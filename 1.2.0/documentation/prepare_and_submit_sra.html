@@ -1,0 +1,248 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>SRA Submission &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.2.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="doc-sra-submission"></span><div class="section" id="sra-submission">
+<span id="index-1"></span><h1>SRA Submission<a class="headerlink" href="#sra-submission" title="Permalink to this headline">¶</a></h1>
+<p>QIIME&#8217;s SRA submission code is changing rapidly in the <tt class="docutils literal"><span class="pre">1.2.0-dev</span></tt> versions of QIIME. We&#8217;re making every effort to keep the documentation up-to-date with the code, but if you are interested in using this code you&#8217;ll most likely want to get on the <tt class="docutils literal"><span class="pre">qiime-sra-users</span></tt> mailing list to stay current on the state of the code. Head <a class="reference external" href="http://groups.google.com/group/qiime-sra-users?hl=en">here</a> for information on joining that public group.</p>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>This document discusses using QIIME to submit your own barcoded 454 16S community sequencing data to the SRA. When you&#8217;re ready to start this process you should have your sff files and your metadata mapping file. The following steps are covered:</p>
+<blockquote>
+<ol class="arabic simple">
+<li>Getting an SRA study accession number from SRA.</li>
+<li>Generation of template files using a web service provided by the QIIME team.</li>
+<li>Fill in template files to describe your study and data.</li>
+<li>Applying the <tt class="docutils literal"><span class="pre">process_sra_submission.py</span></tt> workflow in QIIME to generate per-sample sff files; screen and remove human contaminants from your sequence set (if desired); and generate the SRA XML files.</li>
+<li>Submit your data to the SRA.</li>
+</ol>
+</blockquote>
+<p>In addition to QIIME&#8217;s standard dependencies, you will need several of QIIME&#8217;s optional dependencies to complete this process:</p>
+<blockquote>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">uclust</span></tt></li>
+<li>454 off-instrument tools (<tt class="docutils literal"><span class="pre">sffinfo</span></tt>, <tt class="docutils literal"><span class="pre">sfffile</span></tt>). These must be obtained from Roche 454.</li>
+</ul>
+</blockquote>
+<p>You should refer to the <a class="reference external" href="../install/index.html">QIIME install pages</a> for all information related to getting up and running with QIIME.</p>
+<p>If you are interested in running the latter steps with a test data set, you should review the <a class="reference external" href="../tutorials/doc_sra_submission.html">QIIME SRA submission tutorial</a>.</p>
+</div>
+<div class="section" id="step-1-getting-an-sra-study-accession-number-from-sra">
+<h2>Step 1. Getting an SRA study accession number from SRA.<a class="headerlink" href="#step-1-getting-an-sra-study-accession-number-from-sra" title="Permalink to this headline">¶</a></h2>
+<p>Go to the <a class="reference external" href="http://www.ncbi.nlm.nih.gov/Traces/sra">SRA homepage</a> and click the Submit/Submissions tag. Register (only the first time, of course) and log in via the NCBI PDA route. Now, you can create a submission. The Submission ID can be choosen freely (SRA says it should make sense to the submitter). This ID should/must/can (??) be used later as SAMPLE_ALIAS in the submission process. You will receive a SRA accession ID and a new submission without any data loaded.</p>
+<p>If you registered as a new user and belong to a center, you might want to consider to be added to the center&#8217;s user list by contacting <a class="reference external" href="mailto:sra&#37;&#52;&#48;ncbi&#46;nlm&#46;nih&#46;gov">sra<span>&#64;</span>ncbi<span>&#46;</span>nlm<span>&#46;</span>nih<span>&#46;</span>gov</a>.</p>
+</div>
+<div class="section" id="step-2-generation-of-template-files-using-a-web-service">
+<h2>Step 2. Generation of template files using a web service.<a class="headerlink" href="#step-2-generation-of-template-files-using-a-web-service" title="Permalink to this headline">¶</a></h2>
+<p>To generate your template files, please visit the following website:</p>
+<p><a class="reference external" href="http://microbio.me/qiime">http://microbio.me/qiime</a></p>
+<blockquote>
+<ul class="simple">
+<li>If you already have an account you can use that to log into the website. If not, you can use the links at the bottom to create a new account for yourself.</li>
+<li>Once logged in, click the &#8220;Create a New Study&#8221; link and fill out the form.</li>
+<li>After creating a new study, new links will be available on the main page. Click the &#8220;Generate a MIENS-compliant metadata template&#8221; link to begin the process of generating your template files.</li>
+<li>On the new template page you will be presented with all required fields for your MIENS study type(s). You will also have the option of selecting any additional fields that apply to your study. If you do not see a field you&#8217;d like to add, scroll to the bottom of the page and use the search utility. If you still do not find the field you wish to add, you may then manually add a column to the appropriate template file after you&#8217;ve generated your template files (make sure these fields are less than 25 characters in length, start with a letter, and contain only letters, numbers, and the &#8220;_&#8221; character).</li>
+<li>Once you&#8217;ve made your field selections, click the &#8220;Generate Templates&#8221; button at the bottom of the page. You may download each file individually or download the entire bundle as a .zip archive.</li>
+</ul>
+</blockquote>
+<p>Working with Ontologies:</p>
+<p>Within the generated template files is a field reference which describes each field and what the expected values are. For fields that require an ontology value it may be helpful to use the Ontology Lookup utility located on the main page (after creating or selecting a study). You may also wish to browse the ontology online. Links to the referenced ontologies are included in the field reference documentation generated when you created your templates. Look up the field in question and read the description to find the URL of the ontology of interest.</p>
+</div>
+<div class="section" id="step-3-fill-in-template-files-to-describe-your-study-and-data">
+<h2>Step 3. Fill in template files to describe your study and data.<a class="headerlink" href="#step-3-fill-in-template-files-to-describe-your-study-and-data" title="Permalink to this headline">¶</a></h2>
+<p>The SRA submission workflow involves four input files:</p>
+<ol class="arabic simple">
+<li>Study input file</li>
+<li>Sample input file</li>
+<li>Experiment input file</li>
+<li>Submission input file</li>
+</ol>
+<p>The SRA input files are formatted as tab-delimited text.  The first
+non-blank line is the header line, and specifies the field labels for
+the input file.  Field labels may appear in any order, but all
+required field labels must be present for each file type.  Subsequent
+lines specify a set of values for the fields.  SRA input files may
+contain comment lines, which must start with &#8216;#&#8217;.</p>
+<p>A spreadsheet program may be used to edit the SRA input files.  After
+editing, they must be exported to TSV format for use with QIIME.  On
+Google Docs, the menu item <em>File -&gt; Download as -&gt; Text (current sheet)</em>
+will generate a file in the correct format.</p>
+<p>The <a class="reference external" href="sra_field_list.html">SRA Field List</a> describes all available
+fields for each type of input file.</p>
+</div>
+<div class="section" id="step-4-applying-the-process-sra-submission-py-workflow-in-qiime">
+<h2>Step 4. Applying the <tt class="docutils literal"><span class="pre">process_sra_submission.py</span></tt> workflow in QIIME.<a class="headerlink" href="#step-4-applying-the-process-sra-submission-py-workflow-in-qiime" title="Permalink to this headline">¶</a></h2>
+<p>After filling in your templates, you will run the <tt class="docutils literal"><span class="pre">process_sra_submission.py</span></tt> workflow script. This code generates per-library sff files, as required by the SRA, and performs human screen if it is necessary to remove human contaminant sequences from your sff files. (If you&#8217;re not sure whether you need to human screen, perform the human screen.)</p>
+<p>There are two types of human screens that can be applied: a positive screen and a negative screen. A positive screen is where all sequences are searched against a database, and those found to match the database are retained. This is used, for example, when you have 16S reads and you want to search them against greengenes to discard all sequences that don&#8217;t look like they are 16S and therefore represent possible human contaminants. This is a conservative screen, but it is typically a better idea to err on the side of discarding too many reads than to accidentally submit human sequences. A negative screen, on the other hand, is where all sequences are searched against a database, and those found not to match the database are retained. This is less conservative, but necessary for example when you have metagenomic reads, and searching against a single sequence collection therefore won&#8217;t work (because you&#8217;d need full genome sequences of all microbes). In this case, you can screen against the full human genome, and retain only sequences that do not match. When using a negative screen, be sure that your reference set contains the full genome, not just (e.g.) the coding regions. To bypass the human screening step, do not provide a reference set via <tt class="docutils literal"><span class="pre">-r</span></tt>.</p>
+<p>You can run <tt class="docutils literal"><span class="pre">process_sra_submission.py</span></tt> as follows:</p>
+<div class="highlight-python"><pre>process_sra_submission.py -s sff_files/ -e experiment.txt -r 16S_reference_set.fasta -u submission.txt -p sra_parameters.txt -o sra_out/</pre>
+</div>
+<p>The options are:</p>
+<blockquote>
+<ul class="simple">
+<li>-s : directory containing sff files</li>
+<li>-e : the experiment.txt file generated in Step 2 and filled in in Step 3</li>
+<li>-r : reference set fasta file for human screening (optional: to bypass the human screen do not pass -r, but be certain that this is what you want to do)</li>
+<li>-u : the submission.txt file generated in Step 2 and filled in in Step 3</li>
+<li>-p : the parameter file &#8211; the standard parameter file used here can be copied from <a class="reference external" href="../tutorials/doc_sra_submission.html#standard-sra-parameters-txt-file-for-barcoded-16s-community-sequencing-on-454">here</a></li>
+<li>-o : the directory where the output should be written</li>
+</ul>
+</blockquote>
+<p>A tutorial is provided <a class="reference external" href="../tutorials/doc_sra_submission.html">here</a> that illustrates how to run <tt class="docutils literal"><span class="pre">process_sra_submission.py</span></tt> using an example data set.</p>
+</div>
+<div class="section" id="step-5-submit-your-data-to-the-sra">
+<h2>Step 5. Submit your data to the SRA.<a class="headerlink" href="#step-5-submit-your-data-to-the-sra" title="Permalink to this headline">¶</a></h2>
+<p>SRA distinguishes between two types of submitters: individuals or centers. E.g. the Knight lab has registered a center name with the NCBI called &#8220;Center for Comparative Microbial Ecology&#8221; (CCME). All projects overseen by this center must be submitted via the project&#8217;s account (Greg has the credentials for CCME). If you submit as an individual write an email to <a class="reference external" href="mailto:trace&#37;&#52;&#48;ncbi&#46;nlm&#46;nih&#46;gov">trace<span>&#64;</span>ncbi<span>&#46;</span>nlm<span>&#46;</span>nih<span>&#46;</span>gov</a> to request the curent ftp address of the anonymous ftp server.</p>
+<p>The actual submission consists of several XML files and the demultiplexed sff files, usually produced with make_sra_submission.py or process_sra_submission.py.</p>
+<p>Metadata files:</p>
+<ul class="simple">
+<li>Study: XML file specifying sequencing study</li>
+<li>Sample: XML file specifying the target of sequencing</li>
+<li>Experiment: XML file specifying experimental organization and parameters</li>
+<li>Run: One of more XML descriptors linking run data to their experiments</li>
+<li>Submission XML file specifying submission session</li>
+</ul>
+<p>To check your files against the XML schema:</p>
+<div class="highlight-python"><pre>xmllint --schema  http://www.ncbi.nlm.nih.gov/viewvc/v1/trunk/sra/doc/SRA/SRA.run.xsd?view=co run.xml</pre>
+</div>
+<p>Replace &#8220;run&#8221; in the URL with &#8220;sample&#8221;, &#8220;study&#8221;, or &#8220;experiment&#8221; to validate the other files.</p>
+<p>The sff files are already tared and zipped by process_sra_submission.py, but the xml files should be collected in one directory and then be tared and zipped. These two files will be uploaded to the SRA ftp site, usually to the short_read subdirectory. At this point, it&#8217;s a good idea to send an email to your contact at the SRA (can we give a general email sdress here?) to inform them of your upload.</p>
+</div>
+<div class="section" id="resubmitting-and-changing-your-data-in-sra">
+<h2>Resubmitting and changing your data in SRA<a class="headerlink" href="#resubmitting-and-changing-your-data-in-sra" title="Permalink to this headline">¶</a></h2>
+<p>As long as your data in not succesfully loaded and was assigned an SRA ID, you can simply re-upload new XML files. The new ones will replace the old ones. Once at least part of your data is accepted you have to use the MODIFY flag in the submission.xml like this:</p>
+<div class="highlight-python"><pre>&lt;ACTION&gt;
+     &lt;MODIFY source="experiment_modified.xml" target="SRX025053 " notes="Modifying SRX025053"/&gt;
+...</pre>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">SRA Submission</a><ul>
+<li><a class="reference external" href="#introduction">Introduction</a></li>
+<li><a class="reference external" href="#step-1-getting-an-sra-study-accession-number-from-sra">Step 1. Getting an SRA study accession number from SRA.</a></li>
+<li><a class="reference external" href="#step-2-generation-of-template-files-using-a-web-service">Step 2. Generation of template files using a web service.</a></li>
+<li><a class="reference external" href="#step-3-fill-in-template-files-to-describe-your-study-and-data">Step 3. Fill in template files to describe your study and data.</a></li>
+<li><a class="reference external" href="#step-4-applying-the-process-sra-submission-py-workflow-in-qiime">Step 4. Applying the <tt class="docutils literal"><span class="pre">process_sra_submission.py</span></tt> workflow in QIIME.</a></li>
+<li><a class="reference external" href="#step-5-submit-your-data-to-the-sra">Step 5. Submit your data to the SRA.</a></li>
+<li><a class="reference external" href="#resubmitting-and-changing-your-data-in-sra">Resubmitting and changing your data in SRA</a></li>
+</ul>
+</li>
+</ul>
+
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://pycogent.sourceforge.net" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+      &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

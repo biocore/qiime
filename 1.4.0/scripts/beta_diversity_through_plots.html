@@ -1,0 +1,179 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>beta_diversity_through_plots.py – A workflow script for computing beta diversity distance matrices and the corresponding 3D plots &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.4.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="beta-diversity-through-plots"></span><div class="section" id="beta-diversity-through-plots-py-a-workflow-script-for-computing-beta-diversity-distance-matrices-and-the-corresponding-3d-plots">
+<span id="index-0"></span><h1><em>beta_diversity_through_plots.py</em> &#8211; A workflow script for computing beta diversity distance matrices and the corresponding 3D plots<a class="headerlink" href="#beta-diversity-through-plots-py-a-workflow-script-for-computing-beta-diversity-distance-matrices-and-the-corresponding-3d-plots" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>This script will perform beta diversity, principal coordinate anlalysis, and generate a preferences file along with 3D PCoA Plots.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">beta_diversity_through_plots.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-otu_table_fp</dt>
+<dd>The input fasta file [REQUIRED]</dd>
+<dt>-m, <cite>-</cite>-mapping_fp</dt>
+<dd>Path to the mapping file [REQUIRED]</dd>
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>The output directory [REQUIRED]</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-t, <cite>-</cite>-tree_fp</dt>
+<dd>Path to the tree file [default: None; REQUIRED for phylogenetic measures]</dd>
+<dt>-p, <cite>-</cite>-parameter_fp</dt>
+<dd>Path to the parameter file, which specifies changes to the default behavior. See <a class="reference external" href="http://www.qiime.org/documentation/file_formats.html#qiime-parameters">http://www.qiime.org/documentation/file_formats.html#qiime-parameters</a> . [if omitted, default values will be used]</dd>
+<dt><cite>-</cite>-color_by_all_fields</dt>
+<dd>Plots will have coloring for all mapping fields [default: False; only include fields with greater than one value and fewer values than the number of samples]</dd>
+<dt>-c, <cite>-</cite>-histogram_categories</dt>
+<dd>Mapping fields to use when plotting distance histograms [default: None]</dd>
+<dt>-f, <cite>-</cite>-force</dt>
+<dd>Force overwrite of existing output directory (note: existing files in output_dir will not be removed) [default: None]</dd>
+<dt>-w, <cite>-</cite>-print_only</dt>
+<dd>Print the commands but don&#8217;t call them &#8211; useful for debugging [default: False]</dd>
+<dt>-a, <cite>-</cite>-parallel</dt>
+<dd>Run in parallel where available [default: False]</dd>
+<dt>-e, <cite>-</cite>-seqs_per_sample</dt>
+<dd>Depth of coverage for even sampling [default: None]</dd>
+<dt><cite>-</cite>-suppress_2d_plots</dt>
+<dd>Do not generate 2D plots [default: False]</dd>
+<dt><cite>-</cite>-suppress_3d_plots</dt>
+<dd>Do not generate 3D plots [default: False]</dd>
+<dt>-O, <cite>-</cite>-jobs_to_start</dt>
+<dd>Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 1]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>This script results in a distance matrix (from <a class="reference external" href="./beta_diversity.html">beta_diversity.py</a>), a principal coordinates file (from <a class="reference external" href="./principal_coordinates.html">principal_coordinates.py</a>), a preferences file (from <a class="reference external" href="./make_prefs_file.html">make_prefs_file.py</a>) and  folder containing the resulting 3d PCoA plots (as an html from <a class="reference external" href="./make_3d_plots.html">make_3d_plots.py</a>).</p>
+<p><strong>Example:</strong></p>
+<p>The following steps are performed by the command below:</p>
+<ol class="arabic simple">
+<li>Compute a beta diversity distance matrix;</li>
+<li>Peform a principle coordinates analysis on the result of Step 1;</li>
+<li>Generate a 3D prefs file for optimized coloring of continuous variables;</li>
+<li>Generate a 3D plot for all mapping fields with colors optimized for continuous data;</li>
+<li>Generate a 3D plot for all mapping fields with colors optimized for discrete data.</li>
+</ol>
+<div class="highlight-python"><pre>beta_diversity_through_3d_plots.py -i otu_table.txt -o bdiv1 -t inseqs1_rep_set.tre -m inseqs1_mapping.txt -p custom_parameters.txt</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://pycogent.sourceforge.net" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2011, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

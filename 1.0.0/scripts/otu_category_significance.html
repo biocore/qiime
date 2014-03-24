@@ -1,0 +1,190 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>otu_category_significance.py – OTU significance and co-occurence analysis &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0.0-dev',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="otu-category-significance"></span><div class="section" id="otu-category-significance-py-otu-significance-and-co-occurence-analysis">
+<span id="index-53"></span><h1><em>otu_category_significance.py</em> &#8211; OTU significance and co-occurence analysis<a class="headerlink" href="#otu-category-significance-py-otu-significance-and-co-occurence-analysis" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>The script <a class="reference external" href="./otu_category_significance.html">otu_category_significance.py</a> tests whether any of the OTUs in an OTU table are significantly associated with a category in the category mapping file. This code uses, ANOVA, the G test of independence, or Pearson correlation to find OTUs whose members are differentially represented across experimental treatments or measured variables. It can also be used with presence/absence or abundance data for a phylogenetic group (such as that determined with quantitative PCR) to determine if any OTUs co-occur with a taxon of interest.</p>
+<p><strong>Usage:</strong> <tt class="docutils literal"><span class="pre">otu_category_significance.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-otu_table_fp</dt>
+<dd>Path to the otu table</dd>
+<dt>-m, <cite>-</cite>-category_mapping_fp</dt>
+<dd>Path to category mapping file</dd>
+<dt>-c, <cite>-</cite>-category</dt>
+<dd>Name of category over which to run the analysis</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-s, <cite>-</cite>-test</dt>
+<dd>The type of statistical test to run. options are: g_test: determines whether OTU presence/absence is associated with a category using the G test of independence. ANOVA: determines whether OTU abundance is associated with a category. correlation: determines whether OTU abundance is correlated with a continuous variable in the category mapping file.</dd>
+<dt>-o, <cite>-</cite>-output_fp</dt>
+<dd>Path to output file. otu_category_significance_results.txt by default</dd>
+<dt>-f, <cite>-</cite>-filter</dt>
+<dd>Minimum number of samples that must contain the OTU for the OTU to be included in the analysis. default value=10.</dd>
+<dt>-t, <cite>-</cite>-threshold</dt>
+<dd>Threshold under which to consider something absent: Only used if you have numerical data that should be converted to present or absent based on a threshold. Should be None for categorical data or with the correlation test. default value is None</dd>
+<dt>-l, <cite>-</cite>-otu_include_fp</dt>
+<dd>Path to a file with a list of OTUs to evaluate. By default evaluates all OTUs that pass the minimum sample filter. If a filepath is given here in which each OTU name one wishes to evaluate is on a separate line, will apply this additional filter</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>The G test results are output as tab delimited text, which can be examined in Excel. The output has the following columns:</p>
+<ul class="simple">
+<li>OTU: The name of the OTU.</li>
+<li>g_val: The raw test statistic.</li>
+<li>g_prob: The probability that this OTU is non-randomly distributed across the categories.</li>
+<li>Bonferroni_corrected: The probability after correction for multiple comparisons with the Bonferroni correction. In this correction, the p-value is multiplied by the number of comparisons performed (the number of OTUs remaining after applying the filter).</li>
+<li>FDR_corrected: The probability after correction with the &#8220;false discovery rate&#8221; method. In this method, the raw p-values are ranked from low to high. Each p-value is multiplied by the number of comparisons divided by the rank. This correction is less conservative than the Bonferroni correction. The list of significant OTUs is expected to have the percent of false positives predicted by the p value.</li>
+<li>Contingency table columns: The next columns give the information in the contingency table and will vary in number and name based on the number of categories and their names. The two numbers in brackets represent the number of samples that were observed in those categories and the number that would be expected if the OTU members were randomly distributed across samples in the different categories. These columns can be used to evaluate the nature of a non-random association (e.g. if that OTU is always present in a particular category or if it is never present).</li>
+<li>Consensus lineage: The consensus lineage for that OTU will be listed in the last column if it was present in the input OTU table.</li>
+</ul>
+<p>The ANOVA results are output as tab delimited text that can be examined in Excel. The output has the following columns:</p>
+<ul class="simple">
+<li>OTU: The name of the OTU.</li>
+<li>prob: The raw probability from the ANOVA</li>
+<li>Bonferroni_corrected: The probability after correction for multiple comparisons with the Bonferroni correction. In this correction, the p-value is multiplied by the number of comparisons performed (the number of OTUs remaining after applying the filter).</li>
+<li>FDR_corrected: The probability after correction with the &#8220;false discovery rate&#8221; method. In this method, the raw p-values are ranked from low to high. Each p-value is multiplied by the number of comparisons divided by the rank. This correction is less conservative than the Bonferroni correction. The list of significant OTUs is expected to have the percent of false positives predicted by the p value.</li>
+<li>Category Mean Columns: Contains one column for each category reporting the mean count of the OTU in that category.</li>
+<li>Consensus lineage: The consensus lineage for that OTU will be listed in the last column if it was present in the input OTU table.</li>
+</ul>
+<p>The correlation test results are output as tab delimited text, which can be examined in Excel. The output has the following columns:</p>
+<ul class="simple">
+<li>OTU: The name of the OTU.</li>
+<li>prob: The probability that the OTU relative abundance is correlated with the category values across samples.</li>
+<li>Bonferroni_corrected: The probability after correction for multiple comparisons with the Bonferroni correction. In this correction, the p-value is multiplied by the number of comparisons performed (the number of OTUs remaining after applying the filter).</li>
+<li>FDR_corrected: The probability after correction with the &#8220;false discovery rate&#8221; method. In this method, the raw p-values are ranked from low to high. Each p-value is multiplied by the number of comparisons divided by the rank. This correction is less conservative than the Bonferroni correction. The list of significant OTUs is expected to have the percent of false positives predicted by the p value.</li>
+<li>r: Pearson&#8217;s r. This value ranges from -1 to +1, with -1 indicating a perfect negative correlation, +1 indicating a perfect positive correlation, and 0 indicating no relationship.</li>
+<li>Consensus lineage: The consensus lineage for that OTU will be listed in the last column if it was present in the input OTU table.</li>
+</ul>
+<p><strong>Example 1:</strong></p>
+<p>If the user would like to perform a G test on their OTU table using default parameters, while testing the category &#8220;Sex&#8221;, they can run the following command:</p>
+<div class="highlight-python"><pre>otu_category_significance.py -i otu_table.txt -m Mapping_file.txt -s g_test -c Sex</pre>
+</div>
+<p><strong>Example 2:</strong></p>
+<p>If the user would like to perform the same test using numerical qPCR data, where everything below a threshold value should be considered &#8220;absent&#8221; and everything above that value &#8220;present&#8221;, the user will need to set the threshold by running the following command:</p>
+<div class="highlight-python"><pre>otu_category_significance.py -i otu_table.txt -m Mapping_file.txt -s g_test -c qPCR -t 0.16</pre>
+</div>
+<p><strong>Example 3:</strong></p>
+<p>Alternatively, the user could run an ANOVA test on the same data by using the following command:</p>
+<div class="highlight-python"><pre>otu_category_significance.py -i otu_table.txt -m Mapping_file.txt -s ANOVA -c Sex</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+		
+	 <li><a href="../index.html">Home</a><br /></li>
+	 <li><a href="../install/index.html">Install</a><br /></li>
+	 <li><a href="../documentation/index.html">Documentation</a><br /></li>
+	 <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	 <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	 <li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+      &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

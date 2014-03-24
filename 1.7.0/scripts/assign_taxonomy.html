@@ -1,0 +1,209 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>assign_taxonomy.py – Assign taxonomy to each sequence &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.7.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="assign-taxonomy"></span><div class="section" id="assign-taxonomy-py-assign-taxonomy-to-each-sequence">
+<span id="index-0"></span><h1><em>assign_taxonomy.py</em> &#8211; Assign taxonomy to each sequence<a class="headerlink" href="#assign-taxonomy-py-assign-taxonomy-to-each-sequence" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>Contains code for assigning taxonomy, using several techniques.</p>
+<p>Given a set of sequences, assign_taxonomy.py attempts to assign the taxonomy of each sequence. Currently there are three methods implemented: assignment with BLAST, assignment with the RDP classifier, and assignment with the RTAX classifier. The output of this step is a mapping of input sequence identifiers (1st column of output file) to taxonomy (2nd column) and quality score (3rd column). The sequence identifier of the best BLAST hit is also included if the blast method is used (4th column).</p>
+<p>Example reference data sets and id_to_taxonomy maps can be found in the Greengenes OTUs. To get the latest build of those click the &#8220;Most recent Greengenes OTUs&#8221; link on the top right of <a class="reference external" href="http://blog.qiime.org">http://blog.qiime.org</a>. After downloading and unzipping you can use the following following files as -r and -t. As of this writing the latest build was gg_otus_4feb2011, but that portion of path to these files will change with future builds. Modify these paths accordining when calling assign_taxonomy.py.</p>
+<p>-r gg_otus_4feb2011/rep_set/gg_97_otus_4feb2011.fasta
+-t gg_otus_4feb2011/taxonomies/greengenes_tax_rdp_train.txt (best for retraining the RDP classifier)
+-t gg_otus_4feb2011/taxonomies/greengenes_tax.txt (best for BLAST taxonomy assignment)</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">assign_taxonomy.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-input_fasta_fp</dt>
+<dd>Path to the input fasta file</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-t, <cite>-</cite>-id_to_taxonomy_fp</dt>
+<dd>Path to tab-delimited file mapping sequences to assigned taxonomy. Each assigned taxonomy is provided as a semicolon-separated list. For assignment with rdp, each assigned taxonomy must be exactly 6 levels deep. [default: /Users/caporaso/data/gg_12_10_otus/taxonomy/97_otu_taxonomy.txt; REQUIRED when method is blast]</dd>
+<dt>-r, <cite>-</cite>-reference_seqs_fp</dt>
+<dd>Path to reference sequences.  For assignment with blast, these are used to generate a blast database. For assignment with rdp, they are used as training sequences for the classifier. [default: /Users/caporaso/data/gg_12_10_otus/rep_set/97_otus.fasta; REQUIRED if -b is not provided when method is blast]</dd>
+<dt>-p, <cite>-</cite>-training_data_properties_fp</dt>
+<dd>Path to &#8221;.properties&#8221; file in pre-compiled training data for the RDP Classifier.  This option is overridden by the -t and -r options. [default: None]</dd>
+<dt><cite>-</cite>-read_1_seqs_fp</dt>
+<dd>Path to fasta file containing the first read from paired-end sequencing, prior to OTU clustering (used for RTAX only). [default: None]</dd>
+<dt><cite>-</cite>-read_2_seqs_fp</dt>
+<dd>Path to fasta file containing a second read from paired-end sequencing, prior to OTU clustering (used for RTAX only). [default: None]</dd>
+<dt><cite>-</cite>-single_ok</dt>
+<dd>When classifying paired ends, allow fallback to single-ended classification when the mate pair is lacking (used for RTAX only). [default: False]</dd>
+<dt><cite>-</cite>-no_single_ok_generic</dt>
+<dd>When classifying paired ends, do not allow fallback to single-ended classification when the mate pair is overly generic (used for RTAX only). [default: False]</dd>
+<dt><cite>-</cite>-read_id_regex</dt>
+<dd>Used to parse the result of OTU clustering, to get the read_1_id for each clusterID.  (used for RTAX only). [default: S+s+(S+)]</dd>
+<dt><cite>-</cite>-amplicon_id_regex</dt>
+<dd>Used to parse the result of split_libraries, to get the ampliconID for each read_1_id.  Two groups capture read_1_id and ampliconID, respectively.  (used for RTAX only). [default: (S+)s+(S+?)/]</dd>
+<dt><cite>-</cite>-header_id_regex</dt>
+<dd>Used to choose the part of the header in the OTU clustering file that Rtax reports back as the ID.  The default uses the amplicon ID, not including /1 or /3, as the primary key for the query sequences. (used for RTAX only). [default: S+s+(S+?)/]</dd>
+<dt>-m, <cite>-</cite>-assignment_method</dt>
+<dd>Taxon assignment method, must be one of rdp, blast, rtax, mothur, tax2tree [default: rdp]</dd>
+<dt>-b, <cite>-</cite>-blast_db</dt>
+<dd>Database to blast against.  Must provide either &#8211;blast_db or &#8211;reference_seqs_db for assignment with blast [default: None]</dd>
+<dt>-c, <cite>-</cite>-confidence</dt>
+<dd>Minimum confidence to record an assignment, only used for rdp and mothur methods [default: 0.8]</dd>
+<dt><cite>-</cite>-rdp_max_memory</dt>
+<dd>Maximum memory allocation, in MB, for Java virtual machine when using the rdp method.  Increase for large training sets [default: 1500]</dd>
+<dt>-e, <cite>-</cite>-e_value</dt>
+<dd>Maximum e-value to record an assignment, only used for blast method [default: 0.001]</dd>
+<dt><cite>-</cite>-tree_fp</dt>
+<dd>The filepath to a prebuilt tree containing both the representative and reference sequences. Required for Tax2Tree assignment.</dd>
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>Path to store result file [default: &lt;ASSIGNMENT_METHOD&gt;_assigned_taxonomy]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>The consensus taxonomy assignment implemented here is the most detailed lineage description shared by 90% or more of the sequences within the OTU (this level of agreement can be adjusted by the user). The full lineage information for each sequence is one of the output files of the analysis. In addition, a conflict file records cases in which a phylum-level taxonomy assignment disagreement exists within an OTU (such instances are rare and can reflect sequence misclassification within the greengenes database).</p>
+<p><strong>Sample Assignment with BLAST:</strong></p>
+<p>Taxonomy assignments are made by searching input sequences against a blast database of pre-assigned reference sequences. If a satisfactory match is found, the reference assignment is given to the input sequence. This method does not take the hierarchical structure of the taxonomy into account, but it is very fast and flexible. If a file of reference sequences is provided, a temporary blast database is built on-the-fly. The quality scores assigned by the BLAST taxonomy assigner are e-values.</p>
+<p>To assign the sequences to the representative sequence set, using a reference set of sequences and a taxonomy to id assignment text file, where the results are output to default directory &#8220;blast_assigned_taxonomy&#8221;, you can run the following command:</p>
+<div class="highlight-python"><pre>assign_taxonomy.py -i repr_set_seqs.fasta -r ref_seq_set.fna -t id_to_taxonomy.txt</pre>
+</div>
+<p>Optionally, the user could changed the E-value (&#8220;-e&#8221;), using the following command:</p>
+<div class="highlight-python"><pre>assign_taxonomy.py -i repr_set_seqs.fasta -r ref_seq_set.fna -t id_to_taxonomy.txt -e 0.01</pre>
+</div>
+<p><strong>Assignment with the RDP Classifier:</strong></p>
+<p>The RDP Classifier program (Wang, Garrity, Tiedje, &amp; Cole, 2007) assigns taxonomies by matching sequence segments of length 8 to a database of previously assigned sequences. It uses a naive bayesian algorithm, which means that for each potential assignment, it attempts to calculate the probability of the observed matches, assuming that the assignment is correct and that the sequence segments are completely independent. The RDP Classifier is distributed with a pre-built database of assigned sequence, which is used by default. The quality scores provided by the RDP classifier are confidence values.</p>
+<p>Note: If a reference set of sequences and taxonomy to id assignment file are provided, the script will use them to generate a new training dataset for the RDP Classifier on-the-fly.  Because of the RDP Classifier&#8217;s implementation, all lineages in the training dataset must contain the same number of ranks.</p>
+<p>To assign the representative sequence set, where the output directory is &#8220;rdp_assigned_taxonomy&#8221;, you can run the following command:</p>
+<div class="highlight-python"><pre>assign_taxonomy.py -i repr_set_seqs.fasta -m rdp</pre>
+</div>
+<p>Alternatively, the user could change the minimum confidence score (&#8220;-c&#8221;), using the following command:</p>
+<div class="highlight-python"><pre>assign_taxonomy.py -i repr_set_seqs.fasta -m rdp -c 0.85</pre>
+</div>
+<p><strong>Sample Assignment with RTAX:</strong></p>
+<p>Taxonomy assignments are made by searching input sequences against a fasta database of pre-assigned reference sequences. All matches are collected which match the query within 0.5% identity of the best match.  A taxonomy assignment is made to the lowest rank at which more than half of these hits agree.  Note that both unclustered read fasta files are required as inputs in addition to the representative sequence file.</p>
+<p>To make taxonomic classifications of the representative sequences, using a reference set of sequences and a taxonomy to id assignment text file, where the results are output to default directory &#8220;rtax_assigned_taxonomy&#8221;, you can run the following command:</p>
+<div class="highlight-python"><pre>assign_taxonomy.py -i rtax_repr_set_seqs.fasta -m rtax --read_1_seqs_fp read_1.seqs.fna --read_2_seqs_fp read_2.seqs.fna -r rtax_ref_seq_set.fna -t rtax_id_to_taxonomy.txt</pre>
+</div>
+<p><strong>Sample Assignment with Mothur:</strong></p>
+<p>The Mothur software provides a naive bayes classifier similar to the RDP Classifier.  A set of training sequences and id-to-taxonomy assignments must be provided.  Unlike the RDP Classifier, sequences in the training set may be assigned at any level of the taxonomy.</p>
+<p>To make taxonomic classifications of the representative sequences, where the results are output to default directory &#8220;mothur_assigned_taxonomy&#8221;, you can run the following command:</p>
+<div class="highlight-python"><pre>assign_taxonomy.py -i mothur_repr_set_seqs.fasta -m mothur -r mothur_ref_seq_set.fna -t mothur_id_to_taxonomy.txt</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2012, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

@@ -1,0 +1,220 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>compare_alpha_diversity.py – This script compares alpha diversities based on a two-sample t-test using either parametric or non-parametric (Monte Carlo) methods. &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.8.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="compare-alpha-diversity"></span><div class="section" id="compare-alpha-diversity-py-this-script-compares-alpha-diversities-based-on-a-two-sample-t-test-using-either-parametric-or-non-parametric-monte-carlo-methods">
+<span id="index-0"></span><h1><em>compare_alpha_diversity.py</em> &#8211; This script compares alpha diversities based on a two-sample t-test using either parametric or non-parametric (Monte Carlo) methods.<a class="headerlink" href="#compare-alpha-diversity-py-this-script-compares-alpha-diversities-based-on-a-two-sample-t-test-using-either-parametric-or-non-parametric-monte-carlo-methods" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>This script compares the alpha diversity of samples found in a collated alpha
+diversity file. The comparison is done not between samples, but between groups
+of samples. The groupings are created via the input category passed via
+-c/&#8211;category. Any samples which have the same value under the catgory will be
+grouped.</p>
+<p>For example, if your mapping file had a category called &#8216;Treatment&#8217; that
+separated your samples into three groups (Treatment=&#8217;Control&#8217;, Treatment=&#8217;Drug&#8217;,
+Treatment=&#8216;2xDose&#8217;), passing &#8216;Treatment&#8217; to this script would cause it to
+compare (Control,Drug), (Control,2xDose), (2xDose, Drug) alpha diversity
+values. By default the two-sample t-test will be nonparametric (i.e. using
+Monte Carlo permutations to calculate the p-value), though the user has the
+option to make the test a parametric t-test.</p>
+<p>The script creates an output file in tab-separated format where each row is a
+different group comparison. The columns in each row denote which two groups of
+samples are being compared, as well as the mean and standard deviation of each
+group&#8217;s alpha diversity. Finally, the t-statistic and p-value are reported for
+the comparison. This file can be most easily viewed in a spreadsheet program
+such as Excel.</p>
+<p>Note: Any iterations of a rarefaction at a given depth will be averaged. For
+instance, if your collated_alpha file had 10 iterations of the rarefaction at
+depth 480, the scores for the alpha diversity metrics of those 10 iterations
+would be averaged (within sample). The iterations are not controlled by this
+script; when <a class="reference external" href="./multiple_rarefactions.html">multiple_rarefactions.py</a> is called, the -n option specifies the
+number of iterations that have occurred. The multiple comparison correction
+takes into account the number of between group comparisons. If you do not know
+the rarefaction depth available or you want to use the deepest rarefaction
+level available then do not pass -d/&#8211;depth and it will default to using the
+deepest available.</p>
+<p>If t-statistics and/or p-values are None for any of your comparisons, there are
+three possible reasons. The first is that there were undefined values in your
+collated alpha diversity input file. This occurs if there were too few
+sequences in one or more of the samples in the groups involved in those
+comparisons to compute alpha diversity at that depth. You can either rerun
+compare_alpha_diversity.py passing a lower value for &#8211;depth, or you can re-run alpha diversity
+after filtering samples with too few sequences. The second is that you had some
+comparison where each treatment was represented by only a single sample. It is
+not possible to perform a two-sample t-test on two samples each of length 1, so
+None will be reported instead. The third possibility occurs when using the
+nonparamteric t-test with small datasets where the Monte Carlo permutations
+don&#8217;t return a p-value because the distribution of the data has no variance.
+The multiple comparisons correction will not penalize you for comparisons that
+return as None regardless of origin.</p>
+<p>If the means/standard deviations are None for any treatment group, the likely
+cause is that there is an &#8216;na&#8217; value in the collated_alpha file that was
+passed.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">compare_alpha_diversity.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-alpha_diversity_fp</dt>
+<dd>Path to collated alpha diversity file (as generated by <a class="reference external" href="./collate_alpha.html">collate_alpha.py</a>) [REQUIRED]</dd>
+<dt>-m, <cite>-</cite>-mapping_fp</dt>
+<dd>Path to the mapping file [REQUIRED]</dd>
+<dt>-c, <cite>-</cite>-categories</dt>
+<dd>Comma-separated list of categories for comparison [REQUIRED]</dd>
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>Directory where output files should be stored [REQUIRED]</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-t, <cite>-</cite>-test_type</dt>
+<dd>The type of test to perform when calculating the p-values. Valid choices: parametric, nonparametric. If test_type is nonparametric, Monte Carlo permutations will be used to determine the p-value. If test_type is parametric, the num_permutations option will be ignored and the t-distribution will be used instead [default: nonparametric]</dd>
+<dt>-n, <cite>-</cite>-num_permutations</dt>
+<dd>The number of permutations to perform when calculating the p-value. Must be greater than 10. Only applies if test_type is nonparametric [default: 999]</dd>
+<dt>-p, <cite>-</cite>-correction_method</dt>
+<dd>Method to use for correcting multiple comparisons. Available methods are bonferroni, fdr, or none. [default: bonferroni]</dd>
+<dt>-d, <cite>-</cite>-depth</dt>
+<dd>Depth of rarefaction file to use [default: greatest depth]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>Generates a tsv stats file and pdf of boxplots for each input category.
+Each row in the tsv file corresponds to a comparison between two groups of treatment values,
+and includes the means and standard deviations of the two groups&#8217; alpha diversities,
+along with the results of the two-sample t-test.</p>
+<p><strong>Comparing alpha diversities:</strong></p>
+<p>The following command takes the following input: a mapping file (which associaties each sample with a number of characteristics), alpha diversity metric (the results of collate_alpha for an alpha diverity metric, like PD_whole_tree), depth (the rarefaction depth to use for comparison), category (the category in the mapping file to determine which samples to compare to each other), and output filepath (a path to the output file to be created). A nonparametric two sample t-test is run to compare the alpha diversities using the default number of Monte Carlo permutations (999).</p>
+<div class="highlight-python"><pre>compare_alpha_diversity.py -i PD_whole_tree.txt -m mapping.txt -c Treatment -d 100 -o Treatment_PD100</pre>
+</div>
+<p><strong>Comparing alpha diversities:</strong></p>
+<p>Similar to above, but performs comparisons for two categories.</p>
+<div class="highlight-python"><pre>compare_alpha_diversity.py -i PD_whole_tree.txt -m mapping.txt -c Treatment,DOB -d 100 -o Treatment_DOB_PD100</pre>
+</div>
+<p><strong>Parametric t-test:</strong></p>
+<p>The following command runs a parametric two sample t-test using the t-distribution instead of Monte Carlo permutations at rarefaction depth 100.</p>
+<div class="highlight-python"><pre>compare_alpha_diversity.py -i PD_whole_tree.txt -m mapping.txt -c Treatment -d 100 -o PD_d100_parametric -t parametric</pre>
+</div>
+<p><strong>Parametric t-test:</strong></p>
+<p>The following command runs a parametric two sample t-test using the t-distribution instead of Monte Carlo permutations at the greatest depth available.</p>
+<div class="highlight-python"><pre>compare_alpha_diversity.py -i PD_whole_tree.txt -m mapping.txt -c Treatment -o PD_dmax_parametric -t parametric</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

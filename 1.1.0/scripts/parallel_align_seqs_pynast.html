@@ -1,0 +1,175 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>parallel_align_seqs_pynast.py – Parallel sequence alignment using PyNAST &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.1.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="parallel-align-seqs-pynast"></span><div class="section" id="parallel-align-seqs-pynast-py-parallel-sequence-alignment-using-pynast">
+<span id="index-54"></span><h1><em>parallel_align_seqs_pynast.py</em> &#8211; Parallel sequence alignment using PyNAST<a class="headerlink" href="#parallel-align-seqs-pynast-py-parallel-sequence-alignment-using-pynast" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>A wrapper for the <a class="reference external" href="./align_seqs.html">align_seqs.py</a> PyNAST option, intended to make use of multicore/multiprocessor environments to perform analyses in parallel.</p>
+<p><strong>Usage:</strong> <tt class="docutils literal"><span class="pre">parallel_align_seqs_pynast.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-input_fasta_fp</dt>
+<dd>Path to the input fasta file</dd>
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>Path to the output directory</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-a, <cite>-</cite>-pairwise_alignment_method</dt>
+<dd>Method to use for pairwise alignments [default: uclust]</dd>
+<dt>-d, <cite>-</cite>-blast_db</dt>
+<dd>Database to blast against [default: created on-the-fly from template_alignment]</dd>
+<dt>-e, <cite>-</cite>-min_length</dt>
+<dd>Minimum sequence length to include in alignment [default: 150]</dd>
+<dt>-p, <cite>-</cite>-min_percent_id</dt>
+<dd>Minimum percent sequence identity to closest blast hit to include sequence in alignment [default: 75.0]</dd>
+<dt>-N, <cite>-</cite>-align_seqs_fp</dt>
+<dd>Full path to Qiime/scripts/<a class="reference external" href="./align_seqs.html">align_seqs.py</a> [default: /python_software/Qiime/scripts/<a class="reference external" href="./align_seqs.html">align_seqs.py</a>]</dd>
+<dt>-O, <cite>-</cite>-jobs_to_start</dt>
+<dd>Number of jobs to start [default: 2]</dd>
+<dt>-P, <cite>-</cite>-poller_fp</dt>
+<dd>Full path to qiime/parallel/<a class="reference external" href="./poller.html">poller.py</a> [default: /python_software/Qiime/scripts/<a class="reference external" href="./poller.html">poller.py</a>]</dd>
+<dt>-R, <cite>-</cite>-retain_temp_files</dt>
+<dd>Retain temporary files after runs complete (useful for debugging) [default: False]</dd>
+<dt>-S, <cite>-</cite>-suppress_submit_jobs</dt>
+<dd>Only split input and write commands file - don&#8217;t submit jobs [default: False]</dd>
+<dt>-T, <cite>-</cite>-poll_directly</dt>
+<dd>Poll directly for job completion rather than running poller as a separate job. If -T is specified this script will not return until all jobs have completed. [default: False]</dd>
+<dt>-U, <cite>-</cite>-cluster_jobs_fp</dt>
+<dd>Path to <a class="reference external" href="./cluster_jobs.html">cluster_jobs.py</a> script  [default: /python_software/Qiime/scripts/<a class="reference external" href="./start_parallel_jobs.html">start_parallel_jobs.py</a>]</dd>
+<dt>-W, <cite>-</cite>-suppress_polling</dt>
+<dd>Suppress polling of jobs and merging of results upon completion [default: False]</dd>
+<dt>-X, <cite>-</cite>-job_prefix</dt>
+<dd>Job prefix [default: descriptive prefix + random chars]</dd>
+<dt>-Y, <cite>-</cite>-python_exe_fp</dt>
+<dd>Full path to python executable [default: /opt/local/bin/python]</dd>
+<dt>-Z, <cite>-</cite>-seconds_to_sleep</dt>
+<dd>Number of seconds to sleep between checks for run  completion when polling runs [default: 60]</dd>
+<dt>-t, <cite>-</cite>-template_fp</dt>
+<dd>Filepath for template against [default: /data/greengenes_core_sets/core_set_aligned.fasta.imputed]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>This results in a multiple sequence alignment (FASTA-formatted).</p>
+<p><strong>Example:</strong></p>
+<p>Align the input file (-i) against /home/qiime_user/pynast_test_template.fasta (-t) via 5 (-O) independent jobs and write the output (-o) to /home/qiime_user/out/:</p>
+<div class="highlight-python"><pre>parallel_align_seqs_pynast.py -i /home/qiime_user/10_seq.fasta -O 5 -t /home/qiime_user/pynast_test_template.fasta -o /home/qiime_user/out/</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+		
+	 <li><a href="../index.html">Home</a><br /></li>
+	 <li><a href="../install/index.html">Install</a><br /></li>
+	 <li><a href="../documentation/index.html">Documentation</a><br /></li>
+	 <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	 <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	 <li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+      &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

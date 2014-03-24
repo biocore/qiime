@@ -1,0 +1,262 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Comparing Distance Matrices &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.6.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="comparing-distance-matrices">
+<span id="distance-matrix-comparison"></span><h1>Comparing Distance Matrices<a class="headerlink" href="#comparing-distance-matrices" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>This tutorial explains how to use several different distance matrix comparison techniques that are available in <a class="reference external" href="../scripts/compare_distance_matrices.html">compare_distance_matrices.py</a>. All of the currently available comparison techniques are based on the Mantel test, which is a non-parametric statistical method that computes the correlation between two distance matrices. In addition to this statistical method, QIIME also provides the partial Mantel test and Mantel correlogram. Each of these methods will be described in greater detail below.</p>
+<p>One common application of distance matrix comparison techniques is to determine if correlation exists between a community distance matrix (e.g. UniFrac distance matrix) and a second matrix derived from an environmental parameter that is numeric/continuous in nature (e.g. difference in pH, temperature, or geographical location). For example, one might be interested in seeing if communities that are at dissimilar pH levels are more different from one another than communities that are at very similar pH levels. If so, this would indicate positive correlation between the two distance matrices. To create a distance matrix from a continuous category in your mapping file (e.g. environmental parameter), please refer to the <a class="reference external" href="../scripts/distance_matrix_from_mapping.html">distance_matrix_from_mapping.py</a> script documentation.</p>
+<p>Please note that this tutorial does not attempt to cover every possible option that can be used in the distance matrix comparison script. Instead, it attempts to provide useful examples to give you an idea of how to use these statistical methods in your own analysis, as well as customize some of the output to your liking. For a complete listing of the available options, please refer to the <a class="reference external" href="../scripts/compare_distance_matrices.html">compare_distance_matrices.py</a> script documentation.</p>
+</div>
+<div class="section" id="input-files">
+<h2>Input Files<a class="headerlink" href="#input-files" title="Permalink to this headline">¶</a></h2>
+<p>You can obtain the files used in this tutorial <a class="reference external" href="https://s3.amazonaws.com/s3-qiime_tutorial_files/88_soils.zip">here</a>. The files are taken from a study (Lauber et al., 2009) where 88 soil samples were collected at various regions around the world. pH was recorded for each of the soil samples. Using <a class="reference external" href="../scripts/distance_matrix_from_mapping.html">distance_matrix_from_mapping.py</a>, we created a distance matrix containing differences in pH between each pair of samples. Throughout this tutorial, we will explore various ways of comparing these matrices for correlation.</p>
+</div>
+<div class="section" id="output-files">
+<h2>Output Files<a class="headerlink" href="#output-files" title="Permalink to this headline">¶</a></h2>
+<p>Depending on which statistical method you run, the output file(s) generated by this script will vary. They will all be placed in the directory specified by the required -o option. Most of the output files will be tab-separated text files containing information about the test that was performed and its results. These can easily be viewed in a spreadsheet program such as Excel.</p>
+</div>
+<div class="section" id="mantel-test">
+<h2>Mantel Test<a class="headerlink" href="#mantel-test" title="Permalink to this headline">¶</a></h2>
+<p>The Mantel test tests the correlation between two distance matrices. It is non-parametric and computes the significance of the correlation through permutations of the rows and columns of one of the input distance matrices. The test statistic is the Pearson product-moment correlation coefficient <cite>r</cite>. <cite>r</cite> falls in the range of -1 to +1, where being close to -1 indicates strong negative correlation and +1 indicates strong positive correlation. An <cite>r</cite> value of 0 indicates no correlation.</p>
+<p>To illustrate the use of the Mantel test, we will determine if there is significant correlation between the unweighted UniFrac distance matrix and the pH distance matrix. Run the following command:</p>
+<div class="highlight-python"><pre>compare_distance_matrices.py --method=mantel -i unweighted_unifrac_dm.txt,PH_dm.txt -o mantel_out -n 999</pre>
+</div>
+<p>This command will create a new output directory named <tt class="file docutils literal"><span class="pre">mantel_out</span></tt>, which will contain a single text file called <tt class="file docutils literal"><span class="pre">mantel_results.txt</span></tt>. Open up <tt class="file docutils literal"><span class="pre">mantel_results.txt</span></tt> to see the results of the test:</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li># Number of entries refers to the number of rows (or cols) retained in each</li>
+<li># distance matrix after filtering the distance matrices to include only those</li>
+<li># samples that were in both distance matrices. p-value contains the correct</li>
+<li># number of significant digits.</li>
+<li>DM1       DM2     Number of entries       Mantel r statistic      p-value Number of permutations  Tail type</li>
+<li>unweighted_unifrac_dm.txt PH_dm.txt       77      0.75592 0.001   999     two sided</li>
+</ul>
+</div>
+<p>The Mantel <cite>r</cite> statistic of 0.75592 indicates that there is relatively strong positive correlation between the UniFrac and pH matrices. The p-value of 0.001 indicates that our results are statistically significant at an alpha of 0.05. We determined the p-value by specifying 999 permutations with the -n option. By default, the p-value is calculated using a two-tailed test, though this can be changed using the -t option.</p>
+<p>This script also has a &#8220;batch&#8221; mode where you may specify more than two distance matrices as input. A separate Mantel test will be performed for each pair of distance matrices. Run the following command:</p>
+<div class="highlight-python"><pre>compare_distance_matrices.py --method=mantel -i unweighted_unifrac_dm.txt,unweighted_unifrac_dm_shuffled.txt,PH_dm.txt -o mantel_out -n 999</pre>
+</div>
+<p>Again, open up <tt class="file docutils literal"><span class="pre">mantel_out/mantel_results.txt</span></tt> to see the results of the test:</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li># Number of entries refers to the number of rows (or cols) retained in each</li>
+<li># distance matrix after filtering the distance matrices to include only those</li>
+<li># samples that were in both distance matrices. p-value contains the correct</li>
+<li># number of significant digits.</li>
+<li>DM1       DM2     Number of entries       Mantel r statistic      p-value Number of permutations  Tail type</li>
+<li>unweighted_unifrac_dm.txt unweighted_unifrac_dm_shuffled_1.txt    77      -0.01380        0.659   999     two sided</li>
+<li>unweighted_unifrac_dm.txt PH_dm.txt       77      0.75592 0.001   999     two sided</li>
+<li>unweighted_unifrac_dm_shuffled_1.txt      PH_dm.txt       77      0.01960 0.559   999     two sided</li>
+</ul>
+</div>
+<p>We specified three distance matrices in the previous command. Two of the distance matrices are the same ones we previously used and we added a third new distance matrix called <tt class="file docutils literal"><span class="pre">unweighted_unifrac_dm_shuffled.txt</span></tt>. This distance matrix is the same as the original unweighted UniFrac distance matrix except its sample IDs are shuffled. This distance matrix is included to illustrate a negative control, i.e. one that should <cite>not</cite> be correlated with either of the other two distance matrices. The results file indicates that there isn&#8217;t significant correlation between the original and shuffled UniFrac distance matrices because the Mantel <cite>r</cite> statistic is close to zero and the p-value is very large (0.659). The middle line in the results file is the same as our previous results (strong significant positive correlation). The last line indicates that the shuffled UniFrac and pH distance matrices are not significantly correlated.</p>
+</div>
+<div class="section" id="partial-mantel-test">
+<h2>Partial Mantel Test<a class="headerlink" href="#partial-mantel-test" title="Permalink to this headline">¶</a></h2>
+<p>The partial Mantel test is used to estimate the correlation between two matrices, A and B, while controlling for the effect of a control matrix C. The partial Mantel test is a first-order correlation analysis that utilizes three distance (dissimilarity) matrices. This test builds on the simple Mantel test by adding a third &#8220;control&#8221; matrix. The goal is to test the correlation between matrices A and B while controlling the effect of a third matrix C, in order to remove spurious correlations. The first distance matrix is the one that is permuted so that the correlation structure between the first and second distance matrices is kept constant (Oksanen et al., 2011). A popular use of the partial Mantel test is to compare a community distance matrix with another distance matrix derived from an environmental parameter, using geographic distance as the third &#8220;control&#8221; distance matrix.</p>
+<p>To illustrate the use of the partial Mantel test, we will determine if there is significant correlation between the unweighted and weighted UniFrac distance matrices, using the pH distance matrix as the control matrix. Run the following command:</p>
+<div class="highlight-python"><pre>compare_distance_matrices.py --method=partial_mantel -i unweighted_unifrac_dm.txt,weighted_unifrac_dm.txt -c PH_dm.txt -o partial_mantel_out -n 999</pre>
+</div>
+<p>This command will create a new output directory named <tt class="file docutils literal"><span class="pre">partial_mantel_out</span></tt>, which will contain a single text file called <tt class="file docutils literal"><span class="pre">partial_mantel_results.txt</span></tt>. Open up <tt class="file docutils literal"><span class="pre">partial_mantel_results.txt</span></tt> to see the results of the test:</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li># Number of entries refers to the number of rows (or cols) retained in each</li>
+<li># distance matrix after filtering the distance matrices to include only those</li>
+<li># samples that were in both distance matrices. p-value contains the correct</li>
+<li># number of significant digits.</li>
+<li>DM1       DM2     CDM     Number of entries       Mantel r statistic      p-value Number of permutations  Tail type</li>
+<li>unweighted_unifrac_dm.txt weighted_unifrac_dm.txt PH_dm.txt       77      0.68183 0.001   999     greater</li>
+</ul>
+</div>
+<p>The Mantel <cite>r</cite> statistic of 0.68183 indicates that there is relatively strong positive correlation between the unweighted and weighted UniFrac distance matrices while controlling for differences in pH. The p-value of 0.001 indicates that our results are statistically significant at an alpha of 0.05. As with the Mantel test (above), we can also specify more than two distance matrices as inputs, and separate partial Mantel tests will be performed for all pairs of input distance matrices, using the same control matrix for each test.</p>
+</div>
+<div class="section" id="mantel-correlogram">
+<h2>Mantel Correlogram<a class="headerlink" href="#mantel-correlogram" title="Permalink to this headline">¶</a></h2>
+<p>Mantel correlogram tests whether there is correlation between two distance matrices by measuring the correlation between each class of distances. Mantel correlogram performs a Mantel test on each distance class and generates a correlogram with distance classes on the x-axis and their corresponding Mantel test statistic on the y-axis. The shape of the correlogram can then be analyzed to determine the underlying correlative structure that exists between the two input distance matrices. Mantel correlogram is typically used as an auxiliary method to the traditional Mantel test. Thus, the Mantel test is used to check for overall significant correlation between two distance matrices, and Mantel correlogram can then be used to further investigate the underlying structure of the correlative relationship.</p>
+<p>Sturge’s rule is used to determine the number of distance classes based on the number of pairwise comparisons that are possible in the input distance matrices. These distance classes can be thought of as bins (as used in histograms). For each distance class, a Mantel test is performed and a Mantel <cite>r</cite> statisic is computed. A corrected p-value (i.e. Bonferroni, FDR, Holm, etc.) is also computed for each test. The results of this method are usually visualized in a correlogram, which is a graph with the geographic/environmental distance classes on the x-axis and the Mantel statistics on the y-axis.</p>
+<p>As previously stated, the <em>shape</em> of the correlogram determines the underlying structure of the correlative relationship. For example, different correlogram shapes indicate whether the correlation exists as a linear gradient, a single bump, multiple bumps, a &#8220;nugget&#8221; effect, and so on. This tutorial does not attempt to illustrate or explain all possible types of correlograms. We refer the reader to Legendre and Legendre (1998) for an excellent discussion of how to interpret correlograms.</p>
+<p>To illustrate the use of the Mantel correlogram method, we will determine the underlying correlative structure between unweighted UniFrac distance and difference in pH. Since we previously obtained significant results from the traditional Mantel test, it is appropriate to use Mantel correlogram for further investigation. Run the following command:</p>
+<div class="highlight-python"><pre>compare_distance_matrices.py --method=mantel_corr -i unweighted_unifrac_dm.txt,PH_dm.txt -o mantel_correlogram_out -n 999</pre>
+</div>
+<p>This command will create a new output directory named <tt class="file docutils literal"><span class="pre">mantel_correlogram_out</span></tt>, which will contain two files called <tt class="file docutils literal"><span class="pre">mantel_correlogram_results.txt</span></tt> and <tt class="file docutils literal"><span class="pre">unweighted_unifrac_dm.txt_AND_PH_dm.txt_mantel_correlogram.pdf</span></tt>. Open up <tt class="file docutils literal"><span class="pre">mantel_correlogram_results.txt</span></tt> to see the results of the test:</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<div class="last line-block">
+<div class="line"># Number of entries refers to the number of rows (or cols) retained in each</div>
+<div class="line"># distance matrix after filtering the distance matrices to include only those</div>
+<div class="line"># samples that were in both distance matrices. p-value contains the correct</div>
+<div class="line"># number of significant digits.</div>
+<div class="line"># Distance classes with values of None were in the second half of the distance</div>
+<div class="line"># classes and not all samples could be included in the distance class, so</div>
+<div class="line"># calculations were not performed.</div>
+<div class="line">DM1       DM2     Number of entries       Number of permutations  Class index     Number of distances     Mantel r statistic      p-value p-value (Bonferroni corrected)  Tail type</div>
+<div class="line">unweighted_unifrac_dm.txt PH_dm.txt       77      999     0.185384615385  874     0.366968109081  0.001   0.007   greater</div>
+<div class="line-block">
+<div class="line">0.556153846154 830     0.303484182667  0.001   0.007   greater</div>
+<div class="line">0.926923076923 780     0.175832596202  0.001   0.007   greater</div>
+<div class="line">1.29769230769  706     0.0626170953492 0.001   0.007   greater</div>
+<div class="line">1.66846153846  616     -0.0228103590068        0.095   0.665   less</div>
+<div class="line">2.03923076923  572     -0.121409591684 0.001   0.007   less</div>
+<div class="line">2.41   458     -0.191866428719 0.001   0.007   less</div>
+<div class="line">2.78076923077  326     None    None    None    None</div>
+<div class="line">3.15153846154  238     None    None    None    None</div>
+<div class="line">3.52230769231  202     None    None    None    None</div>
+<div class="line">3.89307692308  146     None    None    None    None</div>
+<div class="line">4.26384615385  82      None    None    None    None</div>
+<div class="line">4.63461538462  22      None    None    None    None</div>
+</div>
+</div>
+</div>
+<p>The results file contains information about which two distance matrices were compared, how many entries (i.e. samples) were in each, and the number of permutations used to compute the p-values. The class index indicates the midpoint of each distance class derived from the second distance matrix (in this case, <tt class="file docutils literal"><span class="pre">PH_dm.txt</span></tt>). The next column contains the number of distances in each distance class. The Mantel <cite>r</cite> statistic denotes the strength of the correlation for the distance class, and the p-value and Bonferroni-corrected p-value indicate the significance of the test.</p>
+<p>Open up <tt class="file docutils literal"><span class="pre">unweighted_unifrac_dm.txt_AND_PH_dm.txt_mantel_correlogram.pdf</span></tt> to view the Mantel correlogram:</p>
+<img alt="../_images/mantel_correlogram.png" class="align-center" src="../_images/mantel_correlogram.png" />
+<p>The correlogram is a visual representation of the results in the output text file that we just examined. The x-axis is the distance class indices and the y-axis is the Mantel <cite>r</cite> statistic. Points that are filled in (black) are statistically significant at an alpha of 0.05 (this can be changed with the -a option). Points that are not filled in (white) are not statistically significant at the specified alpha level. By examining the shape of the correlogram, we see that the underlying correlative structure is a linear gradient. Also note that most of the points in the correlogram are statistically significant. The default output format for the correlogram plot is PDF, but this can be changed to PNG or SVG using the -g option.</p>
+</div>
+<div class="section" id="references">
+<h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<p>Lauber, Christian L et al. &#8220;Pyrosequencing-based assessment of soil pH as a predictor of soil bacterial community structure at the continental scale.&#8221; Applied and environmental microbiology 75.15 (2009): 5111-5120.</p>
+<p>Legendre, P., Legendre, L. Numerical Ecology Second English Edition (1998).</p>
+<p>Oksanen, Jari et al. vegan: Community Ecology  Package. R package version 2.0-3  (2012). <a class="reference external" href="http://CRAN.R-project.org/package=vegan">http://CRAN.R-project.org/package=vegan</a></p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Comparing Distance Matrices</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#input-files">Input Files</a></li>
+<li><a class="reference internal" href="#output-files">Output Files</a></li>
+<li><a class="reference internal" href="#mantel-test">Mantel Test</a></li>
+<li><a class="reference internal" href="#partial-mantel-test">Partial Mantel Test</a></li>
+<li><a class="reference internal" href="#mantel-correlogram">Mantel Correlogram</a></li>
+<li><a class="reference internal" href="#references">References</a></li>
+</ul>
+</li>
+</ul>
+
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2012, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

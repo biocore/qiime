@@ -1,0 +1,239 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Installing QIIME &mdash; Homepage</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.9',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="index.html" />
+    <link rel="next" title="QIIME Tutorial" href="tutorial.html" />
+    <link rel="prev" title="QIIME Virtual Box" href="virtual_box.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="index.html"><img src="_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;">
+	<p style="font-size:12pt;padding: 5px;"><b>News and Announcements &raquo;</b>
+<script type="text/javascript" src="http://app.feed.informer.com/digest3/U9OLMKHF9N.js"><noscript><a href="http://app.feed.informer.com/digest3/U9OLMKHF9N.html">Click for &quot;QIIME&quot;.</a> Powered by <a href="http://feed.informer.com/">RSS Feed Informer</a></noscript></script></p>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="tutorial.html" title="QIIME Tutorial"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="virtual_box.html" title="QIIME Virtual Box"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="doc-install"></span><div class="section" id="installing-qiime">
+<span id="index-149"></span><h1>Installing QIIME<a class="headerlink" href="#installing-qiime" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+</ul>
+<p>To use QIIME, the user should install the following programs and set the appropriate environment variables.</p>
+<div class="section" id="software-dependencies">
+<h2>Software Dependencies<a class="headerlink" href="#software-dependencies" title="Permalink to this headline">¶</a></h2>
+<p>The following programs and datasets were used to generate this tutorial and it is recommended to use the same versions as shown below.</p>
+<ul class="simple">
+<li>Python 2.6 - Download <a class="reference external" href="http://www.python.org/ftp/python/2.6.4/Python-2.6.4.tgz">Python-2.6.4.tgz</a></li>
+<li>PyCogent 1.4.0 - Download <a class="reference external" href="http://sourceforge.net/projects/pycogent/files/PyCogent/1.4/PyCogent-1.4.tgz/download">PyCogent-1.4.tgz</a></li>
+<li>PyNAST 1.0 - Download <a class="reference external" href="http://sourceforge.net/projects/pynast/files/PyNAST%20releases/PyNAST-1.0.tar.gz/download">PyNAST-1.0-tar.gz</a></li>
+<li>Numpy 1.3.0 - Download <a class="reference external" href="http://sourceforge.net/projects/numpy/files/NumPy/1.3.0/numpy-1.3.0.tar.gz/download">numpy-1.3.0-tar.gz</a></li>
+<li>MatPlotLib 0.98.5.2 - Download <a class="reference external" href="http://iweb.dl.sourceforge.net/project/matplotlib/OldFiles/matplotlib-0.98.5.2.tar.gz">matplotlib-0.98.5.2.tar.gz</a></li>
+<li>jre1.6.0_05 - Download <a class="reference external" href="http://wsidecar.apple.com/cgi-bin/nph-reg3rdpty2.pl/product=18844&amp;cat=59&amp;platform=osx&amp;method=sa/JavaForMacOSX10.5Update1.dmg">JavaForMacOSX10.5Update1.dmg</a></li>
+<li>rdp_classifier-2.0.1 - Download <a class="reference external" href="http://downloads.sourceforge.net/project/rdp-classifier/rdp-classifier/rdp_classifier_2.0.1/rdp_classifier_2.0.1.tar.gz">rdp_classifier_2.0.1.tar.gz</a></li>
+<li>greengenes core set data file - Download <a class="reference external" href="http://greengenes.lbl.gov/Download/Sequence_Data/Fasta_data_files/core_set_aligned.fasta.imputed">core_set_aligned.fasta.imputed</a></li>
+<li>greengenes alignment lanemask file - Download <a class="reference external" href="http://greengenes.lbl.gov/Download/Sequence_Data/lanemask_in_1s_and_0s">lanemask_in_1s_and_0s</a></li>
+<li>blast-2.2.22 (please note that this refers to legacy BLAST from NCBI, not BLAST+) - Download <a class="reference external" href="ftp://ftp.ncbi.nlm.nih.gov/blast/executables/LATEST/blast-2.2.22-universal-macosx.tar.gz">blast-2.2.22-universal-macosx.tar.gz</a></li>
+<li>fasttree 2.1.0 - Download <a class="reference external" href="http://www.microbesonline.org/fasttree/FastTree-2.1.0.c">FastTree-2.1.c</a></li>
+<li>cd-hit 3.1 - Download <a class="reference external" href="http://www.bioinformatics.org/download.php/cd-hit/cd-hit-2007-0131.tar.gz">cd-hit-2007-0131.tar.gz</a></li>
+</ul>
+</div>
+<div class="section" id="id1">
+<h2>Installing QIIME<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="stable-pre-release">
+<h3>Stable Pre-Release<a class="headerlink" href="#stable-pre-release" title="Permalink to this headline">¶</a></h3>
+<p>Currently the most stable version of QIIME is our 0.92 pre-release, which you can download from <a class="reference external" href="http://sourceforge.net/projects/qiime/files/releases/Qiime-0.92.tar.gz/download">here</a>.</p>
+</div>
+<div class="section" id="latest-development-version">
+<h3>Latest Development Version<a class="headerlink" href="#latest-development-version" title="Permalink to this headline">¶</a></h3>
+<p>To get the latest development version of QIIME, you should check it out of our Sourceforge repository. While this code is subject to minor changes in interface, it will provide access to the latest and greatest features. The official web documentation is likely to be out-of-date with respect to the development software. You should instead refer to the svn documentation in &#8220;Qiime/doc&#8221;. Check out the latest version of QIIME using svn with the command:</p>
+<div class="highlight-python"><pre>svn co https://qiime.svn.sourceforge.net/svnroot/qiime/trunk Qiime</pre>
+</div>
+<p>The user can update QIIME, by using the following command:</p>
+<div class="highlight-python"><pre>svn update /path/to/QIIME/</pre>
+</div>
+</div>
+</div>
+<div class="section" id="environment-variables">
+<h2>Environment Variables<a class="headerlink" href="#environment-variables" title="Permalink to this headline">¶</a></h2>
+<p>Make sure the following environment variable are set:</p>
+<div class="section" id="path-environment-variable">
+<h3>PATH Environment Variable<a class="headerlink" href="#path-environment-variable" title="Permalink to this headline">¶</a></h3>
+<p>Your $PATH environment variable should contain the following:</p>
+<ul class="simple">
+<li>/path/to/python/bin</li>
+<li>/path/to/cd-hit-est</li>
+<li>/path/to/FastTree</li>
+<li>/path/to/blast-2.2.21/bin/</li>
+<li>/path/to/PyNAST/scripts/</li>
+<li>/path/to/jre1.6_0_16/</li>
+</ul>
+<p>For all path description throughout this tutorial, the &#8220;/path/to/&#8221; refers to the physical location of each program on your local computer. For instance, the &#8220;/path/to/python/bin/&#8221; refers to &#8220;/Library/Frameworks/Python.framework/Versions/2.5/bin&#8221; on Mac OS X version 10.5.</p>
+<p>In the bash shell, you can use the following command (example only shows the path to python, so other softwares can be added to the PATH, using a similar approach):</p>
+<div class="highlight-python"><pre>export PATH=/path/to/python/bin/:$PATH</pre>
+</div>
+</div>
+<div class="section" id="pythonpath-environment-variable">
+<h3>PYTHONPATH Environment Variable<a class="headerlink" href="#pythonpath-environment-variable" title="Permalink to this headline">¶</a></h3>
+<p>Your PYTHONPATH should contain the following:</p>
+<ul class="simple">
+<li>/path/to/PyCogent</li>
+<li>/path/to/QIIME</li>
+<li>/path/to/PyNAST</li>
+</ul>
+<p>In the bash shell, you can use the following command (example only shows the path to QIIME, so other softwares can be added to the PYTHONPATH, using a similar approach):</p>
+<div class="highlight-python"><pre>export PYTHONPATH=/path/to/QIIME/:$PYTHONPATH</pre>
+</div>
+</div>
+<div class="section" id="rdp-jar-path-environment-variable">
+<h3>RDP_JAR_PATH Environment Variable<a class="headerlink" href="#rdp-jar-path-environment-variable" title="Permalink to this headline">¶</a></h3>
+<p>The user should also define an RDP_JAR_PATH variable, since this tutorial uses the RDP Classifier:</p>
+<ul class="simple">
+<li>/path/to/rdp_classifier-2.0.jar</li>
+</ul>
+<p>In the bash shell, you can use the following command:</p>
+<div class="highlight-python"><pre>export RDP_JAR_PATH=/path/to/rdp_classifier-2.0.jar</pre>
+</div>
+</div>
+</div>
+<div class="section" id="testing-qiime-install">
+<h2>Testing QIIME Install<a class="headerlink" href="#testing-qiime-install" title="Permalink to this headline">¶</a></h2>
+<p>Once the source code is downloaded, the user should test QIIME to be sure all essential software is properly installed and the correct environment variables are set.</p>
+<p>In a terminal window the user, should cd to their qiime/test directory using the following command:</p>
+<div class="highlight-python"><pre>cd /path/to/QIIME/tests/</pre>
+</div>
+<p>Then run the following test command:</p>
+<div class="highlight-python"><pre>python all_tests.py -v</pre>
+</div>
+<p>If all tests run properly, then QIIME was properly installed. Some test scripts may fail, due to optional third party applications not being installed. Test failures which contain the text ApplicationNotFoundError can be safely ignored. The following scripts may generate errors:</p>
+<ol class="arabic simple">
+<li>test_align_seqs.py - will fail if PyNAST, blast, muscle or infernal are not installed. PyNAST requires BLAST, and is the default sequence aligner. If you are not using PyNAST, you can safely ignore fails regarding blast and/or PyNAST. If you are not using muscle or infernal, you can safely disregard those error messages.</li>
+<li>test_pick_otus.py – will fail if cd-hit and/or blast are not installed. If you are not planning to use these methods for OTU picking, you do not need to worry about these failures.</li>
+<li>test_process_sff.py - will fail if you do not have sffinfo installed.</li>
+<li>test_pycogent_backports/test_mothur.py - will fail is mothur is not installed.</li>
+<li>test_pycogent_backports/test_uclust.py - will fail is uclust is not installed.</li>
+<li>test_pyronoise.py - will fail in PyroNoise is not installed.</li>
+</ol>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">Installing QIIME</a><ul>
+<li><a class="reference external" href="#software-dependencies">Software Dependencies</a></li>
+<li><a class="reference external" href="#id1">Installing QIIME</a><ul>
+<li><a class="reference external" href="#stable-pre-release">Stable Pre-Release</a></li>
+<li><a class="reference external" href="#latest-development-version">Latest Development Version</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#environment-variables">Environment Variables</a><ul>
+<li><a class="reference external" href="#path-environment-variable">PATH Environment Variable</a></li>
+<li><a class="reference external" href="#pythonpath-environment-variable">PYTHONPATH Environment Variable</a></li>
+<li><a class="reference external" href="#rdp-jar-path-environment-variable">RDP_JAR_PATH Environment Variable</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#testing-qiime-install">Testing QIIME Install</a></li>
+</ul>
+</li>
+</ul>
+
+
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="virtual_box.html"
+                                  title="previous chapter">QIIME Virtual Box</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="tutorial.html"
+                                  title="next chapter">QIIME Tutorial</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/install.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="tutorial.html" title="QIIME Tutorial"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="virtual_box.html" title="QIIME Virtual Box"
+             >previous</a> |</li>
+        <li><a href="index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,233 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Basic Unix/Linux/OS X commands &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.8.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="basic-unix-linux-os-x-commands">
+<span id="unix-commands"></span><h1>Basic Unix/Linux/OS X commands<a class="headerlink" href="#basic-unix-linux-os-x-commands" title="Permalink to this headline">¶</a></h1>
+<p>This document covers some very basic unix commands that will be useful working with QIIME. There are a lot of good resources on the web and in books. A few good ones are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference external" href="http://cli.learncodethehardway.org/book/">The Command Line Crash Course</a> (free online book)</li>
+<li><a class="reference external" href="http://oreilly.com/catalog/9780596003302">Unix Power Tools</a> (book)</li>
+<li><a class="reference external" href="http://practicalcomputing.org/">Practical Computing for Biologists</a> (book; also covers python programming and other relevant topics)</li>
+<li><a class="reference external" href="http://www.linuxcommand.org/learning_the_shell.php">Learning the Shell</a> (free online book on Linux/Unix)</li>
+<li><a class="reference external" href="http://acad.coloradocollege.edu/dept/pc/SciCompLab/UnixTutorial/">Mac OS X UNIX Tutorial for Beginners</a> (free online book on Mac OS)</li>
+</ul>
+</div></blockquote>
+<div class="section" id="cd-change-directory">
+<h2>cd : change directory<a class="headerlink" href="#cd-change-directory" title="Permalink to this headline">¶</a></h2>
+<p>Change to <tt class="docutils literal"><span class="pre">data</span></tt>:</p>
+<div class="highlight-python"><pre>cd data</pre>
+</div>
+<p>Change to your home directory:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">cd</span>
+</pre></div>
+</div>
+<p>Change to one directory higher (e.g. if you&#8217;re in <tt class="docutils literal"><span class="pre">/home/greg/data/</span></tt> change to <tt class="docutils literal"><span class="pre">/home/greg/</span></tt>):</p>
+<div class="highlight-python"><pre>cd ..</pre>
+</div>
+</div>
+<div class="section" id="mv-move-rename-file-or-directory">
+<h2>mv: move/rename file or directory<a class="headerlink" href="#mv-move-rename-file-or-directory" title="Permalink to this headline">¶</a></h2>
+<p>Rename <tt class="docutils literal"><span class="pre">old_filename</span></tt> to <tt class="docutils literal"><span class="pre">new_filename</span></tt>:</p>
+<div class="highlight-python"><pre>mv old_filename new_filename</pre>
+</div>
+</div>
+<div class="section" id="curl-pull-a-file-from-a-remote-location">
+<h2>curl: pull a file from a remote location<a class="headerlink" href="#curl-pull-a-file-from-a-remote-location" title="Permalink to this headline">¶</a></h2>
+<p>Pull the greengenes reference OTU file (4feb2011) and write it to a file with the same name:</p>
+<div class="highlight-python"><pre>curl http://greengenes.lbl.gov/Download/Sequence_Data/Fasta_data_files/Caporaso_Reference_OTUs/gg_otus_4feb2011.tgz &gt; gg_otus_4feb2011.tgz</pre>
+</div>
+</div>
+<div class="section" id="cp-copy-a-file">
+<h2>cp: copy a file<a class="headerlink" href="#cp-copy-a-file" title="Permalink to this headline">¶</a></h2>
+<p>Copy <tt class="docutils literal"><span class="pre">my_file.txt</span></tt> to <tt class="docutils literal"><span class="pre">my_file.txt.backup</span></tt>:</p>
+<div class="highlight-python"><pre>cp my_file.txt my_file.txt.backup</pre>
+</div>
+</div>
+<div class="section" id="compress-a-directory-to-a-tgz-file">
+<h2>Compress a directory to a tgz file<a class="headerlink" href="#compress-a-directory-to-a-tgz-file" title="Permalink to this headline">¶</a></h2>
+<p>Compress the <tt class="docutils literal"><span class="pre">my_data/</span></tt> directory into a single file:</p>
+<div class="highlight-python"><pre>tar -czf my_data.tgz my_data/</pre>
+</div>
+</div>
+<div class="section" id="uncompress-a-tgz-file-into-the-current-directory">
+<h2>Uncompress a tgz file into the current directory<a class="headerlink" href="#uncompress-a-tgz-file-into-the-current-directory" title="Permalink to this headline">¶</a></h2>
+<p>Expand the my_data.tgz file:</p>
+<div class="highlight-python"><pre>tar -xzf my_data.tgz</pre>
+</div>
+</div>
+<div class="section" id="uncompress-a-zip-file">
+<h2>Uncompress a zip file<a class="headerlink" href="#uncompress-a-zip-file" title="Permalink to this headline">¶</a></h2>
+<p>Uncompress the QIIME tutorial data:</p>
+<div class="highlight-python"><pre>unzip ftp://thebeast.colorado.edu/pub/QIIME-v1.5.0-dependencies/qiime_tutorial-v1.5.0.zip</pre>
+</div>
+</div>
+<div class="section" id="working-with-files">
+<h2>Working with files<a class="headerlink" href="#working-with-files" title="Permalink to this headline">¶</a></h2>
+<p>Print the first 10 lines of my_file.txt to screen:</p>
+<div class="highlight-python"><pre>head -n 10 my_file.txt</pre>
+</div>
+<p>Print the last 10 lines of my_file.txt to screen:</p>
+<div class="highlight-python"><pre>tail -n 10 my_file.txt</pre>
+</div>
+<p>Print all of the my_file.txt to screen:</p>
+<div class="highlight-python"><pre>cat my_file.txt</pre>
+</div>
+<p>Open my_file.txt for editing with the pico text editor (<a class="reference external" href="http://www.uic.edu/depts/accc/software/pine/pico.html">go here for help with pico</a>):</p>
+<div class="highlight-python"><pre>pico my_file.txt</pre>
+</div>
+<p>View the file interactively in read-only mode. The stop viewing the file hit <tt class="docutils literal"><span class="pre">q</span></tt>:</p>
+<div class="highlight-python"><pre>less my_file.txt</pre>
+</div>
+</div>
+<div class="section" id="ensuring-that-long-jobs-keep-running-despite-loss-of-network-connection">
+<h2>Ensuring that long jobs keep running despite loss of network connection<a class="headerlink" href="#ensuring-that-long-jobs-keep-running-despite-loss-of-network-connection" title="Permalink to this headline">¶</a></h2>
+<p>When you start a job via <tt class="docutils literal"><span class="pre">ssh</span></tt> on AWS, that job will stay running only as long as your network connection is active. So, if you lose your network connection (e.g., if you need to close your laptop) you job will stop running. This can also happen accidentally, so it&#8217;s a good idea to follow these steps for all long jobs.</p>
+<p>To get around these issues you can use the <tt class="docutils literal"><span class="pre">screen</span></tt> command. These steps illustrate basic usage of <tt class="docutils literal"><span class="pre">screen</span></tt>. To start a screen session to safely run commands:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">screen</span>
+</pre></div>
+</div>
+<p>You&#8217;ll need to hit <tt class="docutils literal"><span class="pre">enter</span></tt>.  Then enter your commands, and you can safely close the terminal window, disconnect from the network, close your computer, etc. When you come back you&#8217;ll need to log into the instance again. You can then type:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">screen</span> <span class="o">-</span><span class="n">r</span>
+</pre></div>
+</div>
+<p>and you&#8217;ll see that the command is still running (or may have completed).</p>
+<p>You can find additional <a class="reference external" href="http://www.ibm.com/developerworks/aix/library/au-gnu_screen/">details on screen here</a>.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Basic Unix/Linux/OS X commands</a><ul>
+<li><a class="reference internal" href="#cd-change-directory">cd : change directory</a></li>
+<li><a class="reference internal" href="#mv-move-rename-file-or-directory">mv: move/rename file or directory</a></li>
+<li><a class="reference internal" href="#curl-pull-a-file-from-a-remote-location">curl: pull a file from a remote location</a></li>
+<li><a class="reference internal" href="#cp-copy-a-file">cp: copy a file</a></li>
+<li><a class="reference internal" href="#compress-a-directory-to-a-tgz-file">Compress a directory to a tgz file</a></li>
+<li><a class="reference internal" href="#uncompress-a-tgz-file-into-the-current-directory">Uncompress a tgz file into the current directory</a></li>
+<li><a class="reference internal" href="#uncompress-a-zip-file">Uncompress a zip file</a></li>
+<li><a class="reference internal" href="#working-with-files">Working with files</a></li>
+<li><a class="reference internal" href="#ensuring-that-long-jobs-keep-running-despite-loss-of-network-connection">Ensuring that long jobs keep running despite loss of network connection</a></li>
+</ul>
+</li>
+</ul>
+
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

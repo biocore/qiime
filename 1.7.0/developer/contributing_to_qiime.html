@@ -1,0 +1,183 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Contributing to QIIME &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.7.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="contributing-to-qiime">
+<span id="id1"></span><h1>Contributing to QIIME<a class="headerlink" href="#contributing-to-qiime" title="Permalink to this headline">¶</a></h1>
+<p>QIIME is an open source software package with an open developer community. You can find the source code and test code for QIIME under public revision control in <a class="reference external" href="https://github.com/qiime/qiime">the QIIME git repository on GitHub</a>.</p>
+<p>While we have a <a class="reference external" href="https://github.com/organizations/qiime/teams/265429">core development group</a>, we very much welcome contributions from other users. Some of the types of contributions we&#8217;re interested in are new features (big or small, but for big ones it&#8217;s generally a good idea to ask us if we&#8217;re interested in including it first), bug fixes, and documentation updates, additions, and fixes. We use <a class="reference external" href="https://help.github.com/articles/using-pull-requests">pull requests</a> to review and accept user contributions.</p>
+<p>Follow the steps below to get started with submitting code to QIIME.</p>
+<div class="section" id="submitting-code-to-qiime">
+<h2>Submitting code to QIIME<a class="headerlink" href="#submitting-code-to-qiime" title="Permalink to this headline">¶</a></h2>
+<p>You should begin by <a class="reference external" href="https://github.com/qiime/qiime/issues">creating an issue</a> describing your code. This should include a description of your code (is it a new feature, a bug fix, etc.), and note in the issue description that you&#8217;re willing to work on it.</p>
+<blockquote>
+<div><ol class="arabic">
+<li><p class="first">If you&#8217;ll be modifying existing QIIME file(s), you&#8217;ll want to get input from the primary developer of the relevant file(s) via a discussion in the issue tracker to let them know you what you&#8217;d like to do. The primary developer is the person listed in the <tt class="docutils literal"><span class="pre">__maintainer__</span></tt> variable at the top of the file. Once you hear back that it is OK to make changes (i.e., they don&#8217;t have local edits, they agree with the change you&#8217;d like to make, and they&#8217;re comfortable with you editing their code), you should assign the issue to yourself on GitHub.</p>
+</li>
+<li><p class="first"><a class="reference external" href="https://help.github.com/articles/fork-a-repo">Fork</a> the QIIME repository on the GitHub website.</p>
+</li>
+<li><p class="first">Clone your forked repository to the system where you&#8217;ll be developing with <tt class="docutils literal"><span class="pre">git</span> <span class="pre">clone</span></tt>.</p>
+</li>
+<li><p class="first">Create a new branch that you will make your changes in with <tt class="docutils literal"><span class="pre">git</span> <span class="pre">checkout</span> <span class="pre">-b</span></tt>.</p>
+</li>
+<li><p class="first">Ensure that you have the latest version of all files (especially important for the file(s) you plan to edit). You should do this by adding QIIME as a remote repository and then pulling from that repository. For example, to update a branch that you&#8217;re working on called <tt class="docutils literal"><span class="pre">my-topic-branch</span></tt> you could do the following (note that you&#8217;ll only need to run the <tt class="docutils literal"><span class="pre">git</span> <span class="pre">remote</span></tt> step one time):</p>
+<div class="highlight-python"><pre>git checkout master
+git remote add upstream https://github.com/qiime/qiime.git
+git pull upstream master
+git checkout my-topic-branch
+git rebase master</pre>
+</div>
+</li>
+<li><p class="first">Run <tt class="docutils literal"><span class="pre">Qiime/tests/all_tests.py</span></tt> to confirm that tests pass before you make any changes. You may get some failures, for example if you don&#8217;t have an external application (e.g., RDP Classifier) installed. It is acceptable to continue if the failing tests are unrelated to the the code your working with. However, if you want to make changes to <tt class="docutils literal"><span class="pre">align_seqs.py</span></tt> and <tt class="docutils literal"><span class="pre">test_align_seqs.py</span></tt> is failing because of missing external applications, you should not proceed until you have installed the external applications and all tests pass.</p>
+</li>
+<li><p class="first">Make your changes to the code and the tests. You should make regular commits to your locally cloned repository with <tt class="docutils literal"><span class="pre">git</span> <span class="pre">add</span></tt> and <tt class="docutils literal"><span class="pre">git</span> <span class="pre">commit</span></tt>. Write descriptive commit messages to accompany each commit.</p>
+</li>
+<li><p class="first">Again, ensure that you have the latest version of all files in case some changed while you were working on your edits.</p>
+</li>
+<li><p class="first">Run <tt class="docutils literal"><span class="pre">Qiime/tests/all_tests.py</span></tt> to ensure that your changes did not cause anything unexpected to break. Note that some tests may fail again because you do not have external applications installed. This is OK, but this is why it is important that you run <tt class="docutils literal"><span class="pre">all_tests.py</span></tt> prior to making changes: if the same tests fail, then you should be OK.</p>
+</li>
+<li><p class="first">Once the tests pass, you should commit your changes and push them to your forked repository on GitHub using <tt class="docutils literal"><span class="pre">git</span> <span class="pre">add</span></tt>, <tt class="docutils literal"><span class="pre">git</span> <span class="pre">commit</span></tt>, and <tt class="docutils literal"><span class="pre">git</span> <span class="pre">push</span></tt>.</p>
+</li>
+<li><p class="first">Issue a <a class="reference external" href="https://help.github.com/articles/using-pull-requests">pull request</a> on the GitHub website to request that we merge your branch&#8217;s changes into QIIME&#8217;s master branch. One of the QIIME developers will get in touch to discuss your code at this stage. If we request changes (which is very common), you don&#8217;t need to issue a new pull request. You should make changes on your local branch, and commit and push them to GitHub. Your pull request will update automatically.</p>
+</li>
+</ol>
+</div></blockquote>
+</div>
+<div class="section" id="getting-help-with-git">
+<h2>Getting help with git<a class="headerlink" href="#getting-help-with-git" title="Permalink to this headline">¶</a></h2>
+<p>If you&#8217;re new to <tt class="docutils literal"><span class="pre">git</span></tt> you&#8217;ll probably find <a class="reference external" href="http://gitref.org/">gitref.org</a> helpful. This is what a lot of the QIIME developers used when we transitioned from Sourceforge and <tt class="docutils literal"><span class="pre">svn</span></tt> to GitHub and <tt class="docutils literal"><span class="pre">git</span></tt>.</p>
+</div>
+<div class="section" id="additional-notes">
+<h2>Additional notes<a class="headerlink" href="#additional-notes" title="Permalink to this headline">¶</a></h2>
+<p>We keep general notes on using GitHub in a Google Doc <a class="reference external" href="https://docs.google.com/document/d/1fUpTyCgpYZDK-He62WPWq4P4aXP2GZxmI9tPgzPxnYU/edit">here</a>. These are being updated somewhat frequently (at least at the time of this writing).</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Contributing to QIIME</a><ul>
+<li><a class="reference internal" href="#submitting-code-to-qiime">Submitting code to QIIME</a></li>
+<li><a class="reference internal" href="#getting-help-with-git">Getting help with git</a></li>
+<li><a class="reference internal" href="#additional-notes">Additional notes</a></li>
+</ul>
+</li>
+</ul>
+
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2012, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

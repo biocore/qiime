@@ -1,0 +1,212 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Using Remote Mapping Files &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.6.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="using-remote-mapping-files">
+<span id="remote-mapping-files"></span><h1>Using Remote Mapping Files<a class="headerlink" href="#using-remote-mapping-files" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>This tutorial explains how to use metadata mapping files that are stored remotely (i.e. not on your local machine) with QIIME. Currently, the only type of remote mapping file that is supported is a Google Spreadsheet, though other methods of remote storage/retrieval may be supported in the future. Thus, for the rest of this tutorial, we will focus on how to use mapping files stored in Google Spreadsheets with QIIME.</p>
+<p><strong>Note:</strong> For more information regarding the QIIME mapping file format, please see the <a class="reference external" href="../documentation/file_formats.html">QIIME file formats documentation</a>.</p>
+<p>A remote mapping file has several advantages over the traditional locally-stored mapping file:</p>
+<ul class="simple">
+<li><strong>It enables collaboration.</strong> By storing the mapping file in a place that can be easily accessed by all members of a project, collaboration becomes easier because now you only have to share a simple URL instead of copying files back-and-forth between computers.</li>
+<li><strong>It prevents mistakes.</strong> By using a remote mapping file, you ensure that everyone in your project is using the <em>definitive</em> version of the mapping file. This is especially important for studies where metadata is often changing. It ensures that no-one is accidentally using an old or outdated version of the file.</li>
+<li><strong>It is convenient.</strong> By using QIIME&#8217;s remote mapping file functionality, you won&#8217;t have to continually export your spreadsheet (from Google Docs, Excel, etc.) into TSV format. This is all taken care of for you behind-the-scenes.</li>
+</ul>
+</div>
+<div class="section" id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
+<p>Before you can use your Google Spreadsheet mapping file with QIIME, you will need to take the following steps.</p>
+<p><strong>Ensure you have an active Internet connection.</strong> You will need to be connected to the Internet in order to retrieve the remote mapping file.</p>
+<p><strong>Install the gdata Python package.</strong> This is an optional dependency for QIIME, but is required if you plan to use a remote mapping file. Please see the <a class="reference external" href="../install/install.html">instructions for installing QIIME natively</a> for more details (version information, etc.). If you are using QIIME in the VirtualBox or on EC2, this package will have already been installed for you.</p>
+<p><strong>Publish your spreadsheet to the web.</strong> This step is necessary because QIIME will connect to the spreadsheet without authentication, and Google currently only provides unauthenticated access to spreadsheets that are published to the web. Note that this is different than <strong>public on the web</strong>, which you will not be able to connect to. The following screenshots illustrate how to publish your spreadsheet to the web:</p>
+<img alt="../_images/remote_mapping_files1.png" src="../_images/remote_mapping_files1.png" />
+<p>Figure 1: Selecting &#8216;Publish to the web&#8217; from within Google Docs.</p>
+<img alt="../_images/remote_mapping_files2.png" src="../_images/remote_mapping_files2.png" />
+<p>Figure 2: Publishing your spreadsheet to the web.</p>
+<p><strong>Note:</strong> When publishing to the web, this <em>does not</em> change the visibility options of your original spreadsheet. It is also important to note that Google Docs gives you an option to automatically republish the spreadsheet anytime changes are made to the original- make sure to select the correct option based on whether you want users to see all changes that are made to the spreadsheet, or if you&#8217;d rather selectively publish the spreadsheet at your own discretion.</p>
+<p><strong>Select your spreadsheet key.</strong> After publishing your spreadsheet to the web, Google Docs will supply you with a URL that can be used to access the published spreadsheet. Select the key (see Figure 3 below) and copy it. This key will be used by QIIME to identify your spreadsheet. You may also wish to note the name of the worksheet (spreadsheets contain multiple worksheets) that contains the mapping file, if you have more than one worksheet in your spreadsheet. The names of the worksheets can be found in the lower lefthand corner of the Google Spreadsheet.</p>
+<img alt="../_images/remote_mapping_files3.png" src="../_images/remote_mapping_files3.png" />
+<p>Figure 3: Selecting your spreadsheet key.</p>
+<p>You are now ready to use your Google Spreadsheet with QIIME!</p>
+</div>
+<div class="section" id="how-do-i-use-a-remote-mapping-file-with-qiime">
+<h2>How do I use a remote mapping file with QIIME?<a class="headerlink" href="#how-do-i-use-a-remote-mapping-file-with-qiime" title="Permalink to this headline">¶</a></h2>
+<p>The script <a class="reference external" href="../scripts/load_remote_mapping_file.html">load_remote_mapping_file.py</a> allows you to export and download a remote mapping file (currently a Google Spreadsheet) to your local machine. This removes the steps of navigating to Google Docs in a web browser and exporting the spreadsheet as TSV each time you need to obtain the latest published version of the spreadsheet.</p>
+<p>To obtain a local copy of the <a class="reference external" href="./tutorial.html">QIIME overview tutorial</a> mapping file stored in Google Docs, run the following command:</p>
+<div class="highlight-python"><pre>load_remote_mapping_file.py -o Fasting_Map.txt -k 0AnzomiBiZW0ddDVrdENlNG5lTWpBTm5kNjRGbjVpQmc</pre>
+</div>
+<p>The -o option specifies the filename to save the mapping file to, and -k specifies the key that we previously copied. Open up <tt class="file docutils literal"><span class="pre">Fasting_Map.txt</span></tt> to see the mapping file in TSV (QIIME-compatible) format:</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li>#SampleID BarcodeSequence LinkerPrimerSequence    Treatment       DOB     Description</li>
+<li>#Example mapping file for the QIIME analysis package.  These 9 samples are from a study of the effects of exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).</li>
+<li>PC.354    AGCACGAGCCTA    YATGCTGCCTCCCGTAGGAGT   Control 20061218        Control_mouse_I.D._354</li>
+<li>PC.355    AACTCGTCGATG    YATGCTGCCTCCCGTAGGAGT   Control 20061218        Control_mouse_I.D._355</li>
+<li>PC.356    ACAGACCACTCA    YATGCTGCCTCCCGTAGGAGT   Control 20061126        Control_mouse_I.D._356</li>
+<li>PC.481    ACCAGCGACTAG    YATGCTGCCTCCCGTAGGAGT   Control 20070314        Control_mouse_I.D._481</li>
+<li>PC.593    AGCAGCACTTGT    YATGCTGCCTCCCGTAGGAGT   Control 20071210        Control_mouse_I.D._593</li>
+<li>PC.607    AACTGTGCGTAC    YATGCTGCCTCCCGTAGGAGT   Fast    20071112        Fasting_mouse_I.D._607</li>
+<li>PC.634    ACAGAGTCGGCT    YATGCTGCCTCCCGTAGGAGT   Fast    20080116        Fasting_mouse_I.D._634</li>
+<li>PC.635    ACCGCAGAGTCA    YATGCTGCCTCCCGTAGGAGT   Fast    20080116        Fasting_mouse_I.D._635</li>
+<li>PC.636    ACGGTGAGTGTC    YATGCTGCCTCCCGTAGGAGT   Fast    20080116        Fasting_mouse_I.D._636</li>
+</ul>
+</div>
+<p>To update this mapping file at a later time, simply rerun the above command (note that you&#8217;ll lose any local changes you may have made to the mapping file, so please be cautious!).</p>
+<p>If your spreadsheet has multiple worksheets (i.e. tabs), <a class="reference external" href="../scripts/load_remote_mapping_file.html">load_remote_mapping_file.py</a>  will by default choose the first worksheet as the one it will export. You can override this behavior by using the -w option and providing the name of the worksheet.</p>
+<p>You may also specify the entire URL of the Google Spreadsheet (instead of only supplying the key) using the same -k option that we used above. The script will attempt to extract the key from the URL.</p>
+<p><strong>Note:</strong> Now that we have a local copy of our mapping file, it is a good idea to run <a class="reference external" href="../scripts/check_id_map.html">check_id_map.py</a> on the mapping file to make sure it is a valid mapping file and that there weren&#8217;t any problems during the export/download process.</p>
+</div>
+<div class="section" id="caveats">
+<h2>Caveats<a class="headerlink" href="#caveats" title="Permalink to this headline">¶</a></h2>
+<p>Please keep the following caveats in mind when using the remote mapping file functionality in QIIME:</p>
+<ul class="simple">
+<li>If your spreadsheet contains blank lines, only the rows <strong>up to</strong> to the first blank line will be exported and downloaded. This is currently a limitation of the Google Spreadsheet API.</li>
+<li>If any headers (i.e. in the first row of the spreadsheet) are empty, the entire column will be ignored during the export.</li>
+</ul>
+</div>
+<div class="section" id="upcoming-features">
+<h2>Upcoming Features<a class="headerlink" href="#upcoming-features" title="Permalink to this headline">¶</a></h2>
+<p>Remote mapping files are very new to QIIME and are thus an experimental feature. We plan to add additional support for remote mapping files in the future, including the following features:</p>
+<ul class="simple">
+<li>Seamless integration with existing QIIME scripts to allow a remote mapping file to be specified directly as input (without having to run <a class="reference external" href="../scripts/load_remote_mapping_file.html">load_remote_mapping_file.py</a> beforehand).</li>
+<li>Option to run <a class="reference external" href="../scripts/check_id_map.html">check_id_map.py</a> as part of the remote mapping file fetching process. Option to have offending fields highlighted in Google Spreadsheet for visual feedback.</li>
+<li>Ability to authenticate users to allow access to spreadsheets that are not &#8220;published to the web&#8221; and to allow edits.</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Using Remote Mapping Files</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li><a class="reference internal" href="#how-do-i-use-a-remote-mapping-file-with-qiime">How do I use a remote mapping file with QIIME?</a></li>
+<li><a class="reference internal" href="#caveats">Caveats</a></li>
+<li><a class="reference internal" href="#upcoming-features">Upcoming Features</a></li>
+</ul>
+</li>
+</ul>
+
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2012, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

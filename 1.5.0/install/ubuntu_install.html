@@ -1,0 +1,163 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>QIIME Install in Ubuntu Linux &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.5.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="qiime-install-in-ubuntu-linux">
+<span id="ubuntu-install"></span><h1>QIIME Install in Ubuntu Linux<a class="headerlink" href="#qiime-install-in-ubuntu-linux" title="Permalink to this headline">¶</a></h1>
+<p>This guide was tested on Ubuntu 11.10 &amp; 12.04. Note that you might be able to install in other Linux distributions following these instructions.</p>
+<div class="section" id="installing-qiime-in-ubuntu-11-10-and-ubuntu-lts-12-04">
+<h2>Installing QIIME in Ubuntu 11.10 and Ubuntu LTS (12.04)<a class="headerlink" href="#installing-qiime-in-ubuntu-11-10-and-ubuntu-lts-12-04" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p class="first">Install Ubuntu 11.10 or 12.04 in your preferred way.</p>
+</li>
+<li><p class="first">Uncomment the universe and multiverse repositories from /etc/apt/sources.list, you can use your favorite text editor but we suggest pico for simplicity. Note that at the bottom of the screen you will have the commands to use to save, exit, etc.</p>
+<div class="highlight-python"><pre>sudo pico /etc/apt/sources.list</pre>
+</div>
+</li>
+<li><p class="first">Install the building dependencies in your machine. This step requires admin (sudo) access. If you do not have sudo access, you must ask your system administrator to grant you sudo access, or to run these steps for you. In general, all of this software should already be installed but it may not be. It&#8217;s therefore best to run this command before the following step.</p>
+<p>For Ubuntu 11.10:</p>
+<div class="highlight-python"><pre>sudo apt-get --force-yes -y install libssl-dev libzmq-dev libgsl0-dev openjdk-6-jdk libxml2 libxslt1.1 libxslt1-dev ant subversion build-essential zlib1g-dev libpng12-dev libfreetype6-dev mpich2 libreadline-dev gfortran unzip libmysqlclient16 libmysqlclient-dev ghc</pre>
+</div>
+<p>For Ubuntu 12.04:</p>
+<div class="highlight-python"><pre>sudo apt-get --force-yes -y install libssl-dev libzmq-dev libgsl0-dev openjdk-6-jdk libxml2 libxslt1.1 libxslt1-dev ant subversion build-essential zlib1g-dev libpng12-dev libfreetype6-dev mpich2 libreadline-dev gfortran unzip libmysqlclient18 libmysqlclient-dev ghc</pre>
+</div>
+</li>
+<li><p class="first">Run the following commands. In this example the software will be installed in your home directory under the qiime_software folder, you can replace this with any path you want.</p>
+<div class="highlight-python"><pre>mkdir $HOME/qiime_software/
+wget ftp://thebeast.colorado.edu/pub/QIIME-v1.5.0-dependencies/app-deploy-qiime-1.5.0.tgz
+tar zxvf app-deploy-qiime-1.5.0.tgz
+cd app-deploy-qiime-1.5.0
+python app-deploy.py $HOME/qiime_software/ -f etc/qiime_1.5.0.conf --force-remove-failed-dirs</pre>
+</div>
+</li>
+<li><p class="first">Happy QIIME-ing!</p>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">QIIME Install in Ubuntu Linux</a><ul>
+<li><a class="reference internal" href="#installing-qiime-in-ubuntu-11-10-and-ubuntu-lts-12-04">Installing QIIME in Ubuntu 11.10 and Ubuntu LTS (12.04)</a></li>
+</ul>
+</li>
+</ul>
+
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://pycogent.sourceforge.net" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2012, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

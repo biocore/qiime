@@ -1,0 +1,161 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>make_otu_table.py – Make OTU table &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.8.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="make-otu-table"></span><div class="section" id="make-otu-table-py-make-otu-table">
+<span id="index-0"></span><h1><em>make_otu_table.py</em> &#8211; Make OTU table<a class="headerlink" href="#make-otu-table-py-make-otu-table" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>The script <a class="reference external" href="./make_otu_table.html">make_otu_table.py</a> tabulates the number of times an OTU is found in each sample, and adds the taxonomic predictions for each OTU in the last column if a taxonomy file is supplied.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">make_otu_table.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-otu_map_fp</dt>
+<dd>Path to the input OTU map (i.e., the output from <a class="reference external" href="./pick_otus.html">pick_otus.py</a>)</dd>
+<dt>-o, <cite>-</cite>-output_biom_fp</dt>
+<dd>The output otu table in biom format (recommended extension: .biom)</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-t, <cite>-</cite>-taxonomy</dt>
+<dd>Path to taxonomy assignment, containing the assignments of taxons to sequences (i.e., resulting txt file from <a class="reference external" href="./assign_taxonomy.html">assign_taxonomy.py</a>) [default: None]</dd>
+<dt>-e, <cite>-</cite>-exclude_otus_fp</dt>
+<dd>Path to a file listing OTU identifiers that should not be included in the OTU table (e.g., the output of <a class="reference external" href="./identify_chimeric_seqs.html">identify_chimeric_seqs.py</a>) or a fasta file where seq ids should be excluded (e.g., failures fasta file from <a class="reference external" href="./align_seqs.html">align_seqs.py</a>)</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>The output of <a class="reference external" href="./make_otu_table.html">make_otu_table.py</a> is a biom file, where the columns correspond to Samples and rows correspond to OTUs and the number of times a sample appears in a particular OTU.</p>
+<p><strong>Make OTU table:</strong></p>
+<p>Make an OTU table from an OTU map (i.e., result from <a class="reference external" href="./pick_otus.html">pick_otus.py</a>) and a taxonomy assignment file (i.e., result from <a class="reference external" href="./assign_taxonomy.html">assign_taxonomy.py</a>). Write the output file to otu_table.biom.</p>
+<div class="highlight-python"><pre>make_otu_table.py -i otu_map.txt -t tax_assignments.txt -o otu_table.biom</pre>
+</div>
+<p><strong>Make OTU table, excluding OTU ids listed in a fasta file:</strong></p>
+<p>Make an OTU table, excluding the sequences listed in pynast_failures.fna. Note that the file pass as -e must end with either &#8216;.fasta&#8217; or &#8216;.fna&#8217;.</p>
+<div class="highlight-python"><pre>make_otu_table.py -i otu_map.txt -o otu_table_no_pynast_failures.biom -e pynast_failures.fna</pre>
+</div>
+<p><strong>Make OTU table, excluding a list of OTU ids:</strong></p>
+<p>Make an OTU table, excluding the sequences listed in chimeric_seqs.txt</p>
+<div class="highlight-python"><pre>make_otu_table.py -i otu_map.txt -o otu_table_non_chimeric.biom -e chimeric_seqs.txt</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

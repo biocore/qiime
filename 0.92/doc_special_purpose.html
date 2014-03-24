@@ -1,0 +1,255 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Special-Purpose Tutorials &mdash; Homepage</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.9',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="index.html" />
+    <link rel="up" title="QIIME Documentation" href="documentation.html" />
+    <link rel="next" title="SRA Submission" href="doc_sra_submission.html" />
+    <link rel="prev" title="print_qiime_config.py – Print out the qiime config settings." href="scripts/print_qiime_config.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="index.html"><img src="_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;">
+	<p style="font-size:12pt;padding: 5px;"><b>News and Announcements &raquo;</b>
+<script type="text/javascript" src="http://app.feed.informer.com/digest3/U9OLMKHF9N.js"><noscript><a href="http://app.feed.informer.com/digest3/U9OLMKHF9N.html">Click for &quot;QIIME&quot;.</a> Powered by <a href="http://feed.informer.com/">RSS Feed Informer</a></noscript></script></p>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="doc_sra_submission.html" title="SRA Submission"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="scripts/print_qiime_config.html" title="print_qiime_config.py – Print out the qiime config settings."
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Home</a> &raquo;</li>
+          <li><a href="documentation.html" accesskey="U">QIIME Documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <ul class="simple">
+</ul>
+<div class="section" id="special-purpose-tutorials">
+<h1>Special-Purpose Tutorials<a class="headerlink" href="#special-purpose-tutorials" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="parallel-runs">
+<h2>Parallel Runs<a class="headerlink" href="#parallel-runs" title="Permalink to this headline">¶</a></h2>
+<p>QIIME supports running several of its slower steps in parallel in a cluster (or other multiple processor/core) environment. Currently, these include:</p>
+<blockquote>
+<ul class="simple">
+<li>Assignment of taxonomy with BLAST, via <tt class="docutils literal"><span class="pre">Qiime/qiime/parallel/assign_taxonomy_blast.py</span></tt></li>
+<li>Assignment of taxonomy with RDP, via <tt class="docutils literal"><span class="pre">Qiime/qiime/parallel/assign_taxonomy_rdp.py</span></tt></li>
+<li>Sequence alignment with PyNAST, via <tt class="docutils literal"><span class="pre">Qiime/qiime/parallel/align_seqs_pynast.py</span></tt></li>
+</ul>
+</blockquote>
+<div class="section" id="writing-a-cluster-jobs-script-specific-to-your-cluster-environment">
+<h3>Writing a cluster_jobs Script Specific to your Cluster Environment<a class="headerlink" href="#writing-a-cluster-jobs-script-specific-to-your-cluster-environment" title="Permalink to this headline">¶</a></h3>
+<p>To make QIIME parallelization useful in different computing environments users are required to provide a script which can start jobs on their system, referred to here as a &#8216;cluster_jobs&#8217; script. The cluster_jobs script takes as its two parameterts:</p>
+<blockquote>
+<ol class="arabic simple">
+<li>A single file which lists the commands to be run (referred to as a &#8216;jobs_list&#8217; file), with one command per line</li>
+<li>A string to use as a prefix when constructing unique job identifiers.</li>
+</ol>
+</blockquote>
+<p>The lines in an example jobs_list file might be:</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li>python pick_otus.py -i inseqs_file1.fasta</li>
+<li>python pick_otus.py -i inseqs_file2.fasta</li>
+<li>python pick_otus.py -i inseqs_file3.fasta</li>
+</ul>
+</div>
+<p>If passed to your cluster_jobs script, this should start three separate jobs corresponding to each of the commands.</p>
+<p>The call to the cluster_jobs script in QIIME&#8217;s parallel scripts looks like the following:</p>
+<div class="highlight-python"><pre>CLUSTER_JOBS_FP -ms job_list.txt JOB_ID</pre>
+</div>
+<p>where CLUSTER_JOBS_FP is the path to your cluster_jobs script and is passed to the parallel scripts via the -U parameter. JOB_ID is intended to be used as a prefix by the cluster_jobs script when creating a unique identifier for each job (and will be passed to the parallel scripts via -X). The same JOB_ID is also used by the QIIME parallel scripts when creating names for temporary files and directories. The -ms indicates that the job files should be made (-m) and submitted (-s).</p>
+<p>Once you have written a cluster_jobs script for your specific environment that can be called via the above interface, running QIIME jobs in parallel should be straight-forward. The parallel variants of the scripts use the same parameters as the serial versions of the scripts, with some additional options in the parallel scripts. Options -N through -Z (capital N through capital Z) are reserved in QIIME for parallel scripts, and in most cases the defaults can be defined in your <tt class="docutils literal"><span class="pre">qiime_config</span></tt> file.</p>
+</div>
+<div class="section" id="example-run-of-pynast-in-parallel">
+<h3>Example Run of PyNAST in Parallel<a class="headerlink" href="#example-run-of-pynast-in-parallel" title="Permalink to this headline">¶</a></h3>
+<p>The following command will start a parallel run of PyNAST, which uses the same interface as the <a class="reference external" href="./scripts/align_seqs.html">align_seqs.py</a> script, where the results are written the an output directory &#8220;parallel_aligned_seqs/&#8221;:</p>
+<div class="highlight-python"><pre>parallel_align_seqs_pynast.py -i repr_set_seqs.fasta -t /ref_set_seqs.fasta -o /home/caporaso/out</pre>
+</div>
+<p>The important thing to note is that this command is that same that would be used to call serial (single processor) PyNAST, except that instead of calling <a class="reference external" href="./scripts/parallel_align_seqs_pynast.html">parallel_align_seqs_pynast.py</a>, you would call <a class="reference external" href="./scripts/align_seqs.html">align_seqs.py</a> to start the run on a single processor. The output from this parallel run is the same as the output would be from the serial run.</p>
+</div>
+<div class="section" id="details-of-the-parallelization">
+<h3>Details of the Parallelization<a class="headerlink" href="#details-of-the-parallelization" title="Permalink to this headline">¶</a></h3>
+<p>This section provides some information on details of the parallelization which are hidden from the user, but provided for users who are interested in what is happening behind-the-scenes.</p>
+<p>The parallelization works as follows. First, the input file (-i) is split into JOBS_TO_START (-O) different roughly equal-sized files. The serial version of the script &#8211; <a class="reference external" href="./scripts/align_seqs.html">align_seqs.py</a> &#8211; is then called on each of these split files as a separate job. Each of these jobs therefore writes its own output files (alignment, log, and failure files). One additional job, the poller, is started to monitor each of the jobs via their output files. When all expected output files exist, the poller will merge the individual output files and clean up any temporary files including the output files created by each of the individual runs. Cleaning up temporary files can be suppressed by passing -R, which is useful for debugging. Bypassing the polling system all-together can be achieved by passing -W.</p>
+</div>
+</div>
+<div class="section" id="the-qiime-config-file">
+<h2>The qiime_config File<a class="headerlink" href="#the-qiime-config-file" title="Permalink to this headline">¶</a></h2>
+<p>First things first: you should not edit or remove <tt class="docutils literal"><span class="pre">Qiime/qiime_config</span></tt>.</p>
+<p>Some QIIME scripts, at this stage primarily the parallel scripts, read default values from a <tt class="docutils literal"><span class="pre">qiime_config</span></tt> file. The default location of this file is in your top-level QIIME directory (<tt class="docutils literal"><span class="pre">Qiime/qiime_config</span></tt>). QIIME scripts pull default values from this file which are system-specific, such as paths to executable files, and these can be overwritten for convenience. The recommended procedure for overwriting these defaults is to copy the <tt class="docutils literal"><span class="pre">qiime_config</span></tt> file to either <tt class="docutils literal"><span class="pre">~/.qiime_config</span></tt> or a location specified by the environment variable $QIIME_CONFIG_FP.</p>
+<p>The Qiime configuration values should only be modified in these copies of the <tt class="docutils literal"><span class="pre">qiime_config</span></tt> file, as changes to the <tt class="docutils literal"><span class="pre">Qiime/qiime_config</span></tt> version may be overwritten in future QIIME updates.</p>
+<p>When defaults are loaded, all three locations are checked in order of precedence. Lowest precedence is given to the <tt class="docutils literal"><span class="pre">Qiime/qiime_config</span></tt> file, as these are defaults defined by the QIIME development team and are likely not relevant to other users&#8217; environments. Higher precedence is given to the file specified by $QIIME_CONFIG_FP, and this is envisioned to be used for defining system-wide defaults. Finally, highest precedence is given to <tt class="docutils literal"><span class="pre">~/.qiime_config</span></tt>, so users have the ability to overwrite defaults defined elsewhere to have maximum control over their environment (e.g., if testing an experimental version of their <tt class="docutils literal"><span class="pre">cluster_jobs</span></tt> script). Note that these values are defaults: the scripts typically allow overwriting of these values via their command line interfaces.</p>
+<p>Note that users can have up to three separate <tt class="docutils literal"><span class="pre">qiime_config</span></tt> files, and one is provided by default with QIIME. At least one <tt class="docutils literal"><span class="pre">qiime_config</span></tt> file must be present in one of the three locations, or scripts that rely on <tt class="docutils literal"><span class="pre">qiime_config</span></tt> file will raise an error. Not all values need to be defined in all <tt class="docutils literal"><span class="pre">qiime_config</span></tt> files, but all values must be defined at least once. This is one more reason why you should not edit or remove <tt class="docutils literal"><span class="pre">Qiime/qiime_config</span></tt>: when new values are added in the future they will be defined in Qiime&#8217;s default copy, but not in your local copies.</p>
+<p>There is a script that prints the current <tt class="docutils literal"><span class="pre">qiime_config</span></tt> settings in the scripts folder:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">print_qiime_config</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="denoising-of-454-data-sets">
+<h2>Denoising of 454 Data Sets<a class="headerlink" href="#denoising-of-454-data-sets" title="Permalink to this headline">¶</a></h2>
+<p><strong>QIIME script:</strong> <tt class="docutils literal"><span class="pre">denoise.py</span></tt></p>
+<p>The pyrosequencing technology employed by 454 sequencing machines produce characteristic sequencing errors, mostly imprecise signals for longer homopolymers runs. Most of the sequences contain no or only a few errors, but a few sequences contain enough errors to be classified as an additional rare OTU. The goal for the denoising procedure is to reduce the amount of erroneous OTUs and thus increasing the accuracy of the whole QIIME pipeline.</p>
+<p>Currently, QIIME supports denoising using Chris Quince&#8217;s PyroNoise (Quince et al., 2009), which needs to be installed separately.</p>
+<p>The input to the denoising script is a textual representation of 454&#8217;s .sff files, produced by 454&#8217;s own tool sffinfo from the initial .sff file:</p>
+<div class="highlight-python"><pre>sffinfo 454Reads.sff &gt; 454Reads.sff.txt</pre>
+</div>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>-i SFF_FP, <cite>-</cite>-input_file=SFF_FP [REQUIRED]</p>
+<blockquote>
+This is the path to the flowgram file (.sff.txt).</blockquote>
+<p>-o OUTPUT_DIR, <cite>-</cite>-output_dir=OUTPUT_DIR [Default: pyronoise_picked_otus/]</p>
+<blockquote>
+This is the location where the resulting output should be written.</blockquote>
+<p>-n NUM_CPUS, <cite>-</cite>-num_cpus=NUM_CPUS [Default: 1]</p>
+<blockquote>
+This is the number of CPUs that should be used.</blockquote>
+<p>-s PRECISION, <cite>-</cite>-precision=PRECISION [Default: 15.0]</p>
+<blockquote>
+This is the precision that should be used (passed to pyroNoise).</blockquote>
+<p>-c CUT_OFF, <cite>-</cite>-cut-off=CUT_OFF [Default: 0.05]</p>
+<blockquote>
+This is the cut-off that should be used (passed to pyroNoise).</blockquote>
+<p>-k, <cite>-</cite>-keep_intermediates [Default: False]</p>
+<blockquote class="last">
+If this parameter is passed, then the script will not delete intermediate PyroNoise files - which is useful for debugging.</blockquote>
+</div>
+<p><strong>Output:</strong></p>
+<p>The output of this script produces two files 1) a denoised FASTA set of cluster centroids and 2) an OTU mapping of flowgram identifiers to centroids.</p>
+<p><strong>Examples:</strong></p>
+<p>To denoise the flowgram sequences in <tt class="docutils literal"><span class="pre">454Reads.sff.txt</span></tt>, you can use the
+following command:</p>
+<div class="highlight-python"><pre>denoise.py -i 454Reads.sff.txt -o 454Reads_out/</pre>
+</div>
+<p>which produces these two output files:</p>
+<blockquote>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">454Reads.fasta</span></tt>: A denoised set of cluster centroids.</li>
+<li><tt class="docutils literal"><span class="pre">454Reads_otu.txt</span></tt>: A mapping of flowgram identifiers to centroids</li>
+</ul>
+</blockquote>
+<p>On a multi-processor machine pyroNoise can be run in parallel using mpirun, where the number of processors is passed to the script via -n, as shown by the following command:</p>
+<div class="highlight-python"><pre>denoise.py -i 454Reads.sff.txt -o 454Reads_out/ -n 4</pre>
+</div>
+<p>Since PyroNoise&#8217;s steep computational requirement, you should limit the application to small data sets. Barcodes and primers are not taken into account here, and barcoded samples should be denoised in separate steps. See Chris&#8217;s PyroNoise web site for details or use a combination of <a class="reference external" href="./scripts/split_libraries.html">split_libraries.py</a> and <tt class="docutils literal"><span class="pre">sfffile</span></tt> (from the 454 software package) to separate the sequences into different sets.</p>
+</div>
+<div class="section" id="references">
+<h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<p>Quince, C., Lanzen, A., Curtis, T. P., Davenport, R. J., Hall, N., Head, I. M., et al. (2009). Accurate determination of microbial diversity from 454 pyrosequencing data. Nat Methods, 6(9), 639-641.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+            <h3><a href="index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">Special-Purpose Tutorials</a><ul>
+<li><a class="reference external" href="#parallel-runs">Parallel Runs</a><ul>
+<li><a class="reference external" href="#writing-a-cluster-jobs-script-specific-to-your-cluster-environment">Writing a cluster_jobs Script Specific to your Cluster Environment</a></li>
+<li><a class="reference external" href="#example-run-of-pynast-in-parallel">Example Run of PyNAST in Parallel</a></li>
+<li><a class="reference external" href="#details-of-the-parallelization">Details of the Parallelization</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#the-qiime-config-file">The qiime_config File</a></li>
+<li><a class="reference external" href="#denoising-of-454-data-sets">Denoising of 454 Data Sets</a></li>
+<li><a class="reference external" href="#references">References</a></li>
+</ul>
+</li>
+</ul>
+
+
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="scripts/print_qiime_config.html"
+                                  title="previous chapter"><em>print_qiime_config.py</em> &#8211; Print out the qiime config settings.</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="doc_sra_submission.html"
+                                  title="next chapter">SRA Submission</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/doc_special_purpose.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="doc_sra_submission.html" title="SRA Submission"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="scripts/print_qiime_config.html" title="print_qiime_config.py – Print out the qiime config settings."
+             >previous</a> |</li>
+        <li><a href="index.html">Home</a> &raquo;</li>
+          <li><a href="documentation.html" >QIIME Documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,181 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>exclude_seqs_by_blast.py – Exclude contaminated sequences using BLAST &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.7.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="exclude-seqs-by-blast"></span><div class="section" id="exclude-seqs-by-blast-py-exclude-contaminated-sequences-using-blast">
+<span id="index-0"></span><h1><em>exclude_seqs_by_blast.py</em> &#8211; Exclude contaminated sequences using BLAST<a class="headerlink" href="#exclude-seqs-by-blast-py-exclude-contaminated-sequences-using-blast" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>This code is designed to allow users of the QIIME workflow to conveniently exclude unwanted sequences from their data. This is mostly useful for excluding human sequences from runs to comply with Internal Review Board (IRB) requirements, but may also have other uses (e.g. perhaps excluding a major bacterial contaminant). Sequences from a run are searched against a user-specified subject database, where BLAST hits are screened by e-value and the percentage of the query that aligns to the sequence.</p>
+<p>For human screening THINK CAREFULLY about the data set that you screen against. Are you excluding human non-coding sequences? What about mitochondrial sequences? This point is CRITICAL because submitting human sequences that are not IRB-approved is BAD.</p>
+<p>(e.g. you would NOT want to just screen against just the coding sequences of the human genome as found in the KEGG .nuc files, for example)</p>
+<p>One valid approach is to screen all putative 16S rRNA sequences against greengenes to ensure they are bacterial rather than human.</p>
+<p>WARNING: You cannot use this script if there are spaces in the path to the database of fasta files because formatdb cannot handle these paths (this is a limitation of NCBI&#8217;s tools and we have no control over it).</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">exclude_seqs_by_blast.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-querydb</dt>
+<dd>The path to a FASTA file containing query sequences</dd>
+<dt>-d, <cite>-</cite>-subjectdb</dt>
+<dd>The path to a FASTA file to BLAST against</dd>
+<dt>-o, <cite>-</cite>-outputdir</dt>
+<dd>The output directory</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-e, <cite>-</cite>-e_value</dt>
+<dd>The e-value cutoff for blast queries [default: 1e-10].</dd>
+<dt>-p, <cite>-</cite>-percent_aligned</dt>
+<dd>The % alignment cutoff for blast queries [default: 0.97].</dd>
+<dt><cite>-</cite>-no_clean</dt>
+<dd>If set, don&#8217;t delete files generated by formatdb after running [default: False].</dd>
+<dt><cite>-</cite>-blastmatroot</dt>
+<dd>Path to a folder containing blast matrices [default: None].</dd>
+<dt><cite>-</cite>-working_dir</dt>
+<dd>Working dir for BLAST [default: /Users/caporaso/temp].</dd>
+<dt>-m, <cite>-</cite>-max_hits</dt>
+<dd>Max hits parameter for BLAST. CAUTION: Because filtering on alignment percentage occurs after BLAST, a max hits value of 1 in combination with an alignment percent filter could miss valid contaminants. [default: 100]</dd>
+<dt>-w, <cite>-</cite>-word_size</dt>
+<dd>Word size to use for BLAST search [default: 28]</dd>
+<dt>-n, <cite>-</cite>-no_format_db</dt>
+<dd>If this flag is specified, format_db will not be called on the subject database (formatdb will be set to False).  This is  useful if you have already formatted the database and a) it took a very long time or b) you want to run the script in parallel on the pre-formatted database [default: False]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>Four output files are generated based on the supplied outputpath + unique suffixes:</p>
+<ol class="arabic simple">
+<li>&#8220;filename_prefix&#8221;.matching: A FASTA file of sequences that did pass the screen (i.e. matched the database and passed all filters).</li>
+<li>&#8220;filename_prefix&#8221;.non-matching: A FASTA file of sequences that did not pass the screen.</li>
+<li>&#8220;filename_prefix&#8221;.raw_blast_results: Contains the raw BLAST results from the screening.</li>
+<li>&#8220;filename_prefix&#8221;.sequence_exclusion_log: A log file summarizing the options used and results obtained.</li>
+</ol>
+<p>In addition, if the <cite>-</cite>-no_clean option is passed, the files generated by formatdb will be kept in the same directory as subjectdb.</p>
+<p><strong>Examples:</strong></p>
+<p>The following is a simple example, where the user can take a given FASTA file (i.e. resulting FASTA file from <a class="reference external" href="./pick_rep_set.html">pick_rep_set.py</a>) and blast those sequences against a reference FASTA file containing the set of sequences which are considered contaminated:</p>
+<div class="highlight-python"><pre>exclude_seqs_by_blast.py -i repr_set_seqs.fasta -d ref_seq_set.fna -o exclude_seqs/</pre>
+</div>
+<p>Alternatively, if the user would like to change the percent of aligned sequence coverage (&#8220;-p&#8221;) or the maximum E-value (&#8220;-e&#8221;), they can use the following command:</p>
+<div class="highlight-python"><pre>exclude_seqs_by_blast.py -i repr_set_seqs.fasta -d ref_seq_set.fna -o exclude_seqs/ -p 0.95 -e 1e-10</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2012, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

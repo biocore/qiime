@@ -1,0 +1,117 @@
+<style type="text/css">
+
+body {
+    width: 80%;
+    font-family: sans-serif;
+}
+
+img {
+    border: none;
+}
+
+img.header {
+    position: absolute;
+    z-index: 2;
+}
+
+h1 {
+    border-bottom: 1px dashed #bbb;
+}
+
+h2 {
+    border-bottom: 1px dashed #ccc;
+}
+
+p {
+    margin-right: 1em;
+}
+
+ul.menu {
+    list-style-type: none;
+    padding: 0;
+}
+
+ul.menu li {
+    color: black;
+}
+
+ul.menu li.selected {
+    width: 100%;
+    background-color: #eee;
+}
+
+ul.menu li a {
+    padding: .2em 1em;
+    text-decoration: none;
+    height: 2em;
+    color: black;
+}
+
+ul.menu li a:hover{
+    background-color: #eee;
+    font-style: bold;
+}
+
+div.footer {
+    width: 100%;
+    text-align: center;
+}
+
+div.wrapper {
+    height: 100%;
+}
+
+div.graybox {
+    width:80%;
+    background-color: #ccc;
+    margin: 1em 1em;
+    padding: auto 2em;
+    font-family: courier;
+    font-size: 14;
+}
+
+div.header {
+    width: 100%;
+    height: 165px;
+}
+
+div.leftcolumn {
+    margin-left: 1em;
+    background-color: #ccc;
+    width: 200px;
+    float: left;
+}
+
+div.news {
+    background-color: #fff;
+}
+
+div.rightcolumn {
+    padding-left: 1em;
+    border: 1px dashed #999;
+    min-width: 500px;
+    width:70%;
+    float: left;
+}
+
+/* Clearfix */
+.clearfix:after {
+    content: ".";
+    display: block;
+    clear: both;
+    visibility: hidden;
+    line-height: 0;
+    height: 0;
+}
+
+.clearfix {
+    display: inline-block;
+}
+
+html[xmlns] .clearfix {
+    display: block;
+}
+
+* html .clearfix {
+    height: 1%;
+}

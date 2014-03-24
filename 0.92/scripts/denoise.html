@@ -1,0 +1,161 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>denoise.py – Denoise a flowgram file &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="Scripts - Analyses and Parameters" href="../doc_script_index.html" />
+    <link rel="next" title="identify_chimeric_seqs.py – Identify chimeric sequences in input FASTA file" href="identify_chimeric_seqs.html" />
+    <link rel="prev" title="merge_mapping_files.py – Merge mapping files" href="merge_mapping_files.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;">
+	<p style="font-size:12pt;padding: 5px;"><b>News and Announcements &raquo;</b>
+<script type="text/javascript" src="http://app.feed.informer.com/digest3/U9OLMKHF9N.js"><noscript><a href="http://app.feed.informer.com/digest3/U9OLMKHF9N.html">Click for &quot;QIIME&quot;.</a> Powered by <a href="http://feed.informer.com/">RSS Feed Informer</a></noscript></script></p>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="identify_chimeric_seqs.html" title="identify_chimeric_seqs.py – Identify chimeric sequences in input FASTA file"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="merge_mapping_files.html" title="merge_mapping_files.py – Merge mapping files"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation.html" >QIIME Documentation</a> &raquo;</li>
+          <li><a href="../doc_script_index.html" accesskey="U">Scripts - Analyses and Parameters</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="denoise"></span><div class="section" id="denoise-py-denoise-a-flowgram-file">
+<span id="index-95"></span><h1><em>denoise.py</em> &#8211; Denoise a flowgram file<a class="headerlink" href="#denoise-py-denoise-a-flowgram-file" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>This script will denoise a flowgram file in  .sff.txt format, which is the output of sffinfo.</p>
+<p><strong>Usage:</strong> <tt class="docutils literal"><span class="pre">denoise.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-input_file</dt>
+<dd>Path to flowgram file (.sff.txt)</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>Path to output directory [default: denoised_seqs/]</dd>
+<dt>-k, <cite>-</cite>-keep_intermediates</dt>
+<dd>Do not delete intermediate files &#8211; useful for debugging [default: False]</dd>
+<dt>-c, <cite>-</cite>-cut-off</dt>
+<dd>Cut-off value (passed to pyroNoise) [default: 0.05]</dd>
+<dt>-s, <cite>-</cite>-precision</dt>
+<dd>Precision (passed to pyroNoise)[default: 15.0]</dd>
+<dt>-n, <cite>-</cite>-num_cpus</dt>
+<dd>Number of CPUs [default: 1]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>This script results in a OTU mapping file along with a sequence file of denoised (FASTA-format). Note that the sequences coming from denoising are no real OTUs, and have to be sent to <a class="reference external" href="./pick_otus.html">pick_otus.py</a> if the users wishes to have a defined similarity threshold.</p>
+<p><strong>Example:</strong></p>
+<p>Denoise flowgrams in file 454Reads.sff.txt:</p>
+<div class="highlight-python"><pre>denoise.py -i 454Reads.sff.txt</pre>
+</div>
+<p><strong>Multi-core Example:</strong></p>
+<p>Denoise flowgrams in file 454Reads.sff.txt using 2 cores on your machine in parallel (requires mpirun):</p>
+<div class="highlight-python"><pre>denoise.py -n 2 -i 454Reads.sff.txt</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="merge_mapping_files.html"
+                                  title="previous chapter"><em>merge_mapping_files.py</em> &#8211; Merge mapping files</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="identify_chimeric_seqs.html"
+                                  title="next chapter"><em>identify_chimeric_seqs.py</em> &#8211; Identify chimeric sequences in input FASTA file</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/scripts/denoise.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="identify_chimeric_seqs.html" title="identify_chimeric_seqs.py – Identify chimeric sequences in input FASTA file"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="merge_mapping_files.html" title="merge_mapping_files.py – Merge mapping files"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation.html" >QIIME Documentation</a> &raquo;</li>
+          <li><a href="../doc_script_index.html" >Scripts - Analyses and Parameters</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+  </body>
+</html>

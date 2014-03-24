@@ -1,0 +1,255 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Analysis of 18S data &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.6.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="analysis-of-18s-data">
+<span id="processing-18s-data"></span><h1>Analysis of 18S data<a class="headerlink" href="#analysis-of-18s-data" title="Permalink to this headline">¶</a></h1>
+<p>This tutorial explains how to use the <strong>QIIME</strong> pipeline to analyze 18S, or mixed 18S/16S, data.  While most of the steps are identical to the standard 16S pipeline described in the <a class="reference external" href="tutorial.html">overview tutorial</a>, reference data that include eukaryotic sequences may be required for OTU picking, taxonomic assignments, and template-based alignment building.</p>
+<p>To this end, QIIME-compatible versions of the <a class="reference external" href="http://www.arb-silva.de/">Silva</a> 104 and 108 releases, which contains data for all three domains of life, are available here: <a class="reference external" href="http://www.arb-silva.de/download/archive/qiime/">http://www.arb-silva.de/download/archive/qiime/</a>.  The <cite>Qiime_files_r104.zip</cite> archive contains several files that will be utilized in this tutorial, and can be used for analyzing 18S datasets.  The 108 release can be used in the same fashion as the 104 release tutorial given below.  Notes about how these datasets and tree were constructed, and the differences between the 104 and 108 release are listed at the bottom of this tutorial.</p>
+<p>IMPORTANT:  Java version 1.6.0 or later is suggested for retraining the RDP classifier, errors have been observed with earlier versions.</p>
+<p>A sample fasta file containing sequences from archaea, bacteria, and eukaryotes can be found in the 18S_tutorial_files of the <a class="reference external" href="ftp://thebeast.colorado.edu/pub/QIIME-v1.5.0-dependencies/qiime_tutorial-v1.5.0.zip">QIIME Tutorial files</a> data set, which will be used along with the Silva reference set in this tutorial.</p>
+<p>Each of the following steps are described in this tutorial (the remaining analyses are identical to those described in the general 16S <a class="reference external" href="tutorial.html">tutorial</a>):</p>
+<ul class="simple">
+<li>Picking Operational Taxonomic Units (OTUs)</li>
+<li>Assigning OTUs to taxonomic identity</li>
+<li>Separating OTU tables according to domain</li>
+<li>Generating and filtering an alignment to construct a phylogenetic tree</li>
+</ul>
+<div class="section" id="making-otu-tables-for-18s-datasets">
+<span id="pickotus"></span><h2>Making OTU tables for 18S datasets<a class="headerlink" href="#making-otu-tables-for-18s-datasets" title="Permalink to this headline">¶</a></h2>
+<p>Here we will cover picking OTUs.  Using the default settings with <a class="reference external" href="../scripts/pick_otus.html">pick_otus.py</a> is no different than with 16S data.  Sequences will be clustered at 97% identity and new clusters will be allowed.  However, one can utilize a reference based approach with the Silva dataset listed above that discards sequences that do not cluster with the reference set.  The advantage to using this approach is that one can use the reference taxonomic assignments and tree rather than generating new ones, however, a large portion of sequences may be discarded.</p>
+<p>To pick OTUs against the Silva reference data set and discard any clusters that do not match, use the following command (the path to the -r parameter representative sequence file will be different for the Silva 108 release):</p>
+<div class="highlight-python"><pre>pick_otus.py -i 18S_tutorial_sample_seqs.fna -m uclust_ref -C -r QIIME_files/rep_set/silva_104_rep_set.fasta -o uclust_ref_picked_otus/</pre>
+</div>
+<p>This will generate a <cite>18S_tutorial_sample_seqs_otus.txt</cite> OTU mapping file in the uclust_ref_picked_otus folder.  An OTU table with taxonomy strings from the reference dataset can be built directly.  To do so now, use the following command (the taxonomy mapping file path for the -t parameter is different if the Silva 108 release is used):</p>
+<div class="highlight-python"><pre>make_otu_table.py -i uclust_ref_picked_otus/18S_tutorial_sample_seqs_otus.txt -t QIIME_files/taxonomy_mapping/Silva_taxa_mapping_104set_97_otus.txt -o otu_table_uclust_ref.biom</pre>
+</div>
+<p>The result of this step is <tt class="file docutils literal"><span class="pre">otu_table_uclust_ref.biom</span></tt>. For more information about the OTU table format, which relies on the biom-format, please go here: <a class="reference external" href="http://biom-format.org/documentation/biom_format.html">biom-format</a></p>
+<p>To convert the table to a tab separated file containing taxonomic information, use this command:</p>
+<div class="highlight-python"><pre>convert_biom.py -i otu_table_uclust_ref.biom -o otu_table_with_taxonomy.txt -b --header_key taxonomy</pre>
+</div>
+<p>which will generate a tab separate OTU table, with an example generated from the Silva 108 release shown below:</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li># Constructed from biom file</li>
+<li>#OTU ID   EF100339        AY854217        EF018454        EU284615        AB032231        AB294267        AB019754        DQ521781        AB294260        DQ809034        AY642706        DQ889882        AF391990        taxonomy</li>
+<li>91263     1.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     Eukaryota; environmental samples; uncultured eukaryote</li>
+<li>75161     0.0     1.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     Eukaryota; Metazoa; Nematoda; Chromadorea; Desmodorida; Desmodoridae; Spiriniinae; Spirinia; Spirinia parasitifera</li>
+<li>14679     0.0     0.0     1.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     Bacteria; Proteobacteria; Deltaproteobacteria; Myxococcales; Sorangiineae; Polyangiaceae; Sorangium; uncultured proteobacterium</li>
+<li>35499     0.0     0.0     0.0     1.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     Archaea; Crenarchaeota; Soil Crenarchaeotic Group(SCG); uncultured archaeon</li>
+<li>41347     0.0     0.0     0.0     0.0     1.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     Eukaryota; Parabasalia; Trichonymphida; Teranymphidae; Eucomonympha; Eucomonympha sp. HsL3</li>
+<li>24695     0.0     0.0     0.0     0.0     0.0     1.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     Archaea; Crenarchaeota; AK31; uncultured archaeon</li>
+<li>53321     0.0     0.0     0.0     0.0     0.0     0.0     1.0     0.0     0.0     0.0     0.0     0.0     0.0     Archaea; Euryarchaeota; Thermoplasmata; Marine Benthic Group E; unidentified archaeon</li>
+<li>66907     0.0     0.0     0.0     0.0     0.0     0.0     0.0     1.0     0.0     0.0     0.0     0.0     0.0     Archaea; Euryarchaeota; Thermoplasmata; Thermoplasmatales; Marine Benthic Group D and DHVEG-1; uncultured archaeon</li>
+<li>27608     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     1.0     0.0     0.0     0.0     0.0     Archaea; Crenarchaeota; South African Gold Mine Gp 1(SAGMCG-1); uncultured archaeon</li>
+<li>99024     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     1.0     0.0     0.0     0.0     Bacteria; Bacteroidetes; Bacteroidia; Bacteroidales; Porphyromonadaceae; Barnesiella; uncultured bacterium</li>
+<li>73606     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     1.0     0.0     0.0     Eukaryota; environmental samples; uncultured eukaryotic picoplankton</li>
+<li>7461      0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     1.0     0.0     Bacteria; Proteobacteria; Alphaproteobacteria; Rhodospirillales; Rhodospirillaceae; uncultured; uncultured alpha proteobacterium</li>
+<li>74406     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0     1.0     Archaea; Crenarchaeota; Miscellaneous Crenarchaeotic Group; uncultured thermal soil archaeon</li>
+</ul>
+</div>
+<p>To generate <em>de novo</em> OTUs, use the following command:</p>
+<div class="highlight-python"><pre>pick_otus.py -i 18S_tutorial_sample_seqs.fna -o uclust_picked_otus/</pre>
+</div>
+<p>This will create a <cite>18S_tutorial_sample_seqs_otus.txt</cite> file in the uclust_picked_otus directory, which can be used to make a representative sequence set for downstream analysis with the following command:</p>
+<div class="highlight-python"><pre>pick_rep_set.py -i uclust_picked_otus/18S_tutorial_sample_seqs_otus.txt -f 18S_tutorial_sample_seqs.fna -o rep_set.fna</pre>
+</div>
+<p>To assign taxonomies to the <em>de novo</em> OTUs that were just generated, use the following command (note that memory usage specified by &#8212;rdp_max_memory is higher for certain retraining taxonomy mapping files, see the notes.txt file associated with the Silva 108 release):</p>
+<div class="highlight-python"><pre>assign_taxonomy.py -i rep_set.fna -o rdp_assigned_taxonomy/ -t QIIME_files/taxonomy_mapping/Silva_RDP_taxa_mapping.txt -r QIIME_files/rep_set/silva_104_rep_set.fasta --rdp_max_memory 2000</pre>
+</div>
+<p>If BLAST is the preferred method of assignment, the generic taxonomic mapping file can be used instead:</p>
+<div class="highlight-python"><pre>assign_taxonomy.py -i rep_set.fna -o blast_assigned_taxonomy/ -t QIIME_files/taxonomy_mapping/Silva_taxa_mapping_104set_97_otus.txt -r QIIME_files/rep_set/silva_104_rep_set.fasta -m blast</pre>
+</div>
+<p>Finally, an OTU table can be built which includes the taxonomic assignments (in this case we will use the RDP assignments):</p>
+<div class="highlight-python"><pre>make_otu_table.py -i uclust_picked_otus/18S_tutorial_sample_seqs_otus.txt -t rdp_assigned_taxonomy/rep_set_tax_assignments.txt -o otu_table.biom</pre>
+</div>
+</div>
+<div class="section" id="separating-otu-tables-according-to-domain">
+<h2>Separating OTU Tables According to Domain<a class="headerlink" href="#separating-otu-tables-according-to-domain" title="Permalink to this headline">¶</a></h2>
+<p>It may be desirable to split the OTU table according to domain for mixed 16S/18S datasets.  To do this, we will use the  <cite>split_otu_table_by_taxonomy.py</cite> module.</p>
+<p>We will split the OTU table generated in the last step at the domain level, 2, by using the following command:</p>
+<div class="highlight-python"><pre>split_otu_table_by_taxonomy.py -i otu_table.biom -L 2 -o separated_otu_tables/</pre>
+</div>
+<p>The output directory, separated_otu_tables, will contain an OTU table for archaea, bacteria, and eukaryotes, which can be utilized in downstream QIIME analyses just as any OTU table.</p>
+</div>
+<div class="section" id="alignments-and-tree-building">
+<h2>Alignments and Tree Building<a class="headerlink" href="#alignments-and-tree-building" title="Permalink to this headline">¶</a></h2>
+<p>To build a tree utilizing the Silva 104 reference set, we will first create an alignment with the <a class="reference external" href="../scripts/align_seqs.html">align_seqs.py</a> module.  The core Silva aligned set will be used as the template.</p>
+<p>Use the following command with the <cite>rep_set.fna</cite> created in the OTU picking step above:</p>
+<div class="highlight-python"><pre>align_seqs.py -i rep_set.fna -t QIIME_files/core_aligned_set/core_Silva_aligned.fasta -o pynast_aligned/</pre>
+</div>
+<p>Next, the alignment must be filtered.  For 16S datasets, a Lanemask is usually applied to remove high entropy positions.  QIIME has incorporated a dynamic entropy and gap calculation to the <a class="reference external" href="../scripts/filter_alignment.html">filter_alignment.py</a> module, which removes the need for a Lanemask.  To filter the alignment created above, use the following command:</p>
+<div class="highlight-python"><pre>filter_alignment.py -i pynast_aligned/rep_set_aligned.fasta -o pynast_aligned/ -e 0.10 -g 0.80</pre>
+</div>
+<p>In this case, the 10% most variable positions and positions that are greater than 80% gaps were removed (the -e and -g parameters respectively).</p>
+<p>Finally, a tree can be built using <a class="reference external" href="../scripts/make_phylogeny.html">make_phylogeny.py</a>:</p>
+<div class="highlight-python"><pre>make_phylogeny.py -i pynast_aligned/rep_set_aligned_pfiltered.fasta -o rep_set.tre</pre>
+</div>
+<p>Trees an OTU tables created can then be utilized in the downstream QIIME analyses as seen in the <a class="reference external" href="tutorial.html#view-statistics-of-the-otu-table">Tutorial - View Statistics of the OTU Table</a>.</p>
+</div>
+<div class="section" id="workflow-scripts">
+<h2>Workflow Scripts<a class="headerlink" href="#workflow-scripts" title="Permalink to this headline">¶</a></h2>
+<p>The Silva 104 reference set can be used in a workflow, such as <a class="reference external" href="../scripts/pick_otus_through_otu_table.html">pick_otus_through_otu_table.py</a>.  It is necessary to modify the <cite>qiime_parameters.txt</cite> file to correctly point to the Silva reference filepaths, and to use the dynamic alignment filtering rather than the 16S Lanemask.  See the <a class="reference external" href="../documentation/file_formats.html#qiime-parameters">documentation</a> for details about the <cite>qiime_parameters.txt</cite> file.</p>
+<p>Parameters that should be modified:</p>
+<blockquote>
+<div><ul class="simple">
+<li>pick_otus:otu_picking_method  uclust (should be set to uclust_ref if a reference based approach is desired)</li>
+<li>pick_otus:refseqs_fp (specify the filepath to the representative Silva 104 set, if reference based approach is desired)</li>
+<li>align_seqs:template_fp (specify the core aligned Silva 104 fasta file path)</li>
+<li>filter_alignment:lane_mask_fp (do not specify a lanemask filepath)</li>
+<li>filter_alignment:allowed_gap_frac     0.999999 (set to 0.80 instead of default)</li>
+<li>filter_alignment:entropy_threshold    0.10 (set to 0.10 if not already set)</li>
+<li>assign_taxonomy:id_to_taxonomy_fp (specify the taxonomy mapping file path, RDP version if RDP is the method of choice)</li>
+<li>assign_taxonomy:reference_seqs_fp (specify the Silva representative set file path)</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="notes-about-silva-reference-set">
+<h2>Notes about Silva Reference Set<a class="headerlink" href="#notes-about-silva-reference-set" title="Permalink to this headline">¶</a></h2>
+<p>These files have been modified from the Silva 104 release to help integration into the QIIME pipeline for marker gene (i.e. small ribosomal subunit) based analysis.</p>
+<p>Versions of software used, apart from custom parsers:</p>
+<p>uclust v1.2.22q version used for clustering Silva files.
+Primer Prospector (<a class="reference external" href="http://pprospector.sourceforge.net/">http://pprospector.sourceforge.net/</a>) module clean_fasta.py was used to degap, remove spaces, and/or convert &#8220;U&#8221; to &#8220;T&#8221; in fasta files.
+fasttree 2.1.0 was used to construct the phylogenetic tree.</p>
+<p>Core Silva aligned set generated by taking complete Silva 104 set, filtered to 80% identity with uclust, followed by filtering out positions that were greater than 99% gaps.</p>
+<p>The representative set was generated by clustering the full Silva 104 release fasta file at 97% identity.</p>
+<p>Taxonomy mapping files were generating by parsing taxonomy strings from the Silva fasta file.  The RDP compatible file was created with a custom parser to get the required 6 levels of taxonomy, followed by hand curation to clean up empty levels of taxonomic definition.</p>
+<p>The representative sequences were first filtered from the original Silva 104 alignment to remove positions that were &gt; 90% gaps and entropy filtered to remove the 10% most entropic (variable) positions, and the resulting alignment was input to Fasttree to build the tree.  Tree was then manually rooted between the Archaeal and Eukaryotic clades.  Note that while this tree has performed reasonably well for phylogenetic analysis (i.e., Unifrac), the structure of the Eukaryotic domain of the tree of life is subject to ongoing debates and likely can not be resolved by the use of single gene markers, such as the SSU, alone.</p>
+<p>Changes in the Silva 108 release:</p>
+<p>In addition to the filtering steps taken for the 104 release, all sequences that contained any degenerate characters were removed in the Silva 108 release.  RDP compatible mapping files for family, genus, and species levels were created for the full dataset and for eukaryotes alone.  Larger amounts of memory are used for lower level taxonomic assignments, see the notes.txt file with the Silva 108 release for details.  No reference tree was created for the Silva 108 release.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Analysis of 18S data</a><ul>
+<li><a class="reference internal" href="#making-otu-tables-for-18s-datasets">Making OTU tables for 18S datasets</a></li>
+<li><a class="reference internal" href="#separating-otu-tables-according-to-domain">Separating OTU Tables According to Domain</a></li>
+<li><a class="reference internal" href="#alignments-and-tree-building">Alignments and Tree Building</a></li>
+<li><a class="reference internal" href="#workflow-scripts">Workflow Scripts</a></li>
+<li><a class="reference internal" href="#notes-about-silva-reference-set">Notes about Silva Reference Set</a></li>
+</ul>
+</li>
+</ul>
+
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2012, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

@@ -1,0 +1,163 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Upgrading to the latest version of QIIME &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.5.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="upgrading-to-the-latest-version-of-qiime">
+<span id="upgrade"></span><h1>Upgrading to the latest version of QIIME<a class="headerlink" href="#upgrading-to-the-latest-version-of-qiime" title="Permalink to this headline">¶</a></h1>
+<p>This page documents how to install a new version of QIIME from an installation of the previous version. It should also be possible to follow the steps to upgrade from older versions to the most recent version, but it&#8217;s best to review all steps in that case to ensure that you won&#8217;t be performing unnecessary steps.</p>
+<p>For a detailed history of the most notable changes between versions see the <a class="reference external" href="http://qiime.svn.sourceforge.net/viewvc/qiime/trunk/ChangeLog?view=markup">QIIME ChangeLog</a>. This points to the most recent version, so will usually also give a preview of the changes that are coming in the next version of QIIME.</p>
+<div class="section" id="to-1-5-0-dev-linux">
+<h2>1.5.0 to 1.5.0-dev (Linux)<a class="headerlink" href="#to-1-5-0-dev-linux" title="Permalink to this headline">¶</a></h2>
+<p>If you want to use the repository version of QIIME in any Linux box, follow these steps:</p>
+<div class="highlight-python"><pre>wget ftp://thebeast.colorado.edu/pub/QIIME-v1.5.0-dependencies/app-deploy-qiime-1.5.0.tgz
+tar zxvf app-deploy-qiime-1.5.0.tgz
+cd app-deploy-qiime-1.5.0
+python app-deploy.py $HOME/qiime_software/ -f etc/qiime_1.5.0_repository.conf --force-remove-failed-dirs</pre>
+</div>
+<p>Note that you can replace the installation folder (/software/) for any other path in your system.</p>
+</div>
+<div class="section" id="to-1-5-0-qiime-virtual-machines">
+<h2>1.4.0 to 1.5.0 (QIIME Virtual Machines)<a class="headerlink" href="#to-1-5-0-qiime-virtual-machines" title="Permalink to this headline">¶</a></h2>
+<p>The new version of the QIIME virtual machine (VM) is based on Ubuntu 12.04 (LTS) due to this upgrade in the operating system we can not support autoupdates. Thus we suggest downloading a new full VM and following the install instructions <a class="reference internal" href="virtual_box.html#virtual-box"><em>QIIME Virtual Box</em></a>.</p>
+</div>
+<div class="section" id="to-1-5-0-general">
+<h2>1.4.0 to 1.5.0 (general)<a class="headerlink" href="#to-1-5-0-general" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><ul class="simple">
+<li>mothur support has been updated to use its latest version 1.25.0, which can be found <a class="reference external" href="http://www.mothur.org/w/images/6/6d/Mothur.1.25.0.zip">link_mothur</a>.</li>
+<li>rtax support has been added, which can be found <a class="reference external" href="http://dev.davidsoergel.com/trac/rtax/raw-attachment/wiki/Releases/rtax-0.981.tgz">link_rtax</a>.</li>
+<li>pplacer support has been added, which can be found <a class="reference external" href="http://matsen.fhcrc.org/pplacer/builds/pplacer-v1.1-Linux.tar.gz">link_pplacer</a>.</li>
+<li>raxml support has been updated to use its latest version 7.3.0 <a class="reference external" href="ftp://thebeast.colorado.edu/pub/QIIME-v1.5.0-dependencies/stamatak-standard-RAxML-5_7_2012.tgz">link_raxml</a>.</li>
+<li>userch support has been updated to use its latest version 5.2.32 <a class="reference external" href="http://www.drive5.com/usearch/">link_usearch</a>.</li>
+</ul>
+</div></blockquote>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Upgrading to the latest version of QIIME</a><ul>
+<li><a class="reference internal" href="#to-1-5-0-dev-linux">1.5.0 to 1.5.0-dev (Linux)</a></li>
+<li><a class="reference internal" href="#to-1-5-0-qiime-virtual-machines">1.4.0 to 1.5.0 (QIIME Virtual Machines)</a></li>
+<li><a class="reference internal" href="#to-1-5-0-general">1.4.0 to 1.5.0 (general)</a></li>
+</ul>
+</li>
+</ul>
+
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://pycogent.sourceforge.net" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2012, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

@@ -1,0 +1,154 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Defining custom parameter files for interacting with the workflow scripts &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.1.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="defining-custom-parameter-files-for-interacting-with-the-workflow-scripts">
+<span id="doc-qiime-parameters"></span><h1>Defining custom parameter files for interacting with the workflow scripts<a class="headerlink" href="#defining-custom-parameter-files-for-interacting-with-the-workflow-scripts" title="Permalink to this headline">¶</a></h1>
+<p>The QIIME &#8216;workflow&#8217; scripts are designed to help automate some of the steps of QIIME. These rely on users defining their analysis in a parameters file. An example is provided as <tt class="docutils literal"><span class="pre">Qiime/qiime_parameters.txt</span></tt>. Working with this file is described in this document.</p>
+<div class="section" id="qiime-parameters-txt">
+<h2>qiime_parameters.txt<a class="headerlink" href="#qiime-parameters-txt" title="Permalink to this headline">¶</a></h2>
+<p>This file is used to give workflow script users control over the parameters to the individual scripts without having an extremely complex and hard to maintain interface to the workflow scripts. Users should copy the example <tt class="docutils literal"><span class="pre">qiime_parameters.txt</span></tt> script to the directory where they are performing their analysis, and edit the values in this file accordingly. This copy will be referred to as the user&#8217;s working <tt class="docutils literal"><span class="pre">qiime_parameters.txt</span></tt> file. The parameters are defined as <tt class="docutils literal"><span class="pre">script_name:parameter_name</span></tt>, followed by a tab, and then the value. For example:</p>
+<div class="highlight-python"><pre>align_seqs:alignment_method     pynast</pre>
+</div>
+<p>This indicates that the <tt class="docutils literal"><span class="pre">--alignment_method</span></tt> will be set to <tt class="docutils literal"><span class="pre">pynast</span></tt> when calling <tt class="docutils literal"><span class="pre">align_seqs.py</span></tt>. To get information on what a parameter in the <tt class="docutils literal"><span class="pre">qiime_parameters.txt</span></tt> file is, you should call the script name followed by <tt class="docutils literal"><span class="pre">-h</span></tt> to access the usage information for that script. In the above example, you could call:</p>
+<div class="highlight-python"><pre>python align_seqs.py -h</pre>
+</div>
+<p>Boolean options are specified by passing <tt class="xref docutils literal"><span class="pre">True</span></tt> or <tt class="xref docutils literal"><span class="pre">False</span></tt> after the tab. For example:</p>
+<div class="highlight-python"><pre>parallel:retain_temp_files      False</pre>
+</div>
+<p>When a parameter is not followed by an option, that indicates that it will not be passed to the script resulting in the default value being used instead. For example:</p>
+<div class="highlight-python"><pre>align_seqs:blast_db</pre>
+</div>
+<p>This results in no <tt class="docutils literal"><span class="pre">--blast_db</span></tt> parameter being passed to <tt class="docutils literal"><span class="pre">align_seqs.py</span></tt>. Alternatively, you can delete this line from your working <tt class="docutils literal"><span class="pre">qiime_parameters.txt</span></tt> file.</p>
+<p>You can find information on the QIIME workflow scripts at:</p>
+<blockquote>
+<ul class="simple">
+<li><a class="reference external" href="../scripts/pick_otus_through_otu_table.html">pick_otus_through_otu_table.py</a></li>
+<li><a class="reference external" href="../scripts/alpha_rarefaction.html">alpha_rarefaction.py</a></li>
+<li><a class="reference external" href="../scripts/beta_diversity_through_3d_plots.html">beta_diversity_through_3d_plots.py</a></li>
+<li><a class="reference external" href="../scripts/jackknifed_upgma.html">jackknifed_upgma.py</a></li>
+</ul>
+</blockquote>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">Defining custom parameter files for interacting with the workflow scripts</a><ul>
+<li><a class="reference external" href="#qiime-parameters-txt">qiime_parameters.txt</a></li>
+</ul>
+</li>
+</ul>
+
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+		
+	 <li><a href="../index.html">Home</a><br /></li>
+	 <li><a href="../install/index.html">Install</a><br /></li>
+	 <li><a href="../documentation/index.html">Documentation</a><br /></li>
+	 <li><a href="index.html">Tutorials</a><br /></li>
+	 <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	 <li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+      &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

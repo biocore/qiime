@@ -1,0 +1,183 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Using parallel QIIME &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0.0-dev',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="using-parallel-qiime">
+<span id="parallel-qiime"></span><h1>Using parallel QIIME<a class="headerlink" href="#using-parallel-qiime" title="Permalink to this headline">¶</a></h1>
+<p>QIIME supports running several of its slower steps in parallel in a cluster (or other multiple processor/core) environment. Currently, these include:</p>
+<blockquote>
+<ul class="simple">
+<li>Assignment of taxonomy with BLAST, via <tt class="docutils literal"><span class="pre">Qiime/scripts/parallel_assign_taxonomy_blast.py</span></tt></li>
+<li>Assignment of taxonomy with RDP, via <tt class="docutils literal"><span class="pre">Qiime/scripts/parallel_assign_taxonomy_rdp.py</span></tt></li>
+<li>Sequence alignment with PyNAST, via <tt class="docutils literal"><span class="pre">Qiime/scripts/parallel_align_seqs_pynast.py</span></tt></li>
+</ul>
+</blockquote>
+<p>QIIME achieves support of parallelization in different environments by requiring users to define a script which is responsible for making and starting the jobs when provided with a list of commands. This script is referred to in QIIME as the cluster_jobs script. An example cluster_jobs script which can be used for parallel runs in multicore/multiprocessor environments is packaged with QIIME as <tt class="docutils literal"><span class="pre">Qiime/scripts/start_parallel_jobs.py</span></tt>.</p>
+<div class="section" id="enabling-parallel-runs-in-qiime">
+<h2>Enabling parallel runs in QIIME<a class="headerlink" href="#enabling-parallel-runs-in-qiime" title="Permalink to this headline">¶</a></h2>
+<p>To enable parallel runs in QIIME you will first need to determine if the <tt class="docutils literal"><span class="pre">Qiime/scripts/start_parallel_jobs.py</span></tt> script will work for your purposes. If you&#8217;re running in a multi-processor or multi-core environment with no queueing system, then it should work for you. If you are running in a more complex environment (e.g, a cluster) you&#8217;ll need to write a custom cluster jobs script. This is discussed below.</p>
+<p>If <tt class="docutils literal"><span class="pre">Qiime/scripts/start_parallel_jobs.py</span></tt> will work for you, or you&#8217;ve defined your own cluster jobs script, you&#8217;ll next need to define the number of jobs that you would like QIIME to start by default. This is done by editing the <tt class="docutils literal"><span class="pre">jobs_to_start</span></tt> value in your <tt class="docutils literal"><span class="pre">qiime_config</span></tt> file. The default value is 1, corresponding to no parallelization. Follow the instructions on creating a custom <tt class="docutils literal"><span class="pre">qiime_config</span></tt> (i.e., don&#8217;t modify <tt class="docutils literal"><span class="pre">Qiime/qiime/support_files/qiime_config</span></tt>, but instead copy that file to <tt class="docutils literal"><span class="pre">$HOME/.qiime_config</span></tt> and edit that version). Then modify the jobs_to_start value to one that makes sense for your environment. For example, if you are running on a dual-core laptop, you probably want 2. (Note that this will likely prevent you from doing anything else with your laptop while QIIME is running in parallel.) If you&#8217;re running on an 8 processor desktop machine, you&#8217;d want to set jobs_to_start to a maximum of 8 &#8211; lower might be better if you&#8217;d like to reserve one or more processors for other work while running parallel QIIME. Note that setting jobs_to_start (e.g., 5 on a dual core system) to a value that is too high will reduce the performance of parallel QIIME. You can overwrite the jobs_to_start value via the command line interface of the parallel scripts &#8211; you are just setting the default value here. If you installed QIIME using Qiime/setup.py, you will also need to set the qiime_scripts_dir value in your qiime_config file to the directory containing the QIIME scripts. By default, this will likely be /usr/local/bin. If you specified a different location by passing &#8211;install-scripts= to setup.py, you should set qiime_scripts_dir to this value.</p>
+</div>
+<div class="section" id="writing-a-cluster-jobs-script-specific-to-your-cluster-environment">
+<h2>Writing a cluster_jobs Script Specific to your Cluster Environment<a class="headerlink" href="#writing-a-cluster-jobs-script-specific-to-your-cluster-environment" title="Permalink to this headline">¶</a></h2>
+<p>To make QIIME parallelization useful in different computing environments users can provide a script which can start jobs on their system, referred to here as a &#8216;cluster_jobs&#8217; script. The cluster_jobs script takes as its two parameters:</p>
+<blockquote>
+<ol class="arabic simple">
+<li>A single file which lists the commands to be run (referred to as a &#8216;jobs_list&#8217; file), with one command per line</li>
+<li>A string to use as a prefix when constructing unique job identifiers.</li>
+</ol>
+</blockquote>
+<p>The lines in an example jobs_list file might be:</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li>python pick_otus.py -i inseqs_file1.fasta</li>
+<li>python pick_otus.py -i inseqs_file2.fasta</li>
+<li>python pick_otus.py -i inseqs_file3.fasta</li>
+</ul>
+</div>
+<p>If passed to your cluster_jobs script, this should start three separate jobs corresponding to each of the commands.</p>
+<p>The call to the cluster_jobs script in QIIME&#8217;s parallel scripts looks like the following:</p>
+<div class="highlight-python"><pre>CLUSTER_JOBS_FP -ms job_list.txt JOB_ID</pre>
+</div>
+<p>where CLUSTER_JOBS_FP is the path to your cluster_jobs script and is passed to the parallel scripts via the -U parameter. JOB_ID is intended to be used as a prefix by the cluster_jobs script when creating a unique identifier for each job (and will be passed to the parallel scripts via -X). The same JOB_ID is also used by the QIIME parallel scripts when creating names for temporary files and directories. The -ms indicates that the job files should be made (-m) and submitted (-s).</p>
+<p>Once you have written a cluster_jobs script for your specific environment that can be called via the above interface, running QIIME jobs in parallel should be straight-forward. The parallel variants of the scripts use the same parameters as the serial versions of the scripts, with some additional options in the parallel scripts. Options -N through -Z (capital N through capital Z) are reserved in QIIME for parallel scripts, and in most cases the defaults can be defined in your <tt class="docutils literal"><span class="pre">qiime_config</span></tt> file.</p>
+<p>To avoid passing -U CLUSTER_JOBS_FP to each call to a parallel script, you should define the cluster_jobs_fp value in your <tt class="docutils literal"><span class="pre">qiime_config</span></tt>.</p>
+</div>
+<div class="section" id="example-run-of-pynast-in-parallel">
+<h2>Example Run of PyNAST in Parallel<a class="headerlink" href="#example-run-of-pynast-in-parallel" title="Permalink to this headline">¶</a></h2>
+<p>The following command will start a parallel run of PyNAST, which uses the same interface as the <a class="reference external" href="../scripts/align_seqs.html">align_seqs.py</a> script, where the results are written the an output directory &#8220;parallel_aligned_seqs/&#8221;:</p>
+<div class="highlight-python"><pre>parallel_align_seqs_pynast.py -i repr_set_seqs.fasta -t /ref_set_seqs.fasta -o /home/caporaso/out</pre>
+</div>
+<p>The important thing to note is that this command is that same that would be used to call serial (single processor) PyNAST, except that instead of calling <a class="reference external" href="../scripts/parallel_align_seqs_pynast.html">parallel_align_seqs_pynast.py</a>, you would call <a class="reference external" href="../scripts/align_seqs.html">align_seqs.py</a> to start the run on a single processor. The output from this parallel run is the same as the output would be from the serial run.</p>
+</div>
+<div class="section" id="details-of-the-parallelization">
+<h2>Details of the Parallelization<a class="headerlink" href="#details-of-the-parallelization" title="Permalink to this headline">¶</a></h2>
+<p>This section provides some information on details of the parallelization which are hidden from the user, but provided for users who are interested in what is happening behind-the-scenes.</p>
+<p>The parallelization works as follows. First, the input file (-i) is split into JOBS_TO_START (-O) different roughly equal-sized files. The serial version of the script &#8211; <a class="reference external" href="../scripts/align_seqs.html">align_seqs.py</a> &#8211; is then called on each of these split files as a separate job. Each of these jobs therefore writes its own output files (alignment, log, and failure files). One additional job, the poller, is started to monitor each of the jobs via their output files. When all expected output files exist, the poller will merge the individual output files and clean up any temporary files including the output files created by each of the individual runs. Cleaning up temporary files can be suppressed by passing -R, which is useful for debugging. Bypassing the polling system all-together can be achieved by passing -W.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">Using parallel QIIME</a><ul>
+<li><a class="reference external" href="#enabling-parallel-runs-in-qiime">Enabling parallel runs in QIIME</a></li>
+<li><a class="reference external" href="#writing-a-cluster-jobs-script-specific-to-your-cluster-environment">Writing a cluster_jobs Script Specific to your Cluster Environment</a></li>
+<li><a class="reference external" href="#example-run-of-pynast-in-parallel">Example Run of PyNAST in Parallel</a></li>
+<li><a class="reference external" href="#details-of-the-parallelization">Details of the Parallelization</a></li>
+</ul>
+</li>
+</ul>
+
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+		
+	 <li><a href="../index.html">Home</a><br /></li>
+	 <li><a href="../install/index.html">Install</a><br /></li>
+	 <li><a href="../documentation/index.html">Documentation</a><br /></li>
+	 <li><a href="index.html">Tutorials</a><br /></li>
+	 <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	 <li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+      &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

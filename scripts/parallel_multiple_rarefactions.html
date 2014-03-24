@@ -1,0 +1,181 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>parallel_multiple_rarefactions.py – Parallel multiple file rarefaction &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.8.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="parallel-multiple-rarefactions"></span><div class="section" id="parallel-multiple-rarefactions-py-parallel-multiple-file-rarefaction">
+<span id="index-0"></span><h1><em>parallel_multiple_rarefactions.py</em> &#8211; Parallel multiple file rarefaction<a class="headerlink" href="#parallel-multiple-rarefactions-py-parallel-multiple-file-rarefaction" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>This script performs like the <a class="reference external" href="./multiple_rarefactions.html">multiple_rarefactions.py</a> script, but is intended to make use of multicore/multiprocessor environments to perform analyses in parallel.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">parallel_multiple_rarefactions.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-input_path</dt>
+<dd>Input filepath, (the otu table) [REQUIRED]</dd>
+<dt>-o, <cite>-</cite>-output_path</dt>
+<dd>Write output rarefied otu tables here makes dir if it doesn&#8217;t exist [REQUIRED]</dd>
+<dt>-m, <cite>-</cite>-min</dt>
+<dd>Min seqs/sample [REQUIRED]</dd>
+<dt>-x, <cite>-</cite>-max</dt>
+<dd>Max seqs/sample (inclusive) [REQUIRED]</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-n, <cite>-</cite>-num-reps</dt>
+<dd>Num iterations at each seqs/sample level [default: 10]</dd>
+<dt><cite>-</cite>-suppress_lineages_included</dt>
+<dd>Exclude taxonomic (lineage) information for each OTU.</dd>
+<dt>-s, <cite>-</cite>-step</dt>
+<dd>Levels: min, min+step... for level &lt;= max [default: 1]</dd>
+<dt><cite>-</cite>-subsample_multinomial</dt>
+<dd>Subsample using subsampling with replacement [default: False]</dd>
+<dt>-R, <cite>-</cite>-retain_temp_files</dt>
+<dd>Retain temporary files after runs complete (useful for debugging) [default: False]</dd>
+<dt>-S, <cite>-</cite>-suppress_submit_jobs</dt>
+<dd>Only split input and write commands file - don&#8217;t submit jobs [default: False]</dd>
+<dt>-T, <cite>-</cite>-poll_directly</dt>
+<dd>Poll directly for job completion rather than running poller as a separate job. If -T is specified this script will not return until all jobs have completed. [default: False]</dd>
+<dt>-U, <cite>-</cite>-cluster_jobs_fp</dt>
+<dd>Path to cluster jobs script (defined in qiime_config)  [default: <a class="reference external" href="./start_parallel_jobs.html">start_parallel_jobs.py</a>]</dd>
+<dt>-W, <cite>-</cite>-suppress_polling</dt>
+<dd>Suppress polling of jobs and merging of results upon completion [default: False]</dd>
+<dt>-X, <cite>-</cite>-job_prefix</dt>
+<dd>Job prefix [default: descriptive prefix + random chars]</dd>
+<dt>-Z, <cite>-</cite>-seconds_to_sleep</dt>
+<dd>Number of seconds to sleep between checks for run  completion when polling runs [default: 1]</dd>
+<dt>-O, <cite>-</cite>-jobs_to_start</dt>
+<dd>Number of jobs to start [default: 2]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>The result of <a class="reference external" href="./parallel_multiple_rarefactions.html">parallel_multiple_rarefactions.py</a> consists of a number of files, which depend on the minimum/maximum number of sequences per samples, steps and iterations. The files have the same otu table format as the input otu_table.biom, and are named in the following way: rarefaction_100_0.txt, where &#8220;100&#8221; corresponds to the sequences per sample and &#8220;0&#8221; for the iteration.</p>
+<p><strong>OTU tables of different depths:</strong></p>
+<p>Build rarefied otu tables containing 10 (-m) to 140 (-x) sequences in steps of 10 (-s) with 2 (-n) repetions per number of sequences, from otu_table.biom (-i). Write the output files to the rarefied_otu_tables directory (-o, will be created if it doesn&#8217;t exist). The name of the output files will be of the form rarefaction_&lt;num_seqs&gt;_&lt;reptition_number&gt;.biom. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).</p>
+<div class="highlight-python"><pre>parallel_multiple_rarefactions.py -o $PWD/rarefied_otu_tables/ -m 10 -x 140 -s 10 -n 2 -i $PWD/otu_table.biom</pre>
+</div>
+<p><strong>OTU tables of the same depth:</strong></p>
+<p>Build 8 rarefied otu tables each containing exactly 100 sequences per sample (even depth rarefaction). ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).</p>
+<div class="highlight-python"><pre>parallel_multiple_rarefactions.py -o $PWD/even_otu_tables/ -m 100 -x 100 -n 8 -i $PWD/otu_table.biom</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

@@ -1,0 +1,361 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Denoising of 454 Data Sets &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.4.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="denoising-of-454-data-sets">
+<span id="denoising-454-data"></span><h1>Denoising of 454 Data Sets<a class="headerlink" href="#denoising-of-454-data-sets" title="Permalink to this headline">¶</a></h1>
+<p>The pyrosequencing technology employed by 454 sequencing machines produces characteristic sequencing errors, mostly imprecise signals for longer homopolymers runs. Most of the sequences contain none or only a few errors, but a few sequences contain enough errors to be classified as an additional rare OTU. The goal for the denoising procedure is to reduce the amount of erroneous OTUs and thus increasing the accuracy of the whole QIIME pipeline.</p>
+<p>If there are multiple, large 454 runs, follow this tutorial to denoise the data set and analyze it with QIIME. In short, each 454 run needs to be preprocessed with <a class="reference external" href="../scripts/split_libraries.html">split_libraries.py</a> and denoised separately. Afterwards the output files are combined for OTU picking. We will show an example with two 454 runs (<tt class="file docutils literal"><span class="pre">run1.sff</span></tt> and <tt class="file docutils literal"><span class="pre">run2.sff</span></tt>).</p>
+<p><strong>Data preparation:</strong></p>
+<p>From the raw, binary sff file, three files need to be generated for each run with the sffinfo tool from 454. You should have this tool if you have a 454 sequencer. Otherwise ask the sequencing facility for the files:</p>
+<div class="highlight-python"><pre>sffinfo    run_1.sff &gt; run_1.sff.txt
+sffinfo -s run_1.sff &gt; run_1.fasta
+sffinfo -q run_1.sff &gt; run_1.qual
+
+sffinfo    run_2.sff &gt; run_2.sff.txt
+sffinfo -s run_2.sff &gt; run_2.fasta
+sffinfo -q run_2.sff &gt; run_2.qual</pre>
+</div>
+<p>Note that the qiime since package v1.2 has a replacement for the sfftools.
+It&#8217;s slower but fully functional.</p>
+<p>For more details on the available options of each script explained in
+the following use the -h option.</p>
+<p><strong>Quality filtering and barcode assignment:</strong></p>
+<p>Prior to denoising, each read has to be assigned to one barcode/sample
+and low quality reads need to be filtered out. This can be done using
+<a class="reference external" href="../scripts/split_libraries.html">split_libraries.py</a>. An example command would be:</p>
+<div class="highlight-python"><pre>split_libraries.py -o run1 -f run1.fasta -q run1.qual -m run1_mapping.txt -w 50 -r -l 150 -L 350
+split_libraries.py -o run2 -f run2.fasta -q run2.qual -m run2_mapping.txt -w 50 -r -l 150 -L 350 -n 1000000</pre>
+</div>
+<p>This step has to be done separately for each 454 pool, following the usual guidelines for running several data sets through <a class="reference external" href="../scripts/split_libraries.html">split_libraries.py</a>.</p>
+<p>For a single, non-barcoded sample, <a class="reference external" href="../scripts/split_libraries.html">split_libraries.py</a>
+can be provided with a mapping file that has an empty field for the BarcodeSequence.</p>
+<p>Example:</p>
+<div class="highlight-python"><pre>#SampleID   BarcodeSequence     LinkerPrimerSequence     Description
+Artificial                      ATTAGATACCCNGGTAG        ArtificialGSFLX_from_Quince_et_al</pre>
+</div>
+<p>Note that fields must be separated by a single tab. For the empty barcode there must be two
+tabs between SampleID and the primer sequence. Use QIIME&#8217;s
+<a class="reference external" href="../scripts/check_id_map.html">check_id_map.py</a> to test for validity. Then, use
+<a class="reference external" href="../scripts/split_libraries.html">split_libraries.py</a> as usual, but with
+option -b 0.</p>
+<p><strong>Flowgram clustering (aka denoising)</strong></p>
+<p>Each run will be denoised using its quality filtered output of <a class="reference external" href="../scripts/split_libraries.html">split_libraries.py</a> and the initial <tt class="file docutils literal"><span class="pre">.sff.txt</span></tt> file. All flowgrams without a match in the provided <a class="reference external" href="../scripts/split_libraries.html">split_libraries.py</a> FASTA file are removed. The sequencing primer will be extracted from the metadata mapping file:</p>
+<div class="highlight-python"><pre>denoise_wrapper.py -v -i run1.sff.txt -f run1/seqs.fna -o run1/denoised/ -m run1_mapping.txt
+denoise_wrapper.py -v -i run2.sff.txt -f run2/seqs.fna -o run2/denoised/ -m run2_mapping.txt</pre>
+</div>
+<p>Denoising large data sets is computationally demanding. While smaller data sets (&lt; 50,000 sequences) can be run on one single machine within an hour, a typical 454 run with 400,000 sequences after quality filtering requires up to a day on a 24 core cluster. If the denoiser is set up properly on your cluster or multi-core machine, it can be started in parallel mode using the option -n:</p>
+<div class="highlight-python"><pre>denoise_wrapper.py -v -i run1.sff.txt -f run1/seqs.fna -o run1/denoised/ -m run1_mapping.txt -n 24</pre>
+</div>
+<p>The output files of this step is stored in directory <tt class="file docutils literal"><span class="pre">run1/</span></tt> and <tt class="file docutils literal"><span class="pre">run2/</span></tt>, respectively:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><tt class="file docutils literal"><span class="pre">denoiser.log</span></tt>: Information about the clustering procedure if run in verbose mode (-v). Can be used to monitor the program&#8217;s progress.</li>
+<li><tt class="file docutils literal"><span class="pre">centroids.fasta</span></tt>: The centroids of clusters with 2 and more members.</li>
+<li><tt class="file docutils literal"><span class="pre">singletons.fasta</span></tt>: Reads that could not be clustered.</li>
+<li><tt class="file docutils literal"><span class="pre">denoiser_mapping.txt</span></tt>: The cluster to read mapping.</li>
+<li><tt class="file docutils literal"><span class="pre">denoised_clusters.txt</span></tt>: A cluster mapping in qiime format. Equivalent to 4.</li>
+<li><tt class="file docutils literal"><span class="pre">denoised_seqs.fasta</span></tt>: Centroids and singletons combined and sorted by cluster size.</li>
+</ol>
+</div></blockquote>
+<p>Usually the centroid and singleton files are combined for downstream analysis,
+but occasionally it might make sense to remove the low confidence singletons.
+2, 3, and 4 are used as input to the next step.</p>
+<p><strong>Re-integrating the denoised data into QIIME</strong></p>
+<p>The final step in a denoising run usually is the re-integration of the data into the QIIME pipeline. Since the denoiser uses flowgram similarity for clustering there is no guaranteed sequence (dis)-similarity between cluster centroids. In order to create the usual species-level OTUs at 97% sequence similarity, you must inflate the denoiser results and then run one of QIIME&#8217;s OTU pickers on the combined denoiser output.</p>
+<p>Inflating denoiser results refers to process of creating a new fasta file of denoised sequences where each centroid sequence is written <cite>n</cite> times, where <cite>n</cite> is the cluster size, and each singleton is written once. Flowgram identifiers are mapped to sequence identifiers using the original input file.</p>
+<p>To inflate the results of a single denoiser run call:</p>
+<div class="highlight-python"><pre>inflate_denoiser_output.py -c centroids.fna -s singletons.fna -f seqs.fna -d denoiser_mapping.txt -o denoised_seqs.fna</pre>
+</div>
+<p>To inflate the results from independent denoise_wrapper.py runs, pass all of the centroid, singleton, input fasta files, and denoiser maps:</p>
+<div class="highlight-python"><pre>inflate_denoiser_output.py -c centroids1.fna,centroids2.fna -s singletons1.fna,singletons2.fna -f seqs1.fna,seqs2.fna -d denoiser_mapping1.txt,denoiser_mapping2.txt -o denoised_seqs.fna</pre>
+</div>
+<p>Your denoised sequences can now be fed directly into QIIME at the OTU picking stage. The next step will be to run one of the OTU pickers or OTU picking workflow scripts (e.g., <a class="reference external" href="../scripts/pick_otus.html">pick_otus.py</a>, <a class="reference external" href="../scripts/pick_otus_through_otu_table.html">pick_otus_through_otu_table.py</a>, <a class="reference external" href="../scripts/pick_reference_otus_through_otu_table.html">pick_reference_otus_through_otu_table.py</a>, <a class="reference external" href="../scripts/core_qiime_analyses.html">core_qiime_analyses.py</a>. At the OTU picking stage it is very important that you allow for the abundance presorting, which is currently in place for the uclust OTU picker only. We therefore don&#8217;t recommend using other OTU pickers, and <strong>do not pass the -D/&#8211;suppress_presort_by_abundance_uclust option to pick_otus.py</strong>. If possible, it is worth using uclust with <tt class="docutils literal"><span class="pre">--optimal</span></tt> to assure the best possible choice of OTUs.:</p>
+<div class="highlight-python"><pre>pick_otus.py -s 0.97 -i denoised_seqs.fna -m uclust --optimal</pre>
+</div>
+<p>Passing <tt class="docutils literal"><span class="pre">--optimal</span></tt> may be prohibitively compute-intensive for large analyses however (for example, greater than a single 454 FLX run). The default QIIME pick_otus.py parameters are likely to be sufficient.</p>
+<p>Notes:</p>
+<ul class="simple">
+<li>Denoising very small data sets might be ineffective, since there might not be a good read in the data set that can be used to correct a bad read. If there is a small data set (probably from re-sequencing an under-sampled sample) consider combining it with another, larger data set in your study prior to denoising.</li>
+<li>Currently only one sequencing primer per run is supported. If there is more than one primer the run needs to be split. Simply make per per-primer mapping files and run <a class="reference external" href="../scripts/split_libraries.html">split_libraries.py</a> with each mapping file, then denoise with each output FASTA file separately.</li>
+<li>Using any other OTU picker than uclust with the exact options as specified above might result in systematic differences between your separately denoised runs. Even small sequence differences in the denoiser output can lead to clustering into different OTUs and an artificial separation of samples. We warned you!</li>
+</ul>
+<p><strong>Low-level Interface</strong></p>
+<p><a class="reference external" href="../scripts/denoise_wrapper.html">denoise_wrapper.py</a> provides an easy to use interface to the denoiser, which is sufficient in most cases.
+For power users, we also provide two low level scripts, that allow for more flexibility.</p>
+<p><em>Cluster phase 1 - prefix clustering</em></p>
+<p>All flowgrams corresponding to the sequences that are in <tt class="file docutils literal"><span class="pre">seqs.fna</span></tt>
+(presumed to be the output of <a class="reference external" href="../scripts/split_libraries.html">split_libraries.py</a>)
+are pulled from the .sff.txt file and primer, barcodes and
+the 454 key sequence are removed. Then, the first clustering phase
+groups reads based on common prefixes. For a full FLX run this will
+usually take less than an hour on a standard computer and requires
+less than 1 GB of memory.</p>
+<p>Example command:</p>
+<div class="highlight-python"><pre>$ denoiser_preprocess.py -i 454Reads.sff.txt -f seqs.fna -o example_pp -s -v -p CATGCTGCCTCCCGTAGGAGT</pre>
+</div>
+<p>Several files are stored in the specified output directory. To see the
+clustering stastics check the file <tt class="file docutils literal"><span class="pre">preprocess.log</span></tt> in the output
+directory. Basically the less clusters there are (especially small
+clusters) the faster the next phase  will run. If there are more than
+100.000 sequences remaining, the input set might be split, to achieve
+a reasonable run time. The files in the output directory are used in
+the next step.</p>
+<p><em>Cluster phase II - Flowgram clustering or Denoising</em></p>
+<p>This is the main clustering step and the computationally most expensive one.
+Flowgrams are clustered based on their similarity.</p>
+<p>Example command:</p>
+<div class="highlight-python"><pre>$ denoiser.py -i 454Reads.sff.txt -p example_pp -v -o example_denoised</pre>
+</div>
+<p>The preprocessing information in <tt class="file docutils literal"><span class="pre">example_pp</span></tt> is used and the output is
+stored in a randomly named, new direcory in <tt class="file docutils literal"><span class="pre">example_denoised</span></tt>. Note, that
+when the -p option is not specified here,  the preprocessing is invoked
+from <a class="reference external" href="../scripts/denoiser.html">denoiser.py</a> implicitly.</p>
+<p>Because of the potential long runtime, we suggest to distribute the work over
+many cpus. If you have a multi-core system or cluster available and
+set up the required job submission script (<tt class="file docutils literal"><span class="pre">cluster_jobs_fp</span></tt> in your qiime config)
+the following command will distribute the computation over 24
+cpus:</p>
+<div class="highlight-python"><pre>$ denoiser.py -i 454Reads.sff.txt -p example_pp -v -o example_denoised -c -n 24</pre>
+</div>
+<p>Make sure the output directory is shared by all cluster
+nodes. Depending on the complexity of the data this step might take up
+to a day even on a 24 core system for a full 454 run with 400-500 k
+sequences. Smaller data sets will be finished much faster. The output
+will be written to a randomly named directory within the specified
+output directory.
+The output files are:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>denoiser.log: Information about the clustering procedure if run in verbose mode (-v).</dt>
+<dd><p class="first last">Can be used to monitor the program&#8217;s progress.</p>
+</dd>
+</dl>
+</li>
+<li><p class="first">centroids.fasta: The centroids of clusters with 2 and more members</p>
+</li>
+<li><p class="first">singletons.fasta: Reads that could not be clustered.</p>
+</li>
+<li><p class="first">denoiser_mapping.txt: The cluster to read mapping.</p>
+</li>
+</ul>
+<p>Usually the centroid and singleton files are combined for downstream analysis,
+but occasionally it might make sense to remove the low confidence singletons.</p>
+<p><strong>Notes for running on cluster/multicore system</strong></p>
+<p>We use a very simple setup to farm out the flowgram alignments to a cluster.
+A master process (<a class="reference external" href="../scripts/denoiser.html">denoiser.py</a>) sends data to each worker
+(<a class="reference external" href="../scripts/denoiser_worker.html">denoiser_worker.py</a>).
+A worker sleeps while waiting for the data. Once the file appears it processes it and
+sends the result back to the master and goes back to sleep. The master collects all results
+and iterates. As such, performance is higly dependent on the actual cluster setup:</p>
+<ul>
+<li><p class="first">The overall speed is governed by the slowest worker node</p>
+</li>
+<li><dl class="first docutils">
+<dt>The parallel steps will only start when all worker jobs are established. That means as long</dt>
+<dd><p class="first last">as one jobs remains queued, the other jobs will block your cluster. Decrease the number of workers
+if you run into this problem.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p><strong>FAQ</strong></p>
+<p>Q: How does this denoising procedure differ from PyroNoise?</p>
+<p>Q: What is the expected run-time?</p>
+<p>Q: Can I denoise Titanium data</p>
+<p>Q: How can I speed up the computation?</p>
+<p>Q: Why are there so few sequences in my output file after denoising? Did something went wrong with my sequencing run?</p>
+<p>Q: So where are all the sequences then?</p>
+<p>Q: Can I cluster at different sequence/flowgram similarity thresholds?</p>
+<p>Q: Denoising on the clusters &#8220;hangs&#8221; after a while. What is going on?</p>
+<p>Q: How and why can I run the preprocessing step separately?</p>
+<p>Q: What about different next-gen sequencing platforms?</p>
+<p>&#8212;</p>
+<p>Q: How does this denoising procedure differ from PyroNoise?</p>
+<p>A: PyroNoise uses an expectation maximization (EM) algorithm to figure out the most likely sequence for every read. We, instead, use a greedy scheme that can be seen as an approximation to PyroNoise. According to several test data sets, our approximation gives very similar results in a fraction of the time.</p>
+<p>Q: What is the expected run-time?</p>
+<p>A: The whole heuristic for our method depends on the actual species distribution in your samples.
+An ideal data set has few species and a very skewed abundance distribution with a few, very abundant species.
+With more species and a flatter abundance distribution run time increases. You can get a rough estimate of the run time after the preprocessing step by looking at the number of reads printed in the log file in verbose mode. Very, very roughly, compute time increases quadratically with the number of reads after preprocessing:</p>
+<div class="highlight-python"><pre>...
+Prefix matching: removed 242038 out of 339647 seqs
+Remaining number of sequences: 97609
+...</pre>
+</div>
+<p>If the number of remaining sequences is smaller than 50.000, you can expect &lt;24 hours on 20 cpus.
+With 100k seqs you would need 80 cpus to expect it to finish within a day.</p>
+<p>Here are some guidelines from runs with actual data:</p>
+<ul class="simple">
+<li>partial GSFLX run with 50.000 reads: ~ 1 hour on a single CPU</li>
+<li>Full GSFLX run (~400.000 reads):   6-24 hours on 24 CPUs</li>
+<li>1/2 Titanium run (450k reads):   35 hours on 200 CPUs</li>
+</ul>
+<dl class="docutils">
+<dt>Titanium data takes longer for two reasons:</dt>
+<dd><ol class="first last loweralpha simple">
+<li>Reads are longer, meaning longer alignment times</li>
+<li>We observed a higher variability in the Titanium reads, especially towards the 3&#8217;end leading to a less efficient greedy clustering.</li>
+</ol>
+</dd>
+</dl>
+<p>Q: Can I denoise Titanium data?</p>
+<p>A: Yes. The algorithm can process Titanium data and we have done it several times. As of (denoiser) version 0.9/Qiime-1.2 we ship an error profile for the titanium platform with the package. Use the switch &#8211;titanium to enable the new profile. Be aware that Titanium still takes considerably longer than FLX.</p>
+<p>Q: How can I speed up the computation?</p>
+<p>A:
+1. Use more CPUs if available.</p>
+<ol class="arabic simple" start="2">
+<li>Stop clustering early.
+Clustering phase II processes clusters in decreasing order of their size after cluster phase I. As default, the procedure stops with the first singleton cluster being considered as cluster centroid. Setting -b 3 would stop the clustering with clusters of size 3. Note that setting the -b parameter does not hinder these cluster to be dragged in by another, larger cluster either in phase II or phase III. It just limits their role as cluster centroid.</li>
+<li>Split your data in smaller pieces.
+For very large data sets(&gt;1 FLX plate), this is the recommended way to go. While we have observed that splitting into too small pieces (e.g. per sample with 5k sequences/sample) might render the denoising less effective, we expect very little difference when denoising is performed on larger chunks of data (100k+ reads). We recommend pooling similar samples, e.g. time series samples from the same person, but encourage to separate samples from different habitats with expected very different communities.</li>
+<li>As a rather desperate measure for people who have to limit the compute time we provide a new flag in version 0.9 that controls the maximum number of rounds that the greedy clustering should run for. Note that the lower this number is, the worse the final clustering result can be.</li>
+</ol>
+<p>Q: Why are there so few sequences in my output file after denoising? Did something went wrong with my sequencing run?</p>
+<p>A: No, this is expected. The denoising procedure (and this also holds for Chris Quince&#8217;s Pyronoise) technically do not remove any reads from the input set. This is the task of the initial quality filtering, which we suggest to do using Qiime&#8217;s split_libraries.py. The denoising is basically a clustering approach on the flowgram level, i.e. all reads that look similar enough on the flowgram level are clustered and only the centroid of each cluster is reported in the output file (either in centroids.fasta if the cluster has more than one member or otherwise in singletons.fasta). You can think of the centroids as OTUs on the flowgram level. Since flowgram similarity does not correlate perfectly with sequence-similarity, we usually don&#8217;t call them OTUs, but only after an extra OTU picking step with, say, cd-hit or uclust on the denoised sequences.</p>
+<p>Q: So where are all the sequences then?</p>
+<p>A: If you look at the file denoiser_mapping.txt, e.g. like this:</p>
+<div class="highlight-python"><pre>$ wc denoiser_mapping.txt</pre>
+</div>
+<p>you should see that the number in the middle of the output (i.e. the number of words) is about the number of sequences in your input set. (Sometimes, the denoiser discards a few additional reads due to quality issues that were not captured by split_libraries.py). All reads that are in this mapping file can and will be used e.g. in the downstream Qiime analysis. The first number in the wc output gives the number of lines on the files, which corresponds to the number of clusters after denoising.</p>
+<p>Q: Can I cluster at different sequence/flowgram similarity thresholds?</p>
+<p>A: Basically, Yes. The default clustering parameters are set and tested to work well at 0.97% sequence similarity. If you want to cluster at, say, 0.95% you have to increase both cut-offs and decrease the percent_ID:</p>
+<ul class="simple">
+<li>low_cut-off=LOW_CUTOFF    low clustering threshold for phase II [default: 3.75]</li>
+<li>high_cut-off=HIGH_CUTOFF  high clustering threshold for phase III [default: 4.5]</li>
+<li>percent_id=PERCENT_ID     sequence similarity clustering threshold [default: 0.97]</li>
+</ul>
+<p>The <tt class="file docutils literal"><span class="pre">low_cut_off</span></tt> and the <tt class="file docutils literal"><span class="pre">percent_id</span></tt> are used for clustering in the second, greedy clustering step.
+The <tt class="file docutils literal"><span class="pre">high_cut_off</span></tt> is used in the third clustering step, where unclustered reads are mapped according to their best match to any of the clusters of phase II. For good values for the thresholds, we refer to the plot S2 in the supplementary material of the denoiser paper (Reeder and Knight, Nature Methods 2010).</p>
+<p>Q: Denoising on the clusters &#8220;hangs&#8221; after a while. What is going on?</p>
+<p>A: If not provided with already preprocessed data via the -p option, the denoiser.py script automatically starts the preprocessing phase (cluster phase I in the paper) on one CPU on the cluster. This preprocessing takes from a few minutes for partial GS FLX runs to an hour or more for large Titanium runs. After this step, the parallel cluster phase II starts. First, all requested workers are started one-by-one. Depending on your queueing system and the number of jobs this might take from few seconds to several minutes. If one or more of the jobs are not started by the queueing system, all submitted jobs will block and wait. This is most likely the state your process is in if nothing seems to happen. We know this is not optimally and already thinking about a better solution for the future. In the meantime, make sure you only request as many jobs as you can safely run in your queue and monitor (qstat) the startup phase to see if all jobs are properly scheduled. If you finf that you requested to many CPUs and need to restart, simply kill the master process (denoiser.py) and it should bring down all but the last submitted jobs. The last job might need to be killed by hand.
+Once all workers are succesfully started, you can monitor the progress by following the log file in verbose mode (toggled by the -v option):</p>
+<div class="highlight-python"><pre>$ tail -f denoiser.log</pre>
+</div>
+<p>Q: How and why can I run the preprocessing step separately?</p>
+<p>A: If you call denoiser.py without the -p option (or via its wrapper denoise_wrapper.py in QIIME) the preprocessing step (cluster phase I) is implicitly called. You can explicitly run the preprocessing step via the script preprocess.py and provide the output directory to denoiser.py using the -p option. Reasons for running the steps separately could be:</p>
+<ul class="simple">
+<li>run preprocess on a very fast single CPU machine, then transfer the data to a slower multi-cpu cluster</li>
+<li>You want to check the cluster statistics of phase I first, before deciding of wether the data needs to be split or how many CPUs</li>
+<li>something went wrong with the compute cluster in phase II and the program aborted. The results of preprocessing will be in the output dir and can be re-used if you restart the process.</li>
+</ul>
+<p>Q: What about different next-gen sequencing platforms?</p>
+<p>A: Denoising in this form only applies to 454 based pyrosequencing.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://pycogent.sourceforge.net" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2011, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

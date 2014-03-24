@@ -1,0 +1,144 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>fix_arb_fasta.py – Reformat ARB FASTA files &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="Scripts - Analyses and Parameters" href="../doc_script_index.html" />
+    <link rel="next" title="make_qiime_py_file.py – Create python file" href="make_qiime_py_file.html" />
+    <link rel="prev" title="convert_unifrac_sample_mapping_to_otu_table.py – Convert a UniFrac sample mapping file to an OTU table" href="convert_unifrac_sample_mapping_to_otu_table.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;">
+	<p style="font-size:12pt;padding: 5px;"><b>News and Announcements &raquo;</b>
+<script type="text/javascript" src="http://app.feed.informer.com/digest3/U9OLMKHF9N.js"><noscript><a href="http://app.feed.informer.com/digest3/U9OLMKHF9N.html">Click for &quot;QIIME&quot;.</a> Powered by <a href="http://feed.informer.com/">RSS Feed Informer</a></noscript></script></p>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="make_qiime_py_file.html" title="make_qiime_py_file.py – Create python file"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="convert_unifrac_sample_mapping_to_otu_table.html" title="convert_unifrac_sample_mapping_to_otu_table.py – Convert a UniFrac sample mapping file to an OTU table"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation.html" >QIIME Documentation</a> &raquo;</li>
+          <li><a href="../doc_script_index.html" accesskey="U">Scripts - Analyses and Parameters</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="fix-arb-fasta"></span><div class="section" id="fix-arb-fasta-py-reformat-arb-fasta-files">
+<span id="index-101"></span><h1><em>fix_arb_fasta.py</em> &#8211; Reformat ARB FASTA files<a class="headerlink" href="#fix-arb-fasta-py-reformat-arb-fasta-files" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>This script fixes ARB FASTA formatting by repairing incorrect line break chararcters, stripping spaces and replacing &#8220;.&#8221; with &#8220;-&#8221; characters.</p>
+<p><strong>Usage:</strong> <tt class="docutils literal"><span class="pre">fix_arb_fasta.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="last docutils">
+<dt>-f, <cite>-</cite>-input_fasta_fp</dt>
+<dd>Path to the input fasta file</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>The reformatted sequences are written to stdout.</p>
+<p><strong>Example:</strong></p>
+<p>Fix the input ARB FASTA format file arb.fasta and print the result to stdout:</p>
+<div class="highlight-python"><pre>fix_arb_fasta.py -i arb.fasta</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="convert_unifrac_sample_mapping_to_otu_table.html"
+                                  title="previous chapter"><em>convert_unifrac_sample_mapping_to_otu_table.py</em> &#8211; Convert a UniFrac sample mapping file to an OTU table</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="make_qiime_py_file.html"
+                                  title="next chapter"><em>make_qiime_py_file.py</em> &#8211; Create python file</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/scripts/fix_arb_fasta.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="make_qiime_py_file.html" title="make_qiime_py_file.py – Create python file"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="convert_unifrac_sample_mapping_to_otu_table.html" title="convert_unifrac_sample_mapping_to_otu_table.py – Convert a UniFrac sample mapping file to an OTU table"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation.html" >QIIME Documentation</a> &raquo;</li>
+          <li><a href="../doc_script_index.html" >Scripts - Analyses and Parameters</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+  </body>
+</html>

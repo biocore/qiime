@@ -1,0 +1,241 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>compare_categories.py – Analyzes statistical significance of sample groupings using distance matrices &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.8.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="compare-categories"></span><div class="section" id="compare-categories-py-analyzes-statistical-significance-of-sample-groupings-using-distance-matrices">
+<span id="index-0"></span><h1><em>compare_categories.py</em> &#8211; Analyzes statistical significance of sample groupings using distance matrices<a class="headerlink" href="#compare-categories-py-analyzes-statistical-significance-of-sample-groupings-using-distance-matrices" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>This script allows for the analysis of the strength and statistical
+significance of sample groupings using a distance matrix as the primary input.
+Several statistical methods are available: adonis, ANOSIM, BEST, Moran&#8217;s I,
+MRPP, PERMANOVA, PERMDISP, and db-RDA.</p>
+<p>Note: R&#8217;s vegan and ape packages are used to compute many of these methods, and
+for the ones that are not, their implementations are based on the
+implementations found in those packages. It is recommended to read through the
+detailed descriptions provided by the authors (they are not reproduced here)
+and to refer to the primary literature for complete details, including the
+methods&#8217; assumptions. To view the documentation of a method in R, prepend a
+question mark before the method name. For example:</p>
+<p>?vegan::adonis</p>
+<p>The following are brief descriptions of the available methods:</p>
+<p>adonis - Partitions a distance matrix among sources of variation in order to
+describe the strength and significance that a categorical or continuous
+variable has in determining variation of distances. This is a nonparametric
+method and is nearly equivalent to db-RDA (see below) except when distance
+matrices constructed with semi-metric or non-metric dissimilarities are
+provided, which may result in negative eigenvalues. adonis is very similar to
+PERMANOVA, though it is more robust in that it can accept either categorical or
+continuous variables in the metadata mapping file, while PERMANOVA can only
+accept categorical variables. See vegan::adonis for more details.</p>
+<p>ANOSIM - Tests whether two or more groups of samples are significantly
+different based on a categorical variable found in the metadata mapping file.
+You can specify a category in the metadata mapping file to separate
+samples into groups and then test whether there are significant differences
+between those groups. For example, you might test whether &#8216;Control&#8217; samples are
+significantly different from &#8216;Fast&#8217; samples. Since ANOSIM is nonparametric,
+significance is determined through permutations. See vegan::anosim for more
+details.</p>
+<p>BEST - This method looks at the numerical environmental variables relating
+samples in a distance matrix. For instance, given a UniFrac distance matrix and
+pH and latitude (or any other number of variables) in soil samples, BEST will
+rank them in order of which best explain patterns in the communities. This
+method will only accept categories that are numerical (continuous or discrete).
+This is currently the only method in this script that accepts more than one
+category (via -c). See vegan::bioenv for more details.</p>
+<p>Moran&#8217;s I - This method uses the numerical (e.g. geographical) data supplied to
+identify what type of spatial configuration occurs in the samples. For example,
+are they dispersed, clustered, or of no distinctly noticeable configuration
+when compared to each other? This method will only accept a category that is
+numerical. See ape::Moran.I for more details.</p>
+<p>MRPP - This method tests whether two or more groups of samples are
+significantly different based on a categorical variable found in the metadata
+mapping file. You can specify a category in the metadata mapping file to
+separate samples into groups and then test whether there are significant
+differences between those groups. For example, you might test whether &#8216;Control&#8217;
+samples are significantly different from &#8216;Fast&#8217; samples. Since MRPP is
+nonparametric, significance is determined through permutations. See
+vegan::mrpp for more details.</p>
+<p>PERMANOVA - This method is very similar to adonis except that it only accepts a
+categorical variable in the metadata mapping file. It uses an ANOVA
+experimental design and returns a pseudo-F value and a p-value. Since PERMANOVA
+is nonparametric, significance is determined through permutations.</p>
+<p>PERMDISP - This method analyzes the multivariate homogeneity of group
+dispersions (variances). In essence, it determines whether the variances of
+groups of samples are significantly different. The results of both parametric
+and nonparametric significance tests are provided in the output. This method is
+generally used as a companion to PERMANOVA. See vegan::betadisper for more
+details.</p>
+<p>db-RDA - This method is very similar to adonis and will only differ if certain
+non-Euclidean semi- or non-metrics are used to generate the input distance
+matrix, and negative eigenvalues are encountered. The only difference then will
+be in the p-values, not the R^2 values. As part of the output, an ordination
+plot is also generated that shows grouping/clustering of samples based on a
+category in the metadata mapping file. This category is used to explain the
+variability between samples. Thus, the ordination output of db-RDA is similar
+to PCoA except that it is constrained, while PCoA is unconstrained (i.e. with
+db-RDA, you must specify which category should be used to explain the
+variability in your data). See vegan::capscale for more details.</p>
+<p>For more information and examples pertaining to this script, please refer to
+the accompanying tutorial, which can be found at
+<a class="reference external" href="http://qiime.org/tutorials/category_comparison.html">http://qiime.org/tutorials/category_comparison.html</a>.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">compare_categories.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt><cite>-</cite>-method</dt>
+<dd>The statistical method to use. Valid options: adonis, anosim, best, morans_i, mrpp, permanova, permdisp, dbrda</dd>
+<dt>-i, <cite>-</cite>-input_dm</dt>
+<dd>The input distance matrix. WARNING: Only symmetric, hollow distance matrices may be used as input. Asymmetric distance matrices, such as those obtained by the UniFrac Gain metric (i.e. <a class="reference external" href="./beta_diversity.html">beta_diversity.py</a> -m unifrac_g), should not be used as input</dd>
+<dt>-m, <cite>-</cite>-mapping_file</dt>
+<dd>The metadata mapping file</dd>
+<dt>-c, <cite>-</cite>-categories</dt>
+<dd>A comma-delimited list of categories from the mapping file. Note: all methods except for BEST take just a single category. If multiple categories are provided, only the first will be used</dd>
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>Path to the output directory</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-n, <cite>-</cite>-num_permutations</dt>
+<dd>The number of permutations to use when calculating statistical significance. Only applies to adonis, ANOSIM, MRPP, PERMANOVA, PERMDISP, and db-RDA. Must be greater than or equal to zero [default: 999]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>At least one file will be created in the output directory specified by -o. For
+most methods, a single output file containing the results of the test (e.g. the
+effect size statistic and p-value) will be created. The format of the output
+files will vary between methods as some are generated by native QIIME code,
+while others are generated by R&#8217;s vegan or ape packages. Please refer to the
+script description for details on how to access additional information for
+these methods, including what information is included in the output files.</p>
+<p>db-RDA is the only exception in that two output files are created: a results
+text file and a PDF of the ordination plot.</p>
+<p><strong>adonis example:</strong></p>
+<p>Runs the adonis statistical method on a distance matrix and mapping file using the Treatment category and 999 permutations, writing the output to the &#8216;adonis_out&#8217; directory.</p>
+<div class="highlight-python"><pre>compare_categories.py --method adonis -i unweighted_unifrac_dm.txt -m Fasting_Map.txt -c Treatment -o adonis_out -n 999</pre>
+</div>
+<p><strong>ANOSIM example:</strong></p>
+<p>Runs the ANOSIM statistical method on a distance matrix and mapping file using the Treatment category and 99 permutations, writing the output to the &#8216;anosim_out&#8217; directory.</p>
+<div class="highlight-python"><pre>compare_categories.py --method anosim -i unweighted_unifrac_dm.txt -m Fasting_Map.txt -c Treatment -o anosim_out -n 99</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

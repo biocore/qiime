@@ -1,0 +1,197 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>demultiplex_fasta.py – Demultiplex fasta data according to barcode sequences or data supplied in fasta labels. &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.6.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="demultiplex-fasta"></span><div class="section" id="demultiplex-fasta-py-demultiplex-fasta-data-according-to-barcode-sequences-or-data-supplied-in-fasta-labels">
+<span id="index-0"></span><h1><em>demultiplex_fasta.py</em> &#8211; Demultiplex fasta data according to barcode sequences or data supplied in fasta labels.<a class="headerlink" href="#demultiplex-fasta-py-demultiplex-fasta-data-according-to-barcode-sequences-or-data-supplied-in-fasta-labels" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>Using barcodes and/or data from fasta labels provided in a mapping file, will demultiplex sequences from an input fasta file.  Barcodes will be removed from the sequences in the output fasta file by default.  If a quality scores file is supplied, the quality score file will be truncated to match the output fasta file.  The default barcode type are 12 base pair Golay codes.  Alternative barcodes allowed are 8 base pair Hamming codes, variable_length, or generic barcodes of a specified length.  Generic barcodes utilize mismatch counts for correction.  One can also use an added demultiplex field (-j option) to specify data in the fasta labels that can be used alone or in conjunction with barcode sequences for demultiplexing.  All barcode correction is disabled when variable length barcodes are used.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">demultiplex_fasta.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-m, <cite>-</cite>-map</dt>
+<dd>Name of mapping file. NOTE: Must contain a header line indicating SampleID in the first column and BarcodeSequence in the second, LinkerPrimerSequence in the third.</dd>
+<dt>-f, <cite>-</cite>-fasta</dt>
+<dd>Names of fasta files, comma-delimited</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-q, <cite>-</cite>-qual</dt>
+<dd>File paths of qual files, comma-delimited [default: None]</dd>
+<dt>-B, <cite>-</cite>-keep_barcode</dt>
+<dd>Do not remove barcode from sequences</dd>
+<dt>-b, <cite>-</cite>-barcode_type</dt>
+<dd>Barcode type, hamming_8, golay_12, variable_length (will disable any barcode correction if variable_length set), or a number representing the length of the barcode, such as -b 4. The max barcode errors (-e) should be lowered for short barcodes.  [default: golay_12]</dd>
+<dt>-o, <cite>-</cite>-dir_prefix</dt>
+<dd>Directory prefix for output files [default: .]</dd>
+<dt>-e, <cite>-</cite>-max_barcode_errors</dt>
+<dd>Maximum number of errors in barcode.  If using generic barcodes every 0.5 specified counts as a primer mismatch. [default: 1.5]</dd>
+<dt>-n, <cite>-</cite>-start-numbering-at</dt>
+<dd>Seq id to use for the first sequence [default: 1]</dd>
+<dt><cite>-</cite>-retain_unassigned_reads</dt>
+<dd>Retain sequences which can not be demultiplexed in a seperate output sequence file [default: False]</dd>
+<dt>-c, <cite>-</cite>-disable_bc_correction</dt>
+<dd>Disable attempts to find nearest corrected barcode.  Can improve performance. [default: False]</dd>
+<dt>-F, <cite>-</cite>-save_barcode_frequencies</dt>
+<dd>Save frequences of barcodes as they appear in the given sequences.  Sorts in order of largest to smallest.  Will do nothing if barcode type is 0 or variable_length.  [default: False]</dd>
+<dt>-j, <cite>-</cite>-added_demultiplex_field</dt>
+<dd>Use -j to add a field to use in the mapping file as an additional demultiplexing option to the barcode.  All combinations of barcodes and the values in these fields must be unique. The fields must contain values that can be parsed from the fasta labels such as &#8220;plate=R_2008_12_09&#8221;.  In this case, &#8220;plate&#8221; would be the column header and &#8220;R_2008_12_09&#8221; would be the field data (minus quotes) in the mapping file.  To use the run prefix from the fasta label, such as &#8220;&gt;FLP3FBN01ELBSX&#8221;, where &#8220;FLP3FBN01&#8221; is generated from the run ID, use &#8220;-j run_prefix&#8221; and set the run prefix to be used as the data under the column headerr &#8220;run_prefix&#8221;.  [default: None]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>Four files can be generated by %prog</p>
+<ol class="arabic simple">
+<li>seqs.fna - This contains the fasta sequences, demultiplexed according to barcodes and/or added demultiplexed field.</li>
+<li>demultiplexed_sequences.log - Contains details about demultiplexing stats</li>
+<li>seqs.qual - If quality score file(s) are supplied, these will be truncated to match the seqs.fna file after barcode removal if such is enabled.</li>
+<li>seqs_not_assigned.fna - If <cite>-</cite>-retain_unassigned_reads is enabled, will write all sequences that can not be demultiplexed to this file.  Also will create a seqs_not_assigned.qual file if quality file supplied.</li>
+</ol>
+<p><strong>Standard Example:</strong></p>
+<p>Using a single 454 run, which contains a single FASTA, QUAL, and mapping file while using default parameters and outputting the data into the Directory &#8220;demultiplexed_output&#8221;:</p>
+<div class="highlight-python"><pre>demultiplex_fasta.py -m Mapping_File_golay.txt -f 1.TCA.454Reads.fna -q 1.TCA.454Reads.qual -o demultiplexed_output/</pre>
+</div>
+<p>For the case where there are multiple FASTA and QUAL files, the user can run the following command as long as there are not duplicate barcodes listed in the mapping file:</p>
+<div class="highlight-python"><pre>demultiplex_fasta.py -m Mapping_File_golay.txt -f 1.TCA.454Reads.fna,2.TCA.454Reads.fna -q 1.TCA.454Reads.qual,2.TCA.454Reads.qual -o demultiplexed_output_comma_separated/</pre>
+</div>
+<p><strong>Duplicate Barcode Example:</strong></p>
+<p>An example of this situation would be a study with 1200 samples. You wish to have 400 samples per run, so you split the analysis into three runs with and reuse barcodes (you only have 600). After initial analysis you determine a small subset is underrepresented (&lt;500 sequences per samples) and you boost the number of sequences per sample for this subset by running a fourth run. Since the same sample IDs are in more than one run, it is likely that some sequences will be assigned the same unique identifier by %prog when it is run separately on the four different runs, each with their own barcode file. This will cause a problem in file concatenation of the four different runs into a single large file. To avoid this, you can use the &#8216;-n&#8217; parameter which defines a start index for %prog fasta label enumeration. From experience, most 454 runs (when combining both files for a single plate) will have 350,000 to 650,000 sequences. Thus, if Run 1 for %prog uses &#8216;-n 1000000&#8217;, Run 2 uses &#8216;-n 2000000&#8217;, etc., then you are guaranteed to have unique identifiers after concatenating the results of multiple 454 runs. With newer technologies you will just need to make sure that your start index spacing is greater than the potential number of sequences.</p>
+<p>To run %prog, you will need two or more (depending on the number of times the barcodes were reused) separate mapping files (one for each Run, for example one Run1 and another one for Run2), then you can run %prog using the FASTA and mapping file for Run1 and FASTA and mapping file for Run2. Once you have independently run demultiplex_fasta on each file, followed by quality filtering, you can concatenate (cat) the sequence files generated. You can also concatenate the mapping files, since the barcodes are not necessary for downstream analyses, unless the same sample ids are found in multiple mapping files.</p>
+<p>Run %prog on Run 1:</p>
+<div class="highlight-python"><pre>demultiplex_fasta.py -m Mapping_File1.txt -f 1.TCA.454Reads.fna -q 1.TCA.454Reads.qual -o demultiplexed_output_Run1/ -n 1000000</pre>
+</div>
+<p>Run demultiplex_fasta on Run 2:</p>
+<div class="highlight-python"><pre>demultiplex_fasta.py -m Mapping_File2.txt -f 2.TCA.454Reads.fna -q 2.TCA.454Reads.qual -o demultiplexed_output_Run2/ -n 2000000</pre>
+</div>
+<p><strong>Barcode Decoding Example:</strong></p>
+<p>The standard barcode types supported by %prog are golay (Length: 12 NTs) and hamming (Length: 8 NTs). For situations where the barcodes are of a different length than golay and hamming, the user can define a generic barcode type &#8220;-b&#8221; as an integer, where the integer is the length of the barcode used in the study.</p>
+<p>For the case where the generic 8 base pair barcodes were used, you can use the following command:</p>
+<div class="highlight-python"><pre>demultiplex_fasta.py -m Mapping_File_8bp_barcodes.txt -f 1.TCA.454Reads.fna -q 1.TCA.454Reads.qual -o demultiplexed_output_8bp_barcodes/ -b 8</pre>
+</div>
+<p>To use the run prefix at the beginning of the fasta label for demultiplexing, there has to be a field in the mapping file labeled &#8220;run_prefix&#8221;, and can be used by the following command:</p>
+<div class="highlight-python"><pre>demultiplex_fasta.py -m Mapping_File_run_prefix.txt -f 1.TCA.454Reads.fna -q 1.TCA.454Reads.qual -o demultiplexed_output_run_prefix/ -j run_prefix</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2012, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>
