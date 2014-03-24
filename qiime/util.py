@@ -51,10 +51,6 @@ from cogent import LoadSeqs, Sequence, DNA
 from cogent.parse.tree import DndParser
 from cogent.cluster.procrustes import procrustes
 from cogent.core.alignment import Alignment
-from cogent.core.moltype import (MolType, IUPAC_DNA_chars,
-                                 IUPAC_DNA_ambiguities,
-                                 IUPAC_DNA_ambiguities_complements,
-                                 DnaStandardPairs, ModelDnaSequence)
 from cogent.data.molecular_weight import DnaMW
 from cogent.util.misc import remove_files, create_dir, handle_error_codes
 from cogent.app.util import get_tmp_filename as cogent_get_tmp_filename
