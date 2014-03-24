@@ -48,7 +48,7 @@ __maintainer__ = "William Walters"
 __email__ = "william.a.walters@colorado.edu"
 
 from collections import defaultdict
-from string import letters, digits, upper, lower
+from string import letters, digits, upper
 from os.path import basename, join
 from operator import itemgetter
 from copy import deepcopy
@@ -378,7 +378,7 @@ def check_dna_chars_primers(header,
     """
 
     valid_dna_chars = DNASequence.iupac_characters()
-    valid_dna_chars.update([','])
+    valid_dna_chars.add(',')
 
     # Detect fields directly, in case user does not have fields in proper
     # order in the mapping file (this will generate error separately)
