@@ -1,0 +1,213 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>collate_alpha.py – Collate alpha diversity results &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.6.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="collate-alpha"></span><div class="section" id="collate-alpha-py-collate-alpha-diversity-results">
+<span id="index-0"></span><h1><em>collate_alpha.py</em> &#8211; Collate alpha diversity results<a class="headerlink" href="#collate-alpha-py-collate-alpha-diversity-results" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>When performing batch analyses on the OTU table (e.g. rarefaction followed by alpha diversity), the result of <a class="reference external" href="./alpha_diversity.html">alpha_diversity.py</a> comprises many files, which need to be concatenated into a single file for generating rarefaction curves.  This script joins those files.
+Input files are:
+each file represents one (rarefied) otu table
+each row in a file represents one sample
+each column in a file represents one diversity metric</p>
+<p>Output files are:
+each file represents one diversity metric
+each row in a file represents one (rarefied) otu table
+each column in a file represents one sample</p>
+<p>The input directory should contain only otu tables. The output directory should be empty or nonexistant and the example file is optional.</p>
+<p>If you have a set of rarefied OTU tables, make sure the example file contains every sample present in the otu talbes. You should typically choose the file with the fewest sequences per sample, to avoid files with sparse samples omitted.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">collate_alpha.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-input_path</dt>
+<dd>Input path (a directory)</dd>
+<dt>-o, <cite>-</cite>-output_path</dt>
+<dd>Output path (a directory).  will be created if needed</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-e, <cite>-</cite>-example_path</dt>
+<dd>Example alpha_diversity analysis file, containing all samples and all metrics to be included in the collated result[Default: chosen automatically (see usage string)]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>This script takes the resulting files from batch alpha diversity and collates them into (one file for each metric used).</p>
+<p>This script transforms a series of files, named (e.g. alpha_rarefaction_20_0.txt, alpha_rarefaction_20_1.txt, etc.) into a (usually much smaller) set of files named (e.g. chao1.txt, PD_whole_tree.txt, etc.), where the columns correspond to samples and rows to the rarefaction files inputted, as shown by the following:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="39%" />
+<col width="30%" />
+<col width="13%" />
+<col width="9%" />
+<col width="9%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"></th>
+<th class="head">sequences per sample</th>
+<th class="head">iteration</th>
+<th class="head">PC.354</th>
+<th class="head">PC.355</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>alpha_rarefaction_20_0.txt</td>
+<td>20</td>
+<td>0</td>
+<td>0.925</td>
+<td>0.915</td>
+</tr>
+<tr class="row-odd"><td>alpha_rarefaction_20_1.txt</td>
+<td>20</td>
+<td>1</td>
+<td>0.9</td>
+<td>0.89</td>
+</tr>
+<tr class="row-even"><td>alpha_rarefaction_20_2.txt</td>
+<td>20</td>
+<td>2</td>
+<td>0.88</td>
+<td>0.915</td>
+</tr>
+<tr class="row-odd"><td>alpha_rarefaction_20_3.txt</td>
+<td>20</td>
+<td>3</td>
+<td>0.91</td>
+<td>0.93</td>
+</tr>
+<tr class="row-even"><td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example:</strong></p>
+<p>The user inputs the results from batch alpha diversity (e.g. alpha_div/) and the location where the results should be written (e.g. collated_alpha/), as shown by the following command:</p>
+<div class="highlight-python"><pre>collate_alpha.py -i alpha_div/ -o collated_alpha/</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2012, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

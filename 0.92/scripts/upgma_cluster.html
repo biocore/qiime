@@ -1,0 +1,150 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>upgma_cluster.py – Build a UPGMA tree comparing samples &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="Scripts - Analyses and Parameters" href="../doc_script_index.html" />
+    <link rel="next" title="make_fastq.py – Make fastq file for ERA submission from paired fasta and qual files" href="make_fastq.html" />
+    <link rel="prev" title="tree_compare.py – Compare jackknifed/bootstrapped trees" href="tree_compare.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;">
+	<p style="font-size:12pt;padding: 5px;"><b>News and Announcements &raquo;</b>
+<script type="text/javascript" src="http://app.feed.informer.com/digest3/U9OLMKHF9N.js"><noscript><a href="http://app.feed.informer.com/digest3/U9OLMKHF9N.html">Click for &quot;QIIME&quot;.</a> Powered by <a href="http://feed.informer.com/">RSS Feed Informer</a></noscript></script></p>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="make_fastq.html" title="make_fastq.py – Make fastq file for ERA submission from paired fasta and qual files"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="tree_compare.html" title="tree_compare.py – Compare jackknifed/bootstrapped trees"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation.html" >QIIME Documentation</a> &raquo;</li>
+          <li><a href="../doc_script_index.html" accesskey="U">Scripts - Analyses and Parameters</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="upgma-cluster"></span><div class="section" id="upgma-cluster-py-build-a-upgma-tree-comparing-samples">
+<span id="index-147"></span><h1><em>upgma_cluster.py</em> &#8211; Build a UPGMA tree comparing samples<a class="headerlink" href="#upgma-cluster-py-build-a-upgma-tree-comparing-samples" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>In addition to using PCoA, it can be useful to cluster samples using UPGMA (Unweighted Pair Group Method with Arithmetic mean, also known as average linkage). As with PCoA, the input to this step is a distance matrix (i.e. resulting file from <a class="reference external" href="./beta_diversity.html">beta_diversity.py</a>).</p>
+<p><strong>Usage:</strong> <tt class="docutils literal"><span class="pre">upgma_cluster.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="last docutils">
+<dt>-i, <cite>-</cite>-input_path</dt>
+<dd>Input path.  directory for batch processing, filename for single file operation</dd>
+<dt>-o, <cite>-</cite>-output_path</dt>
+<dd>Output path. directory for batch processing, filename for single file operation</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>The output is a newick formatted tree compatible with most standard tree viewing programs. Batch processing is also available, allowing the analysis of an entire directory of distance matrices.</p>
+<p><strong>UPGMA Cluster (Single File):</strong></p>
+<p>To perform UPGMA clustering on a single distance matrix (e.g.: beta_div.txt, a result file from <a class="reference external" href="./beta_diversity.html">beta_diversity.py</a>) use the following idiom:</p>
+<div class="highlight-python"><pre>upgma_cluster.py -i beta_div.txt -o beta_div_cluster.tre</pre>
+</div>
+<p><strong>UPGMA Cluster (Multiple Files):</strong></p>
+<p>The script also functions in batch mode if a folder is supplied as input. This script operates on every file in the input directory and creates a corresponding upgma tree file in the output directory, e.g.:</p>
+<div class="highlight-python"><pre>upgma_cluster.py -i beta_div_weighted_unifrac/ -o beta_div_weighted_clusters/</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="tree_compare.html"
+                                  title="previous chapter"><em>tree_compare.py</em> &#8211; Compare jackknifed/bootstrapped trees</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="make_fastq.html"
+                                  title="next chapter"><em>make_fastq.py</em> &#8211; Make fastq file for ERA submission from paired fasta and qual files</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/scripts/upgma_cluster.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="make_fastq.html" title="make_fastq.py – Make fastq file for ERA submission from paired fasta and qual files"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="tree_compare.html" title="tree_compare.py – Compare jackknifed/bootstrapped trees"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation.html" >QIIME Documentation</a> &raquo;</li>
+          <li><a href="../doc_script_index.html" >Scripts - Analyses and Parameters</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+  </body>
+</html>

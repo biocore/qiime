@@ -1,0 +1,161 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>beta_diversity.py – Calculate beta diversity (pairwise sample dissimilarity) on one or many otu tables &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="Scripts - Analyses and Parameters" href="../doc_script_index.html" />
+    <link rel="next" title="dissimilarity_mtx_stats.py – Calculate mean, median and standard deviation from a set of distance matrices" href="dissimilarity_mtx_stats.html" />
+    <link rel="prev" title="beta_diversity_metrics – List of available metrics" href="beta_diversity_metrics.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;">
+	<p style="font-size:12pt;padding: 5px;"><b>News and Announcements &raquo;</b>
+<script type="text/javascript" src="http://app.feed.informer.com/digest3/U9OLMKHF9N.js"><noscript><a href="http://app.feed.informer.com/digest3/U9OLMKHF9N.html">Click for &quot;QIIME&quot;.</a> Powered by <a href="http://feed.informer.com/">RSS Feed Informer</a></noscript></script></p>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="dissimilarity_mtx_stats.html" title="dissimilarity_mtx_stats.py – Calculate mean, median and standard deviation from a set of distance matrices"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="beta_diversity_metrics.html" title="beta_diversity_metrics – List of available metrics"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation.html" >QIIME Documentation</a> &raquo;</li>
+          <li><a href="../doc_script_index.html" accesskey="U">Scripts - Analyses and Parameters</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="beta-diversity"></span><div class="section" id="beta-diversity-py-calculate-beta-diversity-pairwise-sample-dissimilarity-on-one-or-many-otu-tables">
+<span id="index-88"></span><h1><em>beta_diversity.py</em> &#8211; Calculate beta diversity (pairwise sample dissimilarity) on one or many otu tables<a class="headerlink" href="#beta-diversity-py-calculate-beta-diversity-pairwise-sample-dissimilarity-on-one-or-many-otu-tables" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>The input for this script is the OTU table containing the number of sequences observed in each OTU (rows) for each sample (columns). For more information pertaining to the OTU table refer to the documentation for make_otu_table. If the user would like phylogenetic beta diversity metrics using UniFrac, a phylogenetic tree must also be passed as input (see <a class="reference external" href="./make_phylogeny.html">make_phylogeny.py</a>). The output of this script is a distance matrix containing a dissimilarity value for each pairwise comparison.</p>
+<p>A number of metrics are currently supported, including unweighted and weighted UniFrac (pass the -s option to see available metrics). In general, because unifrac uses phylogenetic information, one of the unifrac metrics is recommended, as results can be vastly more useful (Hamady &amp; Knight, 2009). Weighted unifrac is sensitive to factors affecting the relative abundance of different taxa, such as salinity or pH while unweighted unifrac considers only the presence or absence of taxa, and is sensitive to factors such as nutrient availability (Costello, personal communication). Typically both weighted and unweighted unifrac are applied.</p>
+<p><strong>Usage:</strong> <tt class="docutils literal"><span class="pre">beta_diversity.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-i, <cite>-</cite>-input_path</dt>
+<dd>Input path: otu table, or dir of otu tables for batch mode</dd>
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>Output directory, will be created if doesn&#8217;t exist</dd>
+<dt>-m, <cite>-</cite>-metrics</dt>
+<dd>Metrics to use, comma delimited if &gt;1 metric, no spaces</dd>
+<dt>-s, <cite>-</cite>-show_metrics</dt>
+<dd>Show available beta diversity metrics and quit</dd>
+<dt>-t, <cite>-</cite>-tree_path</dt>
+<dd>Path to newick tree file, required for phylogenetic metrics [default: None]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>Each file in the input directory should be an otu table, and the output of <a class="reference external" href="./beta_diversity.html">beta_diversity.py</a> is a folder containing text files, each a distance matrix between samples corresponding to an input otu table.</p>
+<p><strong>Single File Beta Diversity:</strong></p>
+<p>To perform beta diversity (using e.g. euclidean distance) on a single OTU table, where the results are output to beta_div.txt, use the following command:</p>
+<div class="highlight-python"><pre>beta_diversity.py -i otu_table.txt -m euclidean -o beta_div/</pre>
+</div>
+<p>Note: Since this is a non-phylogenetic metric, the tree does not need to be supplied.</p>
+<p>In the case that you would like to perform beta diversity using a phylogenetic metric (e.g. weighted_unifrac), you can use the following command:</p>
+<div class="highlight-python"><pre>beta_diversity.py -i otu_table.txt -m weighted_unifrac -o beta_div/ -t repr_set.tre</pre>
+</div>
+<p><strong>Multiple File (batch) Beta Diversity:</strong></p>
+<p>To perform beta diversity on multiple OTU tables (resulting files from <a class="reference external" href="./rarefaction.html">rarefaction.py</a>), specify an input directory (e.g. rarefaction_tables/) as shown by the following command:</p>
+<div class="highlight-python"><pre>beta_diversity.py -i rarefaction_tables/ -m weighted_unifrac -o beta_div/ -t repr_set.tre</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="beta_diversity_metrics.html"
+                                  title="previous chapter"><em>beta_diversity_metrics</em> &#8211; List of available metrics</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="dissimilarity_mtx_stats.html"
+                                  title="next chapter"><em>dissimilarity_mtx_stats.py</em> &#8211; Calculate mean, median and standard deviation from a set of distance matrices</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/scripts/beta_diversity.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="dissimilarity_mtx_stats.html" title="dissimilarity_mtx_stats.py – Calculate mean, median and standard deviation from a set of distance matrices"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="beta_diversity_metrics.html" title="beta_diversity_metrics – List of available metrics"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation.html" >QIIME Documentation</a> &raquo;</li>
+          <li><a href="../doc_script_index.html" >Scripts - Analyses and Parameters</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+  </body>
+</html>

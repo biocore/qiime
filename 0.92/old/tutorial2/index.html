@@ -1,0 +1,221 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Welcome to QIIME’s Tutorial! &mdash; qiime v0.9 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '#',
+        VERSION:     '0.9',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="qiime v0.9 documentation" href="#" />
+    <link rel="next" title="Essential Files" href="essential_files.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="#"><img src="_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="essential_files.html" title="Essential Files"
+             accesskey="N">next</a> |</li>
+        <li><a href="#">qiime v0.9 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="introduction"></span><div class="section" id="welcome-to-qiime-s-tutorial">
+<h1>Welcome to QIIME&#8217;s Tutorial!<a class="headerlink" href="#welcome-to-qiime-s-tutorial" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="contents">
+<h2>Contents<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="essential_files.html">Essential Files</a></li>
+<li class="toctree-l1"><a class="reference external" href="data_analysis_steps.html">Data Analysis Steps</a></li>
+</ul>
+<div class="section" id="id1">
+<h3>Introduction<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>This tutorial explains how to use the <strong>QIIME</strong> (Quantitative Insights Into Microbial Ecology)
+Pipeline to process data from high-throughput 16S rRNA sequencing studies. The purpose of this
+pipeline is to provide a start-to-finish workflow, beginning with multiplexed sequence reads and
+finishing with taxonomic and phylogenetic profiles and comparisons of the samples in the study.
+With this information in hand, it is possible to determine biological and environmental factors that
+alter microbial community ecology in your experiment.</p>
+<p>As an example, we will use data from a study of the response of mouse gut microbial communities to
+fasting (Crawford et al., 2009). To make this tutorial run quickly on a personal computer, we will
+use a subset of the data generated from 5 animals kept on the control ad libitum fed diet, and 4
+animals fasted for 24 hours before sacrifice. At the end of our tutorial, we will be able to
+compare the community structure of control vs. fasted animals. In particular, we will be able to
+compare taxonomic profiles for each sample type, differences in diversity metrics within the
+samples and between the groups, and perform comparative clustering analysis to look for overall
+differences in the samples.</p>
+<p>To process our data, we will perform the following steps, each of which is described in more detail
+in the Data Analysis Steps:</p>
+<ul class="simple">
+<li>Filter the sequence reads for quality and assign multiplexed reads to starting samples by nucleotide barcode.</li>
+<li>Pick Operational Taxonomic Units (OTUs) based on sequence similarity within the reads, and pick a representative sequence from each OTU.</li>
+<li>Assign the OTU to a taxonomic identity using reference databases.</li>
+<li>Align the OTU sequences and create a phylogenetic tree.</li>
+<li>Calculate diversity metrics for each sample and compare the types of communities, using the taxonomic and phylogenetic assignments.</li>
+<li>Generate UPGMA and PCoA plots to visually depict the differences between the samples, and dynamically work with these graphs to generate publication quality figures.</li>
+</ul>
+</div>
+<div class="section" id="contributors">
+<h3>Contributors<a class="headerlink" href="#contributors" title="Permalink to this headline">¶</a></h3>
+<p>J. Gregory Caporaso <a class="footnote-reference" href="#f1" id="id2">[1]</a>, Justin Kuczynski <a class="footnote-reference" href="#f2" id="id3">[2]</a>, Jesse Stombaugh <a class="footnote-reference" href="#f1" id="id4">[1]</a>,
+Kyle Bittinger <a class="footnote-reference" href="#f3" id="id5">[3]</a>, Frederic D. Bushman <a class="footnote-reference" href="#f3" id="id6">[3]</a>, Elizabeth K. Costello <a class="footnote-reference" href="#f1" id="id7">[1]</a>, Noah Fierer <a class="footnote-reference" href="#f4" id="id8">[4]</a>,
+Antonio Gonzalez Peña <a class="footnote-reference" href="#f5" id="id9">[5]</a>, Julia K. Goodrich <a class="footnote-reference" href="#f5" id="id10">[5]</a>, Jeff I. Gordon6, Gavin Huttley <a class="footnote-reference" href="#f7" id="id11">[7]</a>,
+Scott T. Kelley <a class="footnote-reference" href="#f8" id="id12">[8]</a>, Dan Knights <a class="footnote-reference" href="#f5" id="id13">[5]</a>, Jeremy E. Koenig <a class="footnote-reference" href="#f9" id="id14">[9]</a>, Ruth E. Ley <a class="footnote-reference" href="#f9" id="id15">[9]</a>,
+Cathy A. Lozupone <a class="footnote-reference" href="#f1" id="id16">[1]</a>, Daniel McDonald <a class="footnote-reference" href="#f1" id="id17">[1]</a>, Brian D. Muegge <a class="footnote-reference" href="#f6" id="id18">[6]</a>, Megan Pirrung <a class="footnote-reference" href="#f1" id="id19">[1]</a>,
+Jens Reeder <a class="footnote-reference" href="#f1" id="id20">[1]</a>, Joel R. Sevinsky <a class="footnote-reference" href="#f10" id="id21">[10]</a>, Peter J. Turnbaugh <a class="footnote-reference" href="#f6" id="id22">[6]</a>, Will Van Treuren <a class="footnote-reference" href="#f1" id="id23">[1]</a>,
+William A. Walters <a class="footnote-reference" href="#f2" id="id24">[2]</a>, Jeremy Widmann <a class="footnote-reference" href="#f1" id="id25">[1]</a>, Tanya Yatsunenko <a class="footnote-reference" href="#f6" id="id26">[6]</a>, Jesse Zaneveld <a class="footnote-reference" href="#f2" id="id27">[2]</a> and
+Rob Knight <a class="footnote-reference" href="#f1" id="id28">[1]</a>, <a class="footnote-reference" href="#f11" id="id29">[11]</a></p>
+<table class="docutils footnote" frame="void" id="f1" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[1]</td><td><em>(<a class="fn-backref" href="#id2">1</a>, <a class="fn-backref" href="#id4">2</a>, <a class="fn-backref" href="#id7">3</a>, <a class="fn-backref" href="#id16">4</a>, <a class="fn-backref" href="#id17">5</a>, <a class="fn-backref" href="#id19">6</a>, <a class="fn-backref" href="#id20">7</a>, <a class="fn-backref" href="#id23">8</a>, <a class="fn-backref" href="#id25">9</a>, <a class="fn-backref" href="#id28">10</a>)</em> Department of Chemistry and Biochemistry, UCB 215, University of Colorado, Boulder, CO 80309</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="f2" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[2]</td><td><em>(<a class="fn-backref" href="#id3">1</a>, <a class="fn-backref" href="#id24">2</a>, <a class="fn-backref" href="#id27">3</a>)</em> Department of Molecular, Cellular and Developmental Biology, UCB 347, University of Colorado, Boulder, CO 80309</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="f3" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[3]</td><td><em>(<a class="fn-backref" href="#id5">1</a>, <a class="fn-backref" href="#id6">2</a>)</em> Department of Microbiology, Johnson Pavilion 425, University of Pennsylvania, Philadelphia, PA 19104</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="f4" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id8">[4]</a></td><td>Cooperative Institute for Research in Environmental Sciences, University of Colorado, Boulder, CO 80309, USA.; Department of Ecology and Evolutionary Biology, University of Colorado, Boulder, CO 80309, USA.</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="f5" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[5]</td><td><em>(<a class="fn-backref" href="#id9">1</a>, <a class="fn-backref" href="#id10">2</a>, <a class="fn-backref" href="#id13">3</a>)</em> Department of Computer Science, University of Colorado, Boulder, Colorado, USA.</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="f6" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[6]</td><td><em>(<a class="fn-backref" href="#id18">1</a>, <a class="fn-backref" href="#id22">2</a>, <a class="fn-backref" href="#id26">3</a>)</em> Center for Genome Sciences, Washington University School of Medicine, St. Louis, MO 63108</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="f7" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id11">[7]</a></td><td>Computational Genomics Laboratory, John Curtin School of Medical Research, The Australian National University, Canberra, Australian Capital Territory, Australia.</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="f8" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id12">[8]</a></td><td>Department of Biology, San Diego State University, San Diego CA 92182</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="f9" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[9]</td><td><em>(<a class="fn-backref" href="#id14">1</a>, <a class="fn-backref" href="#id15">2</a>)</em> Department of Microbiology, Cornell University, Ithaca NY 14853</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="f10" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id21">[10]</a></td><td>Luca Technologies, 500 Corporate Circle, Suite C, Golden, Colorado 80401</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="f11" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id29">[11]</a></td><td>Howard Hughes Medical Institute</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    <ul>
+<li class="toctree-l1"><a class="reference external" href="essential_files.html">Essential Files</a></li>
+<li class="toctree-l1"><a class="reference external" href="data_analysis_steps.html">Data Analysis Steps</a></li>
+</ul>
+
+
+
+            <h4>Next topic</h4>
+            <p class="topless"><a href="essential_files.html"
+                                  title="next chapter">Essential Files</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="_sources/index.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="essential_files.html" title="Essential Files"
+             >next</a> |</li>
+        <li><a href="#">qiime v0.9 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, meg pirrung.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.4.
+    </div>
+  </body>
+</html>

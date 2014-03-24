@@ -1,0 +1,202 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>conditional_uncovered_probability.py – Calculate the conditional uncovered probability on each sample in an otu table. &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.7.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="conditional-uncovered-probability"></span><div class="section" id="conditional-uncovered-probability-py-calculate-the-conditional-uncovered-probability-on-each-sample-in-an-otu-table">
+<span id="index-0"></span><h1><em>conditional_uncovered_probability.py</em> &#8211; Calculate the conditional uncovered probability on each sample in an otu table.<a class="headerlink" href="#conditional-uncovered-probability-py-calculate-the-conditional-uncovered-probability-on-each-sample-in-an-otu-table" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>This script calculates the conditional uncovered probability for each sample in an OTU table. It uses the methods introduced in Lladser, Gouet, and Reeder, &#8220;Extrapolation of Urn Models via Poissonization: Accurate Measurements of the Microbial Unknown&#8221; PLoS 2011.</p>
+<p>Specifically, it computes a point estimate and a confidence interval using two different methods. Thus it can happen that the PE is actually outside of the CI.</p>
+<p>The CI method requires precomputed constants that depend on the lookahead, the upper-to-lower bound ratio and the desired confidence.
+We only provide these constants for some frequently used combinations. These are (alpha:0.95, r=1..25)) for the the L and U interval types, and (alpha:0.9, 0.95, 0.99; f=10;  r=3..25,30,40,50). Also, there are a few hand picked special cases:</p>
+<p>f=2 and r=50 and alpha=0.95
+f=2 and r=33 and alpha=0.95
+f=1.5 and r=100 and alpha=0.95
+f=1.5 and r=94 and alpha=0.95
+f=2.5 and r=19 and alpha=0.95</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">conditional_uncovered_probability.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-i, <cite>-</cite>-input_path</dt>
+<dd>Input OTU table filepath. [default: None]</dd>
+<dt>-o, <cite>-</cite>-output_path</dt>
+<dd>Output filepath to store the predictions. [default: None]</dd>
+<dt>-r, <cite>-</cite>-look_ahead</dt>
+<dd>Number of unobserved, new colors necessary for prediction. [default: 25]</dd>
+<dt>-c, <cite>-</cite>-ci_type</dt>
+<dd>Type of confidence interval.  Choice of ULCL, ULCU, U, L [default: ULCL]</dd>
+<dt>-a, <cite>-</cite>-alpha</dt>
+<dd>Desired confidence level for CI prediction. [default: 0.95]</dd>
+<dt>-f, <cite>-</cite>-f_ratio</dt>
+<dd>Upper to lower bound ratio for CI prediction. [default: 10.0]</dd>
+<dt>-m, <cite>-</cite>-metrics</dt>
+<dd>CUP metric(s) to use. A comma-separated list should be provided when multiple metrics are specified. [default: lladser_pe,lladser_ci]</dd>
+<dt>-s, <cite>-</cite>-show_metrics</dt>
+<dd>Show the available CUP metrics and exit.</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>The resulting file(s) is a tab-delimited text file, where the columns correspond to estimates of the cond. uncovered probability and the rows correspond to samples. The output file is compatible with the alpha_diversity output files and thus could be tied into thes rarefaction workflow.</p>
+<p>Example Output:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="17%" />
+<col width="31%" />
+<col width="38%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"></th>
+<th class="head">PE</th>
+<th class="head">Lower Bound</th>
+<th class="head">Upper Bound</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>PC.354</td>
+<td>0.111</td>
+<td>0.0245</td>
+<td>0.245</td>
+</tr>
+<tr class="row-odd"><td>PC.124</td>
+<td>0.001</td>
+<td>0.000564</td>
+<td>0.00564</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Default case:</strong></p>
+<p>To calculate the cond. uncovered probability with the default values, you can use the following command:</p>
+<div class="highlight-python"><pre>conditional_uncovered_probability.py -i otu_table.biom -o cup.txt</pre>
+</div>
+<p><strong>Change lookahead:</strong></p>
+<p>To change the accuracy of the prediction change the lookahead value. Larger values of r lead to more precise predictions, but might be unfeasable for small samples. For deeply sequenced samples, try increasing r to 50:</p>
+<div class="highlight-python"><pre>conditional_uncovered_probability.py -i otu_table.biom -o cup_r50.txt -r 50</pre>
+</div>
+<p><strong>Change the interval type:</strong></p>
+<p>To change the confidence interval type to a lower bound prediction, while the upper bound is set to 1 use:</p>
+<div class="highlight-python"><pre>conditional_uncovered_probability.py -i otu_table.biom -o cup_lower_bound.txt -c L</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2012, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

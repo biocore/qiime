@@ -1,0 +1,146 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>make_3d_plot_prefs_file.py – Generate preferences file for 3D plots using Metadata Fields &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="Scripts - Analyses and Parameters" href="../doc_script_index.html" />
+    <link rel="next" title="make_distance_histograms.py – Make distance histograms" href="make_distance_histograms.html" />
+    <link rel="prev" title="make_3d_plots.py – Make 3D PCoA plots" href="make_3d_plots.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;">
+	<p style="font-size:12pt;padding: 5px;"><b>News and Announcements &raquo;</b>
+<script type="text/javascript" src="http://app.feed.informer.com/digest3/U9OLMKHF9N.js"><noscript><a href="http://app.feed.informer.com/digest3/U9OLMKHF9N.html">Click for &quot;QIIME&quot;.</a> Powered by <a href="http://feed.informer.com/">RSS Feed Informer</a></noscript></script></p>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="make_distance_histograms.html" title="make_distance_histograms.py – Make distance histograms"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="make_3d_plots.html" title="make_3d_plots.py – Make 3D PCoA plots"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation.html" >QIIME Documentation</a> &raquo;</li>
+          <li><a href="../doc_script_index.html" accesskey="U">Scripts - Analyses and Parameters</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="make-3d-plot-prefs-file"></span><div class="section" id="make-3d-plot-prefs-file-py-generate-preferences-file-for-3d-plots-using-metadata-fields">
+<span id="index-105"></span><h1><em>make_3d_plot_prefs_file.py</em> &#8211; Generate preferences file for 3D plots using Metadata Fields<a class="headerlink" href="#make-3d-plot-prefs-file-py-generate-preferences-file-for-3d-plots-using-metadata-fields" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>This script generates a preferences (prefs) file, which can be passed via -p to <a class="reference external" href="./make_3d_plots.html">make_3d_plots.py</a>. The prefs file allows for gradient coloring of continuous values in the 3D plots. Currently there is only one color gradient: red to blue.</p>
+<p><strong>Usage:</strong> <tt class="docutils literal"><span class="pre">make_3d_plot_prefs_file.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="last docutils">
+<dt>-b, <cite>-</cite>-color_by</dt>
+<dd>Mapping fields to color by [default: None]</dd>
+<dt>-p, <cite>-</cite>-output_prefs_fp</dt>
+<dd>Path to store output file [default: None]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>The result of this script is a text file, containing coloring preferences to be used by <a class="reference external" href="./make_3d_plots.html">make_3d_plots.py</a>.</p>
+<p><strong>Example:</strong></p>
+<p>To make a prefs file to be used by <a class="reference external" href="./make_3d_plots.html">make_3d_plots.py</a>, the -b value should be passed in as the same as that passed in via -b to <a class="reference external" href="./make_3d_plots.html">make_3d_plots.py</a>. For multiple fields, the command should be a delimited list of fields. For example the -b string could be &#8220;#SampleID,Individual&#8221; and output to the file &#8220;prefs_out.txt&#8221; using the -p parameter.</p>
+<div class="highlight-python"><pre>make_3d_plot_prefs_file.py -b "#SampleID,Individual" -p prefs_out.txt</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="make_3d_plots.html"
+                                  title="previous chapter"><em>make_3d_plots.py</em> &#8211; Make 3D PCoA plots</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="make_distance_histograms.html"
+                                  title="next chapter"><em>make_distance_histograms.py</em> &#8211; Make distance histograms</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/scripts/make_3d_plot_prefs_file.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="make_distance_histograms.html" title="make_distance_histograms.py – Make distance histograms"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="make_3d_plots.html" title="make_3d_plots.py – Make 3D PCoA plots"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation.html" >QIIME Documentation</a> &raquo;</li>
+          <li><a href="../doc_script_index.html" >Scripts - Analyses and Parameters</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+  </body>
+</html>

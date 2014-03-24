@@ -1,0 +1,182 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>compare_3d_plots.py – Plot several PCoA files on the same 3D plot &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.6.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="compare-3d-plots"></span><div class="section" id="compare-3d-plots-py-plot-several-pcoa-files-on-the-same-3d-plot">
+<span id="index-0"></span><h1><em>compare_3d_plots.py</em> &#8211; Plot several PCoA files on the same 3D plot<a class="headerlink" href="#compare-3d-plots-py-plot-several-pcoa-files-on-the-same-3d-plot" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>This script generates a 3D plot comparing two or more sets of principal coordinates using as input two or more principal coordinates files. Edges are drawn in the plot connecting samples with the same ID across different principal coordinates files. The user can also include a file listing the edges to be drawn in the plot, in which case the user may submit any number of principal coordinates files (including one). If the user includes the edges file, the sample IDs need not match between principal coordinates files.</p>
+<p>The principal_coordinates coordinates files are obtained by applying &#8220;<a class="reference external" href="./principal_coordinates.html">principal_coordinates.py</a>&#8221; to a file containing beta diversity measures. The beta diversity files are optained by applying &#8220;<a class="reference external" href="./beta_diversity.html">beta_diversity.py</a>&#8221; to an OTU table. One may apply &#8220;<a class="reference external" href="./transform_coordinate_matrices.html">transform_coordinate_matrices.py</a>&#8221; to the principal_coordinates coordinates files before using this script to compare them.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">compare_3d_plots.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-coord_fnames</dt>
+<dd>This is comma-separated list of the paths to the principal coordinates files (i.e., resulting file from <a class="reference external" href="./principal_coordinates.html">principal_coordinates.py</a>), e.g &#8216;pcoa1.txt,pcoa2.txt&#8217;</dd>
+<dt>-m, <cite>-</cite>-map_fname</dt>
+<dd>This is the user-generated mapping file [default=None]</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-b, <cite>-</cite>-colorby</dt>
+<dd>This is a list of the categories to color by in the plots from the user-generated mapping file. The categories must match the name of a column header in the mapping file exactly and multiple categories can be list by comma separating them without spaces. The user can also combine columns in the mapping file by separating the categories by &#8220;&amp;&amp;&#8221; without spaces [default=None]</dd>
+<dt>-a, <cite>-</cite>-custom_axes</dt>
+<dd>This is a category or list of categories from the user-generated mapping file to use as a custom axis in the plot.  For instance, if there is a pH category and one would like to see the samples plotted on that axis instead of PC1, PC2, etc., one can use this option.  It is also useful for plotting time-series data [default: None]</dd>
+<dt>-p, <cite>-</cite>-prefs_path</dt>
+<dd>This is the user-generated preferences file. NOTE: This is a file with a dictionary containing preferences for the analysis. See <a class="reference external" href="./make_prefs_file.html">make_prefs_file.py</a>. [default: None]</dd>
+<dt>-k, <cite>-</cite>-background_color</dt>
+<dd>This is the background color to use in the plots (Options are &#8216;black&#8217; or &#8216;white&#8217;. [default: None]</dd>
+<dt>-e, <cite>-</cite>-edges_file</dt>
+<dd>A file where each line contains two sample IDs separated by a whitespace character; for each pair of sample IDs, an edge will be drawn from the first sample to the second sample. [default: None]</dd>
+<dt><cite>-</cite>-serial</dt>
+<dd>Connect the 1st set of points to the 2nd, the 2nd to the 3rd, etc. Default behavior is to connect each set of points back to the 1st set. This flag is ignored if the user specifies an edges file.</dd>
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>Path to the output directory</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>This script results in a folder containing an html file which displays the 3D Plots generated.</p>
+<p><strong>Example 1:</strong></p>
+<p>Compare two pca/pcoa files in the same 3d plot where each sample ID is assigned its own color:</p>
+<div class="highlight-python"><pre>compare_3d_plots.py -i $PWD/raw_pca_data1.txt,$PWD/raw_pca_data2.txt -m $PWD/Fasting_Map.txt</pre>
+</div>
+<p><strong>Example 2:</strong></p>
+<p>Compare two pca/pcoa files in the same 3d plot with two coloring schemes (Treatment and DOB):</p>
+<div class="highlight-python"><pre>compare_3d_plots.py -i $PWD/raw_pca_data1.txt,$PWD/raw_pca_data2.txt -m $PWD/Fasting_Map.txt -b 'Treatment,DOB'</pre>
+</div>
+<p><strong>Example 3:</strong></p>
+<p>Compare two pca/pcoa files in the same 3d plot for a combination of label headers from a mapping file:</p>
+<div class="highlight-python"><pre>compare_3d_plots.py -i $PWD/raw_pca_data1.txt,$PWD/raw_pca_data2.txt -m $PWD/Fasting_Map.txt -b 'Treatment&amp;&amp;DOB' -o $PWD/test/</pre>
+</div>
+<p><strong>Example 4:</strong></p>
+<p>Pass in a list of desired edges and only one pca/pcoa file:</p>
+<div class="highlight-python"><pre>compare_3d_plots.py -i $PWD/raw_pca_data1.txt -e $PWD/edges.txt -m Fasting_Map.txt -b 'Treatment&amp;&amp;DOB' -o $PWD/test2/</pre>
+</div>
+<p><strong>Example 5:</strong></p>
+<p>Pass in a list of desired edges and only one pca/pcoa file:</p>
+<div class="highlight-python"><pre>compare_3d_plots.py -i $PWD/raw_pca_data1.txt,$PWD/raw_pca_data2.txt -e $PWD/edges.txt -m $PWD/Fasting_Map.txt -b 'Treatment&amp;&amp;DOB' -o $PWD/test3/</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2012, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

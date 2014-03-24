@@ -1,0 +1,651 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>SRA Field List &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.2.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="doc-sra-field-list"></span><div class="section" id="sra-field-list">
+<span id="index-2"></span><h1>SRA Field List<a class="headerlink" href="#sra-field-list" title="Permalink to this headline">¶</a></h1>
+<p>The make_sra_submission.py QIIME script uses tab-delimited input files
+to generate valid XML files for an SRA submission.  This document
+lists the fields in each type of input file, and gives details on how
+to fill them in.</p>
+<p>If a field is labeled as <em>optional</em>, it may be omitted from the
+header.  For fields labeled <em>derived automatically</em>, a value will be
+generated for each entry in the input file if the field is missing or
+empty.</p>
+<div class="section" id="submission-input-file">
+<h2>Submission Input File<a class="headerlink" href="#submission-input-file" title="Permalink to this headline">¶</a></h2>
+<p>SUBMISSION_ID</p>
+<blockquote>
+<p>Internally unique id for the submission (unique among all
+submissions from your CENTER_NAME).  It should contain only
+alphanumeric characters and underscores.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">knight_handstudy</span></tt></p>
+</blockquote>
+<p>CENTER_NAME</p>
+<blockquote>
+<p>Official name of the center preparing the submission, as it is
+registered with the SRA.  This is a controlled vocabulary; a value
+not recognized by the SRA will cause the submission to fail.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">CCME</span></tt></p>
+</blockquote>
+<p>LAB_NAME</p>
+<blockquote>
+<p>Name of the lab preparing the submission, and usually refers to the
+identity of the PI, not the sequencing center.  The values of this
+field are not part of a controlled vocabulary, so you are free to
+fill in a convenient name for the lab.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">Knight</span></tt></p>
+</blockquote>
+<p>CONTACT</p>
+<blockquote>
+<p>Use a semicolon to separate email address from name.  Multiple
+contacts can be included by separating them with a comma.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">Jane</span> <span class="pre">Smith;janesmith&#64;college.edu,John</span> <span class="pre">Doe;johndoe&#64;company.com</span></tt></p>
+</blockquote>
+<p>FILE (optional)</p>
+<blockquote>
+<p>Filename of tar-gzipped sequence data.  If not submitting sequence
+data, omit this field or leave it blank.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">fierer_hand_study.seqs.tgz</span></tt></p>
+</blockquote>
+<p>ACCESSION (optional)</p>
+<blockquote>
+<p>Accession number for the submission: leave blank if not assigned
+yet, e.g. if new submission rather than replacing XML for an
+existing submission.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">SRA020077</span></tt></p>
+</blockquote>
+<p>SUBMISSION_DATE (optional, derived automatically)</p>
+<blockquote>
+<p>Timestamp of submission.  The format of such a timestamp is
+described in the W3 XML Schema specification, part 2
+(<a class="reference external" href="http://www.w3.org/TR/xmlschema-2/#dateTime">http://www.w3.org/TR/xmlschema-2/#dateTime</a>).  If this field is
+blank or absent, it is set to the date and time that the submission
+XML file was created.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">2009-10-22T06:23:00Z</span></tt></p>
+</blockquote>
+<p>SUBMISSION_COMMENT (optional)</p>
+<blockquote>
+Free-text comments regarding the submission.</blockquote>
+</div>
+<div class="section" id="study-input-file">
+<h2>Study Input File<a class="headerlink" href="#study-input-file" title="Permalink to this headline">¶</a></h2>
+<p>One study per publication (i.e. the STUDY is supposed to be about the
+same amount of info as in a paper).</p>
+<p>STUDY_ALIAS</p>
+<blockquote>
+<p>The STUDY_ALIAS is used as a unique identifier for the study (it
+should be unique among all studies submitted from your institution).
+It should contain only alphanumeric characters and underscores.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">hand_study</span></tt></p>
+</blockquote>
+<p>STUDY_TITLE</p>
+<blockquote>
+<p>Expected (or actual) title of the paper that will be published about
+the study. Free text.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">The</span> <span class="pre">influence</span> <span class="pre">of</span> <span class="pre">sex,</span> <span class="pre">handedness,</span> <span class="pre">and</span> <span class="pre">washing</span> <span class="pre">on</span> <span class="pre">the</span> <span class="pre">diversity</span> <span class="pre">of</span> <span class="pre">hand</span> <span class="pre">surface</span> <span class="pre">bacteria</span></tt></p>
+</blockquote>
+<p>STUDY_TYPE</p>
+<blockquote>
+<p>Should be &#8220;Metagenomics&#8221; for 16S surveys (regrettably). Other
+choices relate to whole-genome studies. Controlled vocabulary.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">Metagenomics</span></tt></p>
+</blockquote>
+<p>STUDY_ABSTRACT</p>
+<blockquote>
+<p>Abstract, e.g. of the publication. Free text.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">This</span> <span class="pre">project</span> <span class="pre">aims</span> <span class="pre">to</span> <span class="pre">undertake</span> <span class="pre">global</span> <span class="pre">surveys</span> <span class="pre">of</span> <span class="pre">microbial</span> <span class="pre">diversity</span> <span class="pre">in</span> <span class="pre">a</span> <span class="pre">range</span> <span class="pre">of</span> <span class="pre">free-living</span> <span class="pre">and</span> <span class="pre">host-associated</span> <span class="pre">communities.</span> <span class="pre">The</span> <span class="pre">importance</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">project</span> <span class="pre">is</span> <span class="pre">that</span> <span class="pre">it</span> <span class="pre">will</span> <span class="pre">provide</span> <span class="pre">a</span> <span class="pre">comparison</span> <span class="pre">of</span> <span class="pre">microbial</span> <span class="pre">diversity</span> <span class="pre">in</span> <span class="pre">a</span> <span class="pre">range</span> <span class="pre">of</span> <span class="pre">habitats</span> <span class="pre">and</span> <span class="pre">provide</span> <span class="pre">a</span> <span class="pre">platform</span> <span class="pre">to</span> <span class="pre">underpin</span> <span class="pre">many</span> <span class="pre">studies</span> <span class="pre">of</span> <span class="pre">community</span> <span class="pre">assembly,</span> <span class="pre">diversity,</span> <span class="pre">etc.</span> <span class="pre">Bacteria</span> <span class="pre">thrive</span> <span class="pre">on</span> <span class="pre">and</span> <span class="pre">within</span> <span class="pre">the</span> <span class="pre">human</span> <span class="pre">body.</span> <span class="pre">One</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">largest</span> <span class="pre">human-associated</span> <span class="pre">microbial</span> <span class="pre">habitats</span> <span class="pre">is</span> <span class="pre">the</span> <span class="pre">skin</span> <span class="pre">surface,</span> <span class="pre">which</span> <span class="pre">harbors</span> <span class="pre">large</span> <span class="pre">numbers</span> <span class="pre">of</span> <span class="pre">bacteria</span> <span class="pre">that</span> <span class="pre">can</span> <span class="pre">have</span> <span class="pre">important</span> <span class="pre">effects</span> <span class="pre">on</span> <span class="pre">health.</span> <span class="pre">We</span> <span class="pre">examined</span> <span class="pre">the</span> <span class="pre">palmar</span> <span class="pre">surfaces</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">dominant</span> <span class="pre">and</span> <span class="pre">nondominant</span> <span class="pre">hands</span> <span class="pre">of</span> <span class="pre">51</span> <span class="pre">healthy</span> <span class="pre">young</span> <span class="pre">adult</span> <span class="pre">volunteers</span> <span class="pre">to</span> <span class="pre">characterize</span> <span class="pre">bacterial</span> <span class="pre">diversity</span> <span class="pre">on</span> <span class="pre">hands</span> <span class="pre">and</span> <span class="pre">to</span> <span class="pre">assess</span> <span class="pre">its</span> <span class="pre">variability</span> <span class="pre">within</span> <span class="pre">and</span> <span class="pre">between</span> <span class="pre">individuals.</span> <span class="pre">We</span> <span class="pre">used</span> <span class="pre">a</span> <span class="pre">novel</span> <span class="pre">pyrosequencing-</span> <span class="pre">based</span> <span class="pre">method</span> <span class="pre">that</span> <span class="pre">allowed</span> <span class="pre">us</span> <span class="pre">to</span> <span class="pre">survey</span> <span class="pre">hand</span> <span class="pre">surface</span> <span class="pre">bacterial</span> <span class="pre">communities</span> <span class="pre">at</span> <span class="pre">an</span> <span class="pre">unprecedented</span> <span class="pre">level</span> <span class="pre">of</span> <span class="pre">detail.</span> <span class="pre">The</span> <span class="pre">diversity</span> <span class="pre">of</span> <span class="pre">skin-associated</span> <span class="pre">bacterial</span> <span class="pre">communities</span> <span class="pre">was</span> <span class="pre">surprisingly</span> <span class="pre">high;</span> <span class="pre">a</span> <span class="pre">typical</span> <span class="pre">hand</span> <span class="pre">surface</span> <span class="pre">harbored</span> <span class="pre">&gt;150</span> <span class="pre">unique</span> <span class="pre">species-level</span> <span class="pre">bacterial</span> <span class="pre">phylotypes,</span> <span class="pre">and</span> <span class="pre">we</span> <span class="pre">identified</span> <span class="pre">a</span> <span class="pre">total</span> <span class="pre">of</span> <span class="pre">4,742</span> <span class="pre">unique</span> <span class="pre">phylotypes</span> <span class="pre">across</span> <span class="pre">all</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">hands</span> <span class="pre">examined.</span> <span class="pre">Although</span> <span class="pre">there</span> <span class="pre">was</span> <span class="pre">a</span> <span class="pre">core</span> <span class="pre">set</span> <span class="pre">of</span> <span class="pre">bacterial</span> <span class="pre">taxa</span> <span class="pre">commonly</span> <span class="pre">found</span> <span class="pre">on</span> <span class="pre">the</span> <span class="pre">palm</span> <span class="pre">surface,</span> <span class="pre">we</span> <span class="pre">observed</span> <span class="pre">pronounced</span> <span class="pre">intra-</span> <span class="pre">and</span> <span class="pre">interpersonal</span> <span class="pre">variation</span> <span class="pre">in</span> <span class="pre">bacterial</span> <span class="pre">community</span> <span class="pre">composition:</span> <span class="pre">hands</span> <span class="pre">from</span> <span class="pre">the</span> <span class="pre">same</span> <span class="pre">individual</span> <span class="pre">shared</span> <span class="pre">only</span> <span class="pre">17%</span> <span class="pre">of</span> <span class="pre">their</span> <span class="pre">phylotypes,</span> <span class="pre">with</span> <span class="pre">different</span> <span class="pre">individuals</span> <span class="pre">sharing</span> <span class="pre">only</span> <span class="pre">13%.</span> <span class="pre">Women</span> <span class="pre">had</span> <span class="pre">significantly</span> <span class="pre">higher</span> <span class="pre">diversity</span> <span class="pre">than</span> <span class="pre">men,</span> <span class="pre">and</span> <span class="pre">community</span> <span class="pre">composition</span> <span class="pre">was</span> <span class="pre">significantly</span> <span class="pre">affected</span> <span class="pre">by</span> <span class="pre">handedness,</span> <span class="pre">time</span> <span class="pre">since</span> <span class="pre">last</span> <span class="pre">hand</span> <span class="pre">washing,</span> <span class="pre">and</span> <span class="pre">an</span> <span class="pre">individual's</span> <span class="pre">sex.</span> <span class="pre">The</span> <span class="pre">variation</span> <span class="pre">within</span> <span class="pre">and</span> <span class="pre">between</span> <span class="pre">individuals</span> <span class="pre">in</span> <span class="pre">microbial</span> <span class="pre">ecology</span> <span class="pre">illustrated</span> <span class="pre">by</span> <span class="pre">this</span> <span class="pre">study</span> <span class="pre">emphasizes</span> <span class="pre">the</span> <span class="pre">challenges</span> <span class="pre">inherent</span> <span class="pre">in</span> <span class="pre">defining</span> <span class="pre">what</span> <span class="pre">constitutes</span> <span class="pre">a</span> <span class="pre">&quot;&quot;healthy&quot;&quot;</span> <span class="pre">bacterial</span> <span class="pre">community;</span> <span class="pre">addressing</span> <span class="pre">these</span> <span class="pre">challenges</span> <span class="pre">will</span> <span class="pre">be</span> <span class="pre">critical</span> <span class="pre">for</span> <span class="pre">the</span> <span class="pre">International</span> <span class="pre">Human</span> <span class="pre">Microbiome</span> <span class="pre">Project.</span></tt></p>
+</blockquote>
+<p>STUDY_DESCRIPTION</p>
+<blockquote>
+<p>Use &#8220;Targeted Gene Survey&#8221; for 16S or other target gene studies</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">Targeted</span> <span class="pre">Gene</span> <span class="pre">Survey</span> <span class="pre">from</span> <span class="pre">Human</span> <span class="pre">Skin</span></tt></p>
+</blockquote>
+<p>CENTER_NAME</p>
+<blockquote>
+<p>NCBI-approved name of the center coordinating the overall study,
+e.g. WUGSC. If you don&#8217;t have a center name, you need to get NCBI to
+define one and then use that - you can&#8217;t do this as free text. This
+will often be the same as other center names.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">CCME</span></tt></p>
+</blockquote>
+<p>CENTER_PROJECT_NAME (optional)</p>
+<blockquote>
+<p>Name of project as used by the center responsible for the study,
+NULL if none.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">NULL</span></tt></p>
+</blockquote>
+<p>PMID (optional)</p>
+<blockquote>
+<p>PubMed ID of paper describing project, if supplied will write out
+STUDY_LINK block, can be multiple (comma-delimited), can be absent
+if no linked publication yet.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">19004758</span></tt></p>
+</blockquote>
+</div>
+<div class="section" id="sample-input-file">
+<h2>Sample Input File<a class="headerlink" href="#sample-input-file" title="Permalink to this headline">¶</a></h2>
+<p>SAMPLE_ALIAS</p>
+<blockquote>
+<p>Unique sample identifier, within each center.  Must be formatted as
+alphanumeric characters plus underscores, with no special
+characters.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">hand_sample_1</span></tt></p>
+</blockquote>
+<p>TITLE</p>
+<blockquote>
+<p>Title of the sample, for display on the SRA website.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">human</span> <span class="pre">hand</span> <span class="pre">microbiome</span></tt></p>
+</blockquote>
+<p>TAXON_ID</p>
+<blockquote>
+<p>NCBI taxon ID of the sample.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">539655</span></tt> (human skin metagenome, species, metagenomes)</p>
+</blockquote>
+<p>COMMON_NAME (optional)</p>
+<blockquote>
+<p>Common name of the sample, should match taxon id&#8217;s name.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">human</span> <span class="pre">skin</span> <span class="pre">metagenome</span></tt></p>
+</blockquote>
+<p>ANONYMIZED_NAME (optional)</p>
+<blockquote>
+<p>Anonymized name of the subject, if applicable (e.g. deidentified
+subject IDs from dbGAP, deidentified subject ids from your
+study). Only applies to human studies, leave blank if not
+applicable.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">Subject</span> <span class="pre">1</span></tt></p>
+</blockquote>
+<p>DESCRIPTION (optional)</p>
+<blockquote>
+<p>Free-text description of this specific sample.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">female</span> <span class="pre">right</span> <span class="pre">palm</span></tt></p>
+</blockquote>
+<p>HOST_TAXID (optional)</p>
+<blockquote>
+<p>Required if there is a host (skip otherwise): taxon id that refers
+to the host. e.g. 9606 = Human.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">Human</span></tt></p>
+</blockquote>
+</div>
+<div class="section" id="experiment-input-file">
+<h2>Experiment Input File<a class="headerlink" href="#experiment-input-file" title="Permalink to this headline">¶</a></h2>
+<p>We have tried to minimize the required fields for the SRA Experiment
+input file as much as possible.  Although only 10 fields are necessary
+for many submissions, we include many optional fields to customize the
+process.  Optional fields are evaluated and filled in on a per-item
+basis.  Fields with a blank value are treated identically to missing
+fields.</p>
+<p>Fields listed as &#8220;optional&#8221; without further annotation are unused if
+blank or missing.  Fields listed as &#8220;optional, default value provided
+automatically&#8221; have a simple default value, which is used if the field
+is blank or missing.  Fields listed as &#8220;optional, derived
+automatically&#8221; have a default value that depends on other fields.  The
+format for deriving a value is given in the field definition.</p>
+<p>EXPERIMENT_TITLE</p>
+<blockquote>
+<p>Title of the experiment. Must be the same for every member of a
+given SRA Experiment. Free text.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">Sampling</span> <span class="pre">and</span> <span class="pre">pyrosequencing</span> <span class="pre">methods</span> <span class="pre">for</span> <span class="pre">quantifying</span>
+<span class="pre">bacterial</span> <span class="pre">communities</span> <span class="pre">in</span> <span class="pre">the</span> <span class="pre">human</span> <span class="pre">gut</span></tt></p>
+<p><em>Output</em>: Used as the text of the &lt;TITLE&gt; element in the SRA
+Experiment XML file.</p>
+</blockquote>
+<p>EXPERIMENT_CENTER</p>
+<blockquote>
+<p>Official abbreviation for the sequencing center associated with the
+experiment, i.e. who made the pool. Needs to be the same for every
+member of a given pool. This is your center name as assigned by NCBI
+and is often the same as the STUDY center.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">UPENNBL</span></tt></p>
+<p><em>Output</em>: Used as the <em>center_name</em> attribute of the &lt;EXPERIMENT&gt;
+element in the SRA Experiment XML file.</p>
+</blockquote>
+<p>STUDY_REF</p>
+<blockquote>
+<p>The alias of the SRA Study to which this SRA Experiment belongs.
+The STUDY_REF should indicate the official alias of the study
+registered with SRA.  If the SRA Study was created with QIIME, the
+alias is the value of STUDY_ALIAS defined in the study input file.
+Must be the same for every member of a given SRA Experiment.</p>
+<p>If items from multiple SRA Studies are included on the same
+sequencing run, create separate SRA Experiments for each study.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">hand_study</span></tt></p>
+<p><em>Output</em>: Used as the <em>refname</em> attribute of the &lt;STUDY_REF&gt; element
+in the SRA Experiment XML file.  It is also used to derive several
+optional fields.</p>
+</blockquote>
+<p>SAMPLE_ALIAS</p>
+<blockquote>
+<p>The alias of the SRA Sample to which this pool member belongs.  The
+SAMPLE_ALIAS should indicate the official alias of a sample registered
+with SRA.  If the SRA Sample was created with QIIME, the alias is the
+value of SAMPLE_ALIAS defined in the sample input file.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">water_blank</span></tt></p>
+<p><em>Output</em>: Used as the <em>refname</em> attribute of the &lt;MEMBER&gt; element in
+the SRA Experiment XML file.  It is also used to derive several
+optional fields.</p>
+</blockquote>
+<p>POOL_PROPORTION</p>
+<blockquote>
+<p>Floating-point number representing the fraction of the pool that was
+intended to come from that pool member.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">0.05</span></tt></p>
+<p><em>Output</em>: Used as the <em>proportion</em> attribute of the &lt;MEMBER&gt; element
+in the SRA Experiment XML file.</p>
+</blockquote>
+<p>BARCODE</p>
+<blockquote>
+<p>Barcode sequence used for each pool member.  Each combination of
+BARCODE, PRIMER and RUN_PREFIX must be unique.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">ACGTCTGTAGCA</span></tt></p>
+<p><em>Output</em>: Used as the text of a &lt;BASECALL&gt; element in the SRA
+Experiment XML file.  It is also used to derive several optional
+fields.</p>
+</blockquote>
+<p>RUN_PREFIX</p>
+<blockquote>
+<p>The 454 instrument usually produces more than one sff file. This
+should be the prefix of the sff file name that was produced by a
+given run.  This allows you to designate a pool as per-library
+rather than per sff file (otherwise you would need to duplicate all
+the info per run for each sff file).</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">GAMA2IO</span></tt>, for an SFF file named <tt class="docutils literal"><span class="pre">GAMA2IO01.sff</span></tt></p>
+<p><em>Output</em>: Used as the <em>name</em> attribute of the &lt;DATA_BLOCK&gt; element
+in the SRA Run XML file.  It is also used to derive several optional
+fields.</p>
+</blockquote>
+<p>EXPERIMENT_DESIGN_DESCRIPTION</p>
+<blockquote>
+<p>Free text description of the overall motivation for the SRA
+Experiment: why those samples were mixed together, what it was for,
+etc.  Needs to be the same for all entries with the same
+EXPERIMENT_ALIAS value.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">Pool</span> <span class="pre">of</span> <span class="pre">samples</span> <span class="pre">from</span> <span class="pre">a</span> <span class="pre">handwashing</span> <span class="pre">study</span> <span class="pre">providing</span> <span class="pre">longitudinal</span> <span class="pre">data</span> <span class="pre">about</span> <span class="pre">recolonization</span> <span class="pre">in</span> <span class="pre">a</span> <span class="pre">small</span> <span class="pre">number</span> <span class="pre">of</span> <span class="pre">subjects.</span></tt></p>
+<p><em>Output</em>: Used as the text of the &lt;DESIGN_DESCRIPTION&gt; element in
+the SRA Experiment XML file.</p>
+</blockquote>
+<p>LIBRARY_CONSTRUCTION_PROTOCOL</p>
+<blockquote>
+<p>Free-text description of how the library was put together (e.g. from
+the methods section of a paper).  Needs to be the same for all
+entries with the same EXPERIMENT_ALIAS value.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">Each</span> <span class="pre">amplicon</span> <span class="pre">library</span> <span class="pre">was</span> <span class="pre">constructed</span> <span class="pre">by</span> <span class="pre">amplifying</span> <span class="pre">the</span> <span class="pre">16S</span> <span class="pre">rRNA</span> <span class="pre">gene</span> <span class="pre">using</span> <span class="pre">the</span> <span class="pre">27f/534r,</span> <span class="pre">357f/926r,</span> <span class="pre">968f/1492r,</span> <span class="pre">BSF8/BSR534,</span> <span class="pre">BSF343/BSR926,</span> <span class="pre">or</span> <span class="pre">BSF917/BSR492</span> <span class="pre">primer</span> <span class="pre">pair.</span> <span class="pre">Primers</span> <span class="pre">contained</span> <span class="pre">DNA</span> <span class="pre">barcode</span> <span class="pre">sequences</span> <span class="pre">such</span> <span class="pre">as</span> <span class="pre">those</span> <span class="pre">described</span> <span class="pre">by</span> <span class="pre">Hamady</span> <span class="pre">et</span> <span class="pre">al.</span> <span class="pre">2008,</span> <span class="pre">and</span> <span class="pre">the</span> <span class="pre">recommended</span> <span class="pre">454</span> <span class="pre">adapter</span> <span class="pre">sequences.</span> <span class="pre">Amplification</span> <span class="pre">conditions</span> <span class="pre">are</span> <span class="pre">described</span> <span class="pre">in</span> <span class="pre">McKenna</span> <span class="pre">et</span> <span class="pre">al</span> <span class="pre">2007,</span> <span class="pre">with</span> <span class="pre">exception</span> <span class="pre">that</span> <span class="pre">the</span> <span class="pre">polymerase</span> <span class="pre">used</span> <span class="pre">was</span> <span class="pre">AccuPrime</span> <span class="pre">(Invitrogen,</span> <span class="pre">Carlsbad,</span> <span class="pre">CA,</span> <span class="pre">USA).</span></tt></p>
+<p><em>Output</em>: Used as the text of the &lt;LIBRARY_CONSTRUCTION_PROTOCOL&gt;
+element in the SRA Experiment XML file.</p>
+</blockquote>
+<p>SAMPLE_CENTER (optional, derived automatically)</p>
+<blockquote>
+<p>Name of the center that provided the sample, can be separate for
+each sample.  If this field is blank or absent, the value of
+EXPERIMENT_CENTER will be used.</p>
+<p>If sample information is stored in dbGAP, the SAMPLE_CENTER should
+be set to &#8220;NCBI&#8221;.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">UPENNBL</span></tt></p>
+<p><em>Output</em>: Used as the <em>refcenter</em> attribute of the &lt;MEMBER&gt; and
+&lt;STUDY_REF&gt; elements in the SRA Experiment XML file.  It is also
+used to derive the DEFAULT_SAMPLE_CENTER field.</p>
+</blockquote>
+<p>STUDY_CENTER (optional, derived automatically)</p>
+<blockquote>
+<p>Name of the center that registered the SRA Study.  Study center
+names are assigned by the SRA, so you must contact them if your
+institution does not have an official study center designation.
+Needs to be the same for every member of a given SRA Experiment.  If
+this field is blank or absent, the value of EXPERIMENT_CENTER will
+be used.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">UPENNBL</span></tt></p>
+<p><em>Output</em>: Used as the <em>refcenter</em> attribute of the &lt;EXPERIMENT_REF&gt;
+element in the SRA Run XML file.</p>
+</blockquote>
+<p>PLATFORM (optional, default value provided automatically)</p>
+<blockquote>
+<p>The sequencing platform, either <tt class="docutils literal"><span class="pre">FLX</span></tt> or <tt class="docutils literal"><span class="pre">Titanium</span></tt>.  If the
+platform value is not found in a table of supported platforms, the
+QIIME script will halt with an error.  If this field is blank or
+absent, the region will be set to &#8216;Titanium&#8217;.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">Titanium</span></tt></p>
+<p><em>Output</em>: Used to generate the contents of the &lt;PLATFORM&gt; element in
+the SRA Experiment XML file.</p>
+</blockquote>
+<p>KEY_SEQ (optional, default value provided automatically)</p>
+<blockquote>
+<p>This is a technical aspect of the 454 platform, is usually TCAG, can
+be obtained from the sff file using the sfftools.  If this
+field is blank or absent, the region will be set to &#8216;TCAG&#8217;.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">TCAG</span></tt></p>
+<p><em>Output</em>: Used as the text of the &lt;EXPECTED_BASECALL&gt; element inside
+the &lt;READ_SPEC&gt; element for the Adapter sequence in the SRA
+Experiment XML file.</p>
+</blockquote>
+<p>REGION (optional, default value provided automatically)</p>
+<blockquote>
+<p>Region of the plate that was sequenced.  If the plate contained only
+a single region, the SRA requires that this be set to &#8216;0&#8217;.  If this
+field is blank or absent, the region will be set to &#8216;0&#8217;.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">1</span></tt></p>
+<p><em>Output</em>: Used as the <em>region</em> attribute of the &lt;DATA_BLOCK&gt; element
+in the SRA Run XML file.</p>
+</blockquote>
+<p>RUN_CENTER (optional, derived automatically)</p>
+<blockquote>
+<p>Name of the institution that performed the run, assigned by
+NCBI. You can use the center name for your lab for this even if you
+had the sequencing done elsewhere according to SRA.  If this field
+is blank or absent, the value of EXPERIMENT_CENTER will be used.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">UPENNBL</span></tt></p>
+<p><em>Output</em>: Used as the <em>center_name</em> and <em>run_center</em> attributes of
+the &lt;RUN&gt; element in the SRA Run XML file.</p>
+</blockquote>
+<p>EXPERIMENT_ALIAS (optional, derived automatically)</p>
+<blockquote>
+<p>Unique id (within the submission) for the experiment.  This is the
+decisive element on which separate SRA Experiments are created.  If
+absent, the value will be derived as {STUDY_REF}_{RUN_PREFIX}.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">hand_study_F0FN7DX</span></tt></p>
+<p><em>Output</em>: Used as the <em>alias</em> attribute of the &lt;EXPERIMENT&gt; element,
+and as the text of the &lt;LIBRARY_NAME&gt; element in the SRA Experiment
+XML file.  Also used as the <em>refname</em> attribute of the
+&lt;EXPERIMENT_REF&gt; element in the SRA Run XML.</p>
+</blockquote>
+<p>RUN_ALIAS (optional, derived automatically)</p>
+<blockquote>
+<p>Alias for the run.  Presently, this should be different for every
+pool member, since each pool member gets a unique RUN element in the
+run XML.  In the future, we plan to change this behavior, and create
+only a single RUN element of multiple pool members share the same
+RUN_ALIAS. Needs to be a short identifier, alphanumeric and
+underscores only (no special characters).  If absent, this field is
+automatically derived as {STUDY_REF}_{SAMPLE_ALIAS}_{RUN_PREFIX}.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">hand_study_sample1_F0FN7DX</span></tt></p>
+<p><em>Output</em>: Used as the <em>alias</em> attribute of the &lt;RUN&gt; element in the
+SRA Run XML.</p>
+</blockquote>
+<p>STUDY_ACCESSION (optional)</p>
+<blockquote>
+<p>Optional accession number for study.  Leave blank or omit this field
+if not already assigned.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">SRP003284</span></tt></p>
+<p><em>Output</em>: Used as the <em>accession</em> attribute of the &lt;STUDY_REF&gt;
+element in the SRA Experiment XML file.</p>
+</blockquote>
+<p>DEFAULT_SAMPLE_CENTER (optional)</p>
+<blockquote>
+<p>Optional default sample center.  If the field is blank or omitted,
+the value from the SAMPLE_CENTER field is used instead.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">UPENNBL</span></tt></p>
+<p><em>Output</em>: Used as the <em>refcenter</em> attribute of the
+&lt;SAMPLE_DESCRIPTOR&gt; element in the SRA Experiment XML file.</p>
+</blockquote>
+<p>DEFAULT_SAMPLE_ACCESSION (optional)</p>
+<blockquote>
+<p>Optional default sample accession number, if available.  Leave blank
+if this has not already been assigned.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">SRS107395</span></tt></p>
+<p><em>Output</em>: Used as the <em>accession</em> attribute of the
+&lt;SAMPLE_DESCRIPTOR&gt; element in the SRA Experiment XML file.</p>
+</blockquote>
+<p>DEFAULT_SAMPLE_NAME (optional, derived automatically)</p>
+<blockquote>
+<p>Optional reference name for the default sample.  If this field is
+blank/absent, and no DEFAULT_SAMPLE_ACCESSION is provided, the name
+is automatically derived as {STUDY_REF}_default.  Otherwise, the
+default sample is specified by the accession number alone, and this
+attribute is not inserted into the XML output.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">hand_study_default</span></tt></p>
+<p><em>Output</em>: Used as the <em>refname</em> attribute of the &lt;SAMPLE_DESCRIPTOR&gt;
+element in the SRA Experiment XML file.</p>
+</blockquote>
+<p>POOL_MEMBER_ACCESSION (optional)</p>
+<blockquote>
+<p>Optional accession number for pool member. This field should be
+blank or absent if an SRA accession number is not already assigned.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">SRS107397</span></tt></p>
+<p><em>Output</em>: Used as the <em>accession</em> attribute of the &lt;MEMBER&gt; element
+in the SRA Experiment XML file.</p>
+</blockquote>
+<p>POOL_MEMBER_NAME (optional, derived automatically)</p>
+<blockquote>
+<p>Unique (within the pool) id for each pool member.  If the field is
+blank or absent, it is derived automatically.  The derived value of
+this field depends on the primer.  If a primer was provided, it is
+derived as {RUN_PREFIX}_{SAMPLE_ALIAS}_{PRIMER_READ_GROUP_TAG}.
+Otherwise, a value of {RUN_PREFIX}_{SAMPLE_ALIAS} is used.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">F0FN7DX01_sample1_V1-V2</span></tt></p>
+<p><em>Output</em>: Used as the <em>member_name</em> attribute of the &lt;MEMBER&gt;
+element in the SRA Experiment XML file.  Also used to derive the
+value of POOL_MEMBER_FILENAME.</p>
+</blockquote>
+<p>POOL_MEMBER_FILENAME (optional, derived automatically)</p>
+<blockquote>
+<p>Filename for SFF file containing sequences from this pool member.
+The SFF files are searched for in a subdirectory of the sff_dir
+named after the RUN_PREFIX.  If the field is blank or absent, a
+default value of {POOL_MEMBER_NAME}.sff is used.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">F0FN7DX01_sample1_V1-V2.sff</span></tt></p>
+<p><em>Output</em>: Used as the <em>filename</em> attribute of the &lt;RUN&gt; element in
+the SRA Run XML.  Also used by the QIIME software to find the SFF
+file and automatically generate a checksum.</p>
+</blockquote>
+<p>BARCODE_READ_GROUP_TAG (optional, derived automatically)</p>
+<blockquote>
+<p>An identifier for each barcode within a pool.  If this field is
+absent, a value of {RUN_PREFIX}_{BARCODE} is derived automatically.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">F0FN7DX01_AGCTAGCT</span></tt></p>
+<p><em>Output</em>: Used as the <em>read_group_tag</em> attribute of a &lt;BASECALL&gt;
+element, and of a &lt;READ_LABEL&gt; element, in the SRA Experiment XML
+file.</p>
+</blockquote>
+<p>LINKER (optional)</p>
+<blockquote>
+<p>Linker sequence between the primer and the barcode (to reduce
+differences in hybridization based on the barcode).  This field may
+be empty or absent.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">GGCCAG</span></tt></p>
+<p><em>Output</em>: Used as the text of a &lt;BASECALL&gt; element in the SRA
+Experiment XML file.</p>
+</blockquote>
+<p>PRIMER (optional)</p>
+<blockquote>
+<p>Primer sequence that was used for this particular library member. If
+you used more than one primer for a given pool member (which is
+allowed) you need to duplicate the whole row with the additional
+primer information. This needs to be the actual sequence of the
+primer, not the name of the primer (i.e. not V2).</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">CTGCTGCCTYCCGTA</span></tt></p>
+<p><em>Output</em>: Used as the text of a &lt;BASECALL&gt; element in the SRA
+Experiment XML file.  It is also used to derive several optional
+fields.</p>
+</blockquote>
+<p>PRIMER_READ_GROUP_TAG (optional, derived automatically)</p>
+<blockquote>
+<p>Read group that samples will be assigned to based on the primer,
+e.g. V2 for the V2 primers. By default, multidimensional
+demultiplexing on the barcode and primer is performed.  If it is not
+present, this field will be derived using a table of standard primer
+read group tags.  If the primer is not found in the table, a
+KeyError is raised.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">V1-V3</span></tt></p>
+<p><em>Output</em>: Used as the <em>read_group_tag</em> attribute of a &lt;BASECALL&gt;
+element, and of a &lt;READ_LABEL&gt; element, in the SRA Experiment XML
+file.</p>
+</blockquote>
+<p>LIBRARY_STRATEGY (optional, default value provided automatically)</p>
+<blockquote>
+<p>Sequencing technique intended for this library (optional
+field). This will usually be <tt class="docutils literal"><span class="pre">AMPLICON</span></tt> (default) or
+<tt class="docutils literal"><span class="pre">METAGENOMIC</span></tt>.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">AMPLICON</span></tt></p>
+<p><em>Output</em>: Used as the text of the &lt;LIBRARY_STRATEGY&gt; element in the
+SRA Experiment XML file.</p>
+</blockquote>
+<p>LIBRARY_SOURCE (optional, default value provided automatically)</p>
+<blockquote>
+<p>Type of source material that is being sequenced (optional
+field). This will usually be <tt class="docutils literal"><span class="pre">GENOMIC</span></tt> (default) or
+<tt class="docutils literal"><span class="pre">METAGENOMIC</span></tt>.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">GENOMIC</span></tt></p>
+<p><em>Output</em>: Used as the text of the &lt;LIBRARY_SOURCE&gt; element in the
+SRA Experiment XML file.</p>
+</blockquote>
+<p>LIBRARY_SELECTION (optional, default value provided automatically)</p>
+<blockquote>
+<p>Whether any method was used to select and/or enrich the material
+being sequenced (optional field). This is used in cases where
+e.g. the cells were sorted, if PCR was used to make a specific
+amplicon, if fractionation for viruses was done, etc.  The default
+value is <tt class="docutils literal"><span class="pre">PCR</span></tt>.</p>
+<p><em>Example</em>: <tt class="docutils literal"><span class="pre">PCR</span></tt></p>
+<p><em>Output</em>: Used as the text of the &lt;LIBRARY_SELECTION&gt; element in the
+SRA Experiment XML file.</p>
+</blockquote>
+<p>RUN_ACCESSION (optional, currently unused)</p>
+<blockquote>
+Optional accession number for the run.  Leave blank or omit this
+field if not already assigned.</blockquote>
+<p>EXPERIMENT_ACCESSION (optional, currently unused)</p>
+<blockquote>
+Optional accession number for the experiment.  If you already
+created the Experiment accession in SRA, use it &#8211; otherwise, omit
+this field or leave it blank.</blockquote>
+<p>RUN_DATE (optional, currently unused)</p>
+<blockquote>
+Date the run was performed: this can be obtained from the sff file.</blockquote>
+<p>INSTRUMENT_NAME (optional, currently unused)</p>
+<blockquote>
+This field is used if the specific machine used has a name or label
+(i.e. a label on that specific piece of equipment, not the type of
+instrument). Some sequencing centers assign names to specific
+instruments.&#8221;</blockquote>
+<p>SAMPLE_ACCESSION (<strong>DEPRECATED</strong>)</p>
+<blockquote>
+Please use DEFAULT_SAMPLE_ACCESSION instead.  If the new field is
+blank or absent, this valie is used.  This field will continue to
+work, but will produce a warning.</blockquote>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">SRA Field List</a><ul>
+<li><a class="reference external" href="#submission-input-file">Submission Input File</a></li>
+<li><a class="reference external" href="#study-input-file">Study Input File</a></li>
+<li><a class="reference external" href="#sample-input-file">Sample Input File</a></li>
+<li><a class="reference external" href="#experiment-input-file">Experiment Input File</a></li>
+</ul>
+</li>
+</ul>
+
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://pycogent.sourceforge.net" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+      &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

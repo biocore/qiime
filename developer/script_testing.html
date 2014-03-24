@@ -1,0 +1,232 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Automated script testing &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.8.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="automated-script-testing">
+<h1>Automated script testing<a class="headerlink" href="#automated-script-testing" title="Permalink to this headline">¶</a></h1>
+<p>QIIME is well-tested: we make automated software testing a high priority, as you can see by reviewing the <tt class="docutils literal"><span class="pre">Qiime/tests/</span></tt> directory <a class="reference external" href="https://github.com/qiime/qiime/tree/master/tests">here</a>. After installing QIIME, users can run the automated test suite by changing to the <tt class="docutils literal"><span class="pre">Qiime/tests</span></tt> directory and running:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">all_tests</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>These tests are additionally run on a nightly basis, and developers are alerted to test failures.</p>
+<p>One limitation of our testing strategy in QIIME however has been that it doesn&#8217;t test the script interfaces, which are the primary point of interaction with users. So, for example, if script looks something like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">qiime.filter</span> <span class="kn">import</span> <span class="n">filter_samples_from_otu_table</span>
+<span class="kn">from</span> <span class="nn">qiime.filter</span> <span class="kn">import</span> <span class="n">filter_otus_from_otu_table</span>
+
+<span class="o">...</span>
+
+<span class="k">if</span> <span class="n">run_mode</span> <span class="o">==</span> <span class="s">&#39;filter_samples&#39;</span><span class="p">:</span>
+        <span class="n">filter_samples_from_otu_table</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="k">elif</span> <span class="n">run_mode</span> <span class="o">==</span> <span class="s">&#39;filter_otus&#39;</span><span class="p">:</span>
+        <span class="n">filter_otus_from_otu_table</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">,</span> <span class="s">&quot;Unknown run_mode.&quot;</span>
+</pre></div>
+</div>
+<p>and a developer accidentally removes the <tt class="docutils literal"><span class="pre">from</span> <span class="pre">qiime.filter</span> <span class="pre">import</span> <span class="pre">filter_otus_from_otu_table</span></tt> line but only tests with <tt class="docutils literal"><span class="pre">run_mode</span> <span class="pre">==</span> <span class="pre">'filter_samples'</span></tt>, we may not catch the error before release of the software. These types of errors generally result in cryptic error messages, which frustrates users and increases our technical support load. As powerful as the underlying code may be, this simple, common mistake makes it useless to the end user.</p>
+<p>To detect these types of errors, we&#8217;ve developed a script interface testing framework that makes use of the <tt class="docutils literal"><span class="pre">usage_examples</span></tt> in the <tt class="docutils literal"><span class="pre">script_info</span></tt> object that is implemented by all scripts. This framework relies on a set of example files that can be used with QIIME, as well as a script for running the script usage tests. This is all contained in the <tt class="docutils literal"><span class="pre">qiime_test_data</span></tt> directory in the QIIME repository.</p>
+<p>The following sections first illustrate how to apply this testing framework locally, and then how to develop QIIME scripts so they can be used with this framework.</p>
+<div class="section" id="running-script-usage-tests">
+<h2>Running script usage tests<a class="headerlink" href="#running-script-usage-tests" title="Permalink to this headline">¶</a></h2>
+<p>After obtaining the <tt class="docutils literal"><span class="pre">qiime</span></tt> repository, you can <tt class="docutils literal"><span class="pre">cd</span></tt> to <tt class="docutils literal"><span class="pre">qiime/tests</span></tt> directory. You&#8217;ll see a script called <tt class="docutils literal"><span class="pre">all_tests.py</span></tt>. You can run this from the <tt class="docutils literal"><span class="pre">qiime_test_data</span></tt> directory by calling:</p>
+<div class="highlight-python"><pre>./all_tests.py --suppress_unit_tests</pre>
+</div>
+<p>This will run all of the tests which are currently defined in verbose mode. You can run specific tests by passing the names of those tests via the <tt class="docutils literal"><span class="pre">--script_usage_tests</span></tt> parameter. For example, to run only the tests for <tt class="docutils literal"><span class="pre">add_qiime_labels.py</span></tt> and <tt class="docutils literal"><span class="pre">make_otu_table.py</span></tt> you can run the following:</p>
+<div class="highlight-python"><pre>./all_tests.py --suppress_unit_tests --script_usage_tests add_qiime_labels,make_otu_table</pre>
+</div>
+<p>These tests will print output to the screen.</p>
+<p>The recommended way of testing QIIME is to run QIIME&#8217;s unit tests and script usage tests. You can do this simply by running:</p>
+<div class="highlight-python"><pre>./all_tests.py</pre>
+</div>
+</div>
+<div class="section" id="how-the-script-usage-tests-work">
+<h2>How the script usage tests work<a class="headerlink" href="#how-the-script-usage-tests-work" title="Permalink to this headline">¶</a></h2>
+<p>You&#8217;ll see many sub-directories in <tt class="docutils literal"><span class="pre">qiime_test_data</span></tt> with names corresponding to the names of QIIME scripts. Each of these directories contains example input and output for the corresponding QIIME script. For example, the <tt class="docutils literal"><span class="pre">make_otu_table</span></tt> directory contains the following test data for <tt class="docutils literal"><span class="pre">make_otu_table.py</span></tt>:</p>
+<div class="highlight-python"><pre>ls make_otu_table/
+chimeric_seqs.txt                       otu_table.biom                          otu_table_non_chimeric.biom             tax_assignments.txt
+otu_map.txt                             otu_table_no_pynast_failures.biom       pynast_failures.fna</pre>
+</div>
+<p>If you call <tt class="docutils literal"><span class="pre">make_otu_table.py</span> <span class="pre">-h</span></tt>, you&#8217;ll see the following usage examples:</p>
+<div class="highlight-python"><pre>Example usage:
+Print help message and exit
+ make_otu_table.py -h
+
+Make OTU table: Make an OTU table from an OTU map (i.e., result from pick_otus.py) and a taxonomy assignment file (i.e., result from assign_taxonomy.py). Write the output file to otu_table.biom.
+ make_otu_table.py -i otu_map.txt -t tax_assignments.txt -o otu_table.biom
+
+Make OTU table, excluding OTU ids listed in a fasta file: Make an OTU table, excluding the sequences listed in pynast_failures.fna. Note that the file pass as -e must end with either '.fasta' or '.fna'.
+ make_otu_table.py -i otu_map.txt -o otu_table_no_pynast_failures.biom -e pynast_failures.fna
+
+Make OTU table, excluding a list of OTU ids: Make an OTU table, excluding the sequences listed in chimeric_seqs.txt
+ make_otu_table.py -i otu_map.txt -o otu_table_non_chimeric.biom -e chimeric_seqs.txt</pre>
+</div>
+<p>What you&#8217;ll notice is that the usage example input and output files correspond to the files in <tt class="docutils literal"><span class="pre">qiime/qiime_test_data/make_otu_table</span></tt>. The script interface testing works by copying all of the files in <tt class="docutils literal"><span class="pre">make_otu_table</span></tt> to a temporary directory, changing into that directory, running each of the usage examples, and confirming that the script exited successfully (i.e., with an exit status of <tt class="docutils literal"><span class="pre">0</span></tt>).</p>
+<blockquote>
+<div><div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Currently the script usage tests only test whether a script exits successfully: they do not check whether the results correspond to the example output. The reasoning is that that would duplicate the functionality of the unit tests (which isn&#8217;t a bad thing, except that implementing this would be a lot of work). These are tests that the interfaces themselves are working.</p>
+</div>
+</div></blockquote>
+<p>If you don&#8217;t see a directory corresponding to a script name in the <tt class="docutils literal"><span class="pre">qiime_test_data</span></tt> directory, that means that a script interface test has not been defined for the given script. We&#8217;re currently working on extending this framework to cover all QIIME scripts.</p>
+</div>
+<div class="section" id="adding-script-interface-testing-for-new-scripts">
+<h2>Adding script interface testing for new scripts<a class="headerlink" href="#adding-script-interface-testing-for-new-scripts" title="Permalink to this headline">¶</a></h2>
+<p>Adding new script interface tests is easy. All you do is create a new test directory in <tt class="docutils literal"><span class="pre">qiime_test_data</span></tt>, where the name of the directory corresponds to the script&#8217;s name. For example, if you&#8217;re adding tests for <tt class="docutils literal"><span class="pre">my_script.py</span></tt>, you&#8217;d add a directory called <tt class="docutils literal"><span class="pre">my_script</span></tt>. In that directory you would create example input and output files for all of the script usage examples that are defined in your script. Make several usage examples that make use of different paths through your script.</p>
+<div class="section" id="full-paths">
+<h3>Full paths<a class="headerlink" href="#full-paths" title="Permalink to this headline">¶</a></h3>
+<p>We recommend specifying full paths for many of QIIME scripts, and importantly for workflow and parallel scripts. To do this in your usage example, replace the full path with $PWD. For example (from <tt class="docutils literal"><span class="pre">pick_de_novo_otus.py</span></tt>):</p>
+<div class="highlight-python"><pre>Simple example: The following command will start an analysis on seqs.fna (-i), which is a
+post-split_libraries fasta file. The sequence identifiers in this file should be of the form
+&lt;sample_id&gt;_&lt;unique_seq_id&gt;. The following steps, corresponding to the preliminary data
+preparation, are applied: Pick de novo OTUs at 97%; pick a representative sequence for each
+OTU (the OTU centroid sequence); align the representative set with PyNAST; assign taxonomy
+with the uclust consensus taxonomy assigner; filter the alignment prior to tree building - remove positions which
+are all gaps, and specified as 0 in the lanemask; build a phylogenetic tree with FastTree;
+build an OTU table. All output files will be written to the directory specified by -o, and
+subdirectories as appropriate. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented
+here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).
+ pick_de_novo_otus.py -i $PWD/seqs.fna -o $PWD/otus/</pre>
+</div>
+</div>
+<div class="section" id="cleaning-up-output-files">
+<h3>Cleaning up output files<a class="headerlink" href="#cleaning-up-output-files" title="Permalink to this headline">¶</a></h3>
+<p>Some scripts require that the user-specified output directory does not exist when the script runs, but we provide example output in the test directory. To automatically remove output directories prior to running the tests, add the <tt class="docutils literal"><span class="pre">script_usage_output_to_remove</span></tt> entry to your script info. For example, from <tt class="docutils literal"><span class="pre">pick_de_novo_otus.py</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">script_info</span><span class="p">[</span><span class="s">&#39;script_usage_output_to_remove&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;$PWD/otus/&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Automated script testing</a><ul>
+<li><a class="reference internal" href="#running-script-usage-tests">Running script usage tests</a></li>
+<li><a class="reference internal" href="#how-the-script-usage-tests-work">How the script usage tests work</a></li>
+<li><a class="reference internal" href="#adding-script-interface-testing-for-new-scripts">Adding script interface testing for new scripts</a><ul>
+<li><a class="reference internal" href="#full-paths">Full paths</a></li>
+<li><a class="reference internal" href="#cleaning-up-output-files">Cleaning up output files</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

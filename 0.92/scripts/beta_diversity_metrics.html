@@ -1,0 +1,165 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>beta_diversity_metrics – List of available metrics &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="Scripts - Analyses and Parameters" href="../doc_script_index.html" />
+    <link rel="next" title="beta_diversity.py – Calculate beta diversity (pairwise sample dissimilarity) on one or many otu tables" href="beta_diversity.html" />
+    <link rel="prev" title="parallel_alpha_diversity.py – Parallel alpha diversity" href="parallel_alpha_diversity.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;">
+	<p style="font-size:12pt;padding: 5px;"><b>News and Announcements &raquo;</b>
+<script type="text/javascript" src="http://app.feed.informer.com/digest3/U9OLMKHF9N.js"><noscript><a href="http://app.feed.informer.com/digest3/U9OLMKHF9N.html">Click for &quot;QIIME&quot;.</a> Powered by <a href="http://feed.informer.com/">RSS Feed Informer</a></noscript></script></p>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="beta_diversity.html" title="beta_diversity.py – Calculate beta diversity (pairwise sample dissimilarity) on one or many otu tables"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="parallel_alpha_diversity.html" title="parallel_alpha_diversity.py – Parallel alpha diversity"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation.html" >QIIME Documentation</a> &raquo;</li>
+          <li><a href="../doc_script_index.html" accesskey="U">Scripts - Analyses and Parameters</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="beta-diversity-metrics-list-of-available-metrics">
+<span id="index-11"></span><h1><em>beta_diversity_metrics</em> &#8211; List of available metrics<a class="headerlink" href="#beta-diversity-metrics-list-of-available-metrics" title="Permalink to this headline">¶</a></h1>
+<p><em>Non-phylogenetic beta diversity metrics.</em> These are count based metrics which is based on the OTU table:</p>
+<blockquote>
+<ul class="simple">
+<li>binary_dist_chisq: Binary chi-square distance</li>
+<li>binary_dist_chord: Binary chord distance</li>
+<li>binary_dist_euclidean: Binary euclidean distance</li>
+<li>binary_dist_hamming: Binary Hamming distance (binary Manhattan distance)</li>
+<li>binary_dist_jaccard: Binary Jaccard distance (binary Soergel distance)</li>
+<li>binary_dist_lennon: Binary Lennon distance</li>
+<li>binary_dist_ochiai: Binary Ochiai distance</li>
+<li>binary_dist_pearson: Binary Pearson distance</li>
+<li>binary_dist_sorensen_dice: Binary Sörensen-Dice distance (binary Bray-Curtis distance or binary Whittaker distance)</li>
+<li>dist_bray_curtis: Bray-Curtis distance (normalized Manhattan distance)</li>
+<li>dist_canberra: Canberra distance</li>
+<li>dist_chisq: Chi-square distance</li>
+<li>dist_chord: Chord distance</li>
+<li>dist_euclidean: Euclidean distance</li>
+<li>dist_gower: Gower distance</li>
+<li>dist_hellinger: Hellinger distance</li>
+<li>dist_kulczynski: Kulczynski distance</li>
+<li>dist_manhattan: Manhattan distance</li>
+<li>dist_morisita_horn: Morisita-Horn distance</li>
+<li>dist_pearson: Pearson distance</li>
+<li>dist_soergel: Soergel distance</li>
+<li>dist_spearman_approx: Spearman rank distance</li>
+<li>dist_specprof: Species profile distance</li>
+</ul>
+</blockquote>
+<p><em>Phylogenetic beta diversity metrics.</em> These metrics are based on UniFrac, which takes into account the evolutionary relationship between sequences:</p>
+<blockquote>
+<ul class="simple">
+<li>dist_unifrac_G: The G metric calculates the fraction branch length in the sample i + sample j tree that is exclusive to sample i and it is asymmetric.</li>
+<li>dist_unifrac_G_full_tree: The full_tree version calculates the fraction of branch length in the full tree that is exclusive to sample i and it is asymmetric.</li>
+<li>dist_unweighted_unifrac: This is the standard unweighted UniFrac, which is used to assess &#8216;who&#8217;s there&#8217; without taking in account the relative abundance of identical sequences.</li>
+<li>dist_unweighted_unifrac_full_tree: Typically, when computing the dissimilarity between two samples, unifrac considers only the parts of the phylogenetic tree contained by otus in either sample. The full_tree modification considers the entire supplied tree.</li>
+<li>dist_weighted_normalized_unifrac: Weighted UniFrac with normalized values and is used to include abundance information. The normalization adjusts for varying root-to-tip distances.</li>
+<li>dist_weighted_unifrac: Weighted UniFrac.</li>
+</ul>
+</blockquote>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="parallel_alpha_diversity.html"
+                                  title="previous chapter"><em>parallel_alpha_diversity.py</em> &#8211; Parallel alpha diversity</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="beta_diversity.html"
+                                  title="next chapter"><em>beta_diversity.py</em> &#8211; Calculate beta diversity (pairwise sample dissimilarity) on one or many otu tables</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/scripts/beta_diversity_metrics.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="beta_diversity.html" title="beta_diversity.py – Calculate beta diversity (pairwise sample dissimilarity) on one or many otu tables"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="parallel_alpha_diversity.html" title="parallel_alpha_diversity.py – Parallel alpha diversity"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation.html" >QIIME Documentation</a> &raquo;</li>
+          <li><a href="../doc_script_index.html" >Scripts - Analyses and Parameters</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+  </body>
+</html>

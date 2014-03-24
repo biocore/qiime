@@ -1,0 +1,175 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>make_otu_heatmap_html.py – Make heatmap of OTU table &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.6.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="make-otu-heatmap-html"></span><div class="section" id="make-otu-heatmap-html-py-make-heatmap-of-otu-table">
+<span id="index-0"></span><h1><em>make_otu_heatmap_html.py</em> &#8211; Make heatmap of OTU table<a class="headerlink" href="#make-otu-heatmap-html-py-make-heatmap-of-otu-table" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>Create an interactive OTU heatmap from an OTU table. This script parses the OTU count table and filters the table by counts per otu (user-specified), then converts the table into a javascript array, which can be loaded into a web application. The OTU heatmap displays raw OTU counts per sample, where the counts are colored based on the contribution of each OTU to the total OTU count present in that sample (blue: contributes low percentage of OTUs to sample; red: contributes high percentage of OTUs). This web application allows the user to filter the otu table by number of counts per otu. The user also has the ability to view the table based on taxonomy assignment. Additional features include: the ability to drag rows (up and down) by clicking and dragging on the row headers; and the ability to zoom in on parts of the heatmap by clicking on the counts within the heatmap.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">make_otu_heatmap_html.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-otu_table_fp</dt>
+<dd>Path to the input OTU table (i.e., the output from <a class="reference external" href="./make_otu_table.html">make_otu_table.py</a>)</dd>
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>Path to the output directory</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-n, <cite>-</cite>-num_otu_hits</dt>
+<dd>Only include OTUs with at least this many sequences. [default: 5]</dd>
+<dt>-t, <cite>-</cite>-tree</dt>
+<dd>Path to newick tree where OTUs are tips, used for sorting OTUs in the heatmap</dd>
+<dt>-m, <cite>-</cite>-map_fname</dt>
+<dd>Input metadata mapping filepath, used for sorting samples in the heatmap</dd>
+<dt><cite>-</cite>-sample_tree</dt>
+<dd>Path to newick tree where samples are tips (e.g, output from <a class="reference external" href="./upgma_cluster.html">upgma_cluster.py</a>) used for sorting samples in the heatmap. If both this and the metadata mapping file are provided, the mapping file will be ignored.</dd>
+<dt><cite>-</cite>-log_transform</dt>
+<dd>Log-transform the data. All zeros will be set to a small value (default is 1/2 of the smallest non-zero entry). Data will be translated to be non-negative after log transform and the num_otu_hits will be set to 0.</dd>
+<dt><cite>-</cite>-log_eps</dt>
+<dd>Small value to replace zeros when performing log transformation. [default: 1/2 the smallest non-zero entry].</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>The interactive heatmap is located in OUTPUT_DIR/otu_table.html where OUTPUT_DIR is specified as -o. Safari is recommended for viewing the OTU Heatmap, since the HTML table generation is much faster than Firefox (as of this writing).</p>
+<p><strong>Generate an OTU heatmap:</strong></p>
+<p>By using the default values (&#8220;-n 5), you can then use the code as follows:</p>
+<div class="highlight-python"><pre>make_otu_heatmap_html.py -i otu_table.biom -o heatmap/</pre>
+</div>
+<p><strong>Generate a filtered OTU heatmap:</strong></p>
+<p>If you would like to filter the OTU table by a different number of counts per OTU (i.e., 10):</p>
+<div class="highlight-python"><pre>make_otu_heatmap_html.py -i otu_table.biom -n 10 -o heatmap_mc10/</pre>
+</div>
+<p><strong>Generate a sample-sorted OTU heatmap:</strong></p>
+<p>If you would like to sort the heatmap by Sample IDs then you should supply the mapping file, as follows:</p>
+<div class="highlight-python"><pre>make_otu_heatmap_html.py -i otu_table.biom -o heatmap_sample_sorted -m Fasting_Map.txt</pre>
+</div>
+<p><strong>Generate a sample and OTU-sorted OTU heatmap:</strong></p>
+<p>If you would like to sort the heatmap by Sample IDs and the tips in the tree, you can supply a tree as follows:</p>
+<div class="highlight-python"><pre>make_otu_heatmap_html.py -i otu_table.biom -o heatmap_sample_otu_sorted -m Fasting_Map.txt -t rep_set.tre</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2012, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

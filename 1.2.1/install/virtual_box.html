@@ -1,0 +1,231 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>QIIME Virtual Box &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.2.1-dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="qiime-virtual-box">
+<span id="virtual-box"></span><h1>QIIME Virtual Box<a class="headerlink" href="#qiime-virtual-box" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="what-is-the-qiime-virtual-box">
+<h2>What is the QIIME Virtual Box?<a class="headerlink" href="#what-is-the-qiime-virtual-box" title="Permalink to this headline">¶</a></h2>
+<p>Because of the &#8216;pipeline&#8217; nature of QIIME, there are many external dependencies and installation can therefore be a challenge. The QIIME Virtual Box should get around that problem, and is a fully functional environment for analyzing microbial community surveys and visualizing results.</p>
+<p>The QIIME Virtual Box is a virtual machine based on Ubuntu Linux which comes pre-packaged with QIIME&#8217;s dependencies. This is the fastest way to get up-and-running with QIIME, and is useful for small analyses (approximately up to a full 454 run); and testing QIIME to determine if it meets your needs before investing time in installing it, for example, in your cluster environment.</p>
+</div>
+<div class="section" id="installing-the-qiime-virtual-box">
+<h2>Installing the QIIME Virtual Box<a class="headerlink" href="#installing-the-qiime-virtual-box" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li>Download and install the <a class="reference external" href="http://www.virtualbox.org/wiki/Downloads">VirtualBox</a> (VB) version for your machine.</li>
+<li>Download the <a class="reference external" href="http://bmf.colorado.edu/QIIME/QIIME-1.2.1-amd64.vdi.gz">64-bit QIIME Virtual Box</a>. This file is large so it may take between a few minutes and a few hours depending on your Internet connection speed. You will need to unzip this file, which you can typically do by double-clicking on it.</li>
+<li>Create a new virtual machine:</li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li>Launch VirtualBox, and create a new machine (press the New button).</li>
+<li>A new window will show up. Click &#8216;Next&#8217;.</li>
+<li>In this screen type QIIME as the name for the virtual machine. Then select Linux as the Operating System, and Ubuntu (64 bit) as the version. Click Next.</li>
+<li>Select the amount of RAM (memory). You will need at least 1024MB, but the best option is based on your machine. After selecting the amount of RAM, click Next.</li>
+<li>Select &#8220;Use existing hard drive&#8221;, and click the folder icon next to the selector (it has a green up arrow). In the new window click &#8216;Add&#8217;, and locate the virtual hard drive that was downloaded in step 2. Click Select and then click Next.</li>
+<li>In the new window click Finish.</li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="4">
+<li>Double click on the new virtual machine created &#8211; it will be called QIIME &#8211; to boot it for the first time.</li>
+<li>Review any messages that are shown, and select whatever options are best for you.</li>
+<li>When your new virtual machine boots, you will see a folder on the Desktop called &#8216;Before_you_start&#8217;. Double click on that folder to open it, and then double click on the &#8216;Welcome&#8217; file in that folder. This will get you started with using your QIIME virtual box.</li>
+</ol>
+</div>
+<div class="section" id="upgrading-from-previous-versions-of-the-qiime-virtual-box">
+<h2>Upgrading from previous versions of the QIIME Virtual Box<a class="headerlink" href="#upgrading-from-previous-versions-of-the-qiime-virtual-box" title="Permalink to this headline">¶</a></h2>
+<p>A QIIME upgrade/deploy script is provided for existing 64-bit Virtual Box users to upgrade to the latest version of QIIME without having to reinstall the QIIME VB. To upgrade your VB follow these steps, launch your existing QIIME VB, open a terminal, and run the following commands:</p>
+<div class="highlight-python"><pre>wget http://bmf.colorado.edu/QIIME/qiime_deploy.tgz
+tar zxvf qiime_deploy.tgz
+cd qiime_deploy
+./update.sh
+exit</pre>
+</div>
+<p>Then open a new terminal, and to confirm that you are now running the latest version of Qiime run:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">print_qiime_config</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">t</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="qiime-vb-and-clovr">
+<h2>QIIME VB and CloVR<a class="headerlink" href="#qiime-vb-and-clovr" title="Permalink to this headline">¶</a></h2>
+<p>As of the QIIME 1.2.0 release, the QIIME VB and EC2 images are built using <a class="reference external" href="http://clovr.org">CloVR</a>.  CloVR provides a platform for building portable virtual machines. The platform automates builds in formats compatible with VirtualBox, VMware, and Clouds, including Amazon EC2.  The <a class="reference external" href="http://clovr.org/developers">CloVR developer</a> pages have more information on the platform and build process.</p>
+</div>
+<div class="section" id="limitations-of-the-qiime-virtual-box">
+<h2>Limitations of the QIIME Virtual Box<a class="headerlink" href="#limitations-of-the-qiime-virtual-box" title="Permalink to this headline">¶</a></h2>
+<p>Due to licensing restrictions, we cannot package Roche&#8217;s <tt class="docutils literal"><span class="pre">sff</span> <span class="pre">tools</span></tt> with the QIIME Virtual Box. These must be obtained from Roche/454. When you run QIIME&#8217;s <tt class="docutils literal"><span class="pre">tests/all_tests.py</span></tt> script, you will therefore get failures associated with the wrapper for <tt class="docutils literal"><span class="pre">sff</span> <span class="pre">tools</span></tt> which look like:</p>
+<div class="highlight-python"><pre>Failed the following unit tests, in part or whole due to missing external applications.
+Depending on the QIIME features you plan to use, this may not be critical.
+/home/qiime/Qiime/tests/test_process_sff.py</pre>
+</div>
+<p>You can safely ignore these as QIIME contains built-in tools for parsing sff files. The QIIME sff tools are about 10x slower than Roche&#8217;s version however, so if you have a copy of Roche&#8217;s sff tools you may want to install those in the VB.</p>
+</div>
+<div class="section" id="support-for-the-32-bit-qiime-virtual-box-is-discontinued">
+<h2>Support for the 32-bit QIIME Virtual Box is discontinued<a class="headerlink" href="#support-for-the-32-bit-qiime-virtual-box-is-discontinued" title="Permalink to this headline">¶</a></h2>
+<p>As of Qiime 1.2.0, we no longer build and distribute the 32 bit Virtual Box. The majority of our users work on 64 bit platforms, and supporting multiple versions has become too time-consuming. We apologize for the inconvenience. If upgrading to a 64-bit system is not an option for you, you might want to look into the <a class="reference external" href="./vm_ec2.html">QIIME EC image</a>.</p>
+<p>If you don&#8217;t know whether your machine is 32 or 64 bit, go through the following steps.</p>
+<blockquote>
+<div><ul class="simple">
+<li>Launch VirtualBox, and create a new machine (press the New button).</li>
+<li>A new window will show up. Click &#8216;Next&#8217;.</li>
+<li>In the new window, select Linux as the Operating System. You then have the option to choose a version. If you have the option to choose &#8216;Ubuntu (64 bit)&#8217; as a version, your system can support a 64-bit Virtual Box. If you do not see the option &#8216;Ubuntu (64 bit)&#8217;, your system is 32-bit and you will need to upgrade to a new system before you can run QIIME.</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="error-when-starting-the-64-bit-qiime-virtual-box-on-windows">
+<h3>Error when starting the 64-bit QIIME Virtual Box on Windows<a class="headerlink" href="#error-when-starting-the-64-bit-qiime-virtual-box-on-windows" title="Permalink to this headline">¶</a></h3>
+<p>If you see the following error message when starting the 64-bit QIIME Virtual Box on Windows, follow the instructions below.</p>
+<div class="highlight-python"><pre>Hardware acceleration has been enabled but is not operational. Your 64-bit guest will fail to detect a 64-bit CPU and will not be able to boot.</pre>
+</div>
+<p>By default VT (virtualization technology) comes disabled in Windows. HP has nice instructions on how to fix this, so we point users to those instructions.</p>
+<p>Enabling virtualization in the BIOS</p>
+<ol class="arabic simple">
+<li>Shut down the computer and turn it back on. Repeatedly press esc key at startup.</li>
+<li>Press the F10 key for BIOS Setup.</li>
+<li>Press the right arrow key to System Configuration, select Virtualization Technology and then press the enter key.</li>
+<li>Select Enabled and press the enter key.</li>
+<li>Press the F10 key and select Yes and press the enter key to save changes.</li>
+</ol>
+<p>The computer automatically restarts. If you cannot enable Virtualization Technology on in your BIOS, check if your BIOS needs to be updated.</p>
+<p>These instructions were extracted directly from HPs website <a class="reference external" href="http://h10025.www1.hp.com/ewfrf/wc/document?docname=c01959244&amp;cc=us&amp;lc=en&amp;dlc=en&amp;product=3744198">here</a>.</p>
+<p>If this doesn&#8217;t work, you might need to instead hit F9 to enter the BIOS. See this forum discussion <a class="reference external" href="http://forums11.itrc.hp.com/service/forums/questionanswer.do?admit=109447626+1279028363362+28353475&amp;threadId=1120296">here</a>.</p>
+<p>Briefly, on booting the system, hit F9. Enter Advanced Options -&gt; Processor Options -&gt; Intel(R) Virtualization Technology and then hit Enable.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">QIIME Virtual Box</a><ul>
+<li><a class="reference internal" href="#what-is-the-qiime-virtual-box">What is the QIIME Virtual Box?</a></li>
+<li><a class="reference internal" href="#installing-the-qiime-virtual-box">Installing the QIIME Virtual Box</a></li>
+<li><a class="reference internal" href="#upgrading-from-previous-versions-of-the-qiime-virtual-box">Upgrading from previous versions of the QIIME Virtual Box</a></li>
+<li><a class="reference internal" href="#qiime-vb-and-clovr">QIIME VB and CloVR</a></li>
+<li><a class="reference internal" href="#limitations-of-the-qiime-virtual-box">Limitations of the QIIME Virtual Box</a></li>
+<li><a class="reference internal" href="#support-for-the-32-bit-qiime-virtual-box-is-discontinued">Support for the 32-bit QIIME Virtual Box is discontinued</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a><ul>
+<li><a class="reference internal" href="#error-when-starting-the-64-bit-qiime-virtual-box-on-windows">Error when starting the 64-bit QIIME Virtual Box on Windows</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://pycogent.sourceforge.net" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

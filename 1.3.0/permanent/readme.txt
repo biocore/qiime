@@ -1,0 +1,1 @@
+Files in this directory are linked externally. Do not move this directory when updating the website for new releases.

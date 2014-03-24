@@ -1,0 +1,299 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Working with QIIME on Amazon Web Services EC2 &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.6.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="working-with-qiime-on-amazon-web-services-ec2">
+<span id="working-with-ec2"></span><h1>Working with QIIME on Amazon Web Services EC2<a class="headerlink" href="#working-with-qiime-on-amazon-web-services-ec2" title="Permalink to this headline">¶</a></h1>
+<p>This document covers general steps in working with QIIME on Amazon Web Services (AWS). You&#8217;ll need your own AWS account to do this, and will need the AMI ID of the QIIME image that you want to run. You can find the latest QIIME AMI id on the <a class="reference external" href="http://qiime.org/home_static/dataFiles.html">QIIME resources page</a>. These steps are also covered in the <a class="reference external" href="http://www.youtube.com/watch?v=PEcSL_7D-jo">QIIME EC2 video</a>.</p>
+<div class="section" id="starting-an-ec2-instance">
+<h2>Starting an EC2 instance<a class="headerlink" href="#starting-an-ec2-instance" title="Permalink to this headline">¶</a></h2>
+<p>To launch the QIIME EC2 image on the Amazon Cloud you will first need an AWS account. Create one on the <a class="reference external" href="http://aws.amazon.com/">AWS</a> site if you don&#8217;t already have one. To get started with using AWS, check out their documentation on the <a class="reference external" href="http://aws.amazon.com/console/">AWS console</a> page. You can load the QIIME EC2 image from the <a class="reference external" href="http://aws.amazon.com/console/">AWS console</a> by searching for the AMI ID listed on the <a class="reference external" href="http://qiime.org/home_static/dataFiles.html">QIIME resources page</a>.</p>
+<p><strong>Important</strong>: To use QIIME, you&#8217;ll need to have ssh access to your instance. You&#8217;ll set this up in the <tt class="docutils literal"><span class="pre">Configure</span> <span class="pre">Firewall</span></tt> step of launching the instance. You&#8217;ll need to choose <tt class="docutils literal"><span class="pre">Create</span> <span class="pre">new</span> <span class="pre">security</span> <span class="pre">group</span></tt>. Create a <tt class="docutils literal"><span class="pre">Group</span> <span class="pre">Name</span></tt> and <tt class="docutils literal"><span class="pre">Group</span> <span class="pre">Description</span></tt> (e.g., <tt class="docutils literal"><span class="pre">qiime-ssh</span></tt> for both), and then choose <tt class="docutils literal"><span class="pre">SSH</span></tt> from the <tt class="docutils literal"><span class="pre">Create</span> <span class="pre">a</span> <span class="pre">new</span> <span class="pre">rule</span></tt> drop down box. Click <tt class="docutils literal"><span class="pre">Add</span> <span class="pre">Rule</span></tt> and then <tt class="docutils literal"><span class="pre">Continue</span></tt>.</p>
+</div>
+<div class="section" id="connecting-to-your-ec2-instance-using-ssh">
+<h2>Connecting to your EC2 instance using ssh<a class="headerlink" href="#connecting-to-your-ec2-instance-using-ssh" title="Permalink to this headline">¶</a></h2>
+<p>To connect to your EC2 instance with ssh you&#8217;ll need your key file, the Public DNS entry for your running EC2 instance, and an ssh client. You should have created and downloaded a key file when creating your first EC2 instance. On OS X and Linux, be sure that the permissions are set to <tt class="docutils literal"><span class="pre">400</span></tt> on this file, or you won&#8217;t be able to use it. If your key file is called <tt class="docutils literal"><span class="pre">/home/qiime/my_key.pem</span></tt> you can set the permissions with the command:</p>
+<div class="highlight-python"><pre>chmod 400 /home/qiime/my_key.pem</pre>
+</div>
+<p>You obtain the Public DNS entry from EC2 on a per instantiation basis - every time you Launch or Start and instance, you&#8217;ll need to get this value again. See Figure 1 for where to find this information.</p>
+<blockquote>
+<div><img alt="../_images/public_dns_entry.png" src="../_images/public_dns_entry.png" style="width: 700px;" />
+<p>Figure 1: Identifying the Public DNS entry.</p>
+</div></blockquote>
+<p>If you&#8217;re working on OS X or Linux, you already have an ssh client installed. If you&#8217;re working on Windows, one free option is <a class="reference external" href="http://www.chiark.greenend.org.uk/~sgtatham/putty/">PuTTY</a>.</p>
+<p>To connect to your running EC2 instance using ssh from Linux or OS X you&#8217;ll use a command like the following:</p>
+<div class="highlight-python"><pre>ssh -i PATH_TO_KEY ubuntu@PUBLIC_DNS_ENTRY</pre>
+</div>
+<p>For example:</p>
+<div class="highlight-python"><pre>ssh -i  ~/my_key.pem ubuntu@ec2-50-19-129-122.compute-1.amazonaws.com</pre>
+</div>
+<p>Go <a class="reference external" href="http://ged.msu.edu/angus/tutorials-2011/logging-into-ec2-windows.html">here for instructions on using PuTTY to connect to your running EC2 instance</a>.</p>
+</div>
+<div class="section" id="getting-data-into-and-out-of-your-qiime-ec2-instance">
+<h2>Getting data into and out of your QIIME EC2 instance<a class="headerlink" href="#getting-data-into-and-out-of-your-qiime-ec2-instance" title="Permalink to this headline">¶</a></h2>
+<p>After you&#8217;ve launched your EC2 instance you&#8217;ll likely want to get data into it. After completing your analysis, you&#8217;ll then want to get your data out. It&#8217;s a good idea to pull your important data back out of your EC2 instance as soon as possible to avoid any issues with losing data if any Amazon systems go down, or if you accidentally terminate your instance.</p>
+<p>You can get data into and out of your running EC2 instance with a graphical tool or via the command line, which ever you find more convenient. Command line tools such as <tt class="docutils literal"><span class="pre">scp</span></tt> and <tt class="docutils literal"><span class="pre">sftp</span></tt> work fine for this. A good, free graphical tool for Windows and OS X is <a class="reference external" href="http://cyberduck.ch/">Cyberduck</a>. This supports interacting with S3 buckets as well as EC2 instances (via sftp).</p>
+<p>You will likely want to compress your files for each transfer. You can do this with the tar/gzip commands, or with a tool like WinZip on Windows. See <a class="reference internal" href="unix_commands.html#unix-commands"><em>Basic Unix/Linux/OS X commands</em></a> for help with these commands.</p>
+<div class="section" id="working-with-command-line-tools">
+<h3>Working with command line tools<a class="headerlink" href="#working-with-command-line-tools" title="Permalink to this headline">¶</a></h3>
+<p>The primary tool for moving data into and out of your EC2 instance is <tt class="docutils literal"><span class="pre">scp</span></tt>.</p>
+<p>To copy data into your EC2 instance you&#8217;ll need to know that path to your key file, and the Public DNS entry for your EC2 instance (see Figure 1 for where to find the public DNS entry).</p>
+<p>Your <tt class="docutils literal"><span class="pre">scp</span></tt> command will look like the following to transfer data into your EC2 instance:</p>
+<div class="highlight-python"><pre>scp -i PATH_TO_KEY PATH_TO_SOURCE_FILE ubuntu@PUBLIC_DNS_ENTRY:PATH_TO_DESTINATION_FILE</pre>
+</div>
+<p>To transfer a file out of your EC2 instance, your command will look like this:</p>
+<div class="highlight-python"><pre>scp -i PATH_TO_KEY ubuntu@PUBLIC_DNS_ENTRY:PATH_TO_SOURCE_FILE PATH_TO_DESTINATION_FILE</pre>
+</div>
+<p>Examples of each are:</p>
+<div class="highlight-python"><pre>scp -i  ~/my_key.pem ubuntu@ec2-50-19-129-122.compute-1.amazonaws.com:~/Fasting_Map.txt ~/code/Qiime/examples/qiime_tutorial/Fasting_Map.txt
+scp -i  ~/my_key.pem ~/code/Qiime/examples/qiime_tutorial/Fasting_Map.txt ubuntu@ec2-50-19-129-122.compute-1.amazonaws.com:~/</pre>
+</div>
+</div>
+<div class="section" id="working-with-cyberduck">
+<h3>Working with Cyberduck<a class="headerlink" href="#working-with-cyberduck" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ol class="arabic">
+<li><p class="first">Download and install <a class="reference external" href="http://cyberduck.ch/">Cyberduck</a>. Installing should be straight-forward on OS X and Windows.</p>
+</li>
+<li><p class="first">Launch Cyberduck by using your normal procedure for launching programs. You should see the Cyberduck window open. A new window or sheet will open.</p>
+</li>
+<li><p class="first">To open a connection to your EC2 instance, click the &#8216;Open Connection&#8217; icon on the top-left. Choose &#8220;SFTP (SSH File Transfer Protocol)&#8221; in the dropdown box (not Amazon Simple Storage Service!). In the <tt class="docutils literal"><span class="pre">Server</span></tt> field, enter the text from the <tt class="docutils literal"><span class="pre">Public</span> <span class="pre">DNS</span></tt> field associated with this instance (see Figure 1 for where to find this information). In the <tt class="docutils literal"><span class="pre">Username</span></tt> field enter <tt class="docutils literal"><span class="pre">ubuntu</span></tt> (exactly as written here). Do not enter a password. Expand the <tt class="docutils literal"><span class="pre">More</span> <span class="pre">Options</span></tt> section in the bottom of this window, and click the <tt class="docutils literal"><span class="pre">Use</span> <span class="pre">Public</span> <span class="pre">Key</span> <span class="pre">Authentication</span></tt>. A dialog will open - navigate to where you&#8217;ve stored your key and select the key that is associated with this instance. After filling in the field, the window should look like that in Figure 2. Click <tt class="docutils literal"><span class="pre">Connect</span></tt>.</p>
+<blockquote>
+<div><img alt="../_images/cyberduck_open_connection.png" src="../_images/cyberduck_open_connection.png" />
+<p>Figure 2: Initiating a new connection.</p>
+</div></blockquote>
+</li>
+<li><p class="first">After connecting, you&#8217;ll see a file browser on the remote system (Figure 3). If you&#8217;ve just created this instance you won&#8217;t see any files listed (because you haven&#8217;t put anything there yet). You can drag-and-drop files from your local system to your EC2 instance now (Figure 4). Those files will now be visible on the EC2 instance (Figure 5).</p>
+<blockquote>
+<div><img alt="../_images/cyberduck_opened_connection.png" src="../_images/cyberduck_opened_connection.png" />
+<p>Figure 3. Remote file browser.</p>
+<img alt="../_images/cyberduck_drag_and_drop_input_file.png" src="../_images/cyberduck_drag_and_drop_input_file.png" style="width: 700px;" />
+<p>Figure 4. Drag and drop a local file to the EC2 instance.</p>
+<img alt="../_images/cyberduck_view_file.png" src="../_images/cyberduck_view_file.png" />
+<p>Figure 5. Transferred file is visible on the EC2 instance.</p>
+</div></blockquote>
+</li>
+<li><p class="first">When you run commands on the remote system, new output files and directories will be created (Figure 6). To drag those back to your local system, first switch to the Cyberduck window and hit the refresh icon. You should then see the newly created files, and you can drag and drop them back to your local system (Figure 7).</p>
+<blockquote>
+<div><img alt="../_images/cyberduck_create_output_file.png" src="../_images/cyberduck_create_output_file.png" />
+<p>Figure 6. Create an output file on the EC2 instance.</p>
+<img alt="../_images/cyberduck_drag_and_drop_output_file.png" src="../_images/cyberduck_drag_and_drop_output_file.png" style="width: 700px;" />
+<p>Figure 7. Transfer file from the EC2 instance to the local system.</p>
+</div></blockquote>
+</li>
+</ol>
+</div></blockquote>
+<p>Get help with Cyberduck <a class="reference external" href="http://trac.cyberduck.ch/wiki/help/en">here</a>.</p>
+</div>
+<div class="section" id="other-options-for-getting-data-in-and-out-of-ec2-instances">
+<h3>Other options for getting data in and out of EC2 instances<a class="headerlink" href="#other-options-for-getting-data-in-and-out-of-ec2-instances" title="Permalink to this headline">¶</a></h3>
+<p>Other options for getting data into and out of your EC2 instance include installing <a class="reference external" href="http://www.dropbox.com">Dropbox</a> in your instance, and then putting files in your Dropbox folders on your local system and the EC2 instance; or using the <tt class="docutils literal"><span class="pre">wget</span></tt> command to pull data from URLs. An example of the latter might look like the following:</p>
+<div class="highlight-python"><pre>wget http://greengenes.lbl.gov/Download/Sequence_Data/Fasta_data_files/Caporaso_Reference_OTUs/gg_otus_4feb2011.tgz</pre>
+</div>
+<p>This will download the <tt class="docutils literal"><span class="pre">gg_otus_4feb2011.tgz</span></tt> file (the Greengenes reference OTUs) to your EC2 instance. You can find details on <a class="reference external" href="http://www.gnu.org/software/wget/">wget here</a>.</p>
+</div>
+</div>
+<div class="section" id="stopping-your-ec2-instances">
+<h2>Stopping your EC2 instances<a class="headerlink" href="#stopping-your-ec2-instances" title="Permalink to this headline">¶</a></h2>
+<p>As long as your EC2 instances are running, you&#8217;re paying for them by the hour. When you&#8217;re temporarily done using your EC2 instance, you can stop it from the AWS Management Console by selecting the instance and choosing <tt class="docutils literal"><span class="pre">Instance</span> <span class="pre">Actions</span></tt> &gt; <tt class="docutils literal"><span class="pre">Stop</span></tt> (see Figure 8). Note that you still pay a very small storage fee for stopped instances, so if you&#8217;re permanently done with an instance you probably want to terminate it. You can restart a stopped EC2 instance by selecting that instance and choosing <tt class="docutils literal"><span class="pre">Instance</span> <span class="pre">Actions</span></tt> &gt; <tt class="docutils literal"><span class="pre">Start</span></tt>.</p>
+<blockquote>
+<div><img alt="../_images/stop_instance.png" src="../_images/stop_instance.png" style="width: 700px;" />
+<p>Figure 8. Stopping or pausing an EC2 instance.</p>
+</div></blockquote>
+<p>If you&#8217;re permanently done with an EC2 instance, you can terminate it by selecting the instance and choosing <tt class="docutils literal"><span class="pre">Instance</span> <span class="pre">Actions</span></tt> &gt; <tt class="docutils literal"><span class="pre">Terminate</span></tt>. Once you&#8217;ve terminated an instance you can never get it back: all data in that instance, as well as any configuration changes you&#8217;ve made, etc, is lost forever, so be sure this is what you want to do.</p>
+</div>
+<div class="section" id="creating-a-volume-for-persistent-storage-across-different-launches-of-an-instance-or-different-instances">
+<h2>Creating a volume for persistent storage across different launches of an instance (or different instances)<a class="headerlink" href="#creating-a-volume-for-persistent-storage-across-different-launches-of-an-instance-or-different-instances" title="Permalink to this headline">¶</a></h2>
+<p>The disk space is fairly limited on the EC2 instances. To get around this you can create a volume (the equivalent of an external hard drive) and mount that on your instance. Data that you store in this volume can be accessed across different launches of an instance, or across different instances, but can only be attached to one instance at a time.</p>
+<p>Use the management console to create a volume. To do this, first click the <tt class="docutils literal"><span class="pre">EC2</span></tt> tab. Next, select <tt class="docutils literal"><span class="pre">Volumes</span></tt> on the left sidebar. Then click <tt class="docutils literal"><span class="pre">Create</span> <span class="pre">Volume</span></tt>. See Figure 9.</p>
+<blockquote>
+<div><img alt="../_images/create_an_ebs_volume.png" src="../_images/create_an_ebs_volume.png" style="width: 800px;" />
+<p>Figure 9: Create an EBS Volume.</p>
+</div></blockquote>
+<p>Next you must configure the volume you want to create. You have three options here. First, define the size of the volume. This will be based on the amount of data that you&#8217;ll need to store. Creating a volume that is around 10x the size of the raw data you want to analyze should leave you plenty of disk space for your analysis. Next, you must define what <tt class="docutils literal"><span class="pre">Availability</span> <span class="pre">Zone</span></tt> you&#8217;d like to launch your instance in. This <strong>must</strong> be the same zone that your instance is running in. This information is available under the &#8216;Description&#8217; tab associated with your running instance (see <tt class="docutils literal"><span class="pre">Zone</span></tt> toward the bottom right of Figure 8). Last, you can define an snapshot that you&#8217;d like to create your volume from. You typically won&#8217;t use that here. See Figure 10.</p>
+<blockquote>
+<div><img alt="../_images/configure_ebs_volume_creation.png" src="../_images/configure_ebs_volume_creation.png" style="width: 700px;" />
+<p>Figure 10: Configure EBS volume creation.</p>
+</div></blockquote>
+<p>Finally, you&#8217;ll attach your volume to your instance: the equivalent of plugging the USB hard drive into the computer. To do this, click the checkbox next to your volume, select <tt class="docutils literal"><span class="pre">More</span></tt> and then <tt class="docutils literal"><span class="pre">Attach</span> <span class="pre">Volume</span></tt>. Select the instance that you&#8217;d like to attach your volume to. If you don&#8217;t see your instance it may not be running, or you may have not selected the correct <tt class="docutils literal"><span class="pre">Availability</span> <span class="pre">Zone</span></tt>. Take note of the value associated with <tt class="docutils literal"><span class="pre">Device</span></tt>. You&#8217;ll need this in the next step (we&#8217;ll call this the attachment point). See Figure 11.</p>
+<blockquote>
+<div><img alt="../_images/configure_ebs_volume_attachment.png" src="../_images/configure_ebs_volume_attachment.png" style="width: 700px;" />
+<p>Figure 11: Configure EBS volume attachment.</p>
+</div></blockquote>
+<p>ssh into your EC2 instance and run the following commands. In this example, I&#8217;m assuming that your attachment point is <tt class="docutils literal"><span class="pre">/dev/sdf/</span></tt>. If it&#8217;s not, replace all occurrences of <tt class="docutils literal"><span class="pre">/dev/sdf/</span></tt> with your actual attachment point.</p>
+<p>The first time you use your volume you&#8217;ll need to run this command. Do not run this command on an instance that you already have data in - that will erase your data!</p>
+<div class="highlight-python"><pre>sudo mkfs.ext4 /dev/sdf</pre>
+</div>
+<p>One your first time attaching a volume to a new instance, you&#8217;ll need to run this command:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">mkdir</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">ubuntu</span><span class="o">/</span><span class="n">data</span>
+</pre></div>
+</div>
+<p>Anytime you attach or re-attach your volume to an instance (so after starting a new or stopped instance) you&#8217;ll need to run these commands:</p>
+<div class="highlight-python"><pre>sudo mount /dev/sdf /home/ubuntu/data
+sudo chown ubuntu /home/ubuntu/data
+sudo chgrp ubuntu /home/ubuntu/data</pre>
+</div>
+<p>Once you&#8217;ve created your device, you only need to go through the attachment step to attach to future instances. This is the step illustrated in Figure 11. Note that you&#8217;ll need to create future instances in the same availability zone as this volume if you&#8217;d like to attach this volume.</p>
+</div>
+<div class="section" id="using-qiime-with-starcluster-and-the-ipython-notebook">
+<h2>Using QIIME with StarCluster and the IPython Notebook<a class="headerlink" href="#using-qiime-with-starcluster-and-the-ipython-notebook" title="Permalink to this headline">¶</a></h2>
+<p>QIIME instances can be loaded using <a class="reference external" href="http://web.mit.edu/star/cluster/">StarCluster</a>, which provides an extremely convenient means for starting and using virtual clusters on AWS. This AWS instance also contains support for the <a class="reference external" href="http://ipython.org/ipython-doc/stable/interactive/htmlnotebook.html">IPython Notebook</a>, which provides a convenient interface for creating reproducible analysis pipelines that can easily be shared with others or published as supplementary material with journal articles.</p>
+<p>To start using <a class="reference external" href="http://web.mit.edu/star/cluster/">StarCluster</a> and <a class="reference external" href="http://ipython.org/ipython-doc/stable/interactive/htmlnotebook.html">IPython Notebook</a>, you should see their respective install instructions. Your StarCluster config file should look like this:</p>
+<div class="highlight-python"><pre>[cluster my.qiime.cluster]
+node_image_id = LATEST-QIIME-AMI # see http://qiime.org/home_static/dataFiles.html
+cluster_user = ubuntu
+keyname = YOUR-KEY
+cluster_size = DESIRED-CLUSTER-SIZE
+node_instance_type = DESIRED-INSTANCE-TYPE
+plugins = ipcluster</pre>
+</div>
+<p>Everything in CAPS should be replaced with the corresponding information.</p>
+<p>After launching your cluster, we recommend that you connect as the <tt class="docutils literal"><span class="pre">ubuntu</span></tt> user. You can do this as follows:</p>
+<div class="highlight-python"><pre>starcluster sshmaster CLUSTER_TAG -u ubuntu</pre>
+</div>
+<p>where <tt class="docutils literal"><span class="pre">CLUSTER_TAG</span></tt> refers to the cluster_tag that was specified when you launched your cluster with <tt class="docutils literal"><span class="pre">starcluster</span> <span class="pre">start</span></tt>.</p>
+<p>To run jobs in parallel on this system, you&#8217;ll next need to edit the <tt class="docutils literal"><span class="pre">qiime_config</span></tt> file on the cluster. This file is <tt class="docutils literal"><span class="pre">/home/ubuntu/.qiime_config_default</span></tt>. Edit the values <tt class="docutils literal"><span class="pre">cluster_jobs_fp</span></tt> and <tt class="docutils literal"><span class="pre">temp_dir</span></tt> so they looks like the following:</p>
+<div class="highlight-python"><pre>cluster_jobs_fp start_parallel_jobs_sc.py
+temp_dir        /home/ubuntu/temp/</pre>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Working with QIIME on Amazon Web Services EC2</a><ul>
+<li><a class="reference internal" href="#starting-an-ec2-instance">Starting an EC2 instance</a></li>
+<li><a class="reference internal" href="#connecting-to-your-ec2-instance-using-ssh">Connecting to your EC2 instance using ssh</a></li>
+<li><a class="reference internal" href="#getting-data-into-and-out-of-your-qiime-ec2-instance">Getting data into and out of your QIIME EC2 instance</a><ul>
+<li><a class="reference internal" href="#working-with-command-line-tools">Working with command line tools</a></li>
+<li><a class="reference internal" href="#working-with-cyberduck">Working with Cyberduck</a></li>
+<li><a class="reference internal" href="#other-options-for-getting-data-in-and-out-of-ec2-instances">Other options for getting data in and out of EC2 instances</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#stopping-your-ec2-instances">Stopping your EC2 instances</a></li>
+<li><a class="reference internal" href="#creating-a-volume-for-persistent-storage-across-different-launches-of-an-instance-or-different-instances">Creating a volume for persistent storage across different launches of an instance (or different instances)</a></li>
+<li><a class="reference internal" href="#using-qiime-with-starcluster-and-the-ipython-notebook">Using QIIME with StarCluster and the IPython Notebook</a></li>
+</ul>
+</li>
+</ul>
+
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2012, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

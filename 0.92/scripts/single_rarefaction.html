@@ -1,0 +1,156 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>single_rarefaction.py – Perform rarefaction on a single otu table &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="Scripts - Analyses and Parameters" href="../doc_script_index.html" />
+    <link rel="next" title="summarize_otu_by_cat.py – Create a summarized OTU table for a specific metadata category" href="summarize_otu_by_cat.html" />
+    <link rel="prev" title="parallel_multiple_rarefactions.py – Parallel multiple file rarefaction" href="parallel_multiple_rarefactions.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;">
+	<p style="font-size:12pt;padding: 5px;"><b>News and Announcements &raquo;</b>
+<script type="text/javascript" src="http://app.feed.informer.com/digest3/U9OLMKHF9N.js"><noscript><a href="http://app.feed.informer.com/digest3/U9OLMKHF9N.html">Click for &quot;QIIME&quot;.</a> Powered by <a href="http://feed.informer.com/">RSS Feed Informer</a></noscript></script></p>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="summarize_otu_by_cat.html" title="summarize_otu_by_cat.py – Create a summarized OTU table for a specific metadata category"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="parallel_multiple_rarefactions.html" title="parallel_multiple_rarefactions.py – Parallel multiple file rarefaction"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation.html" >QIIME Documentation</a> &raquo;</li>
+          <li><a href="../doc_script_index.html" accesskey="U">Scripts - Analyses and Parameters</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="single-rarefaction"></span><div class="section" id="single-rarefaction-py-perform-rarefaction-on-a-single-otu-table">
+<span id="index-139"></span><h1><em>single_rarefaction.py</em> &#8211; Perform rarefaction on a single otu table<a class="headerlink" href="#single-rarefaction-py-perform-rarefaction-on-a-single-otu-table" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>To perform bootstrap, jackknife, and rarefaction analyses, the otu table must be subsampled (rarefied).  This script rarefies, or subsamples, an OTU table.  This does not provide curves of diversity by number of sequences in a sample. Rather it creates a subsampled OTU table by random sampling (without replacement) of the input OTU table.  The pseudo-random number generator used for rarefaction by subsampling is NumPy&#8217;s default - an implementation of the Mersenne twister PRNG.</p>
+<p><strong>Usage:</strong> <tt class="docutils literal"><span class="pre">single_rarefaction.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-input_path</dt>
+<dd>Input otu table filepath</dd>
+<dt>-o, <cite>-</cite>-output_path</dt>
+<dd>Write output rarefied otu tables to this filepath</dd>
+<dt>-d, <cite>-</cite>-depth</dt>
+<dd>Sequences per sample to subsample</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt><cite>-</cite>-small_included</dt>
+<dd>Samples containing fewer seqs than the rarefaction level are included in the output but not rarefied [default: False]</dd>
+<dt><cite>-</cite>-lineages_included</dt>
+<dd>Output rarefied otu tables will include taxonomic (lineage) information for each otu, if present in input otu table [default: False]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>The results of <a class="reference external" href="./single_rarefaction.html">single_rarefaction.py</a> consist of a single subsampled OTU table. The file has the same otu table format as the input otu_table.txt. note: if the output file would be empty, no file is written</p>
+<p><strong>Example:</strong></p>
+<p>subsample otu_table.txt at 400 seqs/sample (-d), write results to a file (i.e. rarefaction_400_17.txt) (samples which have fewer than 400 sequences will be included without subsampleing, exactly as they appear in otu_table.txt</p>
+<div class="highlight-python"><pre>single_rarefaction.py -i otu_table.txt -o rarefaction_400_17.txt -d 400 --small_included</pre>
+</div>
+<p>(naming convention implies that the depth is 200 seqs/sam, iteration 17 at that depth (18th file written, due to iter 0))</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="parallel_multiple_rarefactions.html"
+                                  title="previous chapter"><em>parallel_multiple_rarefactions.py</em> &#8211; Parallel multiple file rarefaction</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="summarize_otu_by_cat.html"
+                                  title="next chapter"><em>summarize_otu_by_cat.py</em> &#8211; Create a summarized OTU table for a specific metadata category</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/scripts/single_rarefaction.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="summarize_otu_by_cat.html" title="summarize_otu_by_cat.py – Create a summarized OTU table for a specific metadata category"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="parallel_multiple_rarefactions.html" title="parallel_multiple_rarefactions.py – Parallel multiple file rarefaction"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation.html" >QIIME Documentation</a> &raquo;</li>
+          <li><a href="../doc_script_index.html" >Scripts - Analyses and Parameters</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+  </body>
+</html>

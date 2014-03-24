@@ -1,0 +1,203 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>QIIME parameters files &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.6.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="qiime-parameters-files">
+<span id="qiime-parameter-files"></span><h1>QIIME parameters files<a class="headerlink" href="#qiime-parameters-files" title="Permalink to this headline">¶</a></h1>
+<p>QIIME parameters files are used with the QIIME workflow scripts, which plug together multiple QIIME commands.</p>
+<div class="section" id="motivation">
+<h2>Motivation<a class="headerlink" href="#motivation" title="Permalink to this headline">¶</a></h2>
+<p>The QIIME workflow scripts plug together two or more QIIME commands to facilitate running common processes. For example, <a class="reference external" href="../scripts/pick_otus_through_otu_table.html">pick_otus_through_otu_table.py</a> combines OTU picking, representative sequence picking, taxonomy assignment, sequence alignment, alignment filtering, and tree building in a single QIIME command. If you were to run each of these steps yourself, you would run about seven different commands (depending a little on what options you use). Because each of these individual commands may have many options, it&#8217;s not feasible to make of these options accessible through the <a class="reference external" href="../scripts/pick_otus_through_otu_table.html">pick_otus_through_otu_table.py</a>  interface (to see why, run <tt class="docutils literal"><span class="pre">pick_otus.py</span> <span class="pre">-h</span></tt> to get list of options for just that single script). However, we still want users to have control over the different options available in the individual scripts. To achieve that, you can pass a QIIME parameters file to the workflow scripts to modify options to the component scripts of the workflow.</p>
+</div>
+<div class="section" id="format">
+<h2>Format<a class="headerlink" href="#format" title="Permalink to this headline">¶</a></h2>
+<p>The parameters file is a text file with one parameter setting per line. Blank lines or lines beginning with a <tt class="docutils literal"><span class="pre">#</span></tt> are ignored. A parameter setting is defined as <tt class="docutils literal"><span class="pre">script_name:parameter_name</span></tt>, followed by a tab, and then the value. For example:</p>
+<div class="highlight-python"><pre>pick_otus:otu_picking_method    uclust</pre>
+</div>
+<p>This indicates that the <tt class="docutils literal"><span class="pre">--otu_picking_method</span></tt> will be set to <tt class="docutils literal"><span class="pre">uclust</span></tt> when calling <tt class="docutils literal"><span class="pre">pick_otus.py</span></tt>. To get information on what a parameter in the <tt class="docutils literal"><span class="pre">qiime_parameters.txt</span></tt> file is, you should call the script name followed by <tt class="docutils literal"><span class="pre">-h</span></tt> to access the usage information for that script. In the above example, you could call:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">pick_otus</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">h</span>
+</pre></div>
+</div>
+<p>Flag options (i.e., those that don&#8217;t take a value, like the <tt class="docutils literal"><span class="pre">--enable_rev_strand_match</span></tt> option to <tt class="docutils literal"><span class="pre">pick_otus.py</span></tt>) are specified by passing <tt class="docutils literal"><span class="pre">True</span></tt> or <tt class="docutils literal"><span class="pre">False</span></tt> after the tab. For example:</p>
+<div class="highlight-python"><pre>pick_otus:enable_rev_strand_match       True</pre>
+</div>
+<p>If a parameter is not followed by an option, it will not be passed to the script resulting in the default value being used instead. For example:</p>
+<div class="highlight-python"><pre>pick_otus:similarity</pre>
+</div>
+<p>This results in no <tt class="docutils literal"><span class="pre">--similarity</span></tt> parameter being passed to <tt class="docutils literal"><span class="pre">pick_otus.py</span></tt>. Alternatively, you can delete this line from your parameters file.</p>
+<p>Note that when specifying parameters, you must specify their <cite>long form</cite> name, not their single-letter abbreviation. For example, if a parameter is defined as follows:</p>
+<div class="highlight-python"><pre>-s SIMILARITY, --similarity=SIMILARITY
+                      Sequence similarity threshold (for blast, cdhit,
+                      uclust, uclust_ref, or usearch) [default: 0.97]</pre>
+</div>
+<p>You would pass this as <tt class="docutils literal"><span class="pre">pick_otus:similarity</span></tt>, NOT as <tt class="docutils literal"><span class="pre">pick_otus:s</span></tt>. The latter will not work!</p>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<p>Below are some commonly used parameter files.</p>
+<p>Run OTU picking with uclust&#8217;s default parameters (rather than QIIME&#8217;s default parameters, which are more conservative but <em>much</em> slower). Also, enable reverse strand matching so reads in opposite orientations match one another (i.e., uclust&#8217;s <tt class="docutils literal"><span class="pre">--rev</span></tt> parameter). This information can be saved to a text file and passed to <a class="reference external" href="../scripts/pick_otus_through_otu_table.html">pick_otus_through_otu_table.py</a>, <a class="reference external" href="../scripts/pick_reference_otus_through_otu_table.html">pick_reference_otus_through_otu_table.py</a>, <a class="reference external" href="../scripts/pick_subsampled_reference_otus_through_otu_table.html">pick_subsampled_reference_otus_through_otu_table.py</a>, or <a class="reference external" href="../scripts/core_qiime_analyses.html">core_qiime_analyses.py</a>.</p>
+<div class="highlight-python"><pre>pick_otus:enable_rev_strand_match True
+pick_otus:max_accepts 1
+pick_otus:max_rejects 8
+pick_otus:stepwords 8
+pick_otus:word_length 8</pre>
+</div>
+<p>Run beta diversity with Unweighted UniFrac, Weighted UniFrac, Bray-Curtis, and Euclidean distance metrics. This can be used with <a class="reference external" href="../scripts/beta_diversity_through_plots.html">beta_diversity_through_plots.py</a> and <a class="reference external" href="../scripts/core_qiime_analyses.html">core_qiime_analyses.py</a>.</p>
+<div class="highlight-python"><pre>beta_diversity:metrics  bray_curtis,euclidean,unweighted_unifrac,weighted_unifrac</pre>
+</div>
+</div>
+<div class="section" id="workflow-scripts">
+<h2>Workflow scripts<a class="headerlink" href="#workflow-scripts" title="Permalink to this headline">¶</a></h2>
+<p>You can find information on the QIIME workflow scripts at:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference external" href="../scripts/pick_otus_through_otu_table.html">pick_otus_through_otu_table.py</a></li>
+<li><a class="reference external" href="../scripts/pick_reference_otus_through_otu_table.html">pick_reference_otus_through_otu_table.py</a></li>
+<li><a class="reference external" href="../scripts/pick_subsampled_reference_otus_through_otu_table.html">pick_subsampled_reference_otus_through_otu_table.py</a></li>
+<li><a class="reference external" href="../scripts/alpha_rarefaction.html">alpha_rarefaction.py</a></li>
+<li><a class="reference external" href="../scripts/beta_diversity_through_plots.html">beta_diversity_through_plots.py</a></li>
+<li><a class="reference external" href="../scripts/summarize_taxa_through_plots.html">summarize_taxa_through_plots.py</a></li>
+<li><a class="reference external" href="../scripts/jackknifed_beta_diversity.html">jackknifed_beta_diversity.py</a></li>
+<li><a class="reference external" href="../scripts/core_qiime_analyses.html">core_qiime_analyses.py</a></li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="why-is-there-no-longer-an-example-parameters-file-included-with-qiime">
+<h2>Why is there no longer an example parameters file included with QIIME?<a class="headerlink" href="#why-is-there-no-longer-an-example-parameters-file-included-with-qiime" title="Permalink to this headline">¶</a></h2>
+<p>In the past we provided an example QIIME parameters file, which contained all of the parameters to all of the subcommands for all of the workflow scripts. This was really messy and hard to maintain: if we updated a default parameter in a QIIME script, we had to also update it in the parameters file, or using the example parameters file would default to an old parameter setting. Initially, the parameters files were also required options to the workflow scripts, but they are now optional, so we now recommend using the parameters files in a different way that we have in the past.</p>
+<p>Previously we recommended starting with the example QIIME parameters file and modifying it change the parameters used during your workflow. We now recommend starting with no parameters file (the default) and creating one with only the parameters you want to modify, if you want to change the default behavior. We therefore no longer provide an example parameters file. To find the parameters that are available to modify for a given workflow, you can call the individual component scripts (i.e., the scripts that are called by the workflow scripts) with <tt class="docutils literal"><span class="pre">-h</span></tt> to see what parameters are available to be modified. We hope to make this even simpler in the future as we work on a general refactoring of the QIIME workflow functionality.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">QIIME parameters files</a><ul>
+<li><a class="reference internal" href="#motivation">Motivation</a></li>
+<li><a class="reference internal" href="#format">Format</a></li>
+<li><a class="reference internal" href="#examples">Examples</a></li>
+<li><a class="reference internal" href="#workflow-scripts">Workflow scripts</a></li>
+<li><a class="reference internal" href="#why-is-there-no-longer-an-example-parameters-file-included-with-qiime">Why is there no longer an example parameters file included with QIIME?</a></li>
+</ul>
+</li>
+</ul>
+
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2012, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>make_rarefaction_plots.py – Generate Rarefaction Plots &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="Scripts - Analyses and Parameters" href="../doc_script_index.html" />
+    <link rel="next" title="preferences_file – Example of a prefs file" href="preferences_file.html" />
+    <link rel="prev" title="make_otu_network.py – Make an OTU network and calculate statistics" href="make_otu_network.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;">
+	<p style="font-size:12pt;padding: 5px;"><b>News and Announcements &raquo;</b>
+<script type="text/javascript" src="http://app.feed.informer.com/digest3/U9OLMKHF9N.js"><noscript><a href="http://app.feed.informer.com/digest3/U9OLMKHF9N.html">Click for &quot;QIIME&quot;.</a> Powered by <a href="http://feed.informer.com/">RSS Feed Informer</a></noscript></script></p>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="preferences_file.html" title="preferences_file – Example of a prefs file"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="make_otu_network.html" title="make_otu_network.py – Make an OTU network and calculate statistics"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation.html" >QIIME Documentation</a> &raquo;</li>
+          <li><a href="../doc_script_index.html" accesskey="U">Scripts - Analyses and Parameters</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="make-rarefaction-plots"></span><div class="section" id="make-rarefaction-plots-py-generate-rarefaction-plots">
+<span id="index-116"></span><h1><em>make_rarefaction_plots.py</em> &#8211; Generate Rarefaction Plots<a class="headerlink" href="#make-rarefaction-plots-py-generate-rarefaction-plots" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>Once the batch alpha diversity files have been collated, you may want to compare the diversity using plots. Using the results from <a class="reference external" href="./collate_alpha.html">collate_alpha.py</a>, you can plot the samples and or by category in the mapping file using this script.</p>
+<p>This script creates an html file of rarefaction plots based on the supplied mapping file (-m) and the supplied rarefaction files (-r) from <a class="reference external" href="./collate_alpha.html">collate_alpha.py</a>. The user may also supply optional arguments that will only create plots for supplied metadata columns from the mapping file (-p), an image type (-i), and a resolution (-d). If the user would like to suppress html output they can pass the -n flag, and output raw data with the -w flag. The -y option allows the user to supply a maximum value for the yaxis of the plots.</p>
+<p><strong>Usage:</strong> <tt class="docutils literal"><span class="pre">make_rarefaction_plots.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-m, <cite>-</cite>-map</dt>
+<dd>Name of mapping file [REQUIRED]</dd>
+<dt>-r, <cite>-</cite>-rarefaction</dt>
+<dd>Name of rarefaction file, takesoutput from collate_alpha OR tab delimited data from a previous run of this script. If using raw data from a previous run, set -x flag. [REQUIRED]</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-p, <cite>-</cite>-prefs</dt>
+<dd>Name of columns to make rarefaction graphs of, comma delimited no spaces. Use &#8216;ALL&#8217; command to make graphs of all metadata columns. [default: ALL]</dd>
+<dt>-n, <cite>-</cite>-no_html</dt>
+<dd>Suppress html output. [default: False]</dd>
+<dt>-i, <cite>-</cite>-imagetype</dt>
+<dd>Extension for image type choose from (jpg, gif, png, svg, pdf). [default: png]</dd>
+<dt>-d, <cite>-</cite>-resolution</dt>
+<dd>Output image resolution, [default: 75]</dd>
+<dt>-o, <cite>-</cite>-dir_path</dt>
+<dd>Directory prefix for all analyses [default: .]</dd>
+<dt>-y, <cite>-</cite>-ymax</dt>
+<dd>Maximum value for y axis, [default: 0] the default value will tell the script to calculate a y axis maximum depending on the data</dd>
+<dt>-x, <cite>-</cite>-raw_data</dt>
+<dd>Read in tab delimited, rarefaction graphing data to be plotted.</dd>
+<dt>-w, <cite>-</cite>-write_raw_data</dt>
+<dd>Print out tab delimited, rarefaction graphing data that can be read back in and plotted. [default: False]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>The result of this script produces a folder and within that folder there are sub-folders for each data file (metric) supplied as input. Within the sub-folders, there will be images for each of the categories specified by the user.</p>
+<p><strong>Default Example:</strong></p>
+<p>For generated rarefaction plots using the default parameters, including the mapping file and one rarefaction file, you can use the following command:</p>
+<div class="highlight-python"><pre>make_rarefaction_plots.py -m Mapping_file.txt -r chao1.txt</pre>
+</div>
+<p><strong>Multiple File Example:</strong></p>
+<p>If you would like to generate plots for multiple files, you can use the following command:</p>
+<div class="highlight-python"><pre>make_rarefaction_plots.py -m Mapping_file.txt -r chao1.txt,PD_whole_tree.txt</pre>
+</div>
+<p><strong>Category Specific Example:</strong></p>
+<p>In the case that you want to make plots for a specific category (i.e., pH), you can use the following command:</p>
+<div class="highlight-python"><pre>make_rarefaction_plots.py -m Mapping_file.txt -r chao1.txt -p</pre>
+</div>
+<p><strong>Specify Image Type and Resolution:</strong></p>
+<p>Optionally, you can change the resolution (&#8220;-d&#8221;) and the type of image created (&#8220;-i&#8221;), by using the following command:</p>
+<div class="highlight-python"><pre>make_rarefaction_plots.py -m Mapping_file.txt -r chao1.txt -p pH -d 180 -i pdf</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="make_otu_network.html"
+                                  title="previous chapter"><em>make_otu_network.py</em> &#8211; Make an OTU network and calculate statistics</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="preferences_file.html"
+                                  title="next chapter"><em>preferences_file</em> &#8211; Example of a prefs file</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/scripts/make_rarefaction_plots.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="preferences_file.html" title="preferences_file – Example of a prefs file"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="make_otu_network.html" title="make_otu_network.py – Make an OTU network and calculate statistics"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation.html" >QIIME Documentation</a> &raquo;</li>
+          <li><a href="../doc_script_index.html" >Scripts - Analyses and Parameters</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+  </body>
+</html>

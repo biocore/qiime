@@ -1,0 +1,760 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Open-reference OTU picking applied to Illumina data &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.6.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="open-reference-otu-picking-applied-to-illumina-data">
+<h1>Open-reference OTU picking applied to Illumina data<a class="headerlink" href="#open-reference-otu-picking-applied-to-illumina-data" title="Permalink to this headline">¶</a></h1>
+<p>This document describes how to use QIIME to analyze very large data sets, generally on the HiSeq2000, using an open-reference OTU picking protocol. There are two primary options here: first is to use standard open-reference uclust (i.e., uclust_ref allowing for new clusters); and second is to use the subsampled open-reference OTU picking protocol. The results from both will be nearly identical. The difference is that the first option is slower, but available in QIIME 1.4.0 (and most earlier versions). The runtime will be limiting for multiple HiSeq2000 lanes, or for single HiSeq2000 lanes with high diversity. The second option is much faster, and will work for multiple HiSeq2000 lanes or runs. It is available in QIIME 1.5.0 and later.</p>
+<p>This document very briefly covers option 1. Most of the text covers option 2, including a description of how to use it, what exactly is happening, and test results from applying this to some well-understood 454 data.</p>
+<blockquote>
+<div><div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">You can always find a link to the latest version of the Greengenes reference OTUs and the AMI of the latest QIIME EC2 instances <a class="reference external" href="http://qiime.org/home_static/dataFiles.html">here</a>.</p>
+</div>
+<div class="toctree-wrapper compound">
+<ul class="simple">
+</ul>
+</div>
+</div></blockquote>
+<div class="section" id="option-1-standard-open-reference-otu-picking">
+<h2>Option 1: Standard open-reference OTU picking<a class="headerlink" href="#option-1-standard-open-reference-otu-picking" title="Permalink to this headline">¶</a></h2>
+<p>Standard open-reference OTU picking is suitable for a single HiSeq2000 lane (unless it&#8217;s very high diversity, in which case runtime may be a limiting factor). You&#8217;ll use the <tt class="docutils literal"><span class="pre">pick_otus_through_otu_table.py</span></tt> workflow script in QIIME with a custom parameters file.</p>
+<p>Your parameters file should look like the following:</p>
+<div class="highlight-python"><pre>pick_otus:otu_picking_method uclust_ref
+pick_otus:refseqs_fp &lt;PATH TO REFERENCE COLLECTION&gt;
+pick_otus:enable_rev_strand_match True</pre>
+</div>
+<p>Where <tt class="docutils literal"><span class="pre">&lt;PATH</span> <span class="pre">TO</span> <span class="pre">REFERENCE</span> <span class="pre">COLLECTION&gt;</span></tt> is replaced with the path to the reference data set you&#8217;d like to pick OTUs against. The QIIME development group frequently used the Greengenes reference OTUs. On the QIIME EC2 instance, this path would be <tt class="docutils literal"><span class="pre">/software/gg_otus-4feb2011-release/rep_set/gg_97_otus_4feb2011.fasta</span></tt>.</p>
+<p>This command should be run in parallel. Each job will need approximately 4GB of RAM, so if running on EC2 and you want to start 8 parallel jobs (recommended setting for EC2), your instance type should be <tt class="docutils literal"><span class="pre">m2.4xlarge</span></tt>.</p>
+<p>You can then use the following commands. You should <em>always use full paths</em> which are represented here by <tt class="docutils literal"><span class="pre">$PWD</span></tt>, but will usually look something like <tt class="docutils literal"><span class="pre">/home/ubuntu/my_data/</span></tt> (in other words, they should start with a <tt class="docutils literal"><span class="pre">/</span></tt>). In this example your input sequences (<tt class="docutils literal"><span class="pre">seqs.fna</span></tt>), your parameters file (<tt class="docutils literal"><span class="pre">ucr_params.txt</span></tt>), and your metadata mapping file (<tt class="docutils literal"><span class="pre">map.txt</span></tt>) are all in the same directory represented by <tt class="docutils literal"><span class="pre">$PWD</span></tt>. If you work from the directory containing those files, you can leave <tt class="docutils literal"><span class="pre">$PWD</span></tt> in the commands instead of specifying the full paths.</p>
+<p>First, pick otus, choose representative sequences, assign taxonomy to OTUs, and build a phylogenetic tree. The <tt class="docutils literal"><span class="pre">-aO</span> <span class="pre">8</span></tt> specifies that we want to start 8 parallel jobs - adjust this according to the resources you have available. This is open-reference OTU picking, so reads will be clustered against the reference database (in parallel) and reads which fail to hit the reference data set will subsequently be clustered de novo (serially):</p>
+<div class="highlight-python"><pre>pick_otus_through_otu_table.py -i $PWD/seqs.fna -o $PWD/ucr/ -p $PWD/ucr_params.txt -aO 8</pre>
+</div>
+<p>When working with Illumina data you typically want to filter singleton OTUs (i.e., OTUs with only one sequence) as these are likely to represent sequencing or PCR errors. In QIIME 1.4.0 (and most earlier versions) you can do that with this command:</p>
+<div class="highlight-python"><pre>filter_otu_table.py -i $PWD/ucr/otu_table.txt -o $PWD/ucr/otu_table_mc2.txt -c 2 -s 1</pre>
+</div>
+<p>In QIIME 1.4.0-dev and later, you can filter singleton OTUs with this command:</p>
+<div class="highlight-python"><pre>filter_otus_from_otu_table.py -i $PWD/ucr/otu_table.biom -o $PWD/ucr/otu_table_mc2.biom -c 2</pre>
+</div>
+<p>You&#8217;ll notice that depending on your version of QIIME, the extension on your OTU table file will differ. In QIIME 1.4.0 and earlier, it will be <tt class="docutils literal"><span class="pre">.txt</span></tt>. In QIIME 1.4.0-dev and later it will be <tt class="docutils literal"><span class="pre">.biom</span></tt>. We&#8217;ll continue this example assuming that your OTU table ends with <tt class="docutils literal"><span class="pre">.txt</span></tt> (if you&#8217;re working with QIIME 1.4.0-dev or later, you likely decided to go with option 2 for OTU picking).</p>
+<p>As PCoA of UniFrac distances between samples is a frequent result of interest in microbial ecology, we&#8217;ll cover how to generate PCoA plots next. The first thing you&#8217;ll want to do is evenly sample your OTU table. To choose an even sampling depth, review the number of reads per sample:</p>
+<div class="highlight-python"><pre>per_library_stats.py -i $PWD/ucr97/otu_table_mc2.biom</pre>
+</div>
+<p>This will print information on the number of reads per sample to the terminal. Choose a depth of sampling that maximizes the number of sequences you&#8217;ll include, and also the number of samples that have at least that many sequences: samples with fewer sequences will be excluded from your beta diversity/PCoA analysis. <strong>Even sampling is absolutely critical to getting meaningful UniFrac distances between your samples.</strong></p>
+<p>After choosing an even sampling depth you can use the <tt class="docutils literal"><span class="pre">beta_diversity_through_plots.py</span></tt> script to rarify your OTU table, compute UniFrac distances between samples, and run Principal Coordinates Analysis with the following command (in this example we have chosen an even sampling depth of 25,000 sequences/sample):</p>
+<div class="highlight-python"><pre>beta_diversity_through_plots.py -i $PWD/ucr/otu_table_mc2.biom -e 25000 -o $PWD/ucr/bdiv_even25000/ -t $PWD/ucr/rep_set.tre -m $PWD/map.txt -aO8</pre>
+</div>
+<p>Again the <tt class="docutils literal"><span class="pre">-aO8</span></tt> specifies that the job should be run in parallel on 8 processors. Adjust this according to your resources. When this completes you can open 3D interactive PCoA plots by opening the file <tt class="docutils literal"><span class="pre">bdiv_even25000/unweighted_unifrac_3d_continuous/unweighted_unifrac_pc_3D_PCoA_plots.html</span></tt> in a web browser. This may take a minute to load for very large sets of samples.</p>
+</div>
+<div class="section" id="option-2-subsampled-open-reference-otu-picking">
+<h2>Option 2: Subsampled open-reference OTU picking<a class="headerlink" href="#option-2-subsampled-open-reference-otu-picking" title="Permalink to this headline">¶</a></h2>
+<p>Subsampled reference OTU picking is suitable for any analysis that standard open-reference OTU picking can be used for, but additionally scales to much larger data sets (such as multiple HiSeq runs, which may require several days on ~100 processors to analyze).</p>
+<blockquote>
+<div><div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">If processing multiple HiSeq lanes, don&#8217;t combine the sequence data into a single file. Instead, see <a class="reference internal" href="#iterative-mode"><em>Using the subsampled open-reference OTU picking workflow in iterative mode</em></a>.</p>
+</div>
+</div></blockquote>
+<p>This is an open-reference OTU picking protocol, meaning that sequences are clustered against a reference database, and reads which fail to hit the reference are subsequently clustered de novo. This differs from standard open-reference OTU picking as it was optimized at several steps to enable running on massive numbers of sequences (hundreds of millions, which is massive as of this writing). The steps in this workflow are as follows.</p>
+<div class="section" id="step-0-prefilter-parallel">
+<h3>Step 0: Prefilter (parallel)<a class="headerlink" href="#step-0-prefilter-parallel" title="Permalink to this headline">¶</a></h3>
+<p>Prefilter the input sequence collection by searching reads against the reference set with a low percent identity threshold (default is 60%, modify with <tt class="docutils literal"><span class="pre">--prefilter_percent_id</span></tt>). The choice of 60% is described <a class="reference internal" href="#prefilter-threshold"><em>here</em></a>. All reads which fail to hit the reference set are discarded as likely sequencing error.</p>
+<blockquote>
+<div><div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">If most or all of your sequences are being filtered at this step, your sequences may be in the reverse orientation with respect to your reference database. To address this, you should add the following to your parameters file (creating one, if necessary) and pass this file as <tt class="docutils literal"><span class="pre">-p</span></tt> to <tt class="docutils literal"><span class="pre">pick_subsampled_reference_otus_through_otu_table.py</span></tt>: <tt class="docutils literal"><span class="pre">pick_otus:enable_rev_strand_match</span> <span class="pre">True</span></tt>. This is included in the instructions below, but be aware that this doubles the memory used in this step of the workflow.</p>
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="step-1-closed-reference-parallel">
+<h3>Step 1: Closed reference (parallel)<a class="headerlink" href="#step-1-closed-reference-parallel" title="Permalink to this headline">¶</a></h3>
+<p>Apply closed-reference OTU picking against the reference collection. Generate a fasta file containing all reads that fail to hit the reference collection.</p>
+</div>
+<div class="section" id="step-2-de-novo-clustering-of-subsampled-failures-serial">
+<h3>Step 2: De novo clustering of subsampled failures (serial)<a class="headerlink" href="#step-2-de-novo-clustering-of-subsampled-failures-serial" title="Permalink to this headline">¶</a></h3>
+<p>Randomly subsample the sequences that failed to hit the reference collection, and write these to a new fasta file (default subsampling percentage is 0.1%, modify with <tt class="docutils literal"><span class="pre">-s/--percent_subsample</span></tt>). Cluster these reads de novo, and choose a representative set of sequences as the centroid of each OTU cluster. These are the <em>new reference</em> OTUs.</p>
+</div>
+<div class="section" id="step-3-closed-reference-round-2-parallel">
+<h3>Step 3: Closed reference, round 2 (parallel)<a class="headerlink" href="#step-3-closed-reference-round-2-parallel" title="Permalink to this headline">¶</a></h3>
+<p>Pick closed-reference OTUs against the representative sequences from the previous step. Write all sequences that fail to hit the reference collection to a fasta file.</p>
+</div>
+<div class="section" id="step-4-de-novo-serial">
+<h3>Step 4: De novo (serial)<a class="headerlink" href="#step-4-de-novo-serial" title="Permalink to this headline">¶</a></h3>
+<p>Pick de novo OTUs on all reads that failed to hit the reference collection in the previous step. These are the <em>clean-up</em> OTUs. This step can be suppress by passing <tt class="docutils literal"><span class="pre">--suppress_step4</span></tt>.</p>
+</div>
+<div class="section" id="post-otu-processing-parallel-and-serial-depending-on-step">
+<h3>Post-OTU processing (parallel and serial, depending on step)<a class="headerlink" href="#post-otu-processing-parallel-and-serial-depending-on-step" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li>Assemble the reference OTUs, the new reference OTUs, and the clean-up OTUs into a new OTU map, and construct an OTU table. At this stage, all OTUs with a sequence count of smaller than 2 (i.e., the singleton OTUs) are discarded. This can be modified with the <tt class="docutils literal"><span class="pre">--min_otu_size</span></tt> option, and disabled by passing <tt class="docutils literal"><span class="pre">--min_otu_size=1</span></tt>.</li>
+<li>Construct a new reference collection based on this OTU picking run. This new reference collection will be the combination of the full input reference collection, the new reference OTU representative sequences, and the clean-up OTU representative sequences. Note that this will not include representatives of the singleton OTUs by default. Also note that this differs from the representative set of sequences for this run in that it contains <em>all</em> of the input reference sequences, not only the ones that are represented in the current data set (which is what the representative sequences for this run contains).</li>
+<li>Taxonomy will be assigned to all OTUs (using RDP classifier by default) and representative sequences will be aligned and a tree will be constructed. Finally, an additional OTU table will be constructed that excludes reads that failed to align with PyNAST. It is recommended that this OTU table be used in downstream analysis.</li>
+</ol>
+<p>To apply this analysis to <tt class="docutils literal"><span class="pre">seqs1.fna</span></tt>, picking OTUs against the reference collection <tt class="docutils literal"><span class="pre">refseqs.fna</span></tt> you can run the following command. Your parameters file should contain the following:</p>
+<div class="highlight-python"><pre>pick_otus:otu_picking_method uclust_ref
+pick_otus:enable_rev_strand_match True</pre>
+</div>
+<p>You should <em>always use full paths</em> which are represented here by <tt class="docutils literal"><span class="pre">$PWD</span></tt>, but will usually look something like <tt class="docutils literal"><span class="pre">/home/ubuntu/my_data/</span></tt> (in other words, they should start with a <tt class="docutils literal"><span class="pre">/</span></tt>). In this example your input sequences (<tt class="docutils literal"><span class="pre">seqs1.fna</span></tt>), and your metadata mapping file (<tt class="docutils literal"><span class="pre">map.txt</span></tt>) are all in the same directory represented by <tt class="docutils literal"><span class="pre">$PWD</span></tt>. If you work from the directory containing those files, you can leave <tt class="docutils literal"><span class="pre">$PWD</span></tt> in the commands instead of specifying the full paths:</p>
+<div class="highlight-python"><pre>pick_subsampled_reference_otus_through_otu_table.py -i $PWD/seqs1.fna -r $PWD/refseqs.fna -o $PWD/ucrss/ -aO 8 -p $PWD/ucrss_params.txt</pre>
+</div>
+<p>This command should be run in parallel. Each job will need approximately 4GB of RAM, so if running on EC2 and you want to start 8 parallel jobs (recommended setting for EC2), your instance type should be <tt class="docutils literal"><span class="pre">m2.4xlarge</span></tt>. The <tt class="docutils literal"><span class="pre">-aO</span> <span class="pre">8</span></tt> specifies that we want to start 8 parallel jobs - adjust this according to the resources you have available.</p>
+<p id="ucrss-beta-diversity">As PCoA of UniFrac distances between samples is a frequent result of interest in microbial ecology, we&#8217;ll cover how to generate PCoA plots next. The first thing you&#8217;ll want to do is evenly sample your OTU table. To choose an even sampling depth, review the number of reads per sample:</p>
+<div class="highlight-python"><pre>per_library_stats.py -i $PWD/ucrss/otu_table_mc2_w_tax_no_pynast_failures.biom</pre>
+</div>
+<p>This will print information on the number of reads per sample to the terminal. Choose a depth of sampling that maximizes the number of sequences you&#8217;ll include, and also the number of samples that have at least that many sequences: samples with fewer sequences will be excluded from your beta diversity/PCoA analysis. <strong>Even sampling is absolutely critical to getting meaningful UniFrac distances between your samples.</strong></p>
+<p>After choosing an even sampling depth you can use the <tt class="docutils literal"><span class="pre">beta_diversity_through_plots.py</span></tt> script to rarify your OTU table, compute UniFrac distances between samples, and run Principal Coordinates Analysis with the following command (in this example we have chosen an even sampling depth of 25,000 sequences/sample):</p>
+<div class="highlight-python"><pre>beta_diversity_through_plots.py -i $PWD/ucrss/otu_table_mc2_w_tax_no_pynast_failures.biom  -e 25000 -o $PWD/ucrss/bdiv_even25000/ -t $PWD/ucrss/rep_set.tre -m $PWD/map.txt -aO8</pre>
+</div>
+<p>Again the <tt class="docutils literal"><span class="pre">-aO8</span></tt> specifies that the job should be run in parallel on 8 processors. Adjust this according to your resources. When this completes you can open 3D interactive PCoA plots by opening the file <tt class="docutils literal"><span class="pre">bdiv_even25000/unweighted_unifrac_3d_continuous/unweighted_unifrac_pc_3D_PCoA_plots.html</span></tt> in a web browser. This may take a minute to load for very large sets of samples.</p>
+</div>
+</div>
+<div class="section" id="filtering-an-open-reference-otu-table-to-reference-otus-only">
+<span id="filter-to-closed-ref"></span><h2>Filtering an open-reference OTU table to reference OTUs only<a class="headerlink" href="#filtering-an-open-reference-otu-table-to-reference-otus-only" title="Permalink to this headline">¶</a></h2>
+<p>There are cases where you may be interested in working with the closed reference subset of your open reference OTU table (meaning only those OTUs that hit the reference collection, excluding the new OTUs). Following from the above commands, to do that you can filter the new OTUs from the OTU table with the following command:</p>
+<div class="highlight-python"><pre>filter_otus_from_otu_table.py -i $PWD/ucrss/otu_table_mc2_w_tax_no_pynast_failures.biom -o $PWD/ucrss/otu_table_mc2_w_tax_no_pynast_failures.reference_only.biom --negate_ids_to_exclude -e $PWD/refseqs.fna</pre>
+</div>
+<p>What this does is filter exclude all OTUs with identifiers that are not present in <tt class="docutils literal"><span class="pre">$PWD/refseqs.fna</span></tt>, so all of the new OTUs.</p>
+</div>
+<div class="section" id="subsampled-otu-picking-workflow-evaluation">
+<h2>Subsampled OTU picking workflow evaluation<a class="headerlink" href="#subsampled-otu-picking-workflow-evaluation" title="Permalink to this headline">¶</a></h2>
+<p>Several analyses were performed to confirm that results are comparable between the subsampled open-reference OTU picking workflow and the standard open-reference OTU picking workflow. These include analyses on two different data sets: one host-associated (the <a class="reference external" href="http://www.ncbi.nlm.nih.gov/pubmed/19892944">Costello Whole Body</a> study) and one free-living (the <a class="reference external" href="http://www.ncbi.nlm.nih.gov/pubmed/19502440">Lauber 88 soils</a> study). These two were chosen as Greengenes (the reference set being used) is known to be biased toward human-associated microbes, so I wanted to confirm that the method works when few sequences fail to hit the reference set (whole body) and when many sequences fail to hit the reference set (88 soils).</p>
+<dl class="docutils">
+<dt>Several tests were performed:</dt>
+<dd><ul class="first last simple">
+<li>beta diversity (procrustes analysis to compare subsampled OTU results to de novo, open-reference, and closed-reference OTU picking)</li>
+<li>alpha diversity (test for correlation in observed OTU count between subsampled OTU results and de novo, open-reference, and closed-reference OTU picking)</li>
+<li>otu category significance (reviewed significant OTUs - need a good way to quantitate this)</li>
+</ul>
+</dd>
+</dl>
+<p>For all analyses, sequences that fail to align with PyNAST and singleton OTUs were discarded (these are defaults in the subsampled OTU picking workflow).</p>
+</div>
+<div class="section" id="soils-analysis">
+<h2>88 soils analysis<a class="headerlink" href="#soils-analysis" title="Permalink to this headline">¶</a></h2>
+<p>This analysis is based on the data presented in the <a class="reference external" href="http://www.ncbi.nlm.nih.gov/pubmed/19502440">Lauber 88 soils</a> study.</p>
+<div class="section" id="alpha-diversity">
+<h3>Alpha diversity<a class="headerlink" href="#alpha-diversity" title="Permalink to this headline">¶</a></h3>
+<p>Here I checked whether the subsampled reference OTU alpha diversities for all samples were correlated with the de novo OTU picking, standard open-reference OTU picking, and closed-reference OTU picking alpha diversities. The <em>observed species/OTUs</em> metric was calculated on add data sets (<tt class="docutils literal"><span class="pre">alpha_diversity.py</span> <span class="pre">-m</span> <span class="pre">observed_species</span></tt>), and the Pearson correlations were computed for subsampled reference OTU picking with the three other sets of values.</p>
+<div class="section" id="results">
+<h4>Results<a class="headerlink" href="#results" title="Permalink to this headline">¶</a></h4>
+<blockquote>
+<div><ul class="simple">
+<li>subsampled open-reference OTU picking versus de novo OTU picking: r=0.995 p=4.836e-88</li>
+<li>subsampled open-reference OTU picking versus standard open-reference OTU picking: r=1.000 p=0.000</li>
+<li>subsampled open-reference OTU picking versus closed-reference OTU picking: r=0.8634 p=1.405e-27</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="conclusions">
+<h4>Conclusions<a class="headerlink" href="#conclusions" title="Permalink to this headline">¶</a></h4>
+<p>Subsampled open-reference OTU picking alpha diversity values are significantly correlated with de novo, standard open-reference, and closed-reference OTU picking results. This suggests that we will derive the same biological conclusions between regarding alpha diversity when using the subsampled OTU picking workflow.</p>
+</div>
+</div>
+<div class="section" id="beta-diversity">
+<h3>Beta diversity<a class="headerlink" href="#beta-diversity" title="Permalink to this headline">¶</a></h3>
+<p>Here I checked whether Procrustes comparisons of unweighted UniFrac PCoA plots between subsampled open-reference OTU picking and de novo OTU picking, standard open-reference OTU picking, and closed-reference OTU picking yield significant results. This was calculated using <tt class="docutils literal"><span class="pre">transform_coordinate_matrices.py</span></tt> which is described in the <a class="reference external" href="./procrustes_analysis.html">Procrustes tutorial</a>. p-values are based on 1000 Monte Carlo iterations.</p>
+<div class="section" id="id2">
+<h4>Results<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<blockquote>
+<div><ul class="simple">
+<li>subsampled open-reference OTU picking versus de novo OTU picking: M2=0.009 p&lt;0.001</li>
+<li>subsampled open-reference OTU picking versus standard open-reference OTU picking: M2=0.007 p&lt;0.001</li>
+<li>subsampled open-reference OTU picking versus closed-reference OTU picking: M2=0.039 p&lt;0.001</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="id3">
+<h4>Conclusions<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
+<p>Procrustes results are highly significant for the three comparisons, suggesting that we will derive the same biological conclusions regardless of which of these OTU picking workflows is used.</p>
+</div>
+</div>
+<div class="section" id="otu-category-significance">
+<h3>OTU category significance<a class="headerlink" href="#otu-category-significance" title="Permalink to this headline">¶</a></h3>
+<p>Here I confirm that the same taxonomy groups are identified as significantly different across the pH gradient in these soils using ANOVA, regardless of which OTU picking workflow is applied. These results were computed with the <tt class="docutils literal"><span class="pre">otu_category_significance.py</span></tt> script. To define a category for this test I binned the pH values by truncating the values to integers (so 5.0, 5.3, and 5.9 are all binned to pH 5) and using this binned pH as the category. Since I&#8217;m just looking for consistent results across the different OTU picking methods I don&#8217;t think it&#8217;s important that this isn&#8217;t the most biologically relevant binning strategy. <strong>Note that OTU ids are not directly comparable across all analyses, so it is best to compare the taxonomies.</strong></p>
+<div class="section" id="id4">
+<h4>Results<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h4>
+<p>Top 5 OTUs that differ across bins for subsampled open-reference OTU picking:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="19%" />
+<col width="19%" />
+<col width="62%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">OTU ID</th>
+<th class="head">Bonferroni-adjusted p-value</th>
+<th class="head">Taxonomy</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>New.CleanUp.ReferenceOTU26927</td>
+<td>1.99e-11</td>
+<td>k__Bacteria; p__Proteobacteria; c__Gammaproteobacteria; o__Chromatiales; f__Sinobacteraceae</td>
+</tr>
+<tr class="row-odd"><td>New.CleanUp.ReferenceOTU34053</td>
+<td>7.06e-09</td>
+<td>k__Bacteria; p__Acidobacteria; c__Solibacteres; o__Solibacterales; f__Solibacteraceae</td>
+</tr>
+<tr class="row-even"><td>212596</td>
+<td>9.26e-09</td>
+<td>k__Bacteria; p__Acidobacteria; c__Solibacteres; o__Solibacterales; f__Solibacteraceae</td>
+</tr>
+<tr class="row-odd"><td>112859</td>
+<td>1.22e-08</td>
+<td>k__Bacteria; p__Proteobacteria; c__Alphaproteobacteria; o__Rhizobiales; f__Hyphomicrobiaceae</td>
+</tr>
+<tr class="row-even"><td>New.CleanUp.ReferenceOTU36189</td>
+<td>4.35e-08</td>
+<td>k__Bacteria; p__Actinobacteria; c__Actinobacteria; o__Rubrobacterales; f__Rubrobacteraceae</td>
+</tr>
+</tbody>
+</table>
+<p>Top 5 OTUs that differ across bins for de novo OTU picking:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="19%" />
+<col width="19%" />
+<col width="62%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">OTU ID</th>
+<th class="head">Bonferroni-adjusted p-value</th>
+<th class="head">Taxonomy</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>26819</td>
+<td>3.19e-11</td>
+<td>k__Bacteria; p__Proteobacteria; c__Gammaproteobacteria; o__Chromatiales; f__Sinobacteraceae</td>
+</tr>
+<tr class="row-odd"><td>28062</td>
+<td>5.92e-10</td>
+<td>k__Bacteria; p__Acidobacteria; c__; o__; f__Koribacteraceae</td>
+</tr>
+<tr class="row-even"><td>35264</td>
+<td>2.43e-09</td>
+<td>k__Bacteria; p__Acidobacteria; c__Solibacteres; o__Solibacterales; f__Solibacteraceae</td>
+</tr>
+<tr class="row-odd"><td>45059</td>
+<td>5.48e-09</td>
+<td>k__Bacteria; p__Proteobacteria; c__Alphaproteobacteria; o__; f__</td>
+</tr>
+<tr class="row-even"><td>7687</td>
+<td>2.056e-08</td>
+<td>k__Bacteria; p__Acidobacteria; c__Solibacteres; o__Solibacterales; f__Solibacteraceae</td>
+</tr>
+</tbody>
+</table>
+<p>Top 5 OTUs that differ across bins for standard open-reference OTU picking:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="19%" />
+<col width="19%" />
+<col width="62%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">OTU ID</th>
+<th class="head">Bonferroni-adjusted p-value</th>
+<th class="head">Taxonomy</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>DeNovoOTU26928</td>
+<td>1.99e-11</td>
+<td>k__Bacteria; p__Proteobacteria; c__Gammaproteobacteria; o__Chromatiales; f__Sinobacteraceae</td>
+</tr>
+<tr class="row-odd"><td>DeNovoOTU34054</td>
+<td>7.06e-09</td>
+<td>k__Bacteria; p__Acidobacteria; c__Solibacteres; o__Solibacterales; f__Solibacteraceae</td>
+</tr>
+<tr class="row-even"><td>212596</td>
+<td>9.26e-09</td>
+<td>k__Bacteria; p__Acidobacteria; c__Solibacteres; o__Solibacterales; f__Solibacteraceae</td>
+</tr>
+<tr class="row-odd"><td>112859</td>
+<td>1.22e-08</td>
+<td>k__Bacteria; p__Proteobacteria; c__Alphaproteobacteria; o__Rhizobiales; f__Hyphomicrobiaceae</td>
+</tr>
+<tr class="row-even"><td>DeNovoOTU36190</td>
+<td>4.35e-08</td>
+<td>k__Bacteria; p__Actinobacteria; c__Actinobacteria; o__Rubrobacterales; f__Rubrobacteraceae</td>
+</tr>
+</tbody>
+</table>
+<p>Top 5 OTUs that differ across bins for closed-reference OTU picking:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="17%" />
+<col width="17%" />
+<col width="67%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">OTU ID</th>
+<th class="head">Bonferroni-adjusted p-value</th>
+<th class="head">Taxonomy</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>212596</td>
+<td>4.03e-09</td>
+<td>k__Bacteria; p__Acidobacteria; c__Solibacteres; o__Solibacterales; f__Solibacteraceae; g__CandidatusSolibacter; s__</td>
+</tr>
+<tr class="row-odd"><td>112859</td>
+<td>4.62e-09</td>
+<td>k__Bacteria; p__Proteobacteria; c__Alphaproteobacteria; o__Rhizobiales; f__; g__; s__</td>
+</tr>
+<tr class="row-even"><td>544749</td>
+<td>5.56e-08</td>
+<td>k__Bacteria; p__Proteobacteria; c__Gammaproteobacteria; o__Chromatiales; f__Sinobacteraceae; g__; s__</td>
+</tr>
+<tr class="row-odd"><td>541300</td>
+<td>1.28e-07</td>
+<td>k__Bacteria; p__Acidobacteria; c__Solibacteres; o__Solibacterales; f__Solibacteraceae; g__CandidatusSolibacter; s__</td>
+</tr>
+<tr class="row-even"><td>563862</td>
+<td>1.95e-07</td>
+<td>k__Bacteria; p__Acidobacteria; c__Solibacteres; o__Solibacterales; f__Solibacteraceae; g__CandidatusSolibacter; s__</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id5">
+<h4>Conclusions<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h4>
+<p>In lieu of a solid statistical approach to compare these results, the results appear consistent across the different OTU picking workflows. The standard open-reference and subsampled open-reference are remarkably consistent.</p>
+</div>
+</div>
+<div class="section" id="additional-sanity-check-is-the-new-reference-dataset-sane">
+<h3>Additional sanity check: is the new reference dataset sane?<a class="headerlink" href="#additional-sanity-check-is-the-new-reference-dataset-sane" title="Permalink to this headline">¶</a></h3>
+<p>To confirm that the new reference data set works as expected, I applied standard open-reference OTU picking on the original input sequences against the new reference collection generated by the subsampled OTU analysis. The idea here is that most reads should now hit the reference collection. A number of reads still fail, but on close investigation these turn out to all cluster into singleton OTUs. So, this is expected as singletons are not included in the reference collection (possible to adjust this with the <tt class="docutils literal"><span class="pre">--min_otu_size</span></tt> parameter [default = 2]). The new reference collection that is generated does appear to be sane. The command used for this analysis was:</p>
+<div class="highlight-python"><pre>pick_otus_through_otu_table.py -i /home/ubuntu/data/lauber_88soils/seqs.fna -o /home/ubuntu/data/lauber_88soils/subsample_ref_otus_eval/ucr97_v_new_ref/ -p /home/ubuntu/data/lauber_88soils/subsample_ref_otus_eval/ucr_v_newref_params.txt -aO 3</pre>
+</div>
+<p>The parameters file (<tt class="docutils literal"><span class="pre">-p</span></tt>) for this analysis contained the following lines:</p>
+<div class="highlight-python"><pre>pick_otus:otu_picking_method uclust_ref
+pick_otus:refseqs_fp /home/ubuntu/data/lauber_88soils/subsample_ref_otus_eval/prefilter60/new_refseqs.fna
+pick_otus:enable_rev_strand_match True</pre>
+</div>
+</div>
+</div>
+<div class="section" id="whole-body-analysis">
+<h2>Whole body analysis<a class="headerlink" href="#whole-body-analysis" title="Permalink to this headline">¶</a></h2>
+<p>This analysis is based on the data presented in the <a class="reference external" href="http://www.ncbi.nlm.nih.gov/pubmed/19892944">Costello Whole Body</a> study.</p>
+<div class="section" id="id7">
+<h3>Alpha diversity<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<p>Here I checked whether the subsampled reference OTU alpha diversities for all samples were correlated with the de novo OTU picking, standard open-reference OTU picking, and closed-reference OTU picking alpha diversities. The <em>observed species/OTUs</em> metric was calculated on add data sets (<tt class="docutils literal"><span class="pre">alpha_diversity.py</span> <span class="pre">-m</span> <span class="pre">observed_species</span></tt>), and the Pearson correlations were computed for subsampled reference OTU picking with the three other sets of values.</p>
+<div class="section" id="id8">
+<h4>Results<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h4>
+<blockquote>
+<div><ul class="simple">
+<li>subsampled open-reference OTU picking versus de novo OTU picking: r=0.99  p=0.0</li>
+<li>subsampled open-reference OTU picking versus standard open-reference OTU picking: r=1.0 p=0.0</li>
+<li>subsampled open-reference OTU picking versus closed-reference OTU picking: r=0.95 p=0.0</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="id9">
+<h4>Conclusions<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h4>
+<p>Subsampled open-reference OTU picking alpha diversity values are significantly correlated with de novo, standard open-reference, and closed-reference OTU picking results. This suggests that we will derive the same biological conclusions between regarding alpha diversity when using the subsampled OTU picking workflow.</p>
+</div>
+</div>
+<div class="section" id="id10">
+<h3>Beta diversity<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
+<p>Here I checked whether Procrustes comparisons of unweighted UniFrac PCoA plots between subsampled open-reference OTU picking and de novo OTU picking, standard open-reference OTU picking, and closed-reference OTU picking yield significant results. This was calculated using <tt class="docutils literal"><span class="pre">transform_coordinate_matrices.py</span></tt> which is described in the <a class="reference external" href="./procrustes_analysis.html">Procrustes tutorial</a>. p-values are based on 1000 Monte Carlo iterations.</p>
+<div class="section" id="id12">
+<h4>Results<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h4>
+<blockquote>
+<div><ul class="simple">
+<li>subsampled open-reference OTU picking versus de novo OTU picking: M2=0.056 p&lt;0.001</li>
+<li>subsampled open-reference OTU picking versus standard open-reference OTU picking: M2=0.053 p&lt;0.001</li>
+<li>subsampled open-reference OTU picking versus closed-reference OTU picking: M2=0.072 p&lt;0.001</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="id13">
+<h4>Conclusions<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h4>
+<p>Procrustes results are highly significant for the three comparisons, suggesting that we will derive the same biological conclusions regardless of which of these OTU picking workflows is used.</p>
+</div>
+</div>
+<div class="section" id="id14">
+<h3>OTU category significance<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
+<p>Here I confirm that the same taxonomy groups are identified as significantly different across the body sites in this study using ANOVA, regardless of which OTU picking workflow is applied. These results were computed with the <tt class="docutils literal"><span class="pre">otu_category_significance.py</span></tt> script. <strong>Note that OTU ids are not directly comparable across all analyses, so it is best to compare the taxonomies.</strong></p>
+<div class="section" id="id15">
+<h4>Results<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h4>
+<p>Top 5 OTUs that differ across bins for subsampled open-reference OTU picking:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="19%" />
+<col width="19%" />
+<col width="62%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">OTU ID</th>
+<th class="head">Bonferroni-adjusted p-value</th>
+<th class="head">Taxonomy</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>470747</td>
+<td>5.37e-151</td>
+<td>k__Bacteria; p__Firmicutes; c__Clostridia; o__Clostridiales; f__Lachnospiraceae</td>
+</tr>
+<tr class="row-odd"><td>471122</td>
+<td>4.35e-143</td>
+<td>k__Bacteria; p__Bacteroidetes; c__Bacteroidia; o__Bacteroidales; f__Prevotellaceae</td>
+</tr>
+<tr class="row-even"><td>470477</td>
+<td>4.14e-135</td>
+<td>k__Bacteria; p__Firmicutes; c__Bacilli; o__Lactobacillales; f__Carnobacteriaceae</td>
+</tr>
+<tr class="row-odd"><td>94166</td>
+<td>1.61e-125</td>
+<td>k__Bacteria; p__Proteobacteria; c__Gammaproteobacteria; o__Pasteurellales; f__Pasteurellaceae</td>
+</tr>
+<tr class="row-even"><td>442949</td>
+<td>1.33e-124</td>
+<td>k__Bacteria; p__Firmicutes; c__Clostridia; o__Clostridiales; f__Veillonellaceae</td>
+</tr>
+</tbody>
+</table>
+<p>Top 5 OTUs that differ across bins for de novo OTU picking:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="19%" />
+<col width="19%" />
+<col width="62%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">OTU ID</th>
+<th class="head">Bonferroni-adjusted p-value</th>
+<th class="head">Taxonomy</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>6389</td>
+<td>4.54e-148</td>
+<td>k__Bacteria; p__Firmicutes; c__Clostridia; o__Clostridiales; f__Lachnospiraceae</td>
+</tr>
+<tr class="row-odd"><td>17234</td>
+<td>1.16e-141</td>
+<td>k__Bacteria; p__Bacteroidetes; c__Bacteroidia; o__Bacteroidales; f__Prevotellaceae</td>
+</tr>
+<tr class="row-even"><td>18227</td>
+<td>3.05e-139</td>
+<td>k__Bacteria; p__Firmicutes; c__Bacilli; o__Lactobacillales; f__Carnobacteriaceae</td>
+</tr>
+<tr class="row-odd"><td>7262</td>
+<td>1.22e-134</td>
+<td>k__Bacteria; p__Firmicutes; c__Clostridia; o__Clostridiales; f__Veillonellaceae</td>
+</tr>
+<tr class="row-even"><td>18575</td>
+<td>2.74e-122</td>
+<td>k__Bacteria; p__Proteobacteria; c__Gammaproteobacteria; o__Pasteurellales; f__Pasteurellaceae</td>
+</tr>
+</tbody>
+</table>
+<p>Top 5 OTUs that differ across bins for standard open-reference OTU picking:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="19%" />
+<col width="19%" />
+<col width="62%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">OTU ID</th>
+<th class="head">Bonferroni-adjusted p-value</th>
+<th class="head">Taxonomy</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>470747</td>
+<td>5.37e-151</td>
+<td>k__Bacteria; p__Firmicutes; c__Clostridia; o__Clostridiales; f__Lachnospiraceae</td>
+</tr>
+<tr class="row-odd"><td>471122</td>
+<td>4.35e-143</td>
+<td>k__Bacteria; p__Bacteroidetes; c__Bacteroidia; o__Bacteroidales; f__Prevotellaceae</td>
+</tr>
+<tr class="row-even"><td>470477</td>
+<td>4.14e-135</td>
+<td>k__Bacteria; p__Firmicutes; c__Bacilli; o__Lactobacillales; f__Carnobacteriaceae</td>
+</tr>
+<tr class="row-odd"><td>94166</td>
+<td>1.61e-125</td>
+<td>k__Bacteria; p__Proteobacteria; c__Gammaproteobacteria; o__Pasteurellales; f__Pasteurellaceae</td>
+</tr>
+<tr class="row-even"><td>442949</td>
+<td>1.33e-124</td>
+<td>k__Bacteria; p__Firmicutes; c__Clostridia; o__Clostridiales; f__Veillonellaceae</td>
+</tr>
+</tbody>
+</table>
+<p>Top 5 OTUs that differ across bins for closed-reference OTU picking:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="17%" />
+<col width="17%" />
+<col width="66%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">OTU ID</th>
+<th class="head">Bonferroni-adjusted p-value</th>
+<th class="head">Taxonomy</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>470747</td>
+<td>3.25e-150</td>
+<td>k__Bacteria; p__Firmicutes; c__Clostridia; o__Clostridiales; f__Lachnospiraceae</td>
+</tr>
+<tr class="row-odd"><td>471122</td>
+<td>2.20e-148</td>
+<td>k__Bacteria; p__Bacteroidetes; c__Bacteroidia; o__Bacteroidales; f__Prevotellaceae</td>
+</tr>
+<tr class="row-even"><td>470477</td>
+<td>2.51e-138</td>
+<td>k__Bacteria; p__Firmicutes; c__Bacilli; o__Lactobacillales; f__Carnobacteriaceae</td>
+</tr>
+<tr class="row-odd"><td>94166</td>
+<td>4.30e-130</td>
+<td>k__Bacteria; p__Proteobacteria; c__Gammaproteobacteria; o__Pasteurellales; f__Pasteurellaceae</td>
+</tr>
+<tr class="row-even"><td>442949</td>
+<td>2.04e-121</td>
+<td>k__Bacteria; p__Firmicutes; c__Clostridia; o__Clostridiales; f__Veillonellaceae</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id16">
+<h4>Conclusions<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h4>
+<p>In lieu of a solid statistical approach to compare these results, the results are remarkably consistent across the different OTU picking workflows.</p>
+</div>
+</div>
+<div class="section" id="additional-sanity-check-what-reads-are-being-discarded-by-the-prefilter">
+<span id="prefilter-threshold"></span><h3>Additional sanity check: what reads are being discarded by the prefilter?<a class="headerlink" href="#additional-sanity-check-what-reads-are-being-discarded-by-the-prefilter" title="Permalink to this headline">¶</a></h3>
+<p>To investigate what reads get discarded at the prefilter stage, I evaluated a subset of the reads discarded when the prefilter was set to 80% (<tt class="docutils literal"><span class="pre">--prefilter_percent_id</span> <span class="pre">0.80</span></tt>) versus when the prefilter was set to 60% (default).</p>
+<div class="section" id="sequences-filtered-at-80-but-not-at-60">
+<h4>Sequences filtered at 80% but not at 60%<a class="headerlink" href="#sequences-filtered-at-80-but-not-at-60" title="Permalink to this headline">¶</a></h4>
+<p>These three have high percent id matches to 16S sequences in NCBI:</p>
+<div class="highlight-python"><pre>&gt;F12Pinl.140479_129272 FFLHOYS02GCJLO orig_bc=ATACAGAGCTCC new_bc=ATACAGAGCTCC bc_diffs=0
+CTGGGCCGTGTCTCAGTCCCAGTGTGGCTGATCATCCGAAAAGACCAGCTAAGCATCATTGGCTTGGTCAGCCTTTACCTAACCAACTACCTGATACTACGTGGGCTCATCGAACAGCGCGAATTAGCTTGCTTTATGAATTATTCAGGATTTGGAGTGAACTATTCGGCAGATTCCCACGCGTTACGCACCCGTTCGCCACTTTGCTTG
+&gt;F32Indr.140459_1174716 FFO92CG02IYZBA orig_bc=GCTATCACGAGT new_bc=GCTATCACGAGT bc_diffs=0
+CCGGGCCGTGTCTCAGTCCCAGTGTGGCTGATCATCCGAAAAGACCAGCTAAGCATCATTGGCTTGGTCAGCCTTTACCTGACCAACTACCTAATACTACGCAGGCTCATCAAACAGCGCTTTTTAGCTTTCTTCAGGATTTGGCCCGAACTGTTCGGCAGATTCCCACGCGTTACGCACCCGTTCGCCACTTTGTTCTCAACTGTTCCCACCTCCTGGGCGAGA
+&gt;F32Forr.140528_1210712 FFO92CG02IKGYS orig_bc=GCGTTACACACA new_bc=GCGTTACACACA bc_diffs=0
+CCGGGCCGTGTCTCAGTCCCAGTGTGGCTGATCATCCGAAAAGACCAGCTAAGCATCATTGGCTTGGTCAGCCTTTACCTGACCAACTACCTAATACTACGCAGGCTCATCAAACAGCGCTTTTGAGCTTTCTTCAGGATTTGGCCCGAACTGTTCGGCAGATTCCCACGCGTTACGCACCCGTTCGCCACTTTGTTCTCAACTATTCCGATTCTTTTTTCGGTAGGCCGTTA</pre>
+</div>
+</div>
+<div class="section" id="sequences-filtered-80-and-at-60">
+<h4>Sequences filtered 80% and at 60%<a class="headerlink" href="#sequences-filtered-80-and-at-60" title="Permalink to this headline">¶</a></h4>
+<p>These three reads hit a small fragment, a human sequence, and nothing in NCBI, respectively:</p>
+<div class="highlight-python"><pre>&gt;M22Pinr.140692_1148864 FFO92CG01EQIWQ orig_bc=CGCACATGTTAT new_bc=CGCACATGTTAT bc_diffs=0
+GGAAAAGGGAAAAACAGATGAGACAAATAGAAAACAAATAGCAAATTAGTAGGTGTTAACATGACTTTATCAATAATTACATCAAATGTAGATGATGTTAACCATGGATTGACAAACTTTTTCTTTATAGGACCAGACAGTCAATATTTTAGGTCTTTGAGGCCATATGGTATCTGTCATAACCACTCAACTGAGCCAGGATCAAACTCTGA
+&gt;F31Nstl.140789_1153834 FFO92CG02FSK33 orig_bc=GCAGCCGAGTAT new_bc=GCAGCCGAGTAT bc_diffs=0
+CANNOT INCLUDE THIS READ DUE TO IRB RESTRICTIONS
+&gt;F32Nstl.140804_1160735 FFO92CG01BRQNZ orig_bc=GCTGCTGCAATA new_bc=GCTGCTGCAATA bc_diffs=0
+CTGAAACCCTGGGTCACCAAAAGGCAGGAGGAGGAGGGACAGGGCAAGGCAGGGGAAGAGAGGGGAGGCTGACTCACATACACACATATGCATGCACACATCACACCCACATTCATGTACACACACACAGATTCACATGCATGCACAGCACAATCGCACACTTGTATACACACACAGGCACA</pre>
+</div>
+</div>
+<div class="section" id="id17">
+<h4>Conclusions<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h4>
+<p>Based on this analysis (and currently unpublished data &#8211; will fill in when available), a threshold of 60% was chosen as the default value for discarding sequences that are likely not rRNA.</p>
+</div>
+</div>
+</div>
+<div class="section" id="using-the-subsampled-open-reference-otu-picking-workflow-in-iterative-mode">
+<span id="iterative-mode"></span><h2>Using the subsampled open-reference OTU picking workflow in iterative mode<a class="headerlink" href="#using-the-subsampled-open-reference-otu-picking-workflow-in-iterative-mode" title="Permalink to this headline">¶</a></h2>
+<p>The subsampled open-reference OTU picking workflow can be run in iterative mode to support multiple different sequence collections, such as several HiSeq runs. In iterative mode, the list of sequence files will be processed in order, and the new reference sequences generated at each step will be used as the reference collection for the subsequent step. After all input collections have been processed a single OTU table and tree, covering all of the input collections, will be generated.</p>
+<p>To apply this analysis to <tt class="docutils literal"><span class="pre">seqs1.fna</span></tt> and <tt class="docutils literal"><span class="pre">seqs2.fna</span></tt> in iterative mode, picking OTUs against the reference collection <tt class="docutils literal"><span class="pre">refseqs.fna</span></tt> you can run the following command.</p>
+<p>To apply this analysis to <tt class="docutils literal"><span class="pre">seqs1.fna</span></tt>, picking OTUs against the reference collection <tt class="docutils literal"><span class="pre">refseqs.fna</span></tt> you can run the following command. Your parameters file should contain the following:</p>
+<div class="highlight-python"><pre>pick_otus:otu_picking_method uclust_ref
+pick_otus:enable_rev_strand_match True</pre>
+</div>
+<p>You should <em>always use full paths</em> which are represented here by <tt class="docutils literal"><span class="pre">$PWD</span></tt>, but will usually look something like <tt class="docutils literal"><span class="pre">/home/ubuntu/my_data/</span></tt> (in other words, they should start with a <tt class="docutils literal"><span class="pre">/</span></tt>). In this example your input sequences (<tt class="docutils literal"><span class="pre">seqs1.fna</span></tt>), and your metadata mapping file (<tt class="docutils literal"><span class="pre">map.txt</span></tt>) are all in the same directory represented by <tt class="docutils literal"><span class="pre">$PWD</span></tt>. If you work from the directory containing those files, you can leave <tt class="docutils literal"><span class="pre">$PWD</span></tt> in the commands instead of specifying the full paths:</p>
+<div class="highlight-python"><pre>pick_subsampled_reference_otus_through_otu_table.py -i $PWD/seqs1.fna,$PWD/seqs2.fna -r $PWD/refseqs.fna -o $PWD/ucrss_iter/ -aO 8 -p $PWD/ucrss_params.txt</pre>
+</div>
+<p>This command should be run in parallel. Each job will need approximately 4GB of RAM, so if running on EC2 and you want to start 8 parallel jobs (recommended setting for EC2), your instance type should be <tt class="docutils literal"><span class="pre">m2.4xlarge</span></tt>. The <tt class="docutils literal"><span class="pre">-aO</span> <span class="pre">8</span></tt> specifies that we want to start 8 parallel jobs - adjust this according to the resources you have available.</p>
+<p>After iterative OTU picking you can continue on with beta diversity (and other) analyses as described <a class="reference internal" href="#ucrss-beta-diversity"><em>here</em></a>.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Open-reference OTU picking applied to Illumina data</a><ul>
+<li><a class="reference internal" href="#option-1-standard-open-reference-otu-picking">Option 1: Standard open-reference OTU picking</a></li>
+<li><a class="reference internal" href="#option-2-subsampled-open-reference-otu-picking">Option 2: Subsampled open-reference OTU picking</a><ul>
+<li><a class="reference internal" href="#step-0-prefilter-parallel">Step 0: Prefilter (parallel)</a></li>
+<li><a class="reference internal" href="#step-1-closed-reference-parallel">Step 1: Closed reference (parallel)</a></li>
+<li><a class="reference internal" href="#step-2-de-novo-clustering-of-subsampled-failures-serial">Step 2: De novo clustering of subsampled failures (serial)</a></li>
+<li><a class="reference internal" href="#step-3-closed-reference-round-2-parallel">Step 3: Closed reference, round 2 (parallel)</a></li>
+<li><a class="reference internal" href="#step-4-de-novo-serial">Step 4: De novo (serial)</a></li>
+<li><a class="reference internal" href="#post-otu-processing-parallel-and-serial-depending-on-step">Post-OTU processing (parallel and serial, depending on step)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#filtering-an-open-reference-otu-table-to-reference-otus-only">Filtering an open-reference OTU table to reference OTUs only</a></li>
+<li><a class="reference internal" href="#subsampled-otu-picking-workflow-evaluation">Subsampled OTU picking workflow evaluation</a></li>
+<li><a class="reference internal" href="#soils-analysis">88 soils analysis</a><ul>
+<li><a class="reference internal" href="#alpha-diversity">Alpha diversity</a><ul>
+<li><a class="reference internal" href="#results">Results</a></li>
+<li><a class="reference internal" href="#conclusions">Conclusions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#beta-diversity">Beta diversity</a><ul>
+<li><a class="reference internal" href="#id2">Results</a></li>
+<li><a class="reference internal" href="#id3">Conclusions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#otu-category-significance">OTU category significance</a><ul>
+<li><a class="reference internal" href="#id4">Results</a></li>
+<li><a class="reference internal" href="#id5">Conclusions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#additional-sanity-check-is-the-new-reference-dataset-sane">Additional sanity check: is the new reference dataset sane?</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#whole-body-analysis">Whole body analysis</a><ul>
+<li><a class="reference internal" href="#id7">Alpha diversity</a><ul>
+<li><a class="reference internal" href="#id8">Results</a></li>
+<li><a class="reference internal" href="#id9">Conclusions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id10">Beta diversity</a><ul>
+<li><a class="reference internal" href="#id12">Results</a></li>
+<li><a class="reference internal" href="#id13">Conclusions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id14">OTU category significance</a><ul>
+<li><a class="reference internal" href="#id15">Results</a></li>
+<li><a class="reference internal" href="#id16">Conclusions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#additional-sanity-check-what-reads-are-being-discarded-by-the-prefilter">Additional sanity check: what reads are being discarded by the prefilter?</a><ul>
+<li><a class="reference internal" href="#sequences-filtered-at-80-but-not-at-60">Sequences filtered at 80% but not at 60%</a></li>
+<li><a class="reference internal" href="#sequences-filtered-80-and-at-60">Sequences filtered 80% and at 60%</a></li>
+<li><a class="reference internal" href="#id17">Conclusions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#using-the-subsampled-open-reference-otu-picking-workflow-in-iterative-mode">Using the subsampled open-reference OTU picking workflow in iterative mode</a></li>
+</ul>
+</li>
+</ul>
+
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2012, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

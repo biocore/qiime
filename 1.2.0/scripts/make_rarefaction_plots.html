@@ -1,0 +1,178 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>make_rarefaction_plots.py – Generate Rarefaction Plots &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.2.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="make-rarefaction-plots"></span><div class="section" id="make-rarefaction-plots-py-generate-rarefaction-plots">
+<span id="index-54"></span><h1><em>make_rarefaction_plots.py</em> &#8211; Generate Rarefaction Plots<a class="headerlink" href="#make-rarefaction-plots-py-generate-rarefaction-plots" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>Once the batch alpha diversity files have been collated, you may want to compare the diversity using plots. Using the results from <a class="reference external" href="./collate_alpha.html">collate_alpha.py</a>, you can plot the samples and or by category in the mapping file using this script.</p>
+<p>This script creates an html file of rarefaction plots based on the supplied collated alpha-diversity files in a folder or a comma-separated list of files, by passing the &#8220;-i&#8221; option.  Be aware that this script produces many images for the interactive html pages, so you may choose to not create these pages. The user may also supply optional arguments like an image type (-g), and a resolution (-d).</p>
+<p><strong>Usage:</strong> <tt class="docutils literal"><span class="pre">make_rarefaction_plots.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-input_dir</dt>
+<dd>Name of folder containing rarefaction files, takes output from <a class="reference external" href="./collate_alpha.html">collate_alpha.py</a>.  The user can also supply a list of files, which are comma-separated. [REQUIRED]</dd>
+<dt>-m, <cite>-</cite>-map_fname</dt>
+<dd>Name of mapping file [REQUIRED]</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-b, <cite>-</cite>-colorby</dt>
+<dd>Name of columns to make rarefaction graphs of, comma delimited no spaces.</dd>
+<dt>-p, <cite>-</cite>-prefs_path</dt>
+<dd>Preferences file for coloring of columns.</dd>
+<dt>-k, <cite>-</cite>-background_color</dt>
+<dd>Background color for graphs.</dd>
+<dt>-g, <cite>-</cite>-imagetype</dt>
+<dd>Extension for image type choose from (png, svg, pdf).  WARNING: Some formats may not properly open in your browser! [default: png]</dd>
+<dt>-d, <cite>-</cite>-resolution</dt>
+<dd>Output image resolution, [default: 75]</dd>
+<dt>-y, <cite>-</cite>-ymax</dt>
+<dd>This is the ymax value to be used for the plots, so you can compare rarefaction plots between two different analyses [default: None]</dd>
+<dt>-w, <cite>-</cite>-webpage</dt>
+<dd>This is allows to user to not create the webpage, which may be slow with large datasets [default: True]</dd>
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>Path to the output directory</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>The result of this script produces a folder and within that folder there is a sub-folder containing image files. Within the main folder, there is an html file.</p>
+<p><strong>Default Example:</strong></p>
+<p>For generated rarefaction plots using the default parameters, including the mapping file and one rarefaction file, you can use the following command:</p>
+<div class="highlight-python"><pre>make_rarefaction_plots.py -i collated_alpha/ -m mapping_file.txt</pre>
+</div>
+<p><strong>Specify Image Type and Resolution:</strong></p>
+<p>Optionally, you can change the resolution (&#8220;-d&#8221;) and the type of image created (&#8220;-i&#8221;), by using the following command:</p>
+<div class="highlight-python"><pre>make_rarefaction_plots.py -i collated_alpha/ -m mapping_file.txt -d 180 -g pdf</pre>
+</div>
+<p><strong>Use Prefs File:</strong></p>
+<p>You can also supply a preferences file &#8220;-p&#8221;, as follows</p>
+<div class="highlight-python"><pre>make_rarefaction_plots.py -i collated_alpha/ -m mapping_file.txt -d 180 -p prefs.txt</pre>
+</div>
+<p><strong>Set Background Color:</strong></p>
+<p>Alternatively, you can set the plot background &#8220;-k&#8221;, as follows: a preferences file &#8220;-p&#8221;, as follows</p>
+<div class="highlight-python"><pre>make_rarefaction_plots.py -i collated_alpha/ -m mapping_file.txt -k black</pre>
+</div>
+<p><strong>Generate raw data without interactive webpages:</strong></p>
+<p>The user can choose to not create an interactive webpage (&#8220;-w&#8221; option).  This is for the case, where the user just wants the average plots and the raw average data.</p>
+<div class="highlight-python"><pre>make_rarefaction_plots.py -i collated_alpha/ -m mapping_file.txt -w</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://pycogent.sourceforge.net" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+      &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>filter_otu_table.py – Filters OTU table by minimum OTU count and number of samples or by taxonomy &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.1.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="filter-otu-table"></span><div class="section" id="filter-otu-table-py-filters-otu-table-by-minimum-otu-count-and-number-of-samples-or-by-taxonomy">
+<span id="index-26"></span><h1><em>filter_otu_table.py</em> &#8211; Filters OTU table by minimum OTU count and number of samples or by taxonomy<a class="headerlink" href="#filter-otu-table-py-filters-otu-table-by-minimum-otu-count-and-number-of-samples-or-by-taxonomy" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>After the OTU has been generated, the user may want to filter the table based on the number of samples within each OTU or by the number of sequences per OTU. This step is generally done to reduce the noise within the OTU table and can also reduce the overall size of the table, which is essential when performing analyses on large datasets. Along with filtering based on samples or sequences, the user can include and exclude specific taxon groups.</p>
+<p><strong>Usage:</strong> <tt class="docutils literal"><span class="pre">filter_otu_table.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-otu_table_fp</dt>
+<dd>Path to the input OTU table (i.e., the output from <a class="reference external" href="./make_otu_table.html">make_otu_table.py</a>)</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-c, <cite>-</cite>-min_count</dt>
+<dd>Retain OTUs with at least this many sequences [default=1]</dd>
+<dt>-s, <cite>-</cite>-min_samples</dt>
+<dd>Retain OTUs found in at least this many samples [default=2]</dd>
+<dt>-t, <cite>-</cite>-include_taxonomy</dt>
+<dd>List of taxonomy terms to include [default=]</dd>
+<dt>-e, <cite>-</cite>-exclude_taxonomy</dt>
+<dd>List of taxonomy terms to exclude [default=]</dd>
+<dt>-o, <cite>-</cite>-dir_path</dt>
+<dd>Directory prefix for all analyses [default=./]</dd>
+<dt>-p, <cite>-</cite>-seqs_per_sample</dt>
+<dd>Minimum sequences per sample to retain the sample. [default=None]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>The result of <a class="reference external" href="./filter_otu_table.html">filter_otu_table.py</a> creates a new OTU table, where the filename uses the input OTU filename and appends &#8220;filtered.txt&#8221; to the end of the name.</p>
+<p><strong>Examples:</strong></p>
+<p>To filter the OTU table using the default parameters (&#8220;-c 1&#8221; and &#8220;-s 2&#8221;), then write the results to the current working directory, you can use the code as follows:</p>
+<div class="highlight-python"><pre>filter_otu_table.py -i otu_table.txt</pre>
+</div>
+<p>To filter by the number of samples (i.e., 5) within each OTU (keep only OTU&#8217;s found in at least X number of samples), you can use the code as follows:</p>
+<div class="highlight-python"><pre>filter_otu_table.py -i otu_table.txt -s 5</pre>
+</div>
+<p>To filter by the number of sequences (i.e., 5) within each OTU (keep only OTU&#8217;s with at least X sequences in the OTU), you can use the code as follows:</p>
+<div class="highlight-python"><pre>filter_otu_table.py -i otu_table.txt -c 5</pre>
+</div>
+<p>To include (&#8220;Bacteria&#8221;) and exclude (&#8220;Proteobacteria&#8221;) certain taxon groups (options -t / -e respectively), you can use the code as follows.  The include and exclude parameters must be used together:</p>
+<div class="highlight-python"><pre>filter_otu_table.py -i otu_table.txt -t Bacteria -e Proteobacteria</pre>
+</div>
+<p><strong>Filter samples by number of sequences:</strong></p>
+<p>A user may want to remove samples that have low sequence coverage. NOTE: this feature is mutually exclusive from the other filtering options, so if you pass this, you will need to perform a subsequent filter to remove by the other options.</p>
+<div class="highlight-python"><pre>filter_otu_table.py -i otu_table.txt -p 10</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+		
+	 <li><a href="../index.html">Home</a><br /></li>
+	 <li><a href="../install/index.html">Install</a><br /></li>
+	 <li><a href="../documentation/index.html">Documentation</a><br /></li>
+	 <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	 <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	 <li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+      &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

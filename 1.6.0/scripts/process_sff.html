@@ -1,0 +1,173 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>process_sff.py – Convert sff to FASTA and QUAL files &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.6.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="process-sff"></span><div class="section" id="process-sff-py-convert-sff-to-fasta-and-qual-files">
+<span id="index-0"></span><h1><em>process_sff.py</em> &#8211; Convert sff to FASTA and QUAL files<a class="headerlink" href="#process-sff-py-convert-sff-to-fasta-and-qual-files" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>This script converts a directory of sff files into FASTA, QUAL and flowgram files.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">process_sff.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-input_dir</dt>
+<dd>Input directory of sff files or a single sff filepath</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt><cite>-</cite>-no_trim</dt>
+<dd>Do not trim sequence/qual (requires &#8211;use_sfftools option) [default: False]</dd>
+<dt>-f, <cite>-</cite>-make_flowgram</dt>
+<dd>Generate a flowgram file. [default: False]</dd>
+<dt>-t, <cite>-</cite>-convert_to_FLX</dt>
+<dd>Convert Titanium reads to FLX length. [default: False]</dd>
+<dt><cite>-</cite>-use_sfftools</dt>
+<dd>Use the external programs sfffile and sffinfo for processing, instead of the equivalent python implementation</dd>
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>Input directory of sff files [default: same as input dir]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>This script results in FASTA and QUAL formatted files.</p>
+<p><strong>Simple example:</strong></p>
+<p>Convert all the sffs in directory &#8220;sffs/&#8221; to fasta and qual.</p>
+<div class="highlight-python"><pre>process_sff.py -i sffs/</pre>
+</div>
+<p>Convert a single sff to fasta and qual.</p>
+<div class="highlight-python"><pre>process_sff.py -i sffs/test.sff</pre>
+</div>
+<p><strong>Flowgram example:</strong></p>
+<p>Convert all the sffs in directory &#8220;sffs/&#8221; to fasta and qual, along with a flowgram file.</p>
+<div class="highlight-python"><pre>process_sff.py -i sffs/ -f</pre>
+</div>
+<p>Convert a single sff to fasta and qual, along with a flowgram file.</p>
+<div class="highlight-python"><pre>process_sff.py -i sffs/test.sff -f</pre>
+</div>
+<p><strong>Output example:</strong></p>
+<p>Convert all the sffs in directory &#8220;sffs/&#8221; to fasta and qual, along with a flowgram file and write them to another directory.</p>
+<div class="highlight-python"><pre>process_sff.py -i sffs/ -f -o output_dir</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2012, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

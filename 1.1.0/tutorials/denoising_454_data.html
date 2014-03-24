@@ -1,0 +1,196 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Denoising of 454 Data Sets &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.1.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="denoising-of-454-data-sets">
+<span id="denoising-454-data"></span><h1>Denoising of 454 Data Sets<a class="headerlink" href="#denoising-of-454-data-sets" title="Permalink to this headline">¶</a></h1>
+<p>The pyrosequencing technology employed by 454 sequencing machines produces characteristic sequencing errors, mostly imprecise signals for longer homopolymers runs. Most of the sequences contain none or only a few errors, but a few sequences contain enough errors to be classified as an additional rare OTU. The goal for the denoising procedure is to reduce the amount of erroneous OTUs and thus increasing the accuracy of the whole QIIME pipeline.</p>
+<p>Note: Data sets with at most one full 454 run (~500,000) can be denoised without manual intervention using the workflow script <a class="reference external" href="../scripts/pick_otus_through_otu_table.html">pick_otus_through_otu_table.py</a>.</p>
+<p>If there are multiple, large 454 runs, follow this tutorial to denoise the data set and analyze it with QIIME. In short, each 454 run needs to be preprocessed with <a class="reference external" href="../scripts/split_libraries.html">split_libraries.py</a> and denoised separately. Afterwards the output files are combined for OTU picking. We will show an example with two 454 runs (<tt class="docutils literal"><span class="pre">run1.sff</span></tt> and <tt class="docutils literal"><span class="pre">run2.sff</span></tt>)</p>
+<p><strong>Data preparation:</strong></p>
+<p>From the raw, binary sff file, three files need to be generated for each run with the sffinfo tool from 454. You should have this tool if you have a 454 sequencer. Otherwise ask the sequencing facility for the files:</p>
+<div class="highlight-python"><pre>sffinfo    run_1.sff &gt; run_1.sff.txt
+sffinfo -s run_1.sff &gt; run_1.fasta
+sffinfo -q run_1.sff &gt; run_1.qual
+
+sffinfo    run_2.sff &gt; run_2.sff.txt
+sffinfo -s run_2.sff &gt; run_2.fasta
+sffinfo -q run_2.sff &gt; run_2.qual</pre>
+</div>
+<p><strong>Quality filtering and barcode assignment:</strong></p>
+<p>Prior to denoising, each read has to be assigned to one barcode/sample
+and low quality reads need to be filtered out. This can be done using
+<a class="reference external" href="../scripts/split_libraries.html">split_libraries.py</a>. An example command would be:</p>
+<div class="highlight-python"><pre>split_libraries.py -o run1 -f run1.fasta -q run1.qual -m run1_mapping.txt -w 50 -r -l 150 -L 350
+split_libraries.py -o run2 -f run2.fasta -q run2.qual -m run2_mapping.txt -w 50 -r -l 150 -L 350 -n 1000000</pre>
+</div>
+<p>This step has to be done separately for each 454 pool, following the usual guidelines for running several data sets through <a class="reference external" href="../scripts/split_libraries.html">split_libraries.py</a>.</p>
+<p><strong>Flowgram clustering (aka denoising)</strong></p>
+<p>Each run will be denoised using its quality filtered output of <a class="reference external" href="../scripts/split_libraries.html">split_libraries.py</a> and the initial <tt class="docutils literal"><span class="pre">.sff.txt</span></tt> file. All flowgrams without a match in the provided <a class="reference external" href="../scripts/split_libraries.html">split_libraries.py</a> FASTA file are removed. The sequencing primer will be extracted from the metadata mapping file:</p>
+<div class="highlight-python"><pre>denoise.py -v -i run1.sff.txt -f run1/seqs.fna -o run1/denoised/ -m run1_mapping.txt
+denoise.py -v -i run2.sff.txt -f run2/seqs.fna -o run2/denoised/ -m run2_mapping.txt</pre>
+</div>
+<p>Denoising large data sets is computationally demanding. While smaller data sets (&lt; 50,000 sequences) can be run on one single machine within an hour, a typical 454 run with 400,000 sequences after quality filtering requires up to a day on a 24 core cluster. If the denoiser is set up properly on your cluster or multi-core machine, it can be started in parallel mode using the option -n:</p>
+<div class="highlight-python"><pre>denoise.py -v -i run1.sff.txt -f run1/seqs.fna -o run1/denoised/ -m run1_mapping.txt -n 24</pre>
+</div>
+<p>The output files of this step is stored in directory <tt class="docutils literal"><span class="pre">run1/</span></tt> and <tt class="docutils literal"><span class="pre">run2/</span></tt>, respectively:</p>
+<blockquote>
+<ol class="arabic simple">
+<li><tt class="docutils literal"><span class="pre">denoiser.log</span></tt>: Information about the clustering procedure if run in verbose mode (-v). Can be used to monitor the program&#8217;s progress.</li>
+<li><tt class="docutils literal"><span class="pre">centroids.fasta</span></tt>: The centroids of clusters with 2 and more members.</li>
+<li><tt class="docutils literal"><span class="pre">singletons.fasta</span></tt>: Reads that could not be clustered.</li>
+<li><tt class="docutils literal"><span class="pre">denoiser_mapping.txt</span></tt>: The cluster to read mapping.</li>
+</ol>
+</blockquote>
+<p>Usually the centroid and singleton files are combined for downstream analysis,
+but occasionally it might make sense to remove the low confidence singletons.</p>
+<p><strong>Re-integrating the denoised data into QIIME</strong></p>
+<p>The final step in a denoising run usually is the re-integration of the data into the QIIME pipeline. Since the denoiser uses flowgram similarity for clustering there is no guaranteed sequence (dis)-similarity between cluster centroids. In order to create the usual species-level OTUs at 97% sequence similarity, run one of QIIME&#8217;s OTU pickers on the combined denoiser output. We recommend to use uclust with the option &#8211;user_sort and &#8211;optimal (short options -A and -B for pick_otus.py) to assure the best possible choice of OTUs.</p>
+<p>Combine centroids and singletons from both runs:</p>
+<div class="highlight-python"><pre>cat run1/centroids.fasta run1/singletons.fasta run2/centroids.fasta run2/singletons.fasta &gt; denoised.fasta</pre>
+</div>
+<p>Sort the combined FASTA file by cluster size:</p>
+<div class="highlight-python"><pre>sort_denoiser_output.py -i denoised.fasta -o denoised_sorted.fasta</pre>
+</div>
+<p>Concatenate the output of <a class="reference external" href="../scripts/split_libraries.html">split_libraries.py</a>:</p>
+<div class="highlight-python"><pre>cat run1/seqs.fna run2/seqs.fna &gt; seqs.fna</pre>
+</div>
+<p>Run the QIIME OTU picker:</p>
+<div class="highlight-python"><pre>pick_otus.py -s 0.97 -i denoised_sorted.fasta -m uclust -A -B</pre>
+</div>
+<p>Combine denoiser and QIIME OTU picker output:</p>
+<div class="highlight-python"><pre>merge_denoiser_output.py -f seqs.fna  -d denoised_sorted.fasta  -p uclust_picked_otus/denoised_sorted_otus.txt</pre>
+</div>
+<p>This command creates two new files in a directory (default: <tt class="docutils literal"><span class="pre">Denoiser_out_otu_picked/</span></tt>):</p>
+<blockquote>
+<ol class="arabic simple">
+<li><tt class="docutils literal"><span class="pre">denoised_otu_map.txt</span></tt>: In this mapping, the read/flowgram IDs are replaced by their sample_id from the <a class="reference external" href="../scripts/split_libraries.html">split_libraries.py</a> FASTA file. Also, the lists for each OTU are sorted such that the largest cluster from denoising appears first. This will be important for the next step, picking representative sequences.</li>
+<li><tt class="docutils literal"><span class="pre">denoised_all.fasta</span></tt>: A FASTA file where the header lines are updated with the new sample_ids</li>
+</ol>
+</blockquote>
+<p>Since the sample_ids in the OTU map are already sorted, we can simply pick the most abundant sequence for an OTU by using the &#8220;first&#8221; method with <a class="reference external" href="../scripts/pick_rep_set.html">pick_rep_set.py</a>:</p>
+<div class="highlight-python"><pre>cd  Denoiser_out_otu_picked
+pick_rep_set.py -f denoised_all.fasta -i denoised_otu_map.txt  -m first</pre>
+</div>
+<p>The resulting set of representative sequences can then be fed into the
+QIIME pipeline as any other representative set.</p>
+<p>Notes:</p>
+<ul class="simple">
+<li>Denoising very small data sets might be ineffective, since there might not be a good read in the data set that can be used to correct a bad read. If there is a small data set (probably from re-sequencing an under-sampled sample) consider combining it with another, larger data set in your study prior to denoising.</li>
+<li>Currently only one sequencing primer per run is supported. If there is more than one primer the run needs to be split. Simply make per per-primer mapping files and run <a class="reference external" href="../scripts/split_libraries.html">split_libraries.py</a> with each mapping file, then denoise with each output FASTA file separately.</li>
+<li>Using any other OTU picker than uclust with the exact options as specified above might result in systematic differences between your separately denoised runs. Even small sequence differences in the denoiser output can lead to clustering into different OTUs and an artificial separation of samples. We warned you!</li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+		
+	 <li><a href="../index.html">Home</a><br /></li>
+	 <li><a href="../install/index.html">Install</a><br /></li>
+	 <li><a href="../documentation/index.html">Documentation</a><br /></li>
+	 <li><a href="index.html">Tutorials</a><br /></li>
+	 <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	 <li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+      &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

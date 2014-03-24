@@ -1,0 +1,320 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Installing QIIME natively &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.1.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="doc-install"></span><div class="section" id="installing-qiime-natively">
+<span id="index-1"></span><h1>Installing QIIME natively<a class="headerlink" href="#installing-qiime-natively" title="Permalink to this headline">¶</a></h1>
+<p>QIIME consists of native code and additionally wraps many external applications. This gives the user flexibility to easily build their own analysis pipelines, making use of popular microbial community analysis tools. QIIME handles the processing of input and output of these applications, so the user can spend time analyzing their data rather than parsing, writing, and converting file formats.</p>
+<p>As a consequence of this &#8216;pipeline&#8217; architecture, depending on the features of QIIME that you plan to use, you may or may not need all of QIIME dependencies. Getting all of these applications working correctly can be difficult, which is why we distribute the QIIME virtual box. If you are a beginner user, or just testing QIIME to see if it will meet your needs, you may want to begin with the <a class="reference external" href="./virtual_box.html">virtual box</a> which will greatly ease installation.</p>
+<p>The following programs and datasets were used to generate the QIIME tutorial. QIIME has been tested with the same versions listed below. Other versions are not guaranteed to work. Download links are provided for convenience, but these are subject to change. We&#8217;ll do our best to keep these up-to-date.</p>
+<p>You should follow instructions provided by the package developers to install the dependencies.</p>
+<div class="section" id="dependencies-required-for-all-features-of-qiime">
+<h2>Dependencies required for all features of QIIME<a class="headerlink" href="#dependencies-required-for-all-features-of-qiime" title="Permalink to this headline">¶</a></h2>
+<p>To install most of following dependencies you need to have a build environment on your machine. On OS X, this involves installing the <a class="reference external" href="http://developer.apple.com/technologies/xcode.html">developer tools</a>. On Debian-based Linux (e.g., Ubuntu), this involves installing the <tt class="docutils literal"><span class="pre">build-essential</span></tt> package:</p>
+<div class="highlight-python"><pre>sudo apt-get install build-essential</pre>
+</div>
+<p>The following are required by QIIME:</p>
+<ul class="simple">
+<li>Python 2.6 (<a class="reference external" href="http://www.python.org/ftp/python/2.6.4/Python-2.6.4.tgz">src</a>)</li>
+<li>PyCogent 1.4.1 (<a class="reference external" href="http://sourceforge.net/projects/pycogent/files/PyCogent/1.4.1/PyCogent-1.4.1.tgz/download">src</a>)</li>
+<li>Numpy 1.3.0 (<a class="reference external" href="http://sourceforge.net/projects/numpy/files/NumPy/1.3.0/numpy-1.3.0.tar.gz/download">src</a>)</li>
+</ul>
+</div>
+<div class="section" id="dependencies-required-for-a-subset-of-qiime-s-features">
+<h2>Dependencies required for a subset of QIIME&#8217;s features<a class="headerlink" href="#dependencies-required-for-a-subset-of-qiime-s-features" title="Permalink to this headline">¶</a></h2>
+<p>PyNAST alignment, tree-building, taxonomy assignment, OTU picking, and other data generation steps:</p>
+<ul class="simple">
+<li>uclust 1.1.579 (<a class="reference external" href="http://www.drive5.com/uclust/downloads1_1_579.html">src and binaries</a>) See <a class="reference internal" href="#uclust-install"><em>uclust install notes</em></a>.</li>
+<li>PyNAST 1.1 (<a class="reference external" href="http://sourceforge.net/projects/pynast/files/PyNAST%20releases/PyNAST-1.1.tgz/download">src</a>)</li>
+<li>greengenes core set data file (<a class="reference external" href="http://greengenes.lbl.gov/Download/Sequence_Data/Fasta_data_files/core_set_aligned.fasta.imputed">fasta</a>)</li>
+<li>greengenes alignment lanemask file (<a class="reference external" href="http://greengenes.lbl.gov/Download/Sequence_Data/lanemask_in_1s_and_0s">txt</a>)</li>
+<li>blast-2.2.22 (legacy BLAST from NCBI, <em>NOT</em> BLAST+) (<a class="reference external" href="ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/2.2.22/blast-2.2.22-universal-macosx.tar.gz">OS X</a> or <a class="reference external" href="ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/2.2.22/blast-2.2.22-ia32-linux.tar.gz">linux 32-bit</a>)</li>
+<li>fasttree 2.1.0 (<a class="reference external" href="http://www.microbesonline.org/fasttree/FastTree-2.1.0.c">src</a>)</li>
+<li>cd-hit 3.1 (<a class="reference external" href="http://www.bioinformatics.org/download.php/cd-hit/cd-hit-2007-0131.tar.gz">src</a>)</li>
+<li>jre1.6.0_05 (<a class="reference external" href="http://java.sun.com/javase/downloads/index.jsp">link</a>)</li>
+<li>rdp_classifier-2.0.1 (<a class="reference external" href="http://downloads.sourceforge.net/project/rdp-classifier/rdp-classifier/rdp_classifier_2.0.1/rdp_classifier_2.0.1.tar.gz">src</a>) See <a class="reference internal" href="#rdp-install"><em>RDP install notes</em></a>.</li>
+<li>ChimeraSlayer (via microbiomeutil_2010-04-29) (<a class="reference external" href="http://sourceforge.net/projects/microbiomeutil/files/">src</a>)</li>
+</ul>
+<p>Denoising 454 data:</p>
+<ul class="simple">
+<li>Denoiser 0.84 (<a class="reference external" href="http://www.microbio.me/denoiser/">src</a> &#8211; remember to add the top-level <tt class="docutils literal"><span class="pre">Denoiser_0.84</span></tt> directory to your <tt class="docutils literal"><span class="pre">$PYTHONPATH</span></tt>)</li>
+</ul>
+<p>Graphics and other data analysis steps:</p>
+<ul class="simple">
+<li>MatPlotLib 0.98.5.2 (<a class="reference external" href="http://iweb.dl.sourceforge.net/project/matplotlib/OldFiles/matplotlib-0.98.5.2.tar.gz">src</a>)</li>
+</ul>
+<p>If you plan to build the QIIME documentation locally:</p>
+<ul class="simple">
+<li>Sphinx 0.6.3 (<a class="reference external" href="http://pypi.python.org/pypi/Sphinx">src</a>) See <a class="reference internal" href="#build-qiime-docs"><em>Building the QIIME documentation</em></a></li>
+</ul>
+</div>
+<div class="section" id="shortcuts-in-this-document">
+<h2>Shortcuts in this document<a class="headerlink" href="#shortcuts-in-this-document" title="Permalink to this headline">¶</a></h2>
+<p>For simplicity throughout this document, we assume that you have downloaded QIIME in <tt class="docutils literal"><span class="pre">/home/qiime/</span></tt>. You should consider all occurrences of <tt class="docutils literal"><span class="pre">/home/qiime/</span></tt> in the remainder of this document as references to the directory which contains the QIIME directory which you&#8217;ll have after downloading and unpacking QIIME.</p>
+</div>
+<div class="section" id="getting-qiime">
+<h2>Getting QIIME<a class="headerlink" href="#getting-qiime" title="Permalink to this headline">¶</a></h2>
+<p>First, change to the directory where you would like to download QIIME:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">cd</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">qiime_user</span>
+</pre></div>
+</div>
+<div class="section" id="stable-pre-release">
+<h3>Stable Pre-Release<a class="headerlink" href="#stable-pre-release" title="Permalink to this headline">¶</a></h3>
+<p>Currently the most stable version of QIIME is our 1.1.0 release, which you can download from <a class="reference external" href="http://sourceforge.net/projects/qiime/files/releases/Qiime-1.1.0.tar.gz/download">here</a>.</p>
+</div>
+<div class="section" id="latest-development-version">
+<h3>Latest Development Version<a class="headerlink" href="#latest-development-version" title="Permalink to this headline">¶</a></h3>
+<p>To get the latest development version of QIIME, you should check it out of our Sourceforge repository. While this code is subject to changes in interface and hasn&#8217;t been as extensively tested as the release version, it will provide access to the latest and greatest QIIME features. The official web documentation is likely to be out-of-date with respect to the development software. You should instead refer to the svn documentation in <tt class="docutils literal"><span class="pre">Qiime/doc</span></tt>. Check out the latest version of QIIME using svn with the commands:</p>
+<div class="highlight-python"><pre>svn co https://qiime.svn.sourceforge.net/svnroot/qiime/trunk Qiime</pre>
+</div>
+<p>svn users should periodically update QIIME by using the following command:</p>
+<div class="highlight-python"><pre>svn update /home/qiime/Qiime/</pre>
+</div>
+</div>
+</div>
+<div class="section" id="unpacking-qiime-release-only">
+<h2>Unpacking QIIME (release only)<a class="headerlink" href="#unpacking-qiime-release-only" title="Permalink to this headline">¶</a></h2>
+<p>After downloading the QIIME release tar file you&#8217;ll need to unpack the code. For simplicity in this document, we will assume that you have downloaded QIIME to the directory <tt class="docutils literal"><span class="pre">/home/qiime/</span></tt>.</p>
+<p>Unpack the release Qiime tar file with the commands:</p>
+<div class="highlight-python"><pre>cd /home/qiime_user
+tar -xvzf Qiime-1.1.0.tar.gz
+ln -s /home/qiime/Qiime-1.1.0 /home/qiime/Qiime</pre>
+</div>
+<p>If you have downloaded from svn, QIIME is already unpacked.</p>
+</div>
+<div class="section" id="installing-qiime">
+<h2>Installing QIIME<a class="headerlink" href="#installing-qiime" title="Permalink to this headline">¶</a></h2>
+<p>QIIME consists of library code (in <tt class="docutils literal"><span class="pre">Qiime/qiime</span></tt>), test code (in <tt class="docutils literal"><span class="pre">Qiime/tests</span></tt>), documentation (in <tt class="docutils literal"><span class="pre">Qiime/doc</span></tt>), and scripts (in <tt class="docutils literal"><span class="pre">Qiime/scripts</span></tt>). Installing QIIME consists of running the tests (optional, but highly recommend), installing the library code in a place where python knows where to find it, and installing the scripts in a place where the shell looks for executable files.</p>
+<div class="section" id="installing-the-library-code-and-scripts-with-setup-py">
+<h3>Installing the library code and scripts with setup.py<a class="headerlink" href="#installing-the-library-code-and-scripts-with-setup-py" title="Permalink to this headline">¶</a></h3>
+<p>Using <tt class="docutils literal"><span class="pre">Qiime/setup.py</span></tt> (and thereby python&#8217;s <tt class="docutils literal"><span class="pre">distutils</span></tt> package) is the recommended way of installing the Qiime library code and scripts. You can optionally specify where the library code and scripts should be installed &#8211; depending on your setup, you may want to do this. By default, the QIIME library code will be placed under python&#8217;s <tt class="docutils literal"><span class="pre">site-packages</span></tt>, and the QIIME scripts will be place in <tt class="docutils literal"><span class="pre">/usr/local/bin/</span></tt>. You may need to run <tt class="docutils literal"><span class="pre">setup.py</span></tt> using <tt class="docutils literal"><span class="pre">sudo</span></tt> if you do not have permission to place files in the default locations.</p>
+<p>First, ensure that you are in the top-level QIIME directory:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">cd</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">qiime</span><span class="o">/</span><span class="n">Qiime</span>
+</pre></div>
+</div>
+<p>By default the QIIME scripts will be installed in <tt class="docutils literal"><span class="pre">/usr/local/bin</span></tt>. As there are a lot of QIIME scripts, we recommend customizing the script directory to keep your system organized. This can be customized with the <tt class="docutils literal"><span class="pre">--install_scripts</span></tt> option:</p>
+<div class="highlight-python"><pre>python setup.py install --install-scripts=/home/qiime/bin/</pre>
+</div>
+<p>You can similarly install the library code in an alternate location using the <tt class="docutils literal"><span class="pre">--install-purelib</span></tt> option:</p>
+<div class="highlight-python"><pre>python setup.py install --install-purelib=/home/qiime/lib/</pre>
+</div>
+<p>Combine these options as follows:</p>
+<div class="highlight-python"><pre>python setup.py install --install-scripts=/home/qiime/bin/ --install-purelib=/home/qiime/lib/</pre>
+</div>
+<p>For a complete discussion of customizations related to the setup.py script, <a class="reference external" href="http://docs.python.org/install/index.html#alternate-installation-the-home-scheme">see this page</a>.</p>
+<p>If you used default values for <tt class="docutils literal"><span class="pre">--install-scripts</span></tt> and <tt class="docutils literal"><span class="pre">--install-purelib</span></tt> (by not specifying them), your installation should be complete. If you specified an alternate value for <tt class="docutils literal"><span class="pre">--install-scripts</span></tt>, you&#8217;ll need to ensure that the shell knows where to look for the scripts. If you are using the bash shell and the locations specified in the examples above, you can do this with the following command:</p>
+<div class="highlight-python"><pre>echo "export PATH=/home/qiime/bin/:$PATH" &gt;&gt; /home/qiime/.bashrc</pre>
+</div>
+<p>If you specified an alternate value for <tt class="docutils literal"><span class="pre">--install-purelib</span></tt>, you&#8217;ll need to be sure that python knows where to look for Qiime. If you are using the bash shell and the locations specified in the examples above, you can do this with the following command:</p>
+<div class="highlight-python"><pre>echo "export PYTHONPATH=/home/qiime/lib/:$PYTHONPATH" &gt;&gt; /home/qiime/.bashrc</pre>
+</div>
+<p>The source your <tt class="docutils literal"><span class="pre">.bashrc</span></tt>:</p>
+<div class="highlight-python"><pre>source /home/qiime/.bashrc</pre>
+</div>
+<p id="set-script-dir">Finally, you&#8217;ll need to create and edit a custom <tt class="docutils literal"><span class="pre">qiime_config</span></tt> file to tell QIIME where to look for the QIIME scripts. Create a custom <tt class="docutils literal"><span class="pre">qiime_config</span></tt> file by copying the default <tt class="docutils literal"><span class="pre">qiime_config</span></tt> packaged with QIIME:</p>
+<div class="highlight-python"><pre>cp /home/qiime/Qiime/qiime/support_files/qiime_config /home/qiime/.qiime_config</pre>
+</div>
+<p>Open the new file, <tt class="docutils literal"><span class="pre">/home/qiime/.qiime_config</span></tt>, in a text editor such as TextEdit (on Mac), gedit (on Linux), vim, or emacs (but not Microsoft Word, which is a <a class="reference external" href="http://en.wikipedia.org/wiki/Word_processor">word processor</a>, not a <a class="reference external" href="http://en.wikipedia.org/wiki/Text_editor">text editor</a>!). Find the line beginning <tt class="docutils literal"><span class="pre">qiime_scripts_dir</span></tt> and add a tab, followed by the QIIME scripts directory. If you&#8217;ve used the default value (i.e., you didn&#8217;t specify <tt class="docutils literal"><span class="pre">--install-scripts</span></tt>) the value you add will be <tt class="docutils literal"><span class="pre">/usr/local/bin/</span></tt>. Otherwise, specify the value that you provided for <tt class="docutils literal"><span class="pre">--install-scripts</span></tt>. In the example above, this would look like:</p>
+<div class="highlight-python"><pre>qiime_scripts_dir       /home/qiime/bin/</pre>
+</div>
+<p>Note that the delimiter between the key and the value here is a tab, not a space! For additional information on the qiime_config file, <a class="reference external" href="./qiime_config.html">see this document</a>.</p>
+</div>
+</div>
+<div class="section" id="running-the-test-suite">
+<h2>Running the test suite<a class="headerlink" href="#running-the-test-suite" title="Permalink to this headline">¶</a></h2>
+<p>Next you should run the test suite. Execute the following commands:</p>
+<div class="highlight-python"><pre>cd /home/qiime/Qiime/tests/
+python all_tests.py</pre>
+</div>
+<p>You will see test output on the terminal indicating test successes and failures. Some failures are OK. The <tt class="docutils literal"><span class="pre">all_tests.py</span></tt> command will complete with a summary of test failures. Some tests may fail due to missing external applications &#8211; these will be noted separately from other test failures. If these are related to features of QIIME that you are not using, this is acceptable. Otherwise, you&#8217;ll need to ensure that you have the external applications installed correctly (and the correct versions), and re-run the tests.</p>
+</div>
+<div class="section" id="testing-your-qiime-installation">
+<h2>Testing your QIIME installation<a class="headerlink" href="#testing-your-qiime-installation" title="Permalink to this headline">¶</a></h2>
+<p>If QIIME is installed correctly, you should be able to run the QIIME scripts. Try the following:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">cd</span>
+<span class="n">align_seqs</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">h</span>
+</pre></div>
+</div>
+<p>This should give you help text describing the interface to the align_seqs.py script. (Note that if you do not have a /home/qiime/.bashrc you may get an error at the <tt class="docutils literal"><span class="pre">source</span></tt> step. If you did not specify alternate values for <tt class="docutils literal"><span class="pre">--install-purelib</span></tt> or <tt class="docutils literal"><span class="pre">--install-scripts</span></tt> this shouldn&#8217;t be a problem.)</p>
+</div>
+<div class="section" id="external-application-install-notes">
+<h2>External application install notes<a class="headerlink" href="#external-application-install-notes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="path-environment-variable">
+<h3>PATH Environment Variable<a class="headerlink" href="#path-environment-variable" title="Permalink to this headline">¶</a></h3>
+<p>External applications used by QIIME need to be visible to the shell by existing in executable search path (i.e., listed in the <tt class="docutils literal"><span class="pre">$PATH</span></tt> environment variable). For example, if you plan to use cd-hit, and have the cd-hit executables installed in <tt class="docutils literal"><span class="pre">/home/qiime/bin</span></tt> you can add this directory to your system path with the commands:</p>
+<div class="highlight-python"><pre>echo "export PATH=/home/qiime/bin/:$PATH" &gt;&gt; /home/qiime/.bashrc
+source /home/qiime/.bashrc</pre>
+</div>
+</div>
+<div class="section" id="pythonpath-environment-variable">
+<h3>PYTHONPATH Environment Variable<a class="headerlink" href="#pythonpath-environment-variable" title="Permalink to this headline">¶</a></h3>
+<p>Qiime, PyCogent, and NumPy must be visible to python for all features of QIIME. matplotlib must be visible to python if you plan to use graphics features of QIIME; PyNAST must be visible to python if you plan to use PyNAST for multiple sequence alignment; and Denoiser must be visible to python if you plan to denoise 454 data. With the exception of Denoiser, all of these packages come with setup.py scripts. If you have used these, you should not need to modify your PYTHONPATH to make the library code visible. If you haven&#8217;t used the respective setup.py scripts, or if you specified an alternate value for <tt class="docutils literal"><span class="pre">--install-purelib</span></tt>, you may need to add the locations of these libraries to your PYTHONPATH environment variable.</p>
+<p>For example, if you&#8217;ve installed PyNAST in <tt class="docutils literal"><span class="pre">/home/qiime/PyNAST</span></tt> you can add this to your PYTHONPATH with the commands:</p>
+<div class="highlight-python"><pre>echo "export PYTHONPATH=/home/qiime/PyNAST/:$PYTHONPATH" &gt;&gt; /home/qiime/.bashrc
+source /home/qiime/.bashrc</pre>
+</div>
+</div>
+<div class="section" id="rdp-jar-path-environment-variable">
+<h3>RDP_JAR_PATH Environment Variable<a class="headerlink" href="#rdp-jar-path-environment-variable" title="Permalink to this headline">¶</a></h3>
+<p id="rdp-install">If you plan to use the RDP classifier for taxonomy assignment you must also define an RDP_JAR_PATH variable. If you have the RDP classifier jar file (<tt class="docutils literal"><span class="pre">rdp_classifier-2.0.1.jar</span></tt>) in <tt class="docutils literal"><span class="pre">/home/qiime/app</span></tt> you can do this with the following command:</p>
+<div class="highlight-python"><pre>echo "export RDP_JAR_PATH=/home/qiime/app/rdp_classifier-2.0.1.jar" &gt;&gt; /home/qiime/.bashrc</pre>
+</div>
+</div>
+<div class="section" id="uclust-install-notes">
+<h3>uclust Install Notes<a class="headerlink" href="#uclust-install-notes" title="Permalink to this headline">¶</a></h3>
+<p id="uclust-install">The uclust binary must be called <tt class="docutils literal"><span class="pre">uclust</span></tt>, which differs from the names of the posted binaries, but is the name of the binary if you build from source. If you&#8217;ve installed the binary <tt class="docutils literal"><span class="pre">uclust1.1.579_i86linux32</span></tt> as <tt class="docutils literal"><span class="pre">/home/qiime/bin/uclust1.1.579_i86linux32</span></tt>, we recommend creating a symbolic link to this file:</p>
+<div class="highlight-python"><pre>ln -s /home/qiime/bin/uclust1.1.579_i86linux32 /home/qiime/bin/uclust</pre>
+</div>
+</div>
+</div>
+<div class="section" id="building-the-qiime-documentation">
+<h2>Building The QIIME Documentation<a class="headerlink" href="#building-the-qiime-documentation" title="Permalink to this headline">¶</a></h2>
+<p id="build-qiime-docs">If you are using the svn version of QIIME, you may want to build the documentation locally for access to the latest version. You can change to the <tt class="docutils literal"><span class="pre">Qiime/doc</span></tt> directory and run:</p>
+<div class="highlight-python"><pre>make html</pre>
+</div>
+<p>We try to update the documentation as we update the code, but svn users may notice some discrepancies. After building the documentation, you can view it in a web browser by opening the file <tt class="docutils literal"><span class="pre">Qiime/doc/_build/html/index.html</span></tt>. You may want to bookmark that page for easy access.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">Installing QIIME natively</a><ul>
+<li><a class="reference external" href="#dependencies-required-for-all-features-of-qiime">Dependencies required for all features of QIIME</a></li>
+<li><a class="reference external" href="#dependencies-required-for-a-subset-of-qiime-s-features">Dependencies required for a subset of QIIME&#8217;s features</a></li>
+<li><a class="reference external" href="#shortcuts-in-this-document">Shortcuts in this document</a></li>
+<li><a class="reference external" href="#getting-qiime">Getting QIIME</a><ul>
+<li><a class="reference external" href="#stable-pre-release">Stable Pre-Release</a></li>
+<li><a class="reference external" href="#latest-development-version">Latest Development Version</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#unpacking-qiime-release-only">Unpacking QIIME (release only)</a></li>
+<li><a class="reference external" href="#installing-qiime">Installing QIIME</a><ul>
+<li><a class="reference external" href="#installing-the-library-code-and-scripts-with-setup-py">Installing the library code and scripts with setup.py</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#running-the-test-suite">Running the test suite</a></li>
+<li><a class="reference external" href="#testing-your-qiime-installation">Testing your QIIME installation</a></li>
+<li><a class="reference external" href="#external-application-install-notes">External application install notes</a><ul>
+<li><a class="reference external" href="#path-environment-variable">PATH Environment Variable</a></li>
+<li><a class="reference external" href="#pythonpath-environment-variable">PYTHONPATH Environment Variable</a></li>
+<li><a class="reference external" href="#rdp-jar-path-environment-variable">RDP_JAR_PATH Environment Variable</a></li>
+<li><a class="reference external" href="#uclust-install-notes">uclust Install Notes</a></li>
+</ul>
+</li>
+<li><a class="reference external" href="#building-the-qiime-documentation">Building The QIIME Documentation</a></li>
+</ul>
+</li>
+</ul>
+
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+		
+	 <li><a href="../index.html">Home</a><br /></li>
+	 <li><a href="index.html">Install</a><br /></li>
+	 <li><a href="../documentation/index.html">Documentation</a><br /></li>
+	 <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	 <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	 <li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+      &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

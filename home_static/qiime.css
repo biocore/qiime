@@ -1,0 +1,180 @@
+<style type="text/css">
+
+body {
+    width: 1000px;
+    height: 100%;
+}
+
+html {
+    height: 100%;
+}
+
+img {
+    border: none;
+}
+
+img.header {
+    position: absolute;
+/*    z-index: 1;*/
+}
+
+h1 {
+    border-bottom: 1px dashed #bbb;
+	font-family: helvetica;
+}
+
+h2 {
+    border-bottom: 1px dashed #ccc;
+	font-family: helvetica;
+}
+
+
+h3 {
+	font-family: helvetica;
+}
+
+p {
+	font-family: helvetica;
+	font-size: 11pt;
+    margin-right: 1em;
+}
+
+ul {
+	font-family: helvetica;
+	list-style-type: none;
+	font-size: 10pt;
+}
+
+.code {
+/*    height: 50px;*/
+    white-space: nowrap;
+/*    width: 600px;*/
+    overflow-y: hidden;
+    overflow-x: scroll;
+    font-size:-2;
+    font-family: courier
+}
+
+ul.feedlist {
+	padding-left: 1em;
+}
+
+ul.feedlist li a {
+	border-bottom: 1px dashed #bbb;
+    text-decoration: none;
+    height: 2em;
+    color: black;
+}
+
+ul.feedlist li p {
+	margin-top: .5em;
+	color: #888;
+	font-size: 10pt;
+}
+
+ul.menu {
+/*	height: 100%;*/
+	text-align: right;
+/*	width: 90%;*/
+/*	display: block;*/
+	font-family: helvetica;
+	font-size: 10pt;
+    list-style-type: none;
+    padding: 0;
+}
+
+ul.menu li {
+/*	display: inline;*/
+	padding: .5em .99em;
+    color: black;
+}
+
+ul.menu li.selected a{
+    width: 100%;
+	border-top: 1px solid #ccc;
+/*	font-weight: bold;*/
+/*    background-color: #eee;*/
+}
+
+ul.menu li a {
+    text-decoration: none;
+    height: 2em;
+    color: black;
+}
+
+ul.menu li a:hover{
+	border-bottom: 1px dashed #ccc;
+	list-style-type: square;
+}
+
+div.data {
+    width:750px;
+    height: 100%;
+}
+
+div.menuul {
+	float: left;
+	padding: 0;
+}
+
+div.footer {
+	font-family: helvetica;
+	margin-left: 250px;
+    width: 58%;
+    text-align: center;
+}
+
+div.wrapper {
+	background-color: #fff;
+    height: 100%;
+}
+
+div.graybox {
+    width:80%;
+	font-family: courier;
+    background-color: #ccc;
+    margin: 1em 1em;
+    padding: auto 2em;
+    font-size: 14;
+}
+
+div.header {
+	margin-left: 250px;
+    margin-right: 20%;
+    height: 165px;
+}
+
+div.centercol {
+	padding-left: 1em;
+	border-left: 1px dashed #bbb;
+	margin-left: 250px;
+    margin-right: 20%;
+    width: 58%;
+}
+
+div.leftcol {
+    width: 250px;
+    float: left;
+}
+
+/* Clearfix */
+.clearfix:after {
+    content: ".";
+    display: block;
+    clear: both;
+    visibility: hidden;
+    line-height: 0;
+    height: 0;
+}
+
+.clearfix {
+    display: inline-block;
+}
+
+html[xmlns] .clearfix {
+    display: block;
+}
+
+* html .clearfix {
+    height: 1%;
+}

@@ -1,0 +1,327 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>OTU picking strategies in QIIME &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.7.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="otu-picking-strategies-in-qiime">
+<span id="otu-picking"></span><h1>OTU picking strategies in QIIME<a class="headerlink" href="#otu-picking-strategies-in-qiime" title="Permalink to this headline">¶</a></h1>
+<p>QIIME provides three high-level protocols for OTU picking. These can be described as de novo, closed-reference, and open-reference OTU picking, and are accessible through <a class="reference external" href="../scripts/pick_de_novo_otus.html">pick_de_novo_otus.py</a>, <a class="reference external" href="../scripts/pick_closed_reference_otus.html">pick_closed_reference_otus.py</a>, and <a class="reference external" href="../scripts/pick_open_reference_otus.html">pick_open_reference_otus.py</a>. Each of these protocols are described in this document, and commands are provided which illustrate how to run each of these with uclust and usearch 6.1 (i.e, usearch61).</p>
+<div class="section" id="description-of-qiime-s-otu-picking-protocols">
+<h2>Description of QIIME&#8217;s OTU picking protocols<a class="headerlink" href="#description-of-qiime-s-otu-picking-protocols" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="de-novo-otu-picking">
+<h3>De novo OTU picking<a class="headerlink" href="#de-novo-otu-picking" title="Permalink to this headline">¶</a></h3>
+<p>In a de novo OTU picking process, reads are clustered against one another without any external reference sequence collection. <tt class="docutils literal"><span class="pre">pick_de_novo_otus.py</span></tt> is the primary interface for de novo OTU picking in QIIME, and includes taxonomy assignment, sequence alignment, and tree-building steps. A benefit of de novo OTU picking is that all reads are clustered. A drawback is that there is no existing support for running this in parallel in QIIME, so it can be too slow to apply to large datasets (e.g., more than 10 million reads).</p>
+<p>You <strong>must</strong> use de novo OTU picking if:</p>
+<ul class="simple">
+<li>You do not have a reference sequence collection to cluster against, for example because you&#8217;re working with an infrequently used marker gene.</li>
+</ul>
+<p>You <strong>cannot</strong> use de novo OTU picking if:</p>
+<ul class="simple">
+<li>You are comparing non-overlapping amplicons, such as the V2 and the V4 regions of the 16S rRNA.</li>
+<li>You working with very large data sets, like a full HiSeq 2000 run. (Technically, you can use de novo OTU picking here, but you literally might wait a month for <tt class="docutils literal"><span class="pre">pick_de_novo_otus.py</span></tt> to run.)</li>
+</ul>
+<p>Pros:</p>
+<ul class="simple">
+<li>All reads are clustered</li>
+</ul>
+<p>Cons:</p>
+<ul class="simple">
+<li>Speed. Does not run in parallel.</li>
+</ul>
+</div>
+<div class="section" id="closed-reference-otu-picking">
+<h3>Closed-reference OTU picking<a class="headerlink" href="#closed-reference-otu-picking" title="Permalink to this headline">¶</a></h3>
+<p>In a closed-reference OTU picking process, reads are clustered against a reference sequence collection and any reads which do not hit a sequence in the reference sequence collection are excluded from downstream analyses. <tt class="docutils literal"><span class="pre">pick_closed_reference_otus.py</span></tt> is the primary interface for closed-reference OTU picking in QIIME. If the user provides taxonomic assignments for sequences in the reference database, those are assigned to OTUs.</p>
+<p>You <strong>must</strong> use closed-reference OTU picking if:</p>
+<ul class="simple">
+<li>You are comparing non-overlapping amplicons, such as the V2 and the V4 regions of the 16S rRNA. Your reference sequences must span both of the regions being sequenced.</li>
+</ul>
+<p>You <strong>cannot</strong> use closed-reference OTU picking if:</p>
+<ul class="simple">
+<li>You do not have a reference sequence collection to cluster against, for example because you&#8217;re working with an infrequently used marker gene.</li>
+</ul>
+<p>Pros:</p>
+<ul class="simple">
+<li>Speed. Closed-reference OTU picking is fully parallelizable, so is useful for extremely large data sets.</li>
+<li>Better trees and taxonomy. Because all OTUs are already defined in your reference sequence collection, you may already have a tree and a taxonomy that you trust for those OTUs. You have the option of using those, or building a tree and taxonomy from your sequence data.</li>
+</ul>
+<p>Cons:</p>
+<ul class="simple">
+<li>Inability to detect novel diversity with respect to your reference sequence collection. Because reads that don&#8217;t hit the reference sequence collection are discarded, your analyses only focus on the diversity that you &#8220;already know about&#8221;. Also, depending on how well-characterized the environment that you&#8217;re working in is, you may end up throwing away a small fraction of your reads (e.g., discarding 1-10% of the reads is common for 16S-based human microbiome studies, where databases like Greengenes cover most of the organisms that are typically present) or a large fraction of your reads (e.g, discarding 50-80% of the reads has been observed for &#8220;unusual&#8221; environments like the Guerrero Negro microbial mats).</li>
+</ul>
+</div>
+<div class="section" id="open-reference-otu-picking">
+<h3>Open-reference OTU picking<a class="headerlink" href="#open-reference-otu-picking" title="Permalink to this headline">¶</a></h3>
+<p>In an open-reference OTU picking process, reads are clustered against a reference sequence collection and any reads which do not hit the reference sequence collection are subsequently clustered de novo. <tt class="docutils literal"><span class="pre">pick_open_reference_otus.py</span></tt> is the primary interface for open-reference OTU picking in QIIME, and includes taxonomy assignment, sequence alignment, and tree-building steps.</p>
+<p><strong>Open-reference OTU picking with</strong> <tt class="docutils literal"><span class="pre">pick_open_reference_otus.py</span></tt> <strong>is the preferred strategy for OTU picking among the QIIME developers.</strong></p>
+<p>You <strong>cannot</strong> use open-reference OTU picking if:</p>
+<ul class="simple">
+<li>You are comparing non-overlapping amplicons, such as the V2 and the V4 regions of the 16S rRNA.</li>
+<li>You do not have a reference sequence collection to cluster against, for example because you&#8217;re working with an infrequently used marker gene.</li>
+</ul>
+<p>Pros:</p>
+<ul class="simple">
+<li>All reads are clustered.</li>
+<li>Speed. Open-reference OTU picking is partially run in parallel. In particular, the <em>subsampled open reference OTU picking</em> process implemented in <tt class="docutils literal"><span class="pre">pick_open_reference_otus.py</span></tt> is much faster than <tt class="docutils literal"><span class="pre">pick_de_novo_otus.py</span></tt> as some strategies are applied to run several pieces of the workflow in parallel.</li>
+</ul>
+<p>Cons:</p>
+<ul class="simple">
+<li>Speed. Some steps of this workflow do still run serially. For data sets with a lot of novel diversity with respect to the reference sequence collection, this can still take days to run.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="running-the-otu-picking-workflows">
+<h2>Running the OTU picking workflows<a class="headerlink" href="#running-the-otu-picking-workflows" title="Permalink to this headline">¶</a></h2>
+<p>The same workflow commands are used for running OTU picking with usearch61 and uclust. To run the methods with usearch61, you will need to either pass in a parameters file or specify <tt class="docutils literal"><span class="pre">-m</span> <span class="pre">usearch61</span></tt> on the command line, depending on what workflow you are using. See <a class="reference internal" href="../documentation/qiime_parameters_files.html#qiime-parameter-files"><em>QIIME parameters files</em></a> for information on parameter files.</p>
+<div class="section" id="conventions-used-in-these-examples">
+<h3>Conventions used in these examples<a class="headerlink" href="#conventions-used-in-these-examples" title="Permalink to this headline">¶</a></h3>
+<p>It&#8217;s a good idea, particularly for when running these workflows in parallel, to specify absolute paths for your input and output files. That is indicated here with <tt class="docutils literal"><span class="pre">$PWD</span></tt>, but in practice it will often looks something like <tt class="docutils literal"><span class="pre">$HOME/my-analysis/seqs.fna</span></tt>.</p>
+<p>The reference-based OTU picking workflows require that the user provide reference files (the reference sequence collection). Here we define some environment variables to point to those locations. These paths will likely be different on your system. You can download QIIME-compatible reference files from the <a class="reference external" href="http://qiime.org/home_static/dataFiles.html">QIIME resources page</a>. In this example we&#8217;re working with the Greengenes 12_10 reference OTU collection. You can set environment variables to point to these as follows:</p>
+<div class="highlight-python"><pre>export QIIME_DIR=$HOME/qiime_software
+export reference_seqs=$QIIME_DIR/gg_otus-12_10-release/rep_set/97_otus.fasta
+export reference_tree=$QIIME_DIR/gg_otus-12_10-release/trees/97_otus.tree
+export reference_tax=$QIIME_DIR/gg_otus-12_10-release/taxonomy/97_otu_taxonomy.txt</pre>
+</div>
+</div>
+<div class="section" id="id1">
+<h3>De novo OTU picking<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>With uclust:</p>
+<div class="highlight-python"><pre>pick_de_novo_otus.py -i $PWD/seqs.fna -o $PWD/dn_uc/</pre>
+</div>
+<p>With usearch61:</p>
+<div class="highlight-python"><pre>pick_de_novo_otus.py -i $PWD/seqs.fna -o $PWD/dn_us/ -p $PWD/usearch_params.txt</pre>
+</div>
+<p>where the following information is in <tt class="docutils literal"><span class="pre">usearch_params.txt</span></tt>:</p>
+<div class="highlight-python"><pre>pick_otus:otu_picking_method usearch61</pre>
+</div>
+<p>The key output files are <tt class="docutils literal"><span class="pre">otu_table.biom</span></tt>, the OTU table, and <tt class="docutils literal"><span class="pre">rep_set.tre</span></tt>, the phylogenetic tree relating the OTUs in the OTU table.</p>
+<p>You can find an additional example using de novo OTU picking in <a class="reference internal" href="tutorial.html#tutorial"><em>454 Overview Tutorial: de novo OTU picking and diversity analyses using 454 data</em></a>.</p>
+</div>
+<div class="section" id="id2">
+<h3>Closed-reference OTU picking<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<p>With uclust:</p>
+<div class="highlight-python"><pre>pick_closed_reference_otus.py -i $PWD/seqs.fna -o $PWD/cr_uc/ -r $reference_seqs -t $reference_tax</pre>
+</div>
+<p>With usearch61:</p>
+<div class="highlight-python"><pre>pick_closed_reference_otus.py -i $PWD/seqs.fna -o $PWD/cr_us/ -r $reference_seqs -t $reference_tax -p $PWD/usearch_ref_params.txt</pre>
+</div>
+<p>where the following information is in <tt class="docutils literal"><span class="pre">usearch_ref_params.txt</span></tt>:</p>
+<div class="highlight-python"><pre>pick_otus:otu_picking_method usearch61_ref</pre>
+</div>
+<p>The key output file is <tt class="docutils literal"><span class="pre">otu_table.biom</span></tt>, the OTU table. Note that there is no phylogenetic tree generated in this protocol - as all OTUs are defined by reference sequences, it is assumed that a tree already exists (which would likely be better than the one generated here).</p>
+</div>
+<div class="section" id="id3">
+<h3>Open-reference OTU picking<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p>With uclust:</p>
+<div class="highlight-python"><pre>pick_open_reference_otus.py -i seqs.fna -o or_uc/ -r $reference_seqs</pre>
+</div>
+<p>With usearch61:</p>
+<div class="highlight-python"><pre>pick_open_reference_otus.py -i seqs.fna -o or_us/ -r $reference_seqs -m usearch61</pre>
+</div>
+<p>The key output files are <tt class="docutils literal"><span class="pre">otu_table.biom</span></tt>, the OTU table, and <tt class="docutils literal"><span class="pre">rep_set.tre</span></tt>, the phylogenetic tree relating the OTUs in the OTU table.</p>
+<p>You can find an additional example using open-reference OTU picking in <a class="reference internal" href="illumina_overview_tutorial.html#illumina-overview-tutorial"><em>Illumina Overview Tutorial (an IPython Notebook): open reference OTU picking and core diversity analyses</em></a>.</p>
+</div>
+</div>
+<div class="section" id="alternative-processing-parameters">
+<h2>Alternative processing parameters<a class="headerlink" href="#alternative-processing-parameters" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="de-replication-of-sequences">
+<h3>De-replication of sequences<a class="headerlink" href="#de-replication-of-sequences" title="Permalink to this headline">¶</a></h3>
+<p>If you&#8217;re interested only in dereplicated sequences as your OTU picking process, that is a special case of de novo clustering where the similarity threshold is 100%. To achieve that you can do the following.</p>
+<p>With uclust:</p>
+<div class="highlight-python"><pre>pick_de_novo_otus.py -i $PWD/seqs.fna -o $PWD/derep_uc/ -p $PWD/uclust_dereplication_params.txt</pre>
+</div>
+<p>where the following is in $PWD/uclust_dereplication_params.txt:</p>
+<div class="highlight-python"><pre>pick_otus:similarity 1.0</pre>
+</div>
+<p>With usearch61:</p>
+<div class="highlight-python"><pre>pick_de_novo_otus.py -i $PWD/seqs.fna -o $PWD/derep_us/ -p $PWD/usearch_dereplication_params.txt</pre>
+</div>
+<p>where the following information is in <tt class="docutils literal"><span class="pre">usearch_dereplication_params.txt</span></tt>:</p>
+<div class="highlight-python"><pre>pick_otus:otu_picking_method usearch61
+pick_otus:similarity 1.0</pre>
+</div>
+</div>
+<div class="section" id="running-usearch-in-size-order-mode">
+<h3>Running usearch in size-order mode<a class="headerlink" href="#running-usearch-in-size-order-mode" title="Permalink to this headline">¶</a></h3>
+<p>If you&#8217;re interested in running the usearch OTU pickers in size-order mode (meaning that accepts are prioritized by the size of the cluster rather than the percent identity), add the following lines to a parameters file:</p>
+<div class="highlight-python"><pre>pick_otus:sizeorder True
+pick_otus:maxaccepts 16
+pick_otus:maxrejects 64</pre>
+</div>
+<p>For example, in de novo mode:</p>
+<div class="highlight-python"><pre>pick_de_novo_otus.py -i $PWD/seqs.fna -o $PWD/dn_us_sizeorder/ -p $PWD/dn_sizeorder_params.txt</pre>
+</div>
+<p>where the following information is in <tt class="docutils literal"><span class="pre">dn_sizeorder_params.txt</span></tt>:</p>
+<div class="highlight-python"><pre>pick_otus:otu_picking_method usearch61
+pick_otus:sizeorder True
+pick_otus:max_accepts 16
+pick_otus:max_rejects 64</pre>
+</div>
+<p>In closed-reference mode:</p>
+<div class="highlight-python"><pre>pick_closed_reference_otus.py -i $PWD/seqs.fna -o $PWD/cr_us_sizeorder/ -r $reference_seqs -t $reference_tax -p $PWD/cr_sizeorder_params.txt</pre>
+</div>
+<p>where the following information is in <tt class="docutils literal"><span class="pre">cr_sizeorder_params.txt</span></tt>:</p>
+<div class="highlight-python"><pre>pick_otus:otu_picking_method usearch61_ref
+pick_otus:sizeorder True
+pick_otus:max_accepts 16
+pick_otus:max_rejects 64</pre>
+</div>
+<p>In open-reference mode:</p>
+<div class="highlight-python"><pre>pick_open_reference_otus.py -i seqs.fna -o or_us_sizeorder/ -r $reference_seqs -m usearch61 -p $PWD/or_sizeorder_params.txt</pre>
+</div>
+<p>where the following information is in <tt class="docutils literal"><span class="pre">or_sizeorder_params.txt</span></tt>:</p>
+<div class="highlight-python"><pre>pick_otus:sizeorder True
+pick_otus:max_accepts 16
+pick_otus:max_rejects 64</pre>
+</div>
+</div>
+</div>
+<div class="section" id="citing-these-tools">
+<h2>Citing these tools<a class="headerlink" href="#citing-these-tools" title="Permalink to this headline">¶</a></h2>
+<p>If using these tools you should cite both QIIME and usearch or uclust.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">OTU picking strategies in QIIME</a><ul>
+<li><a class="reference internal" href="#description-of-qiime-s-otu-picking-protocols">Description of QIIME&#8217;s OTU picking protocols</a><ul>
+<li><a class="reference internal" href="#de-novo-otu-picking">De novo OTU picking</a></li>
+<li><a class="reference internal" href="#closed-reference-otu-picking">Closed-reference OTU picking</a></li>
+<li><a class="reference internal" href="#open-reference-otu-picking">Open-reference OTU picking</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#running-the-otu-picking-workflows">Running the OTU picking workflows</a><ul>
+<li><a class="reference internal" href="#conventions-used-in-these-examples">Conventions used in these examples</a></li>
+<li><a class="reference internal" href="#id1">De novo OTU picking</a></li>
+<li><a class="reference internal" href="#id2">Closed-reference OTU picking</a></li>
+<li><a class="reference internal" href="#id3">Open-reference OTU picking</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#alternative-processing-parameters">Alternative processing parameters</a><ul>
+<li><a class="reference internal" href="#de-replication-of-sequences">De-replication of sequences</a></li>
+<li><a class="reference internal" href="#running-usearch-in-size-order-mode">Running usearch in size-order mode</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#citing-these-tools">Citing these tools</a></li>
+</ul>
+</li>
+</ul>
+
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2012, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

@@ -1,0 +1,164 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>beta_diversity.py – Calculate beta diversity (pairwise sample dissimilarity) on one or many otu tables &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.5.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="beta-diversity"></span><div class="section" id="beta-diversity-py-calculate-beta-diversity-pairwise-sample-dissimilarity-on-one-or-many-otu-tables">
+<span id="index-0"></span><h1><em>beta_diversity.py</em> &#8211; Calculate beta diversity (pairwise sample dissimilarity) on one or many otu tables<a class="headerlink" href="#beta-diversity-py-calculate-beta-diversity-pairwise-sample-dissimilarity-on-one-or-many-otu-tables" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>The input for this script is the OTU table containing the number of sequences observed in each OTU (rows) for each sample (columns). For more information pertaining to the OTU table refer to the documentation for make_otu_table. If the user would like phylogenetic beta diversity metrics using UniFrac, a phylogenetic tree must also be passed as input (see <a class="reference external" href="./make_phylogeny.html">make_phylogeny.py</a>). The output of this script is a distance matrix containing a dissimilarity value for each pairwise comparison.</p>
+<p>A number of metrics are currently supported, including unweighted and weighted UniFrac (pass the -s option to see available metrics). In general, because unifrac uses phylogenetic information, one of the unifrac metrics is recommended, as results can be vastly more useful (Hamady &amp; Knight, 2009). Quantitative measures (e.g. weighted unifrac) are ideally suited to revealing community differences that are due to changes in relative taxon abundance (e.g., when a particular set of taxa flourish because a limiting nutrient source becomes abundant). Qualitative measures (e.g. unweighted unifrac) are most informative when communities differ primarily by what can live in them (e.g., at high temperatures), in part because abundance information can obscure significant patterns of variation in which taxa are present (Lozupone et al., 2007). Most qualitative measures are referred to here e.g. &#8220;binary_jaccard&#8221;. Typically both weighted and unweighted unifrac are used.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">beta_diversity.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-i, <cite>-</cite>-input_path</dt>
+<dd>Input OTU table in biom format or input directory containing OTU tables in biom format for batch processing.</dd>
+<dt>-r, <cite>-</cite>-rows</dt>
+<dd>Compute for only these rows of the distance matrix. User should pass a list of sample names (e.g. &#8220;s1,s3&#8221;) [default: None; full n x n matrix is generated]</dd>
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>Output directory. One will be created if it doesn&#8217;t exist.</dd>
+<dt>-m, <cite>-</cite>-metrics</dt>
+<dd>Beta-diversity metric(s) to use. A comma-separated list should be provided when multiple metrics are specified. [default: unweighted_unifrac,weighted_unifrac]</dd>
+<dt>-s, <cite>-</cite>-show_metrics</dt>
+<dd>Show the available beta-diversity metrics and exit. Metrics starting with &#8220;binary...&#8221; specifies that a metric is qualitative, and considers only the presence or absence of each taxon [default: False]</dd>
+<dt>-t, <cite>-</cite>-tree_path</dt>
+<dd>Input newick tree filepath, which is required when phylogenetic metrics are specified. [default: None]</dd>
+<dt>-f, <cite>-</cite>-full_tree</dt>
+<dd>By default, tips not corresponding to OTUs in the OTU table are removed from the tree for diversity calculations. Pass to skip this step if you&#8217;re already passing a minimal tree. Beware with &#8220;full_tree&#8221; metrics, as extra tips in the tree change the result</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>Each file in the input directory should be an otu table, and the output of <a class="reference external" href="./beta_diversity.html">beta_diversity.py</a> is a folder containing text files, each a distance matrix between samples corresponding to an input otu table.</p>
+<p><strong>Single File Beta Diversity (non-phylogenetic):</strong></p>
+<p>To perform beta diversity (using e.g. euclidean distance) on a single OTU table, where the results are output to beta_div/, use the following command:</p>
+<div class="highlight-python"><pre>beta_diversity.py -i otu_table.biom -m euclidean -o beta_div</pre>
+</div>
+<p><strong>Single File Beta Diversity (phylogenetic):</strong></p>
+<p>In the case that you would like to perform beta diversity using a phylogenetic metric (e.g. weighted_unifrac), you can use the following command:</p>
+<div class="highlight-python"><pre>beta_diversity.py -i otu_table.biom -m weighted_unifrac -o beta_div/ -t rep_set.tre</pre>
+</div>
+<p><strong>Multiple File (batch) Beta Diversity (phylogenetic):</strong></p>
+<p>To perform beta diversity on multiple OTU tables (e.g., resulting files from <a class="reference external" href="./multiple_rarefactions.html">multiple_rarefactions.py</a>), specify an input directory (e.g. otu_tables/) as shown by the following command:</p>
+<div class="highlight-python"><pre>beta_diversity.py -i otu_tables/ -m weighted_unifrac -o beta_div/ -t rep_set.tre</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://pycogent.sourceforge.net" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2012, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

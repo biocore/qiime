@@ -1,0 +1,163 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>add_alpha_to_mapping_file.py – Add alpha diversity data to a metadata mapping file &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.6.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="add-alpha-to-mapping-file"></span><div class="section" id="add-alpha-to-mapping-file-py-add-alpha-diversity-data-to-a-metadata-mapping-file">
+<span id="index-0"></span><h1><em>add_alpha_to_mapping_file.py</em> &#8211; Add alpha diversity data to a metadata mapping file<a class="headerlink" href="#add-alpha-to-mapping-file-py-add-alpha-diversity-data-to-a-metadata-mapping-file" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>Add alpha diversity data to a mapping file for use with other QIIME scripts, i. e. <a class="reference external" href="./make_3d_plots.html">make_3d_plots.py</a>. The resulting mapping file will contain three new columns per metric in the alpha diversity data; the first column being the raw value, the second being a normalized raw value and the third one a label classifying the bin where this value fits based on the normalized value.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">add_alpha_to_mapping_file.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-alpha_fp</dt>
+<dd>Alpha diversity data with one or multiple metrics i. e. the output of <a class="reference external" href="./alpha_diversity.html">alpha_diversity.py</a></dd>
+<dt>-m, <cite>-</cite>-mapping_fp</dt>
+<dd>Mapping file to modify by adding the alpha diversity data</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-o, <cite>-</cite>-output_mapping_fp</dt>
+<dd>Filepath for the modified mapping file [default: mapping_file_with_alpha.txt]</dd>
+<dt>-b, <cite>-</cite>-number_of_bins</dt>
+<dd>Number of bins [default: 4]</dd>
+<dt>-x, <cite>-</cite>-missing_value_name</dt>
+<dd>Bin prefix name for the sample identifiers that exist in the mapping file (mapping_fp) but not in the alpha diversity file (alpha_fp) [default: N/A]</dd>
+<dt><cite>-</cite>-binning_method</dt>
+<dd>Select the method name to create the bins, the options are &#8216;equal&#8217; and &#8216;quantile&#8217;. Both methods work over the normalized alpha diversity values. On the one hand &#8216;equal&#8217; will assign the bins on equally spaced limits, depending on the value of &#8211;number_of_bins i. e. if you select 4 the limits will be [0.25, 0.50, 0.75]. On the other hand &#8216;quantile&#8217; will select the limits based on the &#8211;number_of_bins i. e. the limits will be the quartiles if 4 is selected [default: equal].</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>The result of running this script is a metadata mapping file that will include 3 new columns per alpha diversity metric included in the alpha diversity file. For example, with an alpha diversity file with only PD_whole_tree, the new columns will PD_whole_tree_alpha, PD_whole_tree_normalized and PD_whole_tree_bin.</p>
+<p><strong>Adding alpha diversity data:</strong></p>
+<p>Add the alpha diversity values to a mapping file and classify the normalized values into 4 bins, where the limits will be  0 &lt; x &lt;= 0.25 for the first bin 0.25 &lt; x &lt;= 0.5 for the second bin, 0.5 &lt; x &lt;= 0.75 for the third bin and 0.75 &lt; x &lt;= 1 for the fourth bin.</p>
+<div class="highlight-python"><pre>add_alpha_to_mapping_file.py -i adiv_pd.txt -m mapping.txt -b 4 -o alpha_mapping.txt</pre>
+</div>
+<p><strong>Adding alpha diversity data with the quantile method:</strong></p>
+<p>Add the alpha diversity values to a mapping file and classify the normalized values using the quartiles of the distribution of this values.</p>
+<div class="highlight-python"><pre>add_alpha_to_mapping_file.py -i adiv_pd.txt -m mapping.txt -b 4 -o alpha_mapping_quantile.txt --binning_method=quantile</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2012, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>compare_3d_plots.py – Plot two PCoA files on the same 3D plot &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="Scripts - Analyses and Parameters" href="../doc_script_index.html" />
+    <link rel="next" title="make_2d_plots.py – Make 2D PCoA Plots" href="make_2d_plots.html" />
+    <link rel="prev" title="cytoscape_usage – Loading Results with Cytoscape" href="cytoscape_usage.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;">
+	<p style="font-size:12pt;padding: 5px;"><b>News and Announcements &raquo;</b>
+<script type="text/javascript" src="http://app.feed.informer.com/digest3/U9OLMKHF9N.js"><noscript><a href="http://app.feed.informer.com/digest3/U9OLMKHF9N.html">Click for &quot;QIIME&quot;.</a> Powered by <a href="http://feed.informer.com/">RSS Feed Informer</a></noscript></script></p>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="make_2d_plots.html" title="make_2d_plots.py – Make 2D PCoA Plots"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="cytoscape_usage.html" title="cytoscape_usage – Loading Results with Cytoscape"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation.html" >QIIME Documentation</a> &raquo;</li>
+          <li><a href="../doc_script_index.html" accesskey="U">Scripts - Analyses and Parameters</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="compare-3d-plots"></span><div class="section" id="compare-3d-plots-py-plot-two-pcoa-files-on-the-same-3d-plot">
+<span id="index-93"></span><h1><em>compare_3d_plots.py</em> &#8211; Plot two PCoA files on the same 3D plot<a class="headerlink" href="#compare-3d-plots-py-plot-two-pcoa-files-on-the-same-3d-plot" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>This script generates a 3D plot comparing two sets of principle coordinates using as input two principle coordinates files. The principle coordinates files are obtained by applying &#8220;<a class="reference external" href="./principle_coordinates.html">principle_coordinates.py</a>&#8221; to a file containing beta diversity measures. The beta diversity files are optained by applying &#8220;<a class="reference external" href="./beta_diversity.html">beta_diversity.py</a>&#8221; to an OTU table. One may apply &#8220;<a class="reference external" href="./transform_coordinate_matrices.html">transform_coordinate_matrices.py</a>&#8221; to the principle coordinates files before using this script to compare them.</p>
+<p><strong>Usage:</strong> <tt class="docutils literal"><span class="pre">compare_3d_plots.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-coord_fnames</dt>
+<dd>This is comma-separated list of the paths to the principal coordinates files (i.e., resulting file from <a class="reference external" href="./principal_coordinates.html">principal_coordinates.py</a>), e.g &#8216;pcoa1.txt,pcoa2.txt&#8217;</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-m, <cite>-</cite>-map_fname</dt>
+<dd>This is the user-generated mapping file [default=None]</dd>
+<dt>-b, <cite>-</cite>-colorby</dt>
+<dd>This is a list of the categories to color by in the plots from the user-generated mapping file. The categories must match the name of a column header in the mapping file exactly and multiple categories can be list by comma separating them without spaces. The user can also combine columns in the mapping file by separating the categories by &#8220;&amp;&amp;&#8221; without spaces [default=None]</dd>
+<dt>-a, <cite>-</cite>-custom_axes</dt>
+<dd>This is a category or list of categories from the user-generated mapping file to use as a custom axis in the plot.  For instance, if there is a pH category and one would like to see the samples plotted on that axis instead of PC1, PC2, etc., one can use this option.  It is also useful for plotting time-series data [default: None]</dd>
+<dt>-p, <cite>-</cite>-prefs_path</dt>
+<dd>This is the user-generated preferences file. NOTE: This is a file with a dictionary containing preferences for the analysis. See <a class="reference external" href="./make_3d_plot_prefs_file.html">make_3d_plot_prefs_file.py</a>. [default: None]</dd>
+<dt>-o, <cite>-</cite>-dir_path</dt>
+<dd>This is the location where the resulting output should be written [default=]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>This script results in a folder containing an html file which displays the 3D Plots generated.</p>
+<p><strong>Example 1:</strong></p>
+<p>Compare two pca/pcoa files in the same 3d plot where each sample ID is assigned its own color:</p>
+<div class="highlight-python"><pre>compare_3d_plots.py -i 'raw_pca_data1.txt,raw_pca_data2.txt'</pre>
+</div>
+<p><strong>Example 2:</strong></p>
+<p>Compare two pca/pcoa files in the same 3d plot with two coloring schemes (Day and Type):</p>
+<div class="highlight-python"><pre>compare_3d_plots.py -i 'raw_pca_data1.txt,raw_pca_data2.txt' -m input_map.txt -b 'Day,Type'</pre>
+</div>
+<p><strong>Example 3:</strong></p>
+<p>Compare two pca/pcoa files in the same 3d plot for a combination of label headers from a mapping file:</p>
+<div class="highlight-python"><pre>compare_3d_plots.py -i 'raw_pca_data1.txt,raw_pca_data2.txt' -m input_map.txt -b 'Type&amp;&amp;Day' -o ./test/</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="cytoscape_usage.html"
+                                  title="previous chapter"><em>cytoscape_usage</em> &#8211; Loading Results with Cytoscape</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="make_2d_plots.html"
+                                  title="next chapter"><em>make_2d_plots.py</em> &#8211; Make 2D PCoA Plots</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/scripts/compare_3d_plots.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="make_2d_plots.html" title="make_2d_plots.py – Make 2D PCoA Plots"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="cytoscape_usage.html" title="cytoscape_usage – Loading Results with Cytoscape"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation.html" >QIIME Documentation</a> &raquo;</li>
+          <li><a href="../doc_script_index.html" >Scripts - Analyses and Parameters</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+  </body>
+</html>

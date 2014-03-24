@@ -1,0 +1,180 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>make_prefs_file.py – Generate preferences file &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.2.1-dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="make-prefs-file"></span><div class="section" id="make-prefs-file-py-generate-preferences-file">
+<span id="index-0"></span><h1><em>make_prefs_file.py</em> &#8211; Generate preferences file<a class="headerlink" href="#make-prefs-file-py-generate-preferences-file" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>This script generates a preferences (prefs) file, which can be passed to <a class="reference external" href="./make_distance_histograms.html">make_distance_histograms.py</a>, <a class="reference external" href="./make_2d_plots.html">make_2d_plots.py</a> and <a class="reference external" href="./make_3d_plots.html">make_3d_plots.py</a>. The prefs file allows for defining the monte_carlo distance, gradient coloring of continuous values in the 2D and 3D plots, the ball size scale for all the samples and the color of the arrow and the line of the arrow for the procrustes analysis. Currently there is only one color gradient: red to blue.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">make_prefs_file.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-m, <cite>-</cite>-map_fname</dt>
+<dd>This is the metadata mapping file [default=None]</dd>
+<dt>-o, <cite>-</cite>-output_fp</dt>
+<dd>The output filepath</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-b, <cite>-</cite>-mapping_headers_to_use</dt>
+<dd>Mapping fields touse in prefs file [default: ALL]</dd>
+<dt>-k, <cite>-</cite>-background_color</dt>
+<dd>This is the backgroundcolor to  use in the plots. [default: black]</dd>
+<dt>-d, <cite>-</cite>-monte_carlo_dists</dt>
+<dd>Monte carlo distanceto use for each sample header [default: 10]</dd>
+<dt>-i, <cite>-</cite>-input_taxa_file</dt>
+<dd>Summarized taxa file with samplecounts by taxonomy (resulting file from <a class="reference external" href="./summarize_taxa.html">summarize_taxa.py</a>)</dd>
+<dt>-s, <cite>-</cite>-ball_scale</dt>
+<dd>Scale factor for the size of each ball in the plots [default: 1.0]</dd>
+<dt>-l, <cite>-</cite>-arrow_line_color</dt>
+<dd>Arrow line color forprocrustes analysis. [default: white]</dd>
+<dt>-a, <cite>-</cite>-arrow_head_color</dt>
+<dd>Arrow head color forprocrustes analysis. [default: red]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>The result of this script is a text file, containing coloring preferences to be used by <a class="reference external" href="./make_distance_histograms.html">make_distance_histograms.py</a>, <a class="reference external" href="./make_2d_plots.html">make_2d_plots.py</a> and <a class="reference external" href="./make_3d_plots.html">make_3d_plots.py</a>.</p>
+<p><strong>Examples:</strong></p>
+<p>To make a prefs file, the user is required to pass in a user-generated mapping file using &#8220;-m&#8221; and an output filepath, using &#8220;-o&#8221;. When using the defaults, the script will use ALL categories from the mapping file, set the background to black and the monte_carlo distances to 10.</p>
+<div class="highlight-python"><pre>"make_prefs_file.py -m mapping.txt -o prefs_out.txt</pre>
+</div>
+<p>If the user would like to use specified categories (&#8216;SampleID,Individual&#8217;) or combinations of categories (&#8216;SampleID&amp;&amp;Individual&#8217;), they will need to use the -b option, where each category is comma delimited, as follows:</p>
+<div class="highlight-python"><pre>make_prefs_file.py -b "SampleID,Individual,SampleID&amp;&amp;Individual" -o prefs_out.txt</pre>
+</div>
+<p>If the user would like to change the background color for their plots, they can pass the &#8216;-k&#8217; option, where the colors: black and white can be used for 3D plots and many additional colors can be used for the 2D plots, such as cyan, pink, yellow, etc.:</p>
+<div class="highlight-python"><pre>make_prefs_file.py -k white -o prefs_out.txt</pre>
+</div>
+<p>If the user would like to change the monte_carlo distances, they can pass the &#8216;-d&#8217; option as follows:</p>
+<div class="highlight-python"><pre>make_prefs_file.py -d 15 -o prefs_out.txt</pre>
+</div>
+<p>If the user would like to add a list of taxons they can pass the &#8216;-i&#8217; option, which is the resulting taxa file from <a class="reference external" href="./summarize_taxa.html">summarize_taxa.py</a>, as follows:</p>
+<div class="highlight-python"><pre>make_prefs_file.py -i taxa_level_3.txt -o prefs_out.txt</pre>
+</div>
+<p>If the user would like to add the ball size scale they can pass the &#8216;-s&#8217; option as follows:</p>
+<div class="highlight-python"><pre>make_prefs_file.py -m map_fname.txt -s 2.5 -o prefs_out.txt</pre>
+</div>
+<p>If the user would like to add the head and line color for the arrows in the procrustes analysis plot they can pass the &#8216;-a&#8217; and &#8216;-l&#8217; options as follows:</p>
+<div class="highlight-python"><pre>make_prefs_file.py -m map_fname.txt -a black -l blue -o prefs_out.txt</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://pycogent.sourceforge.net" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

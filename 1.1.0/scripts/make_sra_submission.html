@@ -1,0 +1,159 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>make_sra_submission.py – Makes SRA submission files (xml-format) &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.1.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="make-sra-submission"></span><div class="section" id="make-sra-submission-py-makes-sra-submission-files-xml-format">
+<span id="index-47"></span><h1><em>make_sra_submission.py</em> &#8211; Makes SRA submission files (xml-format)<a class="headerlink" href="#make-sra-submission-py-makes-sra-submission-files-xml-format" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>This script makes the submission xml files for SRA (study, experiment, etc.).  This script assumes that there is a simple tab-delimited text input (allowing for examples and comments).</p>
+<p><strong>Usage:</strong> <tt class="docutils literal"><span class="pre">make_sra_submission.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-a, <cite>-</cite>-input_sample_fp</dt>
+<dd>The tab-delimited text file with info about samples [default: None]</dd>
+<dt><cite>-</cite>-template_sample_fp</dt>
+<dd>The template file for samples [default: /python_software/Qiime/qiime/support_files/sra_xml_templates/sample_template.xml]</dd>
+<dt>-t, <cite>-</cite>-input_study_fp</dt>
+<dd>The tab-delimited text file with info about the study [default: None]</dd>
+<dt><cite>-</cite>-template_study_fp</dt>
+<dd>The template file for the study [default: /python_software/Qiime/qiime/support_files/sra_xml_templates/study_template.xml]</dd>
+<dt>-u, <cite>-</cite>-input_submission_fp</dt>
+<dd>The tab-delimited text file with info about the submission [default: None]</dd>
+<dt><cite>-</cite>-template_submission_fp</dt>
+<dd>The template file for the submission [default: /python_software/Qiime/qiime/support_files/sra_xml_templates/submission_template.xml]</dd>
+<dt>-e, <cite>-</cite>-input_experiment_fp</dt>
+<dd>The tab-delimited text file with info about the experiment [default: None]</dd>
+<dt><cite>-</cite>-experiment_attribute_fp</dt>
+<dd>Three-column, tab-delimited file of experiment attributes [default: None]</dd>
+<dt><cite>-</cite>-experiment_link_fp</dt>
+<dd>Three-column, tab-delimited file of experiment links [default: None]</dd>
+<dt>-s, <cite>-</cite>-sff_dir</dt>
+<dd>The directory containing the demultiplexed sff files: 1 dir per run [default: None]</dd>
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>Submission output directory</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>This script produces 3 xml-formatted files.</p>
+<p><strong>Example:</strong></p>
+<p>Read the sample data from sample.txt, the study data from study.txt, and the submission data from submission.txt, which writes out the corresponding XML files.</p>
+<div class="highlight-python"><pre>make_sra_submission.py -a sample.txt -t study.txt -u submission.txt</pre>
+</div>
+<p>Produces the files study.xml, submission.xml, sample.xml (based on the filenames of the .txt files) using the default xml templates.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+		
+	 <li><a href="../index.html">Home</a><br /></li>
+	 <li><a href="../install/index.html">Install</a><br /></li>
+	 <li><a href="../documentation/index.html">Documentation</a><br /></li>
+	 <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	 <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	 <li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+      &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

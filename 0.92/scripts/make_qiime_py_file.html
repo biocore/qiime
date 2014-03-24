@@ -1,0 +1,164 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>make_qiime_py_file.py – Create python file &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="Scripts - Analyses and Parameters" href="../doc_script_index.html" />
+    <link rel="next" title="make_qiime_rst_file.py – Make Sphinx RST file" href="make_qiime_rst_file.html" />
+    <link rel="prev" title="fix_arb_fasta.py – Reformat ARB FASTA files" href="fix_arb_fasta.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;">
+	<p style="font-size:12pt;padding: 5px;"><b>News and Announcements &raquo;</b>
+<script type="text/javascript" src="http://app.feed.informer.com/digest3/U9OLMKHF9N.js"><noscript><a href="http://app.feed.informer.com/digest3/U9OLMKHF9N.html">Click for &quot;QIIME&quot;.</a> Powered by <a href="http://feed.informer.com/">RSS Feed Informer</a></noscript></script></p>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="make_qiime_rst_file.html" title="make_qiime_rst_file.py – Make Sphinx RST file"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="fix_arb_fasta.html" title="fix_arb_fasta.py – Reformat ARB FASTA files"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation.html" >QIIME Documentation</a> &raquo;</li>
+          <li><a href="../doc_script_index.html" accesskey="U">Scripts - Analyses and Parameters</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="make-qiime-py-file"></span><div class="section" id="make-qiime-py-file-py-create-python-file">
+<span id="index-113"></span><h1><em>make_qiime_py_file.py</em> &#8211; Create python file<a class="headerlink" href="#make-qiime-py-file-py-create-python-file" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>This is a script which will add headers and footers to new python files
+and make them executable.</p>
+<p><strong>Usage:</strong> <tt class="docutils literal"><span class="pre">make_qiime_py_file.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-o, <cite>-</cite>-output_fp</dt>
+<dd>The output filepath</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-s, <cite>-</cite>-script</dt>
+<dd>Pass if creating a script to include option parsing framework [default:False].</dd>
+<dt>-t, <cite>-</cite>-test</dt>
+<dd>Pass if creating a unit test file to include relevant information [default:False].</dd>
+<dt>-a, <cite>-</cite>-author_name</dt>
+<dd>The script author&#8217;s (probably you) name to be included the header variables. This will typically need to be enclosed  in quotes to handle spaces. [default:AUTHOR_NAME]</dd>
+<dt>-e, <cite>-</cite>-author_email</dt>
+<dd>The script author&#8217;s (probably you) e-mail address to be included the header variables. [default:AUTHOR_EMAIL]</dd>
+<dt>-c, <cite>-</cite>-copyright</dt>
+<dd>The copyright information to be included in the header variables. [default:Copyright 2010, The QIIME project]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>The results of this script is either a python script, test, or library file, depending on the input parameters.</p>
+<p><strong>Example usage:</strong></p>
+<p>Create a new script:</p>
+<div class="highlight-python"><pre>make_qiime_py_file.py -s -a "Greg Caporaso" -e gregcaporaso@gmail.com -o my_script.py</pre>
+</div>
+<p>Create a new test file:</p>
+<div class="highlight-python"><pre>make_qiime_py_file.py -t -a "Greg Caporaso" -e gregcaporaso@gmail.com -o my_test.py</pre>
+</div>
+<p>Create a basic file (e.g., for library code):</p>
+<div class="highlight-python"><pre>make_qiime_py_file.py -a "Greg Caporaso" -e gregcaporaso@gmail.com -o my_lib.py</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="fix_arb_fasta.html"
+                                  title="previous chapter"><em>fix_arb_fasta.py</em> &#8211; Reformat ARB FASTA files</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="make_qiime_rst_file.html"
+                                  title="next chapter"><em>make_qiime_rst_file.py</em> &#8211; Make Sphinx RST file</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/scripts/make_qiime_py_file.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="make_qiime_rst_file.html" title="make_qiime_rst_file.py – Make Sphinx RST file"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="fix_arb_fasta.html" title="fix_arb_fasta.py – Reformat ARB FASTA files"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation.html" >QIIME Documentation</a> &raquo;</li>
+          <li><a href="../doc_script_index.html" >Scripts - Analyses and Parameters</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+  </body>
+</html>

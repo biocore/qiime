@@ -1,0 +1,347 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>&lt;no title&gt; &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.8.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="group-significance"></span><p id="index-0"><em>group_significance.py</em> &#8211;
+This script is used to compare OTU frequencies in sample groups and to ascertain
+whether or not there are statistically significant differences between the OTU
+abundance in the different sample groups.
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</p>
+<p><strong>Description:</strong></p>
+<p><strong>*Please read all starred documentation below before using this script*</strong></p>
+<p>This script is used to compare OTU frequencies in sample groups and to ascertain
+whether or not there are statistically significant differences between the OTU
+abundance in the different sample groups.</p>
+<p>The script will compare each OTU based
+on the passed sample groupings to see if it is differentially represented. The
+sample groupings are determined by the -c option. The script will group together
+samples which have the same value in the mapping file under the header passed
+with the -c option. Any samples that do not contain a value under the given
+header will not be included in the comparison.
+At a basic level, the script is constructing a OTUxSample
+(rowXcolumn) contingency table, and testing whether or not each OTU is
+differentially represented in cerstain groups of columns (determined by the
+metadata category passed).</p>
+<p>There are several important considerations with this script</p>
+<p>Errors and behind-the-scenes processing:
+* This script will ignore samples that are found in the mapping file but do not
+* contain information for the passed category. This would cause the mapping file
+* to fail <a class="reference external" href="./validate_mapping.html">validate_mapping.py</a>, but will not cause a failure here.
+* This script will silenty ignore situations where the set of samples in the
+* mapping file is a superset of the samples in the biom file. If the reverse is
+* true, the script will error unless &#8211;biom_samples_are_superset is passed.
+* This script will round P-values greater than 1 (after correcting for multiple
+* comparisons) to 1.0.
+* If your results file contains nans for p values its because one or more of the
+* assumptions the selected test makes about the data was not met by the given
+* OTU. The inverse of this statement is not guaranteed; just because the test
+* worked on the data doesn&#8217;t mean all its assumptions are met, just that enough
+* assumptions are met so it doesn&#8217;t fail (see below).</p>
+<p>Filtering your OTU table prior to this script is important:
+* Filtering out OTUs which are found in a low percentage of samples is a good
+* idea before using this script. The old <a class="reference external" href="./otu_category_significance.html">otu_category_significance.py</a> removed
+* OTUs that were not found in at least 25 percent of samples. This prevents
+* 0 variance errors and spurious significance for really low abundance OTUs and
+* focuses the hypothesis discovery process on the abundant OTUs which are likely
+* playing a larger role.</p>
+<p>Test assumptions:
+* This script tests that some basic assumptions of the given statistical test
+* are met by the passed data. These &#8216;assumption tests&#8217; are <em>necessary</em> not
+* <em>sufficient</em> to ensure that the given statistical test you are applying is
+* appropriate for the data. For instance, the script will error if you use the
+* Mann-Whitney-U test and one of your group sizes is smaller than 20. It is
+* likely that assumptions about the distribution of the data, the distribution
+* of the variance, etc. are not robustly met. IT IS YOUR REPSONSIBILTY TO CHECK
+* THAT YOU ARE USING AN APPROPRIATE TEST. For more information on assumptions
+* made by the tests, please look at the following resources:
+* Biometry by Sokal and Rolhf
+* Nonparamteric Statistical Methods by Hollander and Wolfe
+* Documentation in R and Scipy packages
+* Handbook of Biological Statistics by McDonald (available at
+* <a class="reference external" href="http://udel.edu/~mcdonald/statintro.html">http://udel.edu/~mcdonald/statintro.html</a>)</p>
+<p>The assumptions we check for:
+* Kruskal-Wallis: No assumptions are checked for Kruskal-Wallis.
+* G-test: We check that all the values in the table are non-negative and we
+* check that each sample grouping contains at least one non 0 value. If either
+* condition is not met we return G-stat, pval = (nan, nan) but don&#8217;t error.
+* Mann-Whitney-U: The number of data points in the combined samples is &gt;= 20. If
+* there are fewer than 21 data points the script will error. Although R gives
+* exact values for less than 50 data points,  its definition of &#8216;exact&#8217; is
+* unclear since a conditional permutation calculation with ~ 10^14 calculations
+* would be required. The normal approximation is suggested for more than 16 data
+* points by Mann and Whitney 1947, and more than 20 in the Scipy documentation.
+* The bootstrapped version of the test does not require &gt;20 data points. If all
+* the data ranks are tied for one of the groups, the function will return U,nan.
+* ANOVA: No assumptions are checked for ANOVA. However, if the within group
+* variance is 0, we return nan,nan.
+* T-test: No assumptions are checked for the T-test. If no variance groups are
+* detected None or nan will be returned.</p>
+<p>The assumptions we do not check for are:
+* Kruskal-Wallis: The scipy documentation indicates that each group must have
+* at least 5 samples to make the Chi Squared approximation for the distribution
+* of the H statistic be appropriate. R has no such requirement, and we do not
+# implement the requirement here. The KW test does assume that the distributions
+* from which the samples come are the same (although they may be non-normal)
+* except for their location parameter, and we do not check this.
+* G-test:
+* Mann-Whitney-U: Equality of variance between groups. Sample 1 is IID, Sample 2
+* is IID. Sample 1 and Sample 2 are mutually independent.
+* ANOVA: ANOVA assumes equality of variance between groups (homoscedasticity),
+* normality of the residuals, and independence of the individual observations in
+* the samples. None of these conditions are checked by this script.
+* T-test: the t-test assumes that the samples come from populations which are
+* normally distributed. that the variances of the sampled groups are ~ equal and
+* that the individual observations are independent. None of these conditions are
+* checked by this script.</p>
+<p>Null and alternate hypothesis:
+* G-test: The null hypothesis for the g_test (aka goodness of fit,
+* log-likelihood ratio test) is that the frequency of any given OTU is equal
+* across all sample groups. The alternate hypothesis is that the frequency of
+* the OTU is not the same across all sample groups.
+* Kruskal-Wallis: The null hypothesis is that the location paramater of the
+* groups of abundances for a given OTU is the same. The alternate hypothesis is
+* that at least one of the location parameters is different.
+* ANOVA: the null hypothesis is that the means of the observations in the groups
+* are the same, the alternate is that at least one is not.
+* Mann-Whitney-U: the null hypothesis is that the distributions of the groups
+* are equal, such that there is a 50 percent chance that a value from group1 is
+* greater than a value from group2. The alternate is that the distributions are
+* not the same.
+* T-test: the null hypothesis is that the means of the two groups are the same
+* versus the alternate that they are unequal.</p>
+<p>The available tests are:
+ANOVA - one way analysis of variance. This test compares the within-group
+variance to the between-group variance in order to assess whether or not the
+sample groups have even frequencies of a given OTU. It generalizes the t-test to
+more than two groups. This is a parametric test whose assumptions are likely
+violated by data found in most gene surveys.</p>
+<p>kruskal_wallis - nonparametric ANOVA. This test is functionally an expansion of
+ANOVA to cases where the sample means are unequal and the distribution is not
+normal. The assumption that the distribution from which each group (within a
+single OTU) came is the same remains. This is a nonparametric test.</p>
+<p>g_test - goodness of fit or log-likelihood ratio test. This test compares the
+ratio of the OTU frequencies in the sample groups to an &#8216;extrinsic hypothesis&#8217;
+about what their distribution should be. The extrinsic hypothesis coded in this
+script is that all sample groups have equal OTU frequencies. The test compares
+the ratio of the observed OTU frequencies in the sample groups to the expected
+frequencies based on the extrinsic hypothesis. This is a parametric test.</p>
+<p>parametric_t_test - Student&#8217;s t-test. This test compares the frequencies of an
+OTU in one sample group versus another sample group to see what the probability
+of drawing the samples given that each sample had an equal proportion of the OTU
+in it. This is a parametric test whose assumptions are likely violated by data
+found in most gene surveys.</p>
+<p>nonparametric_t_test - nonparametric t-test is calculated using Monte Carlo
+simulation. This test performs in the same way as the t-test, but computes the
+probability based on a boot-strap procedure where the sample group values are
+permuted. The fraction of the time that a t-statistic greater than or equal to
+the observed t-statistic is found is the basis of the nonparametric p-value.
+This is a nonparametric test.</p>
+<p>mann_whitney_u - aka Wilcoxon rank sum test is a nonparametric test where the
+null hypothesis is that the populations from which the two samples come have
+equal means. It is basically an extension of the t-test. This is a nonparametric
+test.</p>
+<p>bootstrap_mann_whitney_u - the bootstrapped version of the mann_whitney_u test.
+Identical behavior to the nonparametric_t_test. This is a nonparametric_t_test.</p>
+<p>This script generates a tab separated output file with the following headers.
+OTU - OTU id
+Test-Statistic - the value of the test statistic for the given test
+P - the raw P value returned by the given test.
+FDR_P - the P value corrected by the Benjamini-Hochberg FDR procedure for</p>
+<blockquote>
+<div>multiple comparisons.</div></blockquote>
+<dl class="docutils">
+<dt>Bonferroni_P - the P value corrected by the Bonferroni procedure for multiple</dt>
+<dd>comparisons.</dd>
+<dt>groupX_mean - there will be as many of these headers as there are unique values</dt>
+<dd>in the mapping file under the category passed with the -c option. Each of these
+fields will contain the mean frequency/abundance/count of the given OTU for the
+given sample group.</dd>
+<dt>Taxonomy - this column will be present only if the biom table contained Taxonomy</dt>
+<dd>information. It will contain the taxonomy of the given OTU.</dd>
+</dl>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">group_significance.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-otu_table_fp</dt>
+<dd>Path to biom format table or to directory containing OTU tables</dd>
+<dt>-m, <cite>-</cite>-mapping_fp</dt>
+<dd>Path to category mapping file</dd>
+<dt>-c, <cite>-</cite>-category</dt>
+<dd>Name of the category over which to run the analysis</dd>
+<dt>-o, <cite>-</cite>-output_fp</dt>
+<dd>Path to the output file or directory</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-s, <cite>-</cite>-test</dt>
+<dd>Test to use. Choices are:</dd>
+</dl>
+</div>
+<dl class="docutils">
+<dt>nonparametric_t_test, bootstrap_mann_whitney_u, ANOVA, kruskal_wallis, g_test, parametric_t_test, mann_whitney_u</dt>
+<dd><p class="first">[default: kruskal_wallis]
+<cite>-</cite>-metadata_key</p>
+<blockquote>
+<div>Key to extract metadata from biom table. default: taxonomy]</div></blockquote>
+<dl class="last docutils">
+<dt><cite>-</cite>-permutations</dt>
+<dd>Number of permutations to use for bootstrapped tests.[default: 1000]</dd>
+<dt><cite>-</cite>-biom_samples_are_superset</dt>
+<dd>If this flag is passed you will be able to use a biom table that contains all the samples listed in the mapping file as well as additional samples not listed in the mapping file. Only their intersecting samples will be used for calculations.</dd>
+<dt><cite>-</cite>-print_non_overlap</dt>
+<dd>If this flag is passed the script will display the samples that do not overlap between the mapping file and the biom file.</dd>
+</dl>
+</dd>
+</dl>
+<p><strong>Output:</strong></p>
+<p>This script generates a tab separated output file with the following headers.
+OTU - OTU id
+Test-Statistic - the value of the test statistic for the given test
+P - the raw P value returned by the given test.
+FDR_P - the P value corrected by the Benjamini-Hochberg FDR procedure for</p>
+<blockquote>
+<div>multiple comparisons.</div></blockquote>
+<dl class="docutils">
+<dt>Bonferroni_P - the P value corrected by the Bonferroni procedure for multiple</dt>
+<dd>comparisons.</dd>
+<dt>groupX_mean - there will be as many of these headers as there are unique values</dt>
+<dd>in the mapping file under the category passed with the -c option. Each of these
+fields will contain the mean frequency/abundance/count of the given OTU for the
+given sample group.</dd>
+<dt>Taxonomy - this column will be present only if the biom table contained Taxonomy</dt>
+<dd>information. It will contain the taxonomy of the given OTU.</dd>
+</dl>
+<p><strong>Find which OTUs have the highest probablilty of being differently represented depending on the sample category &#8216;diet&#8217; using a G test:</strong></p>
+<div class="highlight-python"><pre>group_significance.py -i otu_table.biom -m map_overlapping.txt -c diet -s g_test -o gtest_ocs.txt</pre>
+</div>
+<p><strong>Find which OTUs are differentially represented in two sample groups &#8216;before_after&#8217; using a T-test:</strong></p>
+<div class="highlight-python"><pre>group_significance.py -i otu_table.biom -m map_overlapping.txt -c before_after -s parametric_t_test -o tt_ocs.txt</pre>
+</div>
+<p><strong>Find which OTUs are differentially represented in the sample groups formed by &#8216;diet&#8217; based on nonparamteric ANOVA, aka, Kruskal Wallis test. In addition, prevent the script from erroring because the biom table samples are a superset of the mapping file samples, and print the non-overlapping samples:</strong></p>
+<div class="highlight-python"><pre>group_significance.py -i otu_table.biom -m map.txt -c diet -s kruskal_wallis -o kw_ocs.txt --biom_samples_are_superset --print_non_overlap</pre>
+</div>
+<p><strong>Find which OTUs are differentially represented in the sample groups formed by &#8216;before_after&#8217; based on bootstrapped T-testing with 100 permutations:</strong></p>
+<div class="highlight-python"><pre>group_significance.py -i otu_table.biom -m map_overlapping.txt -c before_after -s nonparametric_t_test --permutations 100 -o btt_ocs.txt</pre>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

@@ -1,0 +1,194 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>make_distance_histograms.py – Make distance histograms &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.7.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="make-distance-histograms"></span><div class="section" id="make-distance-histograms-py-make-distance-histograms">
+<span id="index-0"></span><h1><em>make_distance_histograms.py</em> &#8211; Make distance histograms<a class="headerlink" href="#make-distance-histograms-py-make-distance-histograms" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>To visualize the distance between samples and/or categories in the metadata
+mapping file, the user can generate histograms to represent the distances
+between samples. This script generates an HTML file, where the user can compare
+the distances between samples based on the different categories associated to
+each sample in the metadata mapping file.</p>
+<p>Distance histograms provide a way to compare different categories and see which
+tend to have larger/smaller distances than others. For example, in a hand
+study, you may want to compare the distances between hands to the distances
+between individuals (with the file &#8220;hand_distances.txt&#8221; using the parameter -d
+hand_distances.txt). The categories are defined in the metadata mapping file
+(specified using the parameter -m hand_map.txt). If you want to look at the
+distances between hands and individuals, choose the &#8220;Hand&#8221; field and
+&#8220;Individual&#8221; field (using the parameter &#8211;fields Hand,Individual (notice the
+fields are comma-delimited)). For each of these groups of distances a
+histogram is made. The output is an HTML file which is created in the
+&#8220;Distance_Histograms&#8221; directory (using the parameter -o Distance_Histograms to
+specify output directory) where you can look at all the distance histograms
+individually, and compare them between each other.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">make_distance_histograms.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-d, <cite>-</cite>-distance_matrix_file</dt>
+<dd>Input distance matrix filepath (i.e. the result of <a class="reference external" href="./beta_diversity.html">beta_diversity.py</a>). WARNING: Only symmetric, hollow distance matrices may be used as input. Asymmetric distance matrices, such as those obtained by the UniFrac Gain metric (i.e. <a class="reference external" href="./beta_diversity.html">beta_diversity.py</a> -m unifrac_g), should not be used as input</dd>
+<dt>-m, <cite>-</cite>-map_fname</dt>
+<dd>Input metadata mapping filepath.</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-p, <cite>-</cite>-prefs_path</dt>
+<dd>Input user-generated preferences filepath. NOTE: This is a file with a dictionary containing preferences for the analysis. This dictionary must have a &#8220;Fields&#8221; key mapping to a list of desired fields. [default: None]</dd>
+<dt>-o, <cite>-</cite>-dir_path</dt>
+<dd>Output directory. [default: ./]</dd>
+<dt>-k, <cite>-</cite>-background_color</dt>
+<dd>Background color for use in the plots (black or white) [default: white]</dd>
+<dt><cite>-</cite>-monte_carlo</dt>
+<dd>Deprecated: pass &#8211;monte_carlo_iters &gt; 0 to enable</dd>
+<dt><cite>-</cite>-suppress_html_output</dt>
+<dd>Suppress HTML output. [default: False]</dd>
+<dt>-f, <cite>-</cite>-fields</dt>
+<dd>Comma-separated list of fields to compare, where the list of fields should be in quotes (e.g. &#8220;Field1,Field2,Field3&#8221;). Note: if this option is passed on the command-line, it will overwrite the fields in prefs file. [default: first field in mapping file is used]</dd>
+<dt><cite>-</cite>-monte_carlo_iters</dt>
+<dd>Number of iterations to perform for Monte Carlo analysis. [default: 0; No monte carlo simulation performed]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>The result of this script will be a folder containing images and/or an HTML
+file (with appropriate javascript files), depending on the user-defined
+parameters.</p>
+<p><strong>Distance histograms example:</strong></p>
+<p>In the following command, the user supplies a distance matrix (i.e. the resulting file from <a class="reference external" href="./beta_diversity.html">beta_diversity.py</a>), the user-generated metadata mapping file and one category &#8220;Treatment&#8221; to generate distance histograms.</p>
+<div class="highlight-python"><pre>make_distance_histograms.py -d unweighted_unifrac_dm.txt -m Fasting_Map.txt --fields Treatment -o example1</pre>
+</div>
+<p><strong>Multiple categories:</strong></p>
+<p>For comparison of multiple categories (e.g. Treatment, DOB), you can use the following command (separating each category with a comma).</p>
+<div class="highlight-python"><pre>make_distance_histograms.py -d unweighted_unifrac_dm.txt -m Fasting_Map.txt --fields Treatment,DOB -o example2</pre>
+</div>
+<p><strong>Suppress HTML output:</strong></p>
+<p>By default, HTML output is automatically generated. If the user would like to suppress the HTML output, you can use the following command.</p>
+<div class="highlight-python"><pre>make_distance_histograms.py -d unweighted_unifrac_dm.txt -m Fasting_Map.txt --fields Treatment --suppress_html_output -o example3</pre>
+</div>
+<p><strong>Preferences file:</strong></p>
+<p>You can provide your own preferences file (prefs.txt) with the following command. If a preferences file is supplied, you do not need to supply fields on the command-line.</p>
+<div class="highlight-python"><pre>make_distance_histograms.py -d unweighted_unifrac_dm.txt -m Fasting_Map.txt -p prefs.txt -o example4</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2012, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>
