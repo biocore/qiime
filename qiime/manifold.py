@@ -32,8 +32,10 @@ def compute_manifold(file_name,algorithm):
         print("arg in error, unknown algorithm")
         exit(1)
 
-    eigvals = [1,2,3]
-    pcnts = [30,20,10]
+    fit = fit/abs(fit).max()
+
+    eigvals = [1.0,2.0,3.0]
+    pcnts = [30.0,20.0,10.0]
     
     return format_coords(samples, fit, eigvals, pcnts)
 
