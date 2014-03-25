@@ -31,7 +31,7 @@ def compute_manifold(file_name,algorithm):
     if algorithm=="isomap":
         fit = manifold.Isomap(n_components=3).fit_transform(otumtx)
     else:
-        print("arg in error, unknown algorithm")
+        print("arg in error, unknown algorithm '"+algorithm+"'")
         exit(1)
 
     fit /= abs(fit).max()
