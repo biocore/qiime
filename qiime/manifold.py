@@ -17,6 +17,8 @@ __email__ = "laptopdude2@gmail.com"
 
 def compute_manifold(file_name,algorithm):
 
+    """compute the specified manifold on the specified file"""
+
     otu_table = parse_biom_table(open(file_name,"U"))
 
     samples = otu_table.SampleIds
@@ -32,7 +34,7 @@ def compute_manifold(file_name,algorithm):
         print("arg in error, unknown algorithm")
         exit(1)
 
-    fit = fit/abs(fit).max()
+    fit /= abs(fit).max()
 
     eigvals = [1.0,2.0,3.0]
     pcnts = [30.0,20.0,10.0]
@@ -40,8 +42,9 @@ def compute_manifold(file_name,algorithm):
     return format_coords(samples, fit, eigvals, pcnts)
 
 def multiple_file_manifold(input_dir, output_dir, algorithm):
-    """perform manifoldss on all distance matrices in the input_dir
-    """
+    
+    """perform manifolds on all distance matrices in the input_dir"""
+    
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     file_names = os.listdir(input_dir)
