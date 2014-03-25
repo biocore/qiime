@@ -1669,6 +1669,10 @@ class MetadataMap():
             strings)
     """
 
+    req_header_prefix = ['SampleID', 'BarcodeSequence',
+                         'LinkerPrimerSequence']
+    req_header_suffix = ['Description']
+
     @staticmethod
     def parseMetadataMap(lines):
         """Parses a QIIME metadata mapping file into a MetadataMap object.
@@ -1682,6 +1686,19 @@ class MetadataMap():
                 metadata mapping file
         """
         return MetadataMap(*parse_mapping_file_to_dict(lines))
+
+    @staticmethod
+    def mergeMappingFiles(mapping_files, no_data_value='no_data'):
+        """ Merge list of mapping files into a single mapping file 
+
+            mapping_files: open file objects containing mapping data
+            no_data_value: value to be used in cases where there is no
+            mapping field associated with a sample ID (default: 'no_data')
+        """
+        metadata_maps = map(MetadataMap.parseMetadataMap, mapping_files)
+        merged = sum(metadata_maps[1:], metadata_maps[0])
+        merged.no_data_value = no_data_value
+        return merged
 
     def __init__(self, sample_metadata, Comments):
         """Instantiates a MetadataMap object.
@@ -1698,6 +1715,7 @@ class MetadataMap():
         """
         self._metadata = sample_metadata
         self.Comments = Comments
+        self.no_data_value = 'no_data'
 
     def __eq__(self, other):
         """Test this instance for equality with another.
@@ -1719,6 +1737,108 @@ class MetadataMap():
             classes.
         """
         return not self.__eq__(other)
+
+    def __str__(self):
+        """Returns a tab-separated version of the mapping file
+
+        Missing data will be filled in with the value set in the member
+        variable no_data_value.
+
+        Note: that required columns will be in the required positions, but
+              optional columns may be re-ordered compared to the input data.
+        """
+        # this will hold the output lines while we are generating them
+        output_lines = []
+
+        # Build an ordered list of headers
+        # 2. The optional columns in the mapping file
+        headers_present = self._metadata.iteritems().next()[1].keys()
+        optional_headers = list(set(headers_present) -
+                                set(self.req_header_prefix +
+                                    self.req_header_suffix))
+
+        headers = (self.req_header_prefix + optional_headers +
+                   self.req_header_suffix)
+
+        output_lines.extend(self.Comments)
+        output_lines.append('#' + '\t'.join(headers))
+
+        for sample_id, data in self._metadata.iteritems():
+            current_data = []
+
+            # Get the first required columns
+            current_data.append(sample_id)
+            # skip the SampleID required header, since we get that from the
+            # dict we are currently iterating over
+            for header in self.req_header_prefix[1:]:
+                current_data.append(data[header])
+
+            # Get the optional columns; allow for None in these columns
+            for header in optional_headers:
+                value = self.no_data_value if data[header] is None else \
+                    data[header]
+
+                current_data.append(value)
+
+            # get the last required columns
+            for header in self.req_header_suffix:
+                current_data.append(data[header])
+
+            output_lines.append('\t'.join([str(x) for x in current_data]))
+
+        return '\n'.join(output_lines) + '\n'
+
+    def __add__(self, other):
+        """Merges two mapping files
+
+        Fills in None where there is no data (i.e., when one mapping file
+        does not have a column in the other).  The comments from both mapping
+        files will be concatenated.
+        """
+        # Make a defaultdict of defaultdicts, the latter of which returns
+        # None when an key is not present
+        merged_data = defaultdict(lambda: defaultdict(lambda: None))
+
+        # We will keep track of all unique sample_ids and metadata headers
+        # we have seen as we go
+        all_sample_ids = set()
+        all_headers = set()
+
+        # add all values from self into the merged_data structure
+        for sample_id, data in self._metadata.iteritems():
+            all_sample_ids.add(sample_id)
+            for header, value in data.iteritems():
+                all_headers.add(header)
+                merged_data[sample_id][header] = value
+
+        # then add all data from other
+        for sample_id, data in other._metadata.iteritems():
+            all_sample_ids.add(sample_id)
+            for header, value in data.iteritems():
+                all_headers.add(header)
+                # if the two mapping files have identical sample_ids and
+                # metadata columns but have DIFFERENT values, raise a value
+                # error
+                if merged_data[sample_id][header] is not None and \
+                        merged_data[sample_id][header] != value:
+                    raise ValueError("Different values provided for %s for "
+                                     "sample %s in different mapping files."
+                                     % (header, sample_id))
+                else:
+                    merged_data[sample_id][header] = value
+
+        # Now, convert what we have seen into a normal dict
+        normal_dict = {}
+        for sample_id in all_sample_ids:
+            if sample_id not in normal_dict:
+                normal_dict[sample_id] = {}
+
+            for header in all_headers:
+                normal_dict[sample_id][header] = \
+                    merged_data[sample_id][header]
+
+        # and create a MetadataMap object from it; concatenate comments
+        return self.__class__(normal_dict, self.Comments + other.Comments)
 
     def getSampleMetadata(self, sample_id):
         """Returns the metadata associated with a particular sample.
@@ -2111,3 +2231,29 @@ def biom_taxonomy_formatter(bt, md_key):
         print ('Metadata format could not be determined or metadata key (%s) ' +
                'was incorrect. Metadata will not be returned.') % md_key
         return None
+
+
+def invert_dict(d):
+    """Returns inverse of d, setting keys to values and values to list of keys.
+
+    Note that each value will _always_ be a list, even if one item.
+
+    Can be invoked with anything that can be an argument for dict(), including
+    an existing dict or a list of tuples. However, keys are always appended in
+    arbitrary order, not the input order.
+
+    WARNING: will fail if any values are unhashable, e.g. if they are dicts or
+    lists.
+
+    Ported from PyCogent's cogent.util.misc.InverseDictMulti.
+    """
+    if isinstance(d, dict):
+        temp = d
+    else:
+        temp = dict(d)
+    result = {}
+    for key, val in temp.iteritems():
+        if val not in result:
+            result[val] = []
+        result[val].append(key)
+    return result
