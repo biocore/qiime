@@ -30,13 +30,29 @@ def compute_manifold(file_name,algorithm):
 
     if algorithm=="isomap":
         fit = manifold.Isomap(n_components=3).fit_transform(otumtx)
+    elif algorithm=="lle":
+        fit = manifold.LocallyLinearEmbedding(n_components=3, \
+            method="standard").fit_transform(otumtx)
+    elif algorithm=="modified-lle":
+        fit = manifold.LocallyLinearEmbedding(n_components=3, \
+            method="modified").fit_transform(otumtx)
+    elif algorithm=="hessian-lle":
+        fit = manifold.LocallyLinearEmbedding(n_components=3, \
+            method="hessian").fit_transform(otumtx)
+    elif algorihm=="spectral-embedding":
+        fit = manifold.SpectralEmbedding(n_components=3)
+    elif algorithm=="ltsa":
+        fit = manifold.LocallyLinearEmbedding(n_neighbors=3, \
+            method="ltsa").fit_transform(otumtx)
+    elif algorithm=="mds":
+        fit = manifold.MDS(n_neighbors=3)
     else:
         print("arg in error, unknown algorithm '"+algorithm+"'")
         exit(1)
 
     fit /= abs(fit).max()
 
-    eigvals = [1.0,2.0,3.0]
+    eigvals = [3.0,2.0,1.0]
     pcnts = [30.0,20.0,10.0]
     
     return format_coords(samples, fit, eigvals, pcnts)
