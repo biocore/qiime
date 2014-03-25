@@ -4,15 +4,15 @@ from __future__ import division
 
 __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Justin Kuczynski", "Greg Caporaso"]
+__credits__ = ["Justin Kuczynski", "Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
 import os.path
+from functools import partial
 
-from cogent.maths.stats.rarefaction import subsample_multinomial
 from skbio.maths.subsample import subsample
 
 from qiime.util import parse_command_line_parameters, create_dir
@@ -91,7 +91,7 @@ def main():
                              opts.step, opts.num_reps)
 
     if opts.subsample_multinomial:
-        subsample_f = subsample_multinomial
+        subsample_f = partial(subsample, replace=True)
     else:
         subsample_f = subsample
 
