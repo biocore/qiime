@@ -45,7 +45,6 @@ from numpy import __version__ as numpy_version
 import warnings
 warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
 from skbio.parse.sequences import parse_fasta
-from cogent.seqsim.sequence_generators import SequenceGenerator, IUPAC_DNA
 from cogent import DNA, LoadSeqs
 from cogent.align.align import make_dna_scoring_dict, local_pairwise
 from cogent.util.misc import remove_files
