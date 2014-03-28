@@ -2,8 +2,8 @@
 # file test_split_libraries.py
 
 __author__ = "Rob Knight"
-__copyright__ = "Copyright 2011, The QIIME Project"  # consider project name
-__credits__ = ["Rob Knight", "William Walters"]  # remember to add yourself
+__copyright__ = "Copyright 2011, The QIIME Project"
+__credits__ = ["Rob Knight", "William Walters", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "William Walters"
@@ -190,10 +190,17 @@ class TopLevelTests(TestCase):
         self.assertEqual(check_window_qual_scores(scores1, 1, 5), (False, 7))
 
     def test_expand_degeneracies(self):
-        """generate_possibilities should make possible strings"""
+        """expand_degeneracies should make possible strings"""
+        # No expansion.
         self.assertEqual(expand_degeneracies(['ACG']), ['ACG'])
-        self.assertEqual(expand_degeneracies(['RGY']),
-                         ['AGT', 'AGC', 'GGT', 'GGC'])
+
+        # Expansion, single sequence.
+        self.assertEqual(sorted(expand_degeneracies(['RGY'])),
+                         ['AGC', 'AGT', 'GGC', 'GGT'])
+
+        # Multiple sequences.
+        self.assertEqual(sorted(expand_degeneracies(['ACGW', 'KAT'])),
+                         ['ACGA', 'ACGT', 'GAT', 'TAT'])
 
     def test_get_infile(self):
         """get_infile should return filehandle"""
