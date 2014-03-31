@@ -79,20 +79,6 @@ class CogentTreeBuilderTests(SharedSetupTestCase):
         # note: lines in diff order w/ diff versions
         self.assertEqual(str(actual), expected)
 
-    # this test assumes a certain newick format.  always works for me, but isn't
-    # a good test
-    # def test_midpoint_rooting(self):
-    #     """CogentTreeBuilder: midpoint rooting should work"""
-    #     p = CogentTreeBuilder({'Module': brokit.fasttree})
-    #     log_fp = get_tmp_filename(\
-    #      prefix='CogentTreeBuilderTests_',suffix='.log')
-    #     self._paths_to_clean_up.append(log_fp)
-    #
-    #     actual = p(result_path=None, aln_path=self.input_fp,
-    #         log_path=log_fp,root_method='midpoint')
-    #     expected = midpoint_tree
-    # note: lines in diff order w/ diff versions
-    #     self.assertEqual(str(actual),expected)
 
     def test_root_midpt(self):
         """midpoint should be selected correctly when it is an internal node
