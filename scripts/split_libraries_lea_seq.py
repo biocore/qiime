@@ -3,7 +3,7 @@ from __future__ import division
 
 __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2013, The QIIME Project"
-__credits__ = ["Jai Ram Rideout"]
+__credits__ = ["Jai Ram Rideout", "Charudatta Navare"]
 __license__ = "GPL"
 __version__ = "1.7.0-dev"
 __maintainer__ = "Jai Ram Rideout"
