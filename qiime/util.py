@@ -18,7 +18,7 @@ __email__ = "gregcaporaso@gmail.com"
 A lot of this might migrate into cogent at some point.
 """
 
-from os import getenv, listdir
+from os import getenv, listdir, close
 from os.path import abspath, basename, exists, dirname, join, splitext, isfile
 from collections import defaultdict
 from gzip import open as gz_open
@@ -28,6 +28,7 @@ from datetime import datetime
 from subprocess import Popen
 from random import random
 from itertools import repeat, izip
+from tempfile import mkstemp
 
 from numpy import (array, zeros, shape, vstack, ndarray, asarray,
                    float, where, isnan, std, sqrt, ravel, mean, median,
@@ -53,7 +54,6 @@ from cogent.cluster.procrustes import procrustes
 from cogent.core.alignment import Alignment
 from cogent.data.molecular_weight import DnaMW
 from cogent.util.misc import remove_files, create_dir, handle_error_codes
-from cogent.app.util import get_tmp_filename as cogent_get_tmp_filename
 
 from skbio.app.util import ApplicationError, CommandLineApplication, FilePath
 from skbio.app.util import which
@@ -357,17 +357,6 @@ def get_qiime_temp_dir():
     else:
         result = '/tmp/'
     return result
-
-
-def get_tmp_filename(tmp_dir=None, prefix="tmp", suffix=".txt",
-                     result_constructor=FilePath):
-    """ Wrap cogent.app.util.get_tmp_filename to modify the default tmp_dir """
-    if tmp_dir is None:
-        tmp_dir = get_qiime_temp_dir()
-    return cogent_get_tmp_filename(tmp_dir=tmp_dir,
-                                   prefix=prefix,
-                                   suffix=suffix,
-                                   result_constructor=result_constructor)
 
 
 def load_qiime_config():
@@ -988,8 +977,9 @@ def degap_fasta_aln(seqs):
 
 def write_degapped_fasta_to_file(seqs, tmp_dir="/tmp/"):
     """ write degapped seqs to temp fasta file."""
-    tmp_filename = get_tmp_filename(tmp_dir=tmp_dir, prefix="degapped_",
-                                    suffix=".fasta")
+    fd, tmp_filename = mkstemp(dir=tmp_dir, prefix="degapped_",
+                               suffix=".fasta")
+    close(fd)
 
     with open(tmp_filename, 'w') as fh:
         for seq in degap_fasta_aln(seqs):
