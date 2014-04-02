@@ -43,8 +43,8 @@ def multiple_file_pcoa(input_dir, output_dir):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     file_names = os.listdir(input_dir)
-    file_names = [fname for fname in file_names if not (fname.startswith('.')
-                                                        or os.path.isdir(fname))]
+    file_names = [fname for fname in file_names
+                  if not (fname.startswith('.') or os.path.isdir(fname))]
 
     for fname in file_names:
         base_fname, ext = os.path.splitext(fname)
