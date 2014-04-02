@@ -22,11 +22,10 @@ def pcoa(lines):
     dist_mtx = SymmetricDistanceMatrix.from_file(lines)
     pcoa_obj = PCoA(dist_mtx)
     pcoa_results = pcoa_obj.scores()
+
     # coords, each row is an axis
     coords = pcoa_results.species
     eigvals = pcoa_results.eigvals
-
-    # coords, eigvals = ms.principal_coordinates_analysis(distmtx)
 
     pcnts = (numpy.abs(eigvals) / sum(numpy.abs(eigvals))) * 100
     idxs_descending = pcnts.argsort()[::-1]
