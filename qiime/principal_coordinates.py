@@ -1,26 +1,32 @@
 #!/usr/bin/env python
 import numpy
-import sys
 import os.path
-from optparse import OptionParser
-import cogent.cluster.metric_scaling as ms
+
+from skbio.core.distance import SymmetricDistanceMatrix
+from skbio.maths.stats.ordination import PCoA
+
 from qiime.format import format_coords
-from qiime.parse import parse_distmat
 
 __author__ = "Justin Kuzynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Justin Kuczynski", "Rob Knight", "Antonio Gonzalez Pena",
-               "Catherine Lozupone", "Emily TerAvest"]
+               "Catherine Lozupone", "Emily TerAvest",
+               "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
 
-def pcoa(file):
-    samples, distmtx = parse_distmat(file)
+def pcoa(lines):
+    dist_mtx = SymmetricDistanceMatrix.from_file(lines)
+    pcoa_obj = PCoA(dist_mtx)
+    pcoa_results = pcoa_obj.scores()
     # coords, each row is an axis
-    coords, eigvals = ms.principal_coordinates_analysis(distmtx)
+    coords = pcoa_results.species
+    eigvals = pcoa_results.eigvals
+
+    # coords, eigvals = ms.principal_coordinates_analysis(distmtx)
 
     pcnts = (numpy.abs(eigvals) / sum(numpy.abs(eigvals))) * 100
     idxs_descending = pcnts.argsort()[::-1]
@@ -28,7 +34,7 @@ def pcoa(file):
     eigvals = eigvals[idxs_descending]
     pcnts = pcnts[idxs_descending]
 
-    return format_coords(samples, coords.T, eigvals, pcnts)
+    return format_coords(dist_mtx.ids, coords.T, eigvals, pcnts)
 
 
 def multiple_file_pcoa(input_dir, output_dir):
