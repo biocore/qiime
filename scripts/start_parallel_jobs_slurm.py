@@ -6,7 +6,7 @@ __author__ = "Sami Pietila"
 __copyright__ = "Copyright 2014, The QIIME Project"
 __credits__ = ["Sami Pietila"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Sami Pietila"
 __email__ = "sampie@iki.fi"
 
@@ -22,7 +22,7 @@ qiime_config = load_qiime_config()
 
 script_info = {}
 script_info[
-    'brief_description'] = "Starts parallel jobs on Simple Linux Utility for Resource Management \(SLURM\)."
+    'brief_description'] = "Starts parallel jobs on Simple Linux Utility for Resource Management (SLURM)."
 script_info[
     'script_description'] = "Starts multiple jobs in parallel on SLURM systems."
 script_info['script_usage'] = [
@@ -49,7 +49,7 @@ script_info['disallow_positional_arguments'] = False
 # sbatch template
 SBATCH_TEXT = """#!/bin/bash
 #SBATCH --partition=%s
-#SBATCH --job-name=Qiime-job-%s
+#SBATCH --job-name=QIIME-job-%s
 #SBATCH --quiet
 #######
 srun %s
