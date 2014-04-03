@@ -35,7 +35,7 @@ from numpy import (argsort, array, ceil, empty, fill_diagonal, finfo,
 from numpy.random import permutation
 from cogent.maths.stats.test import t_one_sample
 from biom.table import table_factory, DenseOTUTable
-from skbio.core.distance import SymmetricDistanceMatrix
+from skbio.core.distance import DistanceMatrix
 from skbio.util.misc import create_dir
 
 from qiime.pycogent_backports.test import (mantel_test, mc_t_two_sample,
@@ -237,7 +237,7 @@ class DistanceMatrixStats(object):
         Initializes an instance with the provided list of distance matrices.
 
         Arguments:
-            dms - a list of SymmetricDistanceMatrix objects
+            dms - a list of DistanceMatrix objects
             num_dms - the exact number of allowable distance matrices. If -1
                 (the default), there is no restriction on how many distance
                 matrices the user can set
@@ -268,9 +268,9 @@ class DistanceMatrixStats(object):
                              "exactly %d distance matrices." % (len(dms),
                                                                 self._num_dms))
         for dm in dms:
-            if not isinstance(dm, SymmetricDistanceMatrix):
+            if not isinstance(dm, DistanceMatrix):
                 raise TypeError(
-                    'Invalid type (%s); expected SymmetricDistanceMatrix' %
+                    'Invalid type (%s); expected DistanceMatrix' %
                     dm.__class__.__name__)
             if self._min_dm_size >= 0 and dm.shape[0] < self._min_dm_size:
                 raise ValueError("Distance matrix of size %dx%d is smaller "
@@ -382,7 +382,7 @@ class CategoryStats(DistanceMatrixStats):
 
         Arguments:
             mdmap - a MetadataMap instance
-            dms - a list of SymmetricDistanceMatrix objects
+            dms - a list of DistanceMatrix objects
             cats - a list of strings denoting categories in the metadata map
                 that will be used by this analysis (i.e. the grouping
                 variable(s))
@@ -575,7 +575,7 @@ class Anosim(CategoryStats):
 
         Arguments:
             mdmap - the MetadataMap instance to obtain grouping info from
-            dm - the SymmetricDistanceMatrix instance to obtain distances from
+            dm - the DistanceMatrix instance to obtain distances from
             cat - the category string to group samples by (must be in the
                 metadata map)
             random_fn - the function to use when randomizing the grouping
@@ -777,7 +777,7 @@ class Permanova(CategoryStats):
 
         Arguments:
             mdmap - the MetadataMap instance to obtain grouping info from
-            dm - the SymmetricDistanceMatrix instance to obtain distances from
+            dm - the DistanceMatrix instance to obtain distances from
             cat - the category string to group samples by (must be in the
                 metadata map)
             random_fn - the function to use when randomizing the grouping
@@ -924,7 +924,7 @@ class Best(CategoryStats):
         """Default constructor.
 
         Arguments:
-            dm - the SymmetricDistanceMatrix instance to run the analysis on
+            dm - the DistanceMatrix instance to run the analysis on
             metadata_map - the MetadataMap instance to obtain category
                 information from
             cats - list of category strings in the metadata map that will be
@@ -990,8 +990,7 @@ class Best(CategoryStats):
                 res_mat[i][j] = self._vector_dist(cat_mat[i], cat_mat[j])
                 res_mat[j][i] = res_mat[i][j]
 
-        return SymmetricDistanceMatrix(res_mat,
-                                       self.DistanceMatrices[0].ids)
+        return DistanceMatrix(res_mat, self.DistanceMatrices[0].ids)
 
     def _vector_dist(self, vec1, vec2):
         """Calculates the Euclidean distance between two vectors."""
@@ -1032,13 +1031,11 @@ class MantelCorrelogram(CorrelationStats):
         """Constructs a new MantelCorrelogram instance.
 
         Arguments:
-            eco_dm - a SymmetricDistanceMatrix object representing the
-                ecological distances between samples (e.g. UniFrac distance
-                matrix)
-            geo_dm - a SymmetricDistanceMatrix object representing some other
-                distance measure between samples (most commonly geographical
-                distances, but could also be distances in pH, temperature,
-                etc.)
+            eco_dm - a DistanceMatrix object representing the ecological
+                distances between samples (e.g. UniFrac distance matrix)
+            geo_dm - a DistanceMatrix object representing some other distance
+                measure between samples (most commonly geographical distances,
+                but could also be distances in pH, temperature, etc.)
             alpha - the alpha value to use when marking the Mantel correlogram
                 plot for significance
             variable_size_distance_classes - if True, distance classes (bins)
@@ -1131,8 +1128,7 @@ class MantelCorrelogram(CorrelationStats):
                     curr_ele = dist_class_matrix[i][j]
                     if curr_ele == class_num and i != j:
                         model_matrix[i][j] = 1
-            model_matrix = SymmetricDistanceMatrix(model_matrix,
-                                                   geo_dm.ids)
+            model_matrix = DistanceMatrix(model_matrix, geo_dm.ids)
 
             # Count the number of distances in the current distance class.
             num_distances = int(model_matrix.data.sum())
@@ -1203,8 +1199,7 @@ class MantelCorrelogram(CorrelationStats):
         numbers of distances).
 
         Arguments:
-            dm - the input SymmetricDistanceMatrix object to compute distance
-                classes on
+            dm - the input DistanceMatrix object to compute distance classes on
             num_classes - the number of desired distance classes
         """
         if num_classes < 1:
@@ -1294,7 +1289,7 @@ class MantelCorrelogram(CorrelationStats):
         It is assumed that the index points to a matrix that was flattened,
         containing only the lower triangular elements (excluding the diagonal)
         in left-to-right, top-to-bottom order (such as that given by
-        SymmetricDistanceMatrix.condensed_form()).
+        DistanceMatrix.condensed_form()).
         """
         if idx < 0:
             raise IndexError("The index %d must be greater than or equal to "
@@ -1417,8 +1412,8 @@ class Mantel(CorrelationStats):
         """Constructs a new Mantel instance.
 
         Arguments:
-            dm1 - first SymmetricDistanceMatrix object to be compared
-            dm2 - second SymmetricDistanceMatrix object to be compared
+            dm1 - first DistanceMatrix object to be compared
+            dm2 - second DistanceMatrix object to be compared
             tail_type - the type of Mantel test to perform (i.e. hypothesis
                 test). Can be "two sided", "less", or "greater"
         """
@@ -1449,8 +1444,8 @@ class Mantel(CorrelationStats):
 
         Returns a dict containing the results. The following keys are set:
             method_name - name of the statistical method
-            dm1 - the first SymmetricDistanceMatrix instance that was used
-            dm2 - the second SymmetricDistanceMatrix instance that was used
+            dm1 - the first DistanceMatrix instance that was used
+            dm2 - the second DistanceMatrix instance that was used
             num_perms - the number of permutations used to compute the p-value
             p_value - the p-value computed by the test
             r_value - the Mantel r statistic computed by the test
@@ -1470,8 +1465,8 @@ class Mantel(CorrelationStats):
         alt = self.TailType
 
         # We suppress the symmetry and hollowness check since we are
-        # guaranteed to have SymmetricDistanceMatrix instances (we don't need
-        # to check a second time here).
+        # guaranteed to have DistanceMatrix instances (we don't need to check a
+        # second time here).
         results = mantel_test(m1.data, m2.data, num_perms, alt=alt,
                               suppress_symmetry_and_hollowness_check=True)
 
@@ -1501,9 +1496,9 @@ class PartialMantel(CorrelationStats):
         """Constructs a new PartialMantel instance.
 
         Arguments:
-            dm1 - first SymmetricDistanceMatrix object to be compared
-            dm2 - second SymmetricDistanceMatrix object to be compared
-            cdm - the control SymmetricDistanceMatrix object
+            dm1 - first DistanceMatrix object to be compared
+            dm2 - second DistanceMatrix object to be compared
+            cdm - the control DistanceMatrix object
         """
         super(PartialMantel, self).__init__([dm1, dm2, cdm], num_dms=3,
                                             min_dm_size=3)
@@ -1554,7 +1549,7 @@ class PartialMantel(CorrelationStats):
             # Permute the first distance matrix and calculate new r and
             # p-values.
             p1 = permute_2d(dm1, permutation(dm1.shape[0]))
-            dm1_perm = SymmetricDistanceMatrix(p1, dm1.ids)
+            dm1_perm = DistanceMatrix(p1, dm1.ids)
             dm1_perm_flat = dm1_perm.condensed_form()
             rval1 = pearson(dm1_perm_flat, dm2_flat)
             rval2 = pearson(dm1_perm_flat, cdm_flat)

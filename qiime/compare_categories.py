@@ -13,7 +13,7 @@ __email__ = "jai.rideout@gmail.com"
 from os.path import join
 from types import ListType
 
-from skbio.core.distance import SymmetricDistanceMatrix
+from skbio.core.distance import DistanceMatrix
 
 from qiime.format import (format_anosim_results, format_best_results,
                           format_permanova_results)
@@ -66,7 +66,7 @@ def compare_categories(dm_fp, map_fp, method, categories, num_perms, out_dir):
         md_map = MetadataMap.parseMetadataMap(map_f)
 
     with open(dm_fp, 'U') as dm_f:
-        dm = SymmetricDistanceMatrix.from_file(dm_f)
+        dm = DistanceMatrix.from_file(dm_f)
 
     # Remove any samples from the mapping file that aren't in the distance
     # matrix (important for validation checks). Use strict=True so that an
