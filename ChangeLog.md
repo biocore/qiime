@@ -5,6 +5,7 @@ QIIME 1.8.0-dev (changes since 1.8.0 go here)
 * SciPy >= 0.13.0, pyqi 0.3.1, and the latest development version of scikit-bio are now required dependencies for a QIIME base install.
 * Added new options to make_otu_heatmap.py: --color_scheme, which allows users to choose from different color schemes [here](http://wiki.scipy.org/Cookbook/Matplotlib/Show_colormaps); --observation_metadata_category, which allows users to select a column other than taxonomy to use when labeling the rows; and --observation_metadata_level, which allows the user to specify which level in the hierarchical metadata category to use in creating the row labels.
 * -m/--mapping_fps is no longer required for split_libraries_fastq.py. The mapping file is not required when running with --barcode_type 'not-barcoded',but the mapping file would fail to validate when passing multiple sequence files and sample ids but a mapping file without barcodes (see #1400). 
+* Added alphabetical sorting option (based on boxplot labels) to make_distance_boxplots.py. Sorting by boxplot median can now be performed by passing ``--sort median`` (this was previously invoked by passing ``--sort``). Sorting alphabetically can be performed by passing ``--sort alphabetical``.
 
 QIIME 1.8.0 (11 Dec 2013)
 =========================

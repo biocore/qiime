@@ -11,8 +11,10 @@ __email__ = "jai.rideout@gmail.com"
 
 from os.path import join
 from string import strip
-from cogent.util.misc import create_dir
-from qiime.make_distance_boxplots import make_distance_boxplots
+
+from skbio.util.misc import create_dir
+
+from qiime.make_distance_boxplots import make_distance_boxplots, SORT_TYPES
 from qiime.stats import all_pairs_t_test, tail_types
 from qiime.util import (get_options_lookup, make_option,
                         parse_command_line_parameters)
@@ -72,6 +74,12 @@ script_info['script_usage'].append((
     "interested in performing the statistical tests (or at least not initially).",
     "%prog -d unweighted_unifrac_dm.txt -m Fasting_Map.txt -f \"Treatment\" -o "
     "out4 --suppress_significance_tests"))
+
+script_info['script_usage'].append((
+    "Sort boxplots",
+    "To sort the boxplots by increasing median, supply the --sort option.",
+    "%prog -d unweighted_unifrac_dm.txt -m Fasting_Map.txt -f \"Treatment\" "
+    "-o out5 --sort median"))
 
 script_info['output_description'] = """
 Images of the plots are written to the specified output directory (one image
@@ -186,11 +194,13 @@ script_info['optional_options'] = [
                 'ignored. If --suppress_individual_within is supplied, this option '
                 'will be ignored [default: %default]',
                 default=None, type='string'),
-    make_option('--sort', action='store_true',
-                help='sort boxplots by increasing median. If no sorting is applied, '
-                'boxplots will be grouped logically as follows: all within, all '
-                'between, individual within, and individual between '
-                '[default: %default]', default=False)]
+    make_option('--sort', type='choice', choices=SORT_TYPES,
+                help='If "median", sort boxplots by increasing median. If '
+                '"alphabetical", sort boxplots alphabetically by their '
+                'labels. If this option is not supplied (the default), '
+                'boxplots will be grouped logically as follows: all within, '
+                'all between, individual within, and individual between '
+                '[default: %default]', default=None)]
 
 script_info['version'] = __version__
 
