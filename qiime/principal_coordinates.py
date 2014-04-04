@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-import numpy
-import os.path
+from os.path import exists, isdir, splitext, join
+from os import makedirs, listdir
 
 from skbio.core.distance import SymmetricDistanceMatrix
 from skbio.maths.stats.ordination import PCoA
@@ -23,34 +23,25 @@ def pcoa(lines):
     pcoa_obj = PCoA(dist_mtx)
     pcoa_results = pcoa_obj.scores()
 
-    # coords, each row is an axis
-    coords = pcoa_results.species
-    eigvals = pcoa_results.eigvals
-
-    pcnts = (numpy.abs(eigvals) / sum(numpy.abs(eigvals))) * 100
-    idxs_descending = pcnts.argsort()[::-1]
-    coords = coords[idxs_descending]
-    eigvals = eigvals[idxs_descending]
-    pcnts = pcnts[idxs_descending]
-
-    return format_coords(dist_mtx.ids, coords.T, eigvals, pcnts)
+    return format_coords(dist_mtx.ids, pcoa_results.species,
+                         pcoa_results.eigvals, pcoa_results.perc_expl)
 
 
 def multiple_file_pcoa(input_dir, output_dir):
     """perform PCoAs on all distance matrices in the input_dir
     """
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-    file_names = os.listdir(input_dir)
+    if not exists(output_dir):
+        makedirs(output_dir)
+    file_names = listdir(input_dir)
     file_names = [fname for fname in file_names
-                  if not (fname.startswith('.') or os.path.isdir(fname))]
+                  if not (fname.startswith('.') or isdir(fname))]
 
     for fname in file_names:
-        base_fname, ext = os.path.splitext(fname)
-        infile = os.path.join(input_dir, fname)
-        lines = open(infile, 'U')
-        pcoa_res_string = pcoa(lines)
-        outfile = os.path.join(output_dir, 'pcoa_' + base_fname + '.txt')
-        outfile = open(outfile, 'w')
-        outfile.write(pcoa_res_string)
-        outfile.close()
+        infile = join(input_dir, fname)
+        with open(infile, 'U') as lines:
+            pcoa_res_string = pcoa(lines)
+
+        base_fname, ext = splitext(fname)
+        outfile = join(output_dir, 'pcoa_%s.txt' % base_fname)
+        with open(outfile, 'w') as outf:
+            outf.write(pcoa_res_string)
