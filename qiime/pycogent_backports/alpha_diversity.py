@@ -4,12 +4,13 @@ from __future__ import division
 from functools import reduce
 from math import ceil, e
 
-from cogent.maths.stats.special import lgam
-from cogent.maths.optimisers import minimise
-from cogent.maths.scipy_optimize import fmin_powell
 from numpy import array, zeros, concatenate, arange, log, sqrt, exp, asarray
 from numpy.random import gamma, shuffle
+from scipy.special import gammaln
 from skbio.maths.subsample import subsample
+
+from cogent.maths.optimisers import minimise
+from cogent.maths.scipy_optimize import fmin_powell
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2007-2012, The Cogent Project"
@@ -131,7 +132,7 @@ def brillouin_d(counts):
     """Brilloun index of alpha diversity: Pielou 1975, by way of SDR-IV."""
     nz = counts[counts.nonzero()]
     n = nz.sum()
-    return (lgam(n + 1) - array(map(lgam, nz + 1)).sum()) / n
+    return (gammaln(n + 1) - array(map(gammaln, nz + 1)).sum()) / n
 
 
 def kempton_taylor_q(counts, lower_quantile=.25, upper_quantile=.75):
