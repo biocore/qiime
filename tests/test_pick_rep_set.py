@@ -13,10 +13,13 @@ __email__ = "wasade@gmail.com"
 
 from os import remove, close
 from tempfile import mkstemp
-
-from cogent import LoadSeqs
-from cogent.util.misc import remove_files
 from unittest import TestCase, main
+
+from skbio.util.misc import remove_files
+from skbio.parse.sequences import parse_fasta
+from skbio.core.alignment import SequenceCollection
+from skbio.core.sequence import DNA
+
 from qiime.pick_rep_set import (RepSetPicker, GenericRepSetPicker, first_id,
                                 first, random_id, longest_id, unique_id_map, label_to_name,
                                 make_most_abundant, parse_fasta, ReferenceRepSetPicker)
@@ -256,9 +259,12 @@ class ReferenceRepSetPickerTests(SharedSetupTestCase):
             self.tmp_otu_filepath,
             self.ref_seq_filepath,
             result_path=self.result_filepath)
-        exp = rep_seqs_reference_result_file_exp
-        self.assertEqual(LoadSeqs(self.result_filepath, aligned=False),
-                         LoadSeqs(data=exp, aligned=False))
+        actual = SequenceCollection.from_fasta_records(
+            parse_fasta(open(self.result_filepath)), DNA)
+        expected = SequenceCollection.from_fasta_records(
+            parse_fasta(rep_seqs_reference_result_file_exp.split('\n')), DNA)
+        # we don't care about order in the results
+        self.assertEqual(set(actual), set(expected))
 
     def test_non_ref_otus(self):
         """ReferenceRepSetPicker.__call__ same result as Generic when no ref otus
