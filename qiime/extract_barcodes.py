@@ -16,7 +16,7 @@ from os import rename
 from re import compile
 
 from skbio.parse.sequences import parse_fastq
-from bipy.core.sequence import DNA
+from skbio.core.sequence import DNA
 
 from qiime.check_id_map import process_id_map
 from qiime.split_libraries_fastq import (check_header_match_pre180,

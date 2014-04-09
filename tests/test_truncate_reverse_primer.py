@@ -22,7 +22,7 @@ from cogent.util.misc import remove_files
 from qiime.truncate_reverse_primer import get_rev_primer_seqs,\
     get_output_filepaths, truncate_rev_primers, truncate_reverse_primer
 
-from bipy.core.exception import BiologicalSequenceError
+from skbio.core.exception import BiologicalSequenceError
 
 class FakeOutFile(object):
 
@@ -80,7 +80,7 @@ class TruncateRemoveReversePrimerTests(TestCase):
         mapping_file.close()
 
         fd, self.mapping_bad_header_fp = mkstemp(
-                                        prefix='sample_mapping_badheader_', 
+                                        prefix='sample_mapping_badheader_',
                                         suffix=".txt")
         close(fd)
         mapping_file = open(self.mapping_bad_header_fp, "w")
