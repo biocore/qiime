@@ -52,7 +52,6 @@ from cogent.util.dict2d import Dict2D
 from cogent import LoadSeqs, Sequence
 from cogent.parse.tree import DndParser
 from cogent.cluster.procrustes import procrustes
-from cogent.core.alignment import Alignment
 from cogent.data.molecular_weight import DnaMW
 from cogent.util.misc import remove_files, create_dir, handle_error_codes
 
@@ -265,22 +264,6 @@ class FunctionWithParams(object):
             else:
                 raise TypeError('Data is neither a path to a biom table or a' +
                                 ' biom table object.')
-
-    def getAlignment(self, aln_source):
-        """Returns parsed alignment from putative alignment source"""
-        if isinstance(aln_source, Alignment):
-            aln = aln_source
-        elif aln_source:
-            try:
-                aln = LoadSeqs(aln_source, Aligned=True)
-            except (TypeError, IOError, AssertionError):
-                raise AlignmentMissingError(
-                    "Couldn't read alignment file at path: %s" %
-                    aln_source)
-        else:
-            raise AlignmentMissingError(str(self.Name) +
-                                        " requires an alignment, but no alignment was supplied.")
-        return aln
 
     def __call__(self, result_path=None, log_path=None,
                  *args, **kwargs):
