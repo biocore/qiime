@@ -14,13 +14,13 @@ from glob import glob
 from os import getenv, close
 from os.path import basename, exists, join
 from tempfile import NamedTemporaryFile, mkstemp, mkdtemp
-from cogent import LoadSeqs
-from cogent.util.misc import remove_files
-from qiime.util import get_qiime_temp_dir
 from unittest import TestCase, main
+
+from skbio.util.misc import remove_files
+
+from qiime.util import get_qiime_temp_dir
 from qiime.test import initiate_timeout, disable_timeout
 from qiime.parse import fields_to_dict
-
 from qiime.parallel.blast import ParallelBlaster
 
 
