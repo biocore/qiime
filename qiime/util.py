@@ -49,7 +49,6 @@ from biom.table import (DenseFunctionTable, DenseGeneTable,
                         SparseTable, SparseTaxonTable)
 
 from cogent.util.dict2d import Dict2D
-from cogent import LoadSeqs, Sequence
 from cogent.parse.tree import DndParser
 from cogent.cluster.procrustes import procrustes
 from cogent.data.molecular_weight import DnaMW
