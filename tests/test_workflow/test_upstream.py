@@ -16,11 +16,9 @@ from os.path import join, exists, getsize, split, splitext
 from tempfile import mkdtemp
 from unittest import TestCase, main
 
-from cogent import LoadTree
 from numpy.testing import assert_almost_equal
 from skbio.util.misc import remove_files
-from skbio.core.alignment import SequenceCollection
-from skbio.core.sequence import DNA
+from skbio.core.tree import TreeNode
 from biom.parse import parse_biom_table
 
 from qiime.util import (load_qiime_config, get_qiime_temp_dir, count_seqs)
@@ -217,8 +215,8 @@ class UpstreamWorkflowTests(TestCase):
 
         # number of tips in the tree equals the number of sequences that
         # aligned
-        tree = LoadTree(tree_fp)
-        self.assertEqual(len(tree.tips()), count_seqs(alignment_fp)[0])
+        tree = TreeNode.from_newick(open(tree_fp))
+        self.assertEqual(len(list(tree.tips())), count_seqs(alignment_fp)[0])
 
         # parse the otu table
         otu_table = parse_biom_table(open(otu_table_fp, 'U'))
@@ -302,8 +300,8 @@ class UpstreamWorkflowTests(TestCase):
 
         # number of tips in the tree equals the number of sequences that
         # aligned
-        tree = LoadTree(tree_fp)
-        self.assertEqual(len(tree.tips()), count_seqs(alignment_fp)[0])
+        tree = TreeNode.from_newick(open(tree_fp))
+        self.assertEqual(len(list(tree.tips())), count_seqs(alignment_fp)[0])
 
         # parse the otu table
         otu_table = parse_biom_table(open(otu_table_fp, 'U'))
@@ -385,8 +383,8 @@ class UpstreamWorkflowTests(TestCase):
 
         # number of tips in the tree equals the number of sequences that
         # aligned
-        tree = LoadTree(tree_fp)
-        self.assertEqual(len(tree.tips()), count_seqs(alignment_fp)[0])
+        tree = TreeNode.from_newick(open(tree_fp))
+        self.assertEqual(len(list(tree.tips())), count_seqs(alignment_fp)[0])
 
         # parse the otu table
         otu_table = parse_biom_table(open(otu_table_fp, 'U'))
@@ -461,8 +459,8 @@ class UpstreamWorkflowTests(TestCase):
         self.assertEqual(count_seqs(alignment_fp)[0], num_otus)
 
         # all OTUs in tree
-        tree = LoadTree(tree_fp)
-        self.assertEqual(len(tree.tips()), num_otus)
+        tree = TreeNode.from_newick(open(tree_fp))
+        self.assertEqual(len(list(tree.tips())), num_otus)
 
         # check that the two final output files have non-zero size
         self.assertTrue(getsize(tree_fp) > 0)
