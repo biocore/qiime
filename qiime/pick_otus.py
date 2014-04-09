@@ -23,12 +23,13 @@ from itertools import imap
 from tempfile import mkstemp
 
 from cogent.parse.mothur import parse_otu_list as mothur_parse
-from cogent.util.misc import remove_files
-from cogent import LoadSeqs, DNA
-from cogent.util.misc import flatten
+from cogent import DNA as DNA_cogent
 
+from skbio.util.misc import remove_files, flatten
 from skbio.util.trie import CompressedTrie, fasta_to_pairlist
 from skbio.parse.sequences import parse_fasta
+from skbio.core.alignment import SequenceCollection
+from skbio.core.sequence import DNA
 
 from qiime.util import FunctionWithParams, get_qiime_temp_dir
 from qiime.sort import sort_fasta_by_abundance
@@ -660,7 +661,6 @@ class CdHitOtuPicker(OtuPicker):
          Togther with cd-hit this is a non-heuristic filter reduces run time a lot.
          Still a bit slower than the prefix_prefilter toggled with prefix_prefilter_length.
         """
-        moltype = DNA
         log_lines = []
 
         # create the params dict to pass to cd-hit-est -- IS THERE A
@@ -672,8 +672,7 @@ class CdHitOtuPicker(OtuPicker):
         cd_hit_params['-d'] = id_len  # turn off id truncation
         cd_hit_params['-g'] = "1"
         if (prefix_prefilter_length is not None and trie_prefilter):
-            log_lines.append("Both prefilters selected. Deactivate \
-            trie_prefilter")
+            log_lines.append("Both prefilters selected. Deactivate trie_prefilter")
             trie_prefilter = False
 
         if prefix_prefilter_length is not None:
@@ -681,20 +680,16 @@ class CdHitOtuPicker(OtuPicker):
                 'Prefix-based prefiltering, prefix length: %d'
                 % prefix_prefilter_length)
             seqs, filter_map = self._prefilter_exact_prefixes(
-                parse_fasta(open(seq_path)), prefix_prefilter_length)
+                parse_fasta(open(seq_path),label_to_name=lambda x: x.split()[0]),
+                prefix_prefilter_length)
             log_lines.append(
-                'Prefix-based prefiltering, post-filter num seqs: %d'
-                % len(seqs))
-
+                'Prefix-based prefiltering, post-filter num seqs: %d' % len(seqs))
         elif trie_prefilter:
             log_lines.append(
                 'Trie-based prefiltering')
             seqs, filter_map = self._prefilter_with_trie(seq_path)
-
             log_lines.append(
-                'Trie-based prefiltering, post-filter num seqs: %d'
-                % len(seqs))
-
+                'Trie-based prefiltering, post-filter num seqs: %d' % len(seqs))
         else:
             log_lines.append('No prefix-based prefiltering.')
             # Load the seq path. Right now, cdhit_clusters_from_seqs
@@ -703,16 +698,15 @@ class CdHitOtuPicker(OtuPicker):
             # to cd-hit-est. We may want to change that in the future
             # to avoid the overhead of loading large sequence collections
             # during this step.
-            seqs = LoadSeqs(seq_path,
-                            moltype=moltype,
-                            aligned=False,
-                            label_to_name=lambda x: x.split()[0])
+            seqs = SequenceCollection.from_fasta_records(
+                parse_fasta(open(seq_path),label_to_name=lambda x: x.split()[0]),
+                DNA)
+            seqs = dict(seqs.iteritems())
 
         # Get the clusters by running cd-hit-est against the
         # sequence collection
         clusters = cdhit_clusters_from_seqs(
-            seqs=seqs, moltype=moltype, params=cd_hit_params)
-
+            seqs=seqs, moltype=DNA_cogent, params=cd_hit_params)
         if prefix_prefilter_length is not None or trie_prefilter:
             clusters = self._map_filtered_clusters_to_full_clusters(
                 clusters, filter_map)
