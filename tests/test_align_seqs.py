@@ -15,7 +15,6 @@ from os.path import getsize
 from tempfile import mkstemp
 from unittest import TestCase, main
 
-from cogent.core.alignment import DenseAlignment, Alignment
 from numpy.testing import assert_almost_equal
 from skbio.core.exception import SequenceCollectionError
 from skbio.core.alignment import SequenceCollection, Alignment
