@@ -12,7 +12,7 @@ __email__ = "jai.rideout@gmail.com"
 
 from os import path
 
-from skbio.core.distance import SymmetricDistanceMatrix
+from skbio.core.distance import DistanceMatrix
 
 from qiime.format import format_p_value_for_num_iters
 from qiime.util import make_compatible_distance_matrices
@@ -100,8 +100,8 @@ def run_mantel_test(method, fps, distmats, num_perms, tail_type, comment,
                                                              len(dm1_labels))
                 continue
 
-            dm1 = SymmetricDistanceMatrix(dm1_data, dm1_labels)
-            dm2 = SymmetricDistanceMatrix(dm2_data, dm2_labels)
+            dm1 = DistanceMatrix(dm1_data, dm1_labels)
+            dm2 = DistanceMatrix(dm2_data, dm2_labels)
 
             # Create an instance of our correlation test and run it with
             # the specified number of permutations.
@@ -114,7 +114,7 @@ def run_mantel_test(method, fps, distmats, num_perms, tail_type, comment,
                                                                   'r_value'], p_str,
                                                               num_perms, tail_type)
             elif method == 'partial_mantel':
-                cdm = SymmetricDistanceMatrix(cdm_data, cdm_labels)
+                cdm = DistanceMatrix(cdm_data, cdm_labels)
                 results = PartialMantel(dm1, dm2, cdm)(num_perms)
                 p_str = format_p_value_for_num_iters(results['mantel_p'],
                                                      num_perms)
@@ -184,8 +184,8 @@ def run_mantel_correlogram(fps, distmats, num_perms, comment, alpha,
                                                              len(dm1_labels))
                 continue
 
-            dm1 = SymmetricDistanceMatrix(dm1_data, dm1_labels)
-            dm2 = SymmetricDistanceMatrix(dm2_data, dm2_labels)
+            dm1 = DistanceMatrix(dm1_data, dm1_labels)
+            dm2 = DistanceMatrix(dm2_data, dm2_labels)
 
             # Create an instance of our Mantel correlogram test and run it with
             # the specified number of permutations.
