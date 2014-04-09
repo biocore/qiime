@@ -12,11 +12,13 @@ __email__ = "jesse.stombaugh@colorado.edu"
 
 from StringIO import StringIO
 from os.path import abspath, join, split, splitext
+from tempfile import mkstemp
+from os import close
 
 from skbio.parse.sequences import parse_fasta
+from skbio.core.alignment import Alignment
 
-from cogent.core.alignment import DenseAlignment
-from cogent.core.moltype import DNA
+from cogent.core.moltype import DNA as DNA_cogent
 
 import brokit.pplacer
 import brokit.parsinsert
@@ -25,10 +27,6 @@ import brokit.raxml_v730
 from qiime.util import parse_command_line_parameters, make_option, \
     get_options_lookup, load_qiime_config, create_dir
 from qiime.parse import parse_qiime_parameters
-from cogent.core.moltype import DNA
-from tempfile import mkstemp
-from os import close
-from os.path import abspath, join, split, splitext
 from qiime.insert_seqs_into_tree import convert_tree_tips, \
     write_updated_tree_file, \
     strip_and_rename_unwanted_labels_from_tree
@@ -109,8 +107,8 @@ def main():
     # load input sequences and convert to phylip since the tools require
     # the query sequences to phylip-compliant names
     load_aln = parse_fasta(open(opts.input_fasta_fp, 'U'))
-    aln = DenseAlignment(load_aln)
-    seqs, align_map = aln.toPhylip()
+    aln = Alignment.from_fasta_records(load_aln)
+    seqs, align_map = aln.to_phylip()
 
     if opts.method_params_fp:
         param_dict = parse_qiime_parameters(open(opts.method_params_fp, 'U'))
@@ -118,14 +116,14 @@ def main():
     if module == 'raxml_v730':
         # load the reference sequences
         load_ref_aln = \
-            DenseAlignment(parse_fasta(open(opts.refseq_fp, 'U')))
+            Alignment(parse_fasta(open(opts.refseq_fp, 'U')))
 
         # combine and load the reference plus query
-        combined_aln = parse_fasta(StringIO(load_ref_aln.toFasta() +
-                                                   '\n' + aln.toFasta()))
+        combined_aln = parse_fasta(StringIO(load_ref_aln.to_fasta() +
+                                                   '\n' + aln.to_fasta()))
         # overwrite the alignment map
-        aln = DenseAlignment(combined_aln)
-        seqs, align_map = aln.toPhylip()
+        aln = Alignment.from_fasta_records(combined_aln)
+        seqs, align_map = aln.to_phylip()
 
         try:
             parameters = param_dict['raxml']
@@ -185,8 +183,8 @@ def main():
 
     # call the module and return a tree object
     result = \
-        tree_insertion_module_names[module].insert_sequences_into_tree(seqs,
-                                                                       moltype=DNA, params=parameters)
+        tree_insertion_module_names[module].insert_sequences_into_tree(
+            seqs, moltype=DNA_cogent, params=parameters)
 
     result_tree = strip_and_rename_unwanted_labels_from_tree(align_map, result)
 
