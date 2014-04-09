@@ -51,9 +51,8 @@ from biom.table import (DenseFunctionTable, DenseGeneTable,
 from cogent.util.dict2d import Dict2D
 from cogent.parse.tree import DndParser
 from cogent.cluster.procrustes import procrustes
-from cogent.data.molecular_weight import DnaMW
-from cogent.util.misc import remove_files, create_dir, handle_error_codes
 
+from skbio.util.misc import remove_files, create_dir
 from skbio.app.util import ApplicationError, CommandLineApplication, FilePath
 from skbio.app.util import which
 from skbio.core.sequence import DNASequence
