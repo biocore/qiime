@@ -48,9 +48,9 @@ def filter_aln_by_otus(aln, prefs):
         be removed"""
     filtered_seqs = []
     removed_seqs = []
-    for j in range(aln.getNumSeqs()):
+    for j in range(aln.sequence_count()):
         remove = False
-        aln_name = aln.Names[j]
+        aln_name = aln[j].identifier
         stripped_aln_name = aln_name.split(' ')[0].split('_')
         if len(stripped_aln_name) > 1:
             new_aln_name = ''.join(stripped_aln_name[:-1])
@@ -62,9 +62,9 @@ def filter_aln_by_otus(aln, prefs):
                 remove = True
 
         if remove:
-            removed_seqs.append((aln_name, aln.getSeq(aln_name)))
+            removed_seqs.append((aln_name, str(aln[aln_name])))
         else:
-            filtered_seqs.append((aln_name, aln.getSeq(aln_name)))
+            filtered_seqs.append((aln_name, str(aln[aln_name])))
 
     return filtered_seqs, removed_seqs
 
@@ -134,4 +134,3 @@ def filter_samples(prefs, data, dir_path='', filename=None):
     output_file = open(output_filepath, 'w')
     output_file.write(filtered_seqs.to_fasta())
     output_file.close()
-

@@ -12,11 +12,15 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 
+import os
+
+from skbio.core.alignment import SequenceCollection
+from skbio.core.sequence import DNA
+from skbio.parse.sequences import parse_fasta
+
 from qiime.util import make_option
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.filter_otus_by_sample import filter_samples, process_extract_samples
-import os
-from cogent import LoadSeqs
 from qiime.parse import fields_to_dict
 
 options_lookup = get_options_lookup()
@@ -57,7 +61,8 @@ def main():
     fasta_file = opts.input_fasta_fp
 
     # load the input alignment
-    data['aln'] = LoadSeqs(fasta_file, aligned=False)
+    data['aln'] = SequenceCollection.from_fasta_records(
+        parse_fasta(open(fasta_file)), DNA)
 
     # Load the otu file
     otu_path = opts.otu_map_fp
