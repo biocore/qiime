@@ -16,7 +16,8 @@ __email__ = "antgonza@gmail.com"
 
 from qiime.distance_matrix_from_mapping import compute_distance_matrix_from_metadata, dist_vincenty, calculate_dist_vincenty
 from numpy import array
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 import StringIO
 
 
@@ -63,7 +64,7 @@ PC.636	ACGGTGAGTGTC	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	.9	Fasting_mouse__I.D._6
                 [18898, 18898, 18990, 9802, 8906, 9004, 0, 0, 0]])
 
         res_out = compute_distance_matrix_from_metadata(self.DOB)
-        self.assertFloatEqual(exp_out, res_out)
+        assert_almost_equal(exp_out, res_out)
 
     def test_compute_distance_matrix_from_metadata_floats(self):
         """ distance calculations on floats should throw no errors"""
@@ -79,37 +80,37 @@ PC.636	ACGGTGAGTGTC	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	.9	Fasting_mouse__I.D._6
                 [0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.]])
 
         res_out = compute_distance_matrix_from_metadata(self.Float_Col)
-        self.assertFloatEqual(exp_out, res_out)
+        assert_almost_equal(exp_out, res_out)
 
     def test_dist_vincenty(self):
         """dist_Vincenty:Returns distance in meters between two lat long points"""
         lat1, lon1, lat2, lon2, expected_value = 30, 60, 20, -50, 10709578.387
         value = dist_vincenty(lat1, lon1, lat2, lon2, 20)
-        self.assertFloatEqual(value, expected_value)
+        assert_almost_equal(value, expected_value)
 
         lat1, lon1, lat2, lon2, expected_value = 30, 60, 30, 60, 0
         value = dist_vincenty(lat1, lon1, lat2, lon2, 20)
-        self.assertFloatEqual(value, expected_value)
+        assert_almost_equal(value, expected_value)
 
         lat1, lon1, lat2, lon2, expected_value = 0, 0, 1, 0, 110574.389
         value = dist_vincenty(lat1, lon1, lat2, lon2, 20)
-        self.assertFloatEqual(value, expected_value)
+        assert_almost_equal(value, expected_value)
 
         lat1, lon1, lat2, lon2, expected_value = 90, 0, 89, 0, 111693.865
         value = dist_vincenty(lat1, lon1, lat2, lon2, 20)
-        self.assertFloatEqual(value, expected_value)
+        assert_almost_equal(value, expected_value)
 
         lat1, lon1, lat2, lon2, expected_value = 90, 0, -90, 0, 20003931.459
         value = dist_vincenty(lat1, lon1, lat2, lon2, 20)
-        self.assertFloatEqual(value, expected_value)
+        assert_almost_equal(value, expected_value)
 
         lat1, lon1, lat2, lon2, expected_value = 90, 0, 0, 0, 10001965.729
         value = dist_vincenty(lat1, lon1, lat2, lon2, 20)
-        self.assertFloatEqual(value, expected_value)
+        assert_almost_equal(value, expected_value)
 
         lat1, lon1, lat2, lon2, expected_value = 0, 0, 0, 0, 0
         value = dist_vincenty(lat1, lon1, lat2, lon2, 20)
-        self.assertFloatEqual(value, expected_value)
+        assert_almost_equal(value, expected_value)
 
         # test for not converge
         lat1, lon1, lat2, lon2 = 0, 180, 0, 0
@@ -209,7 +210,7 @@ PC.636	ACGGTGAGTGTC	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	.9	Fasting_mouse__I.D._6
 
         res_out = calculate_dist_vincenty(self.latitudes, self.longitudes)
 
-        self.assertFloatEqual(res_out, exp_out)
+        assert_almost_equal(res_out, exp_out)
 
 
 # run tests if called from command line

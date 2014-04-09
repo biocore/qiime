@@ -12,18 +12,17 @@ __email__ = "jai.rideout@gmail.com"
 
 from shutil import rmtree
 from glob import glob
-from os import getenv
+from os import getenv, close
 from os.path import basename, exists, join
-from tempfile import NamedTemporaryFile
+from tempfile import NamedTemporaryFile, mkstemp, mkdtemp
 from cogent import LoadSeqs
 from cogent.app.util import ApplicationError
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.util.misc import remove_files, create_dir
 from qiime.parallel.assign_taxonomy import (ParallelBlastTaxonomyAssigner,
                                             ParallelRdpTaxonomyAssigner,
                                             ParallelUclustConsensusTaxonomyAssigner)
-from qiime.util import (get_qiime_temp_dir,
-                        get_tmp_filename)
+from qiime.util import get_qiime_temp_dir
 from qiime.test import initiate_timeout, disable_timeout
 from qiime.parse import fields_to_dict
 
@@ -36,17 +35,16 @@ class ParallelRdpTaxonomyAssignerTests(TestCase):
         self.dirs_to_remove = []
 
         tmp_dir = get_qiime_temp_dir()
-        self.test_out = get_tmp_filename(tmp_dir=tmp_dir,
-                                         prefix='qiime_parallel_taxonomy_assigner_tests_',
-                                         suffix='',
-                                         result_constructor=str)
+        self.test_out = mkdtemp(dir=tmp_dir,
+                                prefix='qiime_parallel_taxonomy_assigner_tests_',
+                                suffix='')
         self.dirs_to_remove.append(self.test_out)
-        create_dir(self.test_out)
 
         # Temporary input file
-        self.tmp_seq_filepath = get_tmp_filename(tmp_dir=self.test_out,
-                                                 prefix='qiime_parallel_taxonomy_assigner_tests_input',
-                                                 suffix='.fasta')
+        fd, self.tmp_seq_filepath = mkstemp(dir=self.test_out,
+                                            prefix='qiime_parallel_taxonomy_assigner_tests_input',
+                                            suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_seq_filepath, 'w')
         seq_file.write(rdp_test_seqs)
         seq_file.close()
@@ -118,16 +116,15 @@ class ParallelBlastTaxonomyAssignerTests(TestCase):
         self.dirs_to_remove = []
 
         tmp_dir = get_qiime_temp_dir()
-        self.test_out = get_tmp_filename(tmp_dir=tmp_dir,
-                                         prefix='qiime_parallel_taxonomy_assigner_tests_',
-                                         suffix='',
-                                         result_constructor=str)
+        self.test_out = mkdtemp(dir=tmp_dir,
+                                prefix='qiime_parallel_taxonomy_assigner_tests_',
+                                suffix='')
         self.dirs_to_remove.append(self.test_out)
-        create_dir(self.test_out)
 
-        self.tmp_seq_filepath = get_tmp_filename(tmp_dir=self.test_out,
-                                                 prefix='qiime_parallel_taxonomy_assigner_tests_input',
-                                                 suffix='.fasta')
+        fd, self.tmp_seq_filepath = mkstemp(dir=self.test_out,
+                                            prefix='qiime_parallel_taxonomy_assigner_tests_input',
+                                            suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_seq_filepath, 'w')
         seq_file.write(blast_test_seqs.toFasta())
         seq_file.close()
@@ -192,16 +189,15 @@ class ParallelUclustConsensusTaxonomyAssignerTests(TestCase):
         self.dirs_to_remove = []
 
         tmp_dir = get_qiime_temp_dir()
-        self.test_out = get_tmp_filename(tmp_dir=tmp_dir,
-                                         prefix='qiime_parallel_taxonomy_assigner_tests_',
-                                         suffix='',
-                                         result_constructor=str)
+        self.test_out = mkdtemp(dir=tmp_dir,
+                                prefix='qiime_parallel_taxonomy_assigner_tests_',
+                                suffix='')
         self.dirs_to_remove.append(self.test_out)
-        create_dir(self.test_out)
 
-        self.tmp_seq_filepath = get_tmp_filename(tmp_dir=self.test_out,
-                                                 prefix='qiime_parallel_taxonomy_assigner_tests_input',
-                                                 suffix='.fasta')
+        fd, self.tmp_seq_filepath = mkstemp(dir=self.test_out,
+                                            prefix='qiime_parallel_taxonomy_assigner_tests_input',
+                                            suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_seq_filepath, 'w')
         seq_file.write(uclust_test_seqs.toFasta())
         seq_file.close()

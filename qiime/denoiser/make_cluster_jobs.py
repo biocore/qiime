@@ -12,14 +12,14 @@ __maintainer__ = "Jens Reeder"
 __email__ = "jens.reeder@gmail.com"
 
 from os.path import exists
-from os import remove, rename, rmdir, makedirs
+from os import remove, rename, rmdir, makedirs, close
 from subprocess import Popen, PIPE, STDOUT
+from tempfile import mkstemp
 
 from cogent.util.misc import create_dir
 from cogent.app.util import ApplicationNotFoundError
-from bipy.app.util import which
+from skbio.app.util import which
 
-from qiime.util import get_tmp_filename
 
 # qsub template
 # requires format string (walltime, ncpus, nodes, queue, job_name,
@@ -86,8 +86,9 @@ def make_jobs(commands, job_prefix, queue, jobs_dir="jobs/",
     filenames = []
     create_dir(jobs_dir)
     for command in commands:
-        job_name = get_tmp_filename(tmp_dir=jobs_dir, prefix=job_prefix + "_",
-                                    suffix=".txt")
+        fd, job_name = mkstemp(dir=jobs_dir, prefix=job_prefix + "_",
+                              suffix=".txt")
+        close(fd)
         out_fh = open(job_name, "w")
 
         out_fh.write(QSUB_TEXT % (walltime, ncpus, nodes, queue, job_prefix,

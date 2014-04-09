@@ -10,15 +10,17 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
+from os import close
 from os.path import exists, split, splitext, join
 from shutil import rmtree
+from tempfile import mkstemp, mkdtemp
 
 from cogent import LoadSeqs, DNA
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.util.misc import remove_files
-from cogent.app.formatdb import build_blast_db_from_fasta_file
 
-from qiime.util import get_tmp_filename, create_dir
+from brokit.formatdb import build_blast_db_from_fasta_file
+
 from qiime.identify_chimeric_seqs import (BlastFragmentsChimeraChecker,
                                           chimeraSlayer_identify_chimeras, parse_CPS_file,
                                           get_chimeras_from_Nast_aligned, usearch61_chimera_check,
@@ -32,12 +34,15 @@ class BlastFragmentsChimeraCheckerTests(TestCase):
 
     def setUp(self):
         """ """
-        self.id_to_taxonomy_fp = get_tmp_filename(
+        fd, self.id_to_taxonomy_fp = mkstemp(
             prefix='BlastFragmentsChimeraCheckerTests_', suffix='.txt')
-        self.input_seqs_fp = get_tmp_filename(
+        close(fd)
+        fd, self.input_seqs_fp = mkstemp(
             prefix='BlastFragmentsChimeraCheckerTests_', suffix='.fasta')
-        self.reference_seqs_fp = get_tmp_filename(
+        close(fd)
+        fd, self.reference_seqs_fp = mkstemp(
             prefix='BlastFragmentsChimeraCheckerTests_', suffix='.fasta')
+        close(fd)
 
         self._paths_to_clean_up =\
             [self.id_to_taxonomy_fp,
@@ -251,7 +256,8 @@ class ChimeraSlayerChimeraCheckerTests(TestCase):
         """ """
 
         self.files_to_remove = []
-        test_seqs_fp = get_tmp_filename(prefix="test_chimera_slayer")
+        fd, test_seqs_fp = mkstemp(prefix="test_chimera_slayer")
+        close(fd)
         self.files_to_remove.append(test_seqs_fp)
         fh = open(test_seqs_fp, "w")
         fh.write(chimeras)
@@ -273,13 +279,15 @@ class ChimeraSlayerChimeraCheckerTests(TestCase):
         """chimeraSlayer_identify_chimeras works with user provided DB"""
 
         # set up DB
-        ref_db_fp = get_tmp_filename(prefix="test_chimera_slayer_ref_db_")
+        fd, ref_db_fp = mkstemp(prefix="test_chimera_slayer_ref_db_")
+        close(fd)
         fh = open(ref_db_fp, "w")
         fh.write(ref_db)
         fh.close()
 
-        ref_db_nast_fp = get_tmp_filename(
+        fd, ref_db_nast_fp = mkstemp(
             prefix="test_chimera_slayer_nast_db_")
+        close(fd)
         fh_nast = open(ref_db_nast_fp, "w")
         fh_nast.write(ref_db_nast)
         fh_nast.close()
@@ -323,7 +331,8 @@ class ChimeraSlayer_app_tests(TestCase):
 
         # empty input gives empty output
         seqs = ""
-        test_seqs_fp = get_tmp_filename(prefix="test_chimera_slayer")
+        fd, test_seqs_fp = mkstemp(prefix="test_chimera_slayer")
+        close(fd)
         self.files_to_remove.append(test_seqs_fp)
         fh = open(test_seqs_fp, "w")
         fh.write(seqs)
@@ -336,7 +345,8 @@ class ChimeraSlayer_app_tests(TestCase):
         seqs = """>test1
 GTGGGGAATATTGCACAATGGGCGGAAGCCTGATGCAGCGACGCCGCGTGAGGGATGACGGCCTTCGGGTTGTAAACCTCTTTCAGCAGGGACGAAGCGTAAGTGACGGTACCTGCAGAAGAAGCGCCGGCCAACTACGTGCCAGCAGCCGCGGTAAGAC
 """
-        test_seqs_fp2 = get_tmp_filename(prefix="test_chimera_slayer")
+        fd, test_seqs_fp2 = mkstemp(prefix="test_chimera_slayer")
+        close(fd)
         self.files_to_remove.append(test_seqs_fp2)
         fh = open(test_seqs_fp2, "w")
         fh.write(seqs)
@@ -345,7 +355,8 @@ GTGGGGAATATTGCACAATGGGCGGAAGCCTGATGCAGCGACGCCGCGTGAGGGATGACGGCCTTCGGGTTGTAAACCTC
         self.assertEqual(observed, [])
 
         # Real chimeras are identified as such
-        test_seqs_fp3 = get_tmp_filename(prefix="test_chimera_slayer")
+        fd, test_seqs_fp3 = mkstemp(prefix="test_chimera_slayer")
+        close(fd)
         self.files_to_remove.append(test_seqs_fp3)
         fh = open(test_seqs_fp3, "w")
         fh.write(chimeras)
@@ -359,13 +370,14 @@ GTGGGGAATATTGCACAATGGGCGGAAGCCTGATGCAGCGACGCCGCGTGAGGGATGACGGCCTTCGGGTTGTAAACCTC
         """
 
         # set up DB
-        ref_db_fp = get_tmp_filename(prefix="test_chimera_slayer_ref_db_")
+        fd, ref_db_fp = mkstemp(prefix="test_chimera_slayer_ref_db_")
+        close(fd)
         fh = open(ref_db_fp, "w")
         fh.write(ref_db)
         fh.close()
 
-        ref_db_nast_fp = get_tmp_filename(
-            prefix="test_chimera_slayer_nast_db_")
+        fd, ref_db_nast_fp = mkstemp(prefix="test_chimera_slayer_nast_db_")
+        close(fd)
         fh_nast = open(ref_db_nast_fp, "w")
         fh_nast.write(ref_db_nast)
         fh_nast.close()
@@ -375,7 +387,8 @@ GTGGGGAATATTGCACAATGGGCGGAAGCCTGATGCAGCGACGCCGCGTGAGGGATGACGGCCTTCGGGTTGTAAACCTC
 
         # empty input gives empty output
         seqs = ""
-        test_seqs_fp = get_tmp_filename(prefix="test_chimera_slayer")
+        fd,test_seqs_fp = mkstemp(prefix="test_chimera_slayer")
+        close(fd)
 
         self.files_to_remove.append(test_seqs_fp)
         fh = open(test_seqs_fp, "w")
@@ -393,7 +406,8 @@ GTGGGGAATATTGCACAATGGGCGGAAGCCTGATGCAGCGACGCCGCGTGAGGGATGACGGCCTTCGGGTTGTAAACCTC
 GTGGGGAATATTGCACAATGGGCGGAAGCCTGATGCAGCGACGCCGCGTGAGGGATGACGGCCTTCGGGTTGTAAACCTCTTTCAGCAGGGACGAAGCGTAAGTGACGGTACCTGCAGAAGAAGCGCCGGCCAACTACGTGCCAGCAGCCGCGGTAAGAC
 """
 
-        test_seqs_fp2 = get_tmp_filename(prefix="test_chimera_slayer")
+        fd, test_seqs_fp2 = mkstemp(prefix="test_chimera_slayer")
+        close(fd)
         self.files_to_remove.append(test_seqs_fp2)
         fh = open(test_seqs_fp2, "w")
         fh.write(seqs)
@@ -405,7 +419,8 @@ GTGGGGAATATTGCACAATGGGCGGAAGCCTGATGCAGCGACGCCGCGTGAGGGATGACGGCCTTCGGGTTGTAAACCTC
         self.assertEqual(observed, [])
 
         # Real chimeras are identified as such
-        test_seqs_fp3 = get_tmp_filename(prefix="test_chimera_slayer")
+        fd, test_seqs_fp3 = mkstemp(prefix="test_chimera_slayer")
+        close(fd)
         self.files_to_remove.append(test_seqs_fp3)
         fh = open(test_seqs_fp3, "w")
         fh.write(chimeras)
@@ -431,41 +446,38 @@ class Usearch61Tests(TestCase):
     def setUp(self):
         # create the temporary input files
 
-        self.output_dir = get_tmp_filename(
-            prefix='Usearch61ChimeraTests_',
-            suffix='/')
-
-        create_dir(self.output_dir)
+        self.output_dir = mkdtemp(prefix='Usearch61ChimeraTests_',
+                                  suffix='/')
 
         self.dna_seqs = usearch61_dna_seqs
         self.ref_seqs = usearch61_ref_seqs
         self.abundance_seqs = abundance_seqs
         self.uchime_data = uchime_data
 
-        self.raw_dna_seqs_fp = get_tmp_filename(
-            prefix='Usearch61QuerySeqs_',
-            suffix='.fasta')
+        fd, self.raw_dna_seqs_fp = mkstemp(prefix='Usearch61QuerySeqs_',
+                                          suffix='.fasta')
+        close(fd)
         seq_file = open(self.raw_dna_seqs_fp, 'w')
         seq_file.write(self.dna_seqs)
         seq_file.close()
 
-        self.ref_seqs_fp = get_tmp_filename(
-            prefix="Usearch61RefSeqs_",
-            suffix=".fasta")
+        fd, self.ref_seqs_fp = mkstemp(prefix="Usearch61RefSeqs_",
+                                      suffix=".fasta")
+        close(fd)
         seq_file = open(self.ref_seqs_fp, "w")
         seq_file.write(self.ref_seqs)
         seq_file.close()
 
-        self.abundance_seqs_fp = get_tmp_filename(
-            prefix="Usearch61AbundanceSeqs_",
-            suffix=".fasta")
+        fd, self.abundance_seqs_fp = mkstemp(prefix="Usearch61AbundanceSeqs_",
+                                    suffix=".fasta")
+        close(fd)
         seq_file = open(self.abundance_seqs_fp, "w")
         seq_file.write(self.abundance_seqs)
         seq_file.close()
 
-        self.uchime_fp = get_tmp_filename(
-            prefix="UsearchUchimeData_",
-            suffix=".uchime")
+        fd, self.uchime_fp = mkstemp(prefix="UsearchUchimeData_",
+                                    suffix=".uchime")
+        close(fd)
         seq_file = open(self.uchime_fp, "w")
         seq_file.write(self.uchime_data)
         seq_file.close()

@@ -11,9 +11,8 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 from os.path import split, splitext
-from cogent.parse.fasta import MinimalFastaParser
-
-from bipy.core.sequence import DNA
+from skbio.parse.sequences import parse_fasta
+from skbio.core.sequence import DNA
 
 usage_str = """usage: %prog [options] {-i INPUT_FASTA_FP}
 
@@ -41,7 +40,7 @@ def append_rc(s):
 def rc_fasta_lines(fasta_lines, seq_desc_mapper=append_rc):
     """
     """
-    for seq_id, seq in MinimalFastaParser(fasta_lines):
+    for seq_id, seq in parse_fasta(fasta_lines):
         seq_id = seq_desc_mapper(seq_id)
         seq = str(DNA(seq.upper()).rc())
         yield seq_id, seq

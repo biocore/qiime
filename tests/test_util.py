@@ -2,25 +2,29 @@
 from __future__ import division
 # unit tests for util.py
 
-from os import chdir, getcwd, mkdir, rmdir, remove
+from os import chdir, getcwd, mkdir, rmdir, remove, close
 from os.path import split, abspath, dirname, exists, isdir, join
 from glob import glob
 from random import seed
 from shutil import rmtree
 from StringIO import StringIO
-from tempfile import mkdtemp
+from tempfile import mkdtemp, mkstemp
 from collections import defaultdict
+from unittest import TestCase, main
 import gzip
 
 from biom.parse import parse_biom_table_str, parse_biom_table
 
+from numpy.testing import assert_almost_equal
+
+from skbio.core.sequence import DNASequence
+from skbio.parse.sequences import parse_fasta
+
 from cogent import Sequence
-from cogent.util.unit_test import TestCase, main
-from cogent.parse.fasta import MinimalFastaParser
 from cogent.util.misc import remove_files
 from cogent.cluster.procrustes import procrustes
-from cogent.app.formatdb import build_blast_db_from_fasta_file
-from cogent.util.misc import get_random_directory_name, remove_files
+
+from brokit.formatdb import build_blast_db_from_fasta_file
 
 from qiime.parse import (fields_to_dict, parse_distmat, parse_mapping_file,
                          parse_mapping_file_to_dict, parse_otu_table,
@@ -43,10 +47,11 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
                         iseq_to_qseq_fields, get_top_fastq_two_lines,
                         make_compatible_distance_matrices, stderr, _chk_asarray, expand_otu_ids,
                         subsample_fasta, summarize_otu_sizes_from_otu_map, trim_fastq,
-                        get_tmp_filename, load_qiime_config, MetadataMap,
+                        load_qiime_config, MetadataMap,
                         RExecutor, duplicates_indices, trim_fasta, get_qiime_temp_dir,
                         qiime_blastx_seqs, add_filename_suffix, is_valid_git_refname,
-                        is_valid_git_sha1, sync_biom_and_mf, biom_taxonomy_formatter)
+                        is_valid_git_sha1, sync_biom_and_mf,
+                        biom_taxonomy_formatter, invert_dict)
 
 import numpy
 from numpy import array, asarray
@@ -139,9 +144,10 @@ class TopLevelTests(TestCase):
 
     def test_write_seqs_to_fasta(self):
         """ write_seqs_to_fasta functions as expected """
-        output_fp = get_tmp_filename(
+        fd, output_fp = mkstemp(
             prefix="qiime_util_write_seqs_to_fasta_test",
             suffix='.fasta')
+        close(fd)
         self.files_to_remove.append(output_fp)
         seqs = [('s1', 'ACCGGTTGG'), ('s2', 'CCTTGG'),
                 ('S4 some comment string', 'A')]
@@ -170,7 +176,7 @@ o4	seq6	seq7""".split('\n')
         """ split_fasta_on_sample_ids functions as expected
         """
         actual = list(split_fasta_on_sample_ids(
-                      MinimalFastaParser(self.fasta1)))
+                      parse_fasta(self.fasta1)))
         expected = [('Samp1', 'Samp1_42', 'ACCGGTT'),
                     ('s2_a', 's2_a_50', 'GGGCCC'),
                     ('Samp1', 'Samp1_43 some comme_nt', 'AACCG'),
@@ -181,7 +187,7 @@ o4	seq6	seq7""".split('\n')
         """ split_fasta_on_sample_ids_to_dict functions as expected
         """
         actual = split_fasta_on_sample_ids_to_dict(
-            MinimalFastaParser(self.fasta1))
+            parse_fasta(self.fasta1))
         expected = {'Samp1': [('Samp1_42', 'ACCGGTT'),
                               ('Samp1_43 some comme_nt', 'AACCG')],
                     's2_a': [('s2_a_50', 'GGGCCC')],
@@ -191,11 +197,11 @@ o4	seq6	seq7""".split('\n')
     def test_split_fasta_on_sample_ids_to_files(self):
         """ split_fasta_on_sample_ids_to_files functions as expected
         """
-        temp_output_dir = get_random_directory_name(output_dir='/tmp/')
+        temp_output_dir = mkdtemp()
         self.dirs_to_remove.append(temp_output_dir)
 
         split_fasta_on_sample_ids_to_files(
-            MinimalFastaParser(self.fasta2),
+            parse_fasta(self.fasta2),
             output_dir=temp_output_dir,
             per_sample_buffer_size=2)
         self.files_to_remove.extend(glob('%s/*fasta' % temp_output_dir))
@@ -219,7 +225,7 @@ o4	seq6	seq7""".split('\n')
         rel_otu_table = convert_otu_table_relative(otu_table)
         self.assertEqual(rel_otu_table[0], otu_table[0])
         self.assertEqual(rel_otu_table[1], otu_table[1])
-        self.assertEqual(rel_otu_table[2], exp_counts)
+        assert_almost_equal(rel_otu_table[2], exp_counts)
         self.assertEqual(rel_otu_table[3], otu_table[3])
 
     def test_make_safe_f(self):
@@ -330,7 +336,7 @@ o4	seq6	seq7""".split('\n')
                                [.05, 0, 0],
                                [.1, 0, 0]], 'float')
         results = matrix_stats(headers_list, distmats_list)
-        self.assertFloatEqual(results[1:], [exp_mean, exp_median, exp_std])
+        assert_almost_equal(results[1:], [exp_mean, exp_median, exp_std])
         self.assertEqual(results[0], ['a', 'c', 'b'])
 
     def test_matrix_stats2(self):
@@ -428,10 +434,10 @@ o4	seq6	seq7""".split('\n')
     def test_inflate_denoiser_output(self):
         """ inflate_denoiser_output expands denoiser results as expected """
         actual = list(inflate_denoiser_output(
-            MinimalFastaParser(self.centroid_seqs1),
-            MinimalFastaParser(self.singleton_seqs1),
+            parse_fasta(self.centroid_seqs1),
+            parse_fasta(self.singleton_seqs1),
             self.denoiser_mapping1,
-            MinimalFastaParser(self.raw_seqs1)))
+            parse_fasta(self.raw_seqs1)))
         expected = [("S1_0 FXX111 some comments", "TTTT"),
                     ("S1_2 FXX113 some other comments", "TTTT"),
                     ("S3_7 FXX117", "TTTT"),
@@ -443,7 +449,7 @@ o4	seq6	seq7""".split('\n')
 
     def test_flowgram_id_to_seq_id_map(self):
         """ flowgram_id_to_seq_id_map functions as expected """
-        actual = flowgram_id_to_seq_id_map(MinimalFastaParser(self.raw_seqs1))
+        actual = flowgram_id_to_seq_id_map(parse_fasta(self.raw_seqs1))
         expected = {'FXX111': 'S1_0 FXX111 some comments',
                     'FXX112': 'S2_1 FXX112 some comments',
                     'FXX113': 'S1_2 FXX113 some other comments',
@@ -463,18 +469,16 @@ o4	seq6	seq7""".split('\n')
               '>s33', 'A',
               '> 4>', 'AA>',
               '>blah', 'AA']
-        self.assertFloatEqual(
+        assert_almost_equal(
             count_seqs_from_file(f1),
             (3,
              8.666,
-             2.4944),
-            0.001)
-        self.assertFloatEqual(
+             2.4944), decimal=3)
+        assert_almost_equal(
             count_seqs_from_file(f2),
             (4,
              3.25,
-             2.2776),
-            0.001)
+             2.2776), decimal=3)
         self.assertEqual(count_seqs_from_file([]), (0, None, None))
 
     def test_count_seqs(self):
@@ -513,7 +517,7 @@ o4	seq6	seq7""".split('\n')
         """get_split_libraries_fastq_params_and_file_types using reverse
            barcodes computes correct values"""
 
-        temp_output_dir = get_random_directory_name(output_dir='/tmp/')
+        temp_output_dir = mkdtemp()
         self.dirs_to_remove.append(temp_output_dir)
 
         # generate the fastq mapping file
@@ -554,7 +558,7 @@ o4	seq6	seq7""".split('\n')
         """get_split_libraries_fastq_params_and_file_types using forward
            barcodes computes correct values"""
 
-        temp_output_dir = get_random_directory_name(output_dir='/tmp/')
+        temp_output_dir = mkdtemp()
         self.dirs_to_remove.append(temp_output_dir)
 
         # generate the fastq mapping file
@@ -594,7 +598,7 @@ o4	seq6	seq7""".split('\n')
         """get_split_libraries_fastq_params_and_file_types using gzipped files
            and forward barcodes computes correct values"""
 
-        temp_output_dir = get_random_directory_name(output_dir='/tmp/')
+        temp_output_dir = mkdtemp()
         self.dirs_to_remove.append(temp_output_dir)
 
         # generate the fastq mapping file
@@ -635,7 +639,7 @@ o4	seq6	seq7""".split('\n')
             the open fastq file
         """
 
-        temp_output_dir = get_random_directory_name(output_dir='/tmp/')
+        temp_output_dir = mkdtemp()
         self.dirs_to_remove.append(temp_output_dir)
 
         fastq_files = []
@@ -692,8 +696,10 @@ o4	seq6	seq7""".split('\n')
                                [12.3, 10.0]]))
 
         actual_dm1, actual_dm2 = make_compatible_distance_matrices(dm1, dm2)
-        self.assertEqual(actual_dm1, expected_dm1)
-        self.assertEqual(actual_dm2, expected_dm2)
+        self.assertItemsEqual(actual_dm1[0], expected_dm1[0])
+        assert_almost_equal(actual_dm1[1], expected_dm1[1])
+        self.assertItemsEqual(actual_dm2[0], expected_dm2[0])
+        assert_almost_equal(actual_dm2[1], expected_dm2[1])
 
     def test_make_compatible_distance_matrices_w_lookup(self):
         """make_compatible_distance_matrices: functions as expected with lookup"""
@@ -722,8 +728,10 @@ o4	seq6	seq7""".split('\n')
 
         actual_dm1, actual_dm2 = make_compatible_distance_matrices(
             dm1, dm2, lookup)
-        self.assertEqual(actual_dm1, expected_dm1)
-        self.assertEqual(actual_dm2, expected_dm2)
+        self.assertItemsEqual(actual_dm1[0], expected_dm1[0])
+        assert_almost_equal(actual_dm1[1], expected_dm1[1])
+        self.assertItemsEqual(actual_dm2[0], expected_dm2[0])
+        assert_almost_equal(actual_dm2[1], expected_dm2[1])
 
         lookup = {'C': 'C', 'B': 'B', 'T': 'B', 'D': 'D'}
         self.assertRaises(KeyError,
@@ -870,6 +878,30 @@ GTCTGA
             'fb5dy0f85a8b11f199c4f3a75474a2das8138373'))
         self.assertFalse(is_valid_git_sha1(
             '0x5dcc816fbc1c2e8eX087d7d2ed8d2950a7c16b'))
+
+    def test_invert_dict(self):
+        """invert_dict should invert keys and values, keeping all keys
+
+        Ported from PyCogent's cogent.util.misc.InverseDictMulti unit tests.
+        """
+        self.assertEqual(invert_dict({}), {})
+        self.assertEqual(invert_dict({'3':4}), {4:['3']})
+        self.assertEqual(invert_dict(\
+            {'a':'x','b':1,'c':None,'d':('a','b')}), \
+            {'x':['a'],1:['b'],None:['c'],('a','b'):['d']})
+        self.assertRaises(TypeError, invert_dict, {'a':['a','b','c']})
+        d = invert_dict({'a':3, 'b':3, 'c':3, 'd':'3', 'e':'3'})
+        self.assertEqual(len(d), 2)
+        assert 3 in d
+        d3_items = d[3][:]
+        self.assertEqual(len(d3_items), 3)
+        d3_items.sort()
+        self.assertEqual(''.join(d3_items), 'abc')
+        assert '3' in d
+        d3_items = d['3'][:]
+        self.assertEqual(len(d3_items), 2)
+        d3_items.sort()
+        self.assertEqual(''.join(d3_items), 'de')
 
 
 raw_seqs1 = """>S1_0 FXX111 some comments
@@ -1032,7 +1064,8 @@ class FunctionWithParamsTests(TestCase):
         self.assertEqual(biom_data, F.getBiomData(biom_data))
 
         # write biom_data to temp location
-        bt_path = get_tmp_filename()
+        fd, bt_path = mkstemp(suffix='.biom')
+        close(fd)
         biom_file = open(bt_path, 'w')
         biom_file.writelines(bt_string)
         biom_file.close()
@@ -1077,7 +1110,7 @@ class FunctionWithParamsTests(TestCase):
         m_matrix = array([[1.0, 0.0, 1.0], [2.0, 4.0, 4.0]])
         jn_matrix = array([[1.2, 0.1, -1.2], [2.5, 4.0, -4.5]])
         new_matrix = _flip_vectors(jn_matrix, m_matrix)
-        self.assertEqual(new_matrix, array([[1.2, 0.1, 1.2], [2.5, 4.0, 4.5]]))
+        assert_almost_equal(new_matrix, array([[1.2, 0.1, 1.2], [2.5, 4.0, 4.5]]))
 
     def test_compute_jn_pcoa_avg_ranges(self):
         """_compute_jn_pcoa_avg_ranges works
@@ -1091,10 +1124,10 @@ class FunctionWithParamsTests(TestCase):
                                array([[1.0, 4.0, -4.5], [-1.2, -0.1, 1.2]])]
         avg_matrix, low_matrix, high_matrix = _compute_jn_pcoa_avg_ranges(
             jn_flipped_matrices, 'ideal_fourths')
-        self.assertFloatEqual(avg_matrix[(0, 0)], 4.0)
-        self.assertFloatEqual(avg_matrix[(0, 2)], -4.5)
-        self.assertFloatEqual(low_matrix[(0, 0)], 2.16666667)
-        self.assertFloatEqual(high_matrix[(0, 0)], 5.83333333)
+        assert_almost_equal(avg_matrix[(0, 0)], 4.0)
+        assert_almost_equal(avg_matrix[(0, 2)], -4.5)
+        assert_almost_equal(low_matrix[(0, 0)], 2.16666667)
+        assert_almost_equal(high_matrix[(0, 0)], 5.83333333)
 
         avg_matrix, low_matrix, high_matrix = _compute_jn_pcoa_avg_ranges(
             jn_flipped_matrices, 'sdev')
@@ -1127,20 +1160,20 @@ class FunctionWithParamsTests(TestCase):
             summarize_pcoas(master_pcoa, support_pcoas, 'ideal_fourths',
                             apply_procrustes=False)
         self.assertEqual(m_names, ['1', '2', '3'])
-        self.assertFloatEqual(matrix_average[(0, 0)], -1.4)
-        self.assertFloatEqual(matrix_average[(0, 1)], 0.0125)
-        self.assertFloatEqual(matrix_low[(0, 0)], -1.5)
-        self.assertFloatEqual(matrix_high[(0, 0)], -1.28333333)
-        self.assertFloatEqual(matrix_low[(0, 1)], -0.0375)
-        self.assertFloatEqual(matrix_high[(0, 1)], 0.05)
-        self.assertFloatEqual(eigval_average[0], 0.81)
-        self.assertFloatEqual(eigval_average[1], 0.19)
+        assert_almost_equal(matrix_average[(0, 0)], -1.4)
+        assert_almost_equal(matrix_average[(0, 1)], 0.0125)
+        assert_almost_equal(matrix_low[(0, 0)], -1.5)
+        assert_almost_equal(matrix_high[(0, 0)], -1.28333333)
+        assert_almost_equal(matrix_low[(0, 1)], -0.0375)
+        assert_almost_equal(matrix_high[(0, 1)], 0.05)
+        assert_almost_equal(eigval_average[0], 0.81)
+        assert_almost_equal(eigval_average[1], 0.19)
         # test with the IQR option
         matrix_average, matrix_low, matrix_high, eigval_average, m_names = \
             summarize_pcoas(master_pcoa, support_pcoas, method='IQR',
                             apply_procrustes=False)
-        self.assertFloatEqual(matrix_low[(0, 0)], -1.5)
-        self.assertFloatEqual(matrix_high[(0, 0)], -1.3)
+        assert_almost_equal(matrix_low[(0, 0)], -1.5)
+        assert_almost_equal(matrix_high[(0, 0)], -1.3)
 
         # test with procrustes option followed by sdev
         m, m1, msq = procrustes(master_pcoa[1], jn1[1])
@@ -1195,8 +1228,8 @@ class FunctionWithParamsTests(TestCase):
         """
         x = array([[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]])
         min_vals, max_vals = matrix_IQR(x)
-        self.assertEqual(min_vals, array([2.5, 3.5, 4.5]))
-        self.assertEqual(max_vals, array([8.5, 9.5, 10.5]))
+        assert_almost_equal(min_vals, array([2.5, 3.5, 4.5]))
+        assert_almost_equal(max_vals, array([8.5, 9.5, 10.5]))
 
     def test_idealfourths(self):
         """idealfourths: tests the ideal-fourths function which was imported from scipy
@@ -1207,16 +1240,16 @@ class FunctionWithParamsTests(TestCase):
                          [24.416666666666668, 74.583333333333343])
         test_2D = test.repeat(3).reshape(-1, 3)
 
-        self.assertFloatEqualRel(numpy.asarray(idealfourths(test_2D, axis=0)),
+        assert_almost_equal(numpy.asarray(idealfourths(test_2D, axis=0)),
                                  numpy.array(
                                      [[24.41666667, 24.41666667, 24.41666667],
                                       [74.58333333, 74.58333333, 74.58333333]]))
 
-        self.assertEqual(idealfourths(test_2D, axis=1),
+        assert_almost_equal(idealfourths(test_2D, axis=1),
                          test.repeat(2).reshape(-1, 2))
         test = [0, 0]
         _result = idealfourths(test)
-        self.assertEqual(numpy.isnan(_result).all(), True)
+        assert_almost_equal(numpy.isnan(_result).all(), True)
 
     def test_isarray(self):
         "isarray: tests the isarray function"
@@ -1238,7 +1271,8 @@ class FunctionWithParamsTests(TestCase):
                     ('d', "--------AAAAAAA"),
                     ('e', "")]
 
-        expected_result = map(lambda a_b: Sequence(name=a_b[0], seq=a_b[1]),
+        expected_result = map(lambda a_b: DNASequence(a_b[1],
+                                                      identifier=a_b[0]),
                               [("a", "AAAAAAAAAGGGG"),
                                ("b", "AAGGAGC"),
                                ('c', ""),
@@ -1291,19 +1325,19 @@ AAAAAAA
     def test_compare_otu_maps(self):
         """compare_otu_maps computes correct values"""
 
-        self.assertFloatEqual(compare_otu_maps(otu_map1, otu_map1), 0.0)
-        self.assertFloatEqual(compare_otu_maps(otu_map1, otu_map3), 0.0)
-        self.assertFloatEqual(
+        assert_almost_equal(compare_otu_maps(otu_map1, otu_map1), 0.0)
+        assert_almost_equal(compare_otu_maps(otu_map1, otu_map3), 0.0)
+        assert_almost_equal(
             compare_otu_maps(
                 otu_map1,
                 otu_map4),
             0.33333333333)
-        self.assertFloatEqual(
+        assert_almost_equal(
             compare_otu_maps(
                 otu_map3,
                 otu_map4),
             0.33333333333)
-        self.assertFloatEqual(compare_otu_maps(otu_map1, otu_map5), 1)
+        assert_almost_equal(compare_otu_maps(otu_map1, otu_map5), 1)
 
     def test_iseq_to_qseq_fields(self):
         """iseq_to_qseq_fields functions as expected"""
@@ -1343,15 +1377,15 @@ AAAAAAA
         exp = array([0.57735026918962584, 0.57735026918962584,
                      0.57735026918962584, 0.57735026918962584])
         obs = stderr([[1, 1, 1, 1], [2, 2, 2, 2], [3, 3, 3, 3]])
-        self.assertEqual(obs, exp)
+        assert_almost_equal(obs, exp)
 
     def test__chk_asarray(self):
         """_chk_asarray converts list into a numpy array"""
 
         exp = (array([[1, 1, 1, 1], [2, 2, 2, 2], [3, 3, 3, 3]]), 0)
         obs = _chk_asarray([[1, 1, 1, 1], [2, 2, 2, 2], [3, 3, 3, 3]], 0)
-        self.assertEqual(obs, exp)
-
+        assert_almost_equal(obs[0], exp[0])
+        self.assertEqual(obs[1], exp[1])
 
 class BlastSeqsTests(TestCase):
 
@@ -1368,9 +1402,10 @@ class BlastSeqsTests(TestCase):
                                            output_dir=get_qiime_temp_dir())
         self.files_to_remove = db_files_to_remove
 
-        self.refseqs1_fp = get_tmp_filename(tmp_dir=get_qiime_temp_dir(),
-                                            prefix="BLAST_temp_db_",
-                                            suffix=".fasta")
+        fd, self.refseqs1_fp = mkstemp(dir=get_qiime_temp_dir(),
+                                      prefix="BLAST_temp_db_",
+                                      suffix=".fasta")
+        close(fd)
         fasta_f = open(self.refseqs1_fp, 'w')
         fasta_f.write(refseqs1)
         fasta_f.close()
@@ -1383,7 +1418,7 @@ class BlastSeqsTests(TestCase):
     def test_w_refseqs_file(self):
         """qiime_blast_seqs functions with refseqs file
         """
-        inseqs = MinimalFastaParser(self.inseqs1)
+        inseqs = parse_fasta(self.inseqs1)
         actual = qiime_blast_seqs(inseqs, refseqs=self.refseqs1)
         self.assertEqual(len(actual), 5)
 
@@ -1394,7 +1429,7 @@ class BlastSeqsTests(TestCase):
     def test_w_refseqs_fp(self):
         """qiime_blast_seqs functions refseqs_fp
         """
-        inseqs = MinimalFastaParser(self.inseqs1)
+        inseqs = parse_fasta(self.inseqs1)
         actual = qiime_blast_seqs(inseqs, refseqs_fp=self.refseqs1_fp)
         self.assertEqual(len(actual), 5)
 
@@ -1406,7 +1441,7 @@ class BlastSeqsTests(TestCase):
         """qiime_blast_seqs functions with pre-existing blast_db
         """
         # pre-existing blast db
-        inseqs = MinimalFastaParser(self.inseqs1)
+        inseqs = parse_fasta(self.inseqs1)
         actual = qiime_blast_seqs(inseqs, blast_db=self.blast_db)
         self.assertEqual(len(actual), 5)
 
@@ -1418,7 +1453,7 @@ class BlastSeqsTests(TestCase):
         """qiime_blast_seqs: functions with alt seqs_per_blast_run
         """
         for i in range(1, 20):
-            inseqs = MinimalFastaParser(self.inseqs1)
+            inseqs = parse_fasta(self.inseqs1)
             actual = qiime_blast_seqs(
                 inseqs, blast_db=self.blast_db, seqs_per_blast_run=i)
             self.assertEqual(len(actual), 5)
@@ -1430,7 +1465,7 @@ class BlastSeqsTests(TestCase):
     def test_alt_blast_param(self):
         """qiime_blast_seqs: alt blast params give alt results"""
         # Fewer blast hits with stricter e-value
-        inseqs = MinimalFastaParser(self.inseqs1)
+        inseqs = parse_fasta(self.inseqs1)
         actual = qiime_blast_seqs(
             inseqs,
             blast_db=self.blast_db,
@@ -1442,7 +1477,7 @@ class BlastSeqsTests(TestCase):
         self.assertFalse('s100' in actual)
 
     def test_error_on_bad_param_set(self):
-        inseqs = MinimalFastaParser(self.inseqs1)
+        inseqs = parse_fasta(self.inseqs1)
         # no blastdb or refseqs
         self.assertRaises(AssertionError, qiime_blast_seqs, inseqs)
 
@@ -1457,9 +1492,10 @@ class BlastXSeqsTests(TestCase):
         """
         self.nt_inseqs1 = nt_inseqs1.split('\n')
 
-        self.pr_refseqs1_fp = get_tmp_filename(tmp_dir=get_qiime_temp_dir(),
-                                               prefix="BLAST_temp_db_",
-                                               suffix=".fasta")
+        fd, self.pr_refseqs1_fp = mkstemp(dir=get_qiime_temp_dir(),
+                                        prefix="BLAST_temp_db_",
+                                        suffix=".fasta")
+        close(fd)
         fasta_f = open(self.pr_refseqs1_fp, 'w')
         fasta_f.write(pr_refseqs1)
         fasta_f.close()
@@ -1472,7 +1508,7 @@ class BlastXSeqsTests(TestCase):
     def test_w_refseqs_file(self):
         """qiime_blastx_seqs functions with refseqs file
         """
-        inseqs = MinimalFastaParser(self.nt_inseqs1)
+        inseqs = parse_fasta(self.nt_inseqs1)
         actual = qiime_blastx_seqs(inseqs, refseqs_fp=self.pr_refseqs1_fp)
         self.assertEqual(len(actual), 3)
 
@@ -1669,14 +1705,16 @@ class SubSampleFastaTests(TestCase):
         self.temp_dir = load_qiime_config()['temp_dir']
 
         self.fasta_lines = fasta_lines
-        self.fasta_filepath = get_tmp_filename(
+        fd, self.fasta_filepath = mkstemp(
             prefix='subsample_test_', suffix='.fasta')
+        close(fd)
         self.fasta_file = open(self.fasta_filepath, "w")
         self.fasta_file.write(self.fasta_lines)
         self.fasta_file.close()
 
-        self.output_filepath = get_tmp_filename(prefix='subsample_output_',
-                                                suffix='.fasta')
+        fd, self.output_filepath = mkstemp(prefix='subsample_output_',
+                                          suffix='.fasta')
+        close(fd)
 
         self._files_to_remove =\
             [self.fasta_filepath]
@@ -1778,6 +1816,14 @@ class MetadataMapTests(TestCase):
                                  "PC.636\tfoo"]
         self.single_value = MetadataMap(*parse_mapping_file_to_dict(
             self.single_value_str))
+
+        self.m1 = StringIO(m1)
+        self.m2 = StringIO(m2)
+        self.m3 = StringIO(m3)
+
+        self.m1_dup_bad = StringIO(m1_dup_bad)
+        self.m1_dup_good = StringIO(m1_dup_good)
+    
 
     def test_parseMetadataMap(self):
         """Test parsing a mapping file into a MetadataMap instance."""
@@ -2001,6 +2047,68 @@ class MetadataMapTests(TestCase):
 
         self.empty_map.filterSamples(['foo'], strict=False)
         self.assertEqual(self.empty_map.SampleIds, [])
+
+    def test_str(self):
+        """Test conversion to string representation
+        """
+        map_obj = MetadataMap.parseMetadataMap(self.m1)
+        string_rep = StringIO(map_obj)
+
+        self.m1.seek(0)
+
+        # The string representation of the map_obj is unpredictable, since
+        # it is generated from a dict, so we have to get a little clever
+        exp_headers = self.m1.readline().strip().split('\t')
+        obs_headers = string_rep.readline().strip().split('\t')
+
+        # make sure that they have the same columns
+        self.assertEqual(set(exp_headers), set(obs_headers))
+
+        # make sure they have the same values for the same columns
+        for obs, exp in zip(string_rep, self.m1):
+            obs_elements = obs.strip().split('\t')
+            exp_elements = exp.strip().split('\t')
+
+            for exp_i, exp_header in enumerate(exp_headers):
+                obs_i = obs_headers.index(exp_header)
+
+                self.assertEqual(obs_elements[exp_i],
+                                 exp_elements[obs_i])
+
+    def test_merge_mapping_file(self):
+        """merge_mapping_file: functions with default parameters
+        """
+        observed = MetadataMap.mergeMappingFiles([self.m1,self.m3])
+        self.assertEqual(observed, m1_m3_exp)
+            
+    def test_merge_mapping_file_different_no_data_value(self):
+        """merge_mapping_file: functions with different no_data_value
+        """
+        observed = MetadataMap.mergeMappingFiles([self.m1,self.m2],
+                                                  "TESTING_NA")
+        self.assertEqual(observed, m1_m2_exp)
+            
+    def test_merge_mapping_file_three_mapping_files(self):
+        """merge_mapping_file: 3 mapping files
+        """
+        observed = MetadataMap.mergeMappingFiles([self.m1,self.m2,self.m3])
+        self.assertEqual(observed, m1_m2_m3_exp)
+            
+    def test_merge_mapping_file_bad_duplicates(self):
+        """merge_mapping_file: error raised when merging mapping files where
+        same sample ids has different values
+        """
+        self.assertRaises(
+            ValueError,
+            MetadataMap.mergeMappingFiles,
+            [self.m1, self.m1_dup_bad])
+
+    def test_merge_mapping_file_good_duplicates(self):
+        """merge_mapping_file: same sample ids merged correctly when they have
+        mergable data
+        """
+        observed = MetadataMap.mergeMappingFiles([self.m1,self.m1_dup_good])
+        self.assertEqual(observed, m1_m1_dup_good_exp)
 
 
 class SyncBiomTests(TestCase):
@@ -2281,6 +2389,39 @@ ACCAGAGACCGAGA""".split('\n')
 
 expected_lines_20_perc = """>seq4
 ACAGGAGACCGAGAAGA""".split('\n')
+
+m1="""#SampleID\tBarcodeSequence\tLinkerPrimerSequence\toptional1\tDescription
+111111111\tAAAAAAAAAAAAAAA\tTTTTTTTTTTTTTTTTTTTT\tfirst1111\tTHE FIRST"""
+
+# when merged with m1, this should raise a ValueError
+m1_dup_bad="""#SampleID\tBarcodeSequence\tLinkerPrimerSequence\toptional1\tDescription
+111111111\tAAAAAAAAAAAAAAA\tTTTTTTTTTTTTTTTTTTTT\tdupe11111\tDUPE BAD"""
+
+# when merged with m1, this should NOT raise a ValueError
+m1_dup_good="""#SampleID\tBarcodeSequence\tLinkerPrimerSequence\toptional9\tDescription
+111111111\tAAAAAAAAAAAAAAA\tTTTTTTTTTTTTTTTTTTTT\tsomthing\tTHE FIRST"""
+
+m2="""#SampleID\tBarcodeSequence\tLinkerPrimerSequence\toptional2\tDescription
+222222222\tGGGGGGGGGGGGGGG\tCCCCCCCCCCCCCCCCCCCC\tsecond222\tTHE SECOND"""
+
+m3="""#SampleID\tBarcodeSequence\tLinkerPrimerSequence\toptional1\tDescription
+333333333\tFFFFFFFFFFFFFFF\tIIIIIIIIIIIIIIIIIIII\tthird3333\tTHE THIRD"""
+
+# the dict representation of the object with no_data_value set to TESTING_NA
+m1_m2_exp = MetadataMap({'111111111': {'optional1': 'first1111', 'LinkerPrimerSequence': 'TTTTTTTTTTTTTTTTTTTT', 'BarcodeSequence': 'AAAAAAAAAAAAAAA', 'Description': 'THE FIRST', 'optional2': None}, '222222222': {'optional1': None, 'LinkerPrimerSequence': 'CCCCCCCCCCCCCCCCCCCC', 'BarcodeSequence': 'GGGGGGGGGGGGGGG', 'Description': 'THE SECOND', 'optional2': 'second222'}}, [])
+m1_m2_exp.no_data_value = 'TESTING_NA'
+
+# dict representation, with no_data_value left as default ("no_data")
+m1_m3_exp = MetadataMap({'111111111': {'optional1': 'first1111', 'LinkerPrimerSequence': 'TTTTTTTTTTTTTTTTTTTT', 'BarcodeSequence': 'AAAAAAAAAAAAAAA', 'Description': 'THE FIRST'}, '333333333': {'optional1': 'third3333', 'LinkerPrimerSequence': 'IIIIIIIIIIIIIIIIIIII', 'BarcodeSequence': 'FFFFFFFFFFFFFFF', 'Description': 'THE THIRD'}}, [])
+m1_m3_exp.no_data_value = 'no_data'
+
+# dict representation, with no_data_value left as default ("no_data")
+m1_m2_m3_exp = MetadataMap({'111111111': {'BarcodeSequence': 'AAAAAAAAAAAAAAA', 'LinkerPrimerSequence': 'TTTTTTTTTTTTTTTTTTTT', 'optional1': 'first1111', 'Description': 'THE FIRST', 'optional2': None}, '333333333': {'BarcodeSequence': 'FFFFFFFFFFFFFFF', 'LinkerPrimerSequence': 'IIIIIIIIIIIIIIIIIIII', 'optional1': 'third3333', 'Description': 'THE THIRD', 'optional2': None}, '222222222': {'BarcodeSequence': 'GGGGGGGGGGGGGGG', 'LinkerPrimerSequence': 'CCCCCCCCCCCCCCCCCCCC', 'optional1': None, 'Description': 'THE SECOND', 'optional2': 'second222'}}, [])
+m1_m2_m3_exp.no_data_value = 'no_data'
+
+# dict representation, m1 and m1_dup_bad should be mergeable
+m1_m1_dup_good_exp = MetadataMap({'111111111': {'optional9': 'somthing', 'LinkerPrimerSequence': 'TTTTTTTTTTTTTTTTTTTT', 'optional1': 'first1111', 'Description': 'THE FIRST', 'BarcodeSequence': 'AAAAAAAAAAAAAAA'}}, [])
+m1_m1_dup_good_exp.no_data_value = 'no_data'
 
 
 # run unit tests if run from command-line

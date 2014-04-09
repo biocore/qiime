@@ -7,7 +7,6 @@ __credits__ = [
     "Greg Caporaso",
     "Jeremy Widmann",
     "Kyle Bittinger"]
-__license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
@@ -25,23 +24,23 @@ warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
 from os import remove
 from numpy import median
 
-from cogent.parse.record import RecordError
-from cogent.app.util import ApplicationNotFoundError
-from cogent.app.infernal import cmalign_from_alignment
-from cogent.parse.rfam import MinimalRfamParser, ChangedSequence
+import brokit
+from brokit.infernal import cmalign_from_alignment
+import brokit.clustalw
+import brokit.muscle_v38
+import brokit.mafft
 
-from cogent import DNA
-import cogent.app.clustalw
-import cogent.app.mafft
-import cogent.app.muscle_v38
+from cogent import DNA as DNA_cogent
+from skbio.app.util import ApplicationNotFoundError
+from skbio.core.exception import RecordError
+from skbio.parse.sequences import parse_fasta
 
-from qiime.util import (get_tmp_filename,
-                        FunctionWithParams,
+from qiime.util import (FunctionWithParams,
                         get_qiime_temp_dir)
 
 from skbio.core.alignment import SequenceCollection, Alignment
 from skbio.core.sequence import DNASequence
-from skbio.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import parse_fasta
 
 # Load PyNAST if it's available. If it's not, skip it if not but set up
 # to raise errors if the user tries to use it.
@@ -114,7 +113,7 @@ class CogentAligner(Aligner):
         seqs = self.getData(seq_path)
         params = dict(
             [(k, v) for (k, v) in self.Params.items() if k.startswith('-')])
-        result = module.align_unaligned_seqs(seqs, moltype=DNA, params=params)
+        result = module.align_unaligned_seqs(seqs, moltype=DNA_cogent, params=params)
         return result
 
     def __call__(self, result_path=None, log_path=None, *args, **kwargs):
@@ -130,7 +129,7 @@ class InfernalAligner(Aligner):
         """Return new InfernalAligner object with specified params.
         """
         _params = {
-            'moltype': DNA,
+            'moltype': DNA_cogent,
             'Application': 'Infernal',
         }
         _params.update(params)
@@ -141,7 +140,7 @@ class InfernalAligner(Aligner):
 
         log_params = []
         # load candidate sequences
-        candidate_sequences = MinimalFastaParser(open(seq_path, 'U'))
+        candidate_sequences = dict(parse_fasta(open(seq_path, 'U')))
 
         # load template sequences
         try:
@@ -240,12 +239,12 @@ class PyNastAligner(Aligner):
                  failure_path=None):
         # load candidate sequences
         seq_file = open(seq_path, 'U')
-        candidate_sequences = MinimalFastaParser(seq_file)
+        candidate_sequences = parse_fasta(seq_file)
 
         # load template sequences
         template_alignment = []
         template_alignment_fp = self.Params['template_filepath']
-        for seq_id, seq in MinimalFastaParser(open(template_alignment_fp)):
+        for seq_id, seq in parse_fasta(open(template_alignment_fp)):
             # replace '.' characters with '-' characters
             template_alignment.append((seq_id, seq.replace('.', '-').upper()))
         template_alignment = Alignment.from_fasta_records(
@@ -295,7 +294,7 @@ class PyNastAligner(Aligner):
 
 def compute_min_alignment_length(seqs_f, fraction=0.75):
     """ compute the min alignment length as n standard deviations below the mean """
-    med_length = median([len(s) for _, s in MinimalFastaParser(seqs_f)])
+    med_length = median([len(s) for _, s in parse_fasta(seqs_f)])
     return int(med_length * fraction)
 
 
@@ -303,8 +302,8 @@ alignment_method_constructors = {'pynast': PyNastAligner,
                                  'infernal': InfernalAligner}
 
 alignment_module_names = {
-    'muscle': cogent.app.muscle_v38,
-    'clustalw': cogent.app.clustalw,
-    'mafft': cogent.app.mafft,
-    'infernal': cogent.app.infernal,
+    'muscle': brokit.muscle_v38,
+    'clustalw': brokit.clustalw,
+    'mafft': brokit.mafft,
+    'infernal': brokit.infernal,
 }

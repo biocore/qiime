@@ -2,21 +2,24 @@
 # file test_split_libraries.py
 
 __author__ = "Rob Knight"
-__copyright__ = "Copyright 2011, The QIIME Project"  # consider project name
-__credits__ = ["Rob Knight", "William Walters"]  # remember to add yourself
+__copyright__ = "Copyright 2011, The QIIME Project"
+__credits__ = ["Rob Knight", "William Walters", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "William Walters"
 __email__ = "william.a.walters@colorado.edu"
 
 
+from os import close
 from os.path import exists
 from StringIO import StringIO
 from numpy import array
 from shutil import rmtree
+from tempfile import mkstemp, mkdtemp
 
-from cogent.util.unit_test import TestCase, main
-from cogent.util.misc import remove_files
+from unittest import TestCase, main
+from numpy. testing import assert_almost_equal
+from skbio.util.misc import remove_files
 
 from qiime.util import get_tmp_filename
 from qiime.split_libraries import (
@@ -27,7 +30,6 @@ from qiime.split_libraries import (
     seq_exceeds_homopolymers, check_window_qual_scores, check_seqs,
     local_align_primer_seq, preprocess)
 from qiime.parse import parse_qual_score
-from qiime.util import create_dir
 
 class FakeOutFile(object):
 
@@ -102,56 +104,62 @@ class TopLevelTests(TestCase):
             sample_mapping_bad_char_datafield
         self.in_seqs_ambi_chars = in_seqs_ambi_chars
 
-        self.sample_fasta_file = get_tmp_filename(prefix="sample_seqs_",
-                                                  suffix=".fasta")
+        fd, self.sample_fasta_file = mkstemp(prefix="sample_seqs_",
+                                            suffix=".fasta")
+        close(fd)
         seq_file = open(self.sample_fasta_file, 'w')
         seq_file.write("\n".join(self.in_seqs_fixed_len_extra_bc))
         seq_file.close()
 
-        self.sample_qual_file = get_tmp_filename(prefix="sample_qual_",
-                                                 suffix=".qual")
+        fd, self.sample_qual_file = mkstemp(prefix="sample_qual_",
+                                           suffix=".qual")
+        close(fd)
         qual_file = open(self.sample_qual_file, "w")
         qual_file.write("\n".join(self.in_seqs_fixed_len_bc1_qual_scores))
         qual_file.close()
 
-        self.sample_mapping_file = get_tmp_filename(prefix="sample_mapping_",
-                                                    suffix=".txt")
+        fd, self.sample_mapping_file = mkstemp(prefix="sample_mapping_",
+                                              suffix=".txt")
+        close(fd)
         map_file = open(self.sample_mapping_file, "w")
         map_file.write(self.sample_mapping)
         map_file.close()
 
-        self.sample_mapping_file_var_length =\
-            get_tmp_filename(
+        fd, self.sample_mapping_file_var_length =\
+            mkstemp(
                 prefix="sample_mapping_var_len",
                 suffix=".txt")
+        close(fd)
         map_file = open(self.sample_mapping_file_var_length, "w")
         map_file.write(self.sample_mapping_var_length)
         map_file.close()
 
-        self.sample_mapping_bad_char_sampleid_f =\
-            get_tmp_filename(prefix="sample_mapping_bad_char_sampleid_",
-                             suffix=".txt")
+        fd, self.sample_mapping_bad_char_sampleid_f =\
+            mkstemp(prefix="sample_mapping_bad_char_sampleid_",
+                    suffix=".txt")
+        close(fd)
         map_file = open(self.sample_mapping_bad_char_sampleid_f, "w")
         map_file.write(self.sample_mapping_bad_char_sampleid)
         map_file.close()
 
-        self.sample_mapping_bad_char_datafield_f =\
-            get_tmp_filename(prefix="sample_mapping_bad_char_sampleid_",
-                             suffix=".txt")
+        fd, self.sample_mapping_bad_char_datafield_f =\
+            mkstemp(prefix="sample_mapping_bad_char_sampleid_",
+                    suffix=".txt")
+        close(fd)
         map_file = open(self.sample_mapping_bad_char_datafield_f, "w")
         map_file.write(self.sample_mapping_bad_char_datafield)
         map_file.close()
 
-        self.sample_fasta_ambi_chars_f =\
-            get_tmp_filename(prefix="sample_fasta_ambi_chars_",
-                             suffix=".fna")
+        fd, self.sample_fasta_ambi_chars_f =\
+            mkstemp(prefix="sample_fasta_ambi_chars_",
+                    suffix=".fna")
+        close(fd)
         fna_file = open(self.sample_fasta_ambi_chars_f, "w")
         fna_file.write("\n".join(self.in_seqs_ambi_chars))
         fna_file.close()
 
-        self.output_dir = get_tmp_filename(prefix="split_libraries_",
-                                           suffix="/")
-        create_dir(self.output_dir)
+        self.output_dir = mkdtemp(prefix="split_libraries_",
+                                     suffix="/")
 
         self._files_to_remove = \
             [self.sample_fasta_file, self.sample_qual_file,
@@ -180,10 +188,17 @@ class TopLevelTests(TestCase):
         self.assertEqual(check_window_qual_scores(scores1, 1, 5), (False, 7))
 
     def test_expand_degeneracies(self):
-        """generate_possibilities should make possible strings"""
+        """expand_degeneracies should make possible strings"""
+        # No expansion.
         self.assertEqual(expand_degeneracies(['ACG']), ['ACG'])
-        self.assertEqual(expand_degeneracies(['RGY']),
-                         ['AGT', 'AGC', 'GGT', 'GGC'])
+
+        # Expansion, single sequence.
+        self.assertEqual(sorted(expand_degeneracies(['RGY'])),
+                         ['AGC', 'AGT', 'GGC', 'GGT'])
+
+        # Multiple sequences.
+        self.assertEqual(sorted(expand_degeneracies(['ACGW', 'KAT'])),
+                         ['ACGA', 'ACGT', 'GAT', 'TAT'])
 
     def test_get_infile(self):
         """get_infile should return filehandle"""
@@ -440,9 +455,9 @@ z\tGG\tGC\t5\tsample_z"""
         post_lengths = [130, 135]
         raw_hist, pre_hist, post_hist, bin_edges = \
             make_histograms(raw_lengths, pre_lengths, post_lengths)
-        self.assertEqual(pre_hist, array([0, 2, 1, 0, 2]))
-        self.assertEqual(post_hist, array([0, 0, 0, 0, 2]))
-        self.assertEqual(bin_edges, array([90, 100, 110, 120, 130, 140]))
+        assert_almost_equal(pre_hist, array([0, 2, 1, 0, 2]))
+        assert_almost_equal(post_hist, array([0, 0, 0, 0, 2]))
+        assert_almost_equal(bin_edges, array([90, 100, 110, 120, 130, 140]))
 
     def test_check_seqs_sliding_window(self):
         """check_seqs handles sliding window truncations/removal """
@@ -453,8 +468,9 @@ z\tGG\tGC\t5\tsample_z"""
         all_primers = self.all_primers_fixed_len_bc1
         expected = self.expected_fasta_fixed_len_bc1_sliding_window
 
-        out_f = open(get_tmp_filename(prefix="sample_seqs_",
-                                      suffix=".fna.tmp"), "w")
+        fd, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
+        close(fd)
+        out_f = open(out_fp, "w")
         self._files_to_remove.append(out_f.name.replace('.tmp', ''))
 
         actual = check_seqs(
@@ -499,8 +515,9 @@ z\tGG\tGC\t5\tsample_z"""
         all_primers = self.all_primers_variable_len_bc1
         expected = self.expected_fasta_variable_len_bc1
 
-        out_f = open(get_tmp_filename(prefix="sample_seqs_",
-                                      suffix=".fna.tmp"), "w")
+        fd, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
+        close(fd)
+        out_f = open(out_fp, "w")
         self._files_to_remove.append(out_f.name.replace('.tmp', ''))
 
         actual = check_seqs(
@@ -538,8 +555,9 @@ z\tGG\tGC\t5\tsample_z"""
         all_primers = self.all_primers_variable_len_bc2
         expected = self.expected_fasta_variable_len_bc2
 
-        out_f = open(get_tmp_filename(prefix="sample_seqs_",
-                                      suffix=".fna.tmp"), "w")
+        fd, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
+        close(fd)
+        out_f = open(out_fp, "w")
         self._files_to_remove.append(out_f.name.replace('.tmp', ''))
 
         actual = check_seqs(
@@ -580,8 +598,9 @@ z\tGG\tGC\t5\tsample_z"""
         all_primers = self.all_primers_fixed_len_bc1
         expected = self.expected_fasta_fixed_len_bc1
 
-        out_f = open(get_tmp_filename(prefix="sample_seqs_",
-                                      suffix=".fna.tmp"), "w")
+        fd, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
+        close(fd)
+        out_f = open(out_fp, "w")
         self._files_to_remove.append(out_f.name.replace('.tmp', ''))
 
         actual = check_seqs(
@@ -618,8 +637,9 @@ z\tGG\tGC\t5\tsample_z"""
         all_primers = self.all_primers_fixed_len_bc2
         expected = self.expected_fasta_fixed_len_bc2
 
-        out_f = open(get_tmp_filename(prefix="sample_seqs_",
-                                      suffix=".fna.tmp"), "w")
+        fd, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
+        close(fd)
+        out_f = open(out_fp, "w")
         self._files_to_remove.append(out_f.name.replace('.tmp', ''))
 
         actual = check_seqs(
@@ -660,8 +680,9 @@ z\tGG\tGC\t5\tsample_z"""
         all_primers = {}
         expected = self.expected_fasta_fixed_len_bc1_no_primers
 
-        out_f = open(get_tmp_filename(prefix="sample_seqs_",
-                                      suffix=".fna.tmp"), "w")
+        fd, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
+        close(fd)
+        out_f = open(out_fp, "w")
         self._files_to_remove.append(out_f.name.replace('.tmp', ''))
 
         actual = check_seqs(
@@ -702,8 +723,9 @@ z\tGG\tGC\t5\tsample_z"""
         expected = self.expected_in_seqs_reverse_primers
         rev_primers_test = self.reverse_primers_fixed_len_bc1
 
-        out_f = open(get_tmp_filename(prefix="sample_seqs_",
-                                      suffix=".fna.tmp"), "w")
+        fd, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
+        close(fd)
+        out_f = open(out_fp, "w")
         self._files_to_remove.append(out_f.name.replace('.tmp', ''))
 
         actual = check_seqs(
@@ -743,8 +765,9 @@ z\tGG\tGC\t5\tsample_z"""
         expected = self.expected_in_seqs_reverse_primers_mismatch
         rev_primers_test = self.reverse_primers_fixed_len_bc1
 
-        out_f = open(get_tmp_filename(prefix="sample_seqs_",
-                                      suffix=".fna.tmp"), "w")
+        fd, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
+        close(fd)
+        out_f = open(out_fp, "w")
         self._files_to_remove.append(out_f.name.replace('.tmp', ''))
 
         actual = check_seqs(
@@ -783,8 +806,9 @@ z\tGG\tGC\t5\tsample_z"""
         expected = self.expected_in_seqs_reverse_primers_mismatch_allowed
         rev_primers_test = self.reverse_primers_fixed_len_bc1
 
-        out_f = open(get_tmp_filename(prefix="sample_seqs_",
-                                      suffix=".fna.tmp"), "w")
+        fd, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
+        close(fd)
+        out_f = open(out_fp, "w")
         self._files_to_remove.append(out_f.name.replace('.tmp', ''))
 
         actual = check_seqs(
@@ -824,8 +848,9 @@ z\tGG\tGC\t5\tsample_z"""
         expected = self.expected_in_seqs_reverse_primers_full_remove
         rev_primers_test = self.reverse_primers_fixed_len_bc1
 
-        out_f = open(get_tmp_filename(prefix="sample_seqs_",
-                                      suffix=".fna.tmp"), "w")
+        fd, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
+        close(fd)
+        out_f = open(out_fp, "w")
         self._files_to_remove.append(out_f.name.replace('.tmp', ''))
 
         actual = check_seqs(
@@ -864,8 +889,9 @@ z\tGG\tGC\t5\tsample_z"""
         expected = self.expected_in_seqs_reverse_primers_mismatch_allowed
         rev_primers_test = self.reverse_primers_fixed_len_bc1
 
-        out_f = open(get_tmp_filename(prefix="sample_seqs_",
-                                      suffix=".fna.tmp"), "w")
+        fd, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
+        close(fd)
+        out_f = open(out_fp, "w")
         self._files_to_remove.append(out_f.name.replace('.tmp', ''))
 
         actual = check_seqs(
@@ -905,8 +931,9 @@ z\tGG\tGC\t5\tsample_z"""
         all_primers = self.all_primers_fixed_len_bc1
         expected = expected_qual_fixed_len_bc1
 
-        out_f = open(get_tmp_filename(prefix="sample_seqs_",
-                                      suffix=".fna.tmp"), "w")
+        fd, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
+        close(fd)
+        out_f = open(out_fp, "w")
         self._files_to_remove.append(out_f.name.replace('.tmp', ''))
 
         qual_out_f = FakeOutFile()
@@ -945,8 +972,9 @@ z\tGG\tGC\t5\tsample_z"""
         all_primers = self.all_primers_fixed_len_bc1
         expected = self.expected_fasta_extra_bc
 
-        out_f = open(get_tmp_filename(prefix="sample_seqs_",
-                                      suffix=".fna.tmp"), "w")
+        fd, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
+        close(fd)
+        out_f = open(out_fp, "w")
         self._files_to_remove.append(out_f.name.replace('.tmp', ''))
 
         actual = check_seqs(
@@ -985,8 +1013,9 @@ z\tGG\tGC\t5\tsample_z"""
         all_primers = self.all_primers_fixed_len_bc1
         expected = self.expected_fasta_mad
 
-        out_f = open(get_tmp_filename(prefix="sample_seqs_",
-                                      suffix=".fna.tmp"), "w")
+        fd, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
+        close(fd)
+        out_f = open(out_fp, "w")
         self._files_to_remove.append(out_f.name.replace('.tmp', ''))
 
         actual = check_seqs(
@@ -1027,8 +1056,9 @@ z\tGG\tGC\t5\tsample_z"""
         all_primers = self.all_primers_fixed_len_bc1
         expected = self.expected_fasta_fixed_added_demultiplex
 
-        out_f = open(get_tmp_filename(prefix="sample_seqs_",
-                                      suffix=".fna.tmp"), "w")
+        fd, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
+        close(fd)
+        out_f = open(out_fp, "w")
         self._files_to_remove.append(out_f.name.replace('.tmp', ''))
 
         actual = check_seqs(
@@ -1066,8 +1096,9 @@ z\tGG\tGC\t5\tsample_z"""
         all_primers = self.all_primers_fixed_len_bc1
         expected = self.expected_fasta_added_demultiplex_group
 
-        out_f = open(get_tmp_filename(prefix="sample_seqs_",
-                                      suffix=".fna.tmp"), "w")
+        fd, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
+        close(fd)
+        out_f = open(out_fp, "w")
         self._files_to_remove.append(out_f.name.replace('.tmp', ''))
 
         actual = check_seqs(

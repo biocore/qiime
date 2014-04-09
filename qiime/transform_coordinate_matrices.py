@@ -13,7 +13,7 @@ __email__ = "gregcaporaso@gmail.com"
 from random import shuffle
 from numpy import array, mean, append, zeros
 from cogent.cluster.procrustes import procrustes
-from cogent.util.dict2d import Dict2D
+
 from qiime.util import create_dir
 from qiime.parse import parse_coords
 from qiime.format import format_coords

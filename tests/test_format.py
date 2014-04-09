@@ -14,13 +14,14 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 import json
-from os import remove
+from os import remove, close
 from string import digits
+from tempfile import mkstemp
 from numpy import array, nan
 from cogent.util.misc import remove_files
-from cogent.util.unit_test import TestCase, main
-from cogent.parse.fasta import MinimalFastaParser
-from qiime.util import (get_tmp_filename, get_qiime_library_version)
+from unittest import TestCase, main
+from skbio.parse.sequences import parse_fasta
+from qiime.util import  get_qiime_library_version
 from qiime.parse import fields_to_dict, parse_mapping_file
 from qiime.format import (format_distance_matrix, format_otu_table,
                           format_coords, build_prefs_string, format_matrix, format_map_file,
@@ -48,8 +49,10 @@ class TopLevelTests(TestCase):
         self.otu_map1 = [('0', ['seq1', 'seq2', 'seq5']),
                          ('1', ['seq3', 'seq4']),
                          ('2', ['seq6', 'seq7', 'seq8'])]
-        self.tmp_fp1 = get_tmp_filename(prefix='FormatTests_', suffix='.txt')
-        self.tmp_fp2 = get_tmp_filename(prefix='FormatTests_', suffix='.txt')
+        fd, self.tmp_fp1 = mkstemp(prefix='FormatTests_', suffix='.txt')
+        close(fd)
+        fd, self.tmp_fp2 = mkstemp(prefix='FormatTests_', suffix='.txt')
+        close(fd)
         self.files_to_remove = []
 
         self.taxa_summary = [[('a', 'b', 'c'), 0, 1, 2],
@@ -536,13 +539,13 @@ y\t5\t6\tsample y""")
             seqs,
             None)
 
-        tmp_filename = get_tmp_filename(
-            prefix="test_write_Fasta",
-            suffix=".fna")
+        fd, tmp_filename = mkstemp(prefix="test_write_Fasta",
+                                  suffix=".fna")
+        close(fd)
         fh = open(tmp_filename, "w")
         write_Fasta_from_name_seq_pairs(seqs, fh)
         fh.close()
-        actual_seqs = list(MinimalFastaParser(open(tmp_filename, "U")))
+        actual_seqs = list(parse_fasta(open(tmp_filename, "U")))
         remove(tmp_filename)
 
         self.assertEqual(actual_seqs, seqs)

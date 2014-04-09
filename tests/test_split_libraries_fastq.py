@@ -10,7 +10,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from qiime.split_libraries_fastq import (
     process_fastq_single_end_read_file,
     quality_filter_sequence,

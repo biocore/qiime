@@ -10,14 +10,15 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
-from cogent.util.unit_test import TestCase, main
+from os import close
+from tempfile import mkstemp
+
+from unittest import TestCase, main
 from cogent import LoadSeqs
 from qiime.split import (split_mapping_file_on_field,
                          split_otu_table_on_sample_metadata,
                          split_fasta)
-from qiime.util import (get_qiime_temp_dir,
-                        remove_files,
-                        get_tmp_filename)
+from qiime.util import get_qiime_temp_dir, remove_files
 from qiime.format import format_biom_table
 from biom.parse import parse_biom_table
 from biom.table import DenseOTUTable
@@ -83,10 +84,10 @@ class SplitTests(TestCase):
     def test_split_fasta_equal_num_seqs_per_file(self):
         """split_fasta funcs as expected when equal num seqs go to each file
         """
-        filename_prefix = get_tmp_filename(tmp_dir=get_qiime_temp_dir(),
-                                           prefix='split_fasta_tests',
-                                           suffix='',
-                                           result_constructor=str)
+        fd, filename_prefix = mkstemp(dir=get_qiime_temp_dir(),
+                                     prefix='split_fasta_tests',
+                                     suffix='')
+        close(fd)
         infile = ['>seq1', 'AACCTTAA', '>seq2', 'TTAACC', 'AATTAA',
                   '>seq3', 'CCTT--AA']
 
@@ -106,10 +107,10 @@ class SplitTests(TestCase):
     def test_split_fasta_diff_num_seqs_per_file(self):
         """split_fasta funcs as expected when diff num seqs go to each file
         """
-        filename_prefix = get_tmp_filename(tmp_dir=get_qiime_temp_dir(),
-                                           prefix='split_fasta_tests',
-                                           suffix='',
-                                           result_constructor=str)
+        fd, filename_prefix = mkstemp(dir=get_qiime_temp_dir(),
+                                     prefix='split_fasta_tests',
+                                     suffix='')
+        close(fd)
         infile = ['>seq1', 'AACCTTAA', '>seq2', 'TTAACC', 'AATTAA',
                   '>seq3', 'CCTT--AA']
 
@@ -139,10 +140,10 @@ class SplitTests(TestCase):
 
         # test seqs_per_file from 1 to 1000
         for i in range(1, 1000):
-            filename_prefix = get_tmp_filename(tmp_dir=get_qiime_temp_dir(),
-                                               prefix='split_fasta_tests',
-                                               suffix='',
-                                               result_constructor=str)
+            fd, filename_prefix = mkstemp(dir=get_qiime_temp_dir(),
+                                         prefix='split_fasta_tests',
+                                         suffix='')
+            close(fd)
 
             actual = split_fasta(infile, i, filename_prefix)
 

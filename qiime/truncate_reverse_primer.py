@@ -12,12 +12,12 @@ __email__ = "William.A.Walters@colorado.edu"
 
 from os.path import join, basename
 
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import parse_fasta
+from skbio.core.sequence import DNA
 
 from qiime.split_libraries import local_align_primer_seq
 from qiime.check_id_map import process_id_map
 
-from bipy.core.sequence import DNA
 
 def get_rev_primer_seqs(mapping_fp):
     """ Parses mapping file to get dictionary of SampleID:Rev primer
@@ -107,7 +107,7 @@ def truncate_rev_primers(fasta_f,
         'seqs_written': 0
     }
 
-    for label, seq in MinimalFastaParser(fasta_f):
+    for label, seq in parse_fasta(fasta_f):
         curr_label = label.split('_')[0]
 
         log_data['total_seqs'] += 1

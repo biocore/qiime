@@ -13,7 +13,7 @@ __maintainer__ = "Jens Reeder"
 __email__ = "jens.reeder@gmail.com"
 
 import sys
-from os import remove, makedirs, access, X_OK, R_OK
+from os import remove, makedirs, access, X_OK, R_OK, close
 from os.path import exists, isdir
 from collections import defaultdict
 from re import sub
@@ -22,15 +22,15 @@ from socket import error
 from itertools import chain
 from subprocess import Popen, PIPE, STDOUT
 import pickle
+from tempfile import mkstemp
 
 from cogent import Sequence
 from cogent.app.util import ApplicationNotFoundError, ApplicationError
 from cogent.util.misc import create_dir
 from cogent.parse.flowgram_parser import lazy_parse_sff_handle
-from bipy.app.util import which
+from skbio.app.util import which
 
-from qiime.util import (get_qiime_project_dir, FileFormatError,
-                        get_tmp_filename)
+from qiime.util import get_qiime_project_dir, FileFormatError
 
 
 def write_sff_header(header, fh, num=None):
@@ -105,8 +105,9 @@ class FlowgramContainerFile():
 
     def __init__(self, header, outdir="/tmp/"):
         # set up output file
-        self.filename = get_tmp_filename(tmp_dir=outdir, prefix="fc",
-                                         suffix=".sff.txt")
+        fd, self.filename = mkstemp(dir=outdir, prefix="fc",
+                                   suffix=".sff.txt")
+        close(fd)
         self.fh = open(self.filename, "w")
         write_sff_header(header, self.fh)
 
@@ -325,7 +326,8 @@ def init_flowgram_file(filename=None, n=0, l=400, prefix="/tmp/"):
     """
 
     if (filename is None):
-        filename = get_tmp_filename(tmp_dir=prefix, suffix=".dat")
+        fd, filename = mkstemp (dir=prefix, suffix=".dat")
+        close(fd)
 
     fh = open(filename, "w")
     fh.write("%d %d\n" % (n, l))

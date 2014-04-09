@@ -9,7 +9,7 @@ __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
 from qiime.collate_alpha import make_output_row
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 import os
 import numpy
 

@@ -16,7 +16,8 @@ from os import makedirs
 
 from numpy import log10, arange, histogram
 
-from cogent.parse.fastq import MinimalFastqParser
+from skbio.parse.sequences import parse_fastq
+from skbio.core.sequence import DNA
 
 from qiime.format import (format_histogram_one_count,
                           format_split_libraries_fastq_log)
@@ -24,8 +25,6 @@ from qiime.parse import is_casava_v180_or_later
 from qiime.hamming import decode_hamming_8
 from qiime.golay import decode_golay_12
 from qiime.quality import phred_to_ascii33, phred_to_ascii64
-
-from bipy.core.sequence import DNA
 
 
 class FastqParseError(Exception):
@@ -298,8 +297,8 @@ def process_fastq_single_end_read_file(fastq_read_f,
     sequence_lengths = []
     seqs_per_sample_counts = {}
     for bc_data, read_data in izip(
-            MinimalFastqParser(fastq_barcode_f, strict=False),
-            MinimalFastqParser(fastq_read_f, strict=False)):
+            parse_fastq(fastq_barcode_f, strict=False),
+            parse_fastq(fastq_read_f, strict=False)):
         input_sequence_count += 1
         # Confirm match between barcode and read headers
         if strict_header_match and \

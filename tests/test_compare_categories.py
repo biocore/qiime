@@ -14,8 +14,10 @@ from os.path import exists, join
 from shutil import rmtree
 from tempfile import mkdtemp, NamedTemporaryFile
 from cogent.util.misc import remove_files
-from cogent.util.unit_test import TestCase, main
-from bipy.core.distance import DistanceMatrixError
+
+from unittest import TestCase, main
+from skbio.core.distance import DistanceMatrixError
+
 from qiime.compare_categories import compare_categories
 from qiime.util import get_qiime_temp_dir
 

@@ -14,7 +14,7 @@ from optparse import OptionParser
 from os.path import exists
 from os import remove, rename, rmdir, makedirs
 
-from qiime.util import get_tmp_filename, make_option,\
+from qiime.util import  make_option,\
     parse_command_line_parameters, load_qiime_config
 
 from qiime.denoiser.make_cluster_jobs import make_jobs, submit_jobs

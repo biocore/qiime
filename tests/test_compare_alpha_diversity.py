@@ -13,7 +13,10 @@ __email__ = "vantreur@colorado.edu"
 
 from numpy.random import seed
 from numpy import nan, isnan, array
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
+from numpy.testing import assert_almost_equal
+from itertools import izip
 from qiime.parse import parse_mapping_file_to_dict, parse_rarefaction
 from qiime.compare_alpha_diversity import (sampleId_pairs,
                                            compare_alpha_diversities,
@@ -215,7 +218,10 @@ class TopLevelTests(TestCase):
              'Control,1xDose': (None, None),
              'Control,2xDose': (-0.6366887333996324, 0.639061687134877)}
         for k, v in _correct_compare_alpha_results(input_results, 'fdr').items():
-            self.assertFloatEqual(v, expected_fdr_results[k])
+            if v[0] is not None:
+                 assert_almost_equal(v, expected_fdr_results[k])
+            else:
+                 self.assertEqual(v, expected_fdr_results[k])
 
     def test_compare_alpha_diversities(self):
         """Tests alpha diversities are correctly calculated."""
@@ -237,7 +243,7 @@ class TopLevelTests(TestCase):
         # test each key in expected results -- this won't catch if
         # obs_tcomps has extra entries, but test that via the next call
         for k in exp_tcomps:
-            self.assertFloatEqual(exp_tcomps[k], obs_tcomps[k])
+            assert_almost_equal(exp_tcomps[k], obs_tcomps[k])
         self.assertEqual(set(exp_tcomps.keys()), set(obs_tcomps.keys()))
 
         # test that returned alpha diversity averages are correct
@@ -248,7 +254,7 @@ class TopLevelTests(TestCase):
                        '2xDose': (2.7539647172550001, 0.30099438035250015),
                        'Control': (3.3663303519925001, 0.0)}
         for k in exp_ad_avgs:
-            self.assertFloatEqual(exp_ad_avgs[k], obs_ad_avgs[k])
+            assert_almost_equal(exp_ad_avgs[k], obs_ad_avgs[k])
 
         # test 'Dose' at 480 inputs with nonparametric test
         seed(0)  # set the seed to reproduce random MC pvals
@@ -266,7 +272,7 @@ class TopLevelTests(TestCase):
         # test each key in expected results -- this won't catch if
         # obs_tcomps has extra entries, but test that via the next call
         for k in exp_tcomps:
-            self.assertFloatEqual(exp_tcomps[k], obs_tcomps[k])
+            assert_almost_equal(exp_tcomps[k], obs_tcomps[k])
         self.assertEqual(set(exp_tcomps.keys()), set(obs_tcomps.keys()))
 
         # test that returned alpha diversity averages are correct
@@ -282,7 +288,7 @@ class TopLevelTests(TestCase):
                        0.30099438035250015)}
 
         for k in exp_ad_avgs:
-            self.assertFloatEqual(exp_ad_avgs[k], obs_ad_avgs[k])
+            assert_almost_equal(exp_ad_avgs[k], obs_ad_avgs[k])
 
         # test it works with NA values
         # test 'Dose' at 500 inputs with paramteric test
@@ -297,7 +303,9 @@ class TopLevelTests(TestCase):
             {('Control', '2xDose'): (-0.63668873339963239, 0.63906168713487699),
              ('1xDose', '2xDose'): (None, None),
              ('Control', '1xDose'): (None, None)}
-        self.assertFloatEqual(obs_tcomps, exp_tcomps)
+        for obs, exp in izip(obs_tcomps, exp_tcomps):
+            self.assertEqual(obs, exp)
+        
         # test that it works with nonparametric test - this was erroring.
         seed(0)
         test_type = 'nonparametric'
@@ -309,7 +317,8 @@ class TopLevelTests(TestCase):
             self.rarefaction_file,
             self.mapping_file, category=category, depth=depth,
             test_type=test_type)
-        self.assertFloatEqual(obs_tcomps, exp_tcomps)
+        for obs, exp in izip(obs_tcomps, exp_tcomps):
+            self.assertEqual(obs, exp)
 
         # test that returned alpha diversity averages are correct
         # dose
@@ -321,7 +330,7 @@ class TopLevelTests(TestCase):
                        'Control': (2.2669008538500002, 0.0)}
         for k in exp_ad_avgs:
             if k != '1xDose':
-                self.assertFloatEqual(exp_ad_avgs[k], obs_ad_avgs[k])
+                assert_almost_equal(exp_ad_avgs[k], obs_ad_avgs[k])
             if k == '1xDose':
                 self.assertTrue(all(map(isnan, obs_ad_avgs[k])))
 
@@ -339,7 +348,8 @@ class TopLevelTests(TestCase):
             {('Control', '2xDose'): (3.3159701868634883, 0.1864642327553255),
              ('1xDose', '2xDose'): (-0.48227871733885291, 0.66260803238173183),
              ('Control', '1xDose'): (0.83283756452373126, 0.49255115337550748)}
-        self.assertFloatEqual(obs_tcomps, exp_tcomps)
+        for obs, exp in izip(obs_tcomps, exp_tcomps):
+            self.assertEqual(obs, exp)
 
         # test that returned alpha diversity averages are correct
         # dose
@@ -349,7 +359,7 @@ class TopLevelTests(TestCase):
                        '2xDose': (2.8358041871949999, 0.04611264137749993),
                        'Control': (3.1006488615725001, 0.0)}
         for k in exp_ad_avgs:
-            self.assertFloatEqual(exp_ad_avgs[k], obs_ad_avgs[k])
+            assert_almost_equal(exp_ad_avgs[k], obs_ad_avgs[k])
 
     def test_get_category_value_to_sample_ids(self):
         """get_category_value_to_sample_ids functions as expected
@@ -412,9 +422,9 @@ class TopLevelTests(TestCase):
         obs = get_per_sample_average_diversities(self.rarefaction_data, None)
         # check that values are the same
         for k, v in exp.iteritems():
-            self.assertFloatEqual(obs[k], v)
+            assert_almost_equal(obs[k], v)
         # check that keys are the same
-        self.assertEqualItems(obs.keys(), exp.keys())
+        self.assertEqual(obs.keys(), exp.keys())
         # test when depth is specified
         depth = 850
         exp = {'Sam1': 3.32916466,
@@ -426,9 +436,9 @@ class TopLevelTests(TestCase):
         obs = get_per_sample_average_diversities(self.rarefaction_data, depth)
         # check that values are the same
         for k, v in exp.iteritems():
-            self.assertFloatEqual(obs[k], v)
+            assert_almost_equal(obs[k], v)
         # check that keys are the same
-        self.assertEqualItems(obs.keys(), exp.keys())
+        self.assertItemsEqual(obs.keys(), exp.keys())
 
 
 if __name__ == "__main__":

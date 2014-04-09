@@ -10,7 +10,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Jose Clemente"
 __email__ = "jose.clemente@gmail.com"
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from biom.parse import parse_biom_table_str
 from qiime.shared_phylotypes import _calc_shared_phylotypes_pairwise,\
     _calc_shared_phylotypes_multiple, calc_shared_phylotypes

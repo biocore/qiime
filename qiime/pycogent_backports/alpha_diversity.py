@@ -1,18 +1,21 @@
 #!/usr/bin/env python
 from __future__ import division
-from cogent.maths.stats.special import lgam
-from cogent.maths.optimisers import minimise
+
+from functools import reduce
 from math import ceil, e
+
 from numpy import array, zeros, concatenate, arange, log, sqrt, exp, asarray
 from numpy.random import gamma, shuffle
+from scipy.special import gammaln
+from skbio.maths.subsample import subsample
+
+from cogent.maths.optimisers import minimise
 from cogent.maths.scipy_optimize import fmin_powell
-import cogent.maths.stats.rarefaction as rarefaction
-from functools import reduce
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2007-2012, The Cogent Project"
 __credits__ = ["Rob Knight", "Justin Kuczynski, William Van Treuren",
-               "Daniel McDonald"]
+               "Daniel McDonald", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.5.3-dev"
 __maintainer__ = "Rob Knight"
@@ -129,7 +132,7 @@ def brillouin_d(counts):
     """Brilloun index of alpha diversity: Pielou 1975, by way of SDR-IV."""
     nz = counts[counts.nonzero()]
     n = nz.sum()
-    return (lgam(n + 1) - array(map(lgam, nz + 1)).sum()) / n
+    return (gammaln(n + 1) - array(map(gammaln, nz + 1)).sum()) / n
 
 
 def kempton_taylor_q(counts, lower_quantile=.25, upper_quantile=.75):
@@ -266,7 +269,7 @@ def michaelis_menten_fit(counts, num_repeats=1, params_guess=None,
     xvals = arange(1, counts.sum() + 1)
     ymtx = []
     for i in range(num_repeats):
-        ymtx.append(array([observed_species(rarefaction.subsample(counts, n))
+        ymtx.append(array([observed_species(subsample(counts, n))
                            for n in xvals]))
     ymtx = asarray(ymtx)
     yvals = ymtx.mean(0)

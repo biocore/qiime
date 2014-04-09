@@ -17,7 +17,6 @@ from os import makedirs
 from multiprocessing import cpu_count
 
 from qiime.util import make_option
-from qiime.util import get_tmp_filename
 from cogent.util.misc import remove_files
 from qiime.util import (parse_command_line_parameters, create_dir)
 from qiime.sort import sort_fasta_by_abundance
