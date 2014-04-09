@@ -31,6 +31,7 @@ import brokit.muscle_v38
 import brokit.mafft
 
 from cogent import DNA as DNA_cogent
+from cogent.parse.rfam import MinimalRfamParser, ChangedSequence
 from skbio.app.util import ApplicationNotFoundError
 from skbio.core.exception import RecordError
 from skbio.parse.sequences import parse_fasta
@@ -154,7 +155,7 @@ class InfernalAligner(Aligner):
         moltype = self.Params['moltype']
 
         # Need to make separate mapping for unaligned sequences
-        unaligned = SequenceCollection.from_fasta_records(candidate_sequences, DNASequence)
+        unaligned = SequenceCollection.from_fasta_records(candidate_sequences.items(), DNASequence)
         int_map, int_keys = unaligned.int_map(prefix='unaligned_')
         int_map = SequenceCollection.from_fasta_records(
                 [(s[0], str(s[1])) for s in int_map.items()], DNASequence)
