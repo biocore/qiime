@@ -21,7 +21,6 @@ from unittest import TestCase, main
 from numpy. testing import assert_almost_equal
 from skbio.util.misc import remove_files
 
-from qiime.util import get_tmp_filename
 from qiime.split_libraries import (
     expand_degeneracies, get_infile, count_mismatches,
     ok_mm_primer, check_map, fasta_ids,
