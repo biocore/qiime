@@ -7,19 +7,11 @@ from os.path import split, exists, splitext
 from os import mkdir, remove
 from collections import defaultdict
 
-from numpy import nonzero, array, fromstring, repeat, bitwise_or, uint8, zeros,\
-    arange, finfo
-import numpy
-<<<<<<< HEAD
-from cogent import DNA
-from cogent.core.alignment import DenseAlignment, eps
-from cogent.parse.fasta import MinimalFastaParser
-=======
+from numpy import (nonzero, array, fromstring, repeat, bitwise_or,
+    uint8, zeros, arange, finfo)
 
-from cogent.util.unit_test import TestCase, main
-from cogent import LoadSeqs, DNA
+from cogent import DNA
 from cogent.core.alignment import DenseAlignment
->>>>>>> master
 from cogent.core.sequence import ModelDnaSequence
 from cogent.core.profile import Profile
 
@@ -163,7 +155,7 @@ def remove_outliers(seqs, num_sigmas, fraction_seqs_for_stats=.95):
     diff_cutoff = seq_diffs_considered_sorted.mean() + \
         num_sigmas * seq_diffs_considered_sorted.std()
     # mean + e.g.: 4 sigma
-    seq_idxs_to_keep = numpy.arange(len(seq_diffs))[seq_diffs <= diff_cutoff]
+    seq_idxs_to_keep = arange(len(seq_diffs))[seq_diffs <= diff_cutoff]
 
     filtered_aln = aln.getSubAlignment(seq_idxs_to_keep)
     return filtered_aln
