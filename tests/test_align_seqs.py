@@ -15,12 +15,11 @@ from os.path import getsize
 from tempfile import mkstemp
 from unittest import TestCase, main
 
-from cogent import LoadSeqs, DNA
 from cogent.core.alignment import DenseAlignment, Alignment
 from numpy.testing import assert_almost_equal
 from skbio.core.exception import SequenceCollectionError
 from skbio.core.alignment import SequenceCollection, Alignment
-from skbio.core.sequence import DNASequence
+from skbio.core.sequence import DNA
 from skbio.parse.sequences import parse_fasta
 
 from qiime.align_seqs import (compute_min_alignment_length,
@@ -158,7 +157,7 @@ class InfernalAlignerTests(SharedSetupTestCase):
         })
         self.infernal_test1_expected_aln = Alignment.from_fasta_records(
                 parse_fasta(infernal_test1_expected_alignment),
-                DNASequence)
+                DNA)
 
     def test_call_infernal_test1_file_output(self):
         """InfernalAligner writes correct output files for infernal_test1 seqs
@@ -173,7 +172,7 @@ class InfernalAlignerTests(SharedSetupTestCase):
 
         expected_aln = self.infernal_test1_expected_aln
         actual_aln = Alignment.from_fasta_records(parse_fasta(
-                open(self.result_fp)), DNASequence)
+                open(self.result_fp)), DNA)
         self.assertEqual(actual_aln, expected_aln)
 
     def test_call_infernal_test1(self):
@@ -254,9 +253,9 @@ class PyNastAlignerTests(SharedSetupTestCase):
 
         self.pynast_test1_expected_aln = Alignment.from_fasta_records(
                 parse_fasta(pynast_test1_expected_alignment),
-                    DNASequence)
+                    DNA)
         self.pynast_test1_expected_fail = SequenceCollection.from_fasta_records(
-                parse_fasta(pynast_test1_expected_failure), DNASequence)
+                parse_fasta(pynast_test1_expected_failure), DNA)
 
     def test_call_pynast_test1_file_output(self):
         """PyNastAligner writes correct output files for pynast_test1 seqs
@@ -271,11 +270,11 @@ class PyNastAlignerTests(SharedSetupTestCase):
 
         expected_aln = self.pynast_test1_expected_aln
         actual_aln = Alignment.from_fasta_records(parse_fasta(
-                open(self.result_fp)), DNASequence)
+                open(self.result_fp)), DNA)
         self.assertEqual(actual_aln, expected_aln)
 
         actual_fail = SequenceCollection.from_fasta_records(
-                parse_fasta(open(self.failure_fp)), DNASequence)
+                parse_fasta(open(self.failure_fp)), DNA)
         self.assertEqual(actual_fail.to_fasta(),
                          self.pynast_test1_expected_fail.to_fasta())
 
@@ -297,8 +296,9 @@ class PyNastAlignerTests(SharedSetupTestCase):
                          "No alignable seqs should result in an empty file.")
 
         # all seqs reported to fail
-        actual_fail = LoadSeqs(self.failure_fp, aligned=False)
-        self.assertEqual(actual_fail.getNumSeqs(), 3)
+        actual_fail = SequenceCollection.from_fasta_records(
+            parse_fasta(open(self.failure_fp)), DNA)
+        self.assertEqual(actual_fail.sequence_count(), 3)
 
     def test_call_pynast_test1(self):
         """PyNastAligner: functions as expected when returing objects
