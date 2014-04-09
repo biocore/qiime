@@ -1132,7 +1132,7 @@ def get_reverse_primers(id_map):
         # Convert to reverse complement of the primer so its in the
         # proper orientation with the input fasta sequences
         rev_primers[n[1]['BarcodeSequence']] =\
-            [str(DNA(curr_rev_primer).rc()) for curr_rev_primer in
+            [str(DNASequence(curr_rev_primer).rc()) for curr_rev_primer in
              (n[1]['ReversePrimer']).split(',')]
 
     return rev_primers

@@ -195,7 +195,7 @@ class InfernalAligner(Aligner):
         # Pull out original sequences from full alignment.
         infernal_aligned = {}
         aligned_dict = aligned.NamedSeqs
-        for key in int_map.Names:
+        for key in int_map.identifiers():
             infernal_aligned[int_keys.get(key, key)] = aligned_dict[key]
 
         # Create an Alignment object from alignment dict
