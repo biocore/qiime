@@ -15,8 +15,6 @@ from unittest import TestCase, main
 from os import remove, close
 from tempfile import mkstemp
 
-from skbio.core.tree import TreeNode
-
 import brokit.fasttree
 
 from qiime.make_phylogeny import TreeBuilder, CogentTreeBuilder
