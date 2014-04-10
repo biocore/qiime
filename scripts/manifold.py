@@ -45,9 +45,9 @@ script_info['required_options'] = [
 
                 'isomap, ' +
                 'lle, ' +
-                'spectral-embedding, ' +
+                'spectral, ' +
                 'ltsa, ' +
-                'mds.' +
+                'mds. ' +
                 
                 'Note that lle allows "standard", "modified", and "hessian" via the "method" paramter.')
 ]
@@ -67,15 +67,14 @@ def main():
 
     params_list = opts.params.split(",")
     params = dict()
-    params = {"algorithm":opts.algorithm}
     for pair in params_list:
         key_value = pair.split("=")
         params[key_value[0]] = key_value[1]
 
     if os.path.isdir(opts.input_path):
-        multiple_file_manifold(opts.input_path, opts.output_path, params)
+        multiple_file_manifold(opts.input_path, opts.output_path, opts.algorithm, params)
     elif os.path.isfile(opts.input_path):
-        manifold_res_string = compute_manifold(opts.input_path, params)
+        manifold_res_string = compute_manifold(opts.input_path, opts.algorithm, params)
 
         f = open(opts.output_path, 'w')
         f.write(manifold_res_string)

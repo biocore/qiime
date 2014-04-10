@@ -15,7 +15,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Joshua Haas"
 __email__ = "laptopdude2@gmail.com"
 
-def compute_manifold(file_name,params):
+def compute_manifold(file_name,alg,params):
 
     """compute the specified manifold on the specified file"""
 
@@ -27,8 +27,6 @@ def compute_manifold(file_name,params):
         otumtx = otu_table._data.T
     else:
         otumtx = asarray([v for v in otu_table.iterSampleData()])
-
-    alg = params["algorithm"]
 
     if alg=="isomap":
         defaults = {"n_neighbors":5,"n_components":3,"eigen_solver":"auto",
@@ -144,7 +142,7 @@ def fill_args(defaults,params):
                 result[key] = int(params[key])
             elif isFloat(default):
                 result[key] = float(params[key])
-            else
+            else:
                 result[key] = params[key]
     return result
 
