@@ -102,9 +102,10 @@ class CogentTreeBuilder(TreeBuilder):
         # standard qiime says we just consider the first word as the unique ID
         # the rest of the defline of the fasta alignment often doesn't match
         # the otu names in the otu table
-        seqs = Alignment.from_fasta_records(
-            parse_fasta(open(aln_path), label_to_name=lambda x: x.split()[0]),
-            DNA)
+        with open(aln_path) as aln_f:
+            seqs = Alignment.from_fasta_records(
+                parse_fasta(aln_f, label_to_name=lambda x: x.split()[0]),
+                DNA)
         # This ugly little line of code lets us pass a skbio Alignment when a
         # a cogent alignment is expected.
         seqs.getIntMap = seqs.int_map
