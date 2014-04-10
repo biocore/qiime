@@ -111,10 +111,10 @@ def filter_samples(prefs, data, dir_path='', filename=None):
 
     # write a fasta containing list of sequences removed from
     # representative set
-    try:
+    if len(removed_seqs) > 0:
         removed_seqs = SequenceCollection.from_fasta_records(
                 [(e[0], str(e[1])) for e in removed_seqs], DNA)
-    except:
+    else:
         raise ValueError(
             'No sequences were removed.  Did you specify the correct Sample ID?')
     output_filepath2 = '%s/%s_sremoved.fasta' % (dir_path, filename)
