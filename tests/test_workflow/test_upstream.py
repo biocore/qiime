@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # File created on 20 Feb 2013
 from __future__ import division
 
@@ -215,7 +214,8 @@ class UpstreamWorkflowTests(TestCase):
 
         # number of tips in the tree equals the number of sequences that
         # aligned
-        tree = TreeNode.from_newick(open(tree_fp))
+        with open(tree_fp) as f:
+            tree = TreeNode.from_newick(f)
         self.assertEqual(len(list(tree.tips())), count_seqs(alignment_fp)[0])
 
         # parse the otu table
@@ -300,7 +300,8 @@ class UpstreamWorkflowTests(TestCase):
 
         # number of tips in the tree equals the number of sequences that
         # aligned
-        tree = TreeNode.from_newick(open(tree_fp))
+        with open(tree_fp) as f:
+            tree = TreeNode.from_newick(f)
         self.assertEqual(len(list(tree.tips())), count_seqs(alignment_fp)[0])
 
         # parse the otu table
@@ -383,7 +384,8 @@ class UpstreamWorkflowTests(TestCase):
 
         # number of tips in the tree equals the number of sequences that
         # aligned
-        tree = TreeNode.from_newick(open(tree_fp))
+        with open(tree_fp) as f:
+            tree = TreeNode.from_newick(f)
         self.assertEqual(len(list(tree.tips())), count_seqs(alignment_fp)[0])
 
         # parse the otu table
@@ -459,7 +461,8 @@ class UpstreamWorkflowTests(TestCase):
         self.assertEqual(count_seqs(alignment_fp)[0], num_otus)
 
         # all OTUs in tree
-        tree = TreeNode.from_newick(open(tree_fp))
+        with open(tree_fp) as f:
+            tree = TreeNode.from_newick(f)
         self.assertEqual(len(list(tree.tips())), num_otus)
 
         # check that the two final output files have non-zero size

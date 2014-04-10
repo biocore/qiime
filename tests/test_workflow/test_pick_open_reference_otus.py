@@ -183,7 +183,8 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # confirm that number of tips in the tree is the same as the number of sequences
         # in the alignment
-        num_tree_tips = len(list(TreeNode.from_newick(open(tree_fp)).tips()))
+        with open(tree_fp) as f:
+            num_tree_tips = len(list(TreeNode.from_newick(f).tips()))
         num_align_seqs = count_seqs(aln_fp)[0]
         self.assertEqual(num_tree_tips, num_align_seqs)
         self.assertEqual(num_tree_tips, 6)
@@ -310,7 +311,8 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # confirm that number of tips in the tree is the same as the number of sequences
         # in the alignment
-        num_tree_tips = len(list(TreeNode.from_newick(open(tree_fp)).tips()))
+        with open(tree_fp) as f:
+            num_tree_tips = len(list(TreeNode.from_newick(f).tips()))
         num_align_seqs = count_seqs(aln_fp)[0]
         self.assertEqual(num_tree_tips, num_align_seqs)
         self.assertEqual(num_tree_tips, 6)
@@ -606,7 +608,8 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # confirm that number of tips in the tree is the same as the number of sequences
         # in the alignment
-        num_tree_tips = len(list(TreeNode.from_newick(open(tree_fp)).tips()))
+        with open(tree_fp) as f:
+            num_tree_tips = len(list(TreeNode.from_newick(f).tips()))
         num_align_seqs = count_seqs(aln_fp)[0]
         self.assertEqual(num_tree_tips, num_align_seqs)
         self.assertEqual(num_tree_tips, 6)
@@ -723,7 +726,8 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # confirm that number of tips in the tree is the same as the number of sequences
         # in the alignment
-        num_tree_tips = len(list(TreeNode.from_newick(open(tree_fp)).tips()))
+        with open(tree_fp) as f:
+            num_tree_tips = len(list(TreeNode.from_newick(f).tips()))
         num_align_seqs = count_seqs(aln_fp)[0]
         self.assertEqual(num_tree_tips, num_align_seqs)
         self.assertEqual(num_tree_tips, 6)
@@ -850,7 +854,8 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         # confirm that number of tips in the tree is the same as the number of sequences
         # in the alignment (and we already checked that we're happy with that number
         # above when it was compared to the number of OTUs)
-        num_tree_tips = len(list(TreeNode.from_newick(open(tree_fp)).tips()))
+        with open(tree_fp) as f:
+            num_tree_tips = len(list(TreeNode.from_newick(f).tips()))
         num_align_seqs = count_seqs(aln_fp)[0]
         self.assertEqual(num_tree_tips, num_align_seqs)
 
@@ -1003,7 +1008,8 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # confirm that number of tips in the tree is the same as the number of sequences
         # in the alignment
-        num_tree_tips = len(list(TreeNode.from_newick(open(tree_fp)).tips()))
+        with open(tree_fp) as f:
+            num_tree_tips = len(list(TreeNode.from_newick(f).tips()))
         num_align_seqs = count_seqs(aln_fp)[0]
         self.assertEqual(num_tree_tips, num_align_seqs)
         self.assertEqual(num_tree_tips, 7)
@@ -1133,7 +1139,8 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # confirm that number of tips in the tree is the same as the number of sequences
         # in the alignment
-        num_tree_tips = len(list(TreeNode.from_newick(open(tree_fp)).tips()))
+        with open(tree_fp) as f:
+            num_tree_tips = len(list(TreeNode.from_newick(f).tips()))
         num_align_seqs = count_seqs(aln_fp)[0]
         self.assertEqual(num_tree_tips, num_align_seqs)
         self.assertEqual(num_tree_tips, 7)
@@ -1263,7 +1270,8 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # confirm that number of tips in the tree is the same as the number of sequences
         # in the alignment
-        num_tree_tips = len(list(TreeNode.from_newick(open(tree_fp)).tips()))
+        with open(tree_fp) as f:
+            num_tree_tips = len(list(TreeNode.from_newick(f).tips()))
         num_align_seqs = count_seqs(aln_fp)[0]
         self.assertEqual(num_tree_tips, num_align_seqs)
         self.assertEqual(num_tree_tips, 7)
