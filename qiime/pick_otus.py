@@ -699,7 +699,8 @@ class CdHitOtuPicker(OtuPicker):
             # to avoid the overhead of loading large sequence collections
             # during this step.
             seqs = SequenceCollection.from_fasta_records(
-                parse_fasta(open(seq_path),label_to_name=lambda x: x.split()[0]),
+                parse_fasta(open(seq_path),
+                            label_to_name=lambda x: x.split()[0]),
                 DNA)
             seqs = dict(seqs.iteritems())
 
