@@ -161,7 +161,8 @@ class UclustConsensusTaxonAssignerTests(TestCase):
         self.assertTrue(exists(self.output_log_fp))
 
         # check that result has the expected lines
-        output_lines = list(open(self.output_txt_fp, 'U'))
+        with open(self.output_txt_fp, 'U') as f:
+            output_lines = list(f)
         self.assertTrue('q1\tA;F;G\t1.00\t1\n' in output_lines)
         self.assertTrue('q2\tA;H;I;J\t1.00\t1\n' in output_lines)
 
@@ -410,11 +411,13 @@ class BlastTaxonAssignerTests(TestCase):
             [self.id_to_taxonomy_fp,
              self.input_seqs_fp,
              self.reference_seqs_fp]
-
-        open(self.id_to_taxonomy_fp, 'w').write(id_to_taxonomy_string)
-        open(self.input_seqs_fp, 'w').write(test_seq_coll.to_fasta())
+        with open(self.id_to_taxonomy_fp, 'w') as f:
+            f.write(id_to_taxonomy_string)
+        with open(self.input_seqs_fp, 'w') as f:
+            f.write(test_seq_coll.to_fasta())
         self.test_seqs = [(e.identifier, str(e)) for e in test_seq_coll]
-        open(self.reference_seqs_fp, 'w').write(test_refseq_coll.to_fasta())
+        with open(self.reference_seqs_fp, 'w') as f:
+            f.write(test_refseq_coll.to_fasta())
 
         self.expected1 = {
             's1':
@@ -570,7 +573,8 @@ class BlastTaxonAssignerTests(TestCase):
         self.assertRaises(AssertionError, p)
 
         # Functions with a list of (seq_id, seq) pairs
-        seqs = list(parse_fasta(open(self.input_seqs_fp)))
+        with open(self.input_seqs_fp) as f:
+            seqs = list(parse_fasta(f))
         actual = p(seqs=seqs)
         self.assertEqual(actual, self.expected1)
 
@@ -608,7 +612,8 @@ class BlastTaxonAssignerTests(TestCase):
         self._paths_to_clean_up += files_to_remove
 
         # read the input file into (seq_id, seq) pairs
-        seqs = list(parse_fasta(open(self.input_seqs_fp)))
+        with open(self.input_seqs_fp) as f:
+            seqs = list(parse_fasta(f))
 
         actual = p._seqs_to_taxonomy(seqs, blast_db, id_to_taxonomy_map)
         self.assertEqual(actual, self.expected1)
@@ -727,12 +732,16 @@ class RtaxTaxonAssignerTests(TestCase):
              self.reference_seqs_fp,
              self.read_1_seqs_fp,
              self.read_2_seqs_fp]
-
-        open(self.id_to_taxonomy_fp, 'w').write(rtax_reference_taxonomy)
-        open(self.input_seqs_fp, 'w').write(rtax_test_repset_fasta)
-        open(self.reference_seqs_fp, 'w').write(rtax_reference_fasta)
-        open(self.read_1_seqs_fp, 'w').write(rtax_test_read1_fasta)
-        open(self.read_2_seqs_fp, 'w').write(rtax_test_read2_fasta)
+        with open(self.id_to_taxonomy_fp, 'w') as f:
+            f.write(rtax_reference_taxonomy)
+        with open(self.input_seqs_fp, 'w') as f:
+            f.write(rtax_test_repset_fasta)
+        with open(self.reference_seqs_fp, 'w') as f:
+            f.write(rtax_reference_fasta)
+        with open(self.read_1_seqs_fp, 'w') as f:
+            f.write(rtax_test_read1_fasta)
+        with open(self.read_2_seqs_fp, 'w') as f:
+            f.write(rtax_test_read2_fasta)
 
     def tearDown(self):
         remove_files(set(self._paths_to_clean_up), error_on_missing=False)
@@ -1223,7 +1232,8 @@ class RdpTaxonAssignerTests(TestCase):
                 seq_path=self.tmp_seq_filepath,
                 result_path=self.tmp_res_filepath,
                 log_path=None)
-            actual = [l.strip() for l in open(self.tmp_res_filepath, 'r')]
+            with open(self.tmp_res_filepath, 'r') as f:
+                actual = [l.strip() for l in f]
             message = "Expected return value of None but observed %s" % retval
             self.assertTrue(retval is None, message)
             for j in range(num_seqs):
@@ -1251,7 +1261,8 @@ class RdpTaxonAssignerTests(TestCase):
         )
 
         # open the actual log file and the expected file, and pass into lists
-        obs = [l.strip() for l in list(open(self.tmp_log_filepath, 'r'))]
+        with open(self.tmp_log_filepath) as f:
+            obs = [l.strip() for l in list(f)]
         exp = rdp_test1_log_file_contents.split('\n')
         # sort the lists as the entries are written from a dict,
         # so order may vary
@@ -1322,11 +1333,13 @@ class RdpTrainingSetTests(TestCase):
     def test_fix_output_file(self):
         fd, fp = mkstemp()
         close(fd)
-        open(fp, 'w').write(self.tagged_str)
+        with open(fp, 'w') as f:
+            f.write(self.tagged_str)
 
         s = RdpTrainingSet()
         s.fix_output_file(fp)
-        obs = open(fp).read()
+        with open(fp) as f:
+            obs = f.read()
         remove(fp)
 
         self.assertEqual(obs, self.untagged_str)
