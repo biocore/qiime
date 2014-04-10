@@ -7,6 +7,7 @@ __credits__ = [
     "Greg Caporaso",
     "Jeremy Widmann",
     "Kyle Bittinger"]
+__license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
