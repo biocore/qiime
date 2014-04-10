@@ -42,7 +42,14 @@ script_info['required_options'] = [
 
     make_option('-a', '--algorithm', type='string',
                 help='algorithm. Which manifold technique to use. Implemented algorithms: ' +
-                'isomap')
+
+                'isomap, ' +
+                'lle, ' +
+                'spectral-embedding, ' +
+                'ltsa, ' +
+                'mds.' +
+                
+                'Note that lle allows "standard", "modified", and "hessian" via the "method" paramter.')
 ]
 
 script_info['optional_options'] = [
