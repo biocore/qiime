@@ -156,9 +156,10 @@ class InfernalAligner(Aligner):
         moltype = self.Params['moltype']
 
         # Need to make separate mapping for unaligned sequences
-        unaligned = SequenceCollection.from_fasta_records(candidate_sequences.items(), DNASequence)
+        unaligned = SequenceCollection.from_fasta_records(
+            candidate_sequences.iteritems(), DNASequence)
         mapped_seqs, new_to_old_ids = unaligned.int_map(prefix='unaligned_')
-        mapped_seq_tuples = [(k, str(v)) for k,v in mapped_seqs.items()]
+        mapped_seq_tuples = [(k, str(v)) for k,v in mapped_seqs.iteritems()]
 
         # Turn on --gapthresh option in cmbuild to force alignment to full
         # model
