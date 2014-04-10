@@ -181,7 +181,7 @@ class InfernalAlignerTests(SharedSetupTestCase):
         expected_aln = self.infernal_test1_expected_aln
 
         expected_names = ['seq_1', 'seq_2', 'seq_3']
-        self.assertEqual(sorted(actual_aln.Names), expected_names)
+        self.assertEqual(sorted(actual_aln.identifiers()), expected_names)
         self.assertEqual(actual_aln, expected_aln)
 
 

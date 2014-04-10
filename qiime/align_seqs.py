@@ -156,9 +156,8 @@ class InfernalAligner(Aligner):
 
         # Need to make separate mapping for unaligned sequences
         unaligned = SequenceCollection.from_fasta_records(candidate_sequences.items(), DNASequence)
-        int_map, int_keys = unaligned.int_map(prefix='unaligned_')
-        int_map = SequenceCollection.from_fasta_records(
-                [(s[0], str(s[1])) for s in int_map.items()], DNASequence)
+        mapped_seqs, new_to_old_ids = unaligned.int_map(prefix='unaligned_')
+        mapped_seq_tuples = [(k, str(v)) for k,v in mapped_seqs.items()]
 
         # Turn on --gapthresh option in cmbuild to force alignment to full
         # model
@@ -174,7 +173,6 @@ class InfernalAligner(Aligner):
         # are fragments.
         # Also turn on --gapthresh to use same gapthresh as was used to build
         # model
-
         if cmalign_params is None:
             cmalign_params = {}
         cmalign_params.update({'--sub': True, '--gapthresh': 1.0})
@@ -186,20 +184,23 @@ class InfernalAligner(Aligner):
         # Align sequences to alignment including alignment gaps.
         aligned, struct_string = cmalign_from_alignment(aln=template_alignment,
                                                         structure_string=struct,
-                                                        seqs=int_map,
+                                                        seqs=mapped_seq_tuples,
                                                         moltype=moltype,
                                                         include_aln=True,
                                                         params=cmalign_params,
                                                         cmbuild_params=cmbuild_params)
 
         # Pull out original sequences from full alignment.
-        infernal_aligned = {}
+        infernal_aligned = []
+        # Get a dict of the identifiers to sequences (note that this is a
+        # cogent alignment object, hence the call to NamedSeqs)
         aligned_dict = aligned.NamedSeqs
-        for key in int_map.identifiers():
-            infernal_aligned[int_keys.get(key, key)] = aligned_dict[key]
+        for n, o in new_to_old_ids.items():
+            aligned_seq = aligned_dict[n]
+            infernal_aligned.append((o, aligned_seq))
 
         # Create an Alignment object from alignment dict
-        infernal_aligned = Alignment(infernal_aligned, DNASequence)
+        infernal_aligned = Alignment.from_fasta_records(infernal_aligned, DNASequence)
 
         if log_path is not None:
             log_file = open(log_path, 'w')
