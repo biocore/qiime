@@ -28,7 +28,7 @@ def compute_manifold(file_name,params):
     else:
         otumtx = asarray([v for v in otu_table.iterSampleData()])
 
-    alg = opts["algorithm"]
+    alg = params["algorithm"]
 
     if alg=="isomap":
         defaults = {"n_neighbors":5,"n_components":3,"eigen_solver":"auto",
@@ -59,7 +59,7 @@ def compute_manifold(file_name,params):
             modified_tol=params["modified_tol"],
             neighbors_algorithm=params["neighbors_algorithm"],
             random_state=params["random_state"])
-    elif alg=="spectral-embedding":
+    elif alg=="spectral":
         defaults = {"n_components":3,"affinity":"nearest_neighbors","gamma":None,
             "random_state":None,"eigen_solver":None,"n_neighbors":None}
         params = fill_args(defaults,params)
@@ -71,7 +71,7 @@ def compute_manifold(file_name,params):
             eigen_solver=params["eigen_solver"],
             n_neighbors=params["n_neighbors"])
     elif alg=="ltsa":
-        defaults = {"n_neighbors":5,"n_components":3,"reg"=0.001,"eigen_solver":"auto",
+        defaults = {"n_neighbors":5,"n_components":3,"reg":0.001,"eigen_solver":"auto",
             "tol":1e-06,"max_iter":100,"method":"ltsa","hessian_tol":0.0001,
             "modified_tol":1e-12,"neighbors_algorithm":"auto","random_state":None}
         params = fill_args(defaults,params)
@@ -139,5 +139,25 @@ def fill_args(defaults,params):
         result[key] = defaults[key]
     if params is not None:
         for key in params:
-            result[key] = params[key]
+            default = result[key]
+            if isInt(default):
+                result[key] = int(params[key])
+            elif isFloat(default):
+                result[key] = float(params[key])
+            else
+                result[key] = params[key]
     return result
+
+def isInt(s):
+    try: 
+        int(s)
+        return True
+    except ValueError:
+        return False
+
+def isFloat(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
