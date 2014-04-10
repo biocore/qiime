@@ -48,7 +48,6 @@ from biom.table import (DenseFunctionTable, DenseGeneTable,
                         SparseOrthologTable, SparsePathwayTable,
                         SparseTable, SparseTaxonTable)
 
-from cogent.util.dict2d import Dict2D
 from cogent.parse.tree import DndParser
 from cogent.cluster.procrustes import procrustes
 
