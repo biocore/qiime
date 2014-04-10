@@ -65,9 +65,11 @@ script_info['version'] = __version__
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
+    #Individual parameters are separated by commas
     params_list = opts.params.split(",")
     params = dict()
     for pair in params_list:
+        #The value is separated from the parameter by an equals sign
         key_value = pair.split("=")
         params[key_value[0]] = key_value[1]
 

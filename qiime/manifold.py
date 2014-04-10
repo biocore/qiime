@@ -23,11 +23,15 @@ def compute_manifold(file_name,alg,params):
 
     samples = otu_table.SampleIds
 
+    #Dense tables already have all values available
+    #For sparse tables we have to more or less generate missing points
     if isinstance(otu_table, DenseTable):
         otumtx = otu_table._data.T
     else:
         otumtx = asarray([v for v in otu_table.iterSampleData()])
 
+    #Setup the mapping algorithms from sklearns using specified parameters
+    #if a parameter in the dict is invalid for the chosen algorithm it is simply ignored
     if alg=="isomap":
         defaults = {"n_neighbors":5,"n_components":3,"eigen_solver":"auto",
             "tol":0,"max_iter":None,"path_method":"auto","neighbors_algorithm":"auto"}
@@ -104,9 +108,12 @@ def compute_manifold(file_name,alg,params):
         print("arg in error, unknown algorithm '"+alg+"'")
         exit(1)
 
+    #compute the fit and scale from -1 to 1
     fit = mapper.fit_transform(otumtx)
     fit /= abs(fit).max()
 
+    #dummy eigenvalues and percent variation explained
+    #"make_emperor.py" does not work if these are not supplied
     eigvals = [3.0,2.0,1.0]
     pcnts = [30.0,20.0,10.0]
     
@@ -132,6 +139,9 @@ def multiple_file_manifold(input_dir, output_dir, algorithm):
         outfile.close()
 
 def fill_args(defaults,params):
+
+    """replace values in the defaults dict with those in the params dict"""
+    
     result = {}
     for key in defaults:
         result[key] = defaults[key]
@@ -147,6 +157,9 @@ def fill_args(defaults,params):
     return result
 
 def isInt(s):
+
+    """check if the input is an int"""
+    
     try: 
         int(s)
         return True
@@ -154,6 +167,9 @@ def isInt(s):
         return False
 
 def isFloat(s):
+
+    """check if the input is a float"""
+    
     try:
         float(s)
         return True
