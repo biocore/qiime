@@ -259,8 +259,8 @@ class ReferenceRepSetPickerTests(SharedSetupTestCase):
             self.tmp_otu_filepath,
             self.ref_seq_filepath,
             result_path=self.result_filepath)
-        actual = SequenceCollection.from_fasta_records(
-            parse_fasta(open(self.result_filepath)), DNA)
+        with open(self.result_filepath) as f:
+            actual = SequenceCollection.from_fasta_records(parse_fasta(f), DNA)
         expected = SequenceCollection.from_fasta_records(
             parse_fasta(rep_seqs_reference_result_file_exp.split('\n')), DNA)
         # we don't care about order in the results

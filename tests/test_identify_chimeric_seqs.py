@@ -50,9 +50,12 @@ class BlastFragmentsChimeraCheckerTests(TestCase):
              self.input_seqs_fp,
              self.reference_seqs_fp]
 
-        open(self.id_to_taxonomy_fp, 'w').write(id_to_taxonomy_string)
-        open(self.input_seqs_fp, 'w').write(test_seq_coll.to_fasta())
-        open(self.reference_seqs_fp, 'w').write(test_refseq_coll.to_fasta())
+        with open(self.id_to_taxonomy_fp, 'w') as f:
+            f.write(id_to_taxonomy_string)
+        with open(self.input_seqs_fp, 'w') as f:
+            f.write(test_seq_coll.to_fasta())
+        with open(self.reference_seqs_fp, 'w') as f:
+            f.write(test_refseq_coll.to_fasta())
 
         self.bcc = None
 
