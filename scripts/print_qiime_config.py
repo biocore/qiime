@@ -684,51 +684,6 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
                         "Unsupported rtax version. %s is required, but running %s."
                         % ('.'.join(map(str, acceptable_version)), version_string))
 
-    def test_pplacer_supported_version(self):
-        """pplacer is in path and version is supported """
-        acceptable_version = [(1, 1), (1, 1)]
-        self.assertTrue(which('pplacer'),
-                        "pplacer not found. This may or may not be a problem depending on " +
-                        "which components of QIIME you plan to use.")
-        command = "pplacer --version"
-        proc = Popen(command, shell=True, universal_newlines=True,
-                     stdout=PIPE, stderr=STDOUT)
-        stdout = proc.stdout.read()
-        version_string = stdout.strip()[1:4]
-        try:
-            version = tuple(map(int, version_string.split('.')))
-            pass_test = version in acceptable_version
-        except ValueError:
-            pass_test = False
-            version_string = stdout
-        self.assertTrue(pass_test,
-                        "Unsupported pplacer version. %s is required, but running %s."
-                        % ('.'.join(map(str, acceptable_version)), version_string))
-
-    def test_ParsInsert_supported_version(self):
-        """ParsInsert is in path and version is supported """
-        acceptable_version = ["1.04"]
-        self.assertTrue(which('ParsInsert'),
-                        "ParsInsert not found. This may or may not be a problem depending on " +
-                        "which components of QIIME you plan to use.")
-        command = "ParsInsert -v | grep App | awk '{print $3}'"
-        proc = Popen(command, shell=True, universal_newlines=True,
-                     stdout=PIPE, stderr=STDOUT)
-        stdout = proc.stdout.read()
-
-        # remove log file generated
-        remove_files(['ParsInsert.log'], error_on_missing=False)
-
-        version_string = stdout.strip()
-        try:
-            pass_test = version_string in acceptable_version
-        except ValueError:
-            pass_test = False
-            version_string = stdout
-        self.assertTrue(pass_test,
-                        "Unsupported ParsInsert version. %s is required, but running %s."
-                        % ('.'.join(map(str, acceptable_version)), version_string))
-
     def test_usearch_supported_version(self):
         """usearch is in path and version is supported """
         acceptable_version = [(5, 2, 236), (5, 2, 236)]
