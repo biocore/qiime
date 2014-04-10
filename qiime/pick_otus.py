@@ -679,9 +679,10 @@ class CdHitOtuPicker(OtuPicker):
             log_lines.append(
                 'Prefix-based prefiltering, prefix length: %d'
                 % prefix_prefilter_length)
-            seqs, filter_map = self._prefilter_exact_prefixes(
-                parse_fasta(open(seq_path),label_to_name=lambda x: x.split()[0]),
-                prefix_prefilter_length)
+            with open(seq_path) as seq_f:
+                seqs, filter_map = self._prefilter_exact_prefixes(
+                    parse_fasta(seq_f, label_to_name=lambda x: x.split()[0]),
+                    prefix_prefilter_length)
             log_lines.append(
                 'Prefix-based prefiltering, post-filter num seqs: %d' % len(seqs))
         elif trie_prefilter:
@@ -698,10 +699,10 @@ class CdHitOtuPicker(OtuPicker):
             # to cd-hit-est. We may want to change that in the future
             # to avoid the overhead of loading large sequence collections
             # during this step.
-            seqs = SequenceCollection.from_fasta_records(
-                parse_fasta(open(seq_path),
-                            label_to_name=lambda x: x.split()[0]),
-                DNA)
+            with open(seq_path) as seq_f:
+                seqs = SequenceCollection.from_fasta_records(
+                    parse_fasta(seq_f, label_to_name=lambda x: x.split()[0]),
+                    DNA)
             seqs = dict(seqs.iteritems())
 
         # Get the clusters by running cd-hit-est against the
