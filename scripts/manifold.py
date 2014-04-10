@@ -42,20 +42,33 @@ script_info['required_options'] = [
 
     make_option('-a', '--algorithm', type='string',
                 help='algorithm. Which manifold technique to use. Implemented algorithms: ' +
-                'isomap'),
+                'isomap')
 ]
 
-script_info['optional_options'] = []
+script_info['optional_options'] = [
+
+    make_option('-p','--params', type='string',
+                help='parameters for the chosen algorithm. For a full list of parameters see the Scikit Learn documentation for a full list.' +
+                'This option should be in the form "param1=value1,param2=value2". Note that some options do not apply to certain algorithms.')
+]
+
 script_info['version'] = __version__
 
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
+    params_list = opts.params.split(",")
+    params = dict()
+    params = {"algorithm":opts.algorithm}
+    for pair in params_list:
+        key_value = pair.split("=")
+        params[key_value[0]] = key_value[1]
+
     if os.path.isdir(opts.input_path):
-        multiple_file_manifold(opts.input_path, opts.output_path, opts.algorithm)
+        multiple_file_manifold(opts.input_path, opts.output_path, params)
     elif os.path.isfile(opts.input_path):
-        manifold_res_string = compute_manifold(opts.input_path,opts.algorithm)
+        manifold_res_string = compute_manifold(opts.input_path, params)
 
         f = open(opts.output_path, 'w')
         f.write(manifold_res_string)

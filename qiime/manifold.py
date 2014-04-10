@@ -15,7 +15,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Joshua Haas"
 __email__ = "laptopdude2@gmail.com"
 
-def compute_manifold(file_name,algorithm):
+def compute_manifold(file_name,params):
 
     """compute the specified manifold on the specified file"""
 
@@ -28,28 +28,85 @@ def compute_manifold(file_name,algorithm):
     else:
         otumtx = asarray([v for v in otu_table.iterSampleData()])
 
-    if algorithm=="isomap":
-        fit = manifold.Isomap(n_components=3).fit_transform(otumtx)
-    elif algorithm=="lle":
-        fit = manifold.LocallyLinearEmbedding(n_components=3, \
-            method="standard").fit_transform(otumtx)
-    elif algorithm=="modified-lle":
-        fit = manifold.LocallyLinearEmbedding(n_components=3, \
-            method="modified").fit_transform(otumtx)
-    elif algorithm=="hessian-lle":
-        fit = manifold.LocallyLinearEmbedding(n_components=3, \
-            method="hessian").fit_transform(otumtx)
-    elif algorihm=="spectral-embedding":
-        fit = manifold.SpectralEmbedding(n_components=3)
-    elif algorithm=="ltsa":
-        fit = manifold.LocallyLinearEmbedding(n_neighbors=3, \
-            method="ltsa").fit_transform(otumtx)
-    elif algorithm=="mds":
-        fit = manifold.MDS(n_neighbors=3)
+    alg = opts["algorithm"]
+
+    if alg=="isomap":
+        defaults = {"n_neighbors":5,"n_components":3,"eigen_solver":"auto",
+            "tol":0,"max_iter":None,"path_method":"auto","neighbors_algorithm":"auto"}
+        params = fill_args(defaults,params)
+        mapper = manifold.Isomap(
+            n_neighbors=params["n_neighbors"],
+            n_components=params["n_components"],
+            eigen_solver=params["eigen_solver"],
+            tol=params["tol"],
+            max_iter=params["max_iter"],
+            path_method=params["path_method"],
+            neighbors_algorithm=params["neighbors_algorithm"])
+    elif alg=="lle":
+        defaults = {"n_neighbors":5,"n_components":3,"reg"=0.001,"eigen_solver":"auto",
+            "tol":1e-06,"max_iter":100,"method":"standard","hessian_tol":0.0001,
+            "modified_tol":1e-12,"neighbors_algorithm":"auto","random_state":None}
+        params = fill_args(defaults,params)
+        mapper = manifold.LocallyLinearEmbedding(
+            n_neighbors=params["n_neighbors"],
+            n_components=params["n_components"],
+            reg=params["reg"],
+            eigen_solver=params["eigen_solver"],
+            tol=params["tol"],
+            max_iter=params["max_iter"],
+            method=params["method"],
+            hessian_tol=params["hessian_tol"],
+            modified_tol=params["modified_tol"],
+            neighbors_algorithm=params["neighbors_algorithm"],
+            random_state=params["random_state"])
+    elif alg=="spectral-embedding":
+        defaults = {"n_components":3,"affinity":"nearest_neighbors","gamma":None,
+            "random_state":None,"eigen_solver":None,"n_neighbors":None}
+        params = fill_args(defaults,params)
+        mapper = manifold.SpectralEmbedding(
+            n_components=params["n_components"],
+            affinity=params["affinity"],
+            gamma=params["gamma"],
+            random_state=params["random_state"],
+            eigen_solver=params["eigen_solver"],
+            n_neighbors=params["n_neighbors"])
+    elif alg=="ltsa":
+        defaults = {"n_neighbors":5,"n_components":3,"reg"=0.001,"eigen_solver":"auto",
+            "tol":1e-06,"max_iter":100,"method":"ltsa","hessian_tol":0.0001,
+            "modified_tol":1e-12,"neighbors_algorithm":"auto","random_state":None}
+        params = fill_args(defaults,params)
+        mapper = manifold.LocallyLinearEmbedding(
+            n_neighbors=params["n_neighbors"],
+            n_components=params["n_components"],
+            reg=params["reg"],
+            eigen_solver=params["eigen_solver"],
+            tol=params["tol"],
+            max_iter=params["max_iter"],
+            method=params["method"],
+            hessian_tol=params["hessian_tol"],
+            modified_tol=params["modified_tol"],
+            neighbors_algorithm=params["neighbors_algorithm"],
+            random_state=params["random_state"])
+    elif alg=="mds":
+        defaults = {"n_components":3,"metric":True,"n_init":4,"max_iter":300,
+            "verbose":0,"eps":0.001,"n_jobs":1,"random_state":None,
+            "dissimilarity":"euclidean"}
+        params = fill_args(defaults,params)
+        mapper = manifold.Isomap(
+            n_components=params["n_components"],
+            metric=params["metric"],
+            n_init=params["n_init"],
+            max_iter=params["max_iter"],
+            verbose=params["verbose"],
+            eps=params["eps"],
+            n_jobs=params["n_jobs"],
+            random_state=params["random_state"],
+            dissimilarity=params["dissimilarity"])
     else:
-        print("arg in error, unknown algorithm '"+algorithm+"'")
+        print("arg in error, unknown algorithm '"+alg+"'")
         exit(1)
 
+    fit = mapper.fit_transform(otumtx)
     fit /= abs(fit).max()
 
     eigvals = [3.0,2.0,1.0]
@@ -75,3 +132,12 @@ def multiple_file_manifold(input_dir, output_dir, algorithm):
         outfile = open(outfile, 'w')
         outfile.write(manifold_res_string)
         outfile.close()
+
+def fill_args(defaults,params):
+    result = {}
+    for key in defaults:
+        result[key] = defaults[key]
+    if params is not None:
+        for key in params:
+            result[key] = params[key]
+    return result
