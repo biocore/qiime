@@ -125,12 +125,12 @@ class TruncateRemoveReversePrimerTests(TestCase):
         """Raises errors with invalid mapping file """
 
         # Raises error if missing ReversePrimer column
-        self.assertRaises(KeyError, get_rev_primer_seqs,
-                          open(self.mapping_bad_header_fp, "U"))
+        with open(self.mapping_bad_header_fp, "U") as f:
+            self.assertRaises(KeyError, get_rev_primer_seqs, f)
 
         # Raises error if invalid characters in primer
-        self.assertRaises(BiologicalSequenceError, get_rev_primer_seqs,
-                          open(self.mapping_bad_primer_fp, "U"))
+        with open(self.mapping_bad_primer_fp, "U") as f:
+            self.assertRaises(BiologicalSequenceError, get_rev_primer_seqs, f)
 
     def test_get_output_filepaths(self):
         """ Properly returns output filepaths """
