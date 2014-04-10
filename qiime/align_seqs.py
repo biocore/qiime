@@ -197,7 +197,7 @@ class InfernalAligner(Aligner):
         # Get a dict of the identifiers to sequences (note that this is a
         # cogent alignment object, hence the call to NamedSeqs)
         aligned_dict = aligned.NamedSeqs
-        for n, o in new_to_old_ids.items():
+        for n, o in new_to_old_ids.iteritems():
             aligned_seq = aligned_dict[n]
             infernal_aligned.append((o, aligned_seq))
 

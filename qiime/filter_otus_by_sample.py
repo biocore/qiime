@@ -123,10 +123,10 @@ def filter_samples(prefs, data, dir_path='', filename=None):
     output_file2.close()
 
     # write a fasta containing the filtered representative seqs
-    try:
+    if len(filtered_seqs) > 0:
         filtered_seqs = SequenceCollection.from_fasta_records(
                 [(e[0], str(e[1])) for e in filtered_seqs], DNA)
-    except:
+    else:
         raise ValueError(
             'No sequences were remaining in the fasta file.  Did you remove all Sample ID\'s?')
 
