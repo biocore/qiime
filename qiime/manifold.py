@@ -43,7 +43,7 @@ def compute_manifold(file_name,params):
             path_method=params["path_method"],
             neighbors_algorithm=params["neighbors_algorithm"])
     elif alg=="lle":
-        defaults = {"n_neighbors":5,"n_components":3,"reg"=0.001,"eigen_solver":"auto",
+        defaults = {"n_neighbors":5,"n_components":3,"reg":0.001,"eigen_solver":"auto",
             "tol":1e-06,"max_iter":100,"method":"standard","hessian_tol":0.0001,
             "modified_tol":1e-12,"neighbors_algorithm":"auto","random_state":None}
         params = fill_args(defaults,params)
