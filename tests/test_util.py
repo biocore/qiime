@@ -19,9 +19,8 @@ from numpy.testing import assert_almost_equal
 
 from skbio.core.sequence import DNASequence
 from skbio.parse.sequences import parse_fasta
+from skbio.util.misc import remove_files
 
-from cogent import Sequence
-from cogent.util.misc import remove_files
 from cogent.cluster.procrustes import procrustes
 
 from brokit.formatdb import build_blast_db_from_fasta_file

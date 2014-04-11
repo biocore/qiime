@@ -13,11 +13,13 @@ __email__ = "gregcaporaso@gmail.com"
 import numpy
 from numpy import asarray, isnan, log10, median
 from StringIO import StringIO
-from cogent import Sequence
 from re import compile, sub
 from os import walk
 from os.path import join, splitext, exists, isfile, abspath
+
+from skbio.core.sequence import BiologicalSequence
 from biom.table import DenseOTUTable, SparseTaxonTable, table_factory
+
 from qiime.util import get_qiime_library_version, load_qiime_config
 from qiime.colors import data_color_hsv
 
@@ -690,7 +692,7 @@ def write_Fasta_from_name_seq_pairs(name_seqs, fh):
         raise ValueError("Need open file handle to write to.")
 
     for (name, seq) in name_seqs:
-        fh.write("%s\n" % Sequence(name=name, seq=seq).toFasta())
+        fh.write("%s\n" % BiologicalSequence(seq, identifier=name).to_fasta())
 
 
 def illumina_data_to_fastq(record_data, number_of_bases=None):
