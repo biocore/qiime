@@ -44,8 +44,10 @@ from numpy import array, mean, arange, histogram
 from numpy import __version__ as numpy_version
 import warnings
 warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
+
 from skbio.parse.sequences import parse_fasta
-from cogent import DNA, LoadSeqs
+from cogent import DNA as DNA_cogent, LoadSeqs
+
 from cogent.align.align import make_dna_scoring_dict, local_pairwise
 from cogent.util.misc import remove_files
 from skbio.core.sequence import DNASequence
@@ -187,7 +189,7 @@ expanded_equality_scorer_ambigs = MatchScorerAmbigs(1, -1,
                                                         '-': {'-': None}})
 
 
-def pair_hmm_align_unaligned_seqs(seqs, moltype=DNA, params={}):
+def pair_hmm_align_unaligned_seqs(seqs, moltype=DNA_cogent, params={}):
     """
         Checks parameters for pairwise alignment, returns alignment.
 
@@ -1130,7 +1132,7 @@ def get_reverse_primers(id_map):
         # Convert to reverse complement of the primer so its in the
         # proper orientation with the input fasta sequences
         rev_primers[n[1]['BarcodeSequence']] =\
-            [DNA.rc(curr_rev_primer) for curr_rev_primer in
+            [str(DNASequence(curr_rev_primer).rc()) for curr_rev_primer in
              (n[1]['ReversePrimer']).split(',')]
 
     return rev_primers
@@ -1294,7 +1296,7 @@ def preprocess(fasta_files, qual_files, mapping_file,
     else:
         rev_primers = False
 
-    # *** Generate dictionary of {barcode: DNA.rc(ReversePrimer)}
+    # *** Generate dictionary of {barcode: DNA(ReversePrimer).rc()}
     # First check for ReversePrimer in headers, raise error if not found
     # Implement local alignment for primer after barcode is determined.
     # Add option to flag seq with error for rev_primer not found

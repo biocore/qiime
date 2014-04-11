@@ -13,10 +13,10 @@ __email__ = "gregcaporaso@gmail.com"
 from os import close
 from os.path import exists
 from tempfile import mkstemp
-
 from unittest import TestCase, main
-from cogent import LoadSeqs
-from cogent.util.misc import remove_files
+
+from skbio.util.misc import remove_files
+
 from qiime.util import get_qiime_temp_dir
 from qiime.parallel.util import (ParallelWrapper,
                                  BufferedWriter)
@@ -221,7 +221,7 @@ class ParallelWrapperTests(TestCase):
     def test_compute_seqs_per_file(self):
         """compute_seqs_per_file functions as expected
         """
-        fd, temp_fasta_fp = mkstemp(prefix='QiimeScriptUtilTests', 
+        fd, temp_fasta_fp = mkstemp(prefix='QiimeScriptUtilTests',
                                    suffix='.fasta')
         close(fd)
         temp_fasta = ['>seq', 'AAACCCCAAATTGG'] * 25
