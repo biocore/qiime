@@ -23,10 +23,10 @@ from numpy import concatenate, repeat, zeros, nan, asarray
 from numpy.random import permutation
 
 from skbio.parse.record_finder import LabeledRecordFinder
-from skbio.parse.sequences import parse_fastq, FastaFinder
-from skbio.core.sequence import DNA
-
 from cogent.parse.tree import DndParser
+from skbio.parse.sequences import parse_fastq
+from skbio.parse.sequences.fasta import FastaFinder
+from skbio.core.sequence import DNA
 from cogent.core.tree import PhyloNode
 
 from qiime.quality import ascii_to_phred33, ascii_to_phred64
