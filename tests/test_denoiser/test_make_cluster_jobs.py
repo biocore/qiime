@@ -11,12 +11,12 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Jens Reeder"
 __email__ = "jens.reeder@gmail.com"
 
-from os import remove, environ
+from os import remove, environ, close
 from os.path import exists
 from time import sleep
+from tempfile import mkstemp
 
 from unittest import TestCase, main
-from qiime.util import get_tmp_filename
 
 
 from qiime.denoiser.make_cluster_jobs import QSUB_TEXT, make_jobs, \
@@ -30,13 +30,15 @@ class Test_make_cluster_jobs(TestCase):
         self.home = environ['HOME']
         self.queue = "friendlyq"
 
-        self.tmp_result_file = get_tmp_filename(tmp_dir=self.home,
-                                                prefix="/test_hello_",
-                                                suffix=".txt")
+        fd, self.tmp_result_file = mkstemp(dir=self.home,
+                                           prefix="test_hello_",
+                                           suffix=".txt")
+        close(fd)
         self.command = "echo hello > %s\n" % self.tmp_result_file
-        self.tmp_name = get_tmp_filename(tmp_dir="/tmp",
-                                         prefix="make_cluster_jobs_test_",
-                                         suffix=".txt")
+        fd, self.tmp_name = mkstemp(dir="/tmp",
+                                    prefix="make_cluster_jobs_test_",
+                                    suffix=".txt")
+        close(fd)
         fh = open(self.tmp_name, "w")
         fh.write(self.command)
         fh.close()

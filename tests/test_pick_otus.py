@@ -22,12 +22,10 @@ from os.path import abspath, join, exists, split
 from shutil import rmtree
 from tempfile import mkstemp
 
-from skbio.util.misc import create_dir
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
-from cogent.util.misc import remove_files
-from cogent import DNA
-
+from skbio.core.sequence import DNA
+from skbio.util.misc import create_dir, remove_files
 from brokit.formatdb import build_blast_db_from_fasta_path
 
 from qiime.util import load_qiime_config
@@ -242,10 +240,10 @@ class BlastOtuPickerTests(TestCase):
         ]
 
         self.ref_seqs_rc = [
-            ('ref1', DNA.rc('TGCAGCTTGAGCCACAGGAGAGAGAGAGCTTC')),
-            ('ref2', DNA.rc('ACCGATGAGATATTAGCACAGGGGAATTAGAACCA')),
-            ('ref3', DNA.rc('TGTCGAGAGTGAGATGAGATGAGAACA')),
-            ('ref4', DNA.rc('ACGTATTTTAATGGGGCATGGT')),
+            ('ref1', str(DNA('TGCAGCTTGAGCCACAGGAGAGAGAGAGCTTC').rc())),
+            ('ref2', str(DNA('ACCGATGAGATATTAGCACAGGGGAATTAGAACCA').rc())),
+            ('ref3', str(DNA('TGTCGAGAGTGAGATGAGATGAGAACA').rc())),
+            ('ref4', str(DNA('ACGTATTTTAATGGGGCATGGT').rc())),
         ]
 
         fd, self.seqs_fp = mkstemp(prefix='BlastOtuPickerTest_',

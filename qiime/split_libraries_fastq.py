@@ -13,12 +13,14 @@ __email__ = "gregcaporaso@gmail.com"
 from itertools import izip, cycle
 from os.path import split, splitext
 from os import makedirs
+
 from numpy import log10, arange, histogram
-from cogent import DNA
+
 from skbio.parse.sequences import parse_fastq
+from skbio.core.sequence import DNA
+
 from qiime.format import (format_histogram_one_count,
-                          format_split_libraries_fastq_log,
-                          )
+                          format_split_libraries_fastq_log)
 from qiime.parse import is_casava_v180_or_later
 from qiime.hamming import decode_hamming_8
 from qiime.golay import decode_golay_12
@@ -319,7 +321,7 @@ def process_fastq_single_end_read_file(fastq_read_f,
         else:
             barcode = bc_data[sequence_index]
         if rev_comp_barcode:
-            barcode = DNA.rc(barcode)
+            barcode = str(DNA(barcode).rc())
         # Grab the read sequence
         sequence = read_data[1]
         # Grab the read quality
@@ -378,7 +380,7 @@ def process_fastq_single_end_read_file(fastq_read_f,
             seqs_per_sample_counts[sample_id] = 1
 
         if rev_comp:
-            sequence = DNA.rc(sequence)
+            sequence = str(DNA(sequence).rc())
             quality = quality[::-1]
 
         fasta_header = '%s_%s %s orig_bc=%s new_bc=%s bc_diffs=%d' %\

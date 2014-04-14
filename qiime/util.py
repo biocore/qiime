@@ -18,7 +18,7 @@ __email__ = "gregcaporaso@gmail.com"
 A lot of this might migrate into cogent at some point.
 """
 
-from os import getenv, listdir
+from os import getenv, listdir, close
 from os.path import abspath, basename, exists, dirname, join, splitext, isfile
 from collections import defaultdict
 from gzip import open as gz_open
@@ -28,6 +28,7 @@ from datetime import datetime
 from subprocess import Popen
 from random import random
 from itertools import repeat, izip
+from tempfile import mkstemp
 
 from numpy import (array, zeros, shape, vstack, ndarray, asarray,
                    float, where, isnan, std, sqrt, ravel, mean, median,
@@ -47,18 +48,10 @@ from biom.table import (DenseFunctionTable, DenseGeneTable,
                         SparseOrthologTable, SparsePathwayTable,
                         SparseTable, SparseTaxonTable)
 
-from cogent import LoadSeqs, Sequence, DNA
 from cogent.parse.tree import DndParser
 from cogent.cluster.procrustes import procrustes
-from cogent.core.alignment import Alignment
-from cogent.core.moltype import (MolType, IUPAC_DNA_chars,
-                                 IUPAC_DNA_ambiguities,
-                                 IUPAC_DNA_ambiguities_complements,
-                                 DnaStandardPairs, ModelDnaSequence)
-from cogent.data.molecular_weight import DnaMW
-from cogent.util.misc import remove_files, create_dir, handle_error_codes
-from cogent.app.util import get_tmp_filename as cogent_get_tmp_filename
 
+from skbio.util.misc import remove_files, create_dir
 from skbio.app.util import ApplicationError, CommandLineApplication, FilePath
 from skbio.app.util import which
 from skbio.core.sequence import DNASequence
@@ -269,22 +262,6 @@ class FunctionWithParams(object):
                 raise TypeError('Data is neither a path to a biom table or a' +
                                 ' biom table object.')
 
-    def getAlignment(self, aln_source):
-        """Returns parsed alignment from putative alignment source"""
-        if isinstance(aln_source, Alignment):
-            aln = aln_source
-        elif aln_source:
-            try:
-                aln = LoadSeqs(aln_source, Aligned=True)
-            except (TypeError, IOError, AssertionError):
-                raise AlignmentMissingError(
-                    "Couldn't read alignment file at path: %s" %
-                    aln_source)
-        else:
-            raise AlignmentMissingError(str(self.Name) +
-                                        " requires an alignment, but no alignment was supplied.")
-        return aln
-
     def __call__(self, result_path=None, log_path=None,
                  *args, **kwargs):
         """Returns the result of calling the function using the params dict.
@@ -361,17 +338,6 @@ def get_qiime_temp_dir():
     else:
         result = '/tmp/'
     return result
-
-
-def get_tmp_filename(tmp_dir=None, prefix="tmp", suffix=".txt",
-                     result_constructor=FilePath):
-    """ Wrap cogent.app.util.get_tmp_filename to modify the default tmp_dir """
-    if tmp_dir is None:
-        tmp_dir = get_qiime_temp_dir()
-    return cogent_get_tmp_filename(tmp_dir=tmp_dir,
-                                   prefix=prefix,
-                                   suffix=suffix,
-                                   result_constructor=result_constructor)
 
 
 def load_qiime_config():
@@ -992,8 +958,9 @@ def degap_fasta_aln(seqs):
 
 def write_degapped_fasta_to_file(seqs, tmp_dir="/tmp/"):
     """ write degapped seqs to temp fasta file."""
-    tmp_filename = get_tmp_filename(tmp_dir=tmp_dir, prefix="degapped_",
-                                    suffix=".fasta")
+    fd, tmp_filename = mkstemp(dir=tmp_dir, prefix="degapped_",
+                               suffix=".fasta")
+    close(fd)
 
     with open(tmp_filename, 'w') as fh:
         for seq in degap_fasta_aln(seqs):
@@ -1359,7 +1326,7 @@ def get_split_libraries_fastq_params_and_file_types(fastq_fps, mapping_fp):
     # create set of reverse complement barcodes from mapping file
     revcomp_barcode_mapping_column = []
     for i in barcode_mapping_column:
-        revcomp_barcode_mapping_column.append(DNA.rc(i))
+        revcomp_barcode_mapping_column.append(str(DNASequence(i).rc()))
         barcode_len = len(i)
     revcomp_barcode_mapping_column = set(revcomp_barcode_mapping_column)
 
@@ -1689,7 +1656,7 @@ class MetadataMap():
 
     @staticmethod
     def mergeMappingFiles(mapping_files, no_data_value='no_data'):
-        """ Merge list of mapping files into a single mapping file 
+        """ Merge list of mapping files into a single mapping file
 
             mapping_files: open file objects containing mapping data
             no_data_value: value to be used in cases where there is no

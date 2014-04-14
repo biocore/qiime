@@ -6,8 +6,7 @@ import warnings
 from cogent.maths.stats.distribution import (chi_high, z_low, z_high, zprob,
                                              t_high, t_low, tprob, f_high, f_low, fprob, binomial_high, binomial_low,
                                              ndtri)
-from cogent.maths.stats.special import (lgam, log_one_minus, one_minus_exp,
-                                        MACHEP)
+from cogent.maths.stats.special import log_one_minus, one_minus_exp, MACHEP
 from cogent.maths.stats import chisqprob
 from cogent.maths.stats.ks import psmirnov2x, pkstwo
 from cogent.maths.stats.special import Gamma
@@ -19,6 +18,7 @@ from numpy import (absolute, arctanh, array, asarray, concatenate, transpose,
                    argsort, hstack, arange, empty, e, where)
         #, std - currently incorrect
 from numpy.random import permutation, randint, shuffle
+from scipy.special import gammaln
 from operator import add
 from random import choice
 
@@ -1193,7 +1193,7 @@ def tail(prob, test):
 def combinations(n, k):
     """Returns the number of ways of choosing k items from n.
     """
-    return exp(lgam(n + 1) - lgam(k + 1) - lgam(n - k + 1))
+    return exp(gammaln(n + 1) - gammaln(k + 1) - gammaln(n - k + 1))
 
 
 def multiple_comparisons(p, n):

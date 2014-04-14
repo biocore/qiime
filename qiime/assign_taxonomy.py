@@ -23,8 +23,6 @@ from tempfile import NamedTemporaryFile
 from cStringIO import StringIO
 from collections import Counter, defaultdict
 
-from cogent import LoadSeqs, DNA
-
 from skbio.app.util import ApplicationNotFoundError
 from skbio.parse.sequences import parse_fasta
 

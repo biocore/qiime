@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # File created on 20 Feb 2013
 from __future__ import division
 
@@ -14,14 +13,16 @@ from shutil import rmtree
 from glob import glob
 from os.path import join, exists, getsize, split, splitext
 from tempfile import mkdtemp
-
-from cogent import LoadTree, LoadSeqs
 from unittest import TestCase, main
+
 from numpy.testing import assert_almost_equal
-from cogent.util.misc import remove_files
-from qiime.util import load_qiime_config, get_qiime_temp_dir
-from qiime.parse import (parse_qiime_parameters)
+from skbio.util.misc import remove_files
+from skbio.core.tree import TreeNode
 from biom.parse import parse_biom_table
+
+from qiime.util import (load_qiime_config, get_qiime_temp_dir, count_seqs)
+from qiime.parse import (parse_qiime_parameters)
+
 from qiime.test import (initiate_timeout,
                         disable_timeout,
                         get_test_data_fps)
@@ -195,10 +196,6 @@ class UpstreamWorkflowTests(TestCase):
         self.assertEqual(actual_tree_fp, tree_fp)
         self.assertEqual(actual_otu_table_fp, otu_table_fp)
 
-        input_seqs = LoadSeqs(self.test_data['seqs'][0],
-                              format='fasta',
-                              aligned=False)
-
         # Number of OTUs falls within a range that was manually
         # confirmed
         otu_map_lines = list(open(otu_map_fp))
@@ -212,14 +209,14 @@ class UpstreamWorkflowTests(TestCase):
 
         # number of seqs which aligned + num of seqs which failed to
         # align sum to the number of OTUs
-        aln = LoadSeqs(alignment_fp)
-        failures = LoadSeqs(failures_fp, aligned=False)
-        self.assertTrue(aln.getNumSeqs() + failures.getNumSeqs(), num_otus)
+        self.assertEqual(
+         count_seqs(alignment_fp)[0] + count_seqs(failures_fp)[0], num_otus)
 
         # number of tips in the tree equals the number of sequences that
         # aligned
-        tree = LoadTree(tree_fp)
-        self.assertEqual(len(tree.tips()), aln.getNumSeqs())
+        with open(tree_fp) as f:
+            tree = TreeNode.from_newick(f)
+        self.assertEqual(len(list(tree.tips())), count_seqs(alignment_fp)[0])
 
         # parse the otu table
         otu_table = parse_biom_table(open(otu_table_fp, 'U'))
@@ -241,7 +238,8 @@ class UpstreamWorkflowTests(TestCase):
         # input sequences
         number_seqs_in_otu_table = sum([v.sum()
                                        for v in otu_table.iterSampleData()])
-        self.assertEqual(number_seqs_in_otu_table, input_seqs.getNumSeqs())
+        self.assertEqual(number_seqs_in_otu_table,
+                         count_seqs(self.test_data['seqs'][0])[0])
 
         # Check that the log file is created and has size > 0
         log_fp = glob(join(self.test_out, 'log*.txt'))[0]
@@ -285,10 +283,6 @@ class UpstreamWorkflowTests(TestCase):
         self.assertEqual(actual_tree_fp, tree_fp)
         self.assertEqual(actual_otu_table_fp, otu_table_fp)
 
-        input_seqs = LoadSeqs(self.test_data['seqs'][0],
-                              format='fasta',
-                              aligned=False)
-
         # Number of OTUs falls within a range that was manually
         # confirmed
         otu_map_lines = list(open(otu_map_fp))
@@ -302,14 +296,13 @@ class UpstreamWorkflowTests(TestCase):
 
         # number of seqs which aligned + num of seqs which failed to
         # align sum to the number of OTUs
-        aln = LoadSeqs(alignment_fp)
-        failures = LoadSeqs(failures_fp, aligned=False)
-        self.assertTrue(aln.getNumSeqs() + failures.getNumSeqs(), num_otus)
+        self.assertEqual(count_seqs(alignment_fp)[0] + count_seqs(failures_fp)[0], num_otus)
 
         # number of tips in the tree equals the number of sequences that
         # aligned
-        tree = LoadTree(tree_fp)
-        self.assertEqual(len(tree.tips()), aln.getNumSeqs())
+        with open(tree_fp) as f:
+            tree = TreeNode.from_newick(f)
+        self.assertEqual(len(list(tree.tips())), count_seqs(alignment_fp)[0])
 
         # parse the otu table
         otu_table = parse_biom_table(open(otu_table_fp, 'U'))
@@ -331,7 +324,7 @@ class UpstreamWorkflowTests(TestCase):
         # input sequences
         number_seqs_in_otu_table = sum([v.sum()
                                        for v in otu_table.iterSampleData()])
-        self.assertEqual(number_seqs_in_otu_table, input_seqs.getNumSeqs())
+        self.assertEqual(number_seqs_in_otu_table, count_seqs(self.test_data['seqs'][0])[0])
 
         # Check that the log file is created and has size > 0
         log_fp = glob(join(self.test_out, 'log*.txt'))[0]
@@ -374,10 +367,6 @@ class UpstreamWorkflowTests(TestCase):
         self.assertEqual(actual_tree_fp, tree_fp)
         self.assertEqual(actual_otu_table_fp, otu_table_fp)
 
-        input_seqs = LoadSeqs(self.test_data['seqs'][0],
-                              format='fasta',
-                              aligned=False)
-
         # Number of OTUs falls within a range that was manually
         # confirmed
         otu_map_lines = list(open(otu_map_fp))
@@ -391,14 +380,13 @@ class UpstreamWorkflowTests(TestCase):
 
         # number of seqs which aligned + num of seqs which failed to
         # align sum to the number of OTUs
-        aln = LoadSeqs(alignment_fp)
-        failures = LoadSeqs(failures_fp, aligned=False)
-        self.assertTrue(aln.getNumSeqs() + failures.getNumSeqs(), num_otus)
+        self.assertEqual(count_seqs(alignment_fp)[0] + count_seqs(failures_fp)[0], num_otus)
 
         # number of tips in the tree equals the number of sequences that
         # aligned
-        tree = LoadTree(tree_fp)
-        self.assertEqual(len(tree.tips()), aln.getNumSeqs())
+        with open(tree_fp) as f:
+            tree = TreeNode.from_newick(f)
+        self.assertEqual(len(list(tree.tips())), count_seqs(alignment_fp)[0])
 
         # parse the otu table
         otu_table = parse_biom_table(open(otu_table_fp, 'U'))
@@ -420,7 +408,7 @@ class UpstreamWorkflowTests(TestCase):
         # input sequences
         number_seqs_in_otu_table = sum([v.sum()
                                        for v in otu_table.iterSampleData()])
-        self.assertEqual(number_seqs_in_otu_table, input_seqs.getNumSeqs())
+        self.assertEqual(number_seqs_in_otu_table, count_seqs(self.test_data['seqs'][0])[0])
 
         # Check that the log file is created and has size > 0
         log_fp = glob(join(self.test_out, 'log*.txt'))[0]
@@ -458,10 +446,6 @@ class UpstreamWorkflowTests(TestCase):
         otu_table_fp = join(self.test_out, 'otu_table.biom')
         tree_fp = join(self.test_out, 'rep_set.tre')
 
-        input_seqs = LoadSeqs(self.test_data['seqs'][0],
-                              format='fasta',
-                              aligned=False)
-
         # Number of OTUs falls within a range that was manually
         # confirmed
         otu_map_lines = list(open(otu_map_fp))
@@ -474,12 +458,12 @@ class UpstreamWorkflowTests(TestCase):
         self.assertEqual(len(taxonomy_assignment_lines), num_otus)
 
         # all OTUs align
-        aln = LoadSeqs(alignment_fp)
-        self.assertTrue(aln.getNumSeqs(), num_otus)
+        self.assertEqual(count_seqs(alignment_fp)[0], num_otus)
 
         # all OTUs in tree
-        tree = LoadTree(tree_fp)
-        self.assertEqual(len(tree.tips()), num_otus)
+        with open(tree_fp) as f:
+            tree = TreeNode.from_newick(f)
+        self.assertEqual(len(list(tree.tips())), num_otus)
 
         # check that the two final output files have non-zero size
         self.assertTrue(getsize(tree_fp) > 0)
@@ -509,7 +493,7 @@ class UpstreamWorkflowTests(TestCase):
         # input sequences
         number_seqs_in_otu_table = sum([v.sum()
                                        for v in otu_table.iterSampleData()])
-        self.assertEqual(number_seqs_in_otu_table, input_seqs.getNumSeqs())
+        self.assertEqual(number_seqs_in_otu_table, count_seqs(self.test_data['seqs'][0])[0])
 
 if __name__ == "__main__":
     main()

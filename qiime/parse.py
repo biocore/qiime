@@ -21,12 +21,13 @@ from types import GeneratorType
 
 from numpy import concatenate, repeat, zeros, nan, asarray
 from numpy.random import permutation
+
 from skbio.parse.record_finder import LabeledRecordFinder
 from cogent.parse.tree import DndParser
 from skbio.parse.sequences import parse_fastq
 from skbio.parse.sequences.fasta import FastaFinder
+from skbio.core.sequence import DNA
 from cogent.core.tree import PhyloNode
-from cogent import DNA
 
 from qiime.quality import ascii_to_phred33, ascii_to_phred64
 
@@ -763,7 +764,7 @@ def parse_illumina_line(l, barcode_length, rev_comp_barcode,
         barcode = y_position_subfields[1][:barcode_length]
 
     if rev_comp_barcode:
-        barcode = DNA.rc(barcode)
+        barcode = str(DNA(barcode).rc())
 
     result = {
         'Full description': ':'.join(fields[:5]),

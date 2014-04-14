@@ -13,7 +13,7 @@ __email__ = "William.A.Walters@colorado.edu"
 from os.path import join, basename
 
 from skbio.parse.sequences import parse_fasta
-from cogent import DNA
+from skbio.core.sequence import DNA
 
 from qiime.split_libraries import local_align_primer_seq
 from qiime.check_id_map import process_id_map
@@ -50,7 +50,7 @@ def get_rev_primer_seqs(mapping_fp):
     for curr_id in id_map.keys():
         try:
             reverse_primers[curr_id] =\
-                [DNA.rc(curr_rev_primer) for curr_rev_primer in
+                [str(DNA(curr_rev_primer).rc()) for curr_rev_primer in
                  id_map[curr_id]['ReversePrimer'].split(',')]
         except KeyError:
             raise KeyError("Reverse primer not found in mapping file, " +

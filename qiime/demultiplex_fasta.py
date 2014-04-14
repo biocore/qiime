@@ -27,7 +27,6 @@ from gzip import GzipFile
 
 from numpy import array
 from skbio.parse.sequences import parse_fasta
-from cogent.seqsim.sequence_generators import SequenceGenerator, IUPAC_DNA
 
 from qiime.parse import QiimeParseError, MinimalQualParser
 from qiime.hamming import decode_barcode_8

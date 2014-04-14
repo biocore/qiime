@@ -26,15 +26,9 @@ have a barcode that matches the mapping file will not be recorded.
 
 __author__ = "Rob Knight and Micah Hamady"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = [
-    "Rob Knight",
-    "Micah Hamady",
-    "Greg Caporaso",
-    "Kyle Bittinger",
-    "Jesse Stombaugh",
-    "William Walters",
-    "Jens Reeder",
-    "Emily TerAvest"]  # remember to add yourself
+__credits__ = ["Rob Knight", "Micah Hamady", "Greg Caporaso", "Kyle Bittinger",
+               "Jesse Stombaugh", "William Walters", "Jens Reeder",
+               "Emily TerAvest", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "William Walters"
@@ -50,9 +44,10 @@ from numpy import array, mean, arange, histogram
 from numpy import __version__ as numpy_version
 import warnings
 warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
+
 from skbio.parse.sequences import parse_fasta
-from cogent.seqsim.sequence_generators import SequenceGenerator, IUPAC_DNA
-from cogent import DNA, LoadSeqs
+from cogent import DNA as DNA_cogent, LoadSeqs
+
 from cogent.align.align import make_dna_scoring_dict, local_pairwise
 from cogent.util.misc import remove_files
 from skbio.core.sequence import DNASequence
@@ -194,7 +189,7 @@ expanded_equality_scorer_ambigs = MatchScorerAmbigs(1, -1,
                                                         '-': {'-': None}})
 
 
-def pair_hmm_align_unaligned_seqs(seqs, moltype=DNA, params={}):
+def pair_hmm_align_unaligned_seqs(seqs, moltype=DNA_cogent, params={}):
     """
         Checks parameters for pairwise alignment, returns alignment.
 
@@ -274,16 +269,18 @@ def local_align_primer_seq(primer, sequence, sw_scorer=equality_scorer_ambigs):
 
 
 def expand_degeneracies(raw_primers):
-    """ Returns all non-degenerate versions of a given primer sequence """
+    """Returns all non-degenerate versions of a given primer sequence.
+
+    Order is not guaranteed!
+    """
 
     expanded_primers = []
 
     for raw_primer in raw_primers:
-        primers = SequenceGenerator(template=raw_primer.strip(),
-                                    alphabet=IUPAC_DNA)
+        primer_seq = DNASequence(raw_primer.strip())
 
-        for primer in primers:
-            expanded_primers.append(primer)
+        for expanded_primer in primer_seq.nondegenerates():
+            expanded_primers.append(str(expanded_primer))
 
     return expanded_primers
 
@@ -1135,7 +1132,7 @@ def get_reverse_primers(id_map):
         # Convert to reverse complement of the primer so its in the
         # proper orientation with the input fasta sequences
         rev_primers[n[1]['BarcodeSequence']] =\
-            [DNA.rc(curr_rev_primer) for curr_rev_primer in
+            [str(DNASequence(curr_rev_primer).rc()) for curr_rev_primer in
              (n[1]['ReversePrimer']).split(',')]
 
     return rev_primers
@@ -1299,7 +1296,7 @@ def preprocess(fasta_files, qual_files, mapping_file,
     else:
         rev_primers = False
 
-    # *** Generate dictionary of {barcode: DNA.rc(ReversePrimer)}
+    # *** Generate dictionary of {barcode: DNA(ReversePrimer).rc()}
     # First check for ReversePrimer in headers, raise error if not found
     # Implement local alignment for primer after barcode is determined.
     # Add option to flag seq with error for rev_primer not found

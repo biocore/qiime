@@ -18,9 +18,10 @@ already in cogent.app.*, to which wrappers for e.g. NAST need to be
 added..
 """
 
-from cogent import LoadSeqs, DNA
-
+from cogent import DNA as DNA_cogent
 from skbio.parse.sequences import parse_fasta
+from skbio.core.alignment import Alignment
+from skbio.core.sequence import DNA
 
 from qiime.util import FunctionWithParams
 # app controllers that implement align_unaligned_seqs
@@ -101,11 +102,14 @@ class CogentTreeBuilder(TreeBuilder):
         # standard qiime says we just consider the first word as the unique ID
         # the rest of the defline of the fasta alignment often doesn't match
         # the otu names in the otu table
-        seqs = LoadSeqs(
-            aln_path,
-            Aligned=True,
-            label_to_name=lambda x: x.split()[0])
-        result = module.build_tree_from_alignment(seqs, moltype=DNA)
+        with open(aln_path) as aln_f:
+            seqs = Alignment.from_fasta_records(
+                parse_fasta(aln_f, label_to_name=lambda x: x.split()[0]),
+                DNA)
+        # This ugly little line of code lets us pass a skbio Alignment when a
+        # a cogent alignment is expected.
+        seqs.getIntMap = seqs.int_map
+        result = module.build_tree_from_alignment(seqs, moltype=DNA_cogent)
 
         try:
             root_method = kwargs['root_method']

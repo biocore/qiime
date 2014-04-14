@@ -19,9 +19,8 @@ from numpy.testing import assert_almost_equal
 
 from skbio.core.sequence import DNASequence
 from skbio.parse.sequences import parse_fasta
+from skbio.util.misc import remove_files
 
-from cogent import Sequence
-from cogent.util.misc import remove_files
 from cogent.cluster.procrustes import procrustes
 
 from brokit.formatdb import build_blast_db_from_fasta_file
@@ -33,7 +32,7 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
                         extract_seqs_by_sample_id, get_qiime_project_dir,
                         get_qiime_scripts_dir, matrix_stats,
                         raise_error_on_parallel_unavailable,
-                        convert_OTU_table_relative_abundance, create_dir, handle_error_codes,
+                        convert_OTU_table_relative_abundance, create_dir,
                         summarize_pcoas, _compute_jn_pcoa_avg_ranges, _flip_vectors, IQR,
                         idealfourths, isarray, matrix_IQR, degap_fasta_aln,
                         write_degapped_fasta_to_file, compare_otu_maps, get_diff_for_otu_maps,
@@ -1823,7 +1822,7 @@ class MetadataMapTests(TestCase):
 
         self.m1_dup_bad = StringIO(m1_dup_bad)
         self.m1_dup_good = StringIO(m1_dup_good)
-    
+
 
     def test_parseMetadataMap(self):
         """Test parsing a mapping file into a MetadataMap instance."""
@@ -2080,20 +2079,20 @@ class MetadataMapTests(TestCase):
         """
         observed = MetadataMap.mergeMappingFiles([self.m1,self.m3])
         self.assertEqual(observed, m1_m3_exp)
-            
+
     def test_merge_mapping_file_different_no_data_value(self):
         """merge_mapping_file: functions with different no_data_value
         """
         observed = MetadataMap.mergeMappingFiles([self.m1,self.m2],
                                                   "TESTING_NA")
         self.assertEqual(observed, m1_m2_exp)
-            
+
     def test_merge_mapping_file_three_mapping_files(self):
         """merge_mapping_file: 3 mapping files
         """
         observed = MetadataMap.mergeMappingFiles([self.m1,self.m2,self.m3])
         self.assertEqual(observed, m1_m2_m3_exp)
-            
+
     def test_merge_mapping_file_bad_duplicates(self):
         """merge_mapping_file: error raised when merging mapping files where
         same sample ids has different values
