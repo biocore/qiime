@@ -24,7 +24,7 @@ from qiime.util import load_qiime_config, get_qiime_temp_dir
 import qiime.simsam
 
 from tempfile import gettempdir, mkdtemp
-import string 
+import string
 import random
 import os
 import shutil
@@ -53,6 +53,27 @@ class SimsamTests(TestCase):
         for d in self.dirs_to_remove:
             if os.path.exists(d):
                 shutil.rmtree(d)
+
+    def test_create_tip_index(self):
+        """Create a tip index at the root"""
+        t = DndParser("((a,b)c,(d,e)f)g;")
+        qiime.simsam.create_tip_index(t)
+        self.assertEqual({'a':t.getNodeMatchingName('a'),
+                          'b':t.getNodeMatchingName('b'),
+                          'd':t.getNodeMatchingName('d'),
+                          'e':t.getNodeMatchingName('e')}, t._tip_index)
+
+    def test_cache_tip_names(self):
+        """Cache tip names over the tree"""
+        t = DndParser("((a,b)c,(d,e)f)g;")
+        qiime.simsam.cache_tip_names(t)
+        self.assertEqual(t._tip_names, ['a', 'b', 'd', 'e'])
+        self.assertEqual(t.Children[0]._tip_names, ['a', 'b'])
+        self.assertEqual(t.Children[1]._tip_names, ['d', 'e'])
+        self.assertEqual(t.Children[0].Children[0]._tip_names, ['a'])
+        self.assertEqual(t.Children[0].Children[1]._tip_names, ['b'])
+        self.assertEqual(t.Children[1].Children[0]._tip_names, ['d'])
+        self.assertEqual(t.Children[1].Children[1]._tip_names, ['e'])
 
     def test_script(self):
         """ test the whole simsam script
@@ -269,7 +290,7 @@ class SimsamTests(TestCase):
             otu_md_results.extend(res_otu_metadata)
 
         # We should see all OTUs show up at least once.
-        
+
         self.assertTrue('A' in otu_id_results)
         self.assertTrue('B' in otu_id_results)
         self.assertTrue('C' in otu_id_results)
