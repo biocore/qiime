@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 
 __author__ = "Justin Kuczynski"
-__copyright__ = "Copyright 2011, The QIIME Project"  # consider project name
-# remember to add yourself if you make changes
-__credits__ = ["Justin Kuczynski", "Rob Knight"]
+__copyright__ = "Copyright 2011, The QIIME Project"
+__credits__ = ["Justin Kuczynski", "Rob Knight", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Justin Kuczynski"
@@ -25,7 +24,8 @@ from qiime.pycogent_backports.alpha_diversity import (observed_species, osd)
 
 from cogent.util.misc import remove_files
 from qiime.util import load_qiime_config
-from qiime.alpha_diversity import AlphaDiversityCalc, AlphaDiversityCalcs
+from qiime.alpha_diversity import (AlphaDiversityCalc, AlphaDiversityCalcs,
+                                   single_file_cup)
 import qiime.alpha_diversity
 from qiime.parse import parse_newick
 from qiime.format import format_biom_table
@@ -184,6 +184,74 @@ class AlphaDiversityCalcsTests(AlphaDiversitySharedSetUpTests):
         self.assertEqual(len(results[1]), 3)
         self.assertEqual(len(results[2]), 5)
 
-# run tests if called from command line
+
+class SingleFileCUPTests(TestCase):
+    def setUp(self):
+        self.files_to_remove = []
+
+        fd, self.tmp_file = mkstemp(suffix="test_single_file_cup.biom")
+        close(fd)
+        self.files_to_remove.append(self.tmp_file)
+
+        fd, self.tmp_outfile = mkstemp(suffix="test_single_file_cup.txt")
+        close(fd)
+        self.files_to_remove.append(self.tmp_outfile)
+
+    def tearDown(self):
+        remove_files(self.files_to_remove)
+
+    def test_single_file_cup_string(self):
+        """Returns matrix with estimates using metrics string."""
+        # convert_biom using otu_table w/o leading #
+        bt_string = '{"rows": [{"id": "1", "metadata": null}, {"id": "2",\
+ "metadata": null}, {"id": "3", "metadata": null}, {"id": "4", "metadata":\
+ null}, {"id": "5", "metadata": null}], "format": "Biological Observation\
+ Matrix 0.9.1-dev", "data": [[0, 0, 3.0], [0, 1, 4.0], [1, 0, 2.0],\
+ [1, 1, 5.0], [2, 0, 1.0], [2, 1, 2.0], [3, 1, 4.0], [4, 0, 1.0]], "columns":\
+ [{"id": "S1", "metadata": null}, {"id": "S2", "metadata": null}],\
+ "generated_by": "BIOM-Format 0.9.1-dev", "matrix_type": "sparse", "shape":\
+ [5, 2], "format_url": "http://biom-format.org", "date":\
+ "2012-05-04T09:28:28.247809", "type": "OTU table", "id": null,\
+ "matrix_element_type": "float"}'
+
+        with open(self.tmp_file, 'w') as fh:
+            fh.write(bt_string)
+
+        single_file_cup(self.tmp_file, 'lladser_pe,lladser_ci',
+                        self.tmp_outfile, r=4, alpha=0.95, f=10,
+                        ci_type="ULCL")
+
+        # Not much testing here, just make sure we get back a (formatted)
+        # matrix with the right dimensions
+        with open(self.tmp_outfile, 'U') as out_f:
+            observed = out_f.readlines()
+        self.assertEqual(len(observed), 3)
+        self.assertEqual(len(observed[1].split('\t')), 4)
+
+    def test_single_file_cup_list(self):
+        """Returns matrix with estimates using metrics list."""
+        # convert_biom using otu_table w/o leading #
+        bt_string = '{"rows": [{"id": "1", "metadata": null}], "format":\
+ "Biological Observation Matrix 0.9.1-dev", "data": [[0, 0, 3.0]], "columns":\
+ [{"id": "S1", "metadata": null}], "generated_by": "BIOM-Format 0.9.1-dev",\
+ "matrix_type": "sparse", "shape": [1, 1], "format_url":\
+ "http://biom-format.org", "date": "2012-05-04T09:36:57.500673", "type":\
+ "OTU table", "id": null, "matrix_element_type": "float"}'
+
+        with open(self.tmp_file, 'w') as fh:
+            fh.write(bt_string)
+
+        single_file_cup(self.tmp_file, ['lladser_pe', 'lladser_ci'],
+                        self.tmp_outfile, r=4, alpha=0.95, f=10,
+                        ci_type="ULCL")
+
+        with open(self.tmp_outfile, 'U') as out_f:
+            observed = out_f.readlines()
+
+        expected = ["\tlladser_pe\tlladser_lower_bound\tlladser_upper_bound\n",
+                    "S1\tNaN\tNaN\tNaN"]
+        self.assertEqual(observed, expected)
+
+
 if __name__ == '__main__':
     main()
