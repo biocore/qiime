@@ -222,8 +222,10 @@ def convert_fastaqual(fasta_file_path, output_directory='.',
         fasta_out_lookup = defaultdict(str)
         qual_out_lookup = defaultdict(str)
 
+    fpo = str(ascii_increment)
     for header, sequence, qual in parse_fastq(open(fastq_fp, 'U'),
-                                                     strict=False):
+                                              strict=False,
+                                              force_phred_offset=fpo):
         label = header.split()[0]
         sample_id = label.split('_')[0]
 
@@ -239,20 +241,15 @@ def convert_fastaqual(fasta_file_path, output_directory='.',
         if full_fasta_headers:
             label = header
 
-        # convert quality scores
-        qual_scores = []
-        for qual_char in qual:
-            if (ord(qual_char) - ascii_increment) < 0:
-                raise ValueError("Output qual scores are negative values. "
-                                 "Use different ascii_increment value than %s" %
-                                 str(ascii_increment))
-            else:
-                qual_scores.append(str(ord(qual_char) - ascii_increment))
+        if (qual < 0).any():
+            raise ValueError("Output qual scores are negative values. "
+                             "Use different ascii_increment value than %s" %
+                             str(ascii_increment))
 
         # write QUAL file, 60 qual scores per line
         qual_record = '>' + label + '\n'
-        for i in range(0, len(qual_scores), 60):
-            qual_record += ' '.join(qual_scores[i:i + 60]) + '\n'
+        for i in range(0, len(qual), 60):
+            qual_record += ' '.join([str(q) for q in qual[i:i + 60]]) + '\n'
 
         if multiple_output_files:
             qual_out_lookup[qual_out_fp] += qual_record
