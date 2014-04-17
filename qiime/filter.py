@@ -14,7 +14,7 @@ __email__ = "gregcaporaso@gmail.com"
 from collections import defaultdict
 from random import shuffle, sample
 from numpy import array, inf
-from skbio.parse.sequences import parse_fasta
+from skbio.parse.sequences import parse_fasta, parse_fastq
 from qiime.parse import parse_distmat, parse_mapping_file, parse_metadata_state_descriptions
 from qiime.format import format_otu_table, format_distance_matrix, format_mapping_file
 from qiime.util import MetadataMap
@@ -321,7 +321,7 @@ def _filter_sample_ids_from_category_state_coverage(metadata_map,
     return set(samp_ids_to_keep), num_subjects_kept, set(states_kept)
 
 
-def filter_fasta(input_seqs, output_seqs_f, seqs_to_keep, negate=False):
+def filter_fasta(input_seqs_f, output_seqs_f, seqs_to_keep, negate=False):
     """ Write filtered input_seqs to output_seqs_f which contains only seqs_to_keep
 
         input_seqs can be the output of parse_fasta or parse_fastq
@@ -336,13 +336,13 @@ def filter_fasta(input_seqs, output_seqs_f, seqs_to_keep, negate=False):
         def keep_seq(seq_id):
             return seq_id.split()[0] not in seqs_to_keep_lookup
 
-    for seq_id, seq in input_seqs:
+    for seq_id, seq in parse_fasta(input_seqs_f):
         if keep_seq(seq_id):
             output_seqs_f.write('>%s\n%s\n' % (seq_id, seq))
     output_seqs_f.close()
 
 
-def filter_fastq(input_seqs, output_seqs_f, seqs_to_keep, negate=False):
+def filter_fastq(input_seqs_f, output_seqs_f, seqs_to_keep, negate=False):
     """ Write filtered input_seqs to output_seqs_f which contains only seqs_to_keep
 
         input_seqs can be the output of parse_fasta or parse_fastq
@@ -357,7 +357,7 @@ def filter_fastq(input_seqs, output_seqs_f, seqs_to_keep, negate=False):
         def keep_seq(seq_id):
             return seq_id.split()[0] not in seqs_to_keep_lookup
 
-    for seq_id, seq, qual in input_seqs:
+    for seq_id, seq, qual in parse_fastq(input_seqs_f):
         if keep_seq(seq_id):
             output_seqs_f.write('@%s\n%s\n+\n%s\n' % (seq_id, seq, qual))
     output_seqs_f.close()

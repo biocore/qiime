@@ -153,25 +153,30 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
 
     def test_filter_fasta(self):
         """filter_fasta functions as expected"""
-        input_seqs = [('Seq1 some comment', 'ACCTTGG'),
-                      ('s2 some other comment', 'TTGG'),
-                      ('S3', 'AAGGCCGG'),
-                      ('S5 some comment', 'CGT'),
-                      ('seq6 some other comment', 'AA'),
-                      ('S7', 'T')]
+        input_seqs = """>Seq1 some comment
+ACCTTGG
+>s2 some other comment
+TTGG
+>S3
+AAGGCCGG
+>S5 some comment
+CGT
+>seq6 some other comment
+AA
+>S7
+T"""
         seqs_to_keep = {}.fromkeys(['Seq1',
                                     's2 some other comment',
                                     'S3 no comment'])
-
         actual = fake_output_f()
-        filter_fasta(input_seqs,
+        filter_fasta(StringIO(input_seqs),
                      actual,
                      seqs_to_keep,
                      negate=False)
         self.assertEqual(actual.s, self.filter_fasta_expected1)
 
         actual = fake_output_f()
-        filter_fasta(input_seqs,
+        filter_fasta(StringIO(input_seqs),
                      actual,
                      seqs_to_keep,
                      negate=True)
@@ -179,25 +184,44 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
 
     def test_filter_fastq(self):
         """filter_fastq functions as expected"""
-        input_seqs = [('Seq1 some comment', 'ACCTTGG', 'BBBBBBB'),
-                      ('s2 some other comment', 'TTGG', 'BBBB'),
-                      ('S3', 'AAGGCCGG', 'BBCtatcc'),
-                      ('S5 some comment', 'CGT', 'BBB'),
-                      ('seq6 some other comment', 'AA', 'BB'),
-                      ('S7', 'T', 's')]
+
+        input_seqs = """@Seq1 some comment
+ACCTTGG
++
+BBBBBBB
+@s2 some other comment
+TTGG
++
+BBBB
+@S3
+AAGGCCGG
++
+BBCtatcc
+@S5 some comment
+CGT
++
+BBB
+@seq6 some other comment
+AA
++
+BB
+@S7
+T
++
+s"""
         seqs_to_keep = {}.fromkeys(['Seq1',
                                     's2 some other comment',
                                     'S3 no comment'])
 
         actual = fake_output_f()
-        filter_fastq(input_seqs,
+        filter_fastq(StringIO(input_seqs),
                      actual,
                      seqs_to_keep,
                      negate=False)
         self.assertEqual(actual.s, self.filter_fastq_expected1)
 
         actual = fake_output_f()
-        filter_fastq(input_seqs,
+        filter_fastq(StringIO(input_seqs),
                      actual,
                      seqs_to_keep,
                      negate=True)
