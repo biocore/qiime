@@ -247,9 +247,11 @@ def convert_fastaqual(fasta_file_path, output_directory='.',
                              str(ascii_increment))
 
         # write QUAL file, 60 qual scores per line
-        qual_record = '>' + label + '\n'
+        qual_record = [">%s\n" % label]
         for i in range(0, len(qual), 60):
-            qual_record += ' '.join([str(q) for q in qual[i:i + 60]]) + '\n'
+            qual_record.append(' '.join([str(q) for q in qual[i:i + 60]]))
+            qual_record.append('\n')
+        qual_record = ''.join(qual_record)
 
         if multiple_output_files:
             qual_out_lookup[qual_out_fp] += qual_record
