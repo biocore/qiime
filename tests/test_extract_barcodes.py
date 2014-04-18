@@ -10,13 +10,12 @@ __email__ = "william.a.walters@colorado.edu"
 
 import numpy as np
 
-from os.path import isdir, isfile, exists, join, basename
+from os.path import exists, join
 from shutil import rmtree
 from re import compile
 from tempfile import mkdtemp
 
 from unittest import TestCase, main
-from cogent.util.misc import remove_files
 from skbio.util.misc import create_dir
 
 from qiime.extract_barcodes import (extract_barcodes,
