@@ -455,10 +455,7 @@ def process_barcode_in_label(read1_data,
     char_delineator: Specify character that immediately precedes the barcode
         for input_type of barcode_in_label.
     """
-
     header_index = 0
-    sequence_index = 1
-    quality_index = 2
 
     # Check for char_delineator in sequence
     try:
