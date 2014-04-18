@@ -45,7 +45,7 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
                         count_seqs_in_filepaths, get_split_libraries_fastq_params_and_file_types,
                         iseq_to_qseq_fields, get_top_fastq_two_lines,
                         make_compatible_distance_matrices, stderr, _chk_asarray, expand_otu_ids,
-                        subsample_fasta, summarize_otu_sizes_from_otu_map, trim_fastq,
+                        subsample_fasta, summarize_otu_sizes_from_otu_map,
                         load_qiime_config, MetadataMap,
                         RExecutor, duplicates_indices, trim_fasta, get_qiime_temp_dir,
                         qiime_blastx_seqs, add_filename_suffix, is_valid_git_refname,
@@ -735,21 +735,6 @@ o4	seq6	seq7""".split('\n')
         lookup = {'C': 'C', 'B': 'B', 'T': 'B', 'D': 'D'}
         self.assertRaises(KeyError,
                           make_compatible_distance_matrices, dm1, dm2, lookup)
-
-    def test_trim_fastq(self):
-        """ trim_fastq functions as expected """
-        expected = ["""@HWUSI-EAS552R_0357:8:1:10040:6364#0/1
-GACGAG
-+
-hhhhhh
-""",
-                    """@HWUSI-EAS552R_0357:8:1:10184:6365#0/1
-GTCTGA
-+
-hhhhhh
-"""]
-
-        self.assertEqual(list(trim_fastq(self.fastq_barcodes, 6)), expected)
 
     def test_trim_fasta(self):
         """ trim_fasta functions as expected """

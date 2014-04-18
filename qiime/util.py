@@ -278,13 +278,6 @@ class FunctionWithParams(object):
             return result
 
 
-def trim_fastq(fastq_lines, output_length):
-    """trim fastq seqs/quals to output_length bases """
-    for seq_id, seq, qual in parse_fastq(fastq_lines, strict=False):
-        yield '@%s\n%s\n+\n%s\n' % (seq_id, seq[:output_length],
-                                    qual[:output_length])
-
-
 def trim_fasta(fasta_lines, output_length):
     """trim fasta seqs to output_length bases """
     for seq_id, seq in parse_fasta(fasta_lines):
