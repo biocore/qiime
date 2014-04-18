@@ -4,11 +4,13 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso", "Jose Antonio Navas Molina"]
+__credits__ = ["Greg Caporaso", "Jose Antonio Navas Molina", "Daniel McDonald"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
+
+import numpy as np
 
 from unittest import TestCase, main
 from qiime.split_libraries_fastq import (
@@ -25,6 +27,8 @@ from qiime.split_libraries_fastq import (
 )
 from qiime.golay import decode_golay_12
 
+# yes, this is terrible but so is manually converting all the qual scores.
+from skbio.parse.sequences.fastq import _ascii_to_phred64, _ascii_to_phred33
 
 class FakeFile(object):
 
@@ -176,7 +180,7 @@ class SplitLibrariesFastqTests(TestCase):
         expected = self.fastq2_expected_default
         self.assertEqual(len(actual), len(expected))
         for i in range(len(expected)):
-            self.assertEqual(actual[i], expected[i])
+            np.testing.assert_equal(actual[i], expected[i])
 
     def test_process_fastq_single_end_read_file_handles_log(self):
         """ process_fastq_single_end_read_file generates log when expected
@@ -293,9 +297,13 @@ class SplitLibrariesFastqTests(TestCase):
         expected = [(
             'Unassigned_0 990:2:4:11272:5533#1/1 orig_bc=GAAAAAAAAAAT new_bc=GAAAAAAAAAAT bc_diffs=0',
             "GCACACACCGCCCGTCACACCACGAGAGTCGGCAACACCCGAAGTCGGTGAGGTAACCCCGAAAGGGGAGCCAGCC",
-            "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`",
+           np.array([34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34,
+                     34, 34, 34, 34, 34, 34, 34, 34, 25, 32, 32, 28, 32, 34, 34, 34, 34,
+                     34, 34, 34, 34, 34, 34, 34, 34, 34, 32, 34, 34, 34, 34, 33, 34, 32,
+                     33, 32, 31, 27, 34, 33, 31, 33, 33, 29, 34, 30, 31, 34,  9, 23, 20,
+                     20, 17, 30, 25, 18, 30, 21, 32], dtype=np.int8) ,
             0)]
-        self.assertEqual(actual, expected)
+        np.testing.assert_equal(actual, expected)
 
     def test_process_fastq_single_end_read_file_toggle_thirteen_base_barcodes(
             self):
@@ -328,9 +336,13 @@ class SplitLibrariesFastqTests(TestCase):
         expected = [(
             's1_0 990:2:4:11272:5533#1/1 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0',
             "GCACACACCGCCCGTCACACCACGAGAGTCGGCAACACCCGAAGTCGGTGAGGTAACCCCGAAAGGGGAGCCAGCC",
-            "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`",
+            np.array([34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34,
+                      34, 34, 34, 34, 34, 34, 34, 34, 25, 32, 32, 28, 32, 34, 34, 34, 34,
+                      34, 34, 34, 34, 34, 34, 34, 34, 34, 32, 34, 34, 34, 34, 33, 34, 32,
+                      33, 32, 31, 27, 34, 33, 31, 33, 33, 29, 34, 30, 31, 34,  9, 23, 20,
+                      20, 17, 30, 25, 18, 30, 21, 32], dtype=np.int8),
             0)]
-        self.assertEqual(actual, expected)
+        np.testing.assert_equal(actual, expected)
 
     def test_process_fastq_single_end_read_file_toggle_rev_comp(self):
         """process_fastq_single_end_read_file handles rev_comp
@@ -362,9 +374,13 @@ class SplitLibrariesFastqTests(TestCase):
         expected = [(
             's1_0 990:2:4:11272:5533#1/1 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0',
             "GCACACACCGCCCGTCACACCACGAGAGTCGGCAACACCCGAAGTCGGTGAGGTAACCCCGAAAGGGGAGCCAGCC",
-            "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`",
+            np.array([34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34,
+                      34, 34, 34, 34, 34, 34, 34, 34, 25, 32, 32, 28, 32, 34, 34, 34, 34,
+                      34, 34, 34, 34, 34, 34, 34, 34, 34, 32, 34, 34, 34, 34, 33, 34, 32,
+                      33, 32, 31, 27, 34, 33, 31, 33, 33, 29, 34, 30, 31, 34,  9, 23, 20,
+                      20, 17, 30, 25, 18, 30, 21, 32], dtype=np.int8),
             0)]
-        self.assertEqual(actual, expected)
+        np.testingassert_equal(actual, expected)
 
         # rev_comp = True
         actual = process_fastq_single_end_read_file(fastq_f, barcode_fastq_f,
@@ -457,9 +473,13 @@ class SplitLibrariesFastqTests(TestCase):
         expected = [(
             's1_0 990:2:4:11272:5533#1/1 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0',
             "GCACACACCGCCCGTCACACCACGAGAGTCGGCAACACCCGAAGTCGGTGAGGTAACCCCGAAAGGGGAGCCAGCC",
-            "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`",
+            np.array([34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34,
+                      34, 34, 34, 34, 34, 34, 34, 34, 25, 32, 32, 28, 32, 34, 34, 34, 34,
+                      34, 34, 34, 34, 34, 34, 34, 34, 34, 32, 34, 34, 34, 34, 33, 34, 32,
+                      33, 32, 31, 27, 34, 33, 31, 33, 33, 29, 34, 30, 31, 34,  9, 23, 20,
+                      20, 17, 30, 25, 18, 30, 21, 32], dtype=np.int8),
             0)]
-        self.assertEqual(actual, expected)
+        np.testing.assert_equal(actual, expected)
 
         # forward orientation no longer matches when rev_comp_barcode=True
         barcode_to_sample_id = {'TTTTTTTTTTTT': 's1'}
@@ -509,9 +529,13 @@ class SplitLibrariesFastqTests(TestCase):
         expected = [(
             's1_0 990:2:4:11272:5533#1/1 orig_bc=ACAGACCACTCT new_bc=ACAGACCACTCA bc_diffs=1',
             "GCACACACCGCCCGTCACACCACGAGAGTCGGCAACACCCGAAGTCGGTGAGGTAACCCCGAAAGGGGAGCCAGCC",
-            "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`",
-            0)]
-        self.assertEqual(actual, expected)
+            np.array([34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34,
+                      34, 34, 34, 34, 34, 34, 34, 34, 25, 32, 32, 28, 32, 34, 34, 34, 34,
+                      34, 34, 34, 34, 34, 34, 34, 34, 34, 32, 34, 34, 34, 34, 33, 34, 32,
+                      33, 32, 31, 27, 34, 33, 31, 33, 33, 29, 34, 30, 31, 34,  9, 23, 20,
+                      20, 17, 30, 25, 18, 30, 21, 32], dtype=np.int8),
+                   0)]
+        np.testing.assert_equal(actual, expected)
 
         # empty result with adjusted max_barcode_errors
         actual = process_fastq_single_end_read_file(fastq_f, barcode_fastq_f,
@@ -727,7 +751,7 @@ class SplitLibrariesFastqTests(TestCase):
                                          sequence,
                                          quality,
                                          max_bad_run_length=0,
-                                         last_bad_quality_char='B',
+                                         phred_quality_threshold=2,
                                          min_per_read_length=75,
                                          seq_max_N=0,
                                          filter_bad_illumina_qual_digit=True)
@@ -748,7 +772,7 @@ class SplitLibrariesFastqTests(TestCase):
                                          sequence,
                                          quality,
                                          max_bad_run_length=0,
-                                         last_bad_quality_char='B',
+                                         phred_quality_threshold=2,
                                          min_per_read_length=0.75,
                                          seq_max_N=0,
                                          filter_bad_illumina_qual_digit=True)
@@ -766,7 +790,7 @@ class SplitLibrariesFastqTests(TestCase):
                                          sequence,
                                          quality,
                                          max_bad_run_length=0,
-                                         last_bad_quality_char='B',
+                                         phred_quality_threshold=2,
                                          min_per_read_length=75,
                                          seq_max_N=0,
                                          filter_bad_illumina_qual_digit=True)
@@ -784,7 +808,7 @@ class SplitLibrariesFastqTests(TestCase):
                                          sequence,
                                          quality,
                                          max_bad_run_length=0,
-                                         last_bad_quality_char='B',
+                                         phred_quality_threshold=2,
                                          min_per_read_length=75,
                                          seq_max_N=0,
                                          filter_bad_illumina_qual_digit=True)
@@ -802,7 +826,7 @@ class SplitLibrariesFastqTests(TestCase):
                                          sequence,
                                          quality,
                                          max_bad_run_length=0,
-                                         last_bad_quality_char='B',
+                                         phred_quality_threshold=2,
                                          min_per_read_length=75,
                                          seq_max_N=0,
                                          filter_bad_illumina_qual_digit=True)
@@ -820,7 +844,7 @@ class SplitLibrariesFastqTests(TestCase):
                                          sequence,
                                          quality,
                                          max_bad_run_length=0,
-                                         last_bad_quality_char='B',
+                                         phred_quality_threshold=2,
                                          min_per_read_length=75,
                                          seq_max_N=0,
                                          filter_bad_illumina_qual_digit=False)
@@ -838,7 +862,7 @@ class SplitLibrariesFastqTests(TestCase):
                                          sequence,
                                          quality,
                                          max_bad_run_length=0,
-                                         last_bad_quality_char='B',
+                                         phred_quality_threshold=2,
                                          min_per_read_length=75,
                                          seq_max_N=0,
                                          filter_bad_illumina_qual_digit=True)
@@ -855,20 +879,20 @@ class SplitLibrariesFastqTests(TestCase):
         sequence = \
             "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC"
         quality =  \
-            "bbbbbbbbbbbbbbbbbbBbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"
+            _ascii_to_phred64("bbbbbbbbbbbbbbbbbbBbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`")
         actual = quality_filter_sequence(header,
                                          sequence,
                                          quality,
                                          max_bad_run_length=0,
-                                         last_bad_quality_char='B',
+                                         phred_quality_threshold=2,
                                          min_per_read_length=75,
                                          seq_max_N=0,
                                          filter_bad_illumina_qual_digit=True)
-        self.assertEqual(
+        np.testing.assert_equal(
             actual,
             (1,
              "GCACTCACCGCCCGTCAC",
-             "bbbbbbbbbbbbbbbbbb"))
+             _ascii_to_phred64("bbbbbbbbbbbbbbbbbb")))
 
         # increasing max_bad_run_length rescues read
         header = "990:2:4:11271:5323#1/1"
@@ -880,7 +904,7 @@ class SplitLibrariesFastqTests(TestCase):
                                          sequence,
                                          quality,
                                          max_bad_run_length=1,
-                                         last_bad_quality_char='B',
+                                         phred_quality_threshold=2,
                                          min_per_read_length=75,
                                          seq_max_N=0,
                                          filter_bad_illumina_qual_digit=True)
@@ -898,7 +922,7 @@ class SplitLibrariesFastqTests(TestCase):
                                          sequence,
                                          quality,
                                          max_bad_run_length=0,
-                                         last_bad_quality_char='A',
+                                         phred_quality_threshold=1,
                                          min_per_read_length=75,
                                          seq_max_N=0,
                                          filter_bad_illumina_qual_digit=True)
@@ -911,20 +935,20 @@ class SplitLibrariesFastqTests(TestCase):
         sequence = \
             "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC"
         quality =  \
-            "bbbbbbbbbbbbbbbbbbBbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"
+            _ascii_to_phred64("bbbbbbbbbbbbbbbbbbBbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`")
         actual = quality_filter_sequence(header,
                                          sequence,
                                          quality,
                                          max_bad_run_length=0,
-                                         last_bad_quality_char='B',
+                                         phred_quality_threshold=2,
                                          min_per_read_length=5,
                                          seq_max_N=0,
                                          filter_bad_illumina_qual_digit=True)
-        self.assertEqual(
+        np.testing.assert_equal(
             actual,
             (0,
              "GCACTCACCGCCCGTCAC",
-             "bbbbbbbbbbbbbbbbbb"))
+             _ascii_to_phred64("bbbbbbbbbbbbbbbbbb")))
 
     def test_quality_filter_sequence_fail_w_N(self):
         """quality_filter_sequence handles N as expected
@@ -940,7 +964,7 @@ class SplitLibrariesFastqTests(TestCase):
                                          sequence,
                                          quality,
                                          max_bad_run_length=0,
-                                         last_bad_quality_char='B',
+                                         phred_quality_threshold=2,
                                          min_per_read_length=75,
                                          seq_max_N=0,
                                          filter_bad_illumina_qual_digit=True)
@@ -959,7 +983,7 @@ class SplitLibrariesFastqTests(TestCase):
                                          sequence,
                                          quality,
                                          max_bad_run_length=0,
-                                         last_bad_quality_char='B',
+                                         phred_quality_threshold=2,
                                          min_per_read_length=75,
                                          seq_max_N=1,
                                          filter_bad_illumina_qual_digit=True)
@@ -976,20 +1000,22 @@ class SplitLibrariesFastqTests(TestCase):
         sequence = \
             "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTN"
         quality =  \
-            "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^B`"
+            _ascii_to_phred64("bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^B`")
         actual = quality_filter_sequence(header,
                                          sequence,
                                          quality,
                                          max_bad_run_length=0,
-                                         last_bad_quality_char='B',
+                                         phred_quality_threshold=2,
                                          min_per_read_length=50,
                                          seq_max_N=0,
                                          filter_bad_illumina_qual_digit=True)
 
         expected = (0,
                     "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTG",
-                    "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^")
-        self.assertEqual(actual, expected)
+                    _ascii_to_phred64("bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^"))
+        print actual
+        print expected
+        np.testing.assert_equal(actual, expected)
 
 barcode_map1 = {'AAAAAAAAAAAA': 's1',
                 'AAAAAAAAAAAC': 's2',
@@ -1324,39 +1350,39 @@ fastq1_expected_single_barcode = [
 fastq2_expected_default = [
     ("s1_0 M00176:17:000000000-A0CNA:1:1:15487:1773 1:N:0:0 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
      "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC",
-     "bbbbbbbbbbBBBBBBBBBBBBBBBY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`",
+     _ascii_to_phred33("bbbbbbbbbbBBBBBBBBBBBBBBBY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"),
      0),
     ("s2_1 M00176:17:000000000-A0CNA:1:1:17088:1773 1:N:0:0 orig_bc=AAAAAAAAAAAC new_bc=AAAAAAAAAAAC bc_diffs=0",
      "GGTTACCTTGTTACGACTTCACCCCAATCATCGGCCCCACCTTAGACAGCTGACTCCTAAAAGGTTATCTCACCGG",
-     "bbcbbbbbbbbbbbbbbbbbbbbbbbbbb_bbbbbbbbaba_b^bY_`aa^bPb`bbbbHYGYZTbb^_ab[^baT",
+     _ascii_to_phred33("bbcbbbbbbbbbbbbbbbbbbbbbbbbbb_bbbbbbbbaba_b^bY_`aa^bPb`bbbbHYGYZTbb^_ab[^baT"),
      1),
     ("s1_2 M00176:17:000000000-A0CNA:1:1:16738:1773 1:N:0:0 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
      "GCACACACCGCCCGTCACACCATCCGAGTTGGAGGTACCCGAAGCCGGTAGTCTAACCGCAAGGAGGACGCTGTCG",
-     "b_bbbbbbbbbbbbbbbbbbbbbbbbbbabaa^a`[bbbb`bbbbTbbabb]b][_a`a]acaaacbaca_a^`aa",
+     _ascii_to_phred33("b_bbbbbbbbbbbbbbbbbbbbbbbbbbabaa^a`[bbbb`bbbbTbbabb]b][_a`a]acaaacbaca_a^`aa"),
      2),
     ("s4_3 M00176:17:000000000-A0CNA:1:1:12561:1773 1:N:0:0 orig_bc=AAAAAAAAAAAT new_bc=AAAAAAAAAAAT bc_diffs=0",
      "GGCTACCTTGTTACGACTTCACCCTCCTCACTAAACGTACCTTCGACAGCGTCCTCCTTGCGGTTAGACTACCGGC",
-     "bb^bbbBBBBbbbbbbbbbbbbbbbbabbbb``bbb`__bbbbbbIWRXX`R``\`\Y\^__ba^a[Saaa_]O]O",
+     _ascii_to_phred33("bb^bbbBBBBbbbbbbbbbbbbbbbbabbbb``bbb`__bbbbbbIWRXX`R``\`\Y\^__ba^a[Saaa_]O]O"),
      3),
     ("s1_4 M00176:17:000000000-A0CNA:1:1:14596:1773 1:N:0:0 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
      "GCACACACCGCCCGTCACACCATCCGAGTTGGGGGTACCCGAAGCCGG",
-     "b`bbbbbbbbbbbbbbb`^bbbbbYbbbbb\___`_bbab^aaaU^\`",
+     _ascii_to_phred33("b`bbbbbbbbbbbbbbb`^bbbbbYbbbbb\___`_bbab^aaaU^\`"),
      4),
     ("s1_5 M00176:17:000000000-A0CNA:1:1:12515:1774 1:N:0:0 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
      "GGATACCTTGTTACGACTTCACCCTCCTCACTCATCGTACCCTCGACA",
-     "b`bbbbbbbbbbbbbbb`^bbbbbYbbbbb\___`_bbab^aaaU^\`",
+     _ascii_to_phred33("b`bbbbbbbbbbbbbbb`^bbbbbYbbbbb\___`_bbab^aaaU^\`"),
      5),
     ("s2_6 M00176:17:000000000-A0CNA:1:1:17491:1774 1:N:0:0 orig_bc=AAAAAAAAAAAC new_bc=AAAAAAAAAAAC bc_diffs=0",
      "GCACTCACCGCCCGTCACGCCACGGAAGCCGGCTGCACCTGAAGCCGG",
-     "bbbbbbbbbbbbbbbbbbbbbXbbb_bbbabbb`aZ[U]\OTYXV`Tb",
+     _ascii_to_phred33("bbbbbbbbbbbbbbbbbbbbbXbbb_bbbabbb`aZ[U]\OTYXV`Tb"),
      6),
     ("s2_7 M00176:17:000000000-A0CNA:1:1:16427:1774 1:N:0:0 orig_bc=AAAAAAAAAAAC new_bc=AAAAAAAAAAAC bc_diffs=0",
      "GGCTACCTTGTTACGACTTCGCCCCAGTCACCGACCACACCCTCGACGGCTGCCTCCGG",
-     "bbbbbbbbbbbbbbbbbbbba`bbbbbbbbbb`abb_aacbbbbb]___]\[\^^[aOc",
+     _ascii_to_phred33("bbbbbbbbbbbbbbbbbbbba`bbbbbbbbbb`abb_aacbbbbb]___]\[\^^[aOc"),
      7),
     ("s4_8 M00176:17:000000000-A0CNA:1:1:18209:1775 1:N:0:0 orig_bc=AAAAAAAAAAAT new_bc=AAAAAAAAAAAT bc_diffs=0",
      "GGATACCTTGTTACGACTTCACCCCAATCATCGACCCCACCTTCGGCG",
-     "bbbbbbbbbbbbbbbbbbbbbXbbb_bbbabbb`aZ[U]\OTYXV`Tb", 8)]
+     _ascii_to_phred33("bbbbbbbbbbbbbbbbbbbbbXbbb_bbbabbb`aZ[U]\OTYXV`Tb"), 8)]
 
 
 if __name__ == "__main__":
