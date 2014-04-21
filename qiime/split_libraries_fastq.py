@@ -254,8 +254,10 @@ def process_fastq_single_end_read_file(fastq_read_f,
 
     post_casava_v180 = is_casava_v180_or_later(fastq_read_f_line1)
     if post_casava_v180:
+        offset = 33
         check_header_match_f = check_header_match_180_or_later
     else:
+        offset = 64
         check_header_match_f = check_header_match_pre180
 
     # compute the barcode length, if they are all the same.
@@ -283,8 +285,8 @@ def process_fastq_single_end_read_file(fastq_read_f,
     sequence_lengths = []
     seqs_per_sample_counts = {}
     for bc_data, read_data in izip(
-            parse_fastq(fastq_barcode_f, strict=False),
-            parse_fastq(fastq_read_f, strict=False)):
+            parse_fastq(fastq_barcode_f, strict=False, phred_offset=offset),
+            parse_fastq(fastq_read_f, strict=False, phred_offset=offset)):
         input_sequence_count += 1
         # Confirm match between barcode and read headers
         if strict_header_match and \
