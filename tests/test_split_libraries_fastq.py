@@ -1123,101 +1123,101 @@ bbbbbbbbbbbb
 fastq2 = """@M00176:17:000000000-A0CNA:1:1:15487:1773 1:N:0:0
 GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC
 +
-bbbbbbbbbbBBBBBBBBBBBBBBBY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`
+CCCCCCCCCC###############:AA=ACCCCCCCCCCCCCACCCCBCABA@<CB@BB>C?@C*8552?:3?6A
 @M00176:17:000000000-A0CNA:1:1:17088:1773 1:N:0:0
 GGTTACCTTGTTACGACTTCACCCCAATCATCGGCCCCACCTTAGACAGCTGACTCCTAAAAGGTTATCTCACCGG
 +
-bbcbbbbbbbbbbbbbbbbbbbbbbbbbb_bbbbbbbbaba_b^bY_`aa^bPb`bbbbHYGYZTbb^_ab[^baT
+CCDCCCCCCCCCCCCCCCCCCCCCCCCCC@CCCCCCCCBCB@C?C:@ABB?C1CACCCC):(:;5CC?@BC<?CB5
 @M00176:17:000000000-A0CNA:1:1:16738:1773 1:N:0:0
 GCACACACCGCCCGTCACACCATCCGAGTTGGAGGTACCCGAAGCCGGTAGTCTAACCGCAAGGAGGACGCTGTCG
 +
-b_bbbbbbbbbbbbbbbbbbbbbbbbbbabaa^a`[bbbb`bbbbTbbabb]b][_a`a]acaaacbaca_a^`aa
+C@CCCCCCCCCCCCCCCCCCCCCCCCCCBCBB?BA<CCCCACCCC5CCBCC>C><@BAB>BDBBBDCBDB@B?ABB
 @M00176:17:000000000-A0CNA:1:1:12561:1773 1:N:0:0
 GGCTACCTTGTTACGACTTCACCCTCCTCACTAAACGTACCTTCGACAGCGTCCTCCTTGCGGTTAGACTACCGGC
 +
-bb^bbbBBBBbbbbbbbbbbbbbbbbabbbb``bbb`__bbbbbbIWRXX`R``\`\Y\^__ba^a[Saaa_]O]O
+CC?CCC####CCCCCCCCCCCCCCCCBCCCCAACCCA@@CCCCCC*8399A3AA=A=:=?@@CB?B<4BBB@>0>0
 @M00176:17:000000000-A0CNA:1:1:14596:1773 1:N:0:0
 GCACACACCGCCCGTCACACCATCCGAGTTGGGGGTACCCGAAGCCGGCAGTCTAACCGCAAGGAGGACGCTGTCG
 +
-b`bbbbbbbbbbbbbbb`^bbbbbYbbbbb\___`_bbab^aaaU^\`############################
+CACCCCCCCCCCCCCCCA?CCCCC:CCCCC=@@@A@CCBC?BBB6?=A############################
 @M00176:17:000000000-A0CNA:1:1:12515:1774 1:N:0:0
 GGATACCTTGTTACGACTTCACCCTCCTCACTCATCGTACCCTCGACAGCGTCCTCCTTGCTGTTAGACTTCCGGC
 +
-b`bbbbbbbbbbbbbbb`^bbbbbYbbbbb\___`_bbab^aaaU^\`############################
+CACCCCCCCCCCCCCCCA?CCCCC:CCCCC=@@@A@CCBC?BBB6?=A############################
 @M00176:17:000000000-A0CNA:1:1:17491:1774 1:N:0:0
 GCACTCACCGCCCGTCACGCCACGGAAGCCGGCTGCACCTGAAGCCGGTGGGGCAACCGGCTGTCCCTTTTAGCGG
 +
-bbbbbbbbbbbbbbbbbbbbbXbbb_bbbabbb`aZ[U]\OTYXV`Tb############################
+CCCCCCCCCCCCCCCCCCCCC9CCC@CCCBCCCAB;<6>=05:97A5C############################
 @M00176:17:000000000-A0CNA:1:1:16427:1774 1:N:0:0
 GGCTACCTTGTTACGACTTCGCCCCAGTCACCGACCACACCCTCGACGGCTGCCTCCGGCTGGCCCTTTCCACCCA
 +
-bbbbbbbbbbbbbbbbbbbba`bbbbbbbbbb`abb_aacbbbbb]___]\[\^^[aOc#################
+CCCCCCCCCCCCCCCCCCCCBACCCCCCCCCCABCC@BBDCCCCC>@@@>=<=??<B0D#################
 @M00176:17:000000000-A0CNA:1:1:13372:1775 1:N:0:0
 GTACTCACCGCCCGTCACGCCATGGGAGTTGGGCTTACCTGAAGCCCGCGAGCTAACCGGAAAGGGGGGGATGTGG
 +
-bbbb_bbbbbbbbbb```Q```######################################################
+CCCC@CCCCCCCCCCAAA2AAA######################################################
 @M00176:17:000000000-A0CNA:1:1:14806:1775 1:N:0:0
 GGCTACCTTGTTACGACTTCACCCCCGTCGCTCGGCGTACCTTCGACCGCTGCCTCCTTTTGGTTATATCTCCGGG
 +
-``Q``````_``BBBB````K]]a####################################################
+AA2AAAAAA@AA####AAAA,>>B####################################################
 @M00176:17:000000000-A0CNA:1:1:13533:1775 1:N:0:0
 GCACACACCGCCCGTCACACCACGAGAGTCGGCAACACCCGAAGTCGGTGAGGTAACCCCGAAAGGGGAGCCAGCC
 +
-``Q``````_``````````K]]a####################################################
+AA2AAAAAA@AAAAAAAAAA,>>B####################################################
 @M00176:17:000000000-A0CNA:1:1:18209:1775 1:N:0:0
 GGATACCTTGTTACGACTTCACCCCAATCATCGACCCCACCTTCGGCGGCTGGCTCCCCTTTCGGGGGTACCTCAC
 +
-bbbbbbbbbbbbbbbbbbbbbXbbb_bbbabbb`aZ[U]\OTYXV`Tb############################
+CCCCCCCCCCCCCCCCCCCCC9CCC@CCCBCCCAB;<6>=05:97A5C############################
 """
 
 barcode_fastq2 = """@M00176:17:000000000-A0CNA:1:1:15487:1773 2:N:0:0
 AAAAAAAAAAAA
 +
-bbbbbbbbbbbb
+AAAAAAAAAAAA
 @M00176:17:000000000-A0CNA:1:1:17088:1773 2:N:0:0
 AAAAAAAAAAAC
 +
-bbcbbbbbbbbb
+AABAAAAAAAAA
 @M00176:17:000000000-A0CNA:1:1:16738:1773 2:N:0:0
 AAAAAAAAAAAA
 +
-b_bbbbbbbbbb
+A>AAAAAAAAAA
 @M00176:17:000000000-A0CNA:1:1:12561:1773 2:N:0:0
 AAAAAAAAAAAT
 +
-bb^bbbbbbbbb
+AA:AAAAAAAAA
 @M00176:17:000000000-A0CNA:1:1:14596:1773 2:N:0:0
 AAAAAAAAAAAA
 +
-b`bbbbbbbbbb
+A?AAAAAAAAAA
 @M00176:17:000000000-A0CNA:1:1:12515:1774 2:N:0:0
 AAAAAAAAAAAA
 +
-b`bbbbbbbbbb
+A?AAAAAAAAAA
 @M00176:17:000000000-A0CNA:1:1:17491:1774 2:N:0:0
 AAAAAAAAAAAC
 +
-bbbbbbbbbbbb
+AAAAAAAAAAAA
 @M00176:17:000000000-A0CNA:1:1:16427:1774 2:N:0:0
 AAAAAAAAAAAC
 +
-bbbbbbbbbbbb
+AAAAAAAAAAAA
 @M00176:17:000000000-A0CNA:1:1:13372:1775 2:N:0:0
 AAAAAAAAAAAT
 +
-bbbb_bbbbbbb
+AAAA>AAAAAAA
 @M00176:17:000000000-A0CNA:1:1:14806:1775 2:N:0:0
 AAAAAAAAAAAT
 +
-``Q``````_``
+>>1>>>>>>;>>
 @M00176:17:000000000-A0CNA:1:1:13533:1775 2:N:0:0
 GAAAAAAAAAAT
 +
-``Q``````_``
+>>1>>>>>>;>>
 @M00176:17:000000000-A0CNA:1:1:18209:1775 2:N:0:0
 AAAAAAAAAAAT
 +
-bbbbbbbbbbbb
+AAAAAAAAAAAA
 """
 
 
@@ -1348,39 +1348,39 @@ fastq1_expected_single_barcode = [
 fastq2_expected_default = [
     ("s1_0 M00176:17:000000000-A0CNA:1:1:15487:1773 1:N:0:0 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
      "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC",
-     _ascii_to_phred33("bbbbbbbbbbBBBBBBBBBBBBBBBY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"),
+     _ascii_to_phred64("bbbbbbbbbbBBBBBBBBBBBBBBBY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"),
      0),
     ("s2_1 M00176:17:000000000-A0CNA:1:1:17088:1773 1:N:0:0 orig_bc=AAAAAAAAAAAC new_bc=AAAAAAAAAAAC bc_diffs=0",
      "GGTTACCTTGTTACGACTTCACCCCAATCATCGGCCCCACCTTAGACAGCTGACTCCTAAAAGGTTATCTCACCGG",
-     _ascii_to_phred33("bbcbbbbbbbbbbbbbbbbbbbbbbbbbb_bbbbbbbbaba_b^bY_`aa^bPb`bbbbHYGYZTbb^_ab[^baT"),
+     _ascii_to_phred64("bbcbbbbbbbbbbbbbbbbbbbbbbbbbb_bbbbbbbbaba_b^bY_`aa^bPb`bbbbHYGYZTbb^_ab[^baT"),
      1),
     ("s1_2 M00176:17:000000000-A0CNA:1:1:16738:1773 1:N:0:0 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
      "GCACACACCGCCCGTCACACCATCCGAGTTGGAGGTACCCGAAGCCGGTAGTCTAACCGCAAGGAGGACGCTGTCG",
-     _ascii_to_phred33("b_bbbbbbbbbbbbbbbbbbbbbbbbbbabaa^a`[bbbb`bbbbTbbabb]b][_a`a]acaaacbaca_a^`aa"),
+     _ascii_to_phred64("b_bbbbbbbbbbbbbbbbbbbbbbbbbbabaa^a`[bbbb`bbbbTbbabb]b][_a`a]acaaacbaca_a^`aa"),
      2),
     ("s4_3 M00176:17:000000000-A0CNA:1:1:12561:1773 1:N:0:0 orig_bc=AAAAAAAAAAAT new_bc=AAAAAAAAAAAT bc_diffs=0",
      "GGCTACCTTGTTACGACTTCACCCTCCTCACTAAACGTACCTTCGACAGCGTCCTCCTTGCGGTTAGACTACCGGC",
-     _ascii_to_phred33("bb^bbbBBBBbbbbbbbbbbbbbbbbabbbb``bbb`__bbbbbbIWRXX`R``\`\Y\^__ba^a[Saaa_]O]O"),
+     _ascii_to_phred64("bb^bbbBBBBbbbbbbbbbbbbbbbbabbbb``bbb`__bbbbbbIWRXX`R``\`\Y\^__ba^a[Saaa_]O]O"),
      3),
     ("s1_4 M00176:17:000000000-A0CNA:1:1:14596:1773 1:N:0:0 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
      "GCACACACCGCCCGTCACACCATCCGAGTTGGGGGTACCCGAAGCCGG",
-     _ascii_to_phred33("b`bbbbbbbbbbbbbbb`^bbbbbYbbbbb\___`_bbab^aaaU^\`"),
+     _ascii_to_phred64("b`bbbbbbbbbbbbbbb`^bbbbbYbbbbb\___`_bbab^aaaU^\`"),
      4),
     ("s1_5 M00176:17:000000000-A0CNA:1:1:12515:1774 1:N:0:0 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
      "GGATACCTTGTTACGACTTCACCCTCCTCACTCATCGTACCCTCGACA",
-     _ascii_to_phred33("b`bbbbbbbbbbbbbbb`^bbbbbYbbbbb\___`_bbab^aaaU^\`"),
+     _ascii_to_phred64("b`bbbbbbbbbbbbbbb`^bbbbbYbbbbb\___`_bbab^aaaU^\`"),
      5),
     ("s2_6 M00176:17:000000000-A0CNA:1:1:17491:1774 1:N:0:0 orig_bc=AAAAAAAAAAAC new_bc=AAAAAAAAAAAC bc_diffs=0",
      "GCACTCACCGCCCGTCACGCCACGGAAGCCGGCTGCACCTGAAGCCGG",
-     _ascii_to_phred33("bbbbbbbbbbbbbbbbbbbbbXbbb_bbbabbb`aZ[U]\OTYXV`Tb"),
+     _ascii_to_phred64("bbbbbbbbbbbbbbbbbbbbbXbbb_bbbabbb`aZ[U]\OTYXV`Tb"),
      6),
     ("s2_7 M00176:17:000000000-A0CNA:1:1:16427:1774 1:N:0:0 orig_bc=AAAAAAAAAAAC new_bc=AAAAAAAAAAAC bc_diffs=0",
      "GGCTACCTTGTTACGACTTCGCCCCAGTCACCGACCACACCCTCGACGGCTGCCTCCGG",
-     _ascii_to_phred33("bbbbbbbbbbbbbbbbbbbba`bbbbbbbbbb`abb_aacbbbbb]___]\[\^^[aOc"),
+     _ascii_to_phred64("bbbbbbbbbbbbbbbbbbbba`bbbbbbbbbb`abb_aacbbbbb]___]\[\^^[aOc"),
      7),
     ("s4_8 M00176:17:000000000-A0CNA:1:1:18209:1775 1:N:0:0 orig_bc=AAAAAAAAAAAT new_bc=AAAAAAAAAAAT bc_diffs=0",
      "GGATACCTTGTTACGACTTCACCCCAATCATCGACCCCACCTTCGGCG",
-     _ascii_to_phred33("bbbbbbbbbbbbbbbbbbbbbXbbb_bbbabbb`aZ[U]\OTYXV`Tb"), 8)]
+     _ascii_to_phred64("bbbbbbbbbbbbbbbbbbbbbXbbb_bbbabbb`aZ[U]\OTYXV`Tb"), 8)]
 
 
 if __name__ == "__main__":
