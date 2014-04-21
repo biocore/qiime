@@ -43,22 +43,25 @@ def has_barcode_qual(state):
 # phred_offset: via Command and iterators
 
 
-class Seqs(object):
-    """Augmented sequence iterators
+class IterAdapter(object):
+    """Sequence iterator adapter
 
     This sequence iterator allows for optionally combining sequence reads with
     barcode data, as well as performing transforms independently on the reads
     or the barcode data. Barcode quality, if available, is also yielded.
 
+    Essentially, this object augments the yielded type from the standard
+    scikit-bio `SequenceIterator` objects as to include optional information
+    about barcodes.
+
     Attributes
     ----------
-    reads
-    barcodes
+    seq
+    barcode
 
     Examples
     --------
-    >>> import os
-    >>> out = open('test_barcodes.fna', 'w')
+    >>> from skbio.core.iterator import FastqIterator
     >>> out.write(">s1\nAT\n>s2\nGC\n")
     >>> out.close()
     >>> out = open('test_seqs.fq', 'w')
@@ -91,18 +94,9 @@ class Seqs(object):
 
     """
 
-    def __init__(self, seq, qual=None, barcode=None, barcode_qual=None,
-                 seq_kwargs=None, barcode_kwargs=None):
-
-        seq_kwargs = {} if seq_kwargs is None else seq_kwargs
-        self.reads = factory(seq=seq, qual=qual, **seq_kwargs)
-
-        if barcode is None:
-            self.barcodes = None
-        else:
-            barcode_kwargs = {} if barcode_kwargs is None else barcode_kwargs
-            self.barcodes = factory(seq=barcode, qual=barcode_qual,
-                                    **barcode_kwargs)
+    def __init__(self, seq, barcode=None):
+        self.seq = seq
+        self.barcode = barcode
 
     def __iter__(self):
         remap = (('SequenceID', 'BarcodeID'),
@@ -119,23 +113,34 @@ class Seqs(object):
                'BarcodeQualID': None,
                'BarcodeQual': None}
 
-        if self.barcodes is None:
-            for seq in self.reads:
+        if self.barcode is None:
+            for seq in self.seq:
                 rec.update(seq)
                 yield rec
         else:
-            for seq, barcode in izip(self.reads, self.barcodes):
+            for seq, barcode in izip(self.seq, self.barcode):
                 rec.update(seq)
-                rec.update({new_k: barcode[old_k] for new_k, old_k in remap})
+                rec.update({new_k: barcode[old_k] for old_k, new_k in remap})
 
-                if rec['SequenceID'] != rec['BarcodeID']:
+                base_seq_id = self._base_id(rec['SequenceID'])
+                base_bc_id = self._base_id(rec['BarcodeID'])
+
+                if base_seq_id != base_bc_id:
                     raise ValueError("ID mismatch. SequenceID: %s, "
                                      "BarcodeID: %s" % (rec['SequenceID'],
                                                         rec['BarcodeID']))
 
                 yield rec
 
+    def _base_id(self, id_):
+        """Fetch the base ID from a FASTQ sequence ID"""
+        base_pre180 = id_.split('/', 1)[0]
+        base_post180 = id_.split(' ', 1)[0]
 
+        if len(base_pre180) < len(base_post180):
+            return base_pre180
+        else:
+            return base_post180
 class SequenceWorkflow(Workflow):
     """Implement the sequence processing workflow
 
@@ -215,7 +220,7 @@ class SequenceWorkflow(Workflow):
     ### Start Workflow methods
 
     @method(priority=200)
-    @requires(state=has_qual)
+    @requires(state=has_sequence_qual)
     def wf_quality(self):
         """Check sequence quality
 

@@ -1,175 +1,16 @@
 #!/usr/bin/env python
 
-from itertools import chain, izip
-from numpy import array
-from cogent.util.unit_test import TestCase, main
-from cogent.parse.fasta import MinimalFastaParser
-from cogent.parse.fastq import MinimalFastqParser
-from qiime.parse import MinimalQualParser
-from qiime.process_seqs import (_fasta_qual_gen,
-        fasta_iterator, _fastq_barcode_gen, fastq_iterator, _fastq_gen,
-        SequenceWorkflow, _count_mismatches)
-from qiime.quality import ascii_to_phred64
+from unittest import TestCase, main
+
+import numpy as np
+
+from future.builtins import zip
+
+from skbio.core.iterator import FastqIterator
+from skbio.parse.sequences import parse_fastq
+from qiime.process_seqs import IterAdapter, SequenceWorkflow, count_mismatches
 from qiime.util import MetadataMap
 
-class FastqIteratorTests(TestCase):
-    def setUp(self):
-        fastq1_gen = MinimalFastqParser(fastq1_simple.splitlines())
-        fastq2_gen = MinimalFastqParser(fastq2_simple.splitlines())
-        barcodes1_gen = MinimalFastqParser(barcodes1_simple.splitlines())
-        barcodes2_gen = MinimalFastqParser(barcodes2_simple.splitlines())
-        
-        self.fastq_gen = chain(fastq1_gen, fastq2_gen)
-        self.barcodes_gen = chain(barcodes1_gen, barcodes2_gen)
-
-        self.reversed_fastq_gen = chain(fastq2_gen, fastq1_gen)
-
-    def test_fastq_barcode_gen_simple(self):
-        """Test simple fastq/barcode generation"""
-        exp_data = [('a', 'abcde', 'test1', array([33,34,35,36,37])),
-                    ('b', 'asdasdasd', 'test2', array([33,51,36] * 3)),
-                    ('c', '123123', 'test3', array([-15, -14, -13] * 2)),
-                    ('x', 'abcdefg', 'test4', array([33,34,35,36,37,38,39])),
-                    ('y', 'popopo', 'test5', array([48,47] * 3))]
-        exp = []
-        for id_,seq,bc,qual in exp_data:
-            exp.append({'SequenceID':id_, 'Sequence':seq, 'Qual':qual, 
-                        'Barcode':bc})
-        
-        obs = _fastq_barcode_gen(self.fastq_gen, self.barcodes_gen,
-                                 ascii_to_phred64)
-        for o,e in izip(obs,exp):
-            self.assertEqual(o['SequenceID'], e['SequenceID'])
-            self.assertEqual(o['Sequence'], e['Sequence'])
-            self.assertTrue((o['Qual'] == e['Qual']).all())
-            self.assertEqual(o['Barcode'], e['Barcode'])
-
-    def test_fastq_barcode_gen_mismatch_ids(self):
-        """Verify fastq barcode mismatch error"""
-        with self.assertRaises(ValueError):
-            g = _fasta_qual_gen(self.reversed_fastq_gen, self.barcodes_gen)
-            _ = list(g)
-    
-    def test_fastq_iterators_just_fastq(self):
-        """Test iterating fastq without barcodes"""
-        exp_data = [('a', 'abcde', array([33,34,35,36,37])),
-                    ('b', 'asdasdasd', array([33,51,36] * 3)),
-                    ('c', '123123', array([-15, -14, -13] * 2)),
-                    ('x', 'abcdefg', array([33,34,35,36,37,38,39])),
-                    ('y', 'popopo', array([48,47] * 3))]
-        exp = []
-        for id_,seq,qual in exp_data:
-            exp.append({'SequenceID':id_, 'Sequence':seq, 'Qual':qual, 
-                        'Barcode':None})
-        
-        open_fps = map(lambda x: x.splitlines(), [fastq1_simple, fastq2_simple])
-        obs = [d.copy() for d in fastq_iterator(open_fps)]
-        self.assertEqual(obs, exp)
-
-    def test_fastq_iterators_barcodes(self):
-        """Test iterating fastq with barcodes"""
-        exp_data = [('a', 'abcde', 'test1', array([33,34,35,36,37])),
-                    ('b', 'asdasdasd', 'test2', array([33,51,36] * 3)),
-                    ('c', '123123', 'test3', array([-15, -14, -13] * 2)),
-                    ('x', 'abcdefg', 'test4', array([33,34,35,36,37,38,39])),
-                    ('y', 'popopo', 'test5', array([48,47] * 3))]
-        exp = []
-        for id_,seq,bc,qual in exp_data:
-            exp.append({'SequenceID':id_, 'Sequence':seq, 'Qual':qual, 
-                        'Barcode':bc})
-        
-        splitter = lambda x: x.splitlines()
-        fastq_fps = map(splitter, [fastq1_simple, fastq2_simple])
-        bc_fps = map(splitter, [barcodes1_simple, barcodes2_simple])
-
-        obs = fastq_iterator(fastq_fps, bc_fps)
-        for o,e in izip(obs,exp):
-            self.assertEqual(o['SequenceID'], e['SequenceID'])
-            self.assertEqual(o['Sequence'], e['Sequence'])
-            self.assertTrue((o['Qual'] == e['Qual']).all())
-            self.assertEqual(o['Barcode'], e['Barcode'])
-        
-class FastaIteratorTests(TestCase):
-    def setUp(self):
-        fasta1_gen = MinimalFastaParser(fasta1_simple.splitlines())
-        qual1_gen = MinimalQualParser(qual1_simple.splitlines())
-        fasta2_gen = MinimalFastaParser(fasta2_simple.splitlines())
-        qual2_gen = MinimalQualParser(qual2_simple.splitlines())
-        qual2_bad_gen = MinimalQualParser(qual2_simple_bad.splitlines())
-
-        self.fasta_gen = chain(fasta1_gen, fasta2_gen)
-        self.qual_gen = chain(qual1_gen, qual2_gen)
-
-        self.reversed_fasta_gen = chain(fasta2_gen, fasta1_gen)
-        self.qual_bad_gen = chain(qual1_gen, qual2_bad_gen)
-
-    def test_fasta_qual_gen_simple(self):
-        """Test fasta/qual gen"""
-        exp_data = [('a', 'abcde', array([1, 2, 3, 4, 5])),
-                    ('b', 'asdasdasd', array([1,1,1,1,1,1,1,1,1])),
-                    ('c', '123123', array([2, 2, 2, 2, 2, 2])),
-                    ('x', 'abcdefg', array([1, 2, 3, 4, 5, 6, 7])),
-                    ('y', 'popopo', array([1, 1, 1, 1, 1, 1]))]
-        exp = []
-        for id_,seq,qual in exp_data:
-            exp.append({'SequenceID':id_, 'Sequence':seq, 'Qual':qual, 
-                        'Barcode':None})
-        
-        obs = _fasta_qual_gen(self.fasta_gen, self.qual_gen)
-        for o,e in izip(obs,exp):
-            self.assertEqual(o['SequenceID'], e['SequenceID'])
-            self.assertEqual(o['Sequence'], e['Sequence'])
-            self.assertTrue((o['Qual'] == e['Qual']).all())
-
-    def test_fasta_qual_gen_mismatch_ids(self):
-        """Verify fasta/qual id mismatch error"""
-        with self.assertRaises(ValueError):
-            g = _fasta_qual_gen(self.reversed_fasta_gen, self.qual_gen)
-            _ = list(g)
-    
-    def test_fasta_qual_gen_mismatch_length(self):
-        """Verify fasta/qual mismatch error"""
-        with self.assertRaises(ValueError):
-            _ = list(_fasta_qual_gen(self.fasta_gen, self.qual_bad_gen))
-
-    def test_fasta_iterators_just_fasta(self):
-        """Test that we can iterate over just fasta"""
-        exp_data = [('a', 'abcde', None),
-                    ('b', 'asdasdasd', None),
-                    ('c', '123123', None),
-                    ('x', 'abcdefg', None),
-                    ('y', 'popopo', None)]
-
-        exp = []
-        for id_,seq,qual in exp_data:
-            exp.append({'SequenceID':id_, 'Sequence':seq, 'Qual':qual, 
-                        'Barcode':None})
-        
-        open_fps = map(lambda x: x.splitlines(), [fasta1_simple, fasta2_simple])
-        obs = [d.copy() for d in fasta_iterator(open_fps)]
-        self.assertEqual(obs, exp)
-
-    def test_fasta_iterators_fasta_qual(self):
-        """Test that we can iterate over fasta with qual"""
-        exp_data = [('a', 'abcde', array([1, 2, 3, 4, 5])),
-                    ('b', 'asdasdasd', array([1,1,1,1,1,1,1,1,1])),
-                    ('c', '123123', array([2, 2, 2, 2, 2, 2])),
-                    ('x', 'abcdefg', array([1, 2, 3, 4, 5, 6, 7])),
-                    ('y', 'popopo', array([1, 1, 1, 1, 1, 1]))]
-
-        exp = []
-        for id_,seq,qual in exp_data:
-            exp.append({'SequenceID':id_, 'Sequence':seq, 'Qual':qual, 
-                        'Barcode':None})
-        splitter = lambda x: x.splitlines()
-        fasta_fps = map(splitter, [fasta1_simple, fasta2_simple])
-        qual_fps = map(splitter, [qual1_simple, qual2_simple])
-
-        obs = fasta_iterator(fasta_fps, qual_fps)
-        for o,e in izip(obs, exp):
-            self.assertEqual(o['SequenceID'], e['SequenceID'])
-            self.assertEqual(o['Sequence'], e['Sequence'])
-            self.assertTrue((o['Qual'] == e['Qual']).all())
 
 class SupportTests(TestCase):
     def setUp(self):
@@ -180,10 +21,28 @@ class SupportTests(TestCase):
         s1 = "AATTGGCC"
         s2 = "AATTCCCC"
 
-        self.assertEqual(_count_mismatches(s1, s1), 0)
-        self.assertEqual(_count_mismatches(s1, s2), 2)
-        self.assertEqual(_count_mismatches(s2, s1), 2)
-        self.assertEqual(_count_mismatches(s2, s2), 0)
+        self.assertEqual(count_mismatches(s1, s1), 0)
+        self.assertEqual(count_mismatches(s1, s2), 2)
+        self.assertEqual(count_mismatches(s2, s1), 2)
+        self.assertEqual(count_mismatches(s2, s2), 0)
+
+class IterAdapterTests(TestCase):
+    def test_iter(self):
+        seq_raw = fastq1.splitlines()
+        bc_raw = barcode_fastq1.splitlines()
+
+        seq = FastqIterator([seq_raw])
+        barcode = FastqIterator([bc_raw])
+        it = IterAdapter(seq=seq, barcode=barcode)
+
+        for rec, s, b in zip(it, parse_fastq(seq_raw), parse_fastq(bc_raw)):
+            self.assertEqual(rec['SequenceID'], s[0])
+            self.assertEqual(rec['Sequence'], s[1])
+            np.testing.assert_equal(rec['Qual'], s[2])
+            self.assertEqual(rec['BarcodeID'], b[0])
+            self.assertEqual(rec['Barcode'], b[1])
+            np.testing.assert_equal(rec['BarcodeQual'], b[2])
+
 
 class ProcessSeqsWorkflowTests(TestCase):
     """Basing structure off of test_split_libraries_fastq.py"""
@@ -205,7 +64,7 @@ class ProcessSeqsWorkflowTests(TestCase):
     def test_workflow_construction(self):
         """Make sure we can construct using our helper method"""
         x = self._make_workflow_obj({'foo':'bar'})
-    
+
     def test_wf_init(self):
         """Check the initialization method"""
         wf_obj = self._make_workflow_obj({'foo':'bar'})
@@ -220,7 +79,7 @@ class ProcessSeqsWorkflowTests(TestCase):
         item1 = {'Sequence':'AATTGGCC',
                  'Qual':array([6, 6, 6, 6, 6, 6, 6, 6])}
         exp1 = item1.copy()
-        
+
         item2 = {'Sequence':'AATTGGCC',
                  'Qual':array([6, 6, 6, 1, 1, 6, 6, 6])}
         exp2 = item2.copy()
@@ -244,7 +103,7 @@ class ProcessSeqsWorkflowTests(TestCase):
         item1 = {'Sequence':'AATTGGCC',
                  'Qual':array([6, 6, 6, 6, 6, 6, 6, 6])}
         exp1 = item1.copy()
-        
+
         item2 = {'Sequence':'AATTGGCC',
                  'Qual':array([6, 1, 6, 1, 1, 6, 6, 6])}
         exp2 = item2.copy()
@@ -268,7 +127,7 @@ class ProcessSeqsWorkflowTests(TestCase):
         self.assertEqual(item1, exp1)
         self.assertEqual(item2, exp2)
         self.assertEqual(item3, exp3)
-       
+
     def test_demultiplex_golay12(self):
         # this is a wrapper, tested in test_deultiplex_encoded_barcode
         pass
@@ -280,7 +139,7 @@ class ProcessSeqsWorkflowTests(TestCase):
     def test_demultiplex_encoded_barcode(self):
         """Verify decoding barcodes"""
         wf_obj = self._make_workflow_obj({})
-        
+
         needs_a_fix = {'Barcode':'GGAGACAAGGGT', 'Sequence':'AATTGGCC'}
         exact = {'Barcode':'GGAGACAAGGGA', 'Sequence':'AATTGGCC'}
         from_sequence = {'Barcode':None, 'Sequence':'GGAGACAAGGGAAATTAATT'}
@@ -303,7 +162,7 @@ class ProcessSeqsWorkflowTests(TestCase):
         self.assertEqual(wf_obj.FinalState['Corrected barcode'], None)
         self.assertEqual(wf_obj.FinalState['Sample'], 's5')
         self.assertFalse(wf_obj.Failed)
-        
+
         wf_obj.wf_init(from_sequence)
         wf_obj.Failed = False # note, normally handled by Workflow.__call__
         wf_obj._demultiplex_encoded_barcode(from_sequence)
@@ -348,19 +207,19 @@ class ProcessSeqsWorkflowTests(TestCase):
 
     def test_primer_check_forward(self):
         """Pull the forward primer as expected"""
-        wf_obj = self._make_workflow_obj({'max_primer_mismatch':2, 
+        wf_obj = self._make_workflow_obj({'max_primer_mismatch':2,
                                           'retain_primer':False})
-        item1 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'AATTGGCC', 
+        item1 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'AATTGGCC',
                  'Qual':array([1,2,3,4,5,6,7,8])}
-        item2 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'AATTGCCC', 
+        item2 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'AATTGCCC',
                  'Qual':array([1,2,3,4,5,6,7,8])}
-        item3 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'GGTTGCCC', 
+        item3 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'GGTTGCCC',
                  'Qual':array([1,2,3,4,5,6,7,8])}
-        exp_item1 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'CC', 
+        exp_item1 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'CC',
                  'Qual':array([7,8])}
-        exp_item2 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'CC', 
+        exp_item2 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'CC',
                  'Qual':array([7,8])}
-        exp_item3 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'GGTTGCCC', 
+        exp_item3 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'GGTTGCCC',
                  'Qual':array([1,2,3,4,5,6,7,8])}
 
         # item is modified in place in these operations as retain_primer is False
@@ -390,24 +249,24 @@ class ProcessSeqsWorkflowTests(TestCase):
         wf_obj._primer_check_forward(item3)
         self.assertEqual(item3, exp_item3)
         self.assertEqual(wf_obj.FinalState['Sequence'], 'GGTTGCCC')
-        self.assertEqual(wf_obj.FinalState['Qual'], None) 
+        self.assertEqual(wf_obj.FinalState['Qual'], None)
         self.assertEqual(wf_obj.FinalState['Forward primer'], None)
         self.assertTrue(wf_obj.Failed)
 
         # item is not modified in place as retain priemr is True
-        wf_obj = self._make_workflow_obj({'max_primer_mismatch':2, 
+        wf_obj = self._make_workflow_obj({'max_primer_mismatch':2,
                                           'retain_primer':True})
-        item1 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'AATTGGCC', 
+        item1 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'AATTGGCC',
                  'Qual':array([1,2,3,4,5,6,7,8])}
-        item2 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'AATTGCCC', 
+        item2 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'AATTGCCC',
                  'Qual':array([1,2,3,4,5,6,7,8])}
-        item3 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'GGTTGCCC', 
+        item3 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'GGTTGCCC',
                  'Qual':array([1,2,3,4,5,6,7,8])}
-        exp_item1 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'AATTGGCC', 
+        exp_item1 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'AATTGGCC',
                  'Qual':array([1,2,3,4,5,6,7,8])}
-        exp_item2 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'AATTGCCC', 
+        exp_item2 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'AATTGCCC',
                  'Qual':array([1,2,3,4,5,6,7,8])}
-        exp_item3 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'GGTTGCCC', 
+        exp_item3 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'GGTTGCCC',
                  'Qual':array([1,2,3,4,5,6,7,8])}
 
         wf_obj.wf_init(item1)
@@ -436,10 +295,10 @@ class ProcessSeqsWorkflowTests(TestCase):
         wf_obj._primer_check_forward(item3)
         self.assertEqual(item3, exp_item3)
         self.assertEqual(wf_obj.FinalState['Sequence'], 'GGTTGCCC')
-        self.assertEqual(wf_obj.FinalState['Qual'], None) 
+        self.assertEqual(wf_obj.FinalState['Qual'], None)
         self.assertEqual(wf_obj.FinalState['Forward primer'], None)
         self.assertTrue(wf_obj.Failed)
-   
+
     def test_sequence_length_check(self):
         """Check the length of the sequence"""
         wf_obj = self._make_workflow_obj({'min_seq_len':5})
