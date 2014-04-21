@@ -104,7 +104,7 @@ def extract_barcodes(fastq1,
         output_fastq2 = None
 
     if not fastq2:
-        fastq2 = cycle(["@", "AAAAAAAAAAAA", "+", "bbbbbbbbbbbb"])
+        fastq2 = cycle(["@", "AAAAAAAAAAAA", "+", "AAAAAAAAAAAA"])
         not_paired = True
     else:
         not_paired = False
