@@ -38,6 +38,7 @@ _index_headers = {
     "otu_maps": "OTU maps",
     "sequences": "Reference sequences",
     "otu_tables": "OTU tables",
+    "trees": "Trees",
     "What is this":"what ever this is"}
 
 
