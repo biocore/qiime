@@ -225,7 +225,7 @@ def convert_fastaqual(fasta_file_path, output_directory='.',
     fpo = ascii_increment
     for header, sequence, qual in parse_fastq(open(fastq_fp, 'U'),
                                               strict=False,
-                                              force_phred_offset=fpo):
+                                              phred_offset=fpo):
         label = header.split()[0]
         sample_id = label.split('_')[0]
 
