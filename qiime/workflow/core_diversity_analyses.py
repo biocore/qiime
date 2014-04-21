@@ -33,7 +33,12 @@ _index_headers = {
     "alpha_diversity": "Alpha diversity results",
     "taxa_summary": "Taxonomic summary results",
     "taxa_summary_categorical": "Taxonomic summary results (by %s)",
-    "group_significance": "Group significance results"}
+    "group_significance": "Group significance results", 
+    "failures_fp": "Failures", 
+    "otu_maps": "OTU maps",
+    "sequences": "Reference sequences",
+    "otu_tables": "OTU tables",
+    "What is this":"what ever this is"}
 
 
 def format_index_link(link_description, relative_path):
@@ -489,5 +494,5 @@ def run_core_diversity_analyses(
         command_handler(commands, status_update_callback, logger)
     else:
         logger.close()
-
+    
     generate_index_page(index_links, index_fp)
