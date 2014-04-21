@@ -2,192 +2,25 @@
 
 """Filter poor quality reads, trim barcodes/primers and assign to samples"""
 
-from qiime.workflow.core import Workflow, requires, priority, no_requirements
-from cogent.parse.fasta import MinimalFastaParser
-from cogent.parse.fastq import MinimalFastqParser
-from qiime.parse import MinimalQualParser
-from itertools import chain, izip
-from qiime.util import MetadataMap
-from qiime.parse import is_casava_v180_or_later
-from qiime.split_libraries import expand_degeneracies
+import numpy as np
+
+from collections import Counter
+from itertools import izip
+
+from skbio.core.workflow import Workflow, requires, method, not_none
 from qiime.hamming import decode_barcode_8 as decode_hamming_8
 from qiime.golay import decode as decode_golay_12
-from qiime.quality import ascii_to_phred33, ascii_to_phred64
-from numpy import array
-
-class CannotHandleData(exception):
-    pass
-
-class SequenceIterator(object):
-    """Provide a standard API for interacting with sequence files
-    
-    
-    """
-    # pre allocate the iterable return. This is done for performance reasons to
-    # avoid frequent reallocations and to ensure a consistent object type
-    _iter_prealloc = {'SequenceID':None,
-                      'Sequence':None,
-                      'Qual':None,
-                      'Barcode':None}
-
-    def __init__(self, fasta=None, qual=None, fastq=None, rc=False, 
-                 rc_barcodes=None):
-        if fasta is not None and fastq is not None:
-            raise CannotHandleData("Cannot handle both fasta and fastq files")
-
-        if fasta is None qual is not None:
-            raise CannotHandleData("Cannot process qual without fasta data")
 
 
-    def _reset_iter_prealloc():
-        """Reset the buffer"""
-        for k in _iter_prealloc:
-            _iter_prealloc[k] = None
-
-    def _fasta_qual_gen(fasta_gen, qual_gen):
-        """Yield fasta and qual together
-
-        Raises ValueError if the sequence IDs and quality IDs are not in the same
-        order. Raises ValueError if the sequence length does not match the length
-        of the quality score.
-
-        Note: object yielded is updated on each iteration. A new object is _not_
-        created on each iteration. This is done for performance reasons, where
-        quick testing showed a 50% reduction in runtime.
-        """
-        for (seq_id, seq), (qual_id, qual) in izip(fasta_gen, qual_gen):
-            if seq_id != qual_id:
-                raise ValueError("%s is not equal to %s!" % (seq_id, qual_id))
-            if len(seq) != len(qual):
-                raise ValueError("%s is not equal length to %s!" % (seq_id,
-                                                                    qual_id))
-
-            _iter_prealloc['SequenceID'] = seq_id
-            _iter_prealloc['Sequence'] = seq
-            _iter_prealloc['Qual'] = qual
-
-            yield _iter_prealloc
-
-    def _fasta_gen(fasta_gens):
-        """Yield fasta data
-
-        Note: object yielded is updated on each iteration. A new object is _not_
-        created on each iteration. This is done for performance reasons, where
-        quick testing showed a 50% reduction in runtime.
-        """
-        for id_, seq in fasta_gens:
-            _iter_prealloc['SequenceID'] = id_
-            _iter_prealloc['Sequence'] = seq
-            yield _iter_prealloc
-
-    def fasta_iterator(fasta_fps, qual_fps=None):
-        """Yield fasta and qual data
-
-        Expects file-like objects. If qual_fps is not None, quality scores are
-        yielded. The return will either be:
-
-        {'SequenceID':foo, 'Sequence':bar, 'Qual':array([])}
-
-        or
-
-        {'SequenceID':foo, 'Sequence':bar, 'Qual':None}
-
-        Note: object yielded is updated on each iteration. A new object is _not_
-        created on each iteration. This is done for performance reasons, where
-        quick testing showed a 50% reduction in runtime.
-        """
-        _reset_iter_prealloc()
-
-        fasta_gens = chain(*[MinimalFastaParser(f) for f in fasta_fps])
-
-        if qual_fps is not None:
-            qual_gens = chain(*[MinimalQualParser(f) for f in qual_fps])
-            gen = _fasta_qual_gen(fasta_gens, qual_gens)
-        else:
-            qual_gens = None
-            gen = _fasta_gen(fasta_gens)
-
-        return gen
-
-    def _fastq_barcode_gen(fastq_gens, barcode_gens, phred_f):
-        """Yield fastq and barcode data
-
-        Note: object yielded is updated on each iteration. A new object is _not_
-        created on each iteration. This is done for performance reasons, where
-        quick testing showed a 50% reduction in runtime.
-        """
-        _gen = izip(fastq_gens, barcode_gens)
-        for (seqid, seq, qual), (bc_seqid, bc_seq, bc_qual) in _gen:
-            if seqid != bc_seqid:
-                raise ValueError("%s is not equal to %s!" % (seqid, bc_seqid))
-            _iter_prealloc['SequenceID'] = seqid
-            _iter_prealloc['Sequence'] = seq
-            _iter_prealloc['Qual'] = array([phred_f(q) for q in qual])
-            _iter_prealloc['Barcode'] = bc_seq
-
-            yield _iter_prealloc
-
-    def _fastq_gen(fastq_gens, phred_f):
-        """Yield fastq data
-
-        Note: object yielded is updated on each iteration. A new object is _not_
-        created on each iteration. This is done for performance reasons, where
-        quick testing showed a 50% reduction in runtime.
-        """
-        for (seqid, seq, qual) in fastq_gens:
-            _iter_prealloc['SequenceID'] = seqid
-            _iter_prealloc['Sequence'] = seq
-            _iter_prealloc['Qual'] = array([phred_f(q) for q in qual])
-
-            yield _iter_prealloc
-
-    def fastq_iterator(fastq_fps, barcode_fps=None):
-        """Yield fastq data
-
-        Expects file-like objects. If barcode_fps is not None, barcodes are also
-        yielded. The return will either be:
-
-        {'SequenceID':foo, 'Sequence':bar, 'Qual':array([]), 'Barcode':foobar}
-
-        or
-
-        {'SequenceID':foo, 'Sequence':bar, 'Qual':array([]), 'Barcode':None}
-
-        Note: object yielded is updated on each iteration. A new object is _not_
-        created on each iteration. This is done for performance reasons, where
-        quick testing showed a 50% reduction in runtime.
-        """
-        _reset_iter_prealloc()
-
-        fastq_gens = chain(*[MinimalFastqParser(f) for f in fastq_fps])
-
-        # peek
-        first_item = fastq_gens.next()
-        seqid, seq, qual = first_item
-        fastq_gens = chain([first_item], fastq_gens)
-
-        # from qiime.parse.parse_fastq_qual_score (v1.8.0)
-        if is_casava_v180_or_later('@%s' % seqid):
-            ascii_to_phred_f = ascii_to_phred33
-        else:
-            ascii_to_phred_f = ascii_to_phred64
-
-        if barcode_fps:
-            barcode_gens = chain(*[MinimalFastqParser(f) for f in barcode_fps])
-            gen = _fastq_barcode_gen(fastq_gens, barcode_gens, ascii_to_phred_f)
-        else:
-            gen = _fastq_gen(fastq_gens, ascii_to_phred_f)
-
-        return gen
-
-### can cythonize
-def _count_mismatches(seq1, seq2):
+def count_mismatches(seq1, seq2):
     """Counts mismatches between two sequences"""
-    return sum([a != b for a, b in zip(seq1, seq2)])
+    return sum(a != b for a, b in izip(seq1, seq2))
 
-def _has_qual(item):
-    """Check if an item has Qual"""
-    return item['Qual'] is not None
+
+def has_qual(state):
+    """Check if state has Qual"""
+    return state['Qual'] is not None
+
 
 ### notes on splitlib fastq options:
 # barcode_read_fps: via Command
@@ -195,7 +28,7 @@ def _has_qual(item):
 # sample_ids: via Command
 # store_demultiplexed_fastq: via Command
 # retain_unassigned_reads: via Command (Failed == False, Sample == None)
-# start_seq_id: via Command, but also hopefully deprecated in favor of 
+# start_seq_id: via Command, but also hopefully deprecated in favor of
 #       HDF5 format
 # rev_comp_barcode: via Command and iterators? only if the barcodes are separate
 #       then it is possible to do at the iterator level...
@@ -206,138 +39,187 @@ def _has_qual(item):
 class SequenceWorkflow(Workflow):
     """Implement the sequence processing workflow
 
-    All workflow methods expect an item that is dict-like with the following
-    keys and value types:
-        SequenceID : str
-        Sequence   : str
-        Qual       : np.array or None
-        Barcode    : str or None
-    """
-    FinalState = {'Forward primer':None,
-                  'Reverse primer':None,
-                  'Sequence':None,
-                  'Qual':None,
-                  'Sample':None,
-                  'Original barcode':None,
-                  'Corrected barcode':None,
-                  'Final barcode':None,
-                  'Corrected barcode errors':None}
+    The sequence processing workflow manages the following tasks, executed in
+    the following order::
 
-    def _stage_state(self):
-        """Fish out barcodes and primers from the mapping data"""
-        bcs = {}
-        primers = {}
-        for sample in self.Mapping.SampleIds:
-            sample_bc = self.Mapping.getCategoryValue(sample, 'BarcodeSequence')
-            if sample_bc in bcs:
-                raise ValueError("Duplicate barcode found for sample %s" \
-                                 % sample)
-            bcs[sample_bc] = sample
+        1. Quality filtering and trimming of primary sequence data
+        2. Demultiplexing and assigning reads to samples
+        3. Validating primers
+        4. Sequence level quality checks (e.g., ambiguous bases)
 
-            sample_primers = self.Mapping.getCategoryValue(sample, 
-                                                        'LinkerPrimerSequence')
-            all_sample_primers = sample_primers.split(',')
-            primers[sample_bc] = expand_degeneracies(all_sample_primers)
+    Execution of a task will only happen if it is relevant for the data. For
+    instance, quality checks are only performed if the data being operated on
+    has quality scores associated. Runtime control through options are also
+    supported, such that, for instance, the Golay decoder is only executed if
+    indicated by the options passed to the `SequenceWorkflow`.
 
-        self.Barcodes = bcs
-        self.Primers = primers
+    Any task can trigger `failed` and update `stats`.
 
-    def _sanity_check(self):
-        name = self.__class__.__name__
-        if not hasattr(self, 'Mapping'):
-            raise AttributeError("%s is missing Mapping!" % name)
+    Parameters
+    ----------
+    options : dict
+        Runtime options. See ``Options`` for more details
+    barcodes : dict
+        Mapping of barcode nucleotide sequence to a sample ID
+    primers : dict
+        Mapping of nucleotide sequence to enumerated possible primers
 
-        if not isinstance(self.Mapping, MetadataMap):
-            raise AttributeError("self.Mapping is not of type MetadataMap")
+    Options
+    -------
+    ## DESCRIBE EACH OPTION THAT CAN AFFECT WHAT METHODS ARE EXECUTED
+
+    Attributes
+    ----------
+    state
+    stats
+    options
+    barcodes
+    primers
+
+   """
+
+    def __init__(self, *args, **kwargs):
+        if 'barcodes' not in kwargs:
+            kwargs['barcodes'] = {}
+        if 'primers' not in kwargs:
+            kwargs['primers'] = {}
+
+        kwargs['state'] = {'Forward primer': None,
+                           'Reverse primer': None,
+                           'Sequence': None,
+                           'Qual': None,
+                           'Barcode': None,
+                           'Barcode Qual': None,
+                           'Sample': None,
+                           'Original barcode': None,
+                           'Corrected barcode': None,
+                           'Final barcode': None,
+                           'Corrected barcode errors': None}
+
+        kwargs['stats'] = Counter()
+
+        super(SequenceWorkflow, self).__init__(self, *args, **kwargs)
+
+    def initialize_state(self, item):
+        """Reset `state` and update with the current `item`
+
+        Parameters
+        ----------
+        item : dict
+            An item from the `Workflow` generator
+        """
+        for k in self.state:
+            self.state[k] = None
+        self.state.update(item)
 
     ### Start Workflow methods
 
-    @priority(1000)
-    @no_requirements
-    def wf_init(self, item):
-        """Perform per sequence state initialization
-
-        This workflow group will reset FinalState and will set the following in
-        FinalState:
-
-            Sequence
-        """
-        self._init_final_state(item)
-
-    @priority(200)
-    @requires(ValidData=_has_qual)
-    def wf_quality(self, item):
+    @method(priority=200)
+    @requires(state=has_qual)
+    def wf_quality(self):
         """Check sequence quality
 
-        This workflow group may update _item_ in the event of a sequence
-        truncation due to quality!
+        Changes to `state`
+        ------------------
+        This workflow group may trim `state['Sequence']` and `state['Qual']` if
+        quality trimming is enabled.
 
+        Triggers for `failed`
+        ---------------------
+        - If to many nucleotides in `Sequence` are of poor quality.
+
+        Impacted `stats`
+        ----------------
+        quality_max_bad_run_length
+            Incremented if the read contained a run of poor quality bases
+        min_per_read_length_fraction
+            Incrememted if to many positions in `Sequence` are of poor quality
         """
-        self._quality_max_bad_run_length(item)
-        self._quality_min_per_read_length_fraction(item)
+        self._quality_max_bad_run_length()
+        self._quality_min_per_read_length_fraction()
 
-    @priority(150)
-    @requires(Option='demultiplex', Values=True)
-    def wf_demultiplex(self, item):
+    @method(priority=150)
+    @requires(option='demultiplex', values=True)
+    def wf_demultiplex(self):
         """Demultiplex a sequence
 
-        If the sequence has not Failed, the following fields in FinalState will
-        be set:
+        Changes to `state`
+        ------------------
+        Sample
+        Original barcode
+        Final barcode
+        Barcode errors
 
-            Sample
-            Original barcode
-            Final barcode
+        Triggers for `failed`
+        ---------------------
+        - If a sequence could not be associated to a sample
+        - If the number of errors observed in the barcode exceed tolerance
 
-        In addition, the following field may be set:
-
-            Corrected barcode
-            Corrected barcode errors
-
-        This workflow group can trigger Failed and update Stats
+        Impacted `stats`
+        ----------------
+        barcode_corrected
+            Incremented if a barcode was corrected
+        unknown_barcode
+            Incremented if an unknown barcode was observed
+        exceed_barcode_error
+            Incremented if the number of observed barcode
+            errors exceeded tolerance
         """
-        self._demultiplex_golay12(item)
-        self._demultiplex_hamming8(item)
-        self._demultiplex_other(item)
-        self._demultiplex_max_barcode_error(item)
+        self._demultiplex_golay12()
+        self._demultiplex_hamming8()
+        self._demultiplex_other()
+        self._demultiplex_max_barcode_error()
 
     ### should this be wf_instrument for instriument specific checks?
-    @priority(100)
-    @requires(Option='check_primer', Values=True)
-    def wf_primer(self, item):
+    @method(priority=100)
+    @requires(option='check_primer', values=True)
+    def wf_primer(self):
         """Perform primer validation
 
-        Primer validation may update the following keys in FinalState:
+        Changes to `state`
+        ------------------
+        Sequence
+        Qual
+        Forward primer
+        Reverse primer
 
-            Sequence
-            Forward primer
-            Reverse primer
-
-        This workflow group can trigger Failed and update Stats
+        Triggers for `failed`
+        ---------------------
+        - If the `primer` mapping does not contain primers associated with the
+            nucleotide barcode
+        Impacted `stats`
+        ----------------
+        unknown_primer_barcode_pair
         """
-        self._primer_instrument_454(item)
+        self._primer_instrument_454()
 
-    @priority(50)
-    @no_requirements
-    def wf_sequence(self, item):
+    @method(priority=50)
+    def wf_sequence(self):
         """Final sequence level checks
 
         Sequence level checks will not alter FinalState but may trigger Failed
         and update Stats
+
+        Changes to `state`
+        ------------------
+
+        Triggers for `failed`
+        ---------------------
+
+        Impacted `stats`
+        ----------------
         """
-        self._sequence_length_check(item)
-        self._sequence_ambiguous_count(item)
+        self._sequence_length_check()
+        self._sequence_ambiguous_count()
 
     ### End Workflow methods
 
     ### Start quality methods
 
-    @requires(Option='phred_quality_threshold')
-    @requires(Option='max_bad_run_length')
-    def _quality_max_bad_run_length(self, item):
-        """Fail sequence if there is a poor quality run
-
-        Warning: this method can modify item in place
-        """
+    @requires(option='phred_quality_threshold')
+    @requires(option='max_bad_run_length')
+    def _quality_max_bad_run_length(self):
+        """Fail sequence if there is a poor quality run"""
         max_bad_run_length = self.Options['max_bad_run_length']
         phred_quality_threshold = self.Options['phred_quality_threshold']
 
@@ -347,7 +229,7 @@ class SequenceWorkflow(Workflow):
         run_start_idx = 0
         max_run_start_idx = 0
 
-        for idx, v in enumerate(item['Qual']):
+        for idx, v in enumerate(self.state['Qual']):
             if v <= phred_quality_threshold:
                 max_run_length += 1
             else:
@@ -362,112 +244,101 @@ class SequenceWorkflow(Workflow):
                     max_run_start_idx = run_start_idx
 
         if max_run_length > max_bad_run_length:
-            item['Qual'] = item['Qual'][:max_run_start_idx+1]
-            item['Sequence'] = item['Sequence'][:max_run_start_idx+1]
-            self.Stats['_quality_max_bad_run_length'] += 1
+            self.state['Qual'] = self.state['Qual'][:max_run_start_idx+1]
+            self.state['Sequence'] = self.state['Sequence'][:max_run_start_idx+1]
+            self.stats['_quality_max_bad_run_length'] += 1
 
     @requires(Option='phred_quality_threshold')
     @requires(Option='min_per_read_length_fraction')
-    def _quality_min_per_read_length_fraction(self, item):
+    def _quality_min_per_read_length_fraction(self):
         """Fail a sequence if a percentage of bad quality calls exist"""
-        bad_bases = item['Qual'] < self.Options['phred_quality_threshold']
+        bad_bases = self.state['Qual'] < self.Options['phred_quality_threshold']
         bad_bases_count = bad_bases.sum(dtype=float)
         threshold = 1 - self.Options['min_per_read_length_fraction']
 
-        if (bad_bases_count / len(item['Sequence'])) > threshold:
-            self.Failed = True
-            self.Stats['min_per_read_length_fraction'] += 1
+        if (bad_bases_count / len(self.state['Sequence'])) > threshold:
+            self.failed = True
+            self.stats['min_per_read_length_fraction'] += 1
 
     ### End quality methods
 
     ### Start demultiplex methods
     @requires(Option='barcode_type', Values='golay_12')
-    def _demultiplex_golay12(self, item):
+    def _demultiplex_golay12(self):
         """Correct and decode a Golay 12nt barcode"""
-        self._demultiplex_encoded_barcode(item, decode_golay_12, 12)
+        self._demultiplex_encoded_barcode(decode_golay_12, 12)
 
     @requires(Option='barcode_type', Values='hamming_8')
-    def _demultiplex_hamming8(self, item):
+    def _demultiplex_hamming8(self):
         """Correct and decode a Hamming 8nt barcode"""
-        self._demultiplex_encoded_barcode(item, decode_hamming_8, 8)
+        self._demultiplex_encoded_barcode(decode_hamming_8, 8)
 
     @requires(Option='barcode_type', Values='variable')
-    def _demultiplex_other(self, item):
+    def _demultiplex_other(self):
         """Decode a variable length barcode"""
         raise NotImplementedError
 
     #### use kwargs for method and bc_length
-    def _demultiplex_encoded_barcode(self, item, method=decode_golay_12,
-                                     bc_length=12):
+    def _demultiplex_encoded_barcode(self, method, bc_length):
         """Correct and decode an encoded barcode"""
-        if item['Barcode'] is not None:
-            putative_bc = item['Barcode']
+        if self.state['Barcode'] is not None:
+            from_sequence = False
+            putative_bc = self.state['Barcode']
         else:
-            putative_bc = item['Sequence'][:bc_length]
-            ### if this case happens, need to update item['Sequence'] to
-            ### trim off the barcode!
+            from_sequence = True
+            putative_bc = self.state['Sequence'][:bc_length]
 
         self.FinalState['Original barcode'] = putative_bc
 
         if putative_bc in self.Barcodes:
-            self.FinalState['Corrected barcode errors'] = 0
+            self.FinalState['Barcode errors'] = 0
             final_bc = putative_bc
             sample = self.Barcodes[putative_bc]
         else:
             corrected, num_errors = method(putative_bc)
             final_bc = corrected
-            self.FinalState['Corrected barcode'] = corrected
-            self.FinalState['Corrected barcode errors'] = num_errors
-            self.Stats['Barcodes corrected'] += 1
+            self.FinalState['Barcode errors'] = num_errors
+            self.Stats['barcode_corrected'] += 1
             sample = self.Barcodes.get(corrected, None)
 
         self.FinalState['Final barcode'] = final_bc
 
+        if from_sequence:
+            self.state['Sequence'] = self.state['Sequence'][bc_length:]
+
         if sample is None:
             self.Failed = True
-            self.Stats['Unknown barcode'] += 1
+            self.Stats['unknown_barcode'] += 1
         else:
             self.FinalState['Sample'] = sample
 
-    ### really need the requires to be a nonnone value:
-    # @requires(Option='max_barcode_error', Values=_not_none)
-    @requires(Option='max_barcode_error')
-    def _demultiplex_max_barcode_error(self, item):
+    @requires(Option='max_barcode_error', Values=not_none)
+    def _demultiplex_max_barcode_error(self):
         """Fail a sequence if it exceeds a max number of barcode errors"""
         bc_errors = self.Options['max_barcode_error']
-        if self.FinalState['Corrected barcode errors'] > bc_errors:
+        if self.FinalState['Barcode errors'] > bc_errors:
             self.Failed = True
-            self.Stats['exceeds_bc_errors'] += 1
+            self.Stats['exceed_barcode_error'] += 1
 
     ### End demultiplex methods
-
-    ### Start init methods
-
-    def _init_final_state(self, item):
-        """Reset per sequence state"""
-        for k in self.FinalState:
-            self.FinalState[k] = None
-        self.FinalState['Sequence'] = item['Sequence']
-
-    ### End init methods
 
     ### Start primer methods
 
     @requires(Option='instrument_type', Values='454')
-    def _primer_instrument_454(self, item):
+    def _primer_instrument_454(self):
         """Check for a valid primer"""
-        self._primer_check_forward(item)
+        self._primer_check_forward()
 
     @requires(Option='retain_primer')
     @requires(Option='max_primer_mismatch')
-    def _primer_check_forward(self, item):
+    def _primer_check_forward(self):
         """Attempt to determine if the forward primer exists and trim if there
-        
+
         Warning: this method may do an in place update on item if retain primer
         False.
         """
-        seq = item['Sequence']
-        qual = item['Qual']
+        seq = self.state['Sequence']
+        qual = self.state['Qual']
 
         obs_barcode = self.FinalState['Final barcode']
         exp_primers = self.Primers.get(obs_barcode, None)
@@ -481,7 +352,7 @@ class SequenceWorkflow(Workflow):
 
         obs_primer = seq[:len_primer]
 
-        mm = array([_count_mismatches(obs_primer, p) for p in exp_primers])
+        mm = np.array([count_mismatches(obs_primer, p) for p in exp_primers])
 
         if (mm > self.Options['max_primer_mismatch']).all():
             self.Failed = True
@@ -492,10 +363,10 @@ class SequenceWorkflow(Workflow):
         ### should decompose
         if not self.Options['retain_primer']:
             seq = seq[len_primer:]
-            item['Sequence'] = seq
+            self.state['Sequence'] = seq
             if qual is not None:
                 qual = qual[len_primer:]
-                item['Qual'] = qual
+                self.state['Qual'] = qual
 
         self.FinalState['Forward primer'] = obs_primer
         self.FinalState['Sequence'] = seq
@@ -506,16 +377,16 @@ class SequenceWorkflow(Workflow):
     ### Start sequence methods
 
     @requires(Option='min_seq_len')
-    def _sequence_length_check(self, item):
+    def _sequence_length_check(self):
         """Checks minimum sequence length"""
-        if len(item['Sequence']) < self.Options['min_seq_len']:
+        if len(self.state['Sequence']) < self.Options['min_seq_len']:
             self.Failed = True
             self.Stats['min_seq_len'] += 1
 
     @requires(Option='ambiguous_count')
-    def _sequence_ambiguous_count(self, item):
+    def _sequence_ambiguous_count(self):
         """Fail if the number of N characters is greater than threshold"""
-        count = item['Sequence'].count('N')
+        count = self.state['Sequence'].count('N')
         if count > self.Options['ambiguous_count']:
             self.Failed = True
             self.Stats['ambiguous_count'] += 1
