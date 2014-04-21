@@ -8,16 +8,15 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "William Walters"
 __email__ = "william.a.walters@colorado.edu"
 
-import numpy as np
 
 from os.path import exists, join
 from shutil import rmtree
 from re import compile
 from tempfile import mkdtemp
-
 from unittest import TestCase, main
-from skbio.util.misc import create_dir
 
+import numpy as np
+from skbio.util.misc import create_dir
 from qiime.extract_barcodes import (extract_barcodes,
                                     process_barcode_single_end_data, process_barcode_paired_end_data,
                                     process_barcode_paired_stitched, process_barcode_in_label,
@@ -159,7 +158,7 @@ class ExtractBarcodes(TestCase):
         """ Handles fastq lines, parses barcodes """
 
         fastq_data = ["HWI-ST830", "AAAATTTTCCCCGGGG",
-                      np.arange(3, 16 + 3, dtype=np.int8)]
+                      np.arange(3, 19, dtype=np.int8)]
         reads_out = FakeOutFile()
         bcs_out = FakeOutFile()
 
@@ -516,7 +515,7 @@ class ExtractBarcodes(TestCase):
         """ Handles stitched barcode data, parses barcodes from ends """
 
         fastq1_data = ["HWI-ST830", "ATCGATCGATCGATCGATCG",
-                       np.arange(3, 20 + 3, dtype=np.int8)]
+                       np.arange(3, 23, dtype=np.int8)]
         reads1_out = FakeOutFile()
         bcs_out = FakeOutFile()
         forward_primers = [compile(''.join([self.iupac[symbol] for
@@ -558,7 +557,7 @@ class ExtractBarcodes(TestCase):
         """ Handles stitched barcode data, parses barcodes from ends """
 
         fastq1_data = ["HWI-ST830", "ATCGATCGATCGATCGATCG",
-                       np.arange(3, 20 + 3, dtype=np.int8)]
+                       np.arange(3, 23, dtype=np.int8)]
         reads1_out = FakeOutFile()
         bcs_out = FakeOutFile()
         forward_primers = [compile(''.join([self.iupac[symbol] for
