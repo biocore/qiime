@@ -197,8 +197,8 @@ class SequenceWorkflow(Workflow):
     def wf_sequence(self):
         """Final sequence level checks
 
-        Sequence level checks will not alter FinalState but may trigger Failed
-        and update Stats
+        Sequence level checks will not alter `state` but may trigger Failed
+        and update `stats`
 
         Changes to `state`
         ------------------
@@ -220,8 +220,8 @@ class SequenceWorkflow(Workflow):
     @requires(option='max_bad_run_length')
     def _quality_max_bad_run_length(self):
         """Fail sequence if there is a poor quality run"""
-        max_bad_run_length = self.Options['max_bad_run_length']
-        phred_quality_threshold = self.Options['phred_quality_threshold']
+        max_bad_run_length = self.options['max_bad_run_length']
+        phred_quality_threshold = self.options['phred_quality_threshold']
 
         # can cythonize
         run_length = 0
@@ -248,13 +248,13 @@ class SequenceWorkflow(Workflow):
             self.state['Sequence'] = self.state['Sequence'][:max_run_start_idx+1]
             self.stats['_quality_max_bad_run_length'] += 1
 
-    @requires(Option='phred_quality_threshold')
-    @requires(Option='min_per_read_length_fraction')
+    @requires(option='phred_quality_threshold')
+    @requires(option='min_per_read_length_fraction')
     def _quality_min_per_read_length_fraction(self):
         """Fail a sequence if a percentage of bad quality calls exist"""
-        bad_bases = self.state['Qual'] < self.Options['phred_quality_threshold']
+        bad_bases = self.state['Qual'] < self.options['phred_quality_threshold']
         bad_bases_count = bad_bases.sum(dtype=float)
-        threshold = 1 - self.Options['min_per_read_length_fraction']
+        threshold = 1 - self.options['min_per_read_length_fraction']
 
         if (bad_bases_count / len(self.state['Sequence'])) > threshold:
             self.failed = True
@@ -263,17 +263,17 @@ class SequenceWorkflow(Workflow):
     ### End quality methods
 
     ### Start demultiplex methods
-    @requires(Option='barcode_type', Values='golay_12')
+    @requires(option='barcode_type', values='golay_12')
     def _demultiplex_golay12(self):
         """Correct and decode a Golay 12nt barcode"""
         self._demultiplex_encoded_barcode(decode_golay_12, 12)
 
-    @requires(Option='barcode_type', Values='hamming_8')
+    @requires(option='barcode_type', values='hamming_8')
     def _demultiplex_hamming8(self):
         """Correct and decode a Hamming 8nt barcode"""
         self._demultiplex_encoded_barcode(decode_hamming_8, 8)
 
-    @requires(Option='barcode_type', Values='variable')
+    @requires(option='barcode_type', values='variable')
     def _demultiplex_other(self):
         """Decode a variable length barcode"""
         raise NotImplementedError
@@ -288,49 +288,49 @@ class SequenceWorkflow(Workflow):
             from_sequence = True
             putative_bc = self.state['Sequence'][:bc_length]
 
-        self.FinalState['Original barcode'] = putative_bc
+        self.state['Original barcode'] = putative_bc
 
-        if putative_bc in self.Barcodes:
-            self.FinalState['Barcode errors'] = 0
+        if putative_bc in self.barcodes:
+            self.state['Barcode errors'] = 0
             final_bc = putative_bc
-            sample = self.Barcodes[putative_bc]
+            sample = self.barcodes[putative_bc]
         else:
             corrected, num_errors = method(putative_bc)
             final_bc = corrected
-            self.FinalState['Barcode errors'] = num_errors
-            self.Stats['barcode_corrected'] += 1
-            sample = self.Barcodes.get(corrected, None)
+            self.state['Barcode errors'] = num_errors
+            self.stats['barcode_corrected'] += 1
+            sample = self.barcodes.get(corrected, None)
 
-        self.FinalState['Final barcode'] = final_bc
+        self.state['Final barcode'] = final_bc
 
         if from_sequence:
             self.state['Sequence'] = self.state['Sequence'][bc_length:]
 
         if sample is None:
-            self.Failed = True
-            self.Stats['unknown_barcode'] += 1
+            self.failed = True
+            self.stats['unknown_barcode'] += 1
         else:
-            self.FinalState['Sample'] = sample
+            self.state['Sample'] = sample
 
-    @requires(Option='max_barcode_error', Values=not_none)
+    @requires(option='max_barcode_error', values=not_none)
     def _demultiplex_max_barcode_error(self):
         """Fail a sequence if it exceeds a max number of barcode errors"""
-        bc_errors = self.Options['max_barcode_error']
-        if self.FinalState['Barcode errors'] > bc_errors:
-            self.Failed = True
-            self.Stats['exceed_barcode_error'] += 1
+        bc_errors = self.options['max_barcode_error']
+        if self.state['Barcode errors'] > bc_errors:
+            self.failed = True
+            self.stats['exceed_barcode_error'] += 1
 
     ### End demultiplex methods
 
     ### Start primer methods
 
-    @requires(Option='instrument_type', Values='454')
+    @requires(option='instrument_type', values='454')
     def _primer_instrument_454(self):
         """Check for a valid primer"""
         self._primer_check_forward()
 
-    @requires(Option='retain_primer')
-    @requires(Option='max_primer_mismatch')
+    @requires(option='retain_primer')
+    @requires(option='max_primer_mismatch', values=not_none)
     def _primer_check_forward(self):
         """Attempt to determine if the forward primer exists and trim if there
 
@@ -340,12 +340,12 @@ class SequenceWorkflow(Workflow):
         seq = self.state['Sequence']
         qual = self.state['Qual']
 
-        obs_barcode = self.FinalState['Final barcode']
-        exp_primers = self.Primers.get(obs_barcode, None)
+        obs_barcode = self.state['Final barcode']
+        exp_primers = self.primers.get(obs_barcode, None)
 
         if exp_primers is None:
-            self.Stats['unknown_primer_barcode_pair'] += 1
-            self.Failed = True
+            self.stats['unknown_primer_barcode_pair'] += 1
+            self.failed = True
             return
 
         len_primer = len(exp_primers[0])
@@ -354,41 +354,37 @@ class SequenceWorkflow(Workflow):
 
         mm = np.array([count_mismatches(obs_primer, p) for p in exp_primers])
 
-        if (mm > self.Options['max_primer_mismatch']).all():
-            self.Failed = True
-            self.Stats['max_primer_mismatch'] += 1
-            self.Stats['exceeds_max_primer_mismatch'] += 1
+        if (mm > self.options['max_primer_mismatch']).all():
+            self.failed = True
+            self.stats['exceeds_max_primer_mismatch'] += 1
             return
 
-        ### should decompose
-        if not self.Options['retain_primer']:
+        if not self.options['retain_primer']:
             seq = seq[len_primer:]
-            self.state['Sequence'] = seq
             if qual is not None:
                 qual = qual[len_primer:]
-                self.state['Qual'] = qual
 
-        self.FinalState['Forward primer'] = obs_primer
-        self.FinalState['Sequence'] = seq
-        self.FinalState['Qual'] = qual
+        self.state['Forward primer'] = obs_primer
+        self.state['Sequence'] = seq
+        self.state['Qual'] = qual
 
     ### End primer methods
 
     ### Start sequence methods
 
-    @requires(Option='min_seq_len')
+    @requires(option='min_seq_len')
     def _sequence_length_check(self):
         """Checks minimum sequence length"""
-        if len(self.state['Sequence']) < self.Options['min_seq_len']:
-            self.Failed = True
-            self.Stats['min_seq_len'] += 1
+        if len(self.state['Sequence']) < self.options['min_seq_len']:
+            self.failed = True
+            self.stats['min_seq_len'] += 1
 
-    @requires(Option='ambiguous_count')
+    @requires(option='ambiguous_count')
     def _sequence_ambiguous_count(self):
         """Fail if the number of N characters is greater than threshold"""
         count = self.state['Sequence'].count('N')
-        if count > self.Options['ambiguous_count']:
-            self.Failed = True
-            self.Stats['ambiguous_count'] += 1
+        if count > self.options['ambiguous_count']:
+            self.failed = True
+            self.stats['ambiguous_count'] += 1
 
     ### End sequence methods
