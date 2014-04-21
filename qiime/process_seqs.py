@@ -7,6 +7,7 @@ import numpy as np
 from collections import Counter
 from itertools import izip
 
+from skbio.factory.sequence import factory
 from skbio.core.workflow import Workflow, requires, method, not_none
 from qiime.hamming import decode_barcode_8 as decode_hamming_8
 from qiime.golay import decode as decode_golay_12
@@ -17,9 +18,14 @@ def count_mismatches(seq1, seq2):
     return sum(a != b for a, b in izip(seq1, seq2))
 
 
-def has_qual(state):
+def has_sequence_qual(state):
     """Check if state has Qual"""
     return state['Qual'] is not None
+
+
+def has_barcode_qual(state):
+    """Check if state has Barcode Qual"""
+    return state['Barcode Qual'] is not None
 
 
 ### notes on splitlib fastq options:
@@ -35,6 +41,100 @@ def has_qual(state):
 # rev_comp_mapping_barcodes: via Command
 # rev_comp: via Command and iterators
 # phred_offset: via Command and iterators
+
+
+class Seqs(object):
+    """Augmented sequence iterators
+
+    This sequence iterator allows for optionally combining sequence reads with
+    barcode data, as well as performing transforms independently on the reads
+    or the barcode data. Barcode quality, if available, is also yielded.
+
+    Attributes
+    ----------
+    reads
+    barcodes
+
+    Examples
+    --------
+    >>> import os
+    >>> out = open('test_barcodes.fna', 'w')
+    >>> out.write(">s1\nAT\n>s2\nGC\n")
+    >>> out.close()
+    >>> out = open('test_seqs.fq', 'w')
+    >>> out.write("@s1\nAAAT\n+\nghgh\n@s2\nTTGG\n+\nfggh\n")
+    >>> outgz.close()
+
+    >>> from qiime.process_seqs import Seqs
+    >>> it = Seqs(seq='test_seqs.fq', barcode='test_barcodes.fna')
+    >>> for rec in it:
+        ...     print rec['SequenceID']
+        ...     print rec['Sequence']
+        ...     print rec['Qual']
+        ...     print rec['BarcodeID']
+        ...     print rec['Barcode']
+        ...     print rec['BarcodeQual']
+    s1
+    AAAT
+    [39 40 39 40]
+    s1
+    AT
+    None
+    s2
+    TTGG
+    [38 39 39 40]
+    s2
+    GC
+    None
+    >>> os.remove('test_seqs.fq')
+    >>> os.remove('test_barcodes.fna')
+
+    """
+
+    def __init__(self, seq, qual=None, barcode=None, barcode_qual=None,
+                 seq_kwargs=None, barcode_kwargs=None):
+
+        seq_kwargs = {} if seq_kwargs is None else seq_kwargs
+        self.reads = factory(seq=seq, qual=qual, **seq_kwargs)
+
+        if barcode is None:
+            self.barcodes = None
+        else:
+            barcode_kwargs = {} if barcode_kwargs is None else barcode_kwargs
+            self.barcodes = factory(seq=barcode, qual=barcode_qual,
+                                    **barcode_kwargs)
+
+    def __iter__(self):
+        remap = (('SequenceID', 'BarcodeID'),
+                 ('Sequence', 'Barcode'),
+                 ('QualID', 'BarcodeQualID'),
+                 ('Qual', 'BarcodeQual'))
+
+        rec = {'SequenceID': None,
+               'Sequence': None,
+               'QualID': None,
+               'Qual': None,
+               'BarcodeID': None,
+               'Barcode': None,
+               'BarcodeQualID': None,
+               'BarcodeQual': None}
+
+        if self.barcodes is None:
+            for seq in self.reads:
+                rec.update(seq)
+                yield rec
+        else:
+            for seq, barcode in izip(self.reads, self.barcodes):
+                rec.update(seq)
+                rec.update({new_k: barcode[old_k] for new_k, old_k in remap})
+
+                if rec['SequenceID'] != rec['BarcodeID']:
+                    raise ValueError("ID mismatch. SequenceID: %s, "
+                                     "BarcodeID: %s" % (rec['SequenceID'],
+                                                        rec['BarcodeID']))
+
+                yield rec
+
 
 class SequenceWorkflow(Workflow):
     """Implement the sequence processing workflow
