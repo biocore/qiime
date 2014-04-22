@@ -43,8 +43,6 @@ _index_headers = {
 
 
 def format_index_link(link_description, relative_path):
-    #Allow user to use newline characters as in python
-    link_description = link_description.replace('\n', '<br>')
     return '<td>%s</td><td> <a href="%s" target="_blank">%s</a></td>' % (link_description,
                                                                          re.sub(
                                                                              '/+',

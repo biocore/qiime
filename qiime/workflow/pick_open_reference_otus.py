@@ -125,14 +125,14 @@ def pick_reference_otus(input_fp,
         logger.write(
             "Forcing --suppress_new_clusters as this is reference-based OTU picking.\n\n")
         # Build the OTU picking command
-        result = 'pick_otus.py -i %s -o %s -r %s -m %s %s' %\
+        pick_otus_cmd = 'pick_otus.py -i %s -o %s -r %s -m %s %s' %\
             (input_fp,
              output_dir,
              refseqs_fp,
              otu_picking_method,
              params_str)
     
-    return result
+    return pick_otus_cmd
 
 
 def pick_denovo_otus(input_fp,
@@ -655,7 +655,7 @@ def pick_subsampled_open_reference_otus(input_fp,
             commands.append(
                 [('Filter prefilter failures from input', filter_fasta_cmd)])
             index_links.append(
-            ('Pre-filtered sequence identifiers \n'
+            ('Pre-filtered sequence identifiers '
              '(failed to hit reference at %1.2f%% identity)' % prefilter_percent_id,
                         prefilter_failures_list_fp,
                         _index_headers['sequences']))
@@ -836,7 +836,7 @@ def pick_subsampled_open_reference_otus(input_fp,
         otu_no_singletons_fp,
         min_otu_size)
                                                            
-    index_links.append(('Final map of OTU identifier to sequence identifers excluding \n'
+    index_links.append(('Final map of OTU identifier to sequence identifers excluding '
                         'OTUs with fewer than %d sequences' % min_otu_size, 
                         otu_no_singletons_fp, 
                         _index_headers['otu_maps']))
@@ -866,7 +866,7 @@ def pick_subsampled_open_reference_otus(input_fp,
     final_repset_f = open(final_repset_fp, 'w')
     new_refseqs_fp = '%s/new_refseqs.fna' % output_dir
     index_links.append(
-        ('New reference sequences (i.e., OTU representative sequences plus input \n'
+        ('New reference sequences (i.e., OTU representative sequences plus input '
          'reference sequences)',
          new_refseqs_fp,
          _index_headers['sequences']))
@@ -927,7 +927,7 @@ def pick_subsampled_open_reference_otus(input_fp,
         
         align_and_tree_input_otu_table = otu_table_w_tax_fp
         index_links.append(
-            ('OTU table exluding OTUs with fewer than %d sequences and including OTU \n'
+            ('OTU table exluding OTUs with fewer than %d sequences and including OTU '
              'taxonomy assignments' % min_otu_size,
              otu_table_w_tax_fp,
              _index_headers['otu_tables']))
@@ -935,7 +935,7 @@ def pick_subsampled_open_reference_otus(input_fp,
         pynast_failure_filtered_otu_table_fp = \
             '%s/otu_table_mc%d_w_tax_no_pynast_failures.biom' % (output_dir, min_otu_size)
         index_links.append(
-            ('OTU table exluding OTUs with fewer than %d sequences and sequences that \n'
+            ('OTU table exluding OTUs with fewer than %d sequences and sequences that '
             'fail to align with PyNAST and including OTU taxonomy assignments' % min_otu_size,
              pynast_failure_filtered_otu_table_fp,
              _index_headers['otu_tables']))
@@ -945,7 +945,7 @@ def pick_subsampled_open_reference_otus(input_fp,
         otu_table_w_tax_fp = \
             '%s/otu_table_mc%d_w_tax.biom' % (output_dir, min_otu_size)
         index_links.append(
-            ('OTU table exluding OTUs with fewer than %d sequences and including OTU \n'
+            ('OTU table exluding OTUs with fewer than %d sequences and including OTU '
             'taxonomy assignments' % min_otu_size,
              otu_table_w_tax_fp,
              _index_headers['otu_tables']))
@@ -956,7 +956,7 @@ def pick_subsampled_open_reference_otus(input_fp,
             '%s/otu_table_mc%d_no_pynast_failures.biom' % (output_dir,
                                                            min_otu_size)
         index_links.append(
-            ('OTU table exluding OTUs with fewer than %d sequences and sequences that \n'
+            ('OTU table exluding OTUs with fewer than %d sequences and sequences that '
              'fail to align with PyNAST' % min_otu_size,
              pynast_failure_filtered_otu_table_fp,
              _index_headers['otu_tables']))                                    
