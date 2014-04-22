@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 from __future__ import division
 
-__author__ = "Jai Ram Rideout"
-__copyright__ = "Copyright 2013, The QIIME Project"
-__credits__ = ["Jai Ram Rideout", "Charudatta Navare"]
+__author__ = "Charudatta Navare"
+__copyright__ = "Copyright 2014, The QIIME Project"
+__credits__ = ["Charudatta Navare", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Charudatta Navare"
 __email__ = "charudatta.navare@gmail.com"
 
