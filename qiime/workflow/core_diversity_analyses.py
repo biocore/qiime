@@ -27,6 +27,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
+#_index_headers includes key/value pairs use in pick_open_reference_otus.py
 _index_headers = {
     "run_summary": "Run summary data",
     "beta_diversity_even": "Beta diversity results (even sampling: %d)",
@@ -38,12 +39,12 @@ _index_headers = {
     "otu_maps": "OTU maps",
     "sequences": "Reference sequences",
     "otu_tables": "OTU tables",
-    "trees": "Trees",
-    "What is this":"what ever this is"}
+    "trees": "Trees"}
 
 
 def format_index_link(link_description, relative_path):
-
+    #Allow user to use newline characters as in python
+    link_description = link_description.replace('\n', '<br>')
     return '<td>%s</td><td> <a href="%s" target="_blank">%s</a></td>' % (link_description,
                                                                          re.sub(
                                                                              '/+',

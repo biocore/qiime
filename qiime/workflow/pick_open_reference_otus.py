@@ -654,7 +654,9 @@ def pick_subsampled_open_reference_otus(input_fp,
                 (input_fp, prefiltered_input_fp, prefilter_failures_list_fp)
             commands.append(
                 [('Filter prefilter failures from input', filter_fasta_cmd)])
-            index_links.append(('Pre-filtered sequence identifiers\n (failed to hit reference at %1.2f%% identity)' % prefilter_percent_id,
+            index_links.append(
+            ('Pre-filtered sequence identifiers \n'
+             '(failed to hit reference at %1.2f%% identity)' % prefilter_percent_id,
                         prefilter_failures_list_fp,
                         _index_headers['sequences']))
 
@@ -834,7 +836,8 @@ def pick_subsampled_open_reference_otus(input_fp,
         otu_no_singletons_fp,
         min_otu_size)
                                                            
-    index_links.append(('Final map of OTU identifier to sequence identifers excluding OTUs with fewer than %d sequences' % min_otu_size, 
+    index_links.append(('Final map of OTU identifier to sequence identifers excluding \n'
+                        'OTUs with fewer than %d sequences' % min_otu_size, 
                         otu_no_singletons_fp, 
                         _index_headers['otu_maps']))
 
@@ -863,7 +866,8 @@ def pick_subsampled_open_reference_otus(input_fp,
     final_repset_f = open(final_repset_fp, 'w')
     new_refseqs_fp = '%s/new_refseqs.fna' % output_dir
     index_links.append(
-        ('New reference sequences (i.e., OTU representative sequences plus input reference sequences)',
+        ('New reference sequences (i.e., OTU representative sequences plus input \n'
+         'reference sequences)',
          new_refseqs_fp,
          _index_headers['sequences']))
     # write non-singleton otus representative sequences from step1 to the
@@ -923,14 +927,16 @@ def pick_subsampled_open_reference_otus(input_fp,
         
         align_and_tree_input_otu_table = otu_table_w_tax_fp
         index_links.append(
-            ('OTU table exluding OTUs with fewer than %d sequences and including OTU taxonomy assignments' % min_otu_size,
+            ('OTU table exluding OTUs with fewer than %d sequences and including OTU \n'
+             'taxonomy assignments' % min_otu_size,
              otu_table_w_tax_fp,
              _index_headers['otu_tables']))
              
         pynast_failure_filtered_otu_table_fp = \
             '%s/otu_table_mc%d_w_tax_no_pynast_failures.biom' % (output_dir, min_otu_size)
         index_links.append(
-            ('OTU table exluding OTUs with fewer than %d sequences and sequences that fail to align with PyNAST and including OTU taxonomy assignments' % min_otu_size,
+            ('OTU table exluding OTUs with fewer than %d sequences and sequences that \n'
+            'fail to align with PyNAST and including OTU taxonomy assignments' % min_otu_size,
              pynast_failure_filtered_otu_table_fp,
              _index_headers['otu_tables']))
          
@@ -939,7 +945,8 @@ def pick_subsampled_open_reference_otus(input_fp,
         otu_table_w_tax_fp = \
             '%s/otu_table_mc%d_w_tax.biom' % (output_dir, min_otu_size)
         index_links.append(
-            ('OTU table exluding OTUs with fewer than %d sequences and including OTU taxonomy assignments' % min_otu_size,
+            ('OTU table exluding OTUs with fewer than %d sequences and including OTU \n'
+            'taxonomy assignments' % min_otu_size,
              otu_table_w_tax_fp,
              _index_headers['otu_tables']))
          
@@ -949,7 +956,8 @@ def pick_subsampled_open_reference_otus(input_fp,
             '%s/otu_table_mc%d_no_pynast_failures.biom' % (output_dir,
                                                            min_otu_size)
         index_links.append(
-            ('OTU table exluding OTUs with fewer than %d sequences and sequences that fail to align with PyNAST' % min_otu_size,
+            ('OTU table exluding OTUs with fewer than %d sequences and sequences that \n'
+             'fail to align with PyNAST' % min_otu_size,
              pynast_failure_filtered_otu_table_fp,
              _index_headers['otu_tables']))                                    
 
