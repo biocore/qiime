@@ -1290,17 +1290,6 @@ def count_seqs_in_filepaths(fasta_filepaths, seq_counter=count_seqs):
 # End functions for counting sequences in fasta files
 
 
-def get_top_fastq_two_lines(open_file):
-    """ This function returns the first 4 lines of the open fastq file
-    """
-    line1 = open_file.readline()
-    line2 = open_file.readline()
-    line3 = open_file.readline()
-    line4 = open_file.readline()
-    open_file.seek(0)
-    return line1, line2, line3, line4
-
-
 def get_split_libraries_fastq_params_and_file_types(fastq_fps, mapping_fp):
     """ The function takes a list of open fastq files and a mapping file, then
         returns a recommended parameters string for split_libraries_fastq

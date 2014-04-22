@@ -43,7 +43,7 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
                         get_interesting_mapping_fields, inflate_denoiser_output,
                         flowgram_id_to_seq_id_map, count_seqs, count_seqs_from_file,
                         count_seqs_in_filepaths, get_split_libraries_fastq_params_and_file_types,
-                        iseq_to_qseq_fields, get_top_fastq_two_lines,
+                        iseq_to_qseq_fields,
                         make_compatible_distance_matrices, stderr, _chk_asarray, expand_otu_ids,
                         subsample_fasta, summarize_otu_sizes_from_otu_map,
                         load_qiime_config, MetadataMap,
@@ -632,46 +632,6 @@ o4	seq6	seq7""".split('\n')
                                                               map_fpath)
 
         self.assertEqual(obs, exp)
-
-    def test_get_top_fastq_two_lines(self):
-        """ get_top_fastq_two_lines: this function gets the first 4 lines of
-            the open fastq file
-        """
-
-        temp_output_dir = mkdtemp()
-        self.dirs_to_remove.append(temp_output_dir)
-
-        fastq_files = []
-        # generate fastq seqs file
-        seq_fpath = join(temp_output_dir, 'seqs.fastq')
-        seqs_fopen = open(seq_fpath, 'w')
-        seqs_fopen.write('\n'.join(fastq_seqs))
-        seqs_fopen.close()
-
-        fastq_files.append(seq_fpath)
-        self.files_to_remove.append(seq_fpath)
-
-        # generate fastq seqs file
-        barcode_fpath = join(temp_output_dir, 'barcodes.fastq')
-        barcode_fopen = open(barcode_fpath, 'w')
-        barcode_fopen.write('\n'.join(fastq_barcodes))
-        barcode_fopen.close()
-
-        fastq_files.append(barcode_fpath)
-        self.files_to_remove.append(barcode_fpath)
-        exp = [('@HWUSI-EAS552R_0357:8:1:10040:6364#0/1\n', 'GACGAGTCAGTCA\n',
-                '+HWUSI-EAS552R_0357:8:1:10040:6364#0/1\n', 'hhhhhhhhhhhhh\n'),
-               ('@HWUSI-EAS552R_0357:8:1:10040:6364#0/2\n',
-                'TACAGGGGATGCAAGTGTTATCCGGAATTATTGGGCGTAAAGCGTCTGCAGGTTGCTCACTAAGTCTTTTGTTAAATCTTCGGGCTTAACCCGAAACCTGCAAAAGAAACTAGTGCTCTCGAGTATGGTAGAGGTAAAGGGAATTTCCAG\n',
-
-                '+HWUSI-EAS552R_0357:8:1:10040:6364#0/2\n',
-                'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhfhhhhhhgghhhhhWhfcffehf]hhdhhhhhgcghhhchhhhfhcfhhgggdfhgdcffadccfdcccca]^b``ccfdd_caccWbb[b_dfdcdeaec`^`^_daba_b_WdY^`\n')]
-
-        # iterate of dict and make sure the top 4 lines of each file are in the
-        # expected list
-        for i in fastq_files:
-            obs = get_top_fastq_two_lines(open(i))
-            self.assertTrue(obs in exp)
 
     def test_make_compatible_distance_matrices(self):
         """make_compatible_distance_matrices: functions as expected"""
