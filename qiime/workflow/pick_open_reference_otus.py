@@ -656,7 +656,7 @@ def pick_subsampled_open_reference_otus(input_fp,
                 [('Filter prefilter failures from input', filter_fasta_cmd)])
             index_links.append(
             ('Pre-filtered sequence identifiers '
-             '(failed to hit reference at %1.2f%% identity)' % prefilter_percent_id,
+             '(failed to hit reference at %1.1f%% identity)' % (float(prefilter_percent_id)*100),
                         prefilter_failures_list_fp,
                         _index_headers['sequences']))
 
