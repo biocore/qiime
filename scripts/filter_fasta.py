@@ -19,6 +19,7 @@ from qiime.filter import (filter_fasta, filter_fastq,
                           get_seqs_to_keep_lookup_from_fasta_file,
                           sample_ids_from_metadata_description,
                           get_seqs_to_keep_lookup_from_biom)
+from skbio.parse.sequences import parse_fasta
 
 options_lookup = get_options_lookup()
 
