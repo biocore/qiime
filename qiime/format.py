@@ -743,7 +743,7 @@ def illumina_data_to_fastq(record_data, number_of_bases=None):
 def format_biom_table(biom_table):
     """ Given a biom-format Table object, returns that Table as a BIOM string"""
     generated_by_str = "QIIME " + get_qiime_library_version()
-    return biom_table.getBiomFormatJsonString(generated_by_str)
+    return biom_table.get_biom_format_json_string(generated_by_str)
 
 
 def format_mapping_html_data(header,

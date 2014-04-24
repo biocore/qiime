@@ -51,7 +51,7 @@ class ObservationRichnessEstimator(object):
                 be a subclass of AbstractPointEstimator, e.g.
                 Chao1MultinomialPointEstimator
         """
-        if biom_table.isEmpty():
+        if biom_table.is_empty():
             raise EmptyTableError("The input BIOM table cannot be empty.")
 
         self._biom_table = biom_table

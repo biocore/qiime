@@ -26,96 +26,96 @@ def make_html_doc(js_filename):
         r'''
     <html>
     <head>
-    	<script type="text/javascript" src="js/overlib.js"></script>
+    \t<script type="text/javascript" src="js/overlib.js"></script>
         <script type="text/javascript" src="%s"></script>
-    	<script type="text/javascript" src="js/otu_count_display.js"></script>
-    	<script type="text/javascript" src="./js/jquery.js"></script>
-    	<script type="text/javascript" src="./js/jquery.tablednd_0_5.js"></script>
+    \t<script type="text/javascript" src="js/otu_count_display.js"></script>
+    \t<script type="text/javascript" src="./js/jquery.js"></script>
+    \t<script type="text/javascript" src="./js/jquery.tablednd_0_5.js"></script>
         <script type="text/javascript">
 
 
         $(document).ready(function() {
 
-        	$('#otu_table_body').tableDnD({
-        		onDragStart: function(table, new_row) {
-        			if (row==new_row.parentNode.rowIndex && is_selected==1){
-        				change_sel_row=1;
-        			}else{
-        				old_row=new_row.parentNode.rowIndex;
-        				change_sel_row=0;
-        			}
-        		},
-        		onDrop: function(table, new_row) {
-        			if (change_sel_row==1){
-        				row=new_row.rowIndex;
-        			}else if(old_row<row && new_row.rowIndex>row){
-        				row=row-1;
-        			}else if(old_row>row && new_row.rowIndex<row){
-        				row=row+1;
-        			}
-        		},
-            	dragHandle: "dragHandle"
-        	});
+        \t$('#otu_table_body').tableDnD({
+        \t\tonDragStart: function(table, new_row) {
+        \t\t\tif (row==new_row.parentNode.rowIndex && is_selected==1){
+        \t\t\t\tchange_sel_row=1;
+        \t\t\t}else{
+        \t\t\t\told_row=new_row.parentNode.rowIndex;
+        \t\t\t\tchange_sel_row=0;
+        \t\t\t}
+        \t\t},
+        \t\tonDrop: function(table, new_row) {
+        \t\t\tif (change_sel_row==1){
+        \t\t\t\trow=new_row.rowIndex;
+        \t\t\t}else if(old_row<row && new_row.rowIndex>row){
+        \t\t\t\trow=row-1;
+        \t\t\t}else if(old_row>row && new_row.rowIndex<row){
+        \t\t\t\trow=row+1;
+        \t\t\t}
+        \t\t},
+            \tdragHandle: "dragHandle"
+        \t});
             var otu_cutoff=document.getElementById("otu_count_cutoff");
             otu_cutoff.value=otu_num_cutoff;
         });
         </script>
-    	<style type="text/css">
-    	    th.rotate{
-    			white-space : nowrap;
-    			-webkit-transform: rotate(-90deg) translate(20px, 0px);
-    			-moz-transform: rotate(-90deg) translate(20px, 0px);
-    			font-family:arial;
-    			font-size:9px;
-    		}
-    		th.lineage{
-        	    white-space : nowrap;
-        	    text-align:left;
-        	    font-family:arial;
-        	    font-size:10px;
-        	    font-weight: bolder;
-        	}
-        	td.dragHandle{
-            	white-space : nowrap;
-            	text-align:left;
-            	font-family:arial;
-            	font-size:10px;
-            	font-weight: bolder;
-        	}
-        	td{
-            	white-space : nowrap;
-            	font-family:arial;
-            	font-size:10px;
-            	text-align:center;
-            	font-weight: bolder;
-        	}
-        	table{
-            	border-spacing: 0;
-            	text-align:center;
-        	}
-        	p{
-            		text-align:left;
-            		font-weight: normal;
-        	}
-    	</style>
+    \t<style type="text/css">
+    \t    th.rotate{
+    \t\t\twhite-space : nowrap;
+    \t\t\t-webkit-transform: rotate(-90deg) translate(20px, 0px);
+    \t\t\t-moz-transform: rotate(-90deg) translate(20px, 0px);
+    \t\t\tfont-family:arial;
+    \t\t\tfont-size:9px;
+    \t\t}
+    \t\tth.lineage{
+        \t    white-space : nowrap;
+        \t    text-align:left;
+        \t    font-family:arial;
+        \t    font-size:10px;
+        \t    font-weight: bolder;
+        \t}
+        \ttd.dragHandle{
+            \twhite-space : nowrap;
+            \ttext-align:left;
+            \tfont-family:arial;
+            \tfont-size:10px;
+            \tfont-weight: bolder;
+        \t}
+        \ttd{
+            \twhite-space : nowrap;
+            \tfont-family:arial;
+            \tfont-size:10px;
+            \ttext-align:center;
+            \tfont-weight: bolder;
+        \t}
+        \ttable{
+            \tborder-spacing: 0;
+            \ttext-align:center;
+        \t}
+        \tp{
+            \t\ttext-align:left;
+            \t\tfont-weight: normal;
+        \t}
+    \t</style>
     </head>
     <body>
-    	<p>
-    		Filter by Counts per OTU: <input type="text" id="otu_count_cutoff" value="">
-    		<input type="button" onclick="javascript:create_OTU_intervals();" value="Sample ID">
-    		<input type="button" onclick="javascript:write_taxon_heatmap();" value="Taxonomy">
-    	</p>
-    	<br><br><br><br><br><br>
-    	<table id='otu_table_html'>
-    		<thead id='otu_table_head'>
-    		</thead>
-    		<tbody id='otu_table_body'>
-    		<tr><td class="dragHandle"></td>
-    		</tr>
-    		<tr><td class="dragHandle"></td>
-    		</tr>
-    		</tbody>
-    	</table>
+    \t<p>
+    \t\tFilter by Counts per OTU: <input type="text" id="otu_count_cutoff" value="">
+    \t\t<input type="button" onclick="javascript:create_OTU_intervals();" value="Sample ID">
+    \t\t<input type="button" onclick="javascript:write_taxon_heatmap();" value="Taxonomy">
+    \t</p>
+    \t<br><br><br><br><br><br>
+    \t<table id='otu_table_html'>
+    \t\t<thead id='otu_table_head'>
+    \t\t</thead>
+    \t\t<tbody id='otu_table_body'>
+    \t\t<tr><td class="dragHandle"></td>
+    \t\t</tr>
+    \t\t<tr><td class="dragHandle"></td>
+    \t\t</tr>
+    \t\t</tbody>
+    \t</table>
 
     </body>
     </html>''' % (js_filename)
@@ -139,7 +139,7 @@ def create_javascript_array(otu_table, use_floats=False):
 
     # OTU ids first
     js_array.append("OTU_table[0][0]='#OTU ID';\n")
-    for (idx, otu_id) in enumerate(otu_table.ObservationIds):
+    for (idx, otu_id) in enumerate(otu_table.observation_ids):
         js_array.append("OTU_table[0][%i]='%s';\n" % (idx + 1, otu_id))
 
     # Sample ids and values in the table
@@ -172,7 +172,7 @@ def filter_by_otu_hits(num_otu_hits, otu_table):
     """Filter the OTU table by the number of otus per sample"""
     # Filter out rows with sum > num_otu_hits
     new_otu_table = filter_otus_from_otu_table(
-        otu_table, otu_table.ObservationIds,
+        otu_table, otu_table.observation_ids,
         num_otu_hits, inf, 0, inf)
 
     return new_otu_table
@@ -186,7 +186,7 @@ def get_log_transform(otu_table, eps=None):
     # explicit conversion to float: transform
     def f(s_v, s_id, s_md):
         return float64(s_v)
-    float_otu_table = otu_table.transformSamples(f)
+    float_otu_table = otu_table.transform_samples(f)
 
     if eps is None:
         # get the minimum among nonzero entries and divide by two
@@ -207,12 +207,12 @@ def get_log_transform(otu_table, eps=None):
     def g_m(s_v, s_id, s_md):
         return asarray(map(g, s_v))
 
-    eps_otu_table = float_otu_table.transformSamples(g_m)
+    eps_otu_table = float_otu_table.transform_samples(g_m)
 
     # take log of all values with transform
     def h(s_v, s_id, s_md):
         return log(s_v)
-    log_otu_table = eps_otu_table.transformSamples(h)
+    log_otu_table = eps_otu_table.transform_samples(h)
 
     # one more transform
     min_val = inf
@@ -222,7 +222,7 @@ def get_log_transform(otu_table, eps=None):
     def i(s_v, s_id, s_md):
         return s_v - min_val
 
-    res_otu_table = log_otu_table.transformSamples(i)
+    res_otu_table = log_otu_table.transform_samples(i)
 
     return res_otu_table
 
@@ -255,7 +255,7 @@ def generate_heatmap_plots(
     if otu_sort:
         # Since the BIOM object comes back with fewer Observation_ids, we need to
         # remove those from the original sort_order
-        actual_observations = filtered_otu_table.ObservationIds
+        actual_observations = filtered_otu_table.observation_ids
         new_otu_sort_order = []
         for i in otu_sort:
             if i in actual_observations:
