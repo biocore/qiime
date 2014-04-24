@@ -1738,7 +1738,7 @@ def paired_difference_analyses(personal_ids_to_state_values,
     biom_table = table_factory(biom_data,
                                personal_ids,
                                biom_observation_ids,
-                               constructor=Table)
+                               input_is_dense=True)
     biom_table_f = open(biom_table_fp, 'w')
     biom_table_f.write(format_biom_table(biom_table))
     biom_table_f.close()
