@@ -44,7 +44,7 @@ class BetaDiversityCalcTests(TestCase):
         self.qiime_config = load_qiime_config()
         self.tmp_dir = self.qiime_config['temp_dir'] or '/tmp/'
 
-        self.l19_data = to_sparse(numpy.array([
+        self.l19_data = numpy.array([
             [7, 1, 0, 0, 0, 0, 0, 0, 0],
             [4, 2, 0, 0, 0, 1, 0, 0, 0],
             [2, 4, 0, 0, 0, 1, 0, 0, 0],
@@ -64,7 +64,7 @@ class BetaDiversityCalcTests(TestCase):
             [0, 0, 0, 4, 2, 0, 0, 0, 4],
             [0, 0, 0, 2, 4, 0, 0, 0, 1],
             [0, 0, 0, 1, 7, 0, 0, 0, 0]
-        ]))
+        ])
         self.l19_sample_names = [
             'sam1', 'sam2', 'sam3', 'sam4', 'sam5', 'sam6',
             'sam7', 'sam8', 'sam9', 'sam_middle', 'sam11', 'sam12', 'sam13',
@@ -74,7 +74,7 @@ class BetaDiversityCalcTests(TestCase):
         self.l19_taxon_names_w_underscore = ['ta_x1', 'tax2', 'tax3', 'tax4',
                                              'endbigtaxon', 'tax6', 'tax7', 'tax8', 'tax9']
 
-        l19_str = format_biom_table(Table(self.l19_data.T,
+        l19_str = format_biom_table(Table(to_sparse(self.l19_data.T),
                                                   self.l19_sample_names,
                                                   self.l19_taxon_names))
         fd, self.l19_fp = mkstemp(dir=self.tmp_dir,
@@ -82,7 +82,7 @@ class BetaDiversityCalcTests(TestCase):
         close(fd)
         open(self.l19_fp, 'w').write(l19_str)
 
-        l19_str_w_underscore = format_biom_table(Table(self.l19_data.T,
+        l19_str_w_underscore = format_biom_table(Table(to_sparse(self.l19_data.T),
                                                                self.l19_sample_names,
                                                                self.l19_taxon_names_w_underscore))
         fd, self.l19_str_w_underscore_fp = mkstemp(dir=self.tmp_dir,
