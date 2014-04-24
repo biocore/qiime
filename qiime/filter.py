@@ -24,7 +24,7 @@ from biom.parse import parse_biom_table
 def get_otu_ids_from_taxonomy_f(positive_taxa=None,
                                 negative_taxa=None,
                                 metadata_field="taxonomy"):
-    """ return function to pass to Table.filterObservations for taxon-based filtering
+    """ return function to pass to Table.filter_observations for taxon-based filtering
 
         positive_taxa : a list of strings that will be compared to each
          taxonomy level in an observation's (i.e., OTU's) metadata_field. If
@@ -75,7 +75,7 @@ def get_otu_ids_from_taxonomy_f(positive_taxa=None,
                          "These lists must be mutually exclusive.\n"
                          "Offending values are: %s" % ' '.join(positive_taxa & negative_taxa))
 
-    # Define the function that can be passed to Table.filterObservations
+    # Define the function that can be passed to Table.filter_observations
     def result(v, oid, md):
         positive_hit = False
         negative_hit = False
@@ -531,7 +531,7 @@ def filter_samples_from_otu_table(
                                    min_count,
                                    max_count,
                                    0, inf)
-    return otu_table.filterSamples(filter_f)
+    return otu_table.filter_samples(filter_f)
 
 
 def filter_otus_from_otu_table(otu_table, ids_to_keep, min_count, max_count,
@@ -541,7 +541,7 @@ def filter_otus_from_otu_table(otu_table, ids_to_keep, min_count, max_count,
                                    max_count,
                                    min_samples, max_samples,
                                    negate_ids_to_keep)
-    return otu_table.filterObservations(filter_f)
+    return otu_table.filter_observations(filter_f)
 
 # end functions used by filter_samples_from_otu_table.py and
 # filter_otus_from_otu_table.py

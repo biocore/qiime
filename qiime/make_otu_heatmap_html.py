@@ -144,7 +144,7 @@ def create_javascript_array(otu_table, use_floats=False):
 
     # Sample ids and values in the table
     i = 1
-    for (sam_val, sam_id, meta) in otu_table.iterSamples():
+    for (sam_val, sam_id, meta) in otu_table.iter_samples():
         js_array.append("OTU_table[%i][0]='%s';\n" % (i, sam_id))
         for (idx, v) in enumerate(sam_val):
             if use_floats:
@@ -192,7 +192,7 @@ def get_log_transform(otu_table, eps=None):
         # get the minimum among nonzero entries and divide by two
         eps = inf
         for (obs, sam) in float_otu_table.nonzero():
-            eps = minimum(eps, float_otu_table.getValueByIds(obs, sam))
+            eps = minimum(eps, float_otu_table.get_value_by_ids(obs, sam))
         if eps == inf:
             raise ValueError('All values in the OTU table are zero!')
 
