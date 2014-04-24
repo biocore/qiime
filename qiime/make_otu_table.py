@@ -23,7 +23,7 @@ from cogent.util.misc import flatten
 from qiime.format import format_otu_table
 from qiime.parse import parse_otu_map
 from qiime.format import format_biom_table
-from biom.table import SparseOTUTable, Table, table_factory
+from biom.table import Table, table_factory
 
 
 def libs_from_seqids(seq_ids, delim='_'):
@@ -42,7 +42,8 @@ def make_otu_table(otu_map_f,
                    delim='_',
                    table_id=None,
                    sample_metadata=None,
-                   constructor=SparseOTUTable):
+                   constructor=Table,
+                   input_is_dense=False):
 
     data, sample_ids, otu_ids = parse_otu_map(otu_map_f, delim)
 
@@ -65,7 +66,7 @@ def make_otu_table(otu_map_f,
                                   observation_metadata=otu_metadata,
                                   table_id=table_id,
                                   constructor=constructor,
-                                  dtype=int)
+                                  dtype=int, input_is_dense=input_is_dense)
     except ValueError as e:
         raise ValueError("Couldn't create OTU table. Is your OTU map empty?"
                          " Original error message: %s" % (str(e)))
