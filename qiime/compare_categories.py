@@ -10,16 +10,15 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 
-"""Contains functions used in the compare_categories.py script."""
-
 from os.path import join
 from types import ListType
+
+from skbio.core.distance import DistanceMatrix
 
 from qiime.format import (format_anosim_results, format_best_results,
                           format_permanova_results)
 from qiime.stats import Anosim, Best, Permanova
-from qiime.util import (get_qiime_temp_dir, DistanceMatrix, MetadataMap,
-                        RExecutor)
+from qiime.util import get_qiime_temp_dir, MetadataMap, RExecutor
 
 methods = ['adonis', 'anosim', 'best', 'morans_i', 'mrpp', 'permanova',
            'permdisp', 'dbrda']
@@ -63,25 +62,23 @@ def compare_categories(dm_fp, map_fp, method, categories, num_perms, out_dir):
                          "statistical tests on.")
 
     # Parse the mapping file and distance matrix.
-    md_map = MetadataMap.parseMetadataMap(open(map_fp, 'U'))
-    dm = DistanceMatrix.parseDistanceMatrix(open(dm_fp, 'U'))
+    with open(map_fp, 'U') as map_f:
+        md_map = MetadataMap.parseMetadataMap(map_f)
+
+    with open(dm_fp, 'U') as dm_f:
+        dm = DistanceMatrix.from_file(dm_f)
 
     # Remove any samples from the mapping file that aren't in the distance
     # matrix (important for validation checks). Use strict=True so that an
     # error is raised if the distance matrix contains any samples that aren't
     # in the mapping file.
-    md_map.filterSamples(dm.SampleIds, strict=True)
+    md_map.filterSamples(dm.ids, strict=True)
 
     # Run the specified statistical method.
     if method in ['adonis', 'morans_i', 'mrpp', 'permdisp', 'dbrda']:
         # These methods are run in R. Input validation must be done here before
         # running the R commands. The pure-Python implementations perform all
         # validation in the classes in the stats module.
-
-        # Make sure the input distance matrix is symmetric and hollow.
-        if not dm.is_symmetric_and_hollow():
-            raise ValueError("The distance matrix must be symmetric and "
-                             "hollow.")
 
         # Check to make sure all categories passed in are in mapping file and
         # are not all the same value.

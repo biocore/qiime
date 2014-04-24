@@ -12,8 +12,9 @@ __email__ = "gregcaporaso@gmail.com"
 
 from os import rename
 
-from cogent import DNA
-from cogent.util.misc import safe_md5, create_dir
+from skbio.util.misc import safe_md5, create_dir
+from skbio.core.sequence import DNA
+
 from qiime.util import parse_command_line_parameters, make_option, gzip_open
 from qiime.parse import parse_mapping_file
 from qiime.split_libraries_fastq import (process_fastq_single_end_read_file,
@@ -58,21 +59,15 @@ script_info['script_usage'].append(("Demultiplex and quality filter "
 script_info['script_usage'].append(("Quality filter (at Phred >= Q20) one "
                                     "non-multiplexed lane of Illumina fastq data and write results "
                                     "to ./slout_single_sample_q20.", "", "%prog -i lane1_read1.fastq.gz "
-                                    "--sample_id my.sample -o slout_single_sample_q20/ "
-                                    "-m map_not_multiplexed.txt  -q 19 --barcode_type 'not-barcoded'"))
-
-script_info['script_usage'].append(("Quality filter (at Phred >= Q20) one "
-                                    "non-multiplexed lane of Illumina fastq data and write results "
-                                    "to ./slout_single_sample_q20.", "", "%prog -i lane1_read1.fastq.gz "
                                     "--sample_id my.sample.1 -o slout_single_sample_q20/ "
-                                    "-m map_not_multiplexed.txt -q 19 --barcode_type 'not-barcoded'"))
+                                    "-q 19 --barcode_type 'not-barcoded'"))
 
 script_info['script_usage'].append(("Quality filter (at Phred >= Q20) two "
                                     "non-multiplexed lanes of Illumina fastq data with different samples in "
                                     "each and write results to ./slout_not_multiplexed_q20.", "",
                                     "%prog -i lane1_read1.fastq.gz,lane2_read1.fastq.gz "
                                     "--sample_id my.sample.1,my.sample.2 -o slout_not_multiplexed_q20/ "
-                                    "-m map_not_multiplexed.txt -q 19 --barcode_type 'not-barcoded'"))
+                                    "-q 19 --barcode_type 'not-barcoded'"))
 
 script_info['output_description'] = ""
 script_info['required_options'] = [
@@ -81,11 +76,12 @@ script_info['required_options'] = [
                 'one)'),
     make_option('-o', '--output_dir', type="new_dirpath", help='directory to '
                 'store output files'),
-    make_option('-m', '--mapping_fps', type="existing_filepaths",
-                help='metadata mapping files (comma-separated if more than one)')
 ]
 
 script_info['optional_options'] = [
+    make_option('-m', '--mapping_fps', type="existing_filepaths",
+                help='metadata mapping files (comma-separated if more than'
+                ' one) [default: %default]', default=None),
     make_option('-b', '--barcode_read_fps', type="existing_filepaths",
                 default=None, help='the barcode read fastq files (comma-separated '
                 'if more than one) [default: %default]'),
@@ -189,8 +185,12 @@ def main():
                                 "your data is not multiplexed), must provide the same number "
                                 "of sample ids as sequence read filepaths.")
         barcode_read_fps = [None] * len(sequence_read_fps)
+        mapping_fps = [None] * len(sequence_read_fps)
     elif barcode_read_fps is None:
         option_parser.error("Must provide --barcode_read_fps if "
+                            "--barcode_type is not 'not-barcoded'")
+    elif mapping_fps is None:
+        option_parser.error("Must provide --mapping_fps if "
                             "--barcode_type is not 'not-barcoded'")
 
     phred_offset = opts.phred_offset
@@ -270,13 +270,17 @@ def main():
         sequence_read_fp = sequence_read_fps[i]
         barcode_read_fp = barcode_read_fps[i]
         mapping_fp = mapping_fps[i]
-        mapping_f = open(mapping_fp, 'U')
-        _, _, barcode_to_sample_id, _, _, _, _ = check_map(mapping_f,
-                                                           disable_primer_check=True, has_barcodes=barcode_read_fp is not
-                                                           None)
+        if mapping_fp is not None:
+            mapping_f = open(mapping_fp, 'U')
+            _, _, barcode_to_sample_id, _, _, _, _ = check_map(mapping_f,
+                disable_primer_check=True,
+                has_barcodes=barcode_read_fp is not None)
+        else:
+            mapping_f = None
+            barcode_to_sample_id = {}
 
         if rev_comp_mapping_barcodes:
-            barcode_to_sample_id = {DNA.rc(k): v for k, v in
+            barcode_to_sample_id = {str(DNA(k).rc()): v for k, v in
                                     barcode_to_sample_id.iteritems()}
 
         if barcode_type == 'golay_12':
@@ -292,8 +296,9 @@ def main():
                                     ' '.join(invalid_golay_barcodes))
 
         log_f.write("Input file paths\n")
-        log_f.write('Mapping filepath: %s (md5: %s)\n' %
-                    (mapping_fp, safe_md5(open(mapping_fp)).hexdigest()))
+        if mapping_fp is not None:
+            log_f.write('Mapping filepath: %s (md5: %s)\n' %
+                        (mapping_fp, safe_md5(open(mapping_fp)).hexdigest()))
         log_f.write('Sequence read filepath: %s (md5: %s)\n' %
                     (sequence_read_fp,
                      str(safe_md5(open(sequence_read_fp)).hexdigest())))
@@ -307,7 +312,8 @@ def main():
 
         if barcode_read_fp is not None:
             log_f.write('Barcode read filepath: %s (md5: %s)\n\n' %
-                        (barcode_read_fp, safe_md5(open(barcode_read_fp)).hexdigest()))
+                        (barcode_read_fp,
+                         safe_md5(open(barcode_read_fp)).hexdigest()))
 
             if barcode_read_fp.endswith('.gz'):
                 barcode_read_f = gzip_open(barcode_read_fp)

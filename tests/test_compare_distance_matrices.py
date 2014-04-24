@@ -10,17 +10,14 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 
-"""Test suite for the compare_distance_matrices.py module."""
-
 from string import digits
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from qiime.parse import parse_distmat
 from qiime.compare_distance_matrices import (run_mantel_correlogram,
                                              run_mantel_test)
 
 
 class CompareDistanceMatricesTests(TestCase):
-
     """Tests for the compare_distance_matrices.py module.
 
     For these tests, we are interested in the structure of the strings that are

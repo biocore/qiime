@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from qiime.make_library_id_lists import (get_ids, get_first_id)
 """Tests of the make_library_id_lists.py file.
 """

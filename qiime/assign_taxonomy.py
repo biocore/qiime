@@ -23,16 +23,16 @@ from tempfile import NamedTemporaryFile
 from cStringIO import StringIO
 from collections import Counter, defaultdict
 
-from cogent import LoadSeqs, DNA
-from cogent.app.formatdb import build_blast_db_from_fasta_path
-from cogent.app.blast import blast_seqs, Blastall, BlastResult
-from cogent.app import rtax
-from cogent.app.util import ApplicationNotFoundError
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.app.util import ApplicationNotFoundError
+from skbio.parse.sequences import parse_fasta
 
-from qiime.pycogent_backports.uclust import Uclust
-from qiime.pycogent_backports import rdp_classifier
-from qiime.pycogent_backports import mothur
+from brokit.blast import blast_seqs, Blastall, BlastResult
+from brokit.formatdb import build_blast_db_from_fasta_path
+from brokit.uclust import Uclust
+from brokit import rdp_classifier
+from brokit import mothur
+from brokit import rtax
+
 from qiime.util import FunctionWithParams, get_rdp_jarpath, get_qiime_temp_dir
 
 # Load Tax2Tree if it's available. If it's not, skip it, but set up
@@ -190,7 +190,7 @@ class BlastTaxonAssigner(TaxonAssigner):
 
         if seq_path:
             # Get a seq iterator
-            seqs = MinimalFastaParser(open(seq_path))
+            seqs = parse_fasta(open(seq_path))
         # Build object to keep track of the current set of sequence to be
         # blasted, and the results (i.e., seq_id -> (taxonomy,quaility score)
         # mapping)
@@ -466,7 +466,7 @@ class RdpTaxonAssigner(TaxonAssigner):
         reference_seqs_file = open(self.Params['reference_sequences_fp'], 'U')
         id_to_taxonomy_file = open(self.Params['id_to_taxonomy_fp'], 'U')
 
-        for seq_id, seq in MinimalFastaParser(reference_seqs_file):
+        for seq_id, seq in parse_fasta(reference_seqs_file):
             training_set.add_sequence(seq_id, seq)
 
         for line in id_to_taxonomy_file:
@@ -810,7 +810,7 @@ class Tax2TreeTaxonAssigner(TaxonAssigner):
         logger.info(str(self))
 
         with open(seq_path, 'U') as f:
-            seqs = dict(MinimalFastaParser(f))
+            seqs = dict(parse_fasta(f))
 
         consensus_map = tax2tree.prep_consensus(
             open(self.Params['id_to_taxonomy_fp']),

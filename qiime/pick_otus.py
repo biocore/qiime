@@ -18,27 +18,31 @@ grouping those sequences by similarity.
 from copy import copy
 from itertools import ifilter
 from os.path import splitext, split, abspath, join
-from os import makedirs
+from os import makedirs, close
 from itertools import imap
+from tempfile import mkstemp
 
-from cogent.parse.fasta import MinimalFastaParser
 from cogent.parse.mothur import parse_otu_list as mothur_parse
-from cogent.app.cd_hit import cdhit_clusters_from_seqs
-from cogent.app.mothur import Mothur
-from cogent.app.formatdb import build_blast_db_from_fasta_path
-from cogent.app.blast import blast_seqs, Blastall, BlastResult
-from cogent.core.sequence import DnaSequence
-from cogent.util.misc import remove_files
-from cogent import LoadSeqs, DNA, Alignment
-from cogent.util.trie import build_prefix_map
-from cogent.util.misc import flatten
+from cogent import DNA as DNA_cogent
 
-from qiime.util import FunctionWithParams, get_tmp_filename, get_qiime_temp_dir
+from skbio.util.misc import remove_files, flatten
+from skbio.util.trie import CompressedTrie, fasta_to_pairlist
+from skbio.parse.sequences import parse_fasta
+from skbio.core.alignment import SequenceCollection
+from skbio.core.sequence import DNA
+
+from qiime.util import FunctionWithParams, get_qiime_temp_dir
 from qiime.sort import sort_fasta_by_abundance
 from qiime.parse import fields_to_dict
-from qiime.pycogent_backports.uclust import get_clusters_from_fasta_filepath
-from qiime.pycogent_backports.usearch import (usearch_qf,
-                                              usearch61_denovo_cluster, usearch61_ref_cluster)
+
+from brokit.blast import blast_seqs, Blastall, BlastResult
+from brokit.formatdb import build_blast_db_from_fasta_path
+from brokit.mothur import Mothur
+from brokit.cd_hit import cdhit_clusters_from_seqs
+from brokit.uclust import get_clusters_from_fasta_filepath
+from brokit.usearch import (usearch_qf,
+                            usearch61_denovo_cluster,
+                            usearch61_ref_cluster)
 
 
 class OtuPicker(FunctionWithParams):
@@ -140,14 +144,16 @@ class OtuPicker(FunctionWithParams):
 
         trunc_id = lambda a_b: (a_b[0].split()[0], a_b[1])
         # get the prefix map
-        mapping = build_prefix_map(imap(trunc_id, MinimalFastaParser(
-            open(seq_path))))
+        with open(seq_path, 'U') as seq_lines:
+            t = CompressedTrie(fasta_to_pairlist(imap(trunc_id,
+                                                      parse_fasta(seq_lines))))
+        mapping = t.prefix_map
         for key in mapping.keys():
                 mapping[key].append(key)
 
         # collect the representative seqs
         filtered_seqs = []
-        for (label, seq) in MinimalFastaParser(open(seq_path)):
+        for (label, seq) in parse_fasta(open(seq_path)):
             label = label.split()[0]
             if label in mapping:
                 filtered_seqs.append((label, seq))
@@ -209,8 +215,7 @@ class BlastOtuPicker(OtuPicker):
 
         self.log_lines.append('Blast database: %s' % self.blast_db)
 
-        clusters, failures = self._cluster_seqs(
-            MinimalFastaParser(open(seq_path)))
+        clusters, failures = self._cluster_seqs(parse_fasta(open(seq_path)))
         self.log_lines.append('Num OTUs: %d' % len(clusters))
 
         if result_path:
@@ -466,8 +471,8 @@ class PrefixSuffixOtuPicker(OtuPicker):
         assert prefix_length >= 0, 'Prefix length (%d) must be >= 0' % prefix_length
         assert suffix_length >= 0, 'Suffix length (%d) must be >= 0' % suffix_length
 
-        clusters = self._collapse_exact_matches(
-            MinimalFastaParser(open(seq_path)), prefix_length, suffix_length)
+        clusters = self._collapse_exact_matches(parse_fasta(open(seq_path)),
+                                                prefix_length, suffix_length)
         log_lines.append('Num OTUs: %d' % len(clusters))
 
         if result_path:
@@ -567,16 +572,17 @@ class TrieOtuPicker(OtuPicker):
             # This effectively creates a suffix map.
             # Also removes descriptions from seq identifier lines
             seqs = imap(lambda s: (s[0].split()[0], s[1][::-1]),
-                        MinimalFastaParser(open(seq_path)))
+                        parse_fasta(open(seq_path)))
             log_lines.append(
                 'Seqs reversed for suffix mapping (rather than prefix mapping).')
         else:
             # remove descriptions from seq identifier lines
             seqs = imap(lambda s: (s[0].split()[0], s[1]),
-                        MinimalFastaParser(open(seq_path)))
+                        parse_fasta(open(seq_path)))
 
         # Build the mapping
-        mapping = build_prefix_map(seqs)
+        t = CompressedTrie(fasta_to_pairlist(seqs))
+        mapping = t.prefix_map
         log_lines.append('Num OTUs: %d' % len(mapping))
 
         if result_path:
@@ -655,7 +661,6 @@ class CdHitOtuPicker(OtuPicker):
          Togther with cd-hit this is a non-heuristic filter reduces run time a lot.
          Still a bit slower than the prefix_prefilter toggled with prefix_prefilter_length.
         """
-        moltype = DNA
         log_lines = []
 
         # create the params dict to pass to cd-hit-est -- IS THERE A
@@ -667,29 +672,25 @@ class CdHitOtuPicker(OtuPicker):
         cd_hit_params['-d'] = id_len  # turn off id truncation
         cd_hit_params['-g'] = "1"
         if (prefix_prefilter_length is not None and trie_prefilter):
-            log_lines.append("Both prefilters selected. Deactivate \
-            trie_prefilter")
+            log_lines.append("Both prefilters selected. Deactivate trie_prefilter")
             trie_prefilter = False
 
         if prefix_prefilter_length is not None:
             log_lines.append(
                 'Prefix-based prefiltering, prefix length: %d'
                 % prefix_prefilter_length)
-            seqs, filter_map = self._prefilter_exact_prefixes(
-                MinimalFastaParser(open(seq_path)), prefix_prefilter_length)
+            with open(seq_path) as seq_f:
+                seqs, filter_map = self._prefilter_exact_prefixes(
+                    parse_fasta(seq_f, label_to_name=lambda x: x.split()[0]),
+                    prefix_prefilter_length)
             log_lines.append(
-                'Prefix-based prefiltering, post-filter num seqs: %d'
-                % len(seqs))
-
+                'Prefix-based prefiltering, post-filter num seqs: %d' % len(seqs))
         elif trie_prefilter:
             log_lines.append(
                 'Trie-based prefiltering')
             seqs, filter_map = self._prefilter_with_trie(seq_path)
-
             log_lines.append(
-                'Trie-based prefiltering, post-filter num seqs: %d'
-                % len(seqs))
-
+                'Trie-based prefiltering, post-filter num seqs: %d' % len(seqs))
         else:
             log_lines.append('No prefix-based prefiltering.')
             # Load the seq path. Right now, cdhit_clusters_from_seqs
@@ -698,16 +699,16 @@ class CdHitOtuPicker(OtuPicker):
             # to cd-hit-est. We may want to change that in the future
             # to avoid the overhead of loading large sequence collections
             # during this step.
-            seqs = LoadSeqs(seq_path,
-                            moltype=moltype,
-                            aligned=False,
-                            label_to_name=lambda x: x.split()[0])
+            with open(seq_path) as seq_f:
+                seqs = SequenceCollection.from_fasta_records(
+                    parse_fasta(seq_f, label_to_name=lambda x: x.split()[0]),
+                    DNA)
+            seqs = dict(seqs.iteritems())
 
         # Get the clusters by running cd-hit-est against the
         # sequence collection
         clusters = cdhit_clusters_from_seqs(
-            seqs=seqs, moltype=moltype, params=cd_hit_params)
-
+            seqs=seqs, moltype=DNA_cogent, params=cd_hit_params)
         if prefix_prefilter_length is not None or trie_prefilter:
             clusters = self._map_filtered_clusters_to_full_clusters(
                 clusters, filter_map)
@@ -750,8 +751,9 @@ class UclustOtuPickerBase(OtuPicker):
         self.Params['suppress_sort'] = True
 
         # Get a temp file name for the sorted fasta file
-        sorted_input_seqs_filepath = \
-            get_tmp_filename(prefix=self.Name, suffix='.fasta')
+        fd, sorted_input_seqs_filepath = \
+            mkstemp(prefix=self.Name, suffix='.fasta')
+        close(fd)
         # Sort input seqs by abundance, and write to the temp
         # file
         sort_fasta_by_abundance(open(seq_path, 'U'),
@@ -790,11 +792,11 @@ class UclustOtuPickerBase(OtuPicker):
 
     def _apply_identical_sequences_prefilter(self, seq_path):
         """ """
-        unique_seqs_fp = get_tmp_filename(
+        fd, unique_seqs_fp = mkstemp(
             prefix='UclustExactMatchFilter', suffix='.fasta')
+        close(fd)
         seqs_to_cluster, exact_match_id_map =\
-            self._prefilter_exact_matches(
-                MinimalFastaParser(open(seq_path, 'U')))
+            self._prefilter_exact_matches(parse_fasta(open(seq_path, 'U')))
         self.files_to_remove.append(unique_seqs_fp)
         unique_seqs_f = open(unique_seqs_fp, 'w')
         for seq_id, seq in seqs_to_cluster:

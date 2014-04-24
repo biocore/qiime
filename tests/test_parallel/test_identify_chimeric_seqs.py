@@ -13,15 +13,14 @@ from shutil import rmtree
 from glob import glob
 from os import getenv
 from os.path import basename, exists, join
-from tempfile import NamedTemporaryFile
-from cogent import LoadSeqs
-from cogent.util.unit_test import TestCase, main
-from cogent.util.misc import remove_files, create_dir
-from qiime.util import (get_qiime_temp_dir,
-                        get_tmp_filename, load_qiime_config)
+from tempfile import NamedTemporaryFile, mkdtemp
+from unittest import TestCase, main
+
+from skbio.util.misc import remove_files
+
+from qiime.util import get_qiime_temp_dir, load_qiime_config
 from qiime.test import initiate_timeout, disable_timeout
 from qiime.parse import fields_to_dict
-
 from qiime.parallel.identify_chimeric_seqs import ParallelChimericSequenceIdentifier
 
 
@@ -32,11 +31,10 @@ class ParallelChimericSequenceIdentifierTests(TestCase):
         self.dirs_to_remove = []
 
         tmp_dir = get_qiime_temp_dir()
-        self.test_out = get_tmp_filename(tmp_dir=tmp_dir,
-                                         prefix='qiime_parallel_chimeric_sequence_identifier_tests_',
-                                         suffix='', result_constructor=str)
+        self.test_out = mkdtemp(dir=tmp_dir,
+                                prefix='qiime_parallel_chimeric_sequence_identifier_tests_',
+                                suffix='')
         self.dirs_to_remove.append(self.test_out)
-        create_dir(self.test_out)
 
         self.in_seqs_f = NamedTemporaryFile(
             prefix='qiime_parallel_chimeric_sequence_identifier_tests_input',

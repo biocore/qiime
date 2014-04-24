@@ -24,22 +24,25 @@ import warnings
 warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
 from os import remove
 from numpy import median
-from cogent import LoadSeqs, DNA
-from cogent.core.alignment import DenseAlignment, SequenceCollection, Alignment
-from cogent.core.sequence import DnaSequence as Dna
-from cogent.parse.fasta import MinimalFastaParser
-from cogent.parse.record import RecordError
-from cogent.app.util import ApplicationNotFoundError
-from cogent.app.infernal import cmalign_from_alignment
+
+import brokit
+from brokit.infernal import cmalign_from_alignment
+import brokit.clustalw
+import brokit.muscle_v38
+import brokit.mafft
+
+from cogent import DNA as DNA_cogent
 from cogent.parse.rfam import MinimalRfamParser, ChangedSequence
-import cogent.app.clustalw
-import cogent.app.mafft
+from skbio.app.util import ApplicationNotFoundError
+from skbio.core.exception import RecordError
+from skbio.parse.sequences import parse_fasta
 
-from qiime.util import (get_tmp_filename,
-                        FunctionWithParams,
+from qiime.util import (FunctionWithParams,
                         get_qiime_temp_dir)
-import cogent.app.muscle_v38
 
+from skbio.core.alignment import SequenceCollection, Alignment
+from skbio.core.sequence import DNASequence
+from skbio.parse.sequences import parse_fasta
 
 # Load PyNAST if it's available. If it's not, skip it if not but set up
 # to raise errors if the user tries to use it.
@@ -112,7 +115,7 @@ class CogentAligner(Aligner):
         seqs = self.getData(seq_path)
         params = dict(
             [(k, v) for (k, v) in self.Params.items() if k.startswith('-')])
-        result = module.align_unaligned_seqs(seqs, moltype=DNA, params=params)
+        result = module.align_unaligned_seqs(seqs, moltype=DNA_cogent, params=params)
         return result
 
     def __call__(self, result_path=None, log_path=None, *args, **kwargs):
@@ -128,7 +131,7 @@ class InfernalAligner(Aligner):
         """Return new InfernalAligner object with specified params.
         """
         _params = {
-            'moltype': DNA,
+            'moltype': DNA_cogent,
             'Application': 'Infernal',
         }
         _params.update(params)
@@ -139,7 +142,7 @@ class InfernalAligner(Aligner):
 
         log_params = []
         # load candidate sequences
-        candidate_sequences = dict(MinimalFastaParser(open(seq_path, 'U')))
+        candidate_sequences = dict(parse_fasta(open(seq_path, 'U')))
 
         # load template sequences
         try:
@@ -153,9 +156,10 @@ class InfernalAligner(Aligner):
         moltype = self.Params['moltype']
 
         # Need to make separate mapping for unaligned sequences
-        unaligned = SequenceCollection(candidate_sequences, MolType=moltype)
-        int_map, int_keys = unaligned.getIntMap(prefix='unaligned_')
-        int_map = SequenceCollection(int_map, MolType=moltype)
+        unaligned = SequenceCollection.from_fasta_records(
+            candidate_sequences.iteritems(), DNASequence)
+        mapped_seqs, new_to_old_ids = unaligned.int_map(prefix='unaligned_')
+        mapped_seq_tuples = [(k, str(v)) for k,v in mapped_seqs.iteritems()]
 
         # Turn on --gapthresh option in cmbuild to force alignment to full
         # model
@@ -171,7 +175,6 @@ class InfernalAligner(Aligner):
         # are fragments.
         # Also turn on --gapthresh to use same gapthresh as was used to build
         # model
-
         if cmalign_params is None:
             cmalign_params = {}
         cmalign_params.update({'--sub': True, '--gapthresh': 1.0})
@@ -183,20 +186,23 @@ class InfernalAligner(Aligner):
         # Align sequences to alignment including alignment gaps.
         aligned, struct_string = cmalign_from_alignment(aln=template_alignment,
                                                         structure_string=struct,
-                                                        seqs=int_map,
+                                                        seqs=mapped_seq_tuples,
                                                         moltype=moltype,
                                                         include_aln=True,
                                                         params=cmalign_params,
                                                         cmbuild_params=cmbuild_params)
 
         # Pull out original sequences from full alignment.
-        infernal_aligned = {}
+        infernal_aligned = []
+        # Get a dict of the identifiers to sequences (note that this is a
+        # cogent alignment object, hence the call to NamedSeqs)
         aligned_dict = aligned.NamedSeqs
-        for key in int_map.Names:
-            infernal_aligned[int_keys.get(key, key)] = aligned_dict[key]
+        for n, o in new_to_old_ids.iteritems():
+            aligned_seq = aligned_dict[n]
+            infernal_aligned.append((o, aligned_seq))
 
         # Create an Alignment object from alignment dict
-        infernal_aligned = Alignment(infernal_aligned, MolType=moltype)
+        infernal_aligned = Alignment.from_fasta_records(infernal_aligned, DNASequence)
 
         if log_path is not None:
             log_file = open(log_path, 'w')
@@ -205,7 +211,7 @@ class InfernalAligner(Aligner):
 
         if result_path is not None:
             result_file = open(result_path, 'w')
-            result_file.write(infernal_aligned.toFasta())
+            result_file.write(infernal_aligned.to_fasta())
             result_file.close()
             return None
         else:
@@ -237,20 +243,16 @@ class PyNastAligner(Aligner):
                  failure_path=None):
         # load candidate sequences
         seq_file = open(seq_path, 'U')
-        candidate_sequences = MinimalFastaParser(seq_file)
+        candidate_sequences = parse_fasta(seq_file)
 
         # load template sequences
         template_alignment = []
         template_alignment_fp = self.Params['template_filepath']
-        for seq_id, seq in MinimalFastaParser(open(template_alignment_fp)):
+        for seq_id, seq in parse_fasta(open(template_alignment_fp)):
             # replace '.' characters with '-' characters
             template_alignment.append((seq_id, seq.replace('.', '-').upper()))
-        try:
-            template_alignment = LoadSeqs(data=template_alignment, moltype=DNA,
-                                          aligned=DenseAlignment)
-        except KeyError as e:
-            raise KeyError('Only ACGT-. characters can be contained in template alignments.' +
-                           ' The offending character was: %s' % e)
+        template_alignment = Alignment.from_fasta_records(
+                    template_alignment, DNASequence, validate=True)
 
         # initialize_logger
         logger = NastLogger(log_path)
@@ -270,30 +272,33 @@ class PyNastAligner(Aligner):
 
         logger.record(str(self))
 
+        for i, seq in enumerate(pynast_failed):
+            skb_seq = DNASequence(str(seq), identifier=seq.Name)
+            pynast_failed[i] = skb_seq
+        pynast_failed = SequenceCollection(pynast_failed)
+
+        for i, seq in enumerate(pynast_aligned):
+            skb_seq = DNASequence(str(seq), identifier=seq.Name)
+            pynast_aligned[i] = skb_seq
+        pynast_aligned = Alignment(pynast_aligned)
+
         if failure_path is not None:
             fail_file = open(failure_path, 'w')
-            for seq in pynast_failed:
-                fail_file.write(seq.toFasta())
-                fail_file.write('\n')
+            fail_file.write(pynast_failed.to_fasta())
             fail_file.close()
 
         if result_path is not None:
             result_file = open(result_path, 'w')
-            for seq in pynast_aligned:
-                result_file.write(seq.toFasta())
-                result_file.write('\n')
+            result_file.write(pynast_aligned.to_fasta())
             result_file.close()
             return None
         else:
-            try:
-                return LoadSeqs(data=pynast_aligned, aligned=DenseAlignment)
-            except ValueError:
-                return {}
+            return pynast_aligned
 
 
 def compute_min_alignment_length(seqs_f, fraction=0.75):
     """ compute the min alignment length as n standard deviations below the mean """
-    med_length = median([len(s) for _, s in MinimalFastaParser(seqs_f)])
+    med_length = median([len(s) for _, s in parse_fasta(seqs_f)])
     return int(med_length * fraction)
 
 
@@ -301,8 +306,8 @@ alignment_method_constructors = {'pynast': PyNastAligner,
                                  'infernal': InfernalAligner}
 
 alignment_module_names = {
-    'muscle': cogent.app.muscle_v38,
-    'clustalw': cogent.app.clustalw,
-    'mafft': cogent.app.mafft,
-    'infernal': cogent.app.infernal,
+    'muscle': brokit.muscle_v38,
+    'clustalw': brokit.clustalw,
+    'mafft': brokit.mafft,
+    'infernal': brokit.infernal,
 }

@@ -18,7 +18,7 @@ As a consequence of this 'pipeline' architecture, **QIIME has a lot of dependenc
 How to not install QIIME
 ========================
 
-Because QIIME is hard to install, we have attempted to shift this burden to the QIIME development group rather than our users by providing virtual machines with QIIME and all of its dependencies pre-installed. We, and third-party developers, have also created several automated installation procedures. These alternatives (`summarized here <../index.html#downloading-and-installing-qiime>`_) allow you to bypass the complex installation procedure and have access to a full, working QIIME installation. 
+Because QIIME is hard to install, we have attempted to shift this burden to the QIIME development group rather than our users by providing virtual machines with QIIME and all of its dependencies pre-installed. We, and third-party developers, have also created several automated installation procedures. These alternatives (`summarized here <../index.html#downloading-and-installing-qiime>`_) allow you to bypass the complex installation procedure and have access to a full, working QIIME installation.
 
 **We highly recommend going with one of these solutions if you're new to QIIME, or just want to test it out to see if it will do what you want.**
 
@@ -78,6 +78,7 @@ The first are the core scientific python dependencies. The easiest way to instal
 * Python 2.7.3 (`src_python <http://www.python.org/ftp/python/2.7.3/Python-2.7.3.tgz>`_) (license: PSF)
 * Numpy 1.5.1 - 1.7.1 (`src_numpy <http://sourceforge.net/projects/numpy/files/NumPy/1.7.1/numpy-1.7.1.tar.gz/download>`_) (license: BSD)
 * MatPlotLib 1.1.0 - 1.3.1 (`src_matplotlib <http://downloads.sourceforge.net/project/matplotlib/matplotlib/matplotlib-1.1.0/matplotlib-1.1.0.tar.gz>`_) (license: PFS)
+* SciPy >= 0.13.0 (`src_scipy <https://pypi.python.org/packages/source/s/scipy/scipy-0.13.0.tar.gz>`_) (license: BSD)
 
 The next are python packages not included in Canopy Express. Each of these can be installed either via pip (e.g., ``pip install <package-name>``) or by downloading the package, unzipping with ``tar -xzf``, changing to the resulting directory, and running ``python setup.py install`` (see :ref:`Installing with setup.py <python-setup>` for some notes that may be useful).
 
@@ -87,8 +88,10 @@ The next are python packages not included in Canopy Express. Each of these can b
 * qcli 0.1.0 (`src_qcli <https://pypi.python.org/packages/source/q/qcli/qcli-0.1.0.tar.gz>`_) (license: GPL)
 * PyNAST 1.2.2 (`src_pynast <https://pypi.python.org/packages/source/p/pynast/pynast-1.2.2.tar.gz>`_) (license: BSD)
 * Emperor 0.9.3 (`src_emperor <https://pypi.python.org/packages/source/e/emperor/emperor-0.9.3.tar.gz>`_) (license: BSD)
+* pyqi 0.3.1 (`src_pyqi <https://pypi.python.org/packages/source/p/pyqi/pyqi-0.3.1.tar.gz>`_) (license: BSD)
+* scikit-bio (latest development version) (`src_skbio <https://github.com/biocore/scikit-bio>`_) (license: BSD)
 
-Next, there are two non-python dependencies required for the QIIME base package. These should be installed by following their respective install instructions. 
+Next, there are two non-python dependencies required for the QIIME base package. These should be installed by following their respective install instructions.
 
 * uclust 1.2.22q (`src_uclust <http://www.drive5.com/uclust/downloads1_2_22q.html>`_) See :ref:`uclust install notes <uclust-install>`. (licensed specially for Qiime and PyNAST users)
 * fasttree 2.1.3 (`src_fasttree <http://www.microbesonline.org/fasttree/FastTree-2.1.3.c>`_) See `FastTree install instructions <http://www.microbesonline.org/fasttree/#Install>`_ (license: GPL)
@@ -151,17 +154,17 @@ You should see output that looks like the following::
 	................
 	----------------------------------------------------------------------
 	Ran 16 tests in 0.440s
-	
+
 	OK
 
-This indicates that you have a complete QIIME base install. 
+This indicates that you have a complete QIIME base install.
 
 You should next :ref:`run QIIME's unit tests <run-test-suite>`. You will experience some test failures as a result of not having a full QIIME install. If you have questions about these failures, you should post to the `QIIME Forum <http://forum.qiime.org>`_.
 
 QIIME full install (for access to advanced features in QIIME, and non-default processing pipelines)
 ---------------------------------------------------------------------------------------------------
 
-The dependencies described below will support a full QIIME install. These are grouped by the features that each dependency will provide access to. Installation instructions should be followed for each individual package (e.g., from the project's website or README/INSTALL file). 
+The dependencies described below will support a full QIIME install. These are grouped by the features that each dependency will provide access to. Installation instructions should be followed for each individual package (e.g., from the project's website or README/INSTALL file).
 
 Alignment, tree-building, taxonomy assignment, OTU picking, and other data generation steps (required for non-default processing pipelines):
 
@@ -178,8 +181,6 @@ Alignment, tree-building, taxonomy assignment, OTU picking, and other data gener
 * cdbtools (`src_cdbtools <ftp://occams.dfci.harvard.edu/pub/bio/tgi/software/cdbfasta/cdbfasta.tar.gz>`_)
 * muscle 3.8.31 (`src_muscle <http://www.drive5.com/muscle/downloads.htm>`_) (Public domain)
 * rtax 0.984 (`src_rtax <http://static.davidsoergel.com/rtax-0.984.tgz>`_) (license: BSD)
-* pplacer 1.1 (`src_pplacer <http://matsen.fhcrc.org/pplacer/builds/pplacer-v1.1-Linux.tar.gz>`_) (license: GPL)
-* ParsInsert 1.04 (`src_parsinsert <http://downloads.sourceforge.net/project/parsinsert/ParsInsert.1.04.tgz>`_) (license: GPL)
 * usearch v5.2.236 and/or usearch v6.1 (`src_usearch <http://www.drive5.com/usearch/>`_) (license: see http://www.drive5.com/usearch/nonprofit_form.html) **At this stage two different versions of usearch are supported.** usearch v5.2.236 is referred to as ``usearch`` in QIIME, and usearch v6.1 is referred to as ``usearch61``.
 
 Processing sff files:

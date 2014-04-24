@@ -3,6 +3,8 @@
 from __future__ import division
 from numpy import array, log, sqrt, exp
 from math import e
+from os import close
+from tempfile import mkstemp
 from cogent.util.unit_test import TestCase, main
 from qiime.pycogent_backports.alpha_diversity import (expand_counts, counts,
                                                       observed_species, singles, doubles, osd, margalef, menhinick, dominance,
@@ -20,7 +22,6 @@ from qiime.pycogent_backports.alpha_diversity import (expand_counts, counts,
 from qiime.alpha_diversity import (AlphaDiversityCalc, AlphaDiversityCalcs,
                                    single_file_cup, get_cup_metric, list_known_metrics)
 
-from qiime.util import get_tmp_filename
 from cogent.util.misc import remove_files
 from itertools import izip
 import qiime.pycogent_backports.alpha_diversity as alph
@@ -57,12 +58,12 @@ class diversity_tests(TestCase):
              (0.875, 0.74965229485396379),
              (1.0, 1.0)]
         # for Manuel's coverage estimations
-        self.tmp_file = get_tmp_filename(
-            tmp_dir="./",
-            suffix="test_single_file_cup.biom")
-        self.tmp_outfile = get_tmp_filename(
-            tmp_dir="./",
-            suffix="test_single_file_cup.txt")
+        fd, self.tmp_file = mkstemp(dir="./",
+                                    suffix="test_single_file_cup.biom")
+        close(fd)
+        fd, self.tmp_outfile = mkstemp(dir="./",
+                                       suffix="test_single_file_cup.txt")
+        close(fd)
         self.files_to_remove = []
 
     def tearDown(self):

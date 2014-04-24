@@ -13,11 +13,13 @@ __email__ = "gregcaporaso@gmail.com"
 import numpy
 from numpy import asarray, isnan, log10, median
 from StringIO import StringIO
-from cogent import Sequence
 from re import compile, sub
 from os import walk
 from os.path import join, splitext, exists, isfile, abspath
+
+from skbio.core.sequence import BiologicalSequence
 from biom.table import DenseOTUTable, SparseTaxonTable, table_factory
+
 from qiime.util import get_qiime_library_version, load_qiime_config
 from qiime.colors import data_color_hsv
 
@@ -683,14 +685,14 @@ def format_unifrac_sample_mapping(sample_ids, otu_ids, otu_table_array):
 def write_Fasta_from_name_seq_pairs(name_seqs, fh):
     """writes a list of (name,seqs) to filehandle.
 
-    name_seqs: (name,seqs) pair such as from MinimalFASTAParser
+    name_seqs: (name,seqs) pair such as from parse_fasta
     fh: an open filehandle
     """
     if fh is None:
         raise ValueError("Need open file handle to write to.")
 
     for (name, seq) in name_seqs:
-        fh.write("%s\n" % Sequence(name=name, seq=seq).toFasta())
+        fh.write("%s\n" % BiologicalSequence(seq, identifier=name).to_fasta())
 
 
 def illumina_data_to_fastq(record_data, number_of_bases=None):
@@ -989,10 +991,9 @@ def format_anosim_results(anosim_results):
                                            num_perms)
 
     result = 'Method name\tR statistic\tp-value\tNumber of permutations\n'
-    result += '%s\t%.4f\t%s\t%d\n' % (anosim_results['method_name'],
-                                      anosim_results['r_value'],
-                                      p_value,
-                                      num_perms)
+    result += '%s\t%s\t%s\t%d\n' % (anosim_results['method_name'],
+                                    anosim_results['r_value'], p_value,
+                                    num_perms)
     return result
 
 
@@ -1009,10 +1010,9 @@ def format_permanova_results(permanova_results):
 
     result = 'Method name\tPseudo-F statistic\tp-value\t' + \
              'Number of permutations\n'
-    result += '%s\t%.4f\t%s\t%d\n' % (permanova_results['method_name'],
-                                      permanova_results['f_value'],
-                                      p_value,
-                                      num_perms)
+    result += '%s\t%s\t%s\t%d\n' % (permanova_results['method_name'],
+                                    permanova_results['f_value'], p_value,
+                                    num_perms)
     return result
 
 

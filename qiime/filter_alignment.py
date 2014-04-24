@@ -7,17 +7,15 @@ from os.path import split, exists, splitext
 from os import mkdir, remove
 from collections import defaultdict
 
-from cogent.util.unit_test import TestCase, main
-from numpy import nonzero, array, fromstring, repeat, bitwise_or, uint8, zeros,\
-    arange
-import numpy
-from cogent import LoadSeqs, DNA
-from cogent.core.alignment import DenseAlignment, eps
-from cogent.parse.fasta import MinimalFastaParser
+from numpy import (nonzero, array, fromstring, repeat, bitwise_or,
+    uint8, zeros, arange, finfo)
+
+from cogent import DNA
+from cogent.core.alignment import DenseAlignment
 from cogent.core.sequence import ModelDnaSequence
 from cogent.core.profile import Profile
 
-from qiime.util import get_tmp_filename
+from skbio.parse.sequences import parse_fasta
 
 
 __author__ = "Dan Knights"
@@ -55,7 +53,8 @@ def apply_lane_mask(fastalines, lane_mask, verbose=False):
                                           allowed_gap_frac=1, verbose=False)
 
 
-def apply_gap_filter(fastalines, allowed_gap_frac=1 - eps, verbose=False):
+def apply_gap_filter(fastalines, allowed_gap_frac=1 - finfo(float).eps,
+                     verbose=False):
     """ Applies gap filter to fasta-formatted data, yielding filtered seqs.
     """
     return apply_lane_mask_and_gap_filter(fastalines, None,
@@ -69,32 +68,29 @@ def attempt_file_reset(f):
 
 
 def apply_lane_mask_and_gap_filter(fastalines, mask,
-                                   allowed_gap_frac=1 - eps, verbose=False, entropy_threshold=None):
+                                   allowed_gap_frac=1 - finfo(float).eps,
+                                   verbose=False, entropy_threshold=None):
     """Applies a mask and gap filter to fasta file, yielding filtered seqs."""
     if entropy_threshold is not None and not (0 < entropy_threshold < 1):
         raise ValueError('Entropy threshold parameter (-e) needs to be '
                          'between 0 and 1')
 
-    # resolve the mask
-    if mask:
+    if mask is not None:
         mask = mask_to_positions(mask)
-    elif entropy_threshold is not None:
-        mask = generate_lane_mask(fastalines, entropy_threshold)
-        mask = mask_to_positions(mask)
-        attempt_file_reset(fastalines)
+        prefilter_f = lambda x: get_masked_string(x, mask)
     else:
-        mask = slice(None)
+        prefilter_f = lambda x: x
 
     # resolve the gaps based on masked sequence
     gapcounts = None
     gapmask = slice(None)
     if allowed_gap_frac < 1:
         seq_count = 0.0
-        for seq_id, seq in MinimalFastaParser(fastalines):
+        for seq_id, seq in parse_fasta(fastalines):
             seq_count += 1
             seq = seq.replace('.', '-')
 
-            seq = get_masked_string(seq, mask)
+            seq = prefilter_f(seq)
 
             if gapcounts is None:
                 gapcounts = zeros(len(seq))
@@ -102,15 +98,33 @@ def apply_lane_mask_and_gap_filter(fastalines, mask,
             gapcounts[find_gaps(seq)] += 1
 
         gapmask = (gapcounts / seq_count) <= allowed_gap_frac
-
+        gapmask = mask_to_positions(gapmask)
         attempt_file_reset(fastalines)
 
+    # resolve the entropy mask
+    if entropy_threshold is not None:
+        ent_mask = generate_lane_mask(fastalines, entropy_threshold, gapmask)
+        ent_mask = mask_to_positions(ent_mask)
+        entropy_filter_f = lambda x: get_masked_string(x, ent_mask)
+        attempt_file_reset(fastalines)
+    else:
+        entropy_filter_f = prefilter_f
+
     # mask, degap, and yield
-    for seq_id, seq in MinimalFastaParser(fastalines):
+    for seq_id, seq in parse_fasta(fastalines):
         seq = seq.replace('.', '-')
 
-        seq = get_masked_string(seq, mask)
-        seq = get_masked_string(seq, gapmask)
+        # The order in which the mask is applied depends on whether a mask is
+        # specified or inferred. Specifically, if a precomputed mask is
+        # provided (e.g., the Lane mask) then it must be applied prior to a
+        # gap filter, whereas if a mask is inferred then it must be applied
+        # after a gap filter.
+        if mask is None:
+            seq = get_masked_string(seq, gapmask)
+            seq = entropy_filter_f(seq)
+        else:
+            seq = entropy_filter_f(seq)
+            seq = get_masked_string(seq, gapmask)
 
         yield ">%s\n" % seq_id
         yield "%s\n" % seq
@@ -141,7 +155,7 @@ def remove_outliers(seqs, num_sigmas, fraction_seqs_for_stats=.95):
     diff_cutoff = seq_diffs_considered_sorted.mean() + \
         num_sigmas * seq_diffs_considered_sorted.std()
     # mean + e.g.: 4 sigma
-    seq_idxs_to_keep = numpy.arange(len(seq_diffs))[seq_diffs <= diff_cutoff]
+    seq_idxs_to_keep = arange(len(seq_diffs))[seq_diffs <= diff_cutoff]
 
     filtered_aln = aln.getSubAlignment(seq_idxs_to_keep)
     return filtered_aln
@@ -160,7 +174,7 @@ def status(message, dest=stdout, overwrite=True, max_len=100):
     dest.flush()
 
 
-def generate_lane_mask(infile, entropy_threshold):
+def generate_lane_mask(infile, entropy_threshold, existing_mask=None):
     """ Generates lane mask dynamically by calculating base frequencies
 
     infile: open file object for aligned fasta file
@@ -170,7 +184,7 @@ def generate_lane_mask(infile, entropy_threshold):
 
     """
 
-    base_freqs = freqs_from_aln_array(infile)
+    base_freqs = freqs_from_aln_array(infile, existing_mask)
     uncertainty = base_freqs.columnUncertainty()
     uncertainty_sorted = sorted(uncertainty)
 
@@ -194,7 +208,7 @@ def generate_lane_mask(infile, entropy_threshold):
     return lane_mask
 
 
-def freqs_from_aln_array(seqs):
+def freqs_from_aln_array(seqs, existing_mask=None):
     """Returns per-position freqs from arbitrary size alignment.
 
     Warning: fails if all seqs aren't the same length.
@@ -203,7 +217,10 @@ def freqs_from_aln_array(seqs):
     seqs = list of lines from aligned fasta file
     """
     result = None
-    for label, seq in MinimalFastaParser(seqs):
+    for label, seq in parse_fasta(seqs):
+        if existing_mask is not None:
+            seq = get_masked_string(seq, existing_mask)
+
         # Currently cogent does not support . characters for gaps, converting
         # to - characters for compatability.
         seq = ModelDnaSequence(seq.replace('.', '-'))

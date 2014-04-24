@@ -13,7 +13,7 @@ __email__ = "gregcaporaso@gmail.com"
 
 from qiime.util import (parse_command_line_parameters, make_option)
 from os.path import split, splitext, join
-from qiime.util import get_tmp_filename, get_options_lookup
+from qiime.util import get_options_lookup
 from qiime.parallel.multiple_rarefactions import ParallelMultipleRarefactions
 
 options_lookup = get_options_lookup()

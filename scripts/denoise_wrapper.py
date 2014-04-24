@@ -17,7 +17,7 @@ from qiime.util import make_option
 from numpy import array
 
 from cogent.core.alignment import SequenceCollection
-from cogent.app.util import ApplicationError
+from skbio.app.util import ApplicationError
 
 from qiime.util import parse_command_line_parameters, create_dir,\
     handle_error_codes

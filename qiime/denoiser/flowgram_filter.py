@@ -14,9 +14,11 @@ __email__ = "jens.reeder@gmail.com"
 from re import compile, search
 from itertools import imap
 from collections import defaultdict
+from tempfile import mkstemp
+from os import close
 
-from qiime.util import get_tmp_filename, FileFormatError
-from cogent.parse.fasta import MinimalFastaParser
+from qiime.util import FileFormatError
+from skbio.parse.sequences import parse_fasta
 from cogent.parse.flowgram import Flowgram
 
 from qiime.denoiser.utils import cat_sff_files, write_sff_header
@@ -115,8 +117,9 @@ def truncate_flowgrams_in_SFF(
     """
     out_filename = ""
     if not outhandle:
-        out_filename = get_tmp_filename(tmp_dir=outdir, prefix="trunc_sff",
-                                        suffix=".sff.txt")
+        fd, out_filename = mkstemp(dir=outdir, prefix="trunc_sff",
+                                  suffix=".sff.txt")
+        close(fd)
         outhandle = open(out_filename, "w")
 
     write_sff_header(header, outhandle)
@@ -166,8 +169,9 @@ def cleanup_sff(flowgrams, header, outhandle=None, outdir="/tmp",
 
     clean_filename = ""
     if not outhandle:
-        clean_filename = get_tmp_filename(tmp_dir=outdir, prefix="cleanup_sff",
-                                          suffix=".sff.txt")
+        fd, clean_filename = mkstemp(dir=outdir, prefix="cleanup_sff",
+                                    suffix=".sff.txt")
+        close(fd)
         outhandle = open(clean_filename, "w")
 
     l = filter_sff_file(
@@ -188,7 +192,7 @@ def split_sff(sff_file_handles, map_file_handle, outdir="/tmp/"):
                               'produced by sffinfo. The binary .sff will not work here.')
 
     (inverse_map, map_count) = build_inverse_barcode_map(
-        MinimalFastaParser(map_file_handle))
+        parse_fasta(map_file_handle))
 
     filenames = []
     # we might have many barcodes and reach python open file limit

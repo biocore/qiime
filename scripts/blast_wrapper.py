@@ -12,7 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.util import make_option
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import parse_fasta
 from qiime.util import qiime_blast_seqs
 
 options_lookup = get_options_lookup()
@@ -45,7 +45,7 @@ def main():
     option_parser, options, args = parse_command_line_parameters(**script_info)
 
     blast_results = qiime_blast_seqs(
-        seqs=MinimalFastaParser(open(options.input_fasta_fp)),
+        seqs=parse_fasta(open(options.input_fasta_fp)),
         refseqs_fp=options.refseqs_fp,
         seqs_per_blast_run=options.num_seqs_per_blast_run)
 

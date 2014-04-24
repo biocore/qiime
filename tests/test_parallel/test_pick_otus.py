@@ -12,15 +12,17 @@ __email__ = "gregcaporaso@gmail.com"
 
 from shutil import rmtree
 from glob import glob
+from os import close
 from os.path import exists, join
-from cogent.util.unit_test import TestCase, main
-from cogent.util.misc import remove_files, create_dir
+from tempfile import mkstemp, mkdtemp
+
+from cogent.util.misc import remove_files
+from unittest import TestCase, main
 from qiime.parallel.pick_otus import (ParallelPickOtusUclustRef,
                                       ParallelPickOtusBlast,
                                       ParallelPickOtusTrie,
                                       greedy_partition)
-from qiime.util import (get_qiime_temp_dir,
-                        get_tmp_filename)
+from qiime.util import get_qiime_temp_dir
 from qiime.test import initiate_timeout, disable_timeout
 from qiime.parse import parse_otu_map
 
@@ -33,24 +35,24 @@ class ParallelPickOtusTests(TestCase):
         self.dirs_to_remove = []
 
         tmp_dir = get_qiime_temp_dir()
-        self.test_out = get_tmp_filename(tmp_dir=tmp_dir,
-                                         prefix='qiime_parallel_tests_',
-                                         suffix='',
-                                         result_constructor=str)
+        self.test_out = mkdtemp(dir=tmp_dir,
+                                prefix='qiime_parallel_tests_',
+                                suffix='')
         self.dirs_to_remove.append(self.test_out)
-        create_dir(self.test_out)
 
-        self.refseqs1_fp = get_tmp_filename(tmp_dir=self.test_out,
-                                            prefix='qiime_refseqs',
-                                            suffix='.fasta')
+        fd, self.refseqs1_fp = mkstemp(dir=self.test_out,
+                                      prefix='qiime_refseqs',
+                                      suffix='.fasta')
+        close(fd)
         refseqs1_f = open(self.refseqs1_fp, 'w')
         refseqs1_f.write(refseqs1)
         refseqs1_f.close()
         self.files_to_remove.append(self.refseqs1_fp)
 
-        self.inseqs1_fp = get_tmp_filename(tmp_dir=self.test_out,
-                                           prefix='qiime_inseqs',
-                                           suffix='.fasta')
+        fd, self.inseqs1_fp = mkstemp(dir=self.test_out,
+                                     prefix='qiime_inseqs',
+                                     suffix='.fasta')
+        close(fd)
         inseqs1_f = open(self.inseqs1_fp, 'w')
         inseqs1_f.write(inseqs1)
         inseqs1_f.close()
@@ -144,8 +146,9 @@ class ParallelPickOtusTrieTests(ParallelPickOtusTests):
             ('s6', 'ATTTAAT'),
             ('s7', 'AAATAAAAA')
         ]
-        self.small_seq_path = get_tmp_filename(
-            prefix='TrieOtuPickerTest_', suffix='.fasta')
+        fd, self.small_seq_path = mkstemp(prefix='TrieOtuPickerTest_',
+                                         suffix='.fasta')
+        close(fd)
         self.files_to_remove = [self.small_seq_path]
         f = open(self.small_seq_path, 'w')
         f.write('\n'.join(['>%s\n%s' % s for s in seqs]))
