@@ -196,12 +196,12 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # Reference OTUs have correct taxonomy assignment (can't confirm the )
         obs_idx = otu_table.getObservationIndex('295053')
-        self.assertEqual(otu_table.ObservationMetadata[obs_idx]['taxonomy'],
+        self.assertEqual(otu_table.observation_metadata[obs_idx]['taxonomy'],
                          ["k__Bacteria", "p__Proteobacteria", "c__Gammaproteobacteria",
                           "o__Enterobacteriales", "f__Enterobacteriaceae", "g__", "s__"])
         # All observations have 'taxonomy' metadata, and are at least assigned
         # to 'bacteria'
-        for o in otu_table.iterObservations():
+        for o in otu_table.iter_observations():
             self.assertTrue(
                 o[2]['taxonomy'][0] in ['k__Bacteria', 'Unassigned'])
 
@@ -324,11 +324,11 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # Reference OTUs have correct taxonomy assignment (can't confirm the )
         obs_idx = otu_table.getObservationIndex('295053')
-        self.assertEqual(otu_table.ObservationMetadata[obs_idx]['taxonomy'],
+        self.assertEqual(otu_table.observation_metadata[obs_idx]['taxonomy'],
                          ["k__Bacteria", "p__Proteobacteria", "c__Gammaproteobacteria",
                           "o__Enterobacteriales", "f__Enterobacteriaceae", "g__", "s__"])
         # All observations have 'taxonomy' metadata
-        for o in otu_table.iterObservations():
+        for o in otu_table.iter_observations():
             self.assertTrue(
                 o[2]['taxonomy'][0] in ['k__Bacteria', 'Unassigned'])
 
@@ -442,12 +442,12 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # Reference OTUs have correct taxonomy assignment (can't confirm the )
         obs_idx = otu_table.getObservationIndex('295053')
-        self.assertEqual(otu_table.ObservationMetadata[obs_idx]['taxonomy'],
+        self.assertEqual(otu_table.observation_metadata[obs_idx]['taxonomy'],
                          ["k__Bacteria", "p__Proteobacteria", "c__Gammaproteobacteria",
                           "o__Enterobacteriales", "f__Enterobacteriaceae", "g__", "s__"])
         # All observations have 'taxonomy' metadata, and are at least assigned
         # to 'bacteria'
-        for o in otu_table.iterObservations():
+        for o in otu_table.iter_observations():
             self.assertTrue(
                 o[2]['taxonomy'][0] in ['k__Bacteria', 'Unassigned'])
 
@@ -621,12 +621,12 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # Reference OTUs have correct taxonomy assignment (can't confirm the )
         obs_idx = otu_table.getObservationIndex('295053')
-        self.assertEqual(otu_table.ObservationMetadata[obs_idx]['taxonomy'],
+        self.assertEqual(otu_table.observation_metadata[obs_idx]['taxonomy'],
                          ["k__Bacteria", "p__Proteobacteria", "c__Gammaproteobacteria",
                           "o__Enterobacteriales", "f__Enterobacteriaceae", "g__", "s__"])
         # All observations have 'taxonomy' metadata, and are at least assigned
         # to 'bacteria'
-        for o in otu_table.iterObservations():
+        for o in otu_table.iter_observations():
             self.assertTrue(
                 o[2]['taxonomy'][0] in ['k__Bacteria', 'Unassigned'])
 
@@ -739,12 +739,12 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # Reference OTUs have correct taxonomy assignment (can't confirm the )
         obs_idx = otu_table.getObservationIndex('295053')
-        self.assertEqual(otu_table.ObservationMetadata[obs_idx]['taxonomy'],
+        self.assertEqual(otu_table.observation_metadata[obs_idx]['taxonomy'],
                          ["k__Bacteria", "p__Proteobacteria", "c__Gammaproteobacteria",
                           "o__Enterobacteriales", "f__Enterobacteriaceae", "g__", "s__"])
         # All observations have 'taxonomy' metadata, and are at least assigned
         # to 'bacteria'
-        for o in otu_table.iterObservations():
+        for o in otu_table.iter_observations():
             self.assertTrue(
                 o[2]['taxonomy'][0] in ['k__Bacteria', 'Unassigned'])
 
@@ -866,12 +866,12 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # Reference OTUs have correct taxonomy assignment (can't confirm the )
         obs_idx = otu_table.getObservationIndex('295053')
-        self.assertEqual(otu_table.ObservationMetadata[obs_idx]['taxonomy'],
+        self.assertEqual(otu_table.observation_metadata[obs_idx]['taxonomy'],
                          ["k__Bacteria", "p__Proteobacteria", "c__Gammaproteobacteria",
                           "o__Enterobacteriales", "f__Enterobacteriaceae", "g__", "s__"])
         # All observations have 'taxonomy' metadata, and are at least assigned
         # to 'bacteria'
-        for o in otu_table.iterObservations():
+        for o in otu_table.iter_observations():
             self.assertTrue(
                 o[2]['taxonomy'][0] in ['k__Bacteria', 'Unassigned'])
 
@@ -1020,12 +1020,12 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # Reference OTUs have correct taxonomy assignment (can't confirm the )
         obs_idx = otu_table.getObservationIndex('295053')
-        self.assertEqual(otu_table.ObservationMetadata[obs_idx]['taxonomy'],
+        self.assertEqual(otu_table.observation_metadata[obs_idx]['taxonomy'],
                          ["k__Bacteria", "p__Proteobacteria", "c__Gammaproteobacteria",
                           "o__Enterobacteriales", "f__Enterobacteriaceae", "g__", "s__"])
         # All observations have 'taxonomy' metadata, and are at least assigned
         # to 'bacteria'
-        for o in otu_table.iterObservations():
+        for o in otu_table.iter_observations():
             self.assertTrue(
                 o[2]['taxonomy'][0] in ['k__Bacteria', 'Unassigned'])
 
@@ -1151,12 +1151,12 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # Reference OTUs have correct taxonomy assignment (can't confirm the )
         obs_idx = otu_table.getObservationIndex('295053')
-        self.assertEqual(otu_table.ObservationMetadata[obs_idx]['taxonomy'],
+        self.assertEqual(otu_table.observation_metadata[obs_idx]['taxonomy'],
                          ["k__Bacteria", "p__Proteobacteria", "c__Gammaproteobacteria",
                           "o__Enterobacteriales", "f__Enterobacteriaceae", "g__", "s__"])
         # All observations have 'taxonomy' metadata, and are at least assigned
         # to 'bacteria'
-        for o in otu_table.iterObservations():
+        for o in otu_table.iter_observations():
             self.assertTrue(
                 o[2]['taxonomy'][0] in ['k__Bacteria', 'Unassigned'])
 
@@ -1282,12 +1282,12 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # Reference OTUs have correct taxonomy assignment (can't confirm the )
         obs_idx = otu_table.getObservationIndex('295053')
-        self.assertEqual(otu_table.ObservationMetadata[obs_idx]['taxonomy'],
+        self.assertEqual(otu_table.observation_metadata[obs_idx]['taxonomy'],
                          ["k__Bacteria", "p__Proteobacteria", "c__Gammaproteobacteria",
                           "o__Enterobacteriales", "f__Enterobacteriaceae", "g__", "s__"])
         # All observations have 'taxonomy' metadata, and are at least assigned
         # to 'bacteria'
-        for o in otu_table.iterObservations():
+        for o in otu_table.iter_observations():
             self.assertTrue(
                 o[2]['taxonomy'][0] in ['k__Bacteria', 'Unassigned'])
 

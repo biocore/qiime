@@ -34,7 +34,7 @@ from numpy import (argsort, array, ceil, empty, fill_diagonal, finfo,
                    median, nan, min as np_min, max as np_max)
 from numpy.random import permutation
 from cogent.maths.stats.test import t_one_sample
-from biom.table import table_factory, DenseOTUTable
+from biom.table import table_factory, Table
 from skbio.core.distance import DistanceMatrix
 from skbio.util.misc import create_dir
 
@@ -528,7 +528,7 @@ class CategoryStats(DistanceMatrixStats):
         """
         for dm in self.DistanceMatrices:
             for samp_id in dm.ids:
-                if samp_id not in self.MetadataMap.SampleIds:
+                if samp_id not in self.MetadataMap.sample_ids:
                     raise ValueError("The sample ID '%s' was not found in the "
                                      "metadata map." % samp_id)
         for cat in self.Categories:
@@ -1738,7 +1738,7 @@ def paired_difference_analyses(personal_ids_to_state_values,
     biom_table = table_factory(biom_data,
                                personal_ids,
                                biom_observation_ids,
-                               constructor=DenseOTUTable)
+                               constructor=Table)
     biom_table_f = open(biom_table_fp, 'w')
     biom_table_f.write(format_biom_table(biom_table))
     biom_table_f.close()

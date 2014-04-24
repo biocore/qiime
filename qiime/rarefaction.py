@@ -52,7 +52,7 @@ class SingleRarefactionMaker(FunctionWithParams):
             for rep in range(self.num_reps):"""
 
         if not include_lineages:
-            for (val, id, meta) in self.otu_table.iterObservations():
+            for (val, id, meta) in self.otu_table.iter_observations():
                 del meta['taxonomy']
 
         sub_otu_table = get_rare_data(self.otu_table,
@@ -103,7 +103,7 @@ class RarefactionMaker(FunctionWithParams):
 
         this prevents large memory usage"""
         if not include_lineages:
-            for (val, id, meta) in self.otu_table.iterObservations():
+            for (val, id, meta) in self.otu_table.iter_observations():
                 try:
                     del meta['taxonomy']
                 except (TypeError, KeyError) as e:
@@ -176,7 +176,7 @@ def get_rare_data(otu_table,
     if not include_small_samples:
         otu_table = filter_samples_from_otu_table(
             otu_table,
-            otu_table.SampleIds,
+            otu_table.sample_ids,
             seqs_per_sample,
             inf)
 

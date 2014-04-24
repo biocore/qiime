@@ -23,7 +23,7 @@ from cogent.util.misc import flatten
 from qiime.format import format_otu_table
 from qiime.parse import parse_otu_map
 from qiime.format import format_biom_table
-from biom.table import SparseOTUTable, DenseOTUTable, table_factory
+from biom.table import SparseOTUTable, Table, table_factory
 
 
 def libs_from_seqids(seq_ids, delim='_'):

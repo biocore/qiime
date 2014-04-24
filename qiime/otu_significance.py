@@ -287,7 +287,7 @@ def correlation_row_generator(bt, pmf, category):
     # as the order of the samples in data. otherwise will have hard to
     # diagnose correspondence issues
     try:
-        cat_vect = array([pmf[s][category] for s in bt.SampleIds], dtype=float)
+        cat_vect = array([pmf[s][category] for s in bt.sample_ids], dtype=float)
         return ((row, cat_vect) for row in data)
     except ValueError:
         raise ValueError("Mapping file category contained data that couldn't " +

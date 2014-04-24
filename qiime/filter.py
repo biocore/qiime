@@ -216,7 +216,7 @@ def sample_ids_from_category_state_coverage(mapping_f,
         # file.
         required_states = set(map(str, required_states))
         valid_coverage_states = set(metadata_map.getCategoryValues(
-            metadata_map.SampleIds, coverage_category))
+            metadata_map.sample_ids, coverage_category))
         invalid_coverage_states = required_states - valid_coverage_states
 
         if invalid_coverage_states:
@@ -249,7 +249,7 @@ def sample_ids_from_category_state_coverage(mapping_f,
 
     if splitter_category is None:
         results = _filter_sample_ids_from_category_state_coverage(
-            metadata_map, metadata_map.SampleIds, coverage_category,
+            metadata_map, metadata_map.sample_ids, coverage_category,
             subject_category, consider_state, min_num_states,
             required_states)
     else:
@@ -257,7 +257,7 @@ def sample_ids_from_category_state_coverage(mapping_f,
         # match the current splitter category state and using those for the
         # actual filtering.
         splitter_category_states = defaultdict(list)
-        for samp_id in metadata_map.SampleIds:
+        for samp_id in metadata_map.sample_ids:
             splitter_category_state = \
                 metadata_map.getCategoryValue(samp_id, splitter_category)
             splitter_category_states[splitter_category_state].append(samp_id)
@@ -554,7 +554,7 @@ def filter_otu_table_to_n_samples(otu_table, n):
          ValueError will be raised.
     """
     try:
-        ids_to_keep = sample(otu_table.SampleIds, n)
+        ids_to_keep = sample(otu_table.sample_ids, n)
     except ValueError:
         raise ValueError(
             "Number of samples to filter must be between 0 and the number of samples.")

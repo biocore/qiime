@@ -642,17 +642,17 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
         # min and max
         filtered_otu_table = filter_samples_from_otu_table(
             otu_table,
-            otu_table.SampleIds,
+            otu_table.sample_ids,
             148,
             149)
         expected_sample_ids = set(['PC.354', 'PC.635', 'PC.593', 'PC.607'])
         self.assertEqual(
-            set(filtered_otu_table.SampleIds),
+            set(filtered_otu_table.sample_ids),
             expected_sample_ids)
         # min only
         filtered_otu_table = filter_samples_from_otu_table(
             otu_table,
-            otu_table.SampleIds,
+            otu_table.sample_ids,
             148,
             inf)
         expected_sample_ids = set(
@@ -663,12 +663,12 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
              'PC.356',
              'PC.634'])
         self.assertEqual(
-            set(filtered_otu_table.SampleIds),
+            set(filtered_otu_table.sample_ids),
             expected_sample_ids)
         # max only
         filtered_otu_table = filter_samples_from_otu_table(
             otu_table,
-            otu_table.SampleIds,
+            otu_table.sample_ids,
             0,
             149)
         expected_sample_ids = set(
@@ -680,7 +680,7 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
              'PC.593',
              'PC.607'])
         self.assertEqual(
-            set(filtered_otu_table.SampleIds),
+            set(filtered_otu_table.sample_ids),
             expected_sample_ids)
 
     def test_filter_samples_from_otu_table_sample_ids_dense(self):
@@ -695,7 +695,7 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
             0,
             inf)
         self.assertEqual(
-            set(filtered_otu_table.SampleIds),
+            set(filtered_otu_table.sample_ids),
             expected_sample_ids)
 
         # keep some other samples
@@ -706,7 +706,7 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
             0,
             inf)
         self.assertEqual(
-            set(filtered_otu_table.SampleIds),
+            set(filtered_otu_table.sample_ids),
             expected_sample_ids)
 
     def test_filter_otu_table_to_n_samples(self):
@@ -716,11 +716,11 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
 
         # keep two samples
         filtered_otu_table = filter_otu_table_to_n_samples(otu_table, 2)
-        self.assertEqual(len(filtered_otu_table.SampleIds), 2)
+        self.assertEqual(len(filtered_otu_table.sample_ids), 2)
 
         # keep three samples
         filtered_otu_table = filter_otu_table_to_n_samples(otu_table, 3)
-        self.assertEqual(len(filtered_otu_table.SampleIds), 3)
+        self.assertEqual(len(filtered_otu_table.sample_ids), 3)
 
         # ValueError on invalid n
         self.assertRaises(
@@ -739,7 +739,7 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
         results = []
         for i in range(100):
             filtered_otu_table = filter_otu_table_to_n_samples(otu_table, 3)
-            results.append(tuple(filtered_otu_table.SampleIds))
+            results.append(tuple(filtered_otu_table.sample_ids))
         self.assertTrue(len(set(results)) > 1)
 
     def test_filter_samples_from_otu_table_counts_sparse(self):
@@ -749,17 +749,17 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
         # min and max
         filtered_otu_table = filter_samples_from_otu_table(
             otu_table,
-            otu_table.SampleIds,
+            otu_table.sample_ids,
             148,
             149)
         expected_sample_ids = set(['PC.354', 'PC.635', 'PC.593', 'PC.607'])
         self.assertEqual(
-            set(filtered_otu_table.SampleIds),
+            set(filtered_otu_table.sample_ids),
             expected_sample_ids)
         # min only
         filtered_otu_table = filter_samples_from_otu_table(
             otu_table,
-            otu_table.SampleIds,
+            otu_table.sample_ids,
             148,
             inf)
         expected_sample_ids = set(
@@ -770,12 +770,12 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
              'PC.356',
              'PC.634'])
         self.assertEqual(
-            set(filtered_otu_table.SampleIds),
+            set(filtered_otu_table.sample_ids),
             expected_sample_ids)
         # max only
         filtered_otu_table = filter_samples_from_otu_table(
             otu_table,
-            otu_table.SampleIds,
+            otu_table.sample_ids,
             0,
             149)
         expected_sample_ids = set(
@@ -787,7 +787,7 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
              'PC.593',
              'PC.607'])
         self.assertEqual(
-            set(filtered_otu_table.SampleIds),
+            set(filtered_otu_table.sample_ids),
             expected_sample_ids)
 
     def test_filter_samples_from_otu_table_sample_ids_sparse(self):
@@ -802,7 +802,7 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
             0,
             inf)
         self.assertEqual(
-            set(filtered_otu_table.SampleIds),
+            set(filtered_otu_table.sample_ids),
             expected_sample_ids)
 
         # keep some other samples
@@ -813,7 +813,7 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
             0,
             inf)
         self.assertEqual(
-            set(filtered_otu_table.SampleIds),
+            set(filtered_otu_table.sample_ids),
             expected_sample_ids)
 
     def test_sample_ids_from_metadata_description(self):

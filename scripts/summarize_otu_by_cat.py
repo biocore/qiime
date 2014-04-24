@@ -106,7 +106,7 @@ def main():
 
     # normalize the result if requested by the user
     if normalize:
-        result = result.normObservationBySample()
+        result = result.norm_observation_by_sample()
 
     # write a new BIOM file
     f = open(output_fp, 'w')

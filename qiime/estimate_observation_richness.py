@@ -59,7 +59,7 @@ class ObservationRichnessEstimator(object):
 
     def getSampleCount(self):
         """Return the number of samples in the table."""
-        return len(self._biom_table.SampleIds)
+        return len(self._biom_table.sample_ids)
 
     def __call__(self, start=1, stop=None, num_steps=10,
                  confidence_level=0.95):

@@ -168,9 +168,9 @@ def sort_otu_table(otu_table, sorted_sample_ids):
     """Sort an OTU table by sorted sample ids"""
     # sanity check
     sorted_sample_ids_set = set(sorted_sample_ids)
-    if set(otu_table.SampleIds) - sorted_sample_ids_set:
+    if set(otu_table.sample_ids) - sorted_sample_ids_set:
         raise KeyError("Sample IDs present in OTU table but not sorted sample id list: " +
-                       ' '.join(list(set(otu_table.SampleIds) - set(sorted_sample_ids))))
+                       ' '.join(list(set(otu_table.sample_ids) - set(sorted_sample_ids))))
     if len(sorted_sample_ids_set) != len(sorted_sample_ids):
         raise ValueError(
             "Duplicate sample IDs are present in sorted sample id list.")

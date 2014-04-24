@@ -41,7 +41,7 @@ def make_sample_node_table(bt, mf_dict):
     '''
     # make sure to use only the sample ids found in the biom file as the
     # mapping file may have a superset of the ids found in the biom file
-    sids = bt.SampleIds
+    sids = bt.sample_ids
     header = '#NodeID\tNodeType\tAbundance\t' + \
         '\t'.join(mf_dict[sids[0]].keys())
     lines = [header] + ['%s\tsample\t%s\t' % (sid, bt.sampleData(sid).sum()) +
@@ -81,19 +81,19 @@ def make_otu_node_table(bt, md_key, md_fields):
     header = '#NodeID\tNodeType\tAbundance\t' + '\t'.join(md_fields)
     lines = [header]
     # assume that all metadata has same format so testing any entry sufficient
-    md_type = type(bt.ObservationMetadata[0][md_key])
+    md_type = type(bt.observation_metadata[0][md_key])
     if md_type is str or md_type is unicode:
         # there are a huge number of possible ways in which the string could be
         # formatted. if its not splittable on a semicolon (preferred for qiime)
         # no splitting will occur.
         for i, otu in enumerate(bt.ObservationIds):
             line = '%s\totu\t%s\t' % (otu, bt.observationData(otu).sum())
-            line += bt.ObservationMetadata[i][md_key].replace(';', '\t')
+            line += bt.observation_metadata[i][md_key].replace(';', '\t')
             lines.append(line)
     if md_type is list:
         for i, otu in enumerate(bt.ObservationIds):
             line = '%s\totu\t%s\t' % (otu, bt.observationData(otu).sum())
-            line += '\t'.join(bt.ObservationMetadata[i][md_key])
+            line += '\t'.join(bt.observation_metadata[i][md_key])
             lines.append(line)
     if md_type is defaultdict:
         # if md_type is defaultdict keys in md_fields that fail will produce
@@ -101,7 +101,7 @@ def make_otu_node_table(bt, md_key, md_fields):
         try:
             for i, otu in enumerate(bt.ObservationIds):
                 line = '%s\totu\t%s\t' % (otu, bt.observationData(otu).sum())
-                line += '\t'.join([bt.ObservationMetadata[i][md_key][k] for k in
+                line += '\t'.join([bt.observation_metadata[i][md_key][k] for k in
                                    md_fields])
                 lines.append(line)
         except TypeError:
@@ -112,7 +112,7 @@ def make_otu_node_table(bt, md_key, md_fields):
         try:
             for i, otu in enumerate(bt.ObservationIds):
                 line = '%s\totu\t%s\t' % (otu, bt.observationData(otu).sum())
-                line += '\t'.join([bt.ObservationMetadata[i][md_key][k] for k in
+                line += '\t'.join([bt.observation_metadata[i][md_key][k] for k in
                                    md_fields])
                 lines.append(line)
         except KeyError:
@@ -214,7 +214,7 @@ def make_edge_table(bt):
     oids = array(bt.ObservationIds)
     header = '#Sample\tOTU\tAbundance'
     lines = [header]
-    for sample in bt.SampleIds:
+    for sample in bt.sample_ids:
         sample_ind = bt.getSampleIndex(sample)
         otu_ids = oids[data[:, sample_ind].nonzero()[0]]
         otu_abs = data[:, sample_ind][data[:, sample_ind].nonzero()[0]]

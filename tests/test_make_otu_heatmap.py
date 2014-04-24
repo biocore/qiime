@@ -73,7 +73,7 @@ class TopLevelTests(TestCase):
 
     def test_extract_metadata_column(self):
         """Extracts correct column from mapping file"""
-        obs = extract_metadata_column(self.otu_table.SampleIds,
+        obs = extract_metadata_column(self.otu_table.sample_ids,
                                       self.metadata, category='CAT2')
         exp = ['A', 'B', 'A', 'B', 'A', 'B']
         self.assertEqual(obs, exp)
@@ -94,7 +94,7 @@ class TopLevelTests(TestCase):
 
     def test_make_otu_labels(self):
         lineages = []
-        for val, id, meta in self.otu_table.iterObservations():
+        for val, id, meta in self.otu_table.iter_observations():
             lineages.append([v for v in meta['taxonomy']])
         obs = make_otu_labels(self.otu_table.ObservationIds,
                               lineages, n_levels=1)
@@ -102,7 +102,7 @@ class TopLevelTests(TestCase):
         self.assertEqual(obs, exp)
 
         full_lineages = []
-        for val, id, meta in self.otu_table_f.iterObservations():
+        for val, id, meta in self.otu_table_f.iter_observations():
             full_lineages.append([v for v in meta['taxonomy']])
         obs = make_otu_labels(self.otu_table_f.ObservationIds,
                               full_lineages, n_levels=3)
@@ -114,7 +114,7 @@ class TopLevelTests(TestCase):
     def test_names_to_indices(self):
         new_order = ['Sample4', 'Sample2', 'Sample3',
                      'Sample6', 'Sample5', 'Sample1']
-        obs = names_to_indices(self.otu_table.SampleIds, new_order)
+        obs = names_to_indices(self.otu_table.sample_ids, new_order)
         exp = [3, 1, 2, 5, 4, 0]
         assert_almost_equal(obs, exp)
 
@@ -140,7 +140,7 @@ class TopLevelTests(TestCase):
 
     def test_plot_heatmap(self):
         plot_heatmap(
-            self.otu_table, self.otu_table.ObservationIds, self.otu_table.SampleIds,
+            self.otu_table, self.otu_table.ObservationIds, self.otu_table.sample_ids,
             filename=self.tmp_heatmap_fpath)
         self.assertEqual(exists(self.tmp_heatmap_fpath), True)
         remove_files(set([self.tmp_heatmap_fpath]))

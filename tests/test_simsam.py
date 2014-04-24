@@ -122,19 +122,19 @@ class SimsamTests(TestCase):
 
         # 3 samples per input sample
         self.assertEqual(
-            len(res_table.SampleIds),
-            num_replicates * len(orig_table.SampleIds))
+            len(res_table.sample_ids),
+            num_replicates * len(orig_table.sample_ids))
 
         # sample_ids have correct naming and order
-        for i in range(len(orig_table.SampleIds)):
+        for i in range(len(orig_table.sample_ids)):
             for j in range(num_replicates):
-                exp = orig_table.SampleIds[i] + '.' + str(j)
+                exp = orig_table.sample_ids[i] + '.' + str(j)
                 self.assertEqual(
-                    res_table.SampleIds[i * num_replicates + j],
+                    res_table.sample_ids[i * num_replicates + j],
                     exp)
 
         # same total sequences in each replicate sample
-        num_orig_samples = len(orig_table.SampleIds)
+        num_orig_samples = len(orig_table.sample_ids)
         orig_sams = orig_table.iterSampleData()
         res_sams = res_table.iterSampleData()
         for i in range(num_orig_samples):
@@ -192,15 +192,15 @@ class SimsamTests(TestCase):
 
         # 3 samples per input sample
         self.assertEqual(
-            len(res_table.SampleIds),
-            num_replicates * len(orig_table.SampleIds))
+            len(res_table.sample_ids),
+            num_replicates * len(orig_table.sample_ids))
 
         # sample_ids have correct naming and order
-        for i in range(len(orig_table.SampleIds)):
+        for i in range(len(orig_table.sample_ids)):
             for j in range(num_replicates):
-                exp = orig_table.SampleIds[i] + '.' + str(j)
+                exp = orig_table.sample_ids[i] + '.' + str(j)
                 self.assertEqual(
-                    res_table.SampleIds[i * num_replicates + j],
+                    res_table.sample_ids[i * num_replicates + j],
                     exp)
 
         # same otu ids
@@ -208,7 +208,7 @@ class SimsamTests(TestCase):
 
         # same otu table, just replicated thrice
         # note this requires the same sorting of otus, input is correct sorting
-        num_orig_samples = len(orig_table.SampleIds)
+        num_orig_samples = len(orig_table.sample_ids)
         orig_sams = orig_table.iterSampleData()
         res_sams = res_table.iterSampleData()
         for i in range(num_orig_samples):
@@ -341,13 +341,13 @@ class SimsamTests(TestCase):
         """Test creating replicate samples in a mapping file."""
         # 3 replicates, with two extra samples in the mapping file.
         obs = qiime.simsam.create_replicated_mapping_file(self.map_f, 3,
-                                                          self.otu_table.SampleIds)
+                                                          self.otu_table.sample_ids)
         self.assertEqual(obs, exp_rep_map_lines)
 
         # Must specify at least one replicate.
         self.assertRaises(ValueError,
                           qiime.simsam.create_replicated_mapping_file, self.map_f, 0,
-                          self.otu_table.SampleIds)
+                          self.otu_table.sample_ids)
 
     def test_simsam_range_correct_number_of_output(self):
         """simsam_range yields correct number of output tables
@@ -376,24 +376,24 @@ class SimsamTests(TestCase):
             [1], [0.1], self.tutorial_map)
         actual = list(actual)
         self.assertEqual(
-            len(actual[0][0].SampleIds),
-            len(self.tutorial_otu_table.SampleIds))
+            len(actual[0][0].sample_ids),
+            len(self.tutorial_otu_table.sample_ids))
 
         actual = qiime.simsam.simsam_range(
             self.tutorial_otu_table, self.tutorial_tree,
             [2], [0.1], self.tutorial_map)
         actual = list(actual)
         self.assertEqual(
-            len(actual[0][0].SampleIds),
-            2 * len(self.tutorial_otu_table.SampleIds))
+            len(actual[0][0].sample_ids),
+            2 * len(self.tutorial_otu_table.sample_ids))
 
         actual = qiime.simsam.simsam_range(
             self.tutorial_otu_table, self.tutorial_tree,
             [4], [0.1], self.tutorial_map)
         actual = list(actual)
         self.assertEqual(
-            len(actual[0][0].SampleIds),
-            4 * len(self.tutorial_otu_table.SampleIds))
+            len(actual[0][0].sample_ids),
+            4 * len(self.tutorial_otu_table.sample_ids))
 
     def test_simsam_range_functions_without_mapping_file(self):
         """simsam_range yields correct number of output tables
@@ -423,7 +423,7 @@ class SimsamTests(TestCase):
         d, _, _ = \
             parse_mapping_file(open('%s/world_n2_d0.1.txt' % self.test_out))
         mapping_sample_ids = [e[0] for e in d]
-        self.assertItemsEqual(t.SampleIds, mapping_sample_ids)
+        self.assertItemsEqual(t.sample_ids, mapping_sample_ids)
 
 
 map_lines = """#SampleID\tTreatment\tDescription

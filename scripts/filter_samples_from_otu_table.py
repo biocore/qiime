@@ -106,7 +106,7 @@ def main():
         sample_ids_to_keep = sample_ids_from_metadata_description(
             open(mapping_fp, 'U'), valid_states)
     else:
-        sample_ids_to_keep = otu_table.SampleIds
+        sample_ids_to_keep = otu_table.sample_ids
 
     if (sample_id_fp is not None):
         sample_id_f_ids = set([l.strip().split()[0]
@@ -128,7 +128,7 @@ def main():
             filter_mapping_file(
                 mapping_data,
                 mapping_headers,
-                filtered_otu_table.SampleIds)
+                filtered_otu_table.sample_ids)
         open(
             output_mapping_fp,
             'w').write(

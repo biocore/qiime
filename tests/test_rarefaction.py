@@ -84,7 +84,7 @@ class FunctionTests(TestCase):
         """
         maker = RarefactionMaker(self.otu_table_fp, 0, 1, 1, 1)
         res = maker.rarefy_to_list(include_full=True)
-        self.assertItemsEqual(res[-1][2].SampleIds, self.otu_table.SampleIds)
+        self.assertItemsEqual(res[-1][2].sample_ids, self.otu_table.sample_ids)
         self.assertItemsEqual(
             res[-1][2].ObservationIds,
             self.otu_table.ObservationIds)
@@ -109,8 +109,8 @@ class FunctionTests(TestCase):
         otu_table = parse_biom_table(open(fname, 'U'))
 
         self.assertItemsEqual(
-            otu_table.SampleIds,
-            self.otu_table.SampleIds[:2])
+            otu_table.sample_ids,
+            self.otu_table.sample_ids[:2])
         # third sample had 0 seqs, so it's gone
         self.assertItemsEqual(
             otu_table.ObservationIds,
@@ -130,8 +130,8 @@ class FunctionTests(TestCase):
         otu_table = parse_biom_table(open(fname, 'U'))
 
         self.assertItemsEqual(
-            otu_table.SampleIds,
-            self.otu_table.SampleIds[:2])
+            otu_table.sample_ids,
+            self.otu_table.sample_ids[:2])
         # third sample had 0 seqs, so it's gone
         self.assertItemsEqual(
             otu_table.ObservationIds,
@@ -148,10 +148,10 @@ class FunctionTests(TestCase):
         here, rare depth > any sample, and include_small... = True"""
         rare_otu_table = get_rare_data(self.otu_table,
                                        50, include_small_samples=True)
-        self.assertEqual(len(rare_otu_table.SampleIds), 3)
+        self.assertEqual(len(rare_otu_table.sample_ids), 3)
         # 4 observations times 3 samples = size 12 before
         self.assertEqual(len(rare_otu_table.ObservationIds), 4)
-        for sam in self.otu_table.SampleIds:
+        for sam in self.otu_table.sample_ids:
             for otu in self.otu_table.ObservationIds:
                 rare_val = rare_otu_table.getValueByIds(otu, sam)
                 self.assertEqual(rare_otu_table.getValueByIds(otu, sam),
@@ -163,11 +163,11 @@ class FunctionTests(TestCase):
         """
         rare_otu_table = get_rare_data(self.otu_table,
                                        11, include_small_samples=False)
-        self.assertEqual(rare_otu_table.SampleIds, ('X',))
+        self.assertEqual(rare_otu_table.sample_ids, ('X',))
 
         # a very complicated way to test things
         rare_values = [val[0]
-                       for (val, otu_id, meta) in rare_otu_table.iterObservations()]
+                       for (val, otu_id, meta) in rare_otu_table.iter_observations()]
         self.assertEqual(rare_values, [1.0, 5.0, 3.0, 2.0])
 
 if __name__ == '__main__':

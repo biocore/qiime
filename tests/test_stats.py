@@ -858,11 +858,11 @@ class PermanovaTests(TestHelper):
 
         # Formatting the two data_maps to meet permanova requirements.
         self.map = {}
-        for samp_id in self.data_map.SampleIds:
+        for samp_id in self.data_map.sample_ids:
             self.map[samp_id] = self.data_map.getCategoryValue(samp_id,
                                                                'Treatment')
         self.map_uneven = {}
-        for samp_id in self.data_map_uneven.SampleIds:
+        for samp_id in self.data_map_uneven.sample_ids:
             self.map_uneven[samp_id] = self.data_map_uneven.getCategoryValue(
                 samp_id, 'Treatment')
 
@@ -1724,7 +1724,7 @@ class PairedDifferenceTests(TestHelper):
         self.assertTrue(exists(biom_table_fp))
         self.assertTrue(exists(join(self.test_out, 'differences_sids.txt')))
         table = parse_biom_table(open(biom_table_fp, 'U'))
-        self.assertItemsEqual(table.SampleIds, ['subject1', 'subject2'])
+        self.assertItemsEqual(table.sample_ids, ['subject1', 'subject2'])
         self.assertItemsEqual(table.ObservationIds,
                               ['firmicutes-abundance', 'bacteroidetes-abundance'])
         assert_almost_equal(table

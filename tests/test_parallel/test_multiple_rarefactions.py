@@ -84,11 +84,11 @@ class ParallelMultipleRarefactionsTests(TestCase):
         input_table = parse_biom_table(open(self.input1_fp))
         # sanity checks on first table (sampled at 11 seqs/sample)
         output_table = parse_biom_table(open(biom_tables[0]))
-        self.assertEqual(output_table.SampleIds, input_table.SampleIds)
+        self.assertEqual(output_table.sample_ids, input_table.sample_ids)
         self.assertEqual(output_table.sum(), 99)
         # sanity checks on first table (sampled at 91 seqs/sample)
         output_table = parse_biom_table(open(biom_tables[-1]))
-        self.assertEqual(output_table.SampleIds, input_table.SampleIds)
+        self.assertEqual(output_table.sample_ids, input_table.sample_ids)
         self.assertEqual(output_table.sum(), 819)
 
 

@@ -13,7 +13,7 @@ import json
 from unittest import TestCase, main
 from qiime.make_otu_table import (libs_from_seqids,
                                   seqids_from_otu_to_seqid, make_otu_table)
-from biom.table import DenseOTUTable
+from biom.table import Table
 from biom.parse import parse_biom_table
 
 
@@ -48,7 +48,7 @@ class TopLevelTests(TestCase):
 1	ABC_1
 x	GHI_2	GHI_3	GHI_77
 z	DEF_3	XYZ_1""".split('\n')
-        obs = make_otu_table(otu_map_lines, constructor=DenseOTUTable)
+        obs = make_otu_table(otu_map_lines, constructor=Table)
         exp = """{"rows": [{"id": "0", "metadata": null}, {"id": "1", "metadata": null}, {"id": "x", "metadata": null}, {"id": "z", "metadata": null}], "format": "Biological Observation Matrix 0.9dev", "data": [[1, 1, 0, 0], [1, 0, 0, 0], [0, 0, 3, 0], [0, 1, 0, 1]], "columns": [{"id": "ABC", "metadata": null}, {"id": "DEF", "metadata": null}, {"id": "GHI", "metadata": null}, {"id": "XYZ", "metadata": null}], "generated_by": "QIIME 1.4.0-dev, svn revision 2532", "matrix_type": "dense", "shape": [4, 4], "format_url": "http://biom-format.org", "date": "2011-12-21T00:49:15.978315", "type": "OTU table", "id": null, "matrix_element_type": "float"}"""
         self.assertEqual(
             parse_biom_table(obs.split('\n')),
@@ -65,7 +65,7 @@ z	DEF_3	XYZ_1""".split('\n')
         obs = make_otu_table(
             otu_map_lines,
             taxonomy,
-            constructor=DenseOTUTable)
+            constructor=Table)
         exp = """{"rows": [{"id": "0", "metadata": {"taxonomy": ["Bacteria", "Firmicutes"]}}, {"id": "1", "metadata": {"taxonomy": ["None"]}}, {"id": "x", "metadata": {"taxonomy": ["Bacteria", "Bacteroidetes"]}}, {"id": "z", "metadata": {"taxonomy": ["None"]}}], "format": "Biological Observation Matrix 0.9dev", "data": [[1.0, 1.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0], [0.0, 0.0, 3.0, 0.0], [0.0, 1.0, 0.0, 1.0]], "columns": [{"id": "ABC", "metadata": null}, {"id": "DEF", "metadata": null}, {"id": "GHI", "metadata": null}, {"id": "XYZ", "metadata": null}], "generated_by": "QIIME 1.4.0-dev, svn revision 2532", "matrix_type": "dense", "shape": [4, 4], "format_url": "http://biom-format.org", "date": "2011-12-21T00:19:30.961477", "type": "OTU table", "id": null, "matrix_element_type": "float"}"""
         self.assertEqual(
             parse_biom_table(obs.split('\n')),

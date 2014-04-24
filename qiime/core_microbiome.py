@@ -35,9 +35,9 @@ def get_filter_to_core_f(table,
     # generate the position mask, which contains True at SampleIds
     # positions that contain an id in sample_ids
     if sample_ids is None:
-        position_mask = array([True] * len(table.SampleIds))
+        position_mask = array([True] * len(table.sample_ids))
     else:
-        position_mask = array([s in sample_ids for s in table.SampleIds])
+        position_mask = array([s in sample_ids for s in table.sample_ids])
     # determine the number of sample_ids that must have a non-zero
     # value for an OTU to be considered part of the core
     min_count = fraction_for_core * position_mask.sum()

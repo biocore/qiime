@@ -118,7 +118,7 @@ s4\tTTTT\tExp\tDisease mouse, I.D. 357""".split('\n')
         #otu_table = parse_otu_table(self.otu_table, float)
         #otu_table = parse_biom_table(self.otu_table, float)
         #otu_table = convert_otu_table_relative(otu_table)
-        otu_table = self.otu_table.normObservationBySample()
+        otu_table = self.otu_table.norm_observation_by_sample()
         summary, header = make_summary(
             otu_table, 3, upper_percentage, lower_percentage)
         self.assertEqual(header, ['Taxon', 's1', 's2', 's3', 's4'])

@@ -76,7 +76,7 @@ def plot_rank_abundance_graphs(result_fp, sample_names, otu_table,
 """
     # figure out which samples to draw
     if sample_names == '*':
-        user_sample_names = otu_table.SampleIds
+        user_sample_names = otu_table.sample_ids
     else:
         user_sample_names = sample_names.split(',')
         if len(user_sample_names) < 1:

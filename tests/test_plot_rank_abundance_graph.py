@@ -155,7 +155,7 @@ class PlotRankAbundance(TestCase):
         self.assertTrue(exists(tmp_file))
 
     def test_plot_rank_abundance_graphs_dense(self):
-        """plot_rank_abundance_graphs works with any number of samples (DenseOTUTable)"""
+        """plot_rank_abundance_graphs works with any number of samples (Table)"""
 
         self.otu_table = parse_biom_table_str(otu_table_dense)
         self.dir = mkdtemp(dir=self.tmp_dir,
