@@ -27,8 +27,8 @@ def _calc_shared_phylotypes_pairwise(otu_table, i, j):
     j: a sample id in the OTU table
     """
     shared_phylos = logical_and(
-        otu_table.sampleData(i),
-        otu_table.sampleData(j))
+        otu_table.sample_data(i),
+        otu_table.sample_data(j))
     #shared_phylos = logical_and(otu_table[:,i], otu_table[:,j])
 
     return shared_phylos.sum()
@@ -45,11 +45,11 @@ def _calc_shared_phylotypes_multiple(otu_table, idxs):
         raise ValueError(
             "calc_shared_phylotypes_multiple needs at least two sampleIDs to comapre")
     #shared_phylos = ones(len(otu_table[:,1]))
-    shared_phylos = ones(len(otu_table.ObservationIds))
+    shared_phylos = ones(len(otu_table.observation_ids))
     # for idx in idxs:
     for id_ in idxs:
         #shared_phylos = logical_and(shared_phylos, otu_table[:,idx])
-        shared_phylos = logical_and(shared_phylos, otu_table.sampleData(id_))
+        shared_phylos = logical_and(shared_phylos, otu_table.sample_data(id_))
 
     return shared_phylos.sum()
 
