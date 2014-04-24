@@ -121,7 +121,7 @@ class AlphaDiversityCalc(FunctionWithParams):
             [(return val 1 on sample2),...]
         """
         otu_table = self.getBiomData(data_path)
-        data = otu_table.iterSampleData()
+        data = otu_table.iter_sample_data()
         if self.IsPhylogenetic:
             tree = self.getTree(tree_path)
             # build envs dict: envs = {otu_id:{sample_id:count}}
@@ -201,7 +201,7 @@ class AlphaDiversityCalcs(FunctionWithParams):
         for c in self.Calcs:
             # add either calc's multiple return value names, or fn name
             metric_res = c(data_path=data_path,
-                           taxon_names=otu_table.ObservationIds,
+                           taxon_names=otu_table.observation_ids,
                            tree_path=tree,
                            sample_names=otu_table.sample_ids)
             if len(metric_res.shape) == 1:

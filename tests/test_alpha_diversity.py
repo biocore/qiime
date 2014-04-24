@@ -138,7 +138,7 @@ class AlphaDiversityCalcTests(AlphaDiversitySharedSetUpTests):
         c = AlphaDiversityCalc(metric=PD_whole_tree,
                                is_phylogenetic=True)
         assert_almost_equal(c(data_path=self.otu_table1_fp, tree_path=self.tree1,
-                            taxon_names=self.otu_table1.ObservationIds,
+                            taxon_names=self.otu_table1.observation_ids,
                             sample_names=self.otu_table1.sample_ids),
                             [13, 17, 0])
 
@@ -151,12 +151,12 @@ class AlphaDiversityCalcTests(AlphaDiversitySharedSetUpTests):
 
         non_escaped_result = c(data_path=self.otu_table1_fp,
                                tree_path=self.tree1,
-                               taxon_names=self.otu_table1.ObservationIds,
+                               taxon_names=self.otu_table1.observation_ids,
                                sample_names=self.otu_table1.sample_ids)
 
         escaped_result = c(data_path=self.otu_table2_fp,
                            tree_path=self.tree2,
-                           taxon_names=self.otu_table2.ObservationIds,
+                           taxon_names=self.otu_table2.observation_ids,
                            sample_names=self.otu_table2.sample_ids)
 
         assert_almost_equal(non_escaped_result, expected)
