@@ -13,7 +13,7 @@ from collections import defaultdict
 from unittest import TestCase, main
 import gzip
 
-from biom.parse import parse_biom_table_str, parse_biom_table
+from biom.parse import parse_biom_table, parse_biom_table
 
 from numpy.testing import assert_almost_equal
 
@@ -882,7 +882,7 @@ class FunctionWithParamsTests(TestCase):
                   [2,1,1,0,0,1],
                   [0,1,1,0,0,0]]
     }'''
-        biom_data = parse_biom_table_str(bt_string)
+        biom_data = parse_biom_table(bt_string)
         F = FunctionWithParams('')
 
         self.assertEqual(biom_data, F.getBiomData(biom_data))

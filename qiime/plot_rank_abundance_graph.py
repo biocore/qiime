@@ -88,7 +88,7 @@ def plot_rank_abundance_graphs(result_fp, sample_names, otu_table,
     for sample_name, color in zip(user_sample_names, cycle(data_color_order)):
         color = data_colors[color].toHex()
         try:
-            otu_count_vector = otu_table.sampleData(sample_name)
+            otu_count_vector = otu_table.sample_data(sample_name)
         except UnknownID:
             if log_fh:
                 log_fh.write(

@@ -245,8 +245,8 @@ def simsam_range(table,
             # create the simulated otu table
             output_sample_ids, output_otu_ids, output_data, output_metadata = \
                 sim_otu_table(table.sample_ids,
-                              table.ObservationIds,
-                              table.iterSamples(),
+                              table.observation_ids,
+                              table.iter_samples(),
                               table.observation_metadata,
                               tree,
                               simulated_sample_size,
