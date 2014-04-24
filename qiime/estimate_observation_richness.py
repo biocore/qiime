@@ -85,7 +85,7 @@ class ObservationRichnessEstimator(object):
         """
         results = RichnessEstimatesResults()
 
-        for samp_data, samp_id, _ in self._biom_table.iterSamples():
+        for samp_data, samp_id, _ in self._biom_table.iter_samples():
             point_estimator = self._point_estimator_cls(samp_data)
             ref_indiv_count = point_estimator.getTotalIndividualCount()
 

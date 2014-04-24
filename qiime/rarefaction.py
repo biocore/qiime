@@ -39,7 +39,7 @@ class SingleRarefactionMaker(FunctionWithParams):
         self.otu_table = self.getBiomData(otu_path)
 
         self.max_num_taxa = -1
-        for val in self.otu_table.iterObservationData():
+        for val in self.otu_table.iter_observation_data():
             self.max_num_taxa = max(self.max_num_taxa, val.sum())
 
     def rarefy_to_file(self, output_fname, small_included=False,
@@ -91,7 +91,7 @@ class RarefactionMaker(FunctionWithParams):
         self.otu_table = self.getBiomData(otu_path)
         self.max_num_taxa = -1
         tmp = -1
-        for val in self.otu_table.iterObservationData():
+        for val in self.otu_table.iter_observation_data():
             if val.sum() > tmp:
                 tmp = val.sum()
         self.max_num_taxa = tmp
@@ -187,6 +187,6 @@ def get_rare_data(otu_table,
         else:
             return subsample_f(x.astype(int), seqs_per_sample)
 
-    subsampled_otu_table = otu_table.transformSamples(func)
+    subsampled_otu_table = otu_table.transform_samples(func)
 
     return subsampled_otu_table
