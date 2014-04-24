@@ -142,7 +142,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # all OTUs in final OTU table occur more than once
         otu_table = parse_biom_table(open(otu_table_fp, 'U'))
-        for row in otu_table.iterObservationData():
+        for row in otu_table.iter_observation_data():
             self.assertTrue(
                 sum(row) >= 2,
                 "Singleton OTU detected in OTU table.")
@@ -270,7 +270,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # all OTUs in final OTU table occur more than once
         otu_table = parse_biom_table(open(otu_table_fp, 'U'))
-        for row in otu_table.iterObservationData():
+        for row in otu_table.iter_observation_data():
             self.assertTrue(
                 sum(row) >= 2,
                 "Singleton OTU detected in OTU table.")
@@ -389,7 +389,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # all OTUs in final OTU table occur more than once
         otu_table = parse_biom_table(open(otu_table_fp, 'U'))
-        for row in otu_table.iterObservationData():
+        for row in otu_table.iter_observation_data():
             self.assertTrue(
                 sum(row) >= 2,
                 "Singleton OTU detected in OTU table.")
@@ -566,7 +566,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # all OTUs in final OTU table occur more than once
         otu_table = parse_biom_table(open(otu_table_fp, 'U'))
-        for row in otu_table.iterObservationData():
+        for row in otu_table.iter_observation_data():
             self.assertTrue(
                 sum(row) >= 2,
                 "Singleton OTU detected in OTU table.")
@@ -685,7 +685,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # all OTUs in final OTU table occur more than once
         otu_table = parse_biom_table(open(otu_table_fp, 'U'))
-        for row in otu_table.iterObservationData():
+        for row in otu_table.iter_observation_data():
             self.assertTrue(
                 sum(row) >= 2,
                 "Singleton OTU detected in OTU table.")
@@ -809,7 +809,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # all OTUs in final OTU table occur more than once
         otu_table = parse_biom_table(open(otu_table_fp, 'U'))
-        for row in otu_table.iterObservationData():
+        for row in otu_table.iter_observation_data():
             self.assertTrue(
                 sum(row) >= 2,
                 "Singleton OTU detected in OTU table.")
@@ -956,7 +956,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # all OTUs in final OTU table occur more than once
         otu_table = parse_biom_table(open(otu_table_fp, 'U'))
-        for row in otu_table.iterObservationData():
+        for row in otu_table.iter_observation_data():
             self.assertTrue(
                 sum(row) >= 2,
                 "Singleton OTU detected in OTU table.")
@@ -1087,7 +1087,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # all OTUs in final OTU table occur more than once
         otu_table = parse_biom_table(open(otu_table_fp, 'U'))
-        for row in otu_table.iterObservationData():
+        for row in otu_table.iter_observation_data():
             self.assertTrue(
                 sum(row) >= 2,
                 "Singleton OTU detected in OTU table.")
@@ -1218,7 +1218,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # all OTUs in final OTU table occur more than once
         otu_table = parse_biom_table(open(otu_table_fp, 'U'))
-        for row in otu_table.iterObservationData():
+        for row in otu_table.iter_observation_data():
             self.assertTrue(
                 sum(row) >= 2,
                 "Singleton OTU detected in OTU table.")

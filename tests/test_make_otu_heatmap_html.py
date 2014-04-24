@@ -101,8 +101,8 @@ javascript array"""
 
         # comparing directly log_otu_table against exp_otu_table doesn't work,
         #  needs to be modified in the otu table object
-        assert_almost_equal(list(log_otu_table.iterSampleData()),
-                              list(exp_otu_table.iterSampleData()))
+        assert_almost_equal(list(log_otu_table.iter_sample_data()),
+                            list(exp_otu_table.iter_sample_data()))
 
     def test_generate_heatmap_plots(self):
         """generate_heatmap_plots: create default output files"""

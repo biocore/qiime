@@ -216,7 +216,7 @@ def get_log_transform(otu_table, eps=None):
 
     # one more transform
     min_val = inf
-    for val in log_otu_table.iterSampleData():
+    for val in log_otu_table.iter_sample_data():
         min_val = minimum(min_val, val.min())
 
     def i(s_v, s_id, s_md):
@@ -261,7 +261,7 @@ def generate_heatmap_plots(
             if i in actual_observations:
                 new_otu_sort_order.append(i)
 
-        filtered_otu_table = filtered_otu_table.sortObservationOrder(
+        filtered_otu_table = filtered_otu_table.sort_observation_order(
             new_otu_sort_order)
 
     # This sorts the samples by the order supplied
@@ -274,7 +274,7 @@ def generate_heatmap_plots(
             if i in actual_samples:
                 new_sample_sort_order.append(i)
 
-        filtered_otu_table = filtered_otu_table.sortSampleOrder(
+        filtered_otu_table = filtered_otu_table.sort_sample_order(
             new_sample_sort_order)
 
     # Convert OTU counts into a javascript array

@@ -98,11 +98,11 @@ def main():
 
     sample_metadata = mapping_file_to_dict(mapping, headers)
     table = parse_biom_table(open(otu_table_fp, 'U'))
-    table.addSampleMetadata(sample_metadata)
+    table.add_sample_metadata(sample_metadata)
     # create a new OTU table where samples are binned based on their return
     # value from bin_function
-    result = table.collapseSamplesByMetadata(bin_function, norm=False,
-                                             min_group_size=1)
+    result = table.collapse_samples_by_metadata(bin_function, norm=False,
+                                                min_group_size=1)
 
     # normalize the result if requested by the user
     if normalize:

@@ -62,7 +62,7 @@ class SingleRarefactionMaker(FunctionWithParams):
 
         if empty_otus_removed:
             sub_otu_table = filter_otus_from_otu_table(sub_otu_table,
-                                                       sub_otu_table.ObservationIds,
+                                                       sub_otu_table.observation_ids,
                                                        1, inf, 0, inf)
 
         self._write_rarefaction(output_fname, sub_otu_table)
@@ -70,7 +70,7 @@ class SingleRarefactionMaker(FunctionWithParams):
     def _write_rarefaction(self, fname, sub_otu_table):
         """ depth and rep can be numbers or strings
         """
-        if sub_otu_table.isEmpty():
+        if sub_otu_table.is_empty():
             return
         f = open(fname, 'w')
         f.write(format_biom_table(sub_otu_table))
@@ -120,7 +120,7 @@ class RarefactionMaker(FunctionWithParams):
                 if empty_otus_removed:
                     sub_otu_table = filter_otus_from_otu_table(
                         sub_otu_table,
-                        sub_otu_table.ObservationIds, 1, inf, 0, inf)
+                        sub_otu_table.observation_ids, 1, inf, 0, inf)
 
                 self._write_rarefaction(depth, rep, sub_otu_table)
 

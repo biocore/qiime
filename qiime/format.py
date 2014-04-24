@@ -378,10 +378,10 @@ def format_otu_table(sample_names, otu_names, data, taxonomy=None,
         def strip_f(s):
             return s.strip()
         taxonomy = [{'taxonomy': map(strip_f, t.split(';'))} for t in taxonomy]
-    otu_table = Table(Data=data,
-                              SampleIds=sample_names,
-                              ObservationIds=otu_names,
-                              ObservationMetadata=taxonomy)
+    otu_table = Table(data=data,
+                      sample_ids=sample_names,
+                      observation_ids=otu_names,
+                      observation_metadata=taxonomy)
     return format_biom_table(otu_table)
 
 
@@ -920,8 +920,8 @@ def format_tep_file_lines(otu_table_data, mapping_lines, tree_lines,
     # get otu table data
     if(otu_table_data.observation_metadata):
         lines += ['>>otm\n#OTU ID\tOTU Metadata\n']
-        for i in range(len(otu_table_data.ObservationIds)):
-            new_string = otu_table_data.ObservationIds[i] + '\t'
+        for i in range(len(otu_table_data.observation_ids)):
+            new_string = otu_table_data.observation_ids[i] + '\t'
             for m in otu_table_data.observation_metadata[i]['taxonomy']:
                 new_string += m + ';'
             lines += [new_string]
@@ -930,9 +930,9 @@ def format_tep_file_lines(otu_table_data, mapping_lines, tree_lines,
     # format and write otu table and taxonomy lines
     lines += ['>>osm\n']
     if otu_table_data.observation_metadata is None:
-        lines += [str(otu_table_data.delimitedSelf())]
+        lines += [str(otu_table_data.delimited_self())]
     elif "taxonomy" in otu_table_data.observation_metadata[0]:
-        lines += [str(otu_table_data.delimitedSelf(header_key="taxonomy",
+        lines += [str(otu_table_data.delimited_self(header_key="taxonomy",
                                                    header_value="Consensus Lineage",
                                                    metadata_formatter=lambda x: ';'.join(x)))]
 

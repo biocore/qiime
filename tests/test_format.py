@@ -37,7 +37,7 @@ from qiime.format import (format_distance_matrix, format_otu_table,
                           format_best_results, format_permanova_results, format_fastq_record,
                           format_histograms_two_bins)
 from biom.parse import parse_biom_table, parse_classic_table_to_rich_table
-from biom.table import Table
+from biom.table import Table, to_sparse
 from StringIO import StringIO
 
 
@@ -139,7 +139,7 @@ class TopLevelTests(TestCase):
         # BIOM format. Test by converting our expected output to a biom table
         # and comparing that to our observed table.
         exp = parse_classic_table_to_rich_table(exp.split('\n'), None, None,
-                                                None, Table)
+                                                None)
         obs = ''.join(list(format_summarize_taxa(self.taxa_summary,
                                                  self.taxa_header,
                                                  file_format='biom')))
@@ -166,7 +166,7 @@ class TopLevelTests(TestCase):
         write_summarize_taxa(self.taxa_summary, self.taxa_header, self.tmp_fp2,
                              file_format='biom')
         exp = parse_classic_table_to_rich_table(exp.split('\n'), None, None,
-                                                None, Table)
+                                                None)
         obs = open(self.tmp_fp2).read()
         obs = parse_biom_table(obs)
         self.assertEqual(obs, exp)
@@ -191,7 +191,7 @@ class TopLevelTests(TestCase):
         write_summarize_taxa(self.taxa_summary, self.taxa_header, self.tmp_fp2,
                              transposed_output=True, file_format='biom')
         exp = parse_classic_table_to_rich_table(exp.split('\n'), None, None,
-                                                None, Table)
+                                                None)
         obs = open(self.tmp_fp2).read()
         obs = parse_biom_table(obs)
         self.assertEqual(obs, exp)
@@ -454,11 +454,11 @@ class TopLevelTests(TestCase):
         samples = ['a', 'b', 'c']
         otus = [1, 2]
         taxa = ['Bacteria', 'Archaea']
-        res = format_otu_table(samples, otus, a)
+        res = format_otu_table(samples, otus, to_sparse(a))
         # confirm that parsing the res gives us a valid biom file with
         # expected observation and sample ids
         t = parse_biom_table(res.split('\n'))
-        self.assertEqual(t.ObservationIds, ('1', '2'))
+        self.assertEqual(t.observation_ids, ('1', '2'))
         self.assertEqual(t.sample_ids, ('a', 'b', 'c'))
 
     def test_format_coords(self):
