@@ -26,96 +26,96 @@ def make_html_doc(js_filename):
         r'''
     <html>
     <head>
-    \t<script type="text/javascript" src="js/overlib.js"></script>
+    	<script type="text/javascript" src="js/overlib.js"></script>
         <script type="text/javascript" src="%s"></script>
-    \t<script type="text/javascript" src="js/otu_count_display.js"></script>
-    \t<script type="text/javascript" src="./js/jquery.js"></script>
-    \t<script type="text/javascript" src="./js/jquery.tablednd_0_5.js"></script>
+    	<script type="text/javascript" src="js/otu_count_display.js"></script>
+    	<script type="text/javascript" src="./js/jquery.js"></script>
+    	<script type="text/javascript" src="./js/jquery.tablednd_0_5.js"></script>
         <script type="text/javascript">
 
 
         $(document).ready(function() {
 
-        \t$('#otu_table_body').tableDnD({
-        \t\tonDragStart: function(table, new_row) {
-        \t\t\tif (row==new_row.parentNode.rowIndex && is_selected==1){
-        \t\t\t\tchange_sel_row=1;
-        \t\t\t}else{
-        \t\t\t\told_row=new_row.parentNode.rowIndex;
-        \t\t\t\tchange_sel_row=0;
-        \t\t\t}
-        \t\t},
-        \t\tonDrop: function(table, new_row) {
-        \t\t\tif (change_sel_row==1){
-        \t\t\t\trow=new_row.rowIndex;
-        \t\t\t}else if(old_row<row && new_row.rowIndex>row){
-        \t\t\t\trow=row-1;
-        \t\t\t}else if(old_row>row && new_row.rowIndex<row){
-        \t\t\t\trow=row+1;
-        \t\t\t}
-        \t\t},
-            \tdragHandle: "dragHandle"
-        \t});
+        	$('#otu_table_body').tableDnD({
+        		onDragStart: function(table, new_row) {
+        			if (row==new_row.parentNode.rowIndex && is_selected==1){
+        				change_sel_row=1;
+        			}else{
+        				old_row=new_row.parentNode.rowIndex;
+        				change_sel_row=0;
+        			}
+        		},
+        		onDrop: function(table, new_row) {
+        			if (change_sel_row==1){
+        				row=new_row.rowIndex;
+        			}else if(old_row<row && new_row.rowIndex>row){
+        				row=row-1;
+        			}else if(old_row>row && new_row.rowIndex<row){
+        				row=row+1;
+        			}
+        		},
+            	dragHandle: "dragHandle"
+        	});
             var otu_cutoff=document.getElementById("otu_count_cutoff");
             otu_cutoff.value=otu_num_cutoff;
         });
         </script>
-    \t<style type="text/css">
-    \t    th.rotate{
-    \t\t\twhite-space : nowrap;
-    \t\t\t-webkit-transform: rotate(-90deg) translate(20px, 0px);
-    \t\t\t-moz-transform: rotate(-90deg) translate(20px, 0px);
-    \t\t\tfont-family:arial;
-    \t\t\tfont-size:9px;
-    \t\t}
-    \t\tth.lineage{
-        \t    white-space : nowrap;
-        \t    text-align:left;
-        \t    font-family:arial;
-        \t    font-size:10px;
-        \t    font-weight: bolder;
-        \t}
-        \ttd.dragHandle{
-            \twhite-space : nowrap;
-            \ttext-align:left;
-            \tfont-family:arial;
-            \tfont-size:10px;
-            \tfont-weight: bolder;
-        \t}
-        \ttd{
-            \twhite-space : nowrap;
-            \tfont-family:arial;
-            \tfont-size:10px;
-            \ttext-align:center;
-            \tfont-weight: bolder;
-        \t}
-        \ttable{
-            \tborder-spacing: 0;
-            \ttext-align:center;
-        \t}
-        \tp{
-            \t\ttext-align:left;
-            \t\tfont-weight: normal;
-        \t}
-    \t</style>
+    	<style type="text/css">
+    	    th.rotate{
+    			white-space : nowrap;
+    			-webkit-transform: rotate(-90deg) translate(20px, 0px);
+    			-moz-transform: rotate(-90deg) translate(20px, 0px);
+    			font-family:arial;
+    			font-size:9px;
+    		}
+    		th.lineage{
+        	    white-space : nowrap;
+        	    text-align:left;
+        	    font-family:arial;
+        	    font-size:10px;
+        	    font-weight: bolder;
+        	}
+        	td.dragHandle{
+            	white-space : nowrap;
+            	text-align:left;
+            	font-family:arial;
+            	font-size:10px;
+            	font-weight: bolder;
+        	}
+        	td{
+            	white-space : nowrap;
+            	font-family:arial;
+            	font-size:10px;
+            	text-align:center;
+            	font-weight: bolder;
+        	}
+        	table{
+            	border-spacing: 0;
+            	text-align:center;
+        	}
+        	p{
+            		text-align:left;
+            		font-weight: normal;
+        	}
+    	</style>
     </head>
     <body>
-    \t<p>
-    \t\tFilter by Counts per OTU: <input type="text" id="otu_count_cutoff" value="">
-    \t\t<input type="button" onclick="javascript:create_OTU_intervals();" value="Sample ID">
-    \t\t<input type="button" onclick="javascript:write_taxon_heatmap();" value="Taxonomy">
-    \t</p>
-    \t<br><br><br><br><br><br>
-    \t<table id='otu_table_html'>
-    \t\t<thead id='otu_table_head'>
-    \t\t</thead>
-    \t\t<tbody id='otu_table_body'>
-    \t\t<tr><td class="dragHandle"></td>
-    \t\t</tr>
-    \t\t<tr><td class="dragHandle"></td>
-    \t\t</tr>
-    \t\t</tbody>
-    \t</table>
+    	<p>
+    		Filter by Counts per OTU: <input type="text" id="otu_count_cutoff" value="">
+    		<input type="button" onclick="javascript:create_OTU_intervals();" value="Sample ID">
+    		<input type="button" onclick="javascript:write_taxon_heatmap();" value="Taxonomy">
+    	</p>
+    	<br><br><br><br><br><br>
+    	<table id='otu_table_html'>
+    		<thead id='otu_table_head'>
+    		</thead>
+    		<tbody id='otu_table_body'>
+    		<tr><td class="dragHandle"></td>
+    		</tr>
+    		<tr><td class="dragHandle"></td>
+    		</tr>
+    		</tbody>
+    	</table>
 
     </body>
     </html>''' % (js_filename)

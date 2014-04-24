@@ -28,7 +28,7 @@ from qiime.beta_diversity import BetaDiversityCalc, single_file_beta,\
     single_object_beta
 from qiime.beta_metrics import dist_unweighted_unifrac
 from qiime.format import format_biom_table
-from biom.table import Table
+from biom.table import Table, to_sparse
 
 #from modified_beta_diversity import single_object_beta
 
@@ -74,7 +74,7 @@ class BetaDiversityCalcTests(TestCase):
         self.l19_taxon_names_w_underscore = ['ta_x1', 'tax2', 'tax3', 'tax4',
                                              'endbigtaxon', 'tax6', 'tax7', 'tax8', 'tax9']
 
-        l19_str = format_biom_table(Table(self.l19_data.T,
+        l19_str = format_biom_table(Table(to_sparse(self.l19_data.T),
                                                   self.l19_sample_names,
                                                   self.l19_taxon_names))
         fd, self.l19_fp = mkstemp(dir=self.tmp_dir,
@@ -82,7 +82,7 @@ class BetaDiversityCalcTests(TestCase):
         close(fd)
         open(self.l19_fp, 'w').write(l19_str)
 
-        l19_str_w_underscore = format_biom_table(Table(self.l19_data.T,
+        l19_str_w_underscore = format_biom_table(Table(to_sparse(self.l19_data.T),
                                                                self.l19_sample_names,
                                                                self.l19_taxon_names_w_underscore))
         fd, self.l19_str_w_underscore_fp = mkstemp(dir=self.tmp_dir,
