@@ -38,15 +38,7 @@ from numpy.ma.extras import apply_along_axis
 
 from biom.util import compute_counts_per_sample_stats
 from biom.parse import parse_biom_table
-from biom.table import (DenseFunctionTable, DenseGeneTable,
-                        DenseMetaboliteTable, DenseOTUTable,
-                        DenseOrthologTable, DensePathwayTable, DenseTable,
-                        DenseTaxonTable, FunctionTable, GeneTable,
-                        MetaboliteTable, OTUTable, OrthologTable,
-                        PathwayTable, SparseFunctionTable, SparseGeneTable,
-                        SparseMetaboliteTable, SparseOTUTable,
-                        SparseOrthologTable, SparsePathwayTable,
-                        SparseTable, SparseTaxonTable)
+from biom.table import Table
 
 from cogent.parse.tree import DndParser
 from cogent.cluster.procrustes import procrustes
