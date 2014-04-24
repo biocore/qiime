@@ -36,7 +36,7 @@ warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
 from numpy import asarray
 import cogent.maths.distance_transform as distance_transform
 from biom.parse import parse_biom_table
-from biom.table import DenseTable
+from biom.table import Table
 from qiime.util import (FunctionWithParams, TreeMissingError,
                         OtuMissingError)
 from qiime.format import format_matrix, format_distance_matrix
@@ -173,7 +173,7 @@ class BetaDiversityCalc(FunctionWithParams):
             tree = None
 
         otu_table = parse_biom_table(open(data_path, 'U'))
-        if isinstance(otu_table, DenseTable):
+        if isinstance(otu_table, Table):
             otumtx = otu_table._data.T
         else:
             otumtx = asarray([v for v in otu_table.iterSampleData()])
@@ -214,7 +214,7 @@ def single_file_beta(input_path, metrics, tree_path, output_dir,
 
     otu_table = parse_biom_table(open(input_path, 'U'))
 
-    if isinstance(otu_table, DenseTable):
+    if isinstance(otu_table, Table):
         otumtx = otu_table._data.T
     else:
         otumtx = asarray([v for v in otu_table.iterSampleData()])
@@ -321,7 +321,7 @@ def single_object_beta(otu_table, metrics, tr, rowids=None,
                                         diversity metric
                 rowids -- comma seperated string
     """
-    if isinstance(otu_table, DenseTable):
+    if isinstance(otu_table, Table):
         otumtx = otu_table._data.T
     else:
         otumtx = asarray([v for v in otu_table.iterSampleData()])
