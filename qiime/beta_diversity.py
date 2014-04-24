@@ -173,14 +173,11 @@ class BetaDiversityCalc(FunctionWithParams):
             tree = None
 
         otu_table = parse_biom_table(open(data_path, 'U'))
-        if isinstance(otu_table, Table):
-            otumtx = otu_table._data.T
-        else:
-            otumtx = asarray([v for v in otu_table.iterSampleData()])
+        otumtx = asarray([v for v in otu_table.iter_sample_data()])
 
         # get the 2d dist matrix from beta diversity analysis
         if self.IsPhylogenetic:
-            return (self.Metric(otumtx, otu_table.ObservationIds, tree,
+            return (self.Metric(otumtx, otu_table.observation_ids, tree,
                                 otu_table.sample_ids),
                     list(otu_table.sample_ids))
         else:
@@ -214,10 +211,7 @@ def single_file_beta(input_path, metrics, tree_path, output_dir,
 
     otu_table = parse_biom_table(open(input_path, 'U'))
 
-    if isinstance(otu_table, Table):
-        otumtx = otu_table._data.T
-    else:
-        otumtx = asarray([v for v in otu_table.iterSampleData()])
+    otumtx = asarray([v for v in otu_table.iter_sample_data()])
 
     if tree_path:
         tree = parse_newick(open(tree_path, 'U'),
@@ -248,7 +242,7 @@ def single_file_beta(input_path, metrics, tree_path, output_dir,
         if rowids is None:
             # standard, full way
             if is_phylogenetic:
-                dissims = metric_f(otumtx, otu_table.ObservationIds,
+                dissims = metric_f(otumtx, otu_table.observation_ids,
                                    tree, otu_table.sample_ids, make_subtree=(not full_tree))
             else:
                 dissims = metric_f(otumtx)
@@ -280,7 +274,7 @@ def single_file_beta(input_path, metrics, tree_path, output_dir,
                         for i in range(len(otu_table.sample_ids)):
                             if is_phylogenetic:
                                 dissim = metric_f(otumtx[[rowidx, i], :],
-                                                  otu_table.ObservationIds, tree,
+                                                  otu_table.observation_ids, tree,
                                                   [otu_table.sample_ids[rowidx],
                                                    otu_table.sample_ids[i]],
                                                   make_subtree=(not full_tree))[0, 1]
@@ -291,7 +285,7 @@ def single_file_beta(input_path, metrics, tree_path, output_dir,
                     else:
                         # do whole row at once
                         dissims = row_metric(otumtx,
-                                             otu_table.ObservationIds, tree,
+                                             otu_table.observation_ids, tree,
                                              otu_table.sample_ids, rowid,
                                              make_subtree=(not full_tree))
                         row_dissims.append(dissims)
@@ -321,10 +315,7 @@ def single_object_beta(otu_table, metrics, tr, rowids=None,
                                         diversity metric
                 rowids -- comma seperated string
     """
-    if isinstance(otu_table, Table):
-        otumtx = otu_table._data.T
-    else:
-        otumtx = asarray([v for v in otu_table.iterSampleData()])
+    otumtx = asarray([v for v in otu_table.iter_sample_data()])
 
     if tr:
         tree = tr
@@ -352,7 +343,7 @@ def single_object_beta(otu_table, metrics, tr, rowids=None,
         if rowids is None:
             # standard, full way
             if is_phylogenetic:
-                dissims = metric_f(otumtx, otu_table.ObservationIds, tree,
+                dissims = metric_f(otumtx, otu_table.observation_ids, tree,
                                    otu_table.sample_ids, make_subtree=(not full_tree))
             else:
                 dissims = metric_f(otumtx)
@@ -388,7 +379,7 @@ def single_object_beta(otu_table, metrics, tr, rowids=None,
                         for i in range(len(otu_table.sample_ids)):
                             if is_phylogenetic:
                                 dissim = metric_f(otumtx[[rowidx, i], :],
-                                                  otu_table.ObservationIds, tree,
+                                                  otu_table.observation_ids, tree,
                                                   [otu_table.sample_ids[rowidx],
                                                    otu_table.sample_ids[i]],
                                                   make_subtree=(not full_tree))[0, 1]
@@ -399,7 +390,7 @@ def single_object_beta(otu_table, metrics, tr, rowids=None,
                     else:
                         # do whole row at once
                         dissims = row_metric(otumtx,
-                                             otu_table.ObservationIds, tree,
+                                             otu_table.observation_ids, tree,
                                              otu_table.sample_ids, rowid,
                                              make_subtree=(not full_tree))
                         row_dissims.append(dissims)

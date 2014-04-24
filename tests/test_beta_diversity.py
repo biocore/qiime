@@ -28,7 +28,7 @@ from qiime.beta_diversity import BetaDiversityCalc, single_file_beta,\
     single_object_beta
 from qiime.beta_metrics import dist_unweighted_unifrac
 from qiime.format import format_biom_table
-from biom.table import Table
+from biom.table import Table, to_sparse
 
 #from modified_beta_diversity import single_object_beta
 
@@ -44,7 +44,7 @@ class BetaDiversityCalcTests(TestCase):
         self.qiime_config = load_qiime_config()
         self.tmp_dir = self.qiime_config['temp_dir'] or '/tmp/'
 
-        self.l19_data = numpy.array([
+        self.l19_data = to_sparse(numpy.array([
             [7, 1, 0, 0, 0, 0, 0, 0, 0],
             [4, 2, 0, 0, 0, 1, 0, 0, 0],
             [2, 4, 0, 0, 0, 1, 0, 0, 0],
@@ -64,7 +64,7 @@ class BetaDiversityCalcTests(TestCase):
             [0, 0, 0, 4, 2, 0, 0, 0, 4],
             [0, 0, 0, 2, 4, 0, 0, 0, 1],
             [0, 0, 0, 1, 7, 0, 0, 0, 0]
-        ])
+        ]))
         self.l19_sample_names = [
             'sam1', 'sam2', 'sam3', 'sam4', 'sam5', 'sam6',
             'sam7', 'sam8', 'sam9', 'sam_middle', 'sam11', 'sam12', 'sam13',
