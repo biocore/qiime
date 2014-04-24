@@ -2039,7 +2039,7 @@ def sync_biom_and_mf(pmf, bt):
 
         def _f(sv, sid, smd):
             return sid in shared_samples
-        nbt = bt.filterSamples(_f)
+        nbt = bt.filter_samples(_f)
     return npmf, nbt, nonshared_samples
 
 

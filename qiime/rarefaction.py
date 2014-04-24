@@ -153,7 +153,7 @@ class RarefactionMaker(FunctionWithParams):
     def _write_rarefaction(self, depth, rep, sub_otu_table):
         """ depth and rep can be numbers or strings
         """
-        if sub_otu_table.isEmpty():
+        if sub_otu_table.is_empty():
             return
 
         fname = 'rarefaction_' + str(depth) + '_' + str(rep) + '.biom'

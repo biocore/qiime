@@ -135,8 +135,8 @@ class SimsamTests(TestCase):
 
         # same total sequences in each replicate sample
         num_orig_samples = len(orig_table.sample_ids)
-        orig_sams = orig_table.iterSampleData()
-        res_sams = res_table.iterSampleData()
+        orig_sams = orig_table.iter_sample_data()
+        res_sams = res_table.iter_sample_data()
         for i in range(num_orig_samples):
             orig_sam = orig_sams.next()
             for j in range(num_replicates):
@@ -204,13 +204,13 @@ class SimsamTests(TestCase):
                     exp)
 
         # same otu ids
-        self.assertEqual(res_table.ObservationIds, orig_table.ObservationIds)
+        self.assertEqual(res_table.observation_ids, orig_table.observation_ids)
 
         # same otu table, just replicated thrice
         # note this requires the same sorting of otus, input is correct sorting
         num_orig_samples = len(orig_table.sample_ids)
-        orig_sams = orig_table.iterSampleData()
-        res_sams = res_table.iterSampleData()
+        orig_sams = orig_table.iter_sample_data()
+        res_sams = res_table.iter_sample_data()
         for i in range(num_orig_samples):
             orig_sam = orig_sams.next()
             for j in range(num_replicates):
@@ -242,7 +242,7 @@ class SimsamTests(TestCase):
                                    observation_metadata=otu_metadata)
         res_sam_names, res_otus, res_otu_mtx, res_otu_metadata = \
             qiime.simsam.sim_otu_table(
-                sample_ids, otu_ids, rich_table.iterSamples(), otu_metadata,
+                sample_ids, otu_ids, rich_table.iter_samples(), otu_metadata,
                 tree, num_replicates, dissimilarity)
 
         # dissim is too small to change otu C, it should always be there
@@ -283,7 +283,7 @@ class SimsamTests(TestCase):
         for i in range(1000):
             res_sam_names, res_otus, res_otu_mtx, res_otu_metadata = \
                 qiime.simsam.sim_otu_table(sample_ids, otu_ids,
-                                           rich_table.iterSamples(
+                                           rich_table.iter_samples(
                                            ), otu_metadata, tree,
                                            num_replicates, dissimilarity)
             otu_id_results.extend(res_otus)
