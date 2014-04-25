@@ -42,7 +42,7 @@ def make_otu_table(otu_map_f,
                    delim='_',
                    table_id=None,
                    sample_metadata=None,
-                   constructor=Table):
+                   constructor=Table,
                    input_is_dense=False):
 
     data, sample_ids, otu_ids = parse_otu_map(otu_map_f, delim)
