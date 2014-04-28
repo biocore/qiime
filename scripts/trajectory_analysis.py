@@ -110,9 +110,10 @@ if __name__ == '__main__':
         option_parser.error("Category %s does not exist in the mapping file" %
                             sort_category)
 
-    if vectors_axes < 1:
-        option_parser.error("--vectors_axes should be a positive integer, %d "
-                            "found" % vectors_axes)
+    if vectors_axes < 0 or vectors_axes > len(ord_res.eigvals):
+        option_parser.error("--vectors_axes should be between 0 and the max "
+                            "number of axes available (%d), found: %d "
+                            % (len(ord_res.eigvals), vectors_axes))
 
     if weighted and not sort_category:
         option_parser.error("You should provide --sort_by if you want to "
@@ -125,6 +126,10 @@ if __name__ == '__main__':
         if window_size < 1:
             option_parser.error("--window_size should be a positive integer, "
                                 "%d found" % window_size)
+
+    # If vector_axes = 0, we generate all of them
+    if vectors_axes == 0:
+        vectors_axes = len(ord_res.eigvals)
 
     res = run_trajectory_analysis(ord_res, metamap, vector_category,
                                   sort_category, algorithm, vectors_axes,
