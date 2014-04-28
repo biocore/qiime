@@ -149,7 +149,6 @@ def main():
             else:
                 option_parser.error("Output directory already exists. Please choose"
                                     " a different directory, or force overwrite with -f.")
-    else:
         command_handler = call_commands_serially
 
     if verbose:
