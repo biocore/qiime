@@ -141,6 +141,7 @@ def main():
     if print_only:
         command_handler = print_commands
     else:
+        command_handler = call_commands_serially
         try:
             makedirs(output_dir)
         except OSError:
@@ -149,7 +150,6 @@ def main():
             else:
                 option_parser.error("Output directory already exists. Please choose"
                                     " a different directory, or force overwrite with -f.")
-        command_handler = call_commands_serially
 
     if verbose:
         status_update_callback = print_to_stdout
