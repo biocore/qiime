@@ -138,14 +138,15 @@ def main():
                                    parallel,
                                    option_parser)
 
-    try:
-        makedirs(output_dir)
-    except OSError:
-        if opts.force:
-            pass
-        else:
-            option_parser.error("Output directory already exists. Please choose"
-                                " a different directory, or force overwrite with -f.")
+    if not opts.print_only:
+        try:
+            makedirs(output_dir)
+        except OSError:
+            if opts.force:
+                pass
+            else:
+                option_parser.error("Output directory already exists. Please choose"
+                                    " a different directory, or force overwrite with -f.")
 
     if print_only:
         command_handler = print_commands
