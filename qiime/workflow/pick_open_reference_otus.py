@@ -10,7 +10,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
-from os.path import split, splitext, getsize, exists, abspath
+from os.path import split, splitext, getsize, exists, abspath, join
 from shutil import copy, rmtree
 from numpy import inf
 from copy import deepcopy
@@ -28,7 +28,9 @@ from qiime.workflow.util import (print_to_stdout,
                                  WorkflowError)
 from qiime.format import format_biom_table
 from biom.parse import parse_biom_table
-
+from qiime.workflow.core_diversity_analyses import (format_index_link, 
+                                                    generate_index_page, 
+                                                    _index_headers)
 
 def final_repset_from_iteration_repsets(repset_fasta_fs):
     """
@@ -129,6 +131,7 @@ def pick_reference_otus(input_fp,
              refseqs_fp,
              otu_picking_method,
              params_str)
+    
     return pick_otus_cmd
 
 
@@ -166,13 +169,14 @@ def assign_tax(repset_fasta_fp,
     input_basename, input_ext = splitext(input_filename)
     commands = []
     if logger is None:
-        logger = WorkflowLogger(generate_log_fp(output_dir),
+        log_fp = generate_log_fp(output_dir)
+        logger = WorkflowLogger(log_fp,
                                 params=params,
                                 qiime_config=qiime_config)
         close_logger_on_success = True
     else:
         close_logger_on_success = False
-
+  
     # Prep the taxonomy assignment command
     try:
         assignment_method = params['assign_taxonomy']['assignment_method']
@@ -240,12 +244,14 @@ def align_and_tree(repset_fasta_fp,
     input_basename, input_ext = splitext(input_filename)
     commands = []
     if logger is None:
-        logger = WorkflowLogger(generate_log_fp(output_dir),
+        log_fp = generate_log_fp(output_dir)
+        logger = WorkflowLogger(log_fp,
                                 params=params,
                                 qiime_config=qiime_config)
         close_logger_on_success = True
     else:
         close_logger_on_success = False
+    
 
     # Prep the pynast alignment command
     alignment_method = 'pynast'
@@ -373,6 +379,7 @@ def iterative_pick_subsampled_open_reference_otus(
     """
     create_dir(output_dir)
     commands = []
+    
     if logger is None:
         logger = WorkflowLogger(generate_log_fp(output_dir),
                                 params=params,
@@ -419,6 +426,7 @@ def iterative_pick_subsampled_open_reference_otus(
                                                 suppress_step4=suppress_step4,
                                                 logger=logger,
                                                 suppress_md5=suppress_md5,
+                                                suppress_index_page=True,
                                                 denovo_otu_picking_method=denovo_otu_picking_method,
                                                 reference_otu_picking_method=reference_otu_picking_method,
                                                 status_update_callback=status_update_callback)
@@ -429,9 +437,11 @@ def iterative_pick_subsampled_open_reference_otus(
         step1_otu_map_fp = step1_failures_fasta_fp = None
         new_refseqs_fp = '%s/new_refseqs.fna' % iteration_output_dir
         refseqs_fp = new_refseqs_fp
+        
         otu_table_fps.append(
             '%s/otu_table_mc%d.biom' %
             (iteration_output_dir, min_otu_size))
+        
         repset_fasta_fps.append('%s/rep_set.fna' % iteration_output_dir)
 
     # Merge OTU tables - check for existence first as this step has historically
@@ -559,6 +569,7 @@ def pick_subsampled_open_reference_otus(input_fp,
                                         suppress_step4=False,
                                         logger=None,
                                         suppress_md5=False,
+                                        suppress_index_page=False,
                                         denovo_otu_picking_method='uclust',
                                         reference_otu_picking_method='uclust_ref',
                                         status_update_callback=print_to_stdout):
@@ -587,17 +598,25 @@ def pick_subsampled_open_reference_otus(input_fp,
            ','.join(allowed_reference_otu_picking_methods))
 
     # Prepare some variables for the later steps
+    index_links = []
     input_dir, input_filename = split(input_fp)
     input_basename, input_ext = splitext(input_filename)
     create_dir(output_dir)
     commands = []
     if logger is None:
-        logger = WorkflowLogger(generate_log_fp(output_dir),
+        log_fp = generate_log_fp(output_dir)
+        logger = WorkflowLogger(log_fp,
                                 params=params,
                                 qiime_config=qiime_config)
+            
         close_logger_on_success = True
+        index_links.append(
+                ('Run summary data',
+                log_fp,
+                _index_headers['run_summary']))
     else:
         close_logger_on_success = False
+        
 
     if not suppress_md5:
         log_input_md5s(logger, [input_fp,
@@ -635,6 +654,12 @@ def pick_subsampled_open_reference_otus(input_fp,
                 (input_fp, prefiltered_input_fp, prefilter_failures_list_fp)
             commands.append(
                 [('Filter prefilter failures from input', filter_fasta_cmd)])
+            index_links.append(
+            ('Pre-filtered sequence identifiers '
+             '(failed to hit reference at %1.1f%% identity)' % (float(prefilter_percent_id)*100),
+                        prefilter_failures_list_fp,
+                        _index_headers['sequences']))
+
 
             # Call the command handler on the list of commands
             command_handler(commands,
@@ -747,6 +772,12 @@ def pick_subsampled_open_reference_otus(input_fp,
 
     # name the final otu map
     merged_otu_map_fp = '%s/final_otu_map.txt' % output_dir
+ 
+    index_links.append(
+        ('Final map of OTU identifier to sequence identifers (i.e., "OTU map")',
+         merged_otu_map_fp,
+         _index_headers['otu_maps']))   
+    
 
     if not suppress_step4:
         step3_failures_fasta_fp = '%s/failures_failures.fasta' % step3_dir
@@ -799,10 +830,16 @@ def pick_subsampled_open_reference_otus(input_fp,
     # Filter singletons from the otu map
     otu_no_singletons_fp = '%s/final_otu_map_mc%d.txt' % (output_dir,
                                                           min_otu_size)
+     
     otus_to_keep = filter_otus_from_otu_map(
         otu_fp,
         otu_no_singletons_fp,
         min_otu_size)
+                                                           
+    index_links.append(('Final map of OTU identifier to sequence identifers excluding '
+                        'OTUs with fewer than %d sequences' % min_otu_size, 
+                        otu_no_singletons_fp, 
+                        _index_headers['otu_maps']))
 
     logger.write('# Filter singletons from the otu map using API \n' +
                  'python -c "import qiime; qiime.filter.filter_otus_from_otu_map' +
@@ -822,8 +859,17 @@ def pick_subsampled_open_reference_otus(input_fp,
     # reads from this run so we don't hit issues building a tree using
     # sequences of very different lengths. so...
     final_repset_fp = '%s/rep_set.fna' % output_dir
+    index_links.append(
+        ('OTU representative sequences',
+         final_repset_fp,
+         _index_headers['sequences']))
     final_repset_f = open(final_repset_fp, 'w')
     new_refseqs_fp = '%s/new_refseqs.fna' % output_dir
+    index_links.append(
+        ('New reference sequences (i.e., OTU representative sequences plus input '
+         'reference sequences)',
+         new_refseqs_fp,
+         _index_headers['sequences']))
     # write non-singleton otus representative sequences from step1 to the
     # final rep set file
     for otu_id, seq in parse_fasta(open(step1_repset_fasta_fp, 'U')):
@@ -857,10 +903,14 @@ def pick_subsampled_open_reference_otus(input_fp,
 
     # Prep the make_otu_table.py command
     otu_table_fp = '%s/otu_table_mc%d.biom' % (output_dir, min_otu_size)
+    
     make_otu_table_cmd = 'make_otu_table.py -i %s -o %s' %\
         (otu_no_singletons_fp, otu_table_fp)
     commands.append([("Make the otu table", make_otu_table_cmd)])
-
+    index_links.append(
+        ('OTU table exluding OTUs with fewer than %d sequences' % min_otu_size,
+         otu_table_fp,
+         _index_headers['otu_tables']))
     command_handler(commands,
                     status_update_callback,
                     logger=logger,
@@ -874,19 +924,42 @@ def pick_subsampled_open_reference_otus(input_fp,
         tax_input_otu_table_fp = otu_table_fp
         otu_table_w_tax_fp = \
             '%s/otu_table_mc%d_w_tax.biom' % (output_dir, min_otu_size)
+        
         align_and_tree_input_otu_table = otu_table_w_tax_fp
+        index_links.append(
+            ('OTU table exluding OTUs with fewer than %d sequences and including OTU '
+             'taxonomy assignments' % min_otu_size,
+             otu_table_w_tax_fp,
+             _index_headers['otu_tables']))
+             
         pynast_failure_filtered_otu_table_fp = \
-            '%s/otu_table_mc%d_w_tax_no_pynast_failures.biom' % (output_dir,
-                                                                 min_otu_size)
+            '%s/otu_table_mc%d_w_tax_no_pynast_failures.biom' % (output_dir, min_otu_size)
+        index_links.append(
+            ('OTU table exluding OTUs with fewer than %d sequences and sequences that '
+            'fail to align with PyNAST and including OTU taxonomy assignments' % min_otu_size,
+             pynast_failure_filtered_otu_table_fp,
+             _index_headers['otu_tables']))
+         
     elif run_assign_tax:
         tax_input_otu_table_fp = otu_table_fp
         otu_table_w_tax_fp = \
             '%s/otu_table_mc%d_w_tax.biom' % (output_dir, min_otu_size)
+        index_links.append(
+            ('OTU table exluding OTUs with fewer than %d sequences and including OTU '
+            'taxonomy assignments' % min_otu_size,
+             otu_table_w_tax_fp,
+             _index_headers['otu_tables']))
+         
     elif run_align_and_tree:
         align_and_tree_input_otu_table = otu_table_fp
         pynast_failure_filtered_otu_table_fp = \
             '%s/otu_table_mc%d_no_pynast_failures.biom' % (output_dir,
                                                            min_otu_size)
+        index_links.append(
+            ('OTU table exluding OTUs with fewer than %d sequences and sequences that '
+             'fail to align with PyNAST' % min_otu_size,
+             pynast_failure_filtered_otu_table_fp,
+             _index_headers['otu_tables']))                                    
 
     if run_assign_tax:
         if exists(otu_table_w_tax_fp) and getsize(otu_table_w_tax_fp) > 0:
@@ -919,6 +992,11 @@ def pick_subsampled_open_reference_otus(input_fp,
             commands = []
 
     if run_align_and_tree:
+        rep_set_tree_fp = join(output_dir, 'rep_set.tre')
+        index_links.append(
+            ('OTU phylogenetic tree',
+             rep_set_tree_fp,
+             _index_headers['trees']))   
         if exists(pynast_failure_filtered_otu_table_fp) and\
            getsize(pynast_failure_filtered_otu_table_fp) > 0:
             logger.write("Final output file exists (%s). Will not rebuild." %
@@ -953,5 +1031,10 @@ def pick_subsampled_open_reference_otus(input_fp,
                             close_logger_on_success=False)
             commands = []
 
+    
     if close_logger_on_success:
         logger.close()
+    
+    if not suppress_index_page:
+        index_fp = '%s/index.html' % output_dir
+        generate_index_page(index_links, index_fp)
