@@ -1,11 +1,4 @@
 #!/usr/bin/env python
-import sys
-import time
-from sklearn import manifold
-from numpy import asarray
-from biom.parse import parse_biom_table
-from biom.table import DenseTable
-from qiime.format import format_coords
 
 __author__ = "Joshua Haas"
 __copyright__ = "Copyright 2014, The QIIME Project"
@@ -15,11 +8,19 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Joshua Haas"
 __email__ = "laptopdude2@gmail.com"
 
-def compute_manifold(file_name,alg,params):
+import sys
+import time
+from sklearn import manifold
+from numpy import asarray
+from biom.parse import parse_biom_table
+from biom.table import DenseTable
+from qiime.format import format_coords
+
+def compute_manifold(in_file,alg,params):
 
     """compute the specified manifold on the specified file"""
 
-    otu_table = parse_biom_table(open(file_name,"U"))
+    otu_table = parse_biom_table(in_file)
 
     samples = otu_table.SampleIds
 
@@ -132,6 +133,7 @@ def multiple_file_manifold(input_dir, output_dir, algorithm):
     for fname in file_names:
         base_fname, ext = os.path.splitext(fname)
         infile = os.path.join(input_dir, fname)
+        infile = open(infile,"r")
         manifold_res_string = compute_manifold(infile,algorithm)
         outfile = os.path.join(output_dir, algorithm + '_' + base_fname + '.txt')
         outfile = open(outfile, 'w')
