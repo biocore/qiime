@@ -16,7 +16,7 @@ from biom.parse import parse_biom_table
 from biom.table import DenseTable
 from qiime.format import format_coords
 
-def compute_manifold(in_file,alg,params):
+def compute_manifold(in_file,alg,params=None):
 
     """compute the specified manifold on the specified file"""
 
