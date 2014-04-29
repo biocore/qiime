@@ -42,8 +42,7 @@ def make_otu_table(otu_map_f,
                    delim='_',
                    table_id=None,
                    sample_metadata=None,
-                   constructor=Table,
-                   input_is_dense=False):
+                   constructor=Table):
 
     data, sample_ids, otu_ids = parse_otu_map(otu_map_f, delim)
 
@@ -66,7 +65,7 @@ def make_otu_table(otu_map_f,
                                   observation_metadata=otu_metadata,
                                   table_id=table_id,
                                   constructor=constructor,
-                                  dtype=int, input_is_dense=input_is_dense)
+                                  dtype=int)
     except ValueError as e:
         raise ValueError("Couldn't create OTU table. Is your OTU map empty?"
                          " Original error message: %s" % (str(e)))
