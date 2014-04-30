@@ -10,6 +10,9 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Jose Antonio Navas Molina"
 __email__ = "josenavasmolina@gmail.com"
 
+import numpy as np
+from copy import deepcopy
+
 from skbio.maths.stats.ordination import OrdinationResults
 from skbio.maths.gradient import make_groups
 
@@ -17,45 +20,61 @@ from skbio.maths.gradient import make_groups
 TRAJECTORY_ALGORITHMS = ['avg', 'trajectory', 'diff', 'wdiff', None]
 
 
-def filter_unmapped_samples(ord_res, metamap):
+def normalize_samples(ord_res, metamap):
     """Creates a copy of `ord_res` including only those samples present in
-    metamap
+    metamap and a copy of  `metamap` including only those samples present in
+    `ord_res`
 
     Parameters
     ----------
     ord_res : skbio.maths.stats.ordination.OrdinationResults
-        The ordination results to filter
-    metamap : qiime.util.MetadataMap
-        The metadata map with the sample ids to include
+        The ordination results
+    metamap : pandas.DataFrame
+        The metadata map where index are samples ids and columns are the
+        metadata categories
 
     Returns
     -------
     OrdinationResults
-        A copy of `ord_res` including only the samples present in metamap
+        A copy of `ord_res` including only the samples present in `metamap`
+    DataFrame
+        A copy of `metamap` including only the samples present in `ord_res`
 
     Raises
     ------
     ValueError
         If `ord_res` and `metamap` does not have samples in common
     """
-    site_ids = []
-    site_idx = []
-    mapped_samples = metamap.SampleIds
-    for idx, sid in enumerate(ord_res.site_ids):
-        if sid in mapped_samples:
-            site_ids.append(sid)
-            site_idx.append(idx)
+    ord_sample_ids = set(ord_res.site_ids)
+    mm_sample_ids = set(metamap.index)
+    sample_ids = ord_sample_ids.intersection(mm_sample_ids)
 
-    if not site_idx:
-        raise ValueError("Ordination results and mapping file had no samples "
+    if not sample_ids:
+        raise ValueError("Ordination results and metadata map had no samples "
                          "in common")
 
-    site = ord_res.site[site_idx, :]
+    if ord_sample_ids == sample_ids:
+        # No changes needed in ord_res
+        n_ord_res = deepcopy(ord_res)
+    else:
+        # Need to take a subset of ord_res
+        boolean_idx = np.in1d(ord_res.site_ids, list(sample_ids))
+        idx = np.where(boolean_idx)[0]
+        n_ord_res = OrdinationResults(eigvals=ord_res.eigvals,
+                                      proportion_explained=
+                                      ord_res.proportion_explained,
+                                      site=ord_res.site[idx, :],
+                                      site_ids=
+                                      np.asarray(ord_res.site_ids)[idx])
 
-    return OrdinationResults(eigvals=ord_res.eigvals,
-                             proportion_explained=ord_res.proportion_explained,
-                             site=site,
-                             site_ids=site_ids)
+    if mm_sample_ids == sample_ids:
+        # No changes needed in metamap
+        n_metamap = deepcopy(metamap)
+    else:
+        # Need to take a subset of metamap
+        n_metamap = metamap.ix[sample_ids]
+
+    return n_ord_res, n_metamap
 
 
 def run_trajectory_analysis(ord_res, metamap, vector_category,
@@ -77,8 +96,9 @@ def run_trajectory_analysis(ord_res, metamap, vector_category,
     Returns
     -------
     """
-    # Remove any samples not present in mapping file
-    ord_res = filter_unmapped_samples(ord_res, metamap)
+    # Remove any samples from ord_res not present in mapping file
+    # And remove any samples from metamap not present in ord_res
+    ord_res, metamap = normalize_samples(ord_res, metamap)
 
     # Create groups
     groups = make_groups(ord_res, metamap, vector_category, sort_category)
