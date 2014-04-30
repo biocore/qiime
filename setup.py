@@ -260,7 +260,8 @@ setup(name='qiime',
                         'pynast == 1.2.2', 'qcli', 'gdata',
                         'biom-format == 1.3.1', 'emperor >= 0.9.3',
                         'scikit-bio == 0.0.0-dev',
-                        'brokit == 0.0.0-dev'],
+                        'brokit == 0.0.0-dev',
+                        'pandas >= 0.13.1'],
       dependency_links=[
           'https://github.com/biocore/scikit-bio/archive/master.zip#egg=scikit-bio-0.0.0-dev',
           'https://github.com/biocore/brokit/archive/master.zip#egg=brokit-0.0.0-dev'
