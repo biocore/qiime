@@ -24,7 +24,7 @@ from skbio.parse.sequences import parse_fasta
 from qiime.util import  get_qiime_library_version
 from qiime.parse import fields_to_dict, parse_mapping_file
 from qiime.format import (format_distance_matrix, format_otu_table,
-                          format_coords, build_prefs_string, format_matrix, format_map_file,
+                          build_prefs_string, format_matrix, format_map_file,
                           format_histograms, write_Fasta_from_name_seq_pairs,
                           format_unifrac_sample_mapping, format_otu_map, write_otu_map,
                           format_summarize_taxa, write_summarize_taxa,
@@ -460,17 +460,6 @@ class TopLevelTests(TestCase):
         t = parse_biom_table(res.split('\n'))
         self.assertEqual(t.ObservationIds, ('1', '2'))
         self.assertEqual(t.SampleIds, ('a', 'b', 'c'))
-
-    def test_format_coords(self):
-        """format_coords should return tab-delimited table of coords"""
-        a = array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-        header = list('abc')
-        eigvals = [2, 4, 6]
-        pct_var = [3, 2, 1]
-        res = format_coords(header, a, eigvals, pct_var)
-        self.assertEqual(
-            res,
-            "pc vector number\t1\t2\t3\na\t1\t2\t3\nb\t4\t5\t6\nc\t7\t8\t9\n\n\neigvals\t2\t4\t6\n% variation explained\t3\t2\t1")
 
     def test_build_prefs_string(self):
         """build_prefs_string should return a properly formatted prefs string.
