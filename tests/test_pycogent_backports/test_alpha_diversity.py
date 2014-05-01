@@ -3,6 +3,7 @@
 from __future__ import division
 from numpy import array, log, sqrt, exp
 from math import e
+from tempfile import mkstemp
 from cogent.util.unit_test import TestCase, main
 from qiime.pycogent_backports.alpha_diversity import (expand_counts, counts,
                                                       observed_species, singles, doubles, osd, margalef, menhinick, dominance,
@@ -17,18 +18,13 @@ from qiime.pycogent_backports.alpha_diversity import (expand_counts, counts,
                                                       lower_confidence_bound, lladser_ci_from_r, lladser_ci_series, starr_est,
                                                       esty_ci, get_interval_for_r_new_species, lladser_point_estimates)
 
-from qiime.alpha_diversity import (AlphaDiversityCalc, AlphaDiversityCalcs,
-                                   single_file_cup, get_cup_metric, list_known_metrics)
-
-from qiime.util import get_tmp_filename
-from cogent.util.misc import remove_files
 from itertools import izip
 import qiime.pycogent_backports.alpha_diversity as alph
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2007-2012, The Cogent Project"
 __credits__ = ["Rob Knight", "Justin Kuczynski, William Van Treuren",
-               "Jose Antonio Navas Molina"]
+               "Jose Antonio Navas Molina", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.5.3-dev"
 __maintainer__ = "Rob Knight"
@@ -56,18 +52,6 @@ class diversity_tests(TestCase):
              (0.75, 0.541029207232267),
              (0.875, 0.74965229485396379),
              (1.0, 1.0)]
-        # for Manuel's coverage estimations
-        self.tmp_file = get_tmp_filename(
-            tmp_dir="./",
-            suffix="test_single_file_cup.biom")
-        self.tmp_outfile = get_tmp_filename(
-            tmp_dir="./",
-            suffix="test_single_file_cup.txt")
-        self.files_to_remove = []
-
-    def tearDown(self):
-        """ Remove tmp files """
-        remove_files(self.files_to_remove)
 
     def test_expand_counts(self):
         """expand_counts should return correct expanded array"""
@@ -373,55 +357,6 @@ class diversity_tests(TestCase):
         # example3 using dominance
         exp = 1. / dominance(c)
         self.assertFloatEqual(enspie(c), exp)
-
-    def test_single_file_cup(self):
-        """single_file_cup returns matrix with estimates"""
-        # Test using a string as metrics
-        # convert_biom using otu_table w/o leading #
-        bt_string = '{"rows": [{"id": "1", "metadata": null}, {"id": "2",\
- "metadata": null}, {"id": "3", "metadata": null}, {"id": "4", "metadata":\
- null}, {"id": "5", "metadata": null}], "format": "Biological Observation\
- Matrix 0.9.1-dev", "data": [[0, 0, 3.0], [0, 1, 4.0], [1, 0, 2.0],\
- [1, 1, 5.0], [2, 0, 1.0], [2, 1, 2.0], [3, 1, 4.0], [4, 0, 1.0]], "columns":\
- [{"id": "S1", "metadata": null}, {"id": "S2", "metadata": null}],\
- "generated_by": "BIOM-Format 0.9.1-dev", "matrix_type": "sparse", "shape":\
- [5, 2], "format_url": "http://biom-format.org", "date":\
- "2012-05-04T09:28:28.247809", "type": "OTU table", "id": null,\
- "matrix_element_type": "float"}'
-
-        fh = open(self.tmp_file, "w")
-        fh.write(bt_string)
-        fh.close()
-        self.files_to_remove.append(self.tmp_file)
-        self.files_to_remove.append(self.tmp_outfile)
-
-        # Not much testing here, just make sure we get back a (formatted)
-        # matrix with the right dimensions
-        single_file_cup(self.tmp_file, 'lladser_pe,lladser_ci',
-                        self.tmp_outfile, r=4, alpha=0.95, f=10, ci_type="ULCL")
-        observed = open(self.tmp_outfile, "U").readlines()
-        self.assertEqual(len(observed), 3)
-        self.assertEqual(len(observed[1].split('\t')), 4)
-
-        # Test using a list as metrics
-        # convert_biom using otu_table w/o leading #
-        bt_string = '{"rows": [{"id": "1", "metadata": null}], "format":\
- "Biological Observation Matrix 0.9.1-dev", "data": [[0, 0, 3.0]], "columns":\
- [{"id": "S1", "metadata": null}], "generated_by": "BIOM-Format 0.9.1-dev",\
- "matrix_type": "sparse", "shape": [1, 1], "format_url":\
- "http://biom-format.org", "date": "2012-05-04T09:36:57.500673", "type":\
- "OTU table", "id": null, "matrix_element_type": "float"}'
-
-        fh = open(self.tmp_file, "w")
-        fh.write(bt_string)
-        fh.close()
-
-        single_file_cup(self.tmp_file, ['lladser_pe', 'lladser_ci'],
-                        self.tmp_outfile, r=4, alpha=0.95, f=10, ci_type="ULCL")
-        observed = open(self.tmp_outfile, "U").readlines()
-        expected = ["\tlladser_pe\tlladser_lower_bound\tlladser_upper_bound\n",
-                    "S1\tNaN\tNaN\tNaN"]
-        self.assertEqual(observed, expected)
 
     def test_lladser_point_estimates(self):
         """lladser_point_estimates calculates correct estimates"""

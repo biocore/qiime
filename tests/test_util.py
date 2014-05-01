@@ -19,9 +19,8 @@ from numpy.testing import assert_almost_equal
 
 from skbio.core.sequence import DNASequence
 from skbio.parse.sequences import parse_fasta
+from skbio.util.misc import remove_files
 
-from cogent import Sequence
-from cogent.util.misc import remove_files
 from cogent.cluster.procrustes import procrustes
 
 from brokit.formatdb import build_blast_db_from_fasta_file
@@ -33,7 +32,7 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
                         extract_seqs_by_sample_id, get_qiime_project_dir,
                         get_qiime_scripts_dir, matrix_stats,
                         raise_error_on_parallel_unavailable,
-                        convert_OTU_table_relative_abundance, create_dir, handle_error_codes,
+                        convert_OTU_table_relative_abundance, create_dir,
                         summarize_pcoas, _compute_jn_pcoa_avg_ranges, _flip_vectors, IQR,
                         idealfourths, isarray, matrix_IQR, degap_fasta_aln,
                         write_degapped_fasta_to_file, compare_otu_maps, get_diff_for_otu_maps,
@@ -43,10 +42,10 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
                         guess_even_sampling_depth, compute_days_since_epoch,
                         get_interesting_mapping_fields, inflate_denoiser_output,
                         flowgram_id_to_seq_id_map, count_seqs, count_seqs_from_file,
-                        count_seqs_in_filepaths, get_split_libraries_fastq_params_and_file_types,
-                        iseq_to_qseq_fields, get_top_fastq_two_lines,
+                        count_seqs_in_filepaths,
+                        iseq_to_qseq_fields,
                         make_compatible_distance_matrices, stderr, _chk_asarray, expand_otu_ids,
-                        subsample_fasta, summarize_otu_sizes_from_otu_map, trim_fastq,
+                        subsample_fasta, summarize_otu_sizes_from_otu_map,
                         load_qiime_config, MetadataMap,
                         RExecutor, duplicates_indices, trim_fasta, get_qiime_temp_dir,
                         qiime_blastx_seqs, add_filename_suffix, is_valid_git_refname,
@@ -513,166 +512,6 @@ o4	seq6	seq7""".split('\n')
         self.assertEqual(count_seqs_in_filepaths(
             in_fps, seq_counter), expected)
 
-    def test_get_split_libraries_fastq_params_and_file_types_reverse(self):
-        """get_split_libraries_fastq_params_and_file_types using reverse
-           barcodes computes correct values"""
-
-        temp_output_dir = mkdtemp()
-        self.dirs_to_remove.append(temp_output_dir)
-
-        # generate the fastq mapping file
-        map_fpath = join(temp_output_dir, 'map.txt')
-        map_fopen = open(map_fpath, 'w')
-        map_fopen.write('\n'.join(fastq_mapping_rev))
-        map_fopen.close()
-        self.files_to_remove.append(map_fpath)
-
-        fastq_files = []
-        # generate fastq seqs file
-        seq_fpath = join(temp_output_dir, 'seqs.fastq')
-        seqs_fopen = open(seq_fpath, 'w')
-        seqs_fopen.write('\n'.join(fastq_seqs))
-        seqs_fopen.close()
-
-        fastq_files.append(seq_fpath)
-        self.files_to_remove.append(seq_fpath)
-
-        # generate fastq seqs file
-        barcode_fpath = join(temp_output_dir, 'barcodes.fastq')
-        barcode_fopen = open(barcode_fpath, 'w')
-        barcode_fopen.write('\n'.join(fastq_barcodes))
-        barcode_fopen.close()
-
-        fastq_files.append(barcode_fpath)
-        self.files_to_remove.append(barcode_fpath)
-
-        exp = '-i %s -b %s --rev_comp_mapping_barcodes' % (seq_fpath,
-                                                           barcode_fpath)
-
-        obs = get_split_libraries_fastq_params_and_file_types(fastq_files,
-                                                              map_fpath)
-
-        self.assertEqual(obs, exp)
-
-    def test_get_split_libraries_fastq_params_and_file_types_forward(self):
-        """get_split_libraries_fastq_params_and_file_types using forward
-           barcodes computes correct values"""
-
-        temp_output_dir = mkdtemp()
-        self.dirs_to_remove.append(temp_output_dir)
-
-        # generate the fastq mapping file
-        map_fpath = join(temp_output_dir, 'map.txt')
-        map_fopen = open(map_fpath, 'w')
-        map_fopen.write('\n'.join(fastq_mapping_fwd))
-        map_fopen.close()
-        self.files_to_remove.append(map_fpath)
-
-        fastq_files = []
-        # generate fastq seqs file
-        seq_fpath = join(temp_output_dir, 'seqs.fastq')
-        seqs_fopen = open(seq_fpath, 'w')
-        seqs_fopen.write('\n'.join(fastq_seqs))
-        seqs_fopen.close()
-
-        fastq_files.append(seq_fpath)
-        self.files_to_remove.append(seq_fpath)
-
-        # generate fastq seqs file
-        barcode_fpath = join(temp_output_dir, 'barcodes.fastq')
-        barcode_fopen = open(barcode_fpath, 'w')
-        barcode_fopen.write('\n'.join(fastq_barcodes))
-        barcode_fopen.close()
-
-        fastq_files.append(barcode_fpath)
-        self.files_to_remove.append(barcode_fpath)
-
-        exp = '-i %s -b %s ' % (seq_fpath, barcode_fpath)
-
-        obs = get_split_libraries_fastq_params_and_file_types(fastq_files,
-                                                              map_fpath)
-
-        self.assertEqual(obs, exp)
-
-    def test_get_split_libraries_fastq_params_and_file_types_gzipped(self):
-        """get_split_libraries_fastq_params_and_file_types using gzipped files
-           and forward barcodes computes correct values"""
-
-        temp_output_dir = mkdtemp()
-        self.dirs_to_remove.append(temp_output_dir)
-
-        # generate the fastq mapping file
-        map_fpath = join(temp_output_dir, 'map.txt')
-        map_fopen = open(map_fpath, 'w')
-        map_fopen.write('\n'.join(fastq_mapping_fwd))
-        map_fopen.close()
-        self.files_to_remove.append(map_fpath)
-
-        fastq_files = []
-        # generate fastq seqs file
-        seq_fpath = join(temp_output_dir, 'seqs.fastq.gz')
-        seqs_fopen = gzip.open(seq_fpath, 'w')
-        seqs_fopen.write('\n'.join(fastq_seqs))
-        seqs_fopen.close()
-
-        fastq_files.append(seq_fpath)
-        self.files_to_remove.append(seq_fpath)
-
-        # generate fastq seqs file
-        barcode_fpath = join(temp_output_dir, 'barcodes.fastq.gz')
-        barcode_fopen = gzip.open(barcode_fpath, 'w')
-        barcode_fopen.write('\n'.join(fastq_barcodes))
-        barcode_fopen.close()
-
-        fastq_files.append(barcode_fpath)
-        self.files_to_remove.append(barcode_fpath)
-
-        exp = '-i %s -b %s ' % (seq_fpath, barcode_fpath)
-
-        obs = get_split_libraries_fastq_params_and_file_types(fastq_files,
-                                                              map_fpath)
-
-        self.assertEqual(obs, exp)
-
-    def test_get_top_fastq_two_lines(self):
-        """ get_top_fastq_two_lines: this function gets the first 4 lines of
-            the open fastq file
-        """
-
-        temp_output_dir = mkdtemp()
-        self.dirs_to_remove.append(temp_output_dir)
-
-        fastq_files = []
-        # generate fastq seqs file
-        seq_fpath = join(temp_output_dir, 'seqs.fastq')
-        seqs_fopen = open(seq_fpath, 'w')
-        seqs_fopen.write('\n'.join(fastq_seqs))
-        seqs_fopen.close()
-
-        fastq_files.append(seq_fpath)
-        self.files_to_remove.append(seq_fpath)
-
-        # generate fastq seqs file
-        barcode_fpath = join(temp_output_dir, 'barcodes.fastq')
-        barcode_fopen = open(barcode_fpath, 'w')
-        barcode_fopen.write('\n'.join(fastq_barcodes))
-        barcode_fopen.close()
-
-        fastq_files.append(barcode_fpath)
-        self.files_to_remove.append(barcode_fpath)
-        exp = [('@HWUSI-EAS552R_0357:8:1:10040:6364#0/1\n', 'GACGAGTCAGTCA\n',
-                '+HWUSI-EAS552R_0357:8:1:10040:6364#0/1\n', 'hhhhhhhhhhhhh\n'),
-               ('@HWUSI-EAS552R_0357:8:1:10040:6364#0/2\n',
-                'TACAGGGGATGCAAGTGTTATCCGGAATTATTGGGCGTAAAGCGTCTGCAGGTTGCTCACTAAGTCTTTTGTTAAATCTTCGGGCTTAACCCGAAACCTGCAAAAGAAACTAGTGCTCTCGAGTATGGTAGAGGTAAAGGGAATTTCCAG\n',
-
-                '+HWUSI-EAS552R_0357:8:1:10040:6364#0/2\n',
-                'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhfhhhhhhgghhhhhWhfcffehf]hhdhhhhhgcghhhchhhhfhcfhhgggdfhgdcffadccfdcccca]^b``ccfdd_caccWbb[b_dfdcdeaec`^`^_daba_b_WdY^`\n')]
-
-        # iterate of dict and make sure the top 4 lines of each file are in the
-        # expected list
-        for i in fastq_files:
-            obs = get_top_fastq_two_lines(open(i))
-            self.assertTrue(obs in exp)
 
     def test_make_compatible_distance_matrices(self):
         """make_compatible_distance_matrices: functions as expected"""
@@ -736,21 +575,6 @@ o4	seq6	seq7""".split('\n')
         lookup = {'C': 'C', 'B': 'B', 'T': 'B', 'D': 'D'}
         self.assertRaises(KeyError,
                           make_compatible_distance_matrices, dm1, dm2, lookup)
-
-    def test_trim_fastq(self):
-        """ trim_fastq functions as expected """
-        expected = ["""@HWUSI-EAS552R_0357:8:1:10040:6364#0/1
-GACGAG
-+
-hhhhhh
-""",
-                    """@HWUSI-EAS552R_0357:8:1:10184:6365#0/1
-GTCTGA
-+
-hhhhhh
-"""]
-
-        self.assertEqual(list(trim_fastq(self.fastq_barcodes, 6)), expected)
 
     def test_trim_fasta(self):
         """ trim_fasta functions as expected """
@@ -1823,7 +1647,7 @@ class MetadataMapTests(TestCase):
 
         self.m1_dup_bad = StringIO(m1_dup_bad)
         self.m1_dup_good = StringIO(m1_dup_good)
-    
+
 
     def test_parseMetadataMap(self):
         """Test parsing a mapping file into a MetadataMap instance."""
@@ -2080,20 +1904,20 @@ class MetadataMapTests(TestCase):
         """
         observed = MetadataMap.mergeMappingFiles([self.m1,self.m3])
         self.assertEqual(observed, m1_m3_exp)
-            
+
     def test_merge_mapping_file_different_no_data_value(self):
         """merge_mapping_file: functions with different no_data_value
         """
         observed = MetadataMap.mergeMappingFiles([self.m1,self.m2],
                                                   "TESTING_NA")
         self.assertEqual(observed, m1_m2_exp)
-            
+
     def test_merge_mapping_file_three_mapping_files(self):
         """merge_mapping_file: 3 mapping files
         """
         observed = MetadataMap.mergeMappingFiles([self.m1,self.m2,self.m3])
         self.assertEqual(observed, m1_m2_m3_exp)
-            
+
     def test_merge_mapping_file_bad_duplicates(self):
         """merge_mapping_file: error raised when merging mapping files where
         same sample ids has different values

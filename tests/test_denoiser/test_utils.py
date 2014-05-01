@@ -14,6 +14,7 @@ __email__ = "jens.reeder@gmail.com"
 from os import remove, rmdir
 from shutil import rmtree
 from os.path import exists
+from tempfile import mkdtemp
 
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
@@ -23,7 +24,6 @@ from skbio.parse.sequences import parse_fasta
 from cogent.parse.flowgram import Flowgram
 from cogent.parse.flowgram_collection import FlowgramCollection
 from cogent.app.util import ApplicationNotFoundError
-from qiime.util import get_tmp_filename
 from cogent.util.misc import remove_files, create_dir
 
 from qiime.util import get_qiime_project_dir
@@ -117,8 +117,7 @@ class TestUtils(TestCase):
     def test_store_cluster(self):
         """store_clusters stores the centroid seqs for each cluster."""
 
-        self.tmpdir = get_tmp_filename(tmp_dir="./", suffix="_store_clusters/")
-        create_dir(self.tmpdir)
+        self.tmpdir = mkdtemp(dir="./", suffix="_store_clusters/")
 
         self.files_to_remove.append(self.tmpdir + "singletons.fasta")
         self.files_to_remove.append(self.tmpdir + "centroids.fasta")
@@ -358,9 +357,8 @@ BABBA"""
     def test_checkpoints(self):
         """storing and loading of checkpoints works"""
 
-        self.tmpdir = get_tmp_filename(
-            tmp_dir="./",
-            suffix="_test_checkpoints/")
+        self.tmpdir = mkdtemp(dir="./",
+                              suffix="_test_checkpoints/")
 
         bestscores = dict({1: 0.9,
                            2: 1.1,

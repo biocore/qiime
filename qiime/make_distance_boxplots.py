@@ -12,7 +12,9 @@ __email__ = "jai.rideout@gmail.com"
 """Contains functions used in the make_distance_boxplots.py script."""
 
 from collections import defaultdict
-from numpy import argsort, array, median
+
+import numpy as np
+
 from qiime.colors import data_colors, data_color_order
 from qiime.format import format_mapping_file
 from qiime.group import get_all_grouped_distances, get_grouped_distances
@@ -21,6 +23,7 @@ from qiime.parse import parse_distmat, parse_mapping_file
 from skbio.draw.distributions import boxplots
 from qiime.util import MetadataMap
 
+SORT_TYPES = ('median', 'alphabetical')
 
 def make_distance_boxplots(dm_f,
                            map_f,
@@ -37,7 +40,7 @@ def make_distance_boxplots(dm_f,
                            box_width=0.5,
                            box_color=None,
                            color_individual_within_by_field=None,
-                           sort=False):
+                           sort=None):
     """Generates various types of boxplots for distance comparisons.
 
     Returns a list of tuples, one for each field. Each tuple contains the
@@ -147,10 +150,9 @@ def make_distance_boxplots(dm_f,
 
         # We now have our data and labels ready, so plot them!
         if plot_data:
-            if sort:
-                plot_data, plot_labels, plot_colors = \
-                    _sort_distributions_by_median(plot_data, plot_labels,
-                                                  plot_colors)
+            if sort is not None:
+                plot_data, plot_labels, plot_colors = _sort_distributions(
+                    plot_data, plot_labels, plot_colors, sort)
 
             if width is None:
                 width = len(plot_data) * box_width + 2
@@ -191,25 +193,22 @@ def _cast_y_axis_extrema(y_axis_extrema):
     return y_axis_extrema
 
 
-def _sort_distributions_by_median(plot_data, plot_labels, plot_colors):
-    """Sorts plot data, labels, and colors in order of increasing median."""
-    sorted_data = []
+def _sort_distributions(plot_data, plot_labels, plot_colors, sort_type):
+    """Sort plot data, labels, and colors.
 
-    for distribution, label, color in zip(plot_data, plot_labels, plot_colors):
-        sorted_data.append((median(distribution), distribution, label, color))
-    sorted_data.sort()
+    Can sort in order of increasing median or alphabetically (based on plot
+    labels).
 
-    plot_data = []
-    plot_labels = []
-    plot_colors = []
+    """
+    if sort_type == 'median':
+        sort_key = lambda item: np.median(item[0])
+    elif sort_type == 'alphabetical':
+        sort_key = lambda item: item[1]
+    else:
+        raise ValueError("Invalid sort type '%s'." % sort_type)
 
-    for _, distribution, label, color in sorted_data:
-        plot_data.append(distribution)
-        plot_labels.append(label)
-        plot_colors.append(color)
-
-    return plot_data, plot_labels, plot_colors
-
+    # Taken from http://stackoverflow.com/a/9764364
+    return zip(*sorted(zip(plot_data, plot_labels, plot_colors), key=sort_key))
 
 def _color_field_states(map_f, samp_ids, field, field_states, color_by_field):
     """Colors one field by another.

@@ -12,8 +12,9 @@ __email__ = "gregcaporaso@gmail.com"
 
 from os import rename
 
-from cogent import DNA
-from cogent.util.misc import safe_md5, create_dir
+from skbio.util.misc import safe_md5, create_dir
+from skbio.core.sequence import DNA
+
 from qiime.util import parse_command_line_parameters, make_option, gzip_open
 from qiime.parse import parse_mapping_file
 from qiime.split_libraries_fastq import (process_fastq_single_end_read_file,
@@ -279,7 +280,7 @@ def main():
             barcode_to_sample_id = {}
 
         if rev_comp_mapping_barcodes:
-            barcode_to_sample_id = {DNA.rc(k): v for k, v in
+            barcode_to_sample_id = {str(DNA(k).rc()): v for k, v in
                                     barcode_to_sample_id.iteritems()}
 
         if barcode_type == 'golay_12':
@@ -311,7 +312,7 @@ def main():
 
         if barcode_read_fp is not None:
             log_f.write('Barcode read filepath: %s (md5: %s)\n\n' %
-                        (barcode_read_fp, 
+                        (barcode_read_fp,
                          safe_md5(open(barcode_read_fp)).hexdigest()))
 
             if barcode_read_fp.endswith('.gz'):

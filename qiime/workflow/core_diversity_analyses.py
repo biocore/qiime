@@ -27,17 +27,22 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
+#_index_headers includes key/value pairs use in pick_open_reference_otus.py
 _index_headers = {
     "run_summary": "Run summary data",
     "beta_diversity_even": "Beta diversity results (even sampling: %d)",
     "alpha_diversity": "Alpha diversity results",
     "taxa_summary": "Taxonomic summary results",
     "taxa_summary_categorical": "Taxonomic summary results (by %s)",
-    "group_significance": "Group significance results"}
+    "group_significance": "Group significance results", 
+    "failures_fp": "Failures", 
+    "otu_maps": "OTU maps",
+    "sequences": "Reference sequences",
+    "otu_tables": "OTU tables",
+    "trees": "Trees"}
 
 
 def format_index_link(link_description, relative_path):
-
     return '<td>%s</td><td> <a href="%s" target="_blank">%s</a></td>' % (link_description,
                                                                          re.sub(
                                                                              '/+',
@@ -489,5 +494,5 @@ def run_core_diversity_analyses(
         command_handler(commands, status_update_callback, logger)
     else:
         logger.close()
-
+    
     generate_index_page(index_links, index_fp)

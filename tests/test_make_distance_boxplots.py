@@ -12,11 +12,14 @@ __email__ = "jai.rideout@gmail.com"
 """Test suite for the make_distance_boxplots.py module."""
 
 from unittest import TestCase, main
-from numpy.testing import assert_almost_equal
+
 from matplotlib.figure import Figure
+from numpy.testing import assert_almost_equal
+
 from qiime.make_distance_boxplots import (_cast_y_axis_extrema,
-                                          _color_field_states, make_distance_boxplots,
-                                          _sort_distributions_by_median)
+                                          _color_field_states,
+                                          make_distance_boxplots,
+                                          _sort_distributions)
 
 
 class MakeDistanceBoxplotsTests(TestCase):
@@ -258,14 +261,30 @@ class MakeDistanceBoxplotsTests(TestCase):
                           suppress_all_between=True, suppress_individual_within=True,
                           suppress_individual_between=True)
 
-    def test_sort_distributions_by_median(self):
+    def test_sort_distributions_median(self):
         """Test correctly sorts distributions by median."""
-        exp = ([[0, 0, 0, 1], [2, 1, 1], [1, 2, 3]],
-               ['bar', 'baz', 'foo'], ['b', 'r', 'w'])
-        obs = _sort_distributions_by_median(
-            [[1, 2, 3], [2, 1, 1], [0, 0, 0, 1]], ['foo', 'baz', 'bar'],
-            ['w', 'r', 'b'])
+        exp = [([0, 0, 0, 1], [2, 1, 1], [1], [1, 2, 3]),
+               ('bar', 'baz', 'zab', 'foo'), ('b', 'r', 'b', 'w')]
+        obs = _sort_distributions(
+            [[1, 2, 3], [2, 1, 1], [0, 0, 0, 1], [1]],
+            ['foo', 'baz', 'bar', 'zab'], ['w', 'r', 'b', 'b'], 'median')
         self.assertEqual(obs, exp)
+
+    def test_sort_distributions_alphabetical(self):
+        """Test correctly sorts distributions alphabetically."""
+        exp = [([2, 1, 1], [1, 2, 3], [0, 0, 0, 1], [1]),
+               ('baz', 'foo', 'foo', 'zab'), ('r', 'w', 'b', 'b')]
+        obs = _sort_distributions(
+            [[1, 2, 3], [2, 1, 1], [0, 0, 0, 1], [1]],
+            ['foo', 'baz', 'foo', 'zab'], ['w', 'r', 'b', 'b'], 'alphabetical')
+        self.assertEqual(obs, exp)
+
+    def test_sort_distributions_invalid_input(self):
+        """Correctly raises error on invalid input."""
+        # Unfortunately, this code doesn't support the brosort algorithm... :(
+        with self.assertRaises(ValueError):
+            _ = _sort_distributions([[1, 2, 3], [3, 2, 1]], ['foo', 'bar'],
+                                    ['r', 'b'], 'brosort')
 
 
 map_lines = """#SampleID\tFoo\tBar\tBaz\tDescription

@@ -14,8 +14,12 @@ from StringIO import StringIO
 from os.path import exists
 from unittest import TestCase, main
 from os import remove
-from cogent import LoadSeqs
 import shutil
+
+from skbio.core.alignment import SequenceCollection
+from skbio.core.sequence import DNA
+from skbio.parse.sequences import parse_fasta
+
 from qiime.filter_otus_by_sample import (filter_otus, filter_aln_by_otus,
                                          process_extract_samples)
 
@@ -68,7 +72,7 @@ sequences to remove"""
         exp2 = []
         exp2.append(('SampleB', 'CCCCCCC'))
         exp2.append(('SampleC', 'GGGGGGGGGGGGGG'))
-        aln = LoadSeqs(data=self.aln, aligned=False)
+        aln = SequenceCollection.from_fasta_records(self.aln, DNA)
 
         obs1, obs2 = filter_aln_by_otus(aln, self.prefs)
 

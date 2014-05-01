@@ -18,7 +18,7 @@ __email__ = "gregcaporaso@gmail.com"
 A lot of this might migrate into cogent at some point.
 """
 
-from os import getenv, listdir
+from os import getenv, listdir, close
 from os.path import abspath, basename, exists, dirname, join, splitext, isfile
 from collections import defaultdict
 from gzip import open as gz_open
@@ -28,6 +28,7 @@ from datetime import datetime
 from subprocess import Popen
 from random import random
 from itertools import repeat, izip
+from tempfile import mkstemp
 
 from numpy import (array, zeros, shape, vstack, ndarray, asarray,
                    float, where, isnan, std, sqrt, ravel, mean, median,
@@ -47,14 +48,10 @@ from biom.table import (DenseFunctionTable, DenseGeneTable,
                         SparseOrthologTable, SparsePathwayTable,
                         SparseTable, SparseTaxonTable)
 
-from cogent import LoadSeqs, Sequence, DNA
 from cogent.parse.tree import DndParser
 from cogent.cluster.procrustes import procrustes
-from cogent.core.alignment import Alignment
-from cogent.data.molecular_weight import DnaMW
-from cogent.util.misc import remove_files, create_dir, handle_error_codes
-from cogent.app.util import get_tmp_filename as cogent_get_tmp_filename
 
+from skbio.util.misc import remove_files, create_dir
 from skbio.app.util import ApplicationError, CommandLineApplication, FilePath
 from skbio.app.util import which
 from skbio.core.sequence import DNASequence
@@ -265,22 +262,6 @@ class FunctionWithParams(object):
                 raise TypeError('Data is neither a path to a biom table or a' +
                                 ' biom table object.')
 
-    def getAlignment(self, aln_source):
-        """Returns parsed alignment from putative alignment source"""
-        if isinstance(aln_source, Alignment):
-            aln = aln_source
-        elif aln_source:
-            try:
-                aln = LoadSeqs(aln_source, Aligned=True)
-            except (TypeError, IOError, AssertionError):
-                raise AlignmentMissingError(
-                    "Couldn't read alignment file at path: %s" %
-                    aln_source)
-        else:
-            raise AlignmentMissingError(str(self.Name) +
-                                        " requires an alignment, but no alignment was supplied.")
-        return aln
-
     def __call__(self, result_path=None, log_path=None,
                  *args, **kwargs):
         """Returns the result of calling the function using the params dict.
@@ -295,13 +276,6 @@ class FunctionWithParams(object):
             self.writeResult(result_path, result)
         else:
             return result
-
-
-def trim_fastq(fastq_lines, output_length):
-    """trim fastq seqs/quals to output_length bases """
-    for seq_id, seq, qual in parse_fastq(fastq_lines, strict=False):
-        yield '@%s\n%s\n+\n%s\n' % (seq_id, seq[:output_length],
-                                    qual[:output_length])
 
 
 def trim_fasta(fasta_lines, output_length):
@@ -357,17 +331,6 @@ def get_qiime_temp_dir():
     else:
         result = '/tmp/'
     return result
-
-
-def get_tmp_filename(tmp_dir=None, prefix="tmp", suffix=".txt",
-                     result_constructor=FilePath):
-    """ Wrap cogent.app.util.get_tmp_filename to modify the default tmp_dir """
-    if tmp_dir is None:
-        tmp_dir = get_qiime_temp_dir()
-    return cogent_get_tmp_filename(tmp_dir=tmp_dir,
-                                   prefix=prefix,
-                                   suffix=suffix,
-                                   result_constructor=result_constructor)
 
 
 def load_qiime_config():
@@ -988,8 +951,9 @@ def degap_fasta_aln(seqs):
 
 def write_degapped_fasta_to_file(seqs, tmp_dir="/tmp/"):
     """ write degapped seqs to temp fasta file."""
-    tmp_filename = get_tmp_filename(tmp_dir=tmp_dir, prefix="degapped_",
-                                    suffix=".fasta")
+    fd, tmp_filename = mkstemp(dir=tmp_dir, prefix="degapped_",
+                               suffix=".fasta")
+    close(fd)
 
     with open(tmp_filename, 'w') as fh:
         for seq in degap_fasta_aln(seqs):
@@ -1326,105 +1290,6 @@ def count_seqs_in_filepaths(fasta_filepaths, seq_counter=count_seqs):
 # End functions for counting sequences in fasta files
 
 
-def get_top_fastq_two_lines(open_file):
-    """ This function returns the first 4 lines of the open fastq file
-    """
-    line1 = open_file.readline()
-    line2 = open_file.readline()
-    line3 = open_file.readline()
-    line4 = open_file.readline()
-    open_file.seek(0)
-    return line1, line2, line3, line4
-
-
-def get_split_libraries_fastq_params_and_file_types(fastq_fps, mapping_fp):
-    """ The function takes a list of open fastq files and a mapping file, then
-        returns a recommended parameters string for split_libraries_fastq
-    """
-    # parse the mapping
-    data, headers, run_description = parse_mapping_file(open(mapping_fp, 'U'))
-
-    # determine the which column of mapping file is the BarcodeSequence
-    for i, col_head in enumerate(headers):
-        if col_head == 'BarcodeSequence':
-            barcode_column = i
-
-    # create a set of barcodes for easier lookup
-    barcode_mapping_column = set(zip(*data)[barcode_column])
-
-    # create set of reverse complement barcodes from mapping file
-    revcomp_barcode_mapping_column = []
-    for i in barcode_mapping_column:
-        revcomp_barcode_mapping_column.append(DNA.rc(i))
-        barcode_len = len(i)
-    revcomp_barcode_mapping_column = set(revcomp_barcode_mapping_column)
-
-    # get the filenames and sort them, so the file1 corresponds to file2
-    fastq_fps.sort()
-
-    # get the len of the sequence in each of the files, so we can determine
-    # which file is the sequence file and which is the barcode sequence
-    get_file_type_info = {}
-    for fastq_file in fastq_fps:
-        # allow for gzipped files to be used
-        if fastq_file.endswith('.gz'):
-            fastq_fp = gzip_open(fastq_file)
-        else:
-            fastq_fp = open(fastq_file, 'U')
-
-        file_lines = get_top_fastq_two_lines(fastq_fp)
-        parsed_fastq = parse_fastq(file_lines, strict=False)
-        for i, seq_data in enumerate(parsed_fastq):
-            if i == 0:
-                get_file_type_info[fastq_file] = len(seq_data[1])
-            else:
-                break
-        fastq_fp.close()
-
-    # iterate over the sequence lengths and assign each file to either
-    # a sequence list or barcode list
-    barcode_files = []
-    sequence_files = []
-    for i in range(0, len(fastq_fps), 2):
-        if get_file_type_info[fastq_fps[i]] < get_file_type_info[fastq_fps[i + 1]]:
-            barcode_files.append(fastq_fps[i])
-            sequence_files.append(fastq_fps[i + 1])
-        else:
-            barcode_files.append(fastq_fps[i + 1])
-            sequence_files.append(fastq_fps[i])
-
-    # count the number of barcode matches in the forward and reverse direction
-    # to determine if the rev_comp_barcode option needs passed
-    fwd_count = 0
-    rev_count = 0
-    for bfile in barcode_files:
-        # allow for gzipped files to be used
-        if fastq_file.endswith('.gz'):
-            fastq_fp = gzip_open(bfile)
-        else:
-            fastq_fp = open(bfile, 'U')
-
-        parsed_fastq = parse_fastq(fastq_fp, strict=False)
-        for bdata in parsed_fastq:
-            if bdata[1][:barcode_len] in barcode_mapping_column:
-                fwd_count += 1
-            elif bdata[1][:barcode_len] in revcomp_barcode_mapping_column:
-                rev_count += 1
-        fastq_fp.close()
-
-    # determine which barcode direction is correct
-    if rev_count > fwd_count:
-        barcode_orientation = '--rev_comp_mapping_barcodes'
-    else:
-        barcode_orientation = ''
-
-    # generate the string to use in command call to split_libraries_fastq
-    split_lib_str = '-i %s -b %s %s' % (','.join(sequence_files),
-                                        ','.join(barcode_files),
-                                        barcode_orientation)
-    return split_lib_str
-
-
 def iseq_to_qseq_fields(line, barcode_in_header,
                         barcode_length, barcode_qual_c='b'):
     """ Split an Illumina sequence line into qseq fields"""
@@ -1685,7 +1550,7 @@ class MetadataMap():
 
     @staticmethod
     def mergeMappingFiles(mapping_files, no_data_value='no_data'):
-        """ Merge list of mapping files into a single mapping file 
+        """ Merge list of mapping files into a single mapping file
 
             mapping_files: open file objects containing mapping data
             no_data_value: value to be used in cases where there is no
