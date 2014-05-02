@@ -18,7 +18,6 @@ from skbio.maths.stats.spatial import procrustes
 from skbio.maths.stats.ordination import OrdinationResults
 
 from qiime.util import create_dir
-from qiime.format import format_coords
 
 
 def shuffle_full_matrix(m):
@@ -161,10 +160,10 @@ def get_procrustes_results(coords_f1, coords_f2, sample_id_map=None,
     # randomize()
     if randomize:
         coords2 = randomize(coords2)
-        randomized_coords2 = format_coords(coord_header=order,
-                                           coords=coords2,
-                                           eigvals=eigvals2,
-                                           pct_var=pct_var2)
+        randomized_coords2 = OrdinationResults(eigvals=eigvals2,
+                                               proportion_explained=pct_var2,
+                                               site=coords2,
+                                               site_ids=order)
     else:
         randomized_coords2 = None
 
@@ -193,19 +192,18 @@ def get_procrustes_results(coords_f1, coords_f2, sample_id_map=None,
     eigvals = get_eigenvalues(eigvals1, eigvals2)
     pct_var = get_percent_variation_explained(pct_var1, pct_var2)
 
-    transformed_coords1 = format_coords(coord_header=order,
-                                        coords=transformed_coords_m1,
-                                        eigvals=eigvals,
-                                        pct_var=pct_var)
-    transformed_coords2 = format_coords(coord_header=order,
-                                        coords=transformed_coords_m2,
-                                        eigvals=eigvals,
-                                        pct_var=pct_var)
+    transformed_coords1 = OrdinationResults(eigvals=eigvals,
+                                            proportion_explained=pct_var,
+                                            site=transformed_coords_m1,
+                                            site_ids=order)
+    transformed_coords2 = OrdinationResults(eigvals=eigvals,
+                                            proportion_explained=pct_var,
+                                            site=transformed_coords_m2,
+                                            site_ids=order)
 
     # Return the results
-    return (
-        transformed_coords1, transformed_coords2, m_squared, randomized_coords2
-    )
+    return (transformed_coords1, transformed_coords2,
+            m_squared, randomized_coords2)
 
 
 def procrustes_monte_carlo(coords_f1,

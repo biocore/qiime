@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -13,6 +13,7 @@ __email__ = "gregcaporaso@gmail.com"
 from numpy import array
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
+
 from qiime.parse import parse_coords
 from qiime.transform_coordinate_matrices import map_sample_ids, reorder_coords,\
     filter_coords_matrix, pad_coords_matrix, pad_coords_matrices,\

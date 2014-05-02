@@ -148,10 +148,8 @@ def main():
                                            randomize=False,
                                            max_dimensions=num_dimensions)
 
-        with open(output_matrix1_fp, 'w') as output_matrix1_f:
-            output_matrix1_f.write(transf_coords1)
-        with open(output_matrix2_fp, 'w') as output_matrix2_f:
-            output_matrix2_f.write(transf_coords2)
+        transf_coords1.to_file(output_matrix1_fp)
+        transf_coords2.to_file(output_matrix2_fp)
 
         if random_trials:
             if opts.store_trial_details:
