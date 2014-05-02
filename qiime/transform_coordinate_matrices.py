@@ -12,7 +12,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 from random import shuffle
-from numpy import array, mean, append, zeros
+from numpy import array, mean, append, zeros, asarray
 
 from skbio.maths.stats.spatial import procrustes
 from skbio.maths.stats.ordination import OrdinationResults
@@ -160,9 +160,9 @@ def get_procrustes_results(coords_f1, coords_f2, sample_id_map=None,
     # randomize()
     if randomize:
         coords2 = randomize(coords2)
-        randomized_coords2 = OrdinationResults(eigvals=eigvals2,
-                                               proportion_explained=pct_var2,
-                                               site=coords2,
+        randomized_coords2 = OrdinationResults(eigvals=asarray(eigvals2),
+                                               proportion_explained=asarray(pct_var2),
+                                               site=asarray(coords2),
                                                site_ids=order)
     else:
         randomized_coords2 = None
@@ -192,13 +192,13 @@ def get_procrustes_results(coords_f1, coords_f2, sample_id_map=None,
     eigvals = get_eigenvalues(eigvals1, eigvals2)
     pct_var = get_percent_variation_explained(pct_var1, pct_var2)
 
-    transformed_coords1 = OrdinationResults(eigvals=eigvals,
-                                            proportion_explained=pct_var,
-                                            site=transformed_coords_m1,
+    transformed_coords1 = OrdinationResults(eigvals=asarray(eigvals),
+                                            proportion_explained=asarray(pct_var),
+                                            site=asarray(transformed_coords_m1),
                                             site_ids=order)
-    transformed_coords2 = OrdinationResults(eigvals=eigvals,
-                                            proportion_explained=pct_var,
-                                            site=transformed_coords_m2,
+    transformed_coords2 = OrdinationResults(eigvals=asarray(eigvals),
+                                            proportion_explained=asarray(pct_var),
+                                            site=asarray(transformed_coords_m2),
                                             site_ids=order)
 
     # Return the results
