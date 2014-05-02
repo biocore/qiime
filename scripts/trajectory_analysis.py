@@ -12,7 +12,9 @@ __email__ = "josenavasmolina@gmail.com"
 
 from skbio.maths.stats.ordination import OrdinationResults
 
-from qiime.util import parse_command_line_parameters, make_option, MetadataMap
+import pandas as pd
+
+from qiime.util import parse_command_line_parameters, make_option
 from qiime.trajectory_analysis import (run_trajectory_analysis,
                                        TRAJECTORY_ALGORITHMS)
 
@@ -30,14 +32,11 @@ script_info['required_options'] = [
                 help="Input metadata mapping filepath"),
     make_option('-c', '--category', type='string',
                 help="Category name of the mapping file to use to create the "
-                     "vectors")
+                     "vectors"),
+    make_option('-o', '--output_dir', type='new_dirpath',
+                help="Name of the output directory to save the results")
 ]
 script_info['optional_options'] = [
-    make_option('-o', '--output_fp', type='new_filepath',
-                default='vectors_output.txt',
-                help="Name of the file to save the first difference, or the "
-                     "root mean square (RMS) of the vectors grouped by the "
-                     "column used. default: %default]"),
     make_option('-s', '--sort_by', type='string', default=None,
                 help="Category name of the mapping file to use to sort"),
     make_option('--algorithm', type='choice', default=None,
@@ -99,16 +98,17 @@ if __name__ == '__main__':
         ord_res = OrdinationResults.from_file(f)
 
     # Parse the mapping file
-    with open(mapping_fp, 'U') as f:
-        metamap = MetadataMap.parseMedatadaMap(f)
+    # Using dropna to remove comments - with how='all' removes a row
+    # if all its column values are NA, which should occur only with in comments
+    metamap = pd.read_csv(mapping_fp, sep='\t', header=0).dropna(how='all')
 
-    if vector_category not in metamap.CategoryNames:
-        option_parser.error("Category %s does not exist in the mapping file" %
-                            vector_category)
+    if vector_category not in metamap.keys():
+        option_parser.error("Vector category %s does not exist in the mapping "
+                            "file" % vector_category)
 
-    if sort_category and sort_category not in metamap.CategoryNames:
-        option_parser.error("Category %s does not exist in the mapping file" %
-                            sort_category)
+    if sort_category and sort_category not in metamap.keys():
+        option_parser.error("Sort category %s does not exist in the mapping "
+                            "file" % sort_category)
 
     if vectors_axes < 0 or vectors_axes > len(ord_res.eigvals):
         option_parser.error("--vectors_axes should be between 0 and the max "
