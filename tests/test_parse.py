@@ -20,6 +20,9 @@ from StringIO import StringIO
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
 from cogent.util.misc import remove_files
+
+from skbio.core.exception import FileFormatError
+
 from qiime.parse import (group_by_field, group_by_fields,
                          parse_distmat, parse_rarefaction_record, parse_rarefaction, parse_coords,
                          parse_classic_otu_table, make_envs_dict, fields_to_dict,
@@ -512,17 +515,23 @@ node2\t0
 
     def test_parse_coords(self):
         """parse_coords should handle coords file"""
-        coords = """pc vector number\t1\t2\t3
-A\t0.11\t0.09\t0.23
-B\t0.03\t0.07\t-0.26
-C\t0.12\t0.06\t-0.32
+        coords = ["Eigvals\t3",
+                  "4.94\t1.79\t1.50",
+                  "",
+                  "Proportion explained\t3",
+                  "14.3\t5.2\t4.3",
+                  "",
+                  "Species\t0\t0",
+                  "",
+                  "Site\t3\t3",
+                  "A\t.11\t.09\t.23",
+                  "B\t.03\t.07\t-.26",
+                  "C\t.12\t.06\t-.32",
+                  "",
+                  "Biplot\t0\t0",
+                  "",
+                  "Site constraints\t0\t0"]
 
-
-eigvals\t4.94\t1.79\t1.50
-% variation explained\t14.3\t5.2\t4.3
-
-
-""".splitlines()
         obs = parse_coords(coords)
 
         exp = (['A', 'B', 'C'],
@@ -536,17 +545,17 @@ eigvals\t4.94\t1.79\t1.50
         """Check exceptions are raised accordingly with missing information"""
 
         # missing eigenvalues line
-        with self.assertRaises(QiimeParseError):
+        with self.assertRaises(FileFormatError):
             out = parse_coords(COORDS_NO_EIGENVALS.splitlines())
         # missing percentages explained line
-        with self.assertRaises(QiimeParseError):
+        with self.assertRaises(FileFormatError):
             out = parse_coords(COORDS_NO_PCNTS.splitlines())
         # missing vector number line
-        with self.assertRaises(QiimeParseError):
+        with self.assertRaises(FileFormatError):
             out = parse_coords(COORDS_NO_VECTORS.splitlines())
 
         # a whole different file (taxa summary)
-        with self.assertRaises(QiimeParseError):
+        with self.assertRaises(FileFormatError):
             out = parse_coords(taxa_summary1.splitlines())
 
     def test_parse_classic_otu_table_legacy(self):
