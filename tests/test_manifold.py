@@ -8,6 +8,10 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Joshua Haas"
 __email__ = "laptopdude2@gmail.com"
 
+"""
+Performs isomap on a test biom file string.
+"""
+
 from cogent.util.unit_test import TestCase, main
 from qiime.manifold import compute_manifold
 
@@ -16,6 +20,9 @@ class ManifoldTests(TestCase):
     '''Tests of Top-Level Functions'''
 
     def setUp(self):
+
+        """Create a sample biom file string for testing"""
+        
         self.biomstr =('{"id":null,"format": "Biological Observation Matrix 0.9.1-dev",' +
         '"format_url": "http://biom-format.org/documentation/format_versions/biom-1.0.html",' +
         '"type": "OTU table","generated_by": "QIIME revision 1.4.0-dev",' +
@@ -42,7 +49,9 @@ class ManifoldTests(TestCase):
         '[5,1,4,2,1,5]]}')
 
     def test_manifold(self):
+        
         '''Manifold calculation should throw no errors'''
+        
         result = compute_manifold([self.biomstr],"isomap")
         assert result
 

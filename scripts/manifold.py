@@ -1,12 +1,17 @@
 #!/usr/bin/env python
 
 __author__ = "Joshua Haas"
-__copyright__ = "Copyright 2011, The QIIME Project"
+__copyright__ = "Copyright 2014, The QIIME Project"
 __credits__ = ["Joshua Haas","Antonio Gonzalez Pena","Gregory Ditzler"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Joshua Haas"
-__email__ = "haasj74@students.rowan.edu"
+__email__ = "laptopdude2@gmail.com"
+
+
+"""
+Command line interface for the manifold script.
+"""
 
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.util import make_option

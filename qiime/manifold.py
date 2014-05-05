@@ -8,6 +8,20 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Joshua Haas"
 __email__ = "laptopdude2@gmail.com"
 
+"""
+Contains code for dimensionality reduction via manifold learning.
+
+Input file is currently assumed to be a .biom file
+
+Note that the eigvals and percents are meaningless as these don't apply
+to the manifold learning techniques, but EMPeror won't accept the
+output if they are missing.
+
+Also, for the current version of EMPeror in QIIME, plots sometimes
+fail to display for large values. Therefore the output from sklearn
+is normalized to +/- 1
+"""
+
 import sys
 import time
 from sklearn import manifold
