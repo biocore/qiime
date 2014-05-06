@@ -14,12 +14,21 @@ from qiime.split_libraries_lea_seq import (get_cluster_ratio, select_majority_se
 import tempfile
 
 script_info={}
+
 script_info['brief_description'] = "Implements Low-Error Amplicon Sequencing (LEA-Seq)"
 
 script_info['script_description'] = """Implements Low-Error Amplicon Sequencing (LEA-Seq) method, \
 described in: Faith, Jeremiah J., et al. \
 The long-term stability of the human gut microbiota. Science 341.6141 (2013).
-This method is based on redundant sequencing of a set of linear PCR template extensions of 16S rRNA genes. The oligonucleotide primer that is used for PCR template extensions is labeled with a random barcode 5' to the universal 16S rRNA primer sequence. This PCR pool is then amplified with exponential PCR, using primers that specifically amplify only the linear PCR molecules. An index primer is added to the amplicons along with a primer specific for each sample. This exponential PCR pool is then sequenced redundantly (20x coverage). The resulting sequences are separated by sample, using the index sequence. The amplicon sequences within each sample are separated by the random barcodes. The large number of reads for each barcode helps to create an error-corrected consensus sequence for the initial template molecule.
+This method is based on redundant sequencing of a set of linear PCR template\
+extensions of 16S rRNA genes. The oligonucleotide primer that is used for PCR template extensions\
+is labeled with a random barcode 5' to the universal 16S rRNA primer sequence. This PCR pool is\
+then amplified with exponential PCR, using primers that specifically amplify only the linear\
+PCR molecules. An index primer is added to the amplicons along with a primer specific for each\
+sample. This exponential PCR pool is then sequenced redundantly (20x coverage). The resulting\
+sequences are separated by sample, using the index sequence. The amplicon sequences within each\
+sample are separated by the random barcodes. The large number of reads for each barcode helps\
+to create an error-corrected consensus sequence for the initial template molecule.
 """
 
 script_info['script_usage'] = """Example: %prog -i fwd.fq,rev.fq -m Mapping_file.txt -o output_dir --barcode_type=7
@@ -28,6 +37,7 @@ script_info['script_usage'] = """Example: %prog -i fwd.fq,rev.fq -m Mapping_file
 script_info['output_description'] = """ The %prog generates:\
 A fasta file called seqs.fna which contains error corrected consensus sequence for the template DNA\
 """
+
 script_info['required_options'] = [
     make_option('-i', '--sequence_read_fps', type='existing_filepaths',
                 help='the forward and reverse sequence read fastq files '
@@ -64,11 +74,12 @@ script_info['optional_options'] = [
                 '[default: %default]',
                 default=2.5)
 ]
-
 script_info['version'] = __version__
 
+
 def main():
-	option_parser, opts, args = parse_command_line_parameters(**script_info)
+    option_parser, opts, args = \
+	parse_command_line_parameters(**script_info)
 	barcode_type = opts.barcode_type
 	max_barcode_errors = opts.max_barcode_errors
 	output_dir = opts.output_dir
@@ -76,8 +87,8 @@ def main():
 	sequence_read_fps = opts.sequence_read_fps
 	min_consensus = opts.min_consensus
 	max_cluster_ratio = opts.threshold_for_cluster_ratio
-	random_bc_lookup = read_input_file(sequence_read_fps, mapping_fp,\
-                                       output_dir, barcode_type,\
+	random_bc_lookup = read_input_file(sequence_read_fps, mapping_fp,
+                                       output_dir, barcode_type,
                                        max_barcode_errors)
 	consensus_outfile = open(os.path.join(output_dir, "seqs.fna"), "w")
 	for sample_id in random_bc_lookup:
@@ -89,6 +100,6 @@ def main():
 				consensus_seq = get_consensus(seqs, counts, min_consensus)  
 			consensus_outfile.write(">"+ sample_id + random_bc 
                                         + "\n" + consensus_seq+"\n")
-	
+
 if __name__ == "__main__":
     main()
