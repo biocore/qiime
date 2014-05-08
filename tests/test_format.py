@@ -17,7 +17,7 @@ import json
 from os import remove, close
 from string import digits
 from tempfile import mkstemp
-from numpy import array, nan
+from numpy import array, nan, array_equal
 from cogent.util.misc import remove_files
 from unittest import TestCase, main
 from skbio.parse.sequences import parse_fasta
@@ -458,8 +458,8 @@ class TopLevelTests(TestCase):
         # confirm that parsing the res gives us a valid biom file with
         # expected observation and sample ids
         t = parse_biom_table(res.split('\n'))
-        self.assertEqual(t.observation_ids, ('1', '2'))
-        self.assertEqual(t.sample_ids, ('a', 'b', 'c'))
+        self.assertTrue(array_equal(t.observation_ids, ('1', '2')))
+        self.assertTrue(array_equal(t.sample_ids, ('a', 'b', 'c')))
 
     def test_format_coords(self):
         """format_coords should return tab-delimited table of coords"""

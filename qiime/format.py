@@ -114,7 +114,7 @@ def format_summarize_taxa(summary, header, delimiter=';',
             observation_ids.append(delimiter.join(row[0]))
             data.append(row[1:])
 
-        table = table_factory(asarray(data), sample_ids, observation_ids,
+        table = table_factory(asarray(data), observation_ids, sample_ids,
                               constructor=Table)
         yield format_biom_table(table)
     else:
