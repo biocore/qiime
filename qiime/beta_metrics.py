@@ -131,7 +131,7 @@ def _reorder_unifrac_res(unifrac_res, sample_names_in_desired_order):
     unifrac_sample_names = unifrac_res[1]
     unifrac_sample_names_idx = dict([(n, i)
                                     for i, n in enumerate(unifrac_sample_names)])
-    if unifrac_sample_names == sample_names:
+    if numpy.array_equal(unifrac_sample_names,sample_names):
         dist_mtx = unifrac_dist_mtx
     else:
         dist_mtx = numpy.zeros((len(sample_names), len(sample_names)))
@@ -176,7 +176,7 @@ def _reorder_unifrac_res_one_sample(
     unifrac_sample_names = unifrac_res[1]
     unifrac_sample_names_idx = dict([(n, i)
                                     for i, n in enumerate(unifrac_sample_names)])
-    if unifrac_sample_names == sample_names:
+    if numpy.array_equal(unifrac_sample_names,sample_names):
         dist_arry = unifrac_dist_arry
     else:
         dist_arry = numpy.zeros(len(sample_names))

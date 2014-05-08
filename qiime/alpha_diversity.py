@@ -121,12 +121,12 @@ class AlphaDiversityCalc(FunctionWithParams):
             [(return val 1 on sample2),...]
         """
         otu_table = self.getBiomData(data_path)
-        data = otu_table.iter_sample_data()
+        data = otu_table.iter_data(axis='sample')
         if self.IsPhylogenetic:
             tree = self.getTree(tree_path)
             # build envs dict: envs = {otu_id:{sample_id:count}}
             envs = {}
-            for obs_v, obs_id, obs_md in otu_table.iter_observations():
+            for obs_v, obs_id, obs_md in otu_table.iter(axis='observation'):
                 obs = {}
                 for sample_id, v in zip(otu_table.sample_ids, obs_v):
                     obs[sample_id] = v

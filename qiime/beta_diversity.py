@@ -173,7 +173,7 @@ class BetaDiversityCalc(FunctionWithParams):
             tree = None
 
         otu_table = parse_biom_table(open(data_path, 'U'))
-        otumtx = asarray([v for v in otu_table.iter_sample_data()])
+        otumtx = asarray([v for v in otu_table.iter_data(axis='sample')])
 
         # get the 2d dist matrix from beta diversity analysis
         if self.IsPhylogenetic:
@@ -211,7 +211,7 @@ def single_file_beta(input_path, metrics, tree_path, output_dir,
 
     otu_table = parse_biom_table(open(input_path, 'U'))
 
-    otumtx = asarray([v for v in otu_table.iter_sample_data()])
+    otumtx = asarray([v for v in otu_table.iter_data(axis='sample')])
 
     if tree_path:
         tree = parse_newick(open(tree_path, 'U'),
@@ -254,7 +254,7 @@ def single_file_beta(input_path, metrics, tree_path, output_dir,
             rowids_list = rowids.split(',')
             row_dissims = []  # same order as rowids_list
             for rowid in rowids_list:
-                rowidx = otu_table.sample_ids.index(rowid)
+                rowidx = otu_table.index(rowid, axis='sample')
 
                 # first test if we can the dissim is a fn of only the pair
                 # if not, just calc the whole matrix
