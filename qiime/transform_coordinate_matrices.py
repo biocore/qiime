@@ -13,7 +13,6 @@ __email__ = "gregcaporaso@gmail.com"
 
 from random import shuffle
 from numpy import array, mean, append, zeros, asarray
-
 from skbio.maths.stats.spatial import procrustes
 from skbio.maths.stats.ordination import OrdinationResults
 
@@ -160,9 +159,9 @@ def get_procrustes_results(coords_f1, coords_f2, sample_id_map=None,
     # randomize()
     if randomize:
         coords2 = randomize(coords2)
-        randomized_coords2 = OrdinationResults(eigvals=asarray(eigvals2),
-                                               proportion_explained=asarray(pct_var2),
-                                               site=asarray(coords2),
+        randomized_coords2 = OrdinationResults(eigvals=eigvals2,
+                                               proportion_explained=pct_var2,
+                                               site=coords2,
                                                site_ids=order)
     else:
         randomized_coords2 = None

@@ -40,23 +40,23 @@ script_info['script_usage'] = [
     ("Write the transformed procrustes matrices to file",
      "",
      "%prog -i unweighted_unifrac_pc.txt,weighted_unifrac_pc.txt "
-        "-o procrustes_output"),
+     "-o procrustes_output"),
     ("Generate transformed procrustes matrices and monte carlo p-values for "
-        "two principal coordinate matrices",
+     "two principal coordinate matrices",
      "",
      "%prog -i unweighted_unifrac_pc.txt,weighted_unifrac_pc.txt "
-        "-o mc_procrustes_output_2 -r 1000"),
+     "-o mc_procrustes_output_2 -r 1000"),
     ("Generate transformed procrustes matrices and monte carlo p-values for "
-        "four principal coordinate matrices",
+     "four principal coordinate matrices",
      "",
      "%prog -i unweighted_unifrac_pc.txt,weighted_unifrac_pc.txt,euclidean_pc."
-        "txt,bray_curtis_pc.txt -o mc_procrustes_output_4 -r 1000"),
+     "txt,bray_curtis_pc.txt -o mc_procrustes_output_4 -r 1000"),
     ("Generate transformed procrustes matrices and monte carlo p-values for "
-        "three principal coordinate matrices where the sample ids must be "
-        "mapped between matrices",
+     "three principal coordinate matrices where the sample ids must be "
+     "mapped between matrices",
      "",
      "%prog -i s1_pc.txt,s2_pc.txt,s3_pc.txt -s s1_s2_map.txt,s1_s3_map.txt "
-        "-o mc_procrustes_output_3 -r 1000",
+     "-o mc_procrustes_output_3 -r 1000",
      )]
 script_info['output_description'] = ("Two transformed coordinate matrices "
                                      "corresponding to the two input "

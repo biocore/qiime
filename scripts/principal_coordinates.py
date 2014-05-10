@@ -49,7 +49,11 @@ script_info['output_description'] = ("The resulting output file consists of "
                                      " the relationships between samples. The "
                                      "bottom of the output file contains the "
                                      "eigenvalues and % variation explained "
-                                     "for each PC.")
+                                     "for each PC. For more information of the"
+                                     " file format, check the "
+                                     "OrdinationResults class in the "
+                                     "scikit-bio package "
+                                     "(http://scikit-bio.org/)")
 script_info['required_options'] = [
     make_option('-i', '--input_path', type='existing_path',
                 help='path to the input distance matrix file(s) (i.e., the '
