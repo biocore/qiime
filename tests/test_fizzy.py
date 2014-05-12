@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from __future__ import division
 import qiime.fizzy as fizzy 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 import StringIO
 import numpy as np
 
@@ -21,7 +21,9 @@ class FizzyTests(TestCase):
         self.map_file_handle = StringIO.StringIO(map_file_string)
 
     def uniform_data(self, n_observations, n_features, n_select):
-        """ Generate some uniform data to use for test_pyfeast_run """
+        """ 
+            Generate some uniform data to use for test_pyfeast_run
+        """
         xmax = 10
         xmin = 1
 
@@ -42,77 +44,110 @@ class FizzyTests(TestCase):
 
 
     def test_get_fs_methods(self):
-        """this test is going to make sure that we are only implementing feature selection methods that are in a predefined list. 
+        """
+           This test is going to make sure that we are only implementing feature 
+           selection methods that are in a predefined list. 
         """
         self.assertEqual(fizzy.get_fs_methods(), information_theoretic_methods)
 
     def test_parse_biom(self):
-        """this test is going to ensure that we can properly parse our biom file"""
-        correct_biom = ([[  1.,   0.,   1.,   6.], [  0.,   5.,   1.,  6.], [  0.,   7.,   1.,   6.]], [u'OTU0', u'OTU1', u'OTU2', u'OTU3'], [u'ID0', u'ID1', u'ID2'])
-
+        """
+            This test is going to ensure that we can properly parse our biom file
+        """
+        correct_biom = ([[  1.,   0.,   1.,   6.], [  0.,   5.,   1.,  6.], 
+            [  0.,   7.,   1.,   6.]], [u'OTU0', u'OTU1', u'OTU2', u'OTU3'], 
+            [u'ID0', u'ID1', u'ID2'])
         parsed_biom = fizzy.parse_biom(self.biom_file_handle)
         self.assertEqual(parsed_biom, correct_biom)
             
     
     def test_parse_map_file(self):
-        """this test ensures that the map file is properly parsed"""
-
+        """
+            This test ensures that the map file is properly parsed
+        """
         correct_map = [0,1.,1.]
-        parsed_map = fizzy.parse_map_file(self.map_file_handle, "Class", [u'ID0',u'ID1',u'ID2'])
+        parsed_map = fizzy.parse_map_file(self.map_file_handle, "Class", 
+            [u'ID0',u'ID1',u'ID2'])
         self.assertEqual(parsed_map, correct_map)
 
 
     def test_parse_map_invalid_column_name(self):
-        """test the functionality of the map parser."""
-        self.assertRaises(ValueError, fizzy.parse_map_file, self.map_file_handle, "Unknown", [u'ID0',u'ID1',u'ID2'])
+        """
+            Test the functionality of the map parser.
+        """
+        self.assertRaises(ValueError, fizzy.parse_map_file, self.map_file_handle, 
+            "Unknown", [u'ID0',u'ID1',u'ID2'])
 
     def test_parse_map_invalid_sample_name(self):
-        """test with invalid sample names"""
-        self.assertRaises(ValueError, fizzy.parse_map_file, self.map_file_handle, "Class", [u'ID99',u'ID1',u'ID2'])
+        """
+            Test with invalid sample names
+        """
+        self.assertRaises(ValueError, fizzy.parse_map_file, self.map_file_handle, 
+            "Class", [u'ID99',u'ID1',u'ID2'])
     
     def test_parse_map_invalid_equal_num_sample_classes(self):
-        """test with an invalid number of samples"""
-        self.assertRaises(ValueError, fizzy.parse_map_file, self.map_file_handle, "Class", [u'ID0',u'ID1'])
+        """
+            Test with an invalid number of samples
+        """
+        self.assertRaises(ValueError, fizzy.parse_map_file, self.map_file_handle, 
+            "Class", [u'ID0',u'ID1'])
 
     def test_run_pyfeast(self):
-        """assert that each of the selected features are in the appropriate range"""
+        """
+            Assert that each of the selected features are in the appropriate range
+        """
         n_select = 5
         (data, labels)  = self.uniform_data(1000, 50, n_select)
-        variable_names = range(len(labels)) # we don't need this to  be differenttest pyfeast, so just give it the same sized vector
+        variable_names = range(len(labels)) 
 
-        selected_features = fizzy.run_pyfeast(data, labels, variable_names, "MIM", n_select)
+        selected_features = fizzy.run_pyfeast(data, labels, variable_names, 
+            "MIM", n_select)
         for k in selected_features:
           self.assertTrue(k in range(n_select))
 
     def test_run_pyfeast_invalid(self):
-        """test the run_pyfeast function with an invalid algorithm name"""
-
-        self.assertRaises(AttributeError, fizzy.run_pyfeast, None, None, None, "An Invalid Name", None)
+        """
+            Test the run_pyfeast function with an invalid algorithm name
+        """
+        self.assertRaises(AttributeError, fizzy.run_pyfeast, None, None, 
+            None, "An Invalid Name", None)
 
     def test_run_feature_selection(self):
-        """test the feature selection on a toy problem"""
+        """ 
+            Test the feature selection on a toy problem
+        """
         column_name = "Class"
 
-        selected_features = fizzy.run_feature_selection(self.biom_file_handle, self.map_file_handle, column_name, n_select=2)
+        selected_features = fizzy.run_feature_selection(self.biom_file_handle, 
+            self.map_file_handle, column_name, n_select=2)
         self.assertEqual(selected_features, ['OTU0', "OTU1"])
 
     def test_zero_selection(self):
-        """assert that fizzy throws an error for zero features being selected"""
+        """
+            Assert that fizzy throws an error for zero features being selected
+        """
         (data, labels)  = self.uniform_data(500, 50, 10)
-        variable_names = range(len(labels)) # we don't need this to  be differenttest pyfeast, so just give it the same sized vector
-        self.assertRaises(ValueError, fizzy.run_pyfeast, data, labels, variable_names, "MIM", 0)
+        variable_names = range(len(labels)) 
+        self.assertRaises(ValueError, fizzy.run_pyfeast, data, labels, 
+            variable_names, "MIM", 0)
 
     def test_negative_selection(self):
-        """assert that fizzy throws an error for negative features being selected"""
+        """
+            Assert that fizzy throws an error for negative features being selected
+        """
         (data, labels)  = self.uniform_data(500, 50, 10)
-        variable_names = range(len(labels)) # we don't need this to  be differenttest pyfeast, so just give it the same sized vector
-        self.assertRaises(ValueError, fizzy.run_pyfeast, data, labels, variable_names, "MIM", -1)
+        variable_names = range(len(labels)) 
+        self.assertRaises(ValueError, fizzy.run_pyfeast, data, labels, 
+            variable_names, "MIM", -1)
      
     def test_too_large_selection(self):
-        """assert that fizzy throws an error for requesting more features than exist."""
+        """
+            Assert that fizzy throws an error for requesting more features than exist.
+        """
         (data, labels)  = self.uniform_data(500, 50, 10)
-        variable_names = range(len(labels)) # we don't need this to  be differenttest pyfeast, so just give it the same sized vector
-        self.assertRaises(ValueError, fizzy.run_pyfeast, data, labels, variable_names, "MIM", 10000)
+        variable_names = range(len(labels)) 
+        self.assertRaises(ValueError, fizzy.run_pyfeast, data, labels, 
+            variable_names, "MIM", 10000)
      
 information_theoretic_methods = ['CIFE','CMIM','CondMI', 'Condred','ICAP','JMI','MIM','MIFS','mRMR']
 map_file_string = """#SampleID\tClass\nID0\tS1\nID1\tS2\nID2\tS2\n"""
