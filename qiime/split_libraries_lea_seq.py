@@ -419,15 +419,17 @@ def select_unique_rand_bcs(rand_bcs):
         p_line = p_line + ">" + str(rand_bc) + "\n" + rand_bc + "\n"
         unique_rand_bcs[rand_bc] = 0
     fasta_tempfile.write(p_line)
-    qiime_system_call("uclust --usersort --input " + fasta_tempfile.name
-                      + " --uc " + uclust_tempfile.name + " --id " +
+    fasta_tempfile.close()
+    
+    qiime_system_call("uclust --usersort --input " + fasta_tempfile_name
+                      + " --uc " + uclust_tempfile_name + " --id " +
                       str(unique_threshold) + " --log log")
+    
     for line in uclust_tempfile:
         if re.search('^C', line):
             pieces = line.split('\t')
             unique_rand_bc = pieces[8]
             unique_rand_bcs[unique_rand_bc] = 1
-    fasta_tempfile.close()
     uclust_tempfile.close()
     os.unlink(fasta_tempfile_name)
     os.unlink(uclust_tempfile_name)
