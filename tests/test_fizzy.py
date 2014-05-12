@@ -54,18 +54,23 @@ class FizzyTests(TestCase):
         """
             This test is going to ensure that we can properly parse our biom file
         """
-        correct_biom = ([[  1.,   0.,   1.,   6.], [  0.,   5.,   1.,  6.], 
-            [  0.,   7.,   1.,   6.]], [u'OTU0', u'OTU1', u'OTU2', u'OTU3'], 
+        correct_biom = (np.array([[  1.,   0.,   1.,   6.], [  0.,   5.,   1.,  6.], 
+            [  0.,   7.,   1.,   6.]]), [u'OTU0', u'OTU1', u'OTU2', u'OTU3'], 
             [u'ID0', u'ID1', u'ID2'])
         parsed_biom = fizzy.parse_biom(self.biom_file_handle)
-        self.assertEqual(parsed_biom, correct_biom)
+        n = 0 
+        for parsed_val, correct_val in map(None, parsed_biom, correct_biom):
+            if n != 0:
+                self.assertEqual(parsed_val, correct_val)
+            else: 
+                self.assertEqual(parsed_val.tolist(), correct_val.tolist())
             
     
     def test_parse_map_file(self):
         """
             This test ensures that the map file is properly parsed
         """
-        correct_map = [0,1.,1.]
+        correct_map = [0.,1.,1.]
         parsed_map = fizzy.parse_map_file(self.map_file_handle, "Class", 
             [u'ID0',u'ID1',u'ID2'])
         self.assertEqual(parsed_map, correct_map)
