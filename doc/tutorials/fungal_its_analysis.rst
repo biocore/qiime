@@ -4,7 +4,7 @@
 Fungal ITS analysis tutorial (an IPython Notebook): open-reference OTU picking
 ==============================================================================
 
-This tutorial is provided as an IPython Notebook. See the `Fungal ITS analysis tutorial IPython Notebook <http://nbviewer.ipython.org/urls/raw.github.com/qiime/qiime/master/examples/ipynb/Fungal-ITS-analysis.ipynb>`_, and follow the steps either in your own IPython Notebook, or just using QIIME from the command line.
+This tutorial is provided as an IPython Notebook. See the `Fungal ITS analysis tutorial IPython Notebook <http://nbviewer.ipython.org/urls/github.com/qiime/qiime/raw/1.8.0/examples/ipynb/Fungal-ITS-analysis.ipynb>`_, and follow the steps either in your own IPython Notebook, or just using QIIME from the command line.
 
 
 .. warning::

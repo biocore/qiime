@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 import os
 import shutil
-import tempfile
-from cogent.util.unit_test import TestCase, main
-from cogent.app.util import ApplicationNotFoundError
-from cogent.util.misc import app_path
+
+from tempfile import mkdtemp
+from unittest import TestCase, main
+
+from skbio.app.util import ApplicationNotFoundError
 from qiime.process_sff import (
     make_flow_txt, make_fna, make_qual, prep_sffs_in_dir, convert_Ti_to_FLX,
-    adjust_sff_cycles,check_sffinfo)
+    adjust_sff_cycles, check_sffinfo)
 from cogent.parse.binary_sff import parse_binary_sff
 from qiime.util import get_qiime_project_dir, qiime_open
 
@@ -16,30 +17,36 @@ from qiime.util import get_qiime_project_dir, qiime_open
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project"
-#remember to add yourself if you make changes
-__credits__ = ["Rob Knight", "Greg Caporaso", "Kyle Bittinger","Jesse Stombaugh", "Adam Robbins-Pianka"]
+# remember to add yourself if you make changes
+__credits__ = [
+    "Rob Knight",
+    "Greg Caporaso",
+    "Kyle Bittinger",
+    "Jesse Stombaugh",
+    "Adam Robbins-Pianka"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Kyle Bittinger"
 __email__ = "kylebittinger@gmail.com"
-__status__ = "Development"
+
 
 class TopLevelTests(TestCase):
+
     """Top-level tests of functions in process_sff"""
-    
+
     def setUp(self):
         """Create temporary directory of SFF files"""
 
         # Cannot use get_qiime_project_dir() due to test errors in virtual box
         test_dir = os.path.dirname(os.path.abspath(__file__))
-        sff_original_fp =  os.path.join(test_dir, 'test_support_files',
-                                        'test.sff')
-        sff_original_gz_fp =  os.path.join(test_dir, 'test_support_files',
-                                        'test_gz.sff.gz')
+        sff_original_fp = os.path.join(test_dir, 'test_support_files',
+                                       'test.sff')
+        sff_original_gz_fp = os.path.join(test_dir, 'test_support_files',
+                                          'test_gz.sff.gz')
 
         # copy sff file to working directory
-        self.sff_dir = tempfile.mkdtemp()
-        self.gz_sff_dir = tempfile.mkdtemp()
+        self.sff_dir = mkdtemp()
+        self.gz_sff_dir = mkdtemp()
         self.sff_fp = os.path.join(self.sff_dir, 'test.sff')
         self.sff_gz_fp = os.path.join(self.gz_sff_dir, 'test_gz.sff.gz')
         shutil.copy(sff_original_fp, self.sff_fp)
@@ -66,14 +73,15 @@ class TopLevelTests(TestCase):
             'key_sequence': 'TCAG',
             'number_of_reads': 1,
             'key_length': 4,
-            }
+        }
         self.assertEqual(header, expected_header)
         self.assertEqual(header_gz, expected_header)
 
         expected_read = {
             'name_length': 14,
             'Name': 'FA6P1OK01CGMHQ',
-            'flowgram_values': [1.04, 0.0, 1.01, 0.0, 0.0, 0.95999999999999996, 0.0, 1.02],
+            'flowgram_values':
+            [1.04, 0.0, 1.01, 0.0, 0.0, 0.95999999999999996, 0.0, 1.02],
             'clip_adapter_left': 0,
             'read_header_length': 32,
             'Bases': 'TCAG',
@@ -83,7 +91,7 @@ class TopLevelTests(TestCase):
             'clip_adapter_right': 0,
             'clip_qual_right': 4,
             'quality_scores': (32, 32, 32, 32),
-            }
+        }
         reads = list(reads)
         reads_gz = list(reads_gz)
         self.assertEqual(len(reads), 1)
@@ -99,7 +107,7 @@ class TopLevelTests(TestCase):
         convert_Ti_to_FLX(self.sff_gz_fp, sff_flx_gz_fp)
         self.assertNotEqual(os.path.getsize(sff_flx_fp), 0)
         self.assertNotEqual(os.path.getsize(sff_flx_gz_fp), 0)
-    
+
     def test_make_flow_txt(self):
         """test_make_flow_txt should make flowgram file as expected"""
         flow_fp = os.path.join(self.sff_dir, 'test.txt')
@@ -149,8 +157,8 @@ class TopLevelTests(TestCase):
 
     def test_prep_sffs_in_dir_FLX(self):
         """test_prep_sffs_in_dir should convert to FLX read lengths."""
-        output_dir = tempfile.mkdtemp()
-        gz_output_dir = tempfile.mkdtemp()
+        output_dir = mkdtemp()
+        gz_output_dir = mkdtemp()
 
         prep_sffs_in_dir(
             self.sff_dir, output_dir, make_flowgram=True, convert_to_flx=True)
@@ -174,24 +182,23 @@ class TopLevelTests(TestCase):
 
         shutil.rmtree(output_dir)
         shutil.rmtree(gz_output_dir)
-    
 
     def test_prep_sffs_in_dir_no_trim(self):
         """test_prep_sffs_in_dir should use the no_trim option only if sffinfo exists."""
-        output_dir = tempfile.mkdtemp()
-        gz_output_dir = tempfile.mkdtemp()
+        output_dir = mkdtemp()
+        gz_output_dir = mkdtemp()
 
         try:
             check_sffinfo()
-            perform_test=True
+            perform_test = True
         except:
-            perform_test=False
-                                                                
+            perform_test = False
+
         if perform_test:
-            prep_sffs_in_dir(self.sff_dir, output_dir, make_flowgram=False, 
+            prep_sffs_in_dir(self.sff_dir, output_dir, make_flowgram=False,
                              convert_to_flx=False, use_sfftools=True,
                              no_trim=True)
-        
+
             fna_fp = os.path.join(output_dir, 'test.fna')
 
             self.assertEqual(open(fna_fp).read(), fna_notrim_txt)
@@ -200,14 +207,12 @@ class TopLevelTests(TestCase):
             self.assertEqual(open(qual_fp).read(), qual_notrim_txt)
 
             self.assertRaises(TypeError, "gzipped SFF", prep_sffs_in_dir,
-                              self.gz_sff_dir, gz_output_dir, make_flowgram=False, 
+                              self.gz_sff_dir, gz_output_dir, make_flowgram=False,
                               convert_to_flx=False, use_sfftools=True,
                               no_trim=True)
 
             shutil.rmtree(output_dir)
             shutil.rmtree(gz_output_dir)
-
-        
 
 
 flow_txt = """\
@@ -302,4 +307,3 @@ Quality Scores:	32	32	32	32	32	32	32	32	32	32	32	25	25	21	21	21	28	32	32	31	30	3
 
 if __name__ == '__main__':
     main()
-

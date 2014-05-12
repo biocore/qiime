@@ -6,10 +6,9 @@ __copyright__ = "Copyright 2012, The QIIME project"
 __credits__ = ["Jai Ram Rideout", "Michael Dwan", "Logan Knecht",
                "Damien Coy", "Levi McCracken", "Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
-__status__ = "Development"
 
 from os import path
 from cogent.util.misc import create_dir
@@ -23,7 +22,8 @@ from qiime.compare_distance_matrices import (run_mantel_correlogram,
 options_lookup = get_options_lookup()
 
 script_info = {}
-script_info['brief_description'] = """Computes Mantel correlation tests between sets of distance matrices"""
+script_info[
+    'brief_description'] = """Computes Mantel correlation tests between sets of distance matrices"""
 script_info['script_description'] = """
 This script compares two or more distance/dissimilarity matrices for \
 correlation by providing the Mantel, partial Mantel, and Mantel correlogram \
@@ -56,27 +56,27 @@ http://qiime.org/tutorials/distance_matrix_comparison.html.
 """
 script_info['script_usage'] = []
 script_info['script_usage'].append(("Partial Mantel",
-"Performs a partial Mantel test on two distance matrices, "
-"using a third matrix as a control. Runs 99 permutations to calculate the "
-"p-value.",
-"%prog --method partial_mantel -i "
-"weighted_unifrac_dm.txt,unweighted_unifrac_dm.txt -c PH_dm.txt "
-"-o partial_mantel_out -n 99"))
+                                    "Performs a partial Mantel test on two distance matrices, "
+                                    "using a third matrix as a control. Runs 99 permutations to calculate the "
+                                    "p-value.",
+                                    "%prog --method partial_mantel -i "
+                                    "weighted_unifrac_dm.txt,unweighted_unifrac_dm.txt -c PH_dm.txt "
+                                    "-o partial_mantel_out -n 99"))
 script_info['script_usage'].append(("Mantel",
-"Performs a Mantel test on all pairs of four distance matrices, "
-"including 999 permutations for each test.",
-"%prog --method mantel "
-"-i weighted_unifrac_dm.txt,unweighted_unifrac_dm.txt,"
-"weighted_unifrac_even100_dm.txt,unweighted_unifrac_even100_dm.txt "
-"-o mantel_out -n 999"))
+                                    "Performs a Mantel test on all pairs of four distance matrices, "
+                                    "including 999 permutations for each test.",
+                                    "%prog --method mantel "
+                                    "-i weighted_unifrac_dm.txt,unweighted_unifrac_dm.txt,"
+                                    "weighted_unifrac_even100_dm.txt,unweighted_unifrac_even100_dm.txt "
+                                    "-o mantel_out -n 999"))
 script_info['script_usage'].append(("Mantel Correlogram",
-"This example computes a Mantel correlogram on two distance matrices "
-"using 999 permutations in each Mantel test. Output is written to the "
-"mantel_correlogram_out directory.",
-"%prog --method mantel_corr -i unweighted_unifrac_dm.txt,PH_dm.txt -o "
-"mantel_correlogram_out -n 999"))
+                                    "This example computes a Mantel correlogram on two distance matrices "
+                                    "using 999 permutations in each Mantel test. Output is written to the "
+                                    "mantel_correlogram_out directory.",
+                                    "%prog --method mantel_corr -i unweighted_unifrac_dm.txt,PH_dm.txt -o "
+                                    "mantel_correlogram_out -n 999"))
 
-script_info['output_description']= """
+script_info['output_description'] = """
 Mantel: One file is created containing the Mantel 'r' statistic and p-value.
 
 Partial Mantel: One file is created in the output directory, which contains \
@@ -90,60 +90,60 @@ Mantel statistics and p-values, etc. and an image of the correlogram plot.
 script_info['required_options'] = [
     # All methods use these
     make_option('--method',
-        help='matrix correlation method to use. Valid options: '
-        '[mantel, partial_mantel, mantel_corr]',
-        type='choice',
-        choices=['mantel', 'partial_mantel', 'mantel_corr']),
-    make_option('-i','--input_dms', type='existing_filepaths',
-        help='the input distance matrices, comma-separated. WARNING: Only '
-        'symmetric, hollow distance matrices may be used as input. Asymmetric '
-        'distance matrices, such as those obtained by the UniFrac Gain metric '
-        '(i.e. beta_diversity.py -m unifrac_g), should not be used as input'),
+                help='matrix correlation method to use. Valid options: '
+                '[mantel, partial_mantel, mantel_corr]',
+                type='choice',
+                choices=['mantel', 'partial_mantel', 'mantel_corr']),
+    make_option('-i', '--input_dms', type='existing_filepaths',
+                help='the input distance matrices, comma-separated. WARNING: Only '
+                'symmetric, hollow distance matrices may be used as input. Asymmetric '
+                'distance matrices, such as those obtained by the UniFrac Gain metric '
+                '(i.e. beta_diversity.py -m unifrac_g), should not be used as input'),
     options_lookup['output_dir']
 ]
 script_info['optional_options'] = [
     # All methods use these
-    make_option('-n','--num_permutations',
-        help='the number of permutations to perform when calculating the '
-        'p-value [default: %default]', default=100, type='int'),
-     make_option('-s','--sample_id_map_fp', type='existing_filepath',
-        help='Map of original sample ids to new sample ids [default: '
-        '%default]', default=None),
+    make_option('-n', '--num_permutations',
+                help='the number of permutations to perform when calculating the '
+                'p-value [default: %default]', default=100, type='int'),
+    make_option('-s', '--sample_id_map_fp', type='existing_filepath',
+                help='Map of original sample ids to new sample ids [default: '
+                '%default]', default=None),
     # Standard Mantel specific, i.e., method == mantel
-    make_option('-t','--tail_type',
-        help='the type of tail test to perform when calculating the p-value. '
-        'Valid options: [two sided, less, greater] Two sided is a two-tailed '
-        'test, while less tests for r statistics less than the observed r '
-        'statistic, and greater tests for r statistics greater than the '
-        'observed r statistic. Only applies when method is mantel [default: '
-        '%default]', default='two sided', type='choice',
-        choices=['two sided', 'greater', 'less']),
+    make_option('-t', '--tail_type',
+                help='the type of tail test to perform when calculating the p-value. '
+                'Valid options: [two sided, less, greater] Two sided is a two-tailed '
+                'test, while less tests for r statistics less than the observed r '
+                'statistic, and greater tests for r statistics greater than the '
+                'observed r statistic. Only applies when method is mantel [default: '
+                '%default]', default='two sided', type='choice',
+                choices=['two sided', 'greater', 'less']),
     # Mantel Correlogram specific, i.e., method == mantel_corr
     make_option('-a', '--alpha',
-        help='the value of alpha to use when denoting significance in the '
-        'correlogram plot. Only applies when method is mantel_corr',
-        default=0.05, type='float'),
+                help='the value of alpha to use when denoting significance in the '
+                'correlogram plot. Only applies when method is mantel_corr',
+                default=0.05, type='float'),
     make_option('-g', '--image_type',
-        help='the type of image to produce. Valid options: [png, svg, pdf]. '
-        'Only applies when method is mantel_corr [default: %default]',
-        default='pdf', type='choice', choices=['pdf', 'png', 'svg']),
+                help='the type of image to produce. Valid options: [png, svg, pdf]. '
+                'Only applies when method is mantel_corr [default: %default]',
+                default='pdf', type='choice', choices=['pdf', 'png', 'svg']),
     make_option('--variable_size_distance_classes', action='store_true',
-        help='if this option is supplied, each distance class will have an '
-        'equal number of distances (i.e. pairwise comparisons), which may '
-        'result in variable sizes of distance classes (i.e. each distance '
-        'class may span a different range of distances). If this option is '
-        'not supplied, each distance class will have the same width, but may '
-        'contain varying numbers of pairwise distances in each class. This '
-        'option can help maintain statistical power if there are large '
-        'differences in the number of distances in each class. See '
-        'Darcy et al. 2011 (PLoS ONE) for an example of this type of '
-        'correlogram. Only applies when method is mantel_corr '
-        '[default: %default]', default=False),
+                help='if this option is supplied, each distance class will have an '
+                'equal number of distances (i.e. pairwise comparisons), which may '
+                'result in variable sizes of distance classes (i.e. each distance '
+                'class may span a different range of distances). If this option is '
+                'not supplied, each distance class will have the same width, but may '
+                'contain varying numbers of pairwise distances in each class. This '
+                'option can help maintain statistical power if there are large '
+                'differences in the number of distances in each class. See '
+                'Darcy et al. 2011 (PLoS ONE) for an example of this type of '
+                'correlogram. Only applies when method is mantel_corr '
+                '[default: %default]', default=False),
     # Partial Mantel specific, i.e., method == partial_mantel
     make_option('-c', '--control_dm',
-        help='the control matrix. Only applies (and is *required*) when '
-        'method is partial_mantel. [default: %default]', default=None,
-        type='existing_filepath')
+                help='the control matrix. Only applies (and is *required*) when '
+                'method is partial_mantel. [default: %default]', default=None,
+                type='existing_filepath')
 ]
 script_info['version'] = __version__
 
@@ -155,11 +155,12 @@ comment_mantel_pmantel = """\
 """
 
 comment_corr = comment_mantel_pmantel[:-1] + \
-"""
+    """
 # Distance classes with values of None were in the second half of the distance
 # classes and not all samples could be included in the distance class, so
 # calculations were not performed.
 """
+
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
@@ -173,8 +174,8 @@ def main():
                             "specified with the -o option.")
     sample_id_map = None
     if opts.sample_id_map_fp:
-        sample_id_map = dict([(k, v[0]) \
-        for k,v in fields_to_dict(open(opts.sample_id_map_fp, "U")).items()])
+        sample_id_map = dict([(k, v[0])
+                              for k, v in fields_to_dict(open(opts.sample_id_map_fp, "U")).items()])
     input_dm_fps = opts.input_dms
     distmats = [parse_distmat(open(dm_fp, 'U')) for dm_fp in input_dm_fps]
 

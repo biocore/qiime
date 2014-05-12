@@ -6,26 +6,23 @@ __copyright__ = "Copyright 2012, The QIIME project"
 __credits__ = ["Jai Ram Rideout", "Michael Dwan", "Logan Knecht",
                "Damien Coy", "Levi McCracken"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
-__status__ = "Development"
-
-"""Contains functions used in the compare_categories.py script."""
 
 from os.path import join
 from types import ListType
 
+from skbio.core.distance import DistanceMatrix
+
 from qiime.format import (format_anosim_results, format_best_results,
                           format_permanova_results)
 from qiime.stats import Anosim, Best, Permanova
-from qiime.util import (get_qiime_temp_dir, DistanceMatrix, MetadataMap,
-                        RExecutor)
+from qiime.util import get_qiime_temp_dir, MetadataMap, RExecutor
 
-# Map method name to result-formatting function. The R methods will not have
-# one.
 methods = ['adonis', 'anosim', 'best', 'morans_i', 'mrpp', 'permanova',
            'permdisp', 'dbrda']
+
 
 def compare_categories(dm_fp, map_fp, method, categories, num_perms, out_dir):
     """Runs the specified statistical method using the category of interest.
@@ -56,29 +53,32 @@ def compare_categories(dm_fp, map_fp, method, categories, num_perms, out_dir):
     # Special case: we do not allow SampleID as it is not a category, neither
     # in data structure representation nor in terms of a statistical test (no
     # groups are formed since all entries are unique IDs).
-    for category in categories:
-        if category == 'SampleID':
-            raise ValueError("Cannot use SampleID as a category because it is "
-                    "a unique identifier for each sample, and thus does not "
-                    "create groups of samples (nor can it be used as a "
-                    "numeric category in Moran's I or BEST analyses). Please "
-                    "use a different metadata column to perform statistical "
-                    "tests on.")
+    if 'SampleID' in categories:
+        raise ValueError("Cannot use SampleID as a category because it is a "
+                         "unique identifier for each sample, and thus does "
+                         "not create groups of samples (nor can it be used as "
+                         "a numeric category in Moran's I or BEST analyses). "
+                         "Please use a different metadata column to perform "
+                         "statistical tests on.")
 
     # Parse the mapping file and distance matrix.
-    md_map = MetadataMap.parseMetadataMap(open(map_fp, 'U'))
-    dm = DistanceMatrix.parseDistanceMatrix(open(dm_fp, 'U'))
+    with open(map_fp, 'U') as map_f:
+        md_map = MetadataMap.parseMetadataMap(map_f)
+
+    with open(dm_fp, 'U') as dm_f:
+        dm = DistanceMatrix.from_file(dm_f)
+
+    # Remove any samples from the mapping file that aren't in the distance
+    # matrix (important for validation checks). Use strict=True so that an
+    # error is raised if the distance matrix contains any samples that aren't
+    # in the mapping file.
+    md_map.filterSamples(dm.ids, strict=True)
 
     # Run the specified statistical method.
     if method in ['adonis', 'morans_i', 'mrpp', 'permdisp', 'dbrda']:
         # These methods are run in R. Input validation must be done here before
         # running the R commands. The pure-Python implementations perform all
         # validation in the classes in the stats module.
-
-        # Make sure the input distance matrix is symmetric and hollow.
-        if not dm.is_symmetric_and_hollow():
-            raise ValueError("The distance matrix must be symmetric and "
-                             "hollow.")
 
         # Check to make sure all categories passed in are in mapping file and
         # are not all the same value.

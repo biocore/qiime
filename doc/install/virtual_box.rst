@@ -9,6 +9,8 @@ Because of the 'pipeline' nature of QIIME, there are many external dependencies 
 
 The QIIME Virtual Box is a virtual machine based on Ubuntu Linux which comes pre-packaged with QIIME's dependencies. This is the fastest way to get up-and-running with QIIME, and is useful for small analyses (approximately up to a full 454 run); and testing QIIME to determine if it meets your needs before investing time in installing it, for example, in your cluster environment.
 
+It is strongly recommended that your system have 8 or more gigabytes of memory to use the virtual box with the newest releases of reference databases (e.g. Greengenes, UNITE).
+
 Installing the QIIME Virtual Box
 ================================
 1. Download and install the `VirtualBox`_ (VB) version for your machine.
@@ -30,11 +32,6 @@ Installing the QIIME Virtual Box
 VirtualBox help video
 =====================
 A video illustrating these steps can be found `here <http://www.youtube.com/watch?v=1jYupkquaME>`_.
-
-QIIME VB and CloVR
-==================
-
-As of the QIIME 1.2.0 release, the QIIME VB and EC2 images are built using `CloVR`_.  CloVR provides a platform for building portable virtual machines. The platform automates builds in formats compatible with VirtualBox, VMware, and Clouds, including Amazon EC2.  The `CloVR developer <http://clovr.org/developers>`_ pages have more information on the platform and build process.
 
 Limitations of the QIIME Virtual Box
 ====================================
@@ -85,10 +82,10 @@ The computer automatically restarts. If you cannot enable Virtualization Technol
 These instructions were extracted directly from HPs website: `link 
 <http://h10025.www1.hp.com/ewfrf/wc/document?docname=c01959244&cc=us&lc=en&dlc=en&product=3744198>`_.
 
-If this doesn't work, you might need to instead hit F9 to enter the BIOS. See this `forum discussion <http://forums11.itrc.hp.com/service/forums/questionanswer.do?admit=109447626+1279028363362+28353475&threadId=1120296>`_.
+If this doesn't work, you might need to instead hit F9 to enter the BIOS.
 
 Briefly, on booting the system, hit F9. Enter Advanced Options -> Processor Options -> Intel(R) Virtualization Technology and then hit Enable.
 
 .. _CloVR: http://clovr.org
-.. _64-bit QIIME Virtual Box: ftp://thebeast.colorado.edu/pub/QIIME-v1.7.0-dependencies/QIIME-1.7.0-amd64.vdi.gz
+.. _64-bit QIIME Virtual Box: ftp://thebeast.colorado.edu/pub/qiime-release-VMs/QIIME-1.8.0-amd64.vdi.gz
 .. _VirtualBox: http://www.virtualbox.org/wiki/Downloads

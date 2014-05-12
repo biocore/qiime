@@ -6,22 +6,20 @@ __copyright__ = "Copyright 2012, The QIIME project"
 __credits__ = ["Jai Ram Rideout", "Michael Dwan", "Logan Knecht",
                "Damien Coy", "Levi McCracken"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
-__status__ = "Development"
-
-"""Test suite for the compare_distance_matrices.py module."""
 
 from string import digits
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from qiime.parse import parse_distmat
 from qiime.compare_distance_matrices import (run_mantel_correlogram,
                                              run_mantel_test)
 
+
 class CompareDistanceMatricesTests(TestCase):
     """Tests for the compare_distance_matrices.py module.
-    
+
     For these tests, we are interested in the structure of the strings that are
     constructed by the functions in compare_distance_matrices.py.  Thus, we
     simply remove all numbers from the strings so that we don't have to parse
@@ -44,7 +42,6 @@ class CompareDistanceMatricesTests(TestCase):
             text - the string to remove digits from
         """
         return text.translate(None, digits)
-    
 
     def setUp(self):
         """Define some distance matrices that will be used by the tests."""
@@ -74,8 +71,8 @@ class CompareDistanceMatricesTests(TestCase):
         self.comment = "# A sample comment.\n"
         self.alpha = 0.01
         self.tail_type = 'greater'
-        self.sample_id_map = {'z1':'s1', 'z2':'s2', 'z3':'s3', 's1':'s1',
-                              's2':'s2', 's3':'s3'}
+        self.sample_id_map = {'z1': 's1', 'z2': 's2', 'z3': 's3', 's1': 's1',
+                              's2': 's2', 's3': 's3'}
 
     def test_run_mantel_test(self):
         """Test running mantel test on two distmats."""
@@ -83,8 +80,9 @@ class CompareDistanceMatricesTests(TestCase):
               'statistic\tp-value\tNumber of permutations\tTail type\n' + \
               'foo.txt\tbar.txt\t\t.\t.\t\tgreater\n'
         obs = run_mantel_test('mantel', [self.fp1, self.fp2],
-                [self.dm1, self.dm2], self.num_perms, self.tail_type,
-                self.comment, self.alpha)
+                              [self.dm1,
+                                  self.dm2], self.num_perms, self.tail_type,
+                              self.comment, self.alpha)
         self.assertEqual(self.remove_nums(obs), exp)
 
     def test_run_mantel_test_multiple(self):
@@ -94,8 +92,9 @@ class CompareDistanceMatricesTests(TestCase):
               'foo.txt\tbar.txt\t\t.\t.\t\tgreater\nfoo.txt\tbaz.txt\t\t-.' + \
               '\t.\t\tgreater\nbar.txt\tbaz.txt\t\t-.\t.\t\tgreater\n'
         obs = run_mantel_test('mantel', [self.fp1, self.fp2, self.fp3],
-                [self.dm1, self.dm2, self.dm3], self.num_perms, self.tail_type,
-                self.comment, self.alpha)
+                              [self.dm1, self.dm2,
+                                  self.dm3], self.num_perms, self.tail_type,
+                              self.comment, self.alpha)
         self.assertEqual(self.remove_nums(obs), exp)
 
     def test_run_mantel_test_sample_id_map(self):
@@ -104,18 +103,18 @@ class CompareDistanceMatricesTests(TestCase):
               'statistic\tp-value\tNumber of permutations\tTail type\n' + \
               'foo.txt\tbar.txt\t\t.\t.\t\tless\n'
         obs = run_mantel_test('mantel', [self.fp1, self.fp2],
-                [self.dm3, self.dm4], self.num_perms, 'less',
-                self.comment, 0.5, sample_id_map=self.sample_id_map)
+                              [self.dm3, self.dm4], self.num_perms, 'less',
+                              self.comment, 0.5, sample_id_map=self.sample_id_map)
         self.assertEqual(self.remove_nums(obs), exp)
 
     def test_run_mantel_test_too_small(self):
         """Test running mantel test on two distmats that are incompatible."""
         exp = '# A sample comment.\nDM\tDM\tNumber of entries\tMantel r ' + \
-        'statistic\tp-value\tNumber of permutations\tTail type\nfoo.txt\t' + \
-        'bar.txt\t\tToo few samples\n'
+            'statistic\tp-value\tNumber of permutations\tTail type\nfoo.txt\t' + \
+            'bar.txt\t\tToo few samples\n'
         obs = run_mantel_test('mantel', [self.fp1, self.fp2],
-                [self.dm3, self.dm4], self.num_perms, 'less',
-                self.comment, 0.5)
+                              [self.dm3, self.dm4], self.num_perms, 'less',
+                              self.comment, 0.5)
         self.assertEqual(self.remove_nums(obs), exp)
 
     def test_run_mantel_test_single_matrix(self):
@@ -123,26 +122,30 @@ class CompareDistanceMatricesTests(TestCase):
         exp = '# A sample comment.\nDM\tDM\tNumber of entries\tMantel r ' + \
               'statistic\tp-value\tNumber of permutations\tTail type\n'
         obs = run_mantel_test('mantel', [self.fp1], [self.dm3], self.num_perms,
-                'less', self.comment, 0.5)
+                              'less', self.comment, 0.5)
         self.assertEqual(self.remove_nums(obs), exp)
 
     def test_run_mantel_test_invaid_input(self):
         """Test running mantel test on invalid input."""
         self.assertRaises(ValueError, run_mantel_test, 'mantel',
-                [self.fp1, self.fp2], [self.dm1], self.num_perms, 'two sided',
-                None, self.alpha)
+                          [self.fp1,
+                              self.fp2], [
+                              self.dm1], self.num_perms, 'two sided',
+                          None, self.alpha)
 
     def test_run_mantel_test_bad_method(self):
         """Test running mantel test using a bad method."""
         self.assertRaises(ValueError, run_mantel_test, 'foo',
-                [self.fp1, self.fp2], [self.dm1, self.dm2], self.num_perms,
-                'two sided', None, self.alpha)
+                          [self.fp1, self.fp2], [self.dm1,
+                                                 self.dm2], self.num_perms,
+                          'two sided', None, self.alpha)
 
     def test_run_mantel_test_no_cdm(self):
         """Test running partial mantel test with no control dm."""
         self.assertRaises(ValueError, run_mantel_test, 'partial_mantel',
-                [self.fp1, self.fp2], [self.dm1, self.dm2], self.num_perms,
-                'two sided', self.comment, self.alpha)
+                          [self.fp1, self.fp2], [self.dm1,
+                                                 self.dm2], self.num_perms,
+                          'two sided', self.comment, self.alpha)
 
     def test_run_mantel_test_partial_mantel(self):
         """Test running partial mantel test with two dms and a control dm."""
@@ -150,8 +153,9 @@ class CompareDistanceMatricesTests(TestCase):
               'Mantel r statistic\tp-value\tNumber of permutations\tTail ' + \
               'type\nfoo.txt\tbar.txt\tbaz.txt\t\t.\t.\t\tgreater\n'
         obs = run_mantel_test('partial_mantel', [self.fp1, self.fp2],
-                [self.dm1, self.dm2], self.num_perms, self.tail_type,
-                self.comment, self.fp3, self.dm3)
+                              [self.dm1,
+                                  self.dm2], self.num_perms, self.tail_type,
+                              self.comment, self.fp3, self.dm3)
         self.assertEqual(self.remove_nums(obs), exp)
 
     def test_run_mantel_test_partial_mantel_too_small(self):
@@ -160,8 +164,9 @@ class CompareDistanceMatricesTests(TestCase):
               'Mantel r statistic\tp-value\tNumber of permutations\t' + \
               'Tail type\nfoo.txt\tbar.txt\tbaz.txt\t\tToo few samples\n'
         obs = run_mantel_test('partial_mantel', [self.fp1, self.fp2],
-                [self.dm1, self.dm2], self.num_perms, self.tail_type,
-                self.comment, self.fp3, self.dm4)
+                              [self.dm1,
+                                  self.dm2], self.num_perms, self.tail_type,
+                              self.comment, self.fp3, self.dm4)
         self.assertEqual(self.remove_nums(obs), exp)
 
     def test_run_mantel_test_partial_mantel_sample_id_map(self):
@@ -170,35 +175,36 @@ class CompareDistanceMatricesTests(TestCase):
               ' r statistic\tp-value\tNumber of permutations\tTail type\n' + \
               'foo.txt\tbar.txt\tbaz.txt\t\t.\t.\t\tgreater\n'
         obs = run_mantel_test('partial_mantel', [self.fp1, self.fp2],
-                [self.dm1, self.dm2], self.num_perms, self.tail_type,
-                self.comment, self.fp3, self.dm4, self.sample_id_map)
+                              [self.dm1,
+                                  self.dm2], self.num_perms, self.tail_type,
+                              self.comment, self.fp3, self.dm4, self.sample_id_map)
         self.assertEqual(self.remove_nums(obs), exp)
 
     def test_run_mantel_correlogram(self):
         """Test running mantel correlogram on two distmats."""
         exp = ('# A sample comment.\nDM\tDM\tNumber of entries\tNumber of '
-        'permutations\tClass index\tNumber of distances\tMantel r statistic\t'
-        'p-value\tp-value (Bonferroni corrected)\tTail type\nfoo.txt\tbar.txt'
-        '\t\t\t.\t\t.\t.\t.\tgreater\n\t\t\t\t.\t\tNone\tNone\tNone\tNone\n\t'
-        '\t\t\t.\t\tNone\tNone\tNone\tNone\n',
-        ['foo.txt_AND_bar.txt_mantel_correlogram.'], 1)
+               'permutations\tClass index\tNumber of distances\tMantel r statistic\t'
+               'p-value\tp-value (Bonferroni corrected)\tTail type\nfoo.txt\tbar.txt'
+               '\t\t\t.\t\t.\t.\t.\tgreater\n\t\t\t\t.\t\tNone\tNone\tNone\tNone\n\t'
+               '\t\t\t.\t\tNone\tNone\tNone\tNone\n',
+               ['foo.txt_AND_bar.txt_mantel_correlogram.'], 1)
         obs = run_mantel_correlogram([self.fp1, self.fp2],
-                [self.dm1, self.dm2], self.num_perms, self.comment, self.alpha)
+                                     [self.dm1, self.dm2], self.num_perms, self.comment, self.alpha)
         self.assertEqual((self.remove_nums(obs[0]), obs[1], len(obs[2])), exp)
 
     def test_run_mantel_correlogram_multiple(self):
         """Test running mantel correlogram on three distmats."""
         exp = ('# A sample comment.\nDM\tDM\tNumber of entries\tNumber of '
-        'permutations\tClass index\tNumber of distances\tMantel r statistic\t'
-        'p-value\tp-value (Bonferroni corrected)\tTail type\nfoo.txt\tbar.txt'
-        '\t\t\t.\t\t.\t.\t.\tgreater\n\t\t\t\t.\t\tNone\tNone\tNone\tNone\n\t'
-        '\t\t\t.\t\tNone\tNone\tNone\tNone\nfoo.txt\tbaz.txt\t\t\t.\t\t-.\t.\t'
-        '.\tless\n\t\t\t\t.\t\tNone\tNone\tNone\tNone\n\t\t\t\t.\t\tNone\tNone'
-        '\tNone\tNone\nbar.txt\tbaz.txt\t\t\t.\t\t-.\t.\t.\tless\n\t\t\t\t.\t'
-        '\tNone\tNone\tNone\tNone\n\t\t\t\t.\t\tNone\tNone\tNone\tNone\n',
-        ['foo.txt_AND_bar.txt_mantel_correlogram.',
-        'foo.txt_AND_baz.txt_mantel_correlogram.',
-        'bar.txt_AND_baz.txt_mantel_correlogram.'], 3)
+               'permutations\tClass index\tNumber of distances\tMantel r statistic\t'
+               'p-value\tp-value (Bonferroni corrected)\tTail type\nfoo.txt\tbar.txt'
+               '\t\t\t.\t\t.\t.\t.\tgreater\n\t\t\t\t.\t\tNone\tNone\tNone\tNone\n\t'
+               '\t\t\t.\t\tNone\tNone\tNone\tNone\nfoo.txt\tbaz.txt\t\t\t.\t\t-.\t.\t'
+               '.\tless\n\t\t\t\t.\t\tNone\tNone\tNone\tNone\n\t\t\t\t.\t\tNone\tNone'
+               '\tNone\tNone\nbar.txt\tbaz.txt\t\t\t.\t\t-.\t.\t.\tless\n\t\t\t\t.\t'
+               '\tNone\tNone\tNone\tNone\n\t\t\t\t.\t\tNone\tNone\tNone\tNone\n',
+               ['foo.txt_AND_bar.txt_mantel_correlogram.',
+                'foo.txt_AND_baz.txt_mantel_correlogram.',
+                'bar.txt_AND_baz.txt_mantel_correlogram.'], 3)
         obs = run_mantel_correlogram(self.fps, self.distmats, self.num_perms,
                                      self.comment, self.alpha)
         self.assertEqual((self.remove_nums(obs[0]), obs[1], len(obs[2])), exp)
@@ -212,45 +218,47 @@ class CompareDistanceMatricesTests(TestCase):
                'None\tNone\tNone\tNone\n\t\t\t\t.\t\tNone\tNone\tNone\tNone\n',
                ['foo.txt_AND_bar.txt_mantel_correlogram.'], 1)
         obs = run_mantel_correlogram([self.fp1, self.fp2],
-                [self.dm3, self.dm4], self.num_perms, self.comment, self.alpha,
-                sample_id_map=self.sample_id_map)
+                                     [self.dm3,
+                                         self.dm4], self.num_perms, self.comment, self.alpha,
+                                     sample_id_map=self.sample_id_map)
         self.assertEqual((self.remove_nums(obs[0]), obs[1], len(obs[2])), exp)
 
     def test_run_mantel_correlogram_too_small(self):
         """Test running mantel correlogram on two incompatible dms."""
         exp = ('# A sample comment.\nDM\tDM\tNumber of entries\tNumber of '
-        'permutations\tClass index\tNumber of distances\tMantel r statistic\t'
-        'p-value\tp-value (Bonferroni corrected)\tTail type\nfoo.txt\tbaz.txt'
-        '\t\tToo few samples\n', [], 0)
+               'permutations\tClass index\tNumber of distances\tMantel r statistic\t'
+               'p-value\tp-value (Bonferroni corrected)\tTail type\nfoo.txt\tbaz.txt'
+               '\t\tToo few samples\n', [], 0)
         obs = run_mantel_correlogram([self.fp1, self.fp3],
-                [self.dm2, self.dm4], self.num_perms, self.comment, self.alpha)
+                                     [self.dm2, self.dm4], self.num_perms, self.comment, self.alpha)
         self.assertEqual((self.remove_nums(obs[0]), obs[1], len(obs[2])), exp)
 
     def test_run_mantel_correlogram_single_matrix(self):
         """Test running mantel correlogram on one dm."""
         exp = ('# A sample comment.\nDM\tDM\tNumber of entries\tNumber of '
-        'permutations\tClass index\tNumber of distances\tMantel r statistic\t'
-        'p-value\tp-value (Bonferroni corrected)\tTail type\n', [], 0)
+               'permutations\tClass index\tNumber of distances\tMantel r statistic\t'
+               'p-value\tp-value (Bonferroni corrected)\tTail type\n', [], 0)
         obs = run_mantel_correlogram([self.fp1], [self.dm1], self.num_perms,
-                self.comment, self.alpha, sample_id_map=self.sample_id_map)
+                                     self.comment, self.alpha, sample_id_map=self.sample_id_map)
         self.assertEqual((self.remove_nums(obs[0]), obs[1], len(obs[2])), exp)
 
     def test_run_mantel_correlogram_no_comment(self):
         """Test running mantel correlogram without supplying a comment."""
         exp = ('DM\tDM\tNumber of entries\tNumber of permutations\tClass index'
-        '\tNumber of distances\tMantel r statistic\tp-value\tp-value '
-        '(Bonferroni corrected)\tTail type\nfoo.txt\tbar.txt\t\t\t.\t\t-.\t.'
-        '\t.\tless\n\t\t\t\t.\t\tNone\tNone\tNone\tNone\n\t\t\t\t.\t\tNone\t'
-        'None\tNone\tNone\n', ['foo.txt_AND_bar.txt_mantel_correlogram.'], 1)
+               '\tNumber of distances\tMantel r statistic\tp-value\tp-value '
+               '(Bonferroni corrected)\tTail type\nfoo.txt\tbar.txt\t\t\t.\t\t-.\t.'
+               '\t.\tless\n\t\t\t\t.\t\tNone\tNone\tNone\tNone\n\t\t\t\t.\t\tNone\t'
+               'None\tNone\tNone\n', ['foo.txt_AND_bar.txt_mantel_correlogram.'], 1)
         obs = run_mantel_correlogram([self.fp1, self.fp2],
-                [self.dm1, self.dm3], self.num_perms, None, self.alpha,
-                sample_id_map=self.sample_id_map)
+                                     [self.dm1,
+                                         self.dm3], self.num_perms, None, self.alpha,
+                                     sample_id_map=self.sample_id_map)
         self.assertEqual((self.remove_nums(obs[0]), obs[1], len(obs[2])), exp)
 
     def test_run_mantel_correlogram_invaid_input(self):
         """Test running mantel correlogram on invalid input."""
         self.assertRaises(ValueError, run_mantel_correlogram, [self.fp1],
-                [self.dm1, self.dm3], self.num_perms, None, self.alpha)
+                          [self.dm1, self.dm3], self.num_perms, None, self.alpha)
 
 
 if __name__ == "__main__":

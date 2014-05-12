@@ -5,20 +5,25 @@ __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2012, The QIIME project"
 __credits__ = ["Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
-__status__ = "Development"
 
 """Test suite for the make_distance_boxplots.py module."""
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
+
 from matplotlib.figure import Figure
+from numpy.testing import assert_almost_equal
+
 from qiime.make_distance_boxplots import (_cast_y_axis_extrema,
-        _color_field_states, make_distance_boxplots,
-        _sort_distributions_by_median)
+                                          _color_field_states,
+                                          make_distance_boxplots,
+                                          _sort_distributions)
+
 
 class MakeDistanceBoxplotsTests(TestCase):
+
     """Tests for the make_distance_boxplots.py module."""
 
     def setUp(self):
@@ -30,19 +35,19 @@ class MakeDistanceBoxplotsTests(TestCase):
     def test_cast_y_axis_extrema(self):
         """Test correctly assigns colors to a field based on another field."""
         obs = _cast_y_axis_extrema(1.0)
-        self.assertFloatEqual(obs, 1.0)
+        assert_almost_equal(obs, 1.0)
 
         obs = _cast_y_axis_extrema(1)
-        self.assertFloatEqual(obs, 1.0)
+        assert_almost_equal(obs, 1.0)
 
         obs = _cast_y_axis_extrema('1.0')
-        self.assertFloatEqual(obs, 1.0)
+        assert_almost_equal(obs, 1.0)
 
         obs = _cast_y_axis_extrema('1')
-        self.assertFloatEqual(obs, 1.0)
+        assert_almost_equal(obs, 1.0)
 
         obs = _cast_y_axis_extrema('auto')
-        self.assertFloatEqual(obs, None)
+        self.assertIsNone(obs)
 
     def test_cast_y_axis_extrema_invalid_input(self):
         """Test correctly raises an error on bad input."""
@@ -52,53 +57,59 @@ class MakeDistanceBoxplotsTests(TestCase):
         """Test correctly assigns colors to a field based on another field."""
         # All sample IDs and field states.
         exp = ([(1.0, 0.0, 0.0), (0.0, 0.0, 1.0), (1.0, 0.0, 0.0)],
-                {'y': (0.0, 0.0, 1.0), 'x': (1.0, 0.0, 0.0)})
+               {'y': (0.0, 0.0, 1.0), 'x': (1.0, 0.0, 0.0)})
         obs = _color_field_states(self.map_f, ['1', '2', '3', '4', '5', '6'],
-                'Foo', ['a', 'b', 'c'], 'Bar')
-        self.assertFloatEqual(obs, exp)
+                                  'Foo', ['a', 'b', 'c'], 'Bar')
+        self.assertEqual(exp[0], obs[0])
+        assert_almost_equal(obs[1]['x'], exp[1]['x'])
+        assert_almost_equal(obs[1]['y'], exp[1]['y'])
 
         # Subset of sample IDs and field states.
         exp = ([(1.0, 0.0, 0.0)], {'x': (1.0, 0.0, 0.0)})
         obs = _color_field_states(self.map_f, ['1', '2'], 'Foo', ['a'], 'Bar')
-        self.assertFloatEqual(obs, exp)
+        self.assertEqual(exp[0], obs[0])
+        assert_almost_equal(obs[1]['x'], exp[1]['x'])
 
         # Color field by itself (useless but still allowed).
         exp = ([(1.0, 0.0, 0.0), (0.0, 0.0, 1.0), (0.9490196078431372,
                 0.45098039215686275, 0.01568627450980392)], {'a':
-                (1.0, 0.0, 0.0),
-                'c': (0.9490196078431372, 0.45098039215686275,
-                0.01568627450980392), 'b': (0.0, 0.0, 1.0)})
+                                                             (1.0, 0.0, 0.0),
+                                                             'c': (0.9490196078431372, 0.45098039215686275,
+                                                                   0.01568627450980392), 'b': (0.0, 0.0, 1.0)})
         obs = _color_field_states(self.map_f, ['1', '2', '3', '4', '5', '6'],
-                'Foo', ['a', 'b', 'c'], 'Foo')
-        self.assertFloatEqual(obs, exp)
+                                  'Foo', ['a', 'b', 'c'], 'Foo')
+        self.assertEqual(exp[0], obs[0])
+        assert_almost_equal(obs[1]['a'], exp[1]['a'])
+        assert_almost_equal(obs[1]['b'], exp[1]['b'])
+        assert_almost_equal(obs[1]['c'], exp[1]['c'])
 
     def test_color_field_states_invalid_input(self):
         """Test correctly raises error on invalid input."""
         # Field to color not in mapping file.
         self.assertRaises(ValueError, _color_field_states, self.map_f,
-                ['1', '2', '3', '4', '5'], 'Fooz', ['a', 'b'], 'Bar')
+                          ['1', '2', '3', '4', '5'], 'Fooz', ['a', 'b'], 'Bar')
 
         # Field to color by not in mapping file.
         self.assertRaises(ValueError, _color_field_states, self.map_f,
-                ['1', '2', '3', '4', '5'], 'Foo', ['a', 'b'], 'Barz')
+                          ['1', '2', '3', '4', '5'], 'Foo', ['a', 'b'], 'Barz')
 
         # Field states are not found in field (due to subset of sample IDs).
         self.assertRaises(ValueError, _color_field_states, self.map_f,
-                ['1', '2', '3', '4', '5'], 'Foo', ['a', 'c'], 'Bar')
+                          ['1', '2', '3', '4', '5'], 'Foo', ['a', 'c'], 'Bar')
 
         # Field states are not found in field (not in column at all).
         self.assertRaises(ValueError, _color_field_states, self.map_f,
-                ['1', '2', '3', '4', '5', '6'], 'Foo', ['a', 'c', 'z'], 'Bar')
+                          ['1', '2', '3', '4', '5', '6'], 'Foo', ['a', 'c', 'z'], 'Bar')
 
         # Not enough colors.
         samp_ids = [str(i) for i in range(1, 31)]
         self.assertRaises(ValueError, _color_field_states,
-                self.too_many_colors_map_f, samp_ids, 'Description', samp_ids,
-                'Description')
+                          self.too_many_colors_map_f, samp_ids, 'Description', samp_ids,
+                          'Description')
 
         # No one-to-one mapping.
         self.assertRaises(ValueError, _color_field_states, self.map_f,
-                ['1', '2', '3', '4', '5', '6'], 'Foo', ['a', 'c', 'b'], 'Baz')
+                          ['1', '2', '3', '4', '5', '6'], 'Foo', ['a', 'c', 'b'], 'Baz')
 
     def test_make_distance_boxplots(self):
         """Test correctly generates plot, raw data, and labels."""
@@ -201,20 +212,30 @@ class MakeDistanceBoxplotsTests(TestCase):
         self.assertEqual(len(obs[0][2]), 7)
         self.assertEqual(len(obs[0][3]), 7)
         self.assertEqual(len(obs[0][4]), 7)
-        self.assertFloatEqual(obs[0][4], [None, None, (1.0, 0.0, 0.0), (0.0,
-            0.0, 1.0), None, None, None])
+        self.assertIsNone(obs[0][4][0])
+        self.assertIsNone(obs[0][4][1])
+        self.assertEqual(obs[0][4][2], (1.0, 0.0, 0.0))
+        self.assertEqual(obs[0][4][3], (0.0, 0.0, 1.0))
+        self.assertIsNone(obs[0][4][4])
+        self.assertIsNone(obs[0][4][5])
+        self.assertIsNone(obs[0][4][6])
 
         # Color individual within boxes, make sure box_color is ignored.
         obs = make_distance_boxplots(self.dm_f, self.map_f, ['Foo'],
-                box_color='pink', color_individual_within_by_field='Bar')
+                                     box_color='pink', color_individual_within_by_field='Bar')
         self.assertEqual(len(obs), 1)
         self.assertEqual(obs[0][0], 'Foo')
         self.assertTrue(isinstance(obs[0][1], Figure))
         self.assertEqual(len(obs[0][2]), 7)
         self.assertEqual(len(obs[0][3]), 7)
         self.assertEqual(len(obs[0][4]), 7)
-        self.assertFloatEqual(obs[0][4], [None, None, (1.0, 0.0, 0.0), (0.0,
-            0.0, 1.0), None, None, None])
+        self.assertIsNone(obs[0][4][0])
+        self.assertIsNone(obs[0][4][1])
+        self.assertEqual(obs[0][4][2], (1.0, 0.0, 0.0))
+        self.assertEqual(obs[0][4][3], (0.0, 0.0, 1.0))
+        self.assertIsNone(obs[0][4][4])
+        self.assertIsNone(obs[0][4][5])
+        self.assertIsNone(obs[0][4][6])
 
     def test_make_distance_boxplots_invalid_input(self):
         """Test correctly raises an error on invalid input."""
@@ -236,18 +257,34 @@ class MakeDistanceBoxplotsTests(TestCase):
 
         # Suppress everything.
         self.assertRaises(ValueError, make_distance_boxplots, self.dm_f,
-                self.map_f, ['Foo', 'Bar'], suppress_all_within=True,
-                suppress_all_between=True, suppress_individual_within=True,
-                suppress_individual_between=True)
+                          self.map_f, ['Foo', 'Bar'], suppress_all_within=True,
+                          suppress_all_between=True, suppress_individual_within=True,
+                          suppress_individual_between=True)
 
-    def test_sort_distributions_by_median(self):
+    def test_sort_distributions_median(self):
         """Test correctly sorts distributions by median."""
-        exp = ([[0, 0, 0, 1], [2, 1, 1], [1, 2, 3]],
-               ['bar', 'baz', 'foo'], ['b', 'r', 'w'])
-        obs = _sort_distributions_by_median(
-                [[1, 2, 3], [2, 1, 1], [0, 0, 0, 1]], ['foo', 'baz', 'bar'],
-                ['w', 'r', 'b'])
+        exp = [([0, 0, 0, 1], [2, 1, 1], [1], [1, 2, 3]),
+               ('bar', 'baz', 'zab', 'foo'), ('b', 'r', 'b', 'w')]
+        obs = _sort_distributions(
+            [[1, 2, 3], [2, 1, 1], [0, 0, 0, 1], [1]],
+            ['foo', 'baz', 'bar', 'zab'], ['w', 'r', 'b', 'b'], 'median')
         self.assertEqual(obs, exp)
+
+    def test_sort_distributions_alphabetical(self):
+        """Test correctly sorts distributions alphabetically."""
+        exp = [([2, 1, 1], [1, 2, 3], [0, 0, 0, 1], [1]),
+               ('baz', 'foo', 'foo', 'zab'), ('r', 'w', 'b', 'b')]
+        obs = _sort_distributions(
+            [[1, 2, 3], [2, 1, 1], [0, 0, 0, 1], [1]],
+            ['foo', 'baz', 'foo', 'zab'], ['w', 'r', 'b', 'b'], 'alphabetical')
+        self.assertEqual(obs, exp)
+
+    def test_sort_distributions_invalid_input(self):
+        """Correctly raises error on invalid input."""
+        # Unfortunately, this code doesn't support the brosort algorithm... :(
+        with self.assertRaises(ValueError):
+            _ = _sort_distributions([[1, 2, 3], [3, 2, 1]], ['foo', 'bar'],
+                                    ['r', 'b'], 'brosort')
 
 
 map_lines = """#SampleID\tFoo\tBar\tBaz\tDescription

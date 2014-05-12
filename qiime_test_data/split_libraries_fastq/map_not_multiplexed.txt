@@ -1,1 +1,0 @@
-#SampleID	BarcodeSequence	LinkerPrimerSequence	Descriptions1	NA	CCGGACTACHVGGGTWTCTAAT	s1

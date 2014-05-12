@@ -4,26 +4,28 @@ from __future__ import division
 
 __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Justin Kuczynski", "Rob Knight", 
+__credits__ = ["Justin Kuczynski", "Rob Knight",
                "Jai Ram Rideout", "Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
-__status__ = "Development"
 
-import numpy
-import random
 from os.path import join
+from operator import add
+
+from numpy import zeros
+from random import choice
 from biom.table import table_factory
+
 from qiime.format import format_mapping_file, format_biom_table
 from qiime.parse import parse_mapping_file
-from qiime.util import make_option, create_dir
-from qiime.util import parse_command_line_parameters
+from qiime.util import make_option, create_dir, parse_command_line_parameters
 from qiime.sort import natsort
 
-def sim_otu_table(sample_ids, otu_ids, samples, otu_metadata, tree, 
-    num_replicates, dissimilarity):
+
+def sim_otu_table(sample_ids, otu_ids, samples, otu_metadata, tree,
+                  num_replicates, dissimilarity):
     """ make n samples related to each sample in an input otu table
 
     input:
@@ -35,16 +37,13 @@ def sim_otu_table(sample_ids, otu_ids, samples, otu_metadata, tree,
      * otu_metadata: list, either empty or of length len(otu_ids)
     tree: a PhyloNode tree or compatible,
     num_replicates: how many replicates for each input sample
-    dissimilarity: how phylogenetically dissimilar each replicate should be 
+    dissimilarity: how phylogenetically dissimilar each replicate should be
     relative to the original
 
-    output is a tuple with the constituents of an otu table, possibly missing 
+    output is a tuple with the constituents of an otu table, possibly missing
     some otu metadata:
     (res_sam_names, res_otus, res_otu_mtx, res_otu_metadata)
     """
-
-    tree_tips = [tip.Name for tip in tree.tips()]
-
     # hold sample abundance vector in a dict (sample_dict) temporarily
     # format of sample_dict: otu_id: num_seqs
     sample_dicts = []
@@ -56,22 +55,22 @@ def sim_otu_table(sample_ids, otu_ids, samples, otu_metadata, tree,
             sample_dict = {}
             for k in range(len(otu_ids)):
                 otu_abundance = sample_vector[k]
-                if otu_abundance == 0: continue
+                if otu_abundance == 0:
+                    continue
                 new_otu_id = get_new_otu_id(otu_ids[k], tree, dissimilarity)
-                # beware, get_new_otu_id may return something we already 
+                # beware, get_new_otu_id may return something we already
                 # have in the table
-                if sample_dict.has_key(new_otu_id):
+                if new_otu_id in sample_dict:
                     sample_dict[new_otu_id] += otu_abundance
                 else:
                     sample_dict[new_otu_id] = otu_abundance
             sample_dicts.append(sample_dict)
             res_sam_names.append(sample_ids[i] + '.' + str(j))
 
-
     res_otu_mtx, res_otus = combine_sample_dicts(sample_dicts)
 
     res_otu_metadata = []
-    if otu_metadata == None or otu_metadata == []:
+    if otu_metadata is None or otu_metadata == []:
         res_otu_metadata = None
     else:
         for otu_id in res_otus:
@@ -81,28 +80,52 @@ def sim_otu_table(sample_ids, otu_ids, samples, otu_metadata, tree,
             except ValueError:
                 # else just append None since we don't have its metadata
                 res_otu_metadata.append(None)
-    
+
     return res_sam_names, res_otus, res_otu_mtx, res_otu_metadata
+
+
+def create_tip_index(tree):
+    """Create a tip lookup index on the tree"""
+    if hasattr(tree, '_tip_index'):
+        return
+    else:
+        tree._tip_index = {n.Name: n for n in tree.tips()}
+
+def cache_tip_names(tree):
+    """Cache tip names"""
+    if hasattr(tree, '_tip_names'):
+        return
+    else:
+        for n in tree.postorder():
+            if n.isTip():
+                n._tip_names = [n.Name]
+            else:
+                n._tip_names = reduce(add, [c._tip_names for c in n.Children])
+
 
 def get_new_otu_id(old_otu_id, tree, dissim):
     """ simulates an otu switching to related one
 
     input a tipname, a tree, and a distance to walk up the tree
     ouputs the name of the new, randomly chosen, tree tip
-    output tip name may be the same as 
+    output tip name may be the same as
     """
-    node = tree.getNodeMatchingName(old_otu_id) #starts at tip
+    create_tip_index(tree)
+    cache_tip_names(tree)
+
+    node = tree._tip_index[old_otu_id]
     distance_up_tree = 0
     while (not node.isRoot()) and (distance_up_tree + node.Length < dissim):
         distance_up_tree += node.Length
         node = node.Parent
 
-    # another option is to do 50-50 descending each node, 
+    # another option is to do 50-50 descending each node,
     # so we don't bias for overrepresented clades
     if node.isTip():
         return node.Name
     else:
-        return random.choice([tip.Name for tip in node.tips()])
+        return choice(node._tip_names)
+
 
 def combine_sample_dicts(sample_dicts):
     """ combines a list of sample_dicts into one otu table
@@ -111,7 +134,7 @@ def combine_sample_dicts(sample_dicts):
 
     output is a tuple:
     (otu_mtx (rows are otus), otu_ids (list))
-    * otu_mtx has samples in order of dicts, otus sorted with natsort 
+    * otu_mtx has samples in order of dicts, otus sorted with natsort
     / human sort
     * otu_mtx will have all otus mentioned as keys in sample_dicts, even if
     they are abundance 0  ({otu_id:0,...})
@@ -129,13 +152,14 @@ def combine_sample_dicts(sample_dicts):
     for i in range(len(all_otu_ids)):
         indices[all_otu_ids[i]] = i
 
-    otu_mtx = numpy.zeros((len(all_otu_ids),len(sample_dicts)),int) 
+    otu_mtx = zeros((len(all_otu_ids), len(sample_dicts)), int)
     # otus (rows) by samples (cols)
     for i, sample_dict in enumerate(sample_dicts):
         for otu, abund in sample_dict.items():
-            otu_mtx[indices[otu],i] = abund
+            otu_mtx[indices[otu], i] = abund
 
     return otu_mtx, all_otu_ids
+
 
 def create_replicated_mapping_file(map_f, num_replicates, sample_ids):
     """Returns a formatted mapping file with replicated sample IDs.
@@ -173,31 +197,32 @@ def create_replicated_mapping_file(map_f, num_replicates, sample_ids):
 
     return format_mapping_file(header, rep_map_data, comments)
 
+
 def simsam_range(table,
                  tree,
                  simulated_sample_sizes,
                  dissimilarities,
                  mapping_f=None):
     """Applies sim_otu_table over a range of parameters
-    
+
      table: the input table to simulate samples from
      tree: tree related OTUs in input table
      simulated_sample_sizes: a list of ints defining how many
       output samples should be create per input sample
-     dissimilarities: a list of floats containing the 
+     dissimilarities: a list of floats containing the
       dissimilarities to use in simulating tables
-     mapping_f: file handle for metadata mapping file, if 
-      a mapping file should be created with the samples from 
+     mapping_f: file handle for metadata mapping file, if
+      a mapping file should be created with the samples from
       each simulated table
-     
+
      This function will yield tuples with the following form:
       (output table, output mapping lines, simulated_sample_size, dissimilarity)
-     
+
      If the user does not provide mapping_f, the tuples will look like:
       (output table, None, simulated_sample_size, dissimilarity)
-    
+
     """
-    if mapping_f != None:
+    if mapping_f is not None:
         # if the user provided a mapping file, load it into
         # a list for repeated use, and define the function for
         # processing the mapping file
@@ -205,26 +230,27 @@ def simsam_range(table,
         process_map = create_replicated_mapping_file
     else:
         # otherwise create a dummy function for processing the
-        # mapping file so we don't have to check whether it 
+        # mapping file so we don't have to check whether it
         # exists on every iteration
         mapping_lines = None
+
         def process_map(mapping_lines, simulated_sample_size, sample_ids):
             return None
-    
+
     for simulated_sample_size in simulated_sample_sizes:
         # create the output mapping file data
         output_mapping_lines = \
-         process_map(mapping_lines, simulated_sample_size, table.SampleIds)
+            process_map(mapping_lines, simulated_sample_size, table.SampleIds)
         for dissimilarity in dissimilarities:
             # create the simulated otu table
             output_sample_ids, output_otu_ids, output_data, output_metadata = \
-             sim_otu_table(table.SampleIds,
-                           table.ObservationIds,
-                           table.iterSamples(),
-                           table.ObservationMetadata,
-                           tree,
-                           simulated_sample_size,
-                           dissimilarity)
+                sim_otu_table(table.SampleIds,
+                              table.ObservationIds,
+                              table.iterSamples(),
+                              table.ObservationMetadata,
+                              tree,
+                              simulated_sample_size,
+                              dissimilarity)
             output_table = table_factory(output_data,
                                          output_sample_ids,
                                          output_otu_ids,
@@ -233,6 +259,7 @@ def simsam_range(table,
                    output_mapping_lines,
                    simulated_sample_size,
                    dissimilarity)
+
 
 def simsam_range_to_files(table,
                           tree,
@@ -243,39 +270,39 @@ def simsam_range_to_files(table,
                           output_table_basename="table",
                           output_map_basename="map"):
     """Applies sim_otu_table over a range of parameters, writing output to file
-    
+
      table: the input table to simulate samples from
      tree: tree related OTUs in input table
      simulated_sample_sizes: a list of ints defining how many
       output samples should be create per input sample
      dissimilarities: a list of floats containing the
       dissimilarities to use in simulating tables
-     output_dir: the directory where all output tables and 
+     output_dir: the directory where all output tables and
       mapping files should be written
-     mapping_f: file handle for metadata mapping file, if 
+     mapping_f: file handle for metadata mapping file, if
       a mapping file should be created with the samples from
       each simulated table
-     output_table_basename: basename for output table files 
+     output_table_basename: basename for output table files
       (default: table)
-     output_map_basename: basename for output mapping files 
+     output_map_basename: basename for output mapping files
       (default: map)
     """
     create_dir(output_dir)
-    for e in simsam_range(table,tree,simulated_sample_sizes,dissimilarities,mapping_f):
+    for e in simsam_range(table, tree, simulated_sample_sizes, dissimilarities, mapping_f):
         output_table = e[0]
         output_mapping_lines = e[1]
         simulated_sample_size = e[2]
         dissimilarity = e[3]
-        
-        output_table_fp = join(output_dir,'%s_n%d_d%r.biom' %
-         (output_table_basename, simulated_sample_size, dissimilarity))
+
+        output_table_fp = join(output_dir, '%s_n%d_d%r.biom' %
+                               (output_table_basename, simulated_sample_size, dissimilarity))
         output_table_f = open(output_table_fp, 'w')
         output_table_f.write(format_biom_table(output_table))
         output_table_f.close()
-        
-        if output_mapping_lines != None:
-            output_map_fp = join(output_dir,'%s_n%d_d%r.txt' %
-             (output_map_basename, simulated_sample_size, dissimilarity))
+
+        if output_mapping_lines is not None:
+            output_map_fp = join(output_dir, '%s_n%d_d%r.txt' %
+                                 (output_map_basename, simulated_sample_size, dissimilarity))
             output_map_f = open(output_map_fp, 'w')
             output_map_f.write(''.join(output_mapping_lines))
             output_map_f.close()

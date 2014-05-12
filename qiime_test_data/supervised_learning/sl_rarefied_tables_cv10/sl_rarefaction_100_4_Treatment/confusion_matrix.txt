@@ -1,3 +1,0 @@
-True\Predicted	Control	Fast	Class error
-Control	4	1	0.2
-Fast	3	1	0.75

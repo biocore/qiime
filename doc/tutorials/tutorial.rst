@@ -14,7 +14,7 @@ In this walkthrough, text like the following: ::
 
     print_qiime_config.py
 
-denotes the command-line invocation of scripts. You can find full usage information for each script by passing the -h option (help) and/or by reading the full description in the `Documentation <../documentation/index.html>`_. Execute all tutorial commands from within the :file:`qiime_tutorial` directory, which can be downloaded from here: `QIIME Tutorial files <ftp://thebeast.colorado.edu/pub/QIIME-v1.5.0-dependencies/qiime_tutorial-v1.5.0.zip>`_.
+denotes the command-line invocation of scripts. You can find full usage information for each script by passing the -h option (help) and/or by reading the full description in the `Documentation <../documentation/index.html>`_. Execute all tutorial commands from within the :file:`qiime_overview_tutorial` directory, which can be downloaded from here: `QIIME Overview Tutorial files <ftp://thebeast.colorado.edu/pub/qiime-files/qiime_overview_tutorial.zip>`_.
 
 To process our data, we will perform the following analyses, each of which is described in more detail below:
 
@@ -28,7 +28,7 @@ To process our data, we will perform the following analyses, each of which is de
 
 Essential Files
 ----------------
-All the files you will need for this tutorial are here (ftp://thebeast.colorado.edu/pub/QIIME-v1.5.0-dependencies/qiime_tutorial-v1.5.0.zip). Descriptions of these files are below.
+All the files you will need for this tutorial are here (ftp://thebeast.colorado.edu/pub/qiime-files/qiime_overview_tutorial.zip). Descriptions of these files are below.
 
 Sequences (.fna)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -64,13 +64,13 @@ For the purposes of this tutorial, we will use the mapping file :file:`Fasting_M
 
 Check Mapping File
 --------------------------------------------------------------------
-Before beginning with QIIME, you should ensure that your mapping file is formatted correctly with the `check_id_map.py <../scripts/check_id_map.html>`_ script. Type: ::
+Before beginning with QIIME, you should ensure that your mapping file is formatted correctly with the `validate_mapping_file.py <../scripts/validate_mapping_file.html>`_ script. Type: ::
 
-    check_id_map.py -m Fasting_Map.txt -o mapping_output
+    validate_mapping_file.py -m Fasting_Map.txt -o mapping_output
 
 This utility will display a message indicating whether or not problems were found in the mapping file. A HTML file showing the location of errors and warnings will be generated in the output directory, and will also be written to the output to a log file. Errors will cause fatal problems with subsequent scripts and must be corrected before moving forward. Warnings will not cause fatal problems, but it is encouraged that you fix these problems as they are often indicative of typos in your mapping file, invalid characters, or other unintended errors that will impact downstream analysis. A :file:`corrected_mapping.txt` file will also be created in the output directory, which will have a copy of the mapping file with invalid characters replaced by underscores.
 
-Reverse primers can be specified in the mapping file, for removal during the demultiplexing step.  This is not required, but it is STRONGLY recommended, as leaving in sequences following primers, such as sequencing adapters, can interfere with OTU picking and taxonomic assignments with RDP.
+Reverse primers can be specified in the mapping file, for removal during the demultiplexing step.  This is not required, but it is STRONGLY recommended, as leaving in sequences following primers, such as sequencing adapters, can interfere with OTU picking and taxonomic assignment.
 
 An example mapping file with faux reverse primers specified, using the ReversePrimer field, is available here:  `reverse primer mapping file <../_static/Examples/File_Formats/Fasting_Map_reverse_primers.txt>`_.
 
@@ -203,16 +203,16 @@ In the :file:`otus/rep_set/` directory, QIIME has created two new files - the lo
 
 Step 3. Assign Taxonomy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-A primary goal of the QIIME pipeline is to assign high-throughput sequencing reads to taxonomic identities using established databases. This provides information on the microbial lineages found in microbial samples. By default, QIIME uses the RDP classifier to assign taxonomic data to each representative sequence from step 2, above.
+A primary goal of the QIIME pipeline is to assign taxonomy to high-throughput sequencing reads. This provides information on the microbial taxa found in the samples. By default, QIIME uses the uclust consensus taxonomy classifier to attempt to assign taxonomy to each representative sequence resulting from step 2.
 
-In the directory :file:`otus/rdp_assigned_taxonomy/`, there will be a log file and a text file. The text file contains a line for each OTU considered, with the RDP taxonomy assignment and a numerical confidence of that assignment (1 is the highest possible confidence). For some OTUs, the assignment will be as specific as a bacterial species, while others may be assignable to nothing more specific than the bacterial domain. Below are the first few lines of the text file and the user should note that the taxonomic assignment and confidence numbers from their run may not coincide with the output shown below, due to the RDP classification algorithm:
+In the directory :file:`otus/uclust_assigned_taxonomy/`, there will be a log file and a text file. The text file (which we refer to as an observation or OTU metadata file) contains a line for each OTU considered, followed by the taxonomic assignment, the fraction of uclust hits that contained this taxonomic assignment, and the number of uclust hits that were found. For some OTUs, the assignment may be as specific as a bacterial species, while others may not be assignable at all (and will therefore be labeled as *Unassigned*). Below are the first few lines of an observation metadata file containing the results of uclust taxonomic assignment. ::
 
-.. note::
 
-    * 41    PC.356_347  Root;Bacteria                                                                   0.980
-    * 63    PC.635_130  Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"           0.960
-    * 353   PC.634_150  Root;Bacteria;Proteobacteria;Deltaproteobacteria                                0.880
-    * 18    PC.355_1011 Root;Bacteria;Bacteroidetes;Bacteroidetes;Bacteroidales;Rikenellaceae;Alistipes 0.990
+	denovo367	k__Bacteria; p__Bacteroidetes; c__Bacteroidia; o__Bacteroidales; f__S24-7; g__; s__	1.00	3
+	denovo366	k__Bacteria; p__Firmicutes; c__Clostridia; o__Clostridiales; f__; g__; s__	1.00	3
+	denovo365	k__Bacteria; p__Firmicutes; c__Erysipelotrichi; o__Erysipelotrichales; f__Erysipelotrichaceae; g__Allobaculum; s__	1.00	3
+	denovo364	k__Bacteria; p__Firmicutes; c__Clostridia; o__Clostridiales; f__Lachnospiraceae	0.67	3
+	denovo281	Unassigned	1.00	1
 
 .. _alignotuseq:
 
@@ -465,12 +465,9 @@ Compute Beta Diversity and Generate Beta Diversity Plots
 Beta diversity represents the explicit comparison of microbial (or other) communities based on their composition. Beta-diversity metrics thus assess the differences between microbial communities. The fundamental output of these comparisons is a square matrix where a "distance" or dissimilarity is calculated between every pair of community samples, reflecting the dissimilarity between those samples. The data in this distance matrix can be visualized with analyses such as Principal Coordinate Analysis (PCoA) and hierarchical clustering. Like alpha diversity, there are many possible metrics which can be calculated with the QIIME pipeline - the full list of options can be found here `beta diversity metrics <../scripts/beta_diversity_metrics.html>`_. Here, we will calculate beta diversity between our 9 microbial communities using the default beta diversity metrics of weighted and unweighted unifrac, which are phylogenetic measures used extensively in recent microbial community sequencing projects. To perform this analysis, we will use the `beta_diversity_through_plots.py <../scripts/beta_diversity_through_plots.html>`_ workflow script. This script performs the following steps:
 
 1. Rarify OTU table (for more information, refer to `single_rarefaction.py <../scripts/single_rarefaction.html>`_)
-2. Make preferences file (for more information, refer to `make_prefs_file.py <../scripts/make_prefs_file.html>`_)
-3. Compute Beta Diversity (for more information, refer to `beta_diversity.py <../scripts/beta_diversity.html>`_)
-4. Generate Principal Coordinates (for more information, refer to `principal_coordinates.py <../scripts/principal_coordinates.html>`_)
-5. Generate 3D PCoA plots (for more information, refer to `make_3d_plots.py <../scripts/make_3d_plots.html>`_)
-6. Generate 2D PCoA plots (for more information, refer to `make_2d_plots.py <../scripts/make_2d_plots.html>`_)
-7. Make Distance Histograms (for more information, refer to `make_distance_histograms.py <../scripts/make_distance_histograms.html>`_)
+2. Compute Beta Diversity (for more information, refer to `beta_diversity.py <../scripts/beta_diversity.html>`_)
+3. Generate Principal Coordinates (for more information, refer to `principal_coordinates.py <../scripts/principal_coordinates.html>`_)
+4. Generate Emperor PCoA plots (for more information, refer to `make_emperor.py <http://emperor.colorado.edu/>`_)
 
 To run the workflow, type the following command, which defines the input OTU table "-i" and tree file "-t" (from `pick_de_novo_otus.py <../scripts/pick_de_novo_otus.html>`_), the user-defined mapping file "-m", the output directory "-o", and the number of sequences per sample (sequencing depth) as 146: ::
 
@@ -513,50 +510,27 @@ The 9 communities in the tutorial data contain the following numbers of sequence
 
 Because all samples have at least 146 sequences, a rarefaction level of 146 (specified by `-e 146` above), allows us to compare all 9 samples at equal sequencing depth. Any samples containing fewer than 146 sequences would have been removed from these beta diversity analyses.
 
-Step 2. Make Preferences File
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-In order to generate the PCoA plots, we want to generate a preferences file, which defines the colors for each of the samples or for a particular category within a mapping column.  For more information on making a preferences file, please refer to `make_prefs_file.py <../scripts/make_prefs_file.html>`_. The prefs file allows, among other things, different PCoA plots to share the same color scheme.
-
-Step 3. Compute Beta Diversity
+Step 2. Compute Beta Diversity
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Beta-diversity metrics assess the differences between microbial communities. By default, QIIME calculates both weighted and unweighted unifrac, which are phylogenetically aware measures of beta diversity.
 
 The resulting distance matrices ( :file:`wf_bdiv_even146/unweighted_unifrac_dm.txt` and :file:`wf_bdiv_even146/weighted_unifrac_dm.txt`) are the basis for later analysis steps (principal coordinate analysis, hierarchical clustering, and distance histograms)
 
-Step 4. Generate Principal Coordinates
+Step 3. Generate Principal Coordinates
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Principal Coordinate Analysis (PCoA) is a technique that helps to extract and visualize a few highly informative components of variation from complex, multidimensional data. This is a transformation that maps the samples present in the distance matrix to a new set of orthogonal axes such that a maximum amount of variation is explained by the first principal coordinate, the second largest amount of variation is explained by the second principal coordinate, etc. The principal coordinates can be plotted in two or three dimensions to provide an intuitive visualization of the data structure and look at differences between the samples, and look for similarities by sample category. 
 
 The files :file:`wf_bdiv_even146/unweighted_unifrac_pc.txt` and :file:`wf_bdiv_even146/weighted_unifrac_pc.txt` list every sample in the first column, and the subsequent columns contain the value for the sample against the noted principal coordinate. At the bottom of each Principal Coordinate column, you will find the eigenvalue and percent of variation explained by the coordinate.
 
-
-Step 5. Generate 3D PCoA Plots
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-QIIME allows for the inspection of PCoA plots in three dimensions. html files are created in :file:`wf_bdiv_even146/unweighted_unifrac_3d...` and :file:`wf_bdiv_even146/weighted_unifrac_3d...` directories. For the "Treatment" column, all samples with the same "Treatment" will get the same color. For our tutorial, the five control samples are all blue and the four control samples are all green. This lets you easily visualize "clustering" by metadata category. The 3d visualization software allows you to rotate the axes to see the data from different perspectives. By default, the script will plot the first three dimensions in your file. Other combinations can be viewed using the "Views:Choose viewing axes" option in the KiNG viewer (may require the installation of kinemage software). The first 10 components can be viewed using "Views:Parallel coordinates" option or typing "/".
-
-.. image:: ../images/ pcoa2.png
-   :align: center
-
-
-Step 6. Generate 2D PCoA Plots
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The two dimensional plot will be rendered as a html file which can be opened with a standard web browser. The html file created in directories :file:`wf_bdiv_even146/unweighted_unifrac_2d...` shows a plot for each combination of the first three principal coordinates. You can view the name for each sample by holding your mouse cursor over the data point.
+Step 4. Generate Emperor PCoA Plots
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+`Emperor <http://emperor.colorado.edu/>` allows for the inspection of PCoA plots in three dimensions. html files are created in :file:`wf_bdiv_even146/unweighted_unifrac_emperor_pcoa_plot...` and :file:`wf_bdiv_even146/weighted_unifrac_emperor_pcoa_plot...` directories. For the "Treatment" column, all samples with the same "Treatment" will get the same color. For our tutorial, the five control samples are all red and the four Fast samples are all blue. This lets you easily visualize "clustering" by metadata category. The 3d visualization software allows you to rotate the axes to see the data from different perspectives. By default, the script will plot the first three dimensions in your file. Other combinations can be viewed using the "Axes" option in Emperor. The first 8 components can be viewed using the left bottom menu "Parallel" using a parallel coordinates plot.
 
 .. image:: ../images/ pcoa1.png
    :align: center
    :width: 900px
 
-
 .. _gendisthist:
-
-Step 7. Generate Distance Histograms
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Distance Histograms are a way to compare samples from different categories and see which categories tend to have larger/smaller beta diversity than others.
-
-For each of these groups of distances a histogram is made. The output is an HTML file which is defined by the beta-diversity metric used (e.g.,  :file:`wf_bdiv_even146/unweighted_unifrac_histograms/unweighted_unifrac_dm_distance_histograms.html`). Within the HTML you can look at all the distance histograms individually, and compare them between each other. Within the webpage, the user can mouseover and/or select the checkboxes in the right panel to turn on/off the different distances within/between categories. In this example, we are comparing the distances between the samples in the Control versus themselves, and in another color, pairwise distances between communities of fasting mice and control mice.
-
-.. image:: ../images/ hist.png
-   :align: center
 
 .. _jackbd:
 
@@ -571,7 +545,7 @@ This workflow uses jackknife replicates to estimate the uncertainty in PCoA plot
   5) Build UPGMA trees from rarefied distance matrices (for more information, refer to `upgma_cluster.py <../scripts/upgma_cluster.html>`_)
   6) Compare rarefied UPGMA trees and determine jackknife support for tree nodes. (for more information, refer to `tree_compare.py <../scripts/tree_compare.html>`_ and `consensus_tree.py <../scripts/consensus_tree.html>`_)
   7) Compute principal coordinates on each rarefied distance matrix (for more information, refer to `principal_coordinates.py <../scripts/principal_coordinates.html>`_)
-  8) Compare rarefied principal coordinates plots from each rarefied distance matrix (for more information, refer to `make_3d_plots.py <../scripts/make_3d_plots.html>`_ and `make_2d_plots.py <../scripts/make_2d_plots.html>`_)
+  8) Compare rarefied principal coordinates plots from each rarefied distance matrix (for more information, refer to `make_emperor.py <http://emperor.colorado.edu/>`
 
 
 To run the analysis, type the following:
@@ -635,7 +609,7 @@ This compares the UPGMA clustering based on all available data with the jackknif
 
 Steps 7 and 8. Compare Principal Coordinates plots
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The jackknifed replicate PCoA plots can be compared to assess the degree of variation from one replicate to the next. QIIME displays this variation by displaying confidence ellipsoids around the samples represented in a PCoA plot. The resulting plots are present in :file:`wf_jack/unweighted_unifrac/3d_plots`, as well as the corresponding :file:`weighted_unifrac/` and :file:`2d_plots/` locations. An example is shown below:
+The jackknifed replicate PCoA plots can be compared to assess the degree of variation from one replicate to the next. QIIME displays this variation by displaying confidence ellipsoids around the samples represented in a PCoA plot. The resulting plots are present in :file:`wf_jack/unweighted_unifrac/emperor_pcoa_plots`, as well as the corresponding :file:`weighted_unifrac/` location. An example is shown below:
 
 .. image:: ../images/ jackpcoa.png
    :align: center
@@ -656,11 +630,11 @@ The resulting pdf shows the tree with internal nodes colored, red for 75-100% su
 
 Generate 3D Bi-Plots
 ^^^^^^^^^^^^^^^^^^^^
-One can add taxa from the taxon summary files in the folder :file:`wf_taxa_summary/` to a 3D principal coordinates plot using QIIME's `make_3d_plots.py <../scripts/make_3d_plots.html>`_. The coordinates of a given taxon are plotted as a weighted average of the coordinates of all samples, where the weights are the relative abundances of the taxon in the samples. The size of the sphere representing a taxon is proportional to the mean relative abundance of the taxon across all samples. The following example creates a biplot displaying the 5 most abundant phylum-level taxa::
+One can add taxa from the taxon summary files in the folder :file:`wf_taxa_summary/` to a 3D principal coordinates plot using Emperor's `make_emperor.py <http://emperor.colorado.edu/>`_. The coordinates of a given taxon are plotted as a weighted average of the coordinates of all samples, where the weights are the relative abundances of the taxon in the samples. The size of the sphere representing a taxon is proportional to the mean relative abundance of the taxon across all samples. The following example creates a biplot displaying the 5 most abundant phylum-level taxa::
 
-    make_3d_plots.py -i wf_bdiv_even146/unweighted_unifrac_pc.txt -m Fasting_Map.txt -t wf_taxa_summary/otu_table_L3.txt --n_taxa_keep 5 -o 3d_biplot
+    make_emperor.py -i wf_bdiv_even146/unweighted_unifrac_pc.txt -m Fasting_Map.txt -t wf_taxa_summary/otu_table_L3.txt --n_taxa_to_keep 5 -o 3d_biplot
 
-The resulting html file :file:`3d_biplot/unweighted_unifrac_pc_3D_PCoA_plots.html` shows a biplot like this:
+The resulting html file :file:`3d_biplot/index.html` shows a biplot like this:
 
 .. image:: ../images/ biplot.png
    :align: center

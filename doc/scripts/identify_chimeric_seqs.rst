@@ -69,7 +69,7 @@ usearch61 performs both de novo (abundance based) chimera and reference based de
 	`-`-non_chimeras_retention
 		Usearch61 only - selects subsets of sequences detected as non-chimeras to retain after de novo and reference based chimera detection.  Options are intersection or union.  union will retain sequences that are flagged as non-chimeric from either filter, while intersection will retain only those sequences that are flagged as non-chimeras from both detection methods. [default: union]
 	`-`-usearch61_minh
-		Minimum score (h) to be classified as chimera. Increasing this value tends to the number of false positives (and also sensitivity).[default: 0.28]
+		Minimum score (h). Increasing this value tends to reduce the number of false positives and decrease sensitivity.[default: 0.28]
 	`-`-usearch61_xn
 		Weight of 'no' vote. Increasing this value tends to the number of false positives (and also sensitivity). Must be > 1.[default: 8.0]
 	`-`-usearch61_dn
@@ -92,6 +92,8 @@ usearch61 performs both de novo (abundance based) chimera and reference based de
 		Max_rejects value for usearch61.  [default: 8]
 	-o, `-`-output_fp
 		Path to store output, output filepath in the case of blast_fragments and ChimeraSlayer, or directory in case of usearch61  [default: derived from input_seqs_fp]
+	`-`-threads
+		Specify number of threads per core to be used for  usearch61 commands that utilize multithreading. By default, will calculate the number of cores to utilize so a single thread will be used per CPU. Specify a fractional number, e.g. 1.0 for 1 thread per core, or 0.5 for a single thread on a two core CPU. Only applies to usearch61. [default: one_per_cpu]
 
 
 **Output:**

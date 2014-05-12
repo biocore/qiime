@@ -20,7 +20,11 @@ A simple scripts that prints out the qiime config settings and does some sanity 
 	**[OPTIONAL]**
 		
 	-t, `-`-test
-		Test the qiime config for sanity [default: False]
+		Test the QIIME install and configuration [default: False]
+	-b, `-`-qiime_base_install
+		If passed, report only on dependencies required for the QIIME base install [default: False]
+	`-`-haiku
+		SUPPRESSHELP
 
 
 **Output:**

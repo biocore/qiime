@@ -6,10 +6,9 @@ __copyright__ = "Copyright 2012, The QIIME project"
 __credits__ = ["Logan Knecht", "Michael Dwan", "Damien Coy", "Jai Ram Rideout",
                "Levi McCracken"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
-__status__ = "Development"
 
 from os.path import exists
 from cogent.util.misc import create_dir
@@ -20,7 +19,8 @@ from qiime.util import (parse_command_line_parameters, make_option,
 options_lookup = get_options_lookup()
 
 script_info = {}
-script_info['brief_description'] = """Analyzes statistical significance of sample groupings using distance matrices"""
+script_info[
+    'brief_description'] = """Analyzes statistical significance of sample groupings using distance matrices"""
 script_info['script_description'] = """
 This script allows for the analysis of the strength and statistical
 significance of sample groupings using a distance matrix as the primary input.
@@ -111,20 +111,20 @@ http://qiime.org/tutorials/category_comparison.html.
 
 script_info['script_usage'] = []
 script_info['script_usage'].append(("adonis example",
-"Runs the adonis statistical method on a distance matrix and mapping file "
-"using the Treatment category and 999 permutations, writing the output to the "
-"'adonis_out' directory.",
-"%prog --method adonis -i unweighted_unifrac_dm.txt -m Fasting_Map.txt -c "
-"Treatment -o adonis_out -n 999"))
+                                    "Runs the adonis statistical method on a distance matrix and mapping file "
+                                    "using the Treatment category and 999 permutations, writing the output to the "
+                                    "'adonis_out' directory.",
+                                    "%prog --method adonis -i unweighted_unifrac_dm.txt -m Fasting_Map.txt -c "
+                                    "Treatment -o adonis_out -n 999"))
 
 script_info['script_usage'].append(("ANOSIM example",
-"Runs the ANOSIM statistical method on a distance matrix and mapping file "
-"using the Treatment category and 99 permutations, writing the output to the "
-"'anosim_out' directory.",
-"%prog --method anosim -i unweighted_unifrac_dm.txt -m Fasting_Map.txt -c "
-"Treatment -o anosim_out -n 99"))
+                                    "Runs the ANOSIM statistical method on a distance matrix and mapping file "
+                                    "using the Treatment category and 99 permutations, writing the output to the "
+                                    "'anosim_out' directory.",
+                                    "%prog --method anosim -i unweighted_unifrac_dm.txt -m Fasting_Map.txt -c "
+                                    "Treatment -o anosim_out -n 99"))
 
-script_info['output_description']= """
+script_info['output_description'] = """
 At least one file will be created in the output directory specified by -o. For
 most methods, a single output file containing the results of the test (e.g. the
 effect size statistic and p-value) will be created. The format of the output
@@ -139,28 +139,29 @@ text file and a PDF of the ordination plot.
 
 script_info['required_options'] = [
     make_option('--method', help='the statistical method to use. Valid '
-        'options: %s' % ', '.join(methods), type='choice', choices=methods),
+                'options: %s' % ', '.join(methods), type='choice', choices=methods),
     make_option('-i', '--input_dm', type='existing_filepath',
-        help='the input distance matrix. WARNING: Only symmetric, hollow '
-        'distance matrices may be used as input. Asymmetric distance '
-        'matrices, such as those obtained by the UniFrac Gain metric (i.e. '
-        'beta_diversity.py -m unifrac_g), should not be used as input'),
+                help='the input distance matrix. WARNING: Only symmetric, hollow '
+                'distance matrices may be used as input. Asymmetric distance '
+                'matrices, such as those obtained by the UniFrac Gain metric (i.e. '
+                'beta_diversity.py -m unifrac_g), should not be used as input'),
     make_option('-m', '--mapping_file', type='existing_filepath',
-        help='the metadata mapping file'),
+                help='the metadata mapping file'),
     make_option('-c', '--categories', type='string',
-        help='a comma-delimited list of categories from the mapping file. '
-        'Note: all methods except for BEST take just a single category. If '
-        'multiple categories are provided, only the first will be used'),
+                help='a comma-delimited list of categories from the mapping file. '
+                'Note: all methods except for BEST take just a single category. If '
+                'multiple categories are provided, only the first will be used'),
     options_lookup['output_dir']
 ]
 script_info['optional_options'] = [
     make_option('-n', '--num_permutations', help='the number of permutations '
-        'to use when calculating statistical significance. Only applies to '
-        'adonis, ANOSIM, MRPP, PERMANOVA, PERMDISP, and db-RDA. Must be '
-        'greater than or equal to zero [default: %default]', default=999,
-        type='int')
+                'to use when calculating statistical significance. Only applies to '
+                'adonis, ANOSIM, MRPP, PERMANOVA, PERMDISP, and db-RDA. Must be '
+                'greater than or equal to zero [default: %default]', default=999,
+                type='int')
 ]
 script_info['version'] = __version__
+
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)

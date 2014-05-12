@@ -35,8 +35,6 @@ This script will perform beta diversity, principal coordinate anlalysis, and gen
 		Path to the parameter file, which specifies changes to the default behavior. See http://www.qiime.org/documentation/file_formats.html#qiime-parameters . [if omitted, default values will be used]
 	`-`-color_by_all_fields
 		Plots will have coloring for all mapping fields [default: False; only include fields with greater than one value and fewer values than the number of samples]
-	-c, `-`-histogram_categories
-		Mapping fields to use when plotting distance histograms [default: None]
 	-f, `-`-force
 		Force overwrite of existing output directory (note: existing files in output_dir will not be removed) [default: None]
 	-w, `-`-print_only
@@ -45,10 +43,8 @@ This script will perform beta diversity, principal coordinate anlalysis, and gen
 		Run in parallel where available [default: False]
 	-e, `-`-seqs_per_sample
 		Depth of coverage for even sampling [default: None]
-	`-`-suppress_2d_plots
-		Do not generate 2D plots [default: False]
-	`-`-suppress_3d_plots
-		Do not generate 3D plots [default: False]
+	`-`-suppress_emperor_plots
+		Do not generate emperor plots [default: False]
 	-O, `-`-jobs_to_start
 		Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 2]
 

@@ -1,7 +1,22 @@
-QIIME 1.7.0-dev (changes since QIIME 1.7.0 go here)
-===================================================
+QIIME 1.8.0-dev (changes since 1.8.0 go here)
+=============================================
+* QIIME is now even easier to install! Removed ``qiime_scripts_dir``, ``python_exe_fp``, ``working_dir``, and ``cloud_environment`` from the QIIME config file. If these values are present in your QIIME config file, they will be flagged as unrecognized by ``print_qiime_config.py -t`` and will be ignored by QIIME. QIIME will now use the ``python`` executable and QIIME scripts that are found in your ``PATH`` environment variable, and ``temp_dir`` will be used in place of ``working_dir`` (this value was used by some parts of parallel QIIME previously).
+* Removed ``-Y``/``--python_exe_fp`` and ``-N`` options from ``parallel_merge_otu_tables.py`` script as these are not available in any of the other parallel QIIME scripts and we do not have good reason to support them (see QIIME 1.6.0 release notes below for more details).
+* SciPy >= 0.13.0, pyqi 0.3.1, and the latest development version of scikit-bio are now required dependencies for a QIIME base install.
+* Added new options to make_otu_heatmap.py: --color_scheme, which allows users to choose from different color schemes [here](http://wiki.scipy.org/Cookbook/Matplotlib/Show_colormaps); --observation_metadata_category, which allows users to select a column other than taxonomy to use when labeling the rows; and --observation_metadata_level, which allows the user to specify which level in the hierarchical metadata category to use in creating the row labels.
+* -m/--mapping_fps is no longer required for split_libraries_fastq.py. The mapping file is not required when running with --barcode_type 'not-barcoded',but the mapping file would fail to validate when passing multiple sequence files and sample ids but a mapping file without barcodes (see #1400).
+* Added alphabetical sorting option (based on boxplot labels) to make_distance_boxplots.py. Sorting by boxplot median can now be performed by passing ``--sort median`` (this was previously invoked by passing ``--sort``). Sorting alphabetically can be performed by passing ``--sort alphabetical``.
+* Removed insert_seqs_into_tree.py. This code needs additional testing and documentation, and was not widely used. We plan to add this support back in the future, and progress on that can be followed on [#1499](https://github.com/biocore/qiime/issues/1499).
 * Added a feature (e.g., OTU) selection script, fizzy.py.
 * [PyFeast](https://github.com/EESI/PyFeast/releases/v1.0/) v1.0 is now an (optional) QIIME dependency.
+
+QIIME 1.8.0 (11 Dec 2013)
+=========================
+* New script, extract_barcodes.py, and associated tutorial added to support alternative illumina barcoding schemes.
+* Added script join_paired_ends.py, which supports joining of overlapping paired-end reads in fastq files. This wraps fastq-join and SeqPrep.
+* extract_barcodes.py script added-this script is intended to help process fastq data that is not in a compatible format with split_libraries_fastq.py.
+* otu_category_significance.py has been removed in favor of a new script called ``group_significance.py`` which has significantly more functionality.
+* map_reads_to_reference.py has a new parameter, ``--genetic_code``, which can be used to specify which genetic code should be used when doing translated searches (from nucleotide sequences against a protein database). Genetic codes are specified numerically, corresponding to the genetic codes detailed on the [NCBI page here](http://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi)
 * core_diversity_analysis.py has a new parameter, ``--recover_from_failure``, that allows the user to re-run on an existing output directory and will only re-run analyses that haven't already been run. This additionally allows the user to add additional categories to a previous run, which is very common and previously required a full re-run.
 * Added new script, ``estimate_observation_richness.py``, which implements some of the interpolation and extrapolation richness estimators in Colwell et al. (2012), Journal of Plant Ecology. IMPORTANT: This script should be considered beta software; it is currently an experimental feature in QIIME.
 * QIIME now depends on [qcli 0.1.0](ftp://thebeast.colorado.edu/pub/qcli-releases/qcli-0.1.0.tar.gz), a stand-alone package which performs command line interface parsing and testing.
@@ -10,16 +25,30 @@ QIIME 1.7.0-dev (changes since QIIME 1.7.0 go here)
 * split_libraries_fastq.py can now handle per-sample, non-barcoded fastq files. Some sequencing centers are now providing data in this way - if this becomes more common, we'll want to make this more convenient, but for now it's possible.
 * Added a parallel merge OTUs method that will combine OTU tables in parallel where possible.
 * Added identify_paired_differences.py to support paired difference (i.e., Pre/Post) testing as discussed in issue #1040.
-* Required biom-format version is now 1.2.0.
 * Added new taxonomic assignment method, ``qiime.assign_taxonomy.UclustConsensusTaxonAssigner``. This is accessible through ``assign_taxonomy.py -m uclust``, ``parallel_assign_taxonomy_uclust.py``, ``pick_de_novo_otus.py`` and ``pick_open_reference_otus.py``. This is being tested as an alternative to QIIME's existing taxonomic assignment methods.
+* Refactored beta_diversity_though_plots.py, jackknifed_beta_diversity.py, and core_diversity_analyses.py workflows to generate emperor PCoA plots instead of KiNG PCoA plots. QIIME now depends on Emperor 0.9.3. One interface change that will be noticeable to users is that the output PCoA plots from these workflows are no longer separated into "continuous" and "discrete" directories. Users can make these color choices from within emperor, so only one PCoA plot is necessary. This refactoring also involved script interface changes to beta_diversity_through_plots.py, which no longer generates 2d plots (interested users can call make_2d_plots.py directly - these won't be needed as often, since we no longer have a Java dependency) or distance histograms (these data are better accessed through make_distance_boxplots.py, which is better written and tested, though users can still call make_distance_histograms.py directly). As a result, beta_diversity_through_plots.py no longer takes the --suppress_2d_plots, --suppress_3d_plots, or --histogram_categories parameters, and now takes a new --suppress_emperor_plots parameter which can be used to disable PCoA plotting.
+* Modified compare_alpha_diversity.py to generate box plots in addition to statistics, and added the ability to pass multiple categories (instead of just a single category) on the command line. Also fixed issue where options contain ``dest`` parameter, and therefore could have a different name then their longform parameter name. This involves several script interface changes: the --category option is now called --categories; script now takes --output_dir instead of --output_fp (because multiple files can be created, instead of just a single file); --alpha_diversity_filepath is now --alpha_diversity_fp; and --mapping_filepath is now --mapping_fp.
+* Refactored make_rarefaction_plots.py to add options --generate_per_sample_plots  and --generate_average_tables. These are now suppressed by default to reduce run time and size of output.
+* Refactored alpha_rarefaction.py to add option --retain_intermediate_files. Rarefied BIOM tables and alpha diversity results for each rarefied BIOM table are now removed by default to reduce size of output.
+* Update to rtax 0.984.
+* Required PyNAST version is now 1.2.2.
+* Updated default taxonomy assigner to be the new uclust-based consensus taxonomy assigner. This was shown to be more accurate and faster than the existing methods in Bokulich, Rideout et al. (submitted).
+* Renamed check_id_map.py to validate_mapping_file.py for clarity
+* Change short option names in summarize_otu_by_cat.py to be consistent with other scripts.
+* Increased default rdp_max_memory from 1500M to 4000M as this was almost always needing to be increased when re-training on modern reference databases.
+* Required biom-format version is now 1.3.1.
+* convert_unifrac_sample_mapping_to_otu_table.py and convert_otu_table_to_unifrac_sample_mapping.py have been moved to the FastUnifrac repo (https://github.com/qiime/FastUnifrac)
+* Required matplotlib version is now >= 1.1.0, <= 1.3.1.
+* Required numpy version is now >= 1.5.1, <= 1.7.1.
+* QIIME has been added to [PyPi](https://pypi.python.org/pypi) and can be installed using ``pip``.
 
 QIIME 1.7.0 (14 May 2013)
 =========================
 * Required biom-format version is now 1.1.2.
 * core_qiime_analyses.py has been replaced with core_diversity_analyses.py. This follows a re-factoring to support only "downstream" analyses (i.e., starting with a BIOM table). This makes the script more widely applicable as it's now general to any BIOM data and/or different OTU picking strategies.
-* Added support for usearch v6.1 OTU picking and chimera checking. This is in addition to existing support for usearch v5.2.236. 
+* Added support for usearch v6.1 OTU picking and chimera checking. This is in addition to existing support for usearch v5.2.236.
 * Added section on using usearch 6.1 chimera checking with ``identify_chimeric_seqs.py`` to "Chimera checking sequences with QIIME" tutorial.
-* ``compare_alpha_diversity.py`` output now includes average alpha diversity values as well as the comparison p and t vals. 
+* ``compare_alpha_diversity.py`` output now includes average alpha diversity values as well as the comparison p and t vals.
 * ``compare_distance_matrices.py`` has a new option ``--variable_size_distance_classes`` for running Mantel correlogram over distance classes that vary in size (i.e. width) but contain the same number of pairwise distances in each class.
 * ``qiime.filter.sample_ids_from_category_state_coverage`` now supports splitting on a category.
 * Modified add_qiime_labels.py script to use standard metadata mapping file with a column specified for fasta file names to make more consistent with other scripts.
@@ -54,7 +83,7 @@ QIIME 1.6.0 (18 Dec 2012)
 * Modified the parameters (de novo chimera detection, reference chimera detection, and size filtering) for USEARCH options with ``pick_otus.py`` to ``suppress_X`` and ``False`` by default, rather than ``True`` and turned off by calling, to make them more intuitive to use and work better with the workflow scripts.
 * Added a ``simpson_reciprocal`` measure of alpha diversity, which is ``1/D``, following the [definition here](http://www.countrysideinfo.co.uk/simpsons.htm) among other places. Note the measure ``reciprocal_simpson`` is ``1/simpson``, not ``1/D``. It was removed for clarity.
 * Added new script, ``compute_core_microbiome.py``, which identifies the core OTUs (i.e., those defined in some user-defined percentage of the samples).
-* Major refactoring of parallel QIIME. Repetitive code was consolidated into the ParallelWrapper class, which may ultimately move to PyCogent. The only script interface changes are that the ``-Y/--python_exe_fp``, ``-N (serial script filepath)``, and ``-P/--poller_fp`` parameters are no longer available to the user. These were very infrequently (if ever) modified from defaults, so it doesn't make sense to continue to support these. These changes will allow for easier development of new parallel wrappers and facilitate changes to the underlying parallel functionality. 
+* Major refactoring of parallel QIIME. Repetitive code was consolidated into the ParallelWrapper class, which may ultimately move to PyCogent. The only script interface changes are that the ``-Y/--python_exe_fp``, ``-N (serial script filepath)``, and ``-P/--poller_fp`` parameters are no longer available to the user. These were very infrequently (if ever) modified from defaults, so it doesn't make sense to continue to support these. These changes will allow for easier development of new parallel wrappers and facilitate changes to the underlying parallel functionality.
 * Added new script, ``compare_taxa_summaries.py``, and supporting library and test code (``qiime/compare_taxa_summaries.py`` and ``tests/test_compare_taxa_summaries.py``) to allow for the comparison of taxa summary files, including sorting and filling, expected, and paired comparisons using pearson or spearman correlation. Added accompanying tutorial (``doc/tutorials/taxa_summary_comparison.rst``).
 * New script for parallel trie otu picker.
 * Made ``loaddata.r`` more robust when making mapping files, distance matrices, etc. compatible with each other. There were rare cases that caused some R functions (e.g. ``betadisper``) to fail if empty levels were left in the parsed mapping file.
@@ -92,7 +121,7 @@ QIIME 1.5.0 (8 May 2012)
 ==================================
 * OTU tables are now stored on disk in the BIOM file format (see http://biom-format.org). The BIOM format webpage describes the motivation for the switch, but briefly it will support interoperability of related tools (e.g., QIIME/MG-RAST/mothur/VAMPS), and is a more efficient representation of data/metadata. The biom-format projects DenseTable and SparseTable objects are now used to represent OTU tables in memory. See the convert_biom.py script in the biom-format project for converting between 'classic' and BIOM formatted OTU tables.
 * Added a script, add_qiime_labels, that allows users to specify a directory of fasta files, along with a mapping file of SampleID<tab>fasta file name, and combines the fasta files into a single combined fasta file with QIIME compatible labels.  This is to handle situations where sequencing centers perform their own proprietary demultiplexing into separate fasta files per sample, instead of supplying raw data, but users would like to use QIIME to analyze their data.
-* Added new compare_categories.py script to perform significance testing of categories/sample grouping. Added accompanying tutorial and new RExecutor class to util.py. Methods supported by compare_categories.py are Adonis, Anosim, BEST, Moran's I, MRPP, PERMANOVA, PERMDISP, and RDA. See doc/tutorials/category_comparison.rst for details. 
+* Added new compare_categories.py script to perform significance testing of categories/sample grouping. Added accompanying tutorial and new RExecutor class to util.py. Methods supported by compare_categories.py are Adonis, Anosim, BEST, Moran's I, MRPP, PERMANOVA, PERMDISP, and RDA. See doc/tutorials/category_comparison.rst for details.
 * compare_distance_matrices.py can now perform partial Mantel and Mantel correlogram tests in addition to the traditional Mantel test. Additionally, the script has several new options. Added new supporting tutorial and generic statistical method library code (doc/tutorials/distance_matrix_comparison.rst, qiime/stats.py, qiime/compare_distance_matrices.py), and two new classes (DistanceMatrix and MetadataMap) to util.py.
 * make_3d_plots.py added a new option "-s" which by default only outputs the unscaled points, whereas user can choose to show scaled, unscaled or both.
 * split_libraries_fastq.py default parameters updated based on evaluation of parameter settings on real and mock community data sets. A manuscript describing these results is currently in preparation. Briefly, the -p/--min_per_read_length parameter was modified to take a fraction of the full read length that is acceptable as the minimum, rather than an absolute (integer) length. Additionally the --max_bad_run_length default was changed from 1 to 3.
@@ -102,19 +131,19 @@ QIIME 1.5.0 (8 May 2012)
 * Increased allowed ambiguous bases in split_libraries.py default values from 0 to 6.  This is to accommodate the FLX+ long read technology which will often make ambiguous base calls but still have quality sequences following the ambiguous bases.  Also added an option to truncate at the first "N" character option (-x) to allow users to retain these sequences but remove ambiguous bases if desired.
 * Updated merge_mapping_files.py to support merging of mapping files with overlapping sample ids.
 * Added support for CASAVA 1.8.0 quality scores in split_libraries_fastq.py. This involved deprecating the --last_bad_quality_char parameter in favor of --phred_quality_threshold. The latter is now computed from the former on the basis of detecting which version of CASAVA is being used from the fastq headers (unfortunately they don't include this information in the file, but it is possible to detect).
-* Added the possibility of printing the function of the curve that was fit to the points in plot_semivariogram.py 
+* Added the possibility of printing the function of the curve that was fit to the points in plot_semivariogram.py
 * Replaced filter_otu_table.py with filter_otus_from_otu_table.py. The interface was redesigned, and the script was renamed for clarity.
 * Replaced filter_by_metadata.py with filter_samples_from_otu_table.py. The interface was redesigned, and the script was renamed for clarity.
 * Add new script to compute the coverage of a  sample (or its inverse - the conditional uncovered probability) in the script conditional_uncovered_probability.py. Current estimators include lladser_pe, lladser_ci, esty_ci and robbins.
 * Updated usearch application wrapper, unit test, and documentation to handle usearch v5.2.32 as earlier version supported has bugs regarding consensus sequence generation (--consout parameter).
 * Added support for the RTAX taxonomy assignment. RTAX is designed for assigning taxonomy to paired-end reads, but additionally works for single end reads. QIIME currently supports RTAX 0.981.
 * Added the pick_subsampled_reference_otus_through_otu_tables.py, a more efficient open reference OTU picking workflow script for processing very large Illumina (or other) data sets. This is being used to process the Earth Microbiome Project data, so is designed to scale to tens of HiSeq runs. A new tutorial has been added that describes this process (doc/tutorials/open_reference_illumina_processing.rst).
-* Added new script convert_fastqual_to_fastq.py to convert fasta/qual files to fastq. 
-* Added ability to output demultiplexed fastq from split_libraries_fastq.py. 
+* Added new script convert_fastqual_to_fastq.py to convert fasta/qual files to fastq.
+* Added ability to output demultiplexed fastq from split_libraries_fastq.py.
 * Added a new sort option to summarize_taxa_through_plots.py which is very useful for web-interface. By default, sorting is turned off.
 * Added ability to output OTUs per sample instead of sequences per sample to per_library_stats.py.
-* Updates and expansions to existing tutorials, including the using AWS and procrustes analysis tutorials. 
-* Added insert_seqs_into_tree.py to insert reads into an existing tree. This script wraps RAxML, ParsInsert, and PPlacer. 
+* Updates and expansions to existing tutorials, including the using AWS and procrustes analysis tutorials.
+* Added insert_seqs_into_tree.py to insert reads into an existing tree. This script wraps RAxML, ParsInsert, and PPlacer.
 * Updated split_libraries_fastq.py to handle look only at the first n bases of the barcode reads, where n is automatically determined as the length of the barcodes in the mapping file. This feature is only use if all of the barcodes are the same length. It allows qiime to easily handle ignoring of a 13th base call in the barcode files - this is a technical artifact that sometimes arises.
 * Added new stats.py module that provides an API for running biogeographical statistical methods, as well as a framework for creating new method implementations in the future (this code was moved over from qiimeutils/microbiogeo). Also added two new classes to the util module (DistanceMatrix and MetadataMap) that are used by the stats module.
 * Updated Mothur OTU picker support from 1.6.0 to the latest (1.25.0) version.
@@ -128,13 +157,13 @@ QIIME 1.4.0 (13 Dec 2011)
 * Testing of QIIME with new dependency versions, updating of warnings and test failures (in print_qiime_config.py). No code changes were required to support new versions.
 * split_libraries_fastq.py can now handle gzipped input files.
 * Addition of code and tutorial to support plotting of raw distance data in QIIME (scripts/make_distance_comparison_plots.py, scripts/make_distance_boxplots.py, qiime/group.py, doc/tutorials/creating_distance_comparison_plots.rst).
-* Updates to many scripts to support PyCogent custom option types (new_filepath, new_dirpath, etc.). 
+* Updates to many scripts to support PyCogent custom option types (new_filepath, new_dirpath, etc.).
 * Fixes to workflows to fail immediately on certain types of bad inputs (e.g., missing tree when building UniFrac plots) rather than failing only when the script reaches the relevant step in the workflow.
 * Added ability to merge otu tables with overlapping sample ids (in merge_otu_tables.py). Values are summed when an OTU shows up in the same sample in different OTU tables.
 * Added a new script (filter_distance_matrix.py) to filter samples directly from distance matrices.
 * Added script nmds.py Non-Metric Multidimensional Scaling (NMDS).
 * Added in the calculation of standard error in rarefaction plots, since only standard deviation was calculated. Also added an optional option choice for this.
-* Support for pick_otus_through_otu_table.py to allow for uclust_ref to be run in parallel with creation of new clusters. 
+* Support for pick_otus_through_otu_table.py to allow for uclust_ref to be run in parallel with creation of new clusters.
 * Added script distance_matrix_from_mapping.py which allows to create a distance matrix from a metadata column.
 * assign_taxonomy_reference_seqs_fp and assign_taxonomy_id_to_taxonomy_fp were added to qiime_config, which allows users to set defaults for the dataset they'd like to perform taxonomy assignment against. This works for the serial and parallel versions of assign_taxonomy for both BLAST and RDP.
 * Added in make_3d_plots.py the possibility of calculating RMS vectors, using two methods: avg and trajectory, to assess power (movement) of the trajectories. Additionally this feature will return the significance of the difference of the trajectories using ANOVA.
@@ -167,7 +196,7 @@ QIIME 1.4.0 (13 Dec 2011)
 QIIME 1.3.0 (29 June 2011)
 ==================================
 * uclust and uclust_ref OTU pickers now incorporate a pre-filtering step where identical sequences are collapsed before calling uclust and then expanded after calling uclust. This gives a big speed improvement (5-20x) on reasonably sized input sets (>200k sequences) with no effect on the resulting OTUs. This is now the default behavior for pick_otus.py, and can be disabled by passing --suppress_uclust_prefilter_exact_match to pick_otus.py.
-* Added ability to pass a file to sort_otu_table.py that contains a sorted list of sample ids, and use that information rather than the mapping file for sorting the OTU table. This allows users to, e.g., pass sorted mapping files as input. 
+* Added ability to pass a file to sort_otu_table.py that contains a sorted list of sample ids, and use that information rather than the mapping file for sorting the OTU table. This allows users to, e.g., pass sorted mapping files as input.
 * Added core_analyses.py script and workflow function. This plugs together many components of QIIME (split libraries, pick_otus_through_otu_table.py, beta_diversity_through_3d_plots.py, alpha_rarefaction.py) into a single command and parameters file.
 * Added script (split_otu_table_by_taxonomy.py) which will create taxon-specific OTU tables from a master OTU table for taxon-specific analyses of alpha/beta diversity, etc.
 * Changed default behavior of single_rarefaction.py. Now lineage information is included by default, but can be turned off with --suppress_include_lineages
@@ -175,7 +204,7 @@ QIIME 1.3.0 (29 June 2011)
 * Interface changes to summarize_otu_by_cat.py. This allows the user to pass the output file name, rather than a directory where the output file should be written.
 * Parameter -r reassignment in parallel_assign_taxonomy_rdp.py. Now -r is used for reference_seqs_fp as before was for rdp_classifier_fp.
 * Added script inflate_denoiser_output.py to expand clusters to fasta representing all sequences. This allows denoiser results to be passed directly to the OTU pickers (and OTU picking workflows) which should greatly reduce the complexity of denoiser runs. The "Denoising 454 Data" tutorial has been updated to reflect how the pipeline should now be run. The denoising functionality was removed from the pick_otus_through_otu_table.py workflow script as that could only be used in very special circumstances - this allows us to focus our attention on supporting the new pipeline described in the updated tutorial.
-* Reorganized output from pick_otus_through_otu_table.py to get rid of the confusing output directory structure. 
+* Reorganized output from pick_otus_through_otu_table.py to get rid of the confusing output directory structure.
 * Added script plot_semivariogram.py to plot semivariograms using two distance matrices. This script also plots a fitting curve of the data values.
 * Changed beta diversity scripts to do unweighted_unifrac,weighted_unifrac by default.
 * Changed output of summarize_taxa.py to a directory instead of filepath. This allows for multiple levels to be processed simultaneously.
@@ -203,7 +232,7 @@ QIIME 1.3.0 (29 June 2011)
 * Added entropy filtering option to filter_alignment.py. This can be useful for position-filtering de novo alignments, or other alignments where no lanemask is available.
 * Added new script (count_seqs.py) which will count the number of sequences in one or more fasta file, as well as the mean/stddev sequence lengths, and print the results to stdout or file.
 * Added the plot_taxa_summary.py workflow script, which includes summarizing the OTU table by category.
-* Overhauled the QIIME overview tutorial. 
+* Overhauled the QIIME overview tutorial.
 * Added new script (start_parallel_jobs_torque.py) which can be used for running parallel QIIME on clusters using torque for the queueing system. A new qiime_config value, torque_queue, can be specified to define the default queue.
 * Integrated the QIIME Denoiser (Reeder and Knight, 2011) into Qiime.
 * Added script (compare_alpha_diversity.py) for comparing rarefied alpha diversities across different mapping file categories.
@@ -243,8 +272,8 @@ QIIME 1.2.0 (10 Nov 2010)
 * Added the ability to write out the flowgram file in process_sff.py, ability to define an output directory and convert Titanium reads to FLX length.
 * SRA submission protocol updated to perform human screening with uclust_ref against 16S reference sequences, rather than cdhit/blast against reference sequences. This can be a lot faster, and reduces the complexity of the code by requiring users to have uclust installed for the human screen rather than cdhit and blast.
 * Updated SRA protocol to allow users to skip the human screening step as this takes about 2/3 or more of the total analysis time, and is not relevant for non-human-derived samples (e.g., soil samples).
-* Added ability to pass --max_accepts, --max_rejects, and --stable_sort through the uclust otu pickers. 
-* Added a -r parameters to pick_rep_set.py to allow users to pass "preferred" representative sequences in a fasta file. This is useful, for example, if users have picked OTUs with uclust_ref, and would like to use the reference sequences as their representatives, rather than sequences from their sequencing run. 
+* Added ability to pass --max_accepts, --max_rejects, and --stable_sort through the uclust otu pickers.
+* Added a -r parameters to pick_rep_set.py to allow users to pass "preferred" representative sequences in a fasta file. This is useful, for example, if users have picked OTUs with uclust_ref, and would like to use the reference sequences as their representatives, rather than sequences from their sequencing run.
 * Renamed Qiime/scripts/jackknifed_upgma.py to Qiime/scripts/jackknifed_beta_diversity.py to reflect the addition of generating jackknifed 2d and 3d plots to this workflow script.
 * Updated parallel_multiple_rarefactions.py, parallel_alpha_diversity.py, and parallel_beta_diversity.py to use the jobs_to_start value for better control over the number of parallel runs.
 * uclust_ref otu picker now outputs an additional failures file listing the sequences which failed to cluster if the user passed --suppress_new_clusters. This is done for ease of parsing in downstream applications which want to do something special with these sequences. The failures list is no longer written to the log file (although the failures count is still written to the log file).
@@ -262,7 +291,7 @@ QIIME 1.2.0 (10 Nov 2010)
 * Added capability for pairwise sample/sample, monte carlo significance tests. These are frequently done via the unifrac web interface. Users hitting max size limitations on the web can now thrash their own hardware.
 * Fixed a bug in make_rarefaction_plots where the table below the plots had column labels sorted by natsort, while the values in the table were sorted arbitrarily by dict keys. The plots themselves were fine.
 * Added a Procrustes analysis/plotting tutorial.
-* Added code to exclude OTU ids from an OTU table when building the OTU table. This allows users to discard OTUs that were identified as chimeric. Accessible by passing --exclude_otus_fp to make_otu_table.py. 
+* Added code to exclude OTU ids from an OTU table when building the OTU table. This allows users to discard OTUs that were identified as chimeric. Accessible by passing --exclude_otus_fp to make_otu_table.py.
 * Modified identify_chimeric_sequences.py to no longer require the ref db in unaligned format when using chimeraSlayer.
 * Added a tutorial document on applying chimera checking in QIIME.
 * Added ability to pass -F T/F to parallel_blast to allow disabling of the low-complexity filtering in BLAST.
@@ -287,11 +316,11 @@ QIIME 1.1.0 (14 May 2010)
 * Merged the make_rarefaction_averages into the make_rarefaction_plots script.  Also removed the inputs (--rarefaction_ave and --ymax) options, since they are determined by the script.  Also, restructured the output directory format and combined all metric data into one html.
 * Added the uclust_ref OTU picker, which uses uclust to pick OTUs against a reference collection. Sequences which are within the similarity threshold to a reference sequnece will cluster to an OTU defined by that reference sequence, and sequences which are outside of the similarity threshold to any reference sequence will form new OTUs.
 * The interface for exclude_seqs_by_blast.py has changed.  -M and -W options are now lowercase to avoid conflicts with parallel scripts.  Users can avoid formatting the database by passing --no_format_db.  By default the files created by formatdb are now cleaned up. Users can choose not to  clean up these files  using the --no_clean option.  Output file extensions have changed from ".excluded" to ".matching" and from ".screened" to ".non-matching" to be clear regardless of whether the sequences matching the database, or not matching the database, are to be excluded. A check was added for user-supplied BLAST databases in exclude_seqs_by_blast.py when run with --no_format_db: if the required files do not exist a parser error is thrown
-* Added ability to chimera check sequences with ChimeraSlayer. See identify_chimeric_seqs.py for details. 
+* Added ability to chimera check sequences with ChimeraSlayer. See identify_chimeric_seqs.py for details.
 * Added workflow script for second-stage SRA submission, process_sra_submission.py. The SRA submission tutorial has been extensively updated to reflect the use of this new script.
 * Added the ability to supply a tree and sort the heatmap based on the supplied tree.
 * Added the ability to handle variable length barcodes, variable length primers, and no primers with split_libraries.py. Error-correction is not supported for barcode types other than golay_12 and hamming_8. split_libraries.py also now throws an error if the barcode length passed on the commands line does not match the barcode length in the mapping file.
-* Updated the print_qiime_config.py script to print useful debugging information about the QIIME environment. 
+* Updated the print_qiime_config.py script to print useful debugging information about the QIIME environment.
 * Added high-level logging functionality to the workflow scripts.
 * Added RUN_ALIAS field to SRA experiment.txt spreadsheet in make_sra_submission.xml.
 
@@ -314,14 +343,14 @@ QIIME 1.0.0 - (8 Apr 2010)
 * Modified the default value of jobs_to_start to be 1 -- because of the addition of the example cluster_jobs script, the default value of 24 no longer makes sense (if it ever really did...). Because the new script is built for multi-core/multi-proc environments, 24 is too high for most cases. Users will need to modify this value from 1 (corresponding to no parallelization) to a value that makes sense for their environment (e.g., 2 for dual core, or 24 to get the previous default).
 * Added colors module and tests to consolidate and standardize coloring code in QIIME - also updated the graphics scripts to use the colors module.
 * Added ability for user to specify the background colors of plots in prefs files or on the command line.
-* Tweaked SRA submission routines in accordance with accepted format from JCVI's 
+* Tweaked SRA submission routines in accordance with accepted format from JCVI's
 survey of multiple body sites.
 * Fixed SF bug #2971581, which was an issue with the path to qiime's scripts directory not being determined correctly when qiime was installed using setup.py. qiime_config now contains a key (empty by defualt) for the qiime_scripts_dir. If this is not specified by the user, it is determined from the qiime project dir.
 * Renamed scripts/make_3d_prefs_file.py as scripts/make_prefs_file.py to reflect that the prefs files are now used by other scripts.
 * Changed behavior of color-by option to make_3d_plots, make_2d_plots, and make_rarefaction_plots, so if no -b option or prefs files is provided, scripts default to coloring by all values. Consequently, mapping files are also now required for these scripts.
 * Added a split_libraries_illumina.py script to handle processing of Illumina GAIIx data.
 * Added an additional rarefaction script for clarity. There are now 3 scripts to handle rarefaction: single_rarefaction takes one input otu table into one output table, allows manual naming,  multiple_rarefactions makes auto-named rarefied otu tables at a range of depths, and multiple_rarefactios_even_depth.py makes auto-named tables all at the same depth.
-* Added workflow unit tests (with timeout functionality). 
+* Added workflow unit tests (with timeout functionality).
 * Added default alpha and beta diversity metrics to qiime_parameters.txt.
 * Integrated Denoiser (Jens Reeder's 454 denoiser) wrappers, and tied this into the workflow scripts.
 * Added biplot functionality.  make_3d_plots now takes the -t option (off by default) to include taxa on the pcoa plot.
@@ -330,7 +359,7 @@ survey of multiple body sites.
 * Added sanity checks to print_qiime_config.py. This will now allow users to evaluate their environment, and should help with debugging.
 * Added new field to qiime_config (temp_dir) which will be used to specify where temp files should be written. Currently this is only used by the workflow tests, and is intended to allow users to specify something other than /tmp for cases when /tmp is not shared between all nodes that might be working on a job. This will eventually be used for all temp dir creation.
 * Added ability to make summary plots for a directory of coordinate files in make_3d_plots and make_2d_plots. The summary plot adds ellipsoidal confidence intervals around each point in the plot.
-	
+
 
 
 QIIME 0.92 - (3 Mar 2010)
@@ -343,7 +372,7 @@ QIIME 0.91 - (3 Mar 2010)
 * Addition of a uclust-based OTU picker.
 * Transfer of all command line interfaces from Qiime/qiime to Qiime/scripts -- this was an important change as it allowed us to get away from the previously one-to-one relationship between files in our library code (in Qiime/qiime) and the command line interfaces.
 * Standardized command line interfaces for all code in Qiime/scripts by using a new function, Qiime.qiime.util.parse_command_line_parameters to handle the command line interfaces.
-* Moved to Sphinx for documentation, and developed a framework for extracting script documentation directly from the scripts to populate the web documentation. 
+* Moved to Sphinx for documentation, and developed a framework for extracting script documentation directly from the scripts to populate the web documentation.
 * Bug fixes through-out the code base, including but not limited to fixes for Sourceforge tickets: 2957503, 2953765, 2945548, 2942443, 2941925, 2941926, 2941717, 2941396, 2939588, 2939575, 2935939.
 * Updated the all_tests.py script to perform a minimal test of the scripts (getting help text works as expected), and to alert users if unit tests may be failing due to missing external applications, in which case they may not be critical.
 * Created a directory for pycogent_backports, where we can temporarily store new code that has been added to PyCogent, but which has not been added to a PyCogent release yet. This will allow us to keep QIIME's dependencies on the latest PyCogent version despite rapid and frequently related changes in both packages.

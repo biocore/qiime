@@ -156,6 +156,8 @@ The primary inputs for `pick_otus.py <./pick_otus.html>`_ are:
 		Sorting method for usearch61 and usearch61_ref.  Valid options are abundance, length, or None.  If the --usearch_fast_cluster option is enabled, the only sorting method allowed in length. [default: abundance]
 	`-`-sizeorder
 		Enable size based preference in clustering with usearch61. Requires that --usearch61_sort_method be abundance. [default: False]
+	`-`-threads
+		Specify number of threads per core to be used for  usearch61 commands that utilize multithreading. By default, will calculate the number of cores to utilize so a single thread will be used per CPU. Specify a fractional number, e.g. 1.0 for 1 thread per core, or 0.5 for a single thread on a two core CPU. Only applies to usearch61. [default: one_per_cpu]
 
 
 **Output:**

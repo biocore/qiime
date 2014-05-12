@@ -1,0 +1,21 @@
+include README.md
+include ChangeLog.md
+include README
+include INSTALL
+
+graft examples
+graft tests
+graft scripts
+graft doc
+
+prune docs/_build
+
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude .git
+global-exclude FastTree
+global-exclude uclust
+global-exclude FlowgramAli_4frame
+global-exclude *.hi
+global-exclude *.o
+global-exclude qiime_test_data

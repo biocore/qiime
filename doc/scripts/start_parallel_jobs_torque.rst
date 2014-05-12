@@ -27,6 +27,12 @@ This script is designed to start multiple jobs in parallel on cluster systems wi
 		Name of queue to submit to [default: friendlyq]
 	-j, `-`-job_dir
 		Directory to store the jobs [default: jobs/]
+	-w, `-`-max_walltime
+		Maximum time in hours the job will run for [default: 72]
+	-c, `-`-cpus
+		Number of CPUs to use [default:1]
+	-n, `-`-nodes
+		Number of nodes to use [default:1]
 
 
 **Output:**

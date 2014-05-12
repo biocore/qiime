@@ -1,41 +1,51 @@
 #!/usr/bin/env python
-#file process_sff.py
-from cogent.util.misc import app_path
-from cogent.app.util import ApplicationNotFoundError
-from cogent.parse.binary_sff import (
-    parse_binary_sff, format_binary_sff, write_binary_sff, decode_accession,
-    )
-from qiime.util import qiime_open, is_gzip
-from os import listdir
-from os.path import splitext, join, isfile, isdir, split
-from cStringIO import StringIO
-import itertools
-import os
-import subprocess
+# file process_sff.py
+from __future__ import division
 
 """Converts directory of sff files into fasta and qual files.
 """
 
+from os import listdir, devnull
+from os.path import splitext, join, isfile, basename, dirname
+from cStringIO import StringIO
+from itertools import imap
+from subprocess import check_call
+
+from cogent.app.util import ApplicationNotFoundError
+from cogent.parse.binary_sff import (
+    parse_binary_sff, format_binary_sff, write_binary_sff, decode_accession,
+)
+from skbio.app.util import which
+
+from qiime.util import qiime_open, is_gzip
+
 __author__ = "Rob Knight"
-__copyright__ = "Copyright 2011, The QIIME Project" 
-__credits__ = ["Rob Knight", "Greg Caporaso", "Jesse Stombaugh", "Kyle Bittinger", "Adam Robbins-Pianka"]
+__copyright__ = "Copyright 2011, The QIIME Project"
+__credits__ = [
+    "Rob Knight",
+    "Greg Caporaso",
+    "Jesse Stombaugh",
+    "Kyle Bittinger",
+    "Adam Robbins-Pianka",
+    "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Kyle Bittinger"
 __email__ = "kylebittinger@gmail.com"
-__status__ = "Development"
+
 
 def _fail_on_gzipped_sff(sff_fp):
     if (is_gzip(sff_fp)):
         error_msg = "Cannot use gzipped SFF's with sfftools; "
         error_msg += "please unzip the file (%s)" % sff_fp
-        raise TypeError, error_msg
+        raise TypeError(error_msg)
+
 
 def _check_call(*args, **kwargs):
     """Run subprocess.check_call, sending stderr messages to /dev/null
     """
-    kwargs['stderr'] = open(os.devnull, 'w')
-    return subprocess.check_call(*args, **kwargs)
+    kwargs['stderr'] = open(devnull, 'w')
+    return check_call(*args, **kwargs)
 
 
 def _cumulative_sum(xs):
@@ -67,7 +77,7 @@ def adjust_sff_cycles(sff_data, num_cycles):
     read_clip_keys = [
         'clip_qual_left', 'clip_qual_right', 'clip_adapter_left',
         'clip_adapter_right',
-        ]
+    ]
 
     def adjust_read(read):
         r = read.copy()
@@ -91,10 +101,10 @@ def adjust_sff_cycles(sff_data, num_cycles):
         for key in read_clip_keys:
             if r[key] > num_bases:
                 r[key] = num_bases
-            
+
         return r
 
-    return (h, itertools.imap(adjust_read, reads))
+    return (h, imap(adjust_read, reads))
 
 
 def format_binary_sff_as_fna(sff_file, output_file=None, qual=False):
@@ -163,13 +173,13 @@ _MISSING_APP_MESSAGE = (
 
 def check_sffinfo():
     """Raise error if sffinfo is not in $PATH """
-    if not app_path('sffinfo'):
+    if not which('sffinfo'):
         raise ApplicationNotFoundError(_MISSING_APP_MESSAGE % 'sffinfo')
 
 
 def check_sfffile():
     """Raise error if sfffile is not in $PATH """
-    if not app_path('sfffile'):
+    if not which('sfffile'):
         raise ApplicationNotFoundError(_MISSING_APP_MESSAGE % 'sfffile')
 
 
@@ -180,10 +190,11 @@ def convert_Ti_to_FLX(sff_fp, output_fp, use_sfftools=False):
         check_sfffile()
         _check_call(
             ['sfffile', '-flx', '-o', output_fp, sff_fp],
-            stdout=open(os.devnull, 'w'))
+            stdout=open(devnull, 'w'))
     else:
-        header, reads = adjust_sff_cycles(parse_binary_sff(qiime_open(sff_fp, 'rb'),
-                                          True), 100)
+        header, reads = adjust_sff_cycles(
+            parse_binary_sff(qiime_open(sff_fp, 'rb'),
+                             True), 100)
         write_binary_sff(open(output_fp, 'w'), header, reads)
 
 
@@ -200,43 +211,45 @@ def make_flow_txt(sff_fp, output_fp, use_sfftools=False):
             raise IOError("Could not parse SFF %s" % sff_fp)
 
 
-def make_fna(sff_fp, output_fp, use_sfftools=False,no_trim=False):
+def make_fna(sff_fp, output_fp, use_sfftools=False, no_trim=False):
     """Makes fna file from sff file."""
     if use_sfftools:
         _fail_on_gzipped_sff(sff_fp)
         check_sffinfo()
         if no_trim:
-            _check_call(['sffinfo','-notrim','-s', sff_fp], 
+            _check_call(['sffinfo', '-notrim', '-s', sff_fp],
                         stdout=open(output_fp, 'w'))
         else:
             _check_call(['sffinfo', '-s', sff_fp], stdout=open(output_fp, 'w'))
     else:
         try:
-            format_binary_sff_as_fna(qiime_open(sff_fp, 'rb'), open(output_fp, 'w'))
+            format_binary_sff_as_fna(
+                qiime_open(sff_fp, 'rb'), open(output_fp, 'w'))
         except:
             raise IOError("Could not parse SFF %s" % sff_fp)
 
 
-def make_qual(sff_fp, output_fp, use_sfftools=False,no_trim=False):
+def make_qual(sff_fp, output_fp, use_sfftools=False, no_trim=False):
     """Makes qual file from sff file."""
     if use_sfftools:
         _fail_on_gzipped_sff(sff_fp)
         check_sffinfo()
         if no_trim:
-            _check_call(['sffinfo','-notrim','-q', sff_fp], 
+            _check_call(['sffinfo', '-notrim', '-q', sff_fp],
                         stdout=open(output_fp, 'w'))
         else:
             _check_call(['sffinfo', '-q', sff_fp], stdout=open(output_fp, 'w'))
     else:
         try:
-            format_binary_sff_as_fna(qiime_open(sff_fp, 'rb'), open(output_fp, 'w'), qual=True)
+            format_binary_sff_as_fna(
+                qiime_open(sff_fp, 'rb'), open(output_fp, 'w'), qual=True)
         except:
             raise IOError("Could not parse SFF %s" % sff_fp)
 
 
 def prep_sffs_in_dir(
-    sff_dir, output_dir, make_flowgram=False, convert_to_flx=False,
-    use_sfftools=False,no_trim=False):
+        sff_dir, output_dir, make_flowgram=False, convert_to_flx=False,
+        use_sfftools=False, no_trim=False):
     """Converts all sffs in dir to fasta/qual.
 
     If convert_to_flx is True, each SFF file is first adjusted to
@@ -252,16 +265,17 @@ def prep_sffs_in_dir(
         # This is undocumented behavior, but we do support passing a
         # single file.  Do not check for sff extension; assume the
         # user knows what they are doing.
-        filenames = [os.path.basename(sff_dir)]
-        sff_dir = os.path.dirname(sff_dir)
+        filenames = [basename(sff_dir)]
+        sff_dir = dirname(sff_dir)
     else:
-        filenames = [x for x in os.listdir(sff_dir) if (x.endswith('.sff') or
+        filenames = [x for x in listdir(sff_dir) if (x.endswith('.sff') or
                      x.endswith('.sff.gz'))]
 
     for filename in filenames:
         sff_fp = join(sff_dir, filename)
         base_filename = splitext(filename)[0]
-        if filename.endswith('.gz'): base_filename = splitext(base_filename)[0]
+        if filename.endswith('.gz'):
+            base_filename = splitext(base_filename)[0]
         base_output_fp = join(output_dir, base_filename)
 
         if convert_to_flx:
@@ -270,10 +284,9 @@ def prep_sffs_in_dir(
             convert_Ti_to_FLX(sff_fp, sff_flx_fp, use_sfftools)
             # Converted sff file becomes basis for further processing
             sff_fp = sff_flx_fp
-            
+
         make_fna(sff_fp, base_output_fp + '.fna', use_sfftools, no_trim)
         make_qual(sff_fp, base_output_fp + '.qual', use_sfftools, no_trim)
-        
-        
+
         if make_flowgram:
             make_flow_txt(sff_fp, base_output_fp + '.txt', use_sfftools)

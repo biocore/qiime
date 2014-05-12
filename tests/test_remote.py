@@ -5,15 +5,14 @@ __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2012, The QIIME project"
 __credits__ = ["Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
-__status__ = "Development"
 
 """Test suite for the remote.py module."""
 
 from socket import gaierror
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from qiime.remote import (_get_cleaned_headers,
                           _get_spreadsheet_headers,
                           _export_spreadsheet,
@@ -28,7 +27,9 @@ try:
 except ImportError:
     SpreadsheetsService = raise_gdata_not_found_error
 
+
 class RemoteTests(TestCase):
+
     """Tests for the remote.py module."""
 
     def setUp(self):
@@ -72,7 +73,7 @@ class RemoteTests(TestCase):
         """Test correctly raises errors on various bad inputs. Will fail if no Internet connection."""
         # Bad worksheet name.
         self.assertRaises(GoogleSpreadsheetError, load_google_spreadsheet,
-                         self.spreadsheet_key, worksheet_name='foo')
+                          self.spreadsheet_key, worksheet_name='foo')
 
     def test_extract_spreadsheet_key_from_url(self):
         """Test correctly extracts a key from a URL."""
@@ -105,27 +106,27 @@ class RemoteTests(TestCase):
             self.assertEqual(obs, exp)
         else:
             raise GoogleSpreadsheetConnectionError("Cannot execute test "
-                    "without an active Internet connection.")
+                                                   "without an active Internet connection.")
 
     def test_export_spreadsheet(self):
         """Test exporting spreadsheet as TSV. Will fail if no Internet connection."""
         client = self.getClient()
         if client:
             exp = [['#SampleID', 'DOB'],
-                ['#Example mapping file for the QIIME analysis package.  '
-                 'These 9 samples are from a study of the effects of exercise '
-                 'and diet on mouse cardiac physiology (Crawford, et al, '
-                 'PNAS, 2009).'], ['PC.354', '20061218'],
-                ['PC.355', '20061218'], ['PC.356', '20061126'],
-                ['PC.481', '20070314'], ['PC.593', '20071210'],
-                ['PC.607', '20071112'], ['PC.634', '20080116'],
-                ['PC.635', '20080116'], ['PC.636', '20080116']]
+                   ['#Example mapping file for the QIIME analysis package.  '
+                    'These 9 samples are from a study of the effects of exercise '
+                    'and diet on mouse cardiac physiology (Crawford, et al, '
+                    'PNAS, 2009).'], ['PC.354', '20061218'],
+                   ['PC.355', '20061218'], ['PC.356', '20061126'],
+                   ['PC.481', '20070314'], ['PC.593', '20071210'],
+                   ['PC.607', '20071112'], ['PC.634', '20080116'],
+                   ['PC.635', '20080116'], ['PC.636', '20080116']]
             obs = _export_spreadsheet(client, self.spreadsheet_key,
                                       self.worksheet_id, ['#SampleID', 'DOB'])
             self.assertEqual(obs, exp)
         else:
             raise GoogleSpreadsheetConnectionError("Cannot execute test "
-                    "without an active Internet connection.")
+                                                   "without an active Internet connection.")
 
     def test_export_spreadsheet_invalid_input(self):
         """Test exporting spreadsheet with bad input raises errors. Will fail if no Internet connection."""
@@ -133,11 +134,11 @@ class RemoteTests(TestCase):
         if client:
             # Nonexisting header.
             self.assertRaises(GoogleSpreadsheetError, _export_spreadsheet,
-                    client, self.spreadsheet_key, self.worksheet_id,
-                    ['#SampleID', 'Foo'])
+                              client, self.spreadsheet_key, self.worksheet_id,
+                              ['#SampleID', 'Foo'])
         else:
             raise GoogleSpreadsheetConnectionError("Cannot execute test "
-                    "without an active Internet connection.")
+                                                   "without an active Internet connection.")
 
     def test_get_cleaned_headers(self):
         """Test correctly converts headers to Google's representation."""
@@ -145,8 +146,8 @@ class RemoteTests(TestCase):
         exp = ['foo', 'foo_2', 'foo_3', 'foo_4', 'fooo', 'foo_5', 'foo_6',
                'foo_7', 'foo_8', 'foo_9', 'f2oo456', 'foo_10']
         obs = _get_cleaned_headers(
-                ['foo', 'Foo', 'FOO', 'F_oO', 'F:Oo_o', '123foo', '#Foo',
-                 '123foo', ' 123Foo', 'f O\tO#', ' f2\too456', '456 foo'])
+            ['foo', 'Foo', 'FOO', 'F_oO', 'F:Oo_o', '123foo', '#Foo',
+             '123foo', ' 123Foo', 'f O\tO#', ' f2\too456', '456 foo'])
         self.assertEqual(obs, exp)
 
         # All unique.

@@ -4,201 +4,177 @@ __author__ = "William Walters"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["William Walters"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "William Walters"
 __email__ = "William.A.Walters@colorado.edu"
-__status__ = "Development"
 
+from os import close
 from os.path import isdir, isfile, exists
 from shutil import rmtree
 
-from cogent.util.unit_test import TestCase, main
-from qiime.util import get_tmp_filename
-from cogent.util.misc import remove_files, get_random_directory_name
+from tempfile import mkdtemp, mkstemp
+from unittest import TestCase, main
+from cogent.util.misc import remove_files
+from skbio.util.misc import create_dir
 
 from qiime.quality_scores_plot import generate_histogram,\
- plot_qual_report, get_qual_stats, bin_qual_scores, write_qual_report
-from qiime.util import create_dir
+    plot_qual_report, get_qual_stats, bin_qual_scores, write_qual_report
+
 
 class QualityScoresPlotTests(TestCase):
+
     """ Unit tests for the quality_scores_histogram.py module """
-    
+
     def setUp(self):
         # create the temporary input files that will be used
-        
+
         self._files_to_remove = []
-        
-        
-        self.qual_fp = get_tmp_filename(\
-         prefix = 'qual_scores_',
-         suffix = '.qual')
+
+        fd, self.qual_fp = mkstemp(prefix='qual_scores_', suffix='.qual')
+        close(fd)
         seq_file = open(self.qual_fp, 'w')
         seq_file.write(qual_scores)
         seq_file.close()
-        
-        self.output_dir = get_random_directory_name(prefix = '/tmp/')
+
+        self.output_dir = mkdtemp()
         self.output_dir += '/'
-        
+
         create_dir(self.output_dir)
-        
+
         self.expected_output_text_file = expected_output_text_file
-        
-        
+
         self._files_to_remove =\
-         [self.qual_fp]
-        
+            [self.qual_fp]
+
     def tearDown(self):
         if self._files_to_remove:
             remove_files(self._files_to_remove)
-        if exists(self.output_dir ):
-            rmtree(self.output_dir )
-            
+        if exists(self.output_dir):
+            rmtree(self.output_dir)
+
     def test_generate_histogram(self):
         """ No errors when calling function, creates output files"""
-        
+
         # Cannot test content of graphics file, only successful execution
-        
+
         output_dir = self.output_dir
-        
-        
+
         # Should not raise an error with good data
-        
-        generate_histogram(self.qual_fp, output_dir, verbose = False)
-        
+        generate_histogram(self.qual_fp, output_dir, verbose=False)
+
         expected_outfile = output_dir + 'quality_scores_plot.pdf'
-        
+
         self.assertTrue(isfile(expected_outfile))
-        
+
         # Test text file output for proper data
         text_output_fp = output_dir + "quality_bins.txt"
-        
-        text_output_f = open(text_output_fp, "U")
-        
-        actual_text_output = "\n".join([line.strip() for line in text_output_f])
 
+        text_output_f = open(text_output_fp, "U")
+
+        actual_text_output = "\n".join([line.strip()
+                                       for line in text_output_f])
 
         self.assertEqual(actual_text_output, self.expected_output_text_file)
-        
+
     def test_write_qual_report(self):
         """ Writes data to output text file properly """
-        
-        
+
         output_dir = self.output_dir
-        
-        
+
         qual_bins = [[1, 2, 6], [1, 2, 3], [2, 4], [4]]
-        
+
         expected_ave_bins = [3.00, 2.00, 3.00, 4.00]
         expected_std_dev_bins = [2.16, 0.816, 1.0, 0]
         expected_total_bases_bins = [3, 3, 2, 1]
-        
+
         score_min = 25
-        
+
         write_qual_report(expected_ave_bins, expected_std_dev_bins,
-         expected_total_bases_bins, output_dir, score_min)
-        
+                          expected_total_bases_bins, output_dir, score_min)
+
         # Test text file output for proper data
         text_output_fp = output_dir + "quality_bins.txt"
-        
+
         text_output_f = open(text_output_fp, "U")
-        
+
         actual_text_output = [line.strip() for line in text_output_f]
-        
+
         ave_bin_index = 2
         std_dev_bin_index = 4
         total_bases_index = 6
-        
+
         actual_bins_ave =\
-         [float(f) for f in actual_text_output[ave_bin_index].split(',')]
+            [float(f) for f in actual_text_output[ave_bin_index].split(',')]
         actual_bins_std =\
-         [float(f) for f in actual_text_output[std_dev_bin_index].split(',')]
+            [float(f)
+             for f in actual_text_output[std_dev_bin_index].split(',')]
         actual_bins_total_bases =\
-         [float(f) for f in actual_text_output[total_bases_index].split(',')]
-        
+            [float(f)
+             for f in actual_text_output[total_bases_index].split(',')]
 
         self.assertEqual(actual_bins_ave, expected_ave_bins)
         self.assertEqual(actual_bins_std, expected_std_dev_bins)
         self.assertEqual(actual_bins_total_bases, expected_total_bases_bins)
-        
-        
-        
-        
+
     def test_bin_qual_scores(self):
         """ Properly bins qual scores according to nucleotide position """
-        
-        qual_data = {'seq1':[10, 20, 30, 40], 'seq2':[11, 21, 31],
-         'seq3':[12, 22]}
-        
-         
+
+        qual_data = {'seq1': [10, 20, 30, 40], 'seq2': [11, 21, 31],
+                     'seq3': [12, 22]}
+
         expected_bins = [[10, 11, 12], [20, 21, 22], [30, 31], [40]]
-        
+
         actual_bins = bin_qual_scores(qual_data)
-        
-        
+
         # Because of arbritrary dictionary order, need to sort results
-        
         for bin in range(len(actual_bins)):
             actual_bins[bin].sort()
-        
+
         self.assertEqual(actual_bins, expected_bins)
-        
-        
+
     def test_get_qual_stats(self):
         """ Properly generates averages, std dev for bins """
-        
+
         qual_bins = [[1, 2, 6], [1, 2, 3], [2, 4], [4]]
-        
+
         expected_ave_bins = [3, 2, 3, 4]
         expected_std_dev_bins = [2.16, 0.816, 1.0, 0]
         expected_total_bases_bins = [3, 3, 2, 1]
         score_min = 25
-        
+
         actual_ave_bins, actual_std_dev_bins, actual_total_bases_bins,\
-         suggested_trunc_pos = get_qual_stats(qual_bins, score_min)
-         
+            suggested_trunc_pos = get_qual_stats(qual_bins, score_min)
+
         # Should give correct suggested truncation position, where the quality
         # score average went below 25, in this case, at base 0
         expected_trunc_pos = 0
-        
+
         self.assertEqual(suggested_trunc_pos, expected_trunc_pos)
-         
+
         # Round standard deviation calculations
         for n in range(len(actual_std_dev_bins)):
             actual_std_dev_bins[n] = round(actual_std_dev_bins[n], 3)
-         
+
         self.assertEqual(actual_ave_bins, expected_ave_bins)
         self.assertEqual(actual_std_dev_bins, expected_std_dev_bins)
         self.assertEqual(actual_total_bases_bins, expected_total_bases_bins)
-        
-        
+
     def test_plot_qual_report(self):
         """ Is called without error """
-        
+
         output_dir = self.output_dir
-        
-        
+
         score_min = 20
-        
+
         ave_bins = [3, 2, 3, 4]
         std_dev_bins = [2.16, 0.816, 1.0, 0]
         total_bases_bins = [3, 3, 2, 1]
-        
+
         plot_qual_report(ave_bins, std_dev_bins, total_bases_bins, score_min,
-         output_dir)
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+                         output_dir)
+
+
 # Long strings at the end for better readability
-   
-
-
 qual_scores = """>seq1
 36 36 36 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 40 40 40 40 40 40 40 40 40 40 38 38 39 40 40 40 40 40 40 40 40 40 40 40 40 40 40 37 37 37 37 37 33 33 33 36 36 37 37 37 37 37
 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37

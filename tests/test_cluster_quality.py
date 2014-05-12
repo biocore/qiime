@@ -6,34 +6,36 @@ __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Justin Kuczynski"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
-__status__ = "Development"
 
 import numpy
 from os import remove
 
 from cogent.util.misc import create_dir
-from cogent.util.unit_test import TestCase, main
-from qiime.util import get_tmp_filename
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 
 from qiime.cluster_quality import clust_qual_ratio
 
 
 class FunctionTests(TestCase):
+
     """Tests of the abstract OtuPicker class"""
 
     def test_clust_qual_ratio(self):
-        dist_labels = ['s1','s2','s3']
-        dmtx = numpy.array([[0,2.1,3],[2.1,0,1],[3,1,0]])
-        dists = [dist_labels,dmtx]
+        dist_labels = ['s1', 's2', 's3']
+        dmtx = numpy.array([[0, 2.1, 3], [2.1, 0, 1], [3, 1, 0]])
+        dists = [dist_labels, dmtx]
         map_data = \
-            {'s1':{'color':'red'},'s2':{'color':'blue'},'s3':{'color':'red'}}
-        bet, within = clust_qual_ratio(dists, [map_data,[]], 'color')
-        self.assertFloatEqual( sorted(bet), [1,2.1])
-        self.assertFloatEqual(within, [3.])
+            {'s1': {'color': 'red'},
+             's2': {'color': 'blue'},
+                's3': {'color': 'red'}}
+        bet, within = clust_qual_ratio(dists, [map_data, []], 'color')
+        assert_almost_equal(sorted(bet), [1, 2.1])
+        assert_almost_equal(within, [3.])
 
-#run unit tests if run from command-line
+# run unit tests if run from command-line
 if __name__ == '__main__':
     main()

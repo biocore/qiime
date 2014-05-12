@@ -38,6 +38,10 @@ Checks file is a valid fasta file, does not contain gaps ('.' or '-' characters)
 		Determine if sequences are all the same length. [default: False]
 	-a, `-`-all_ids_found
 		Determine if all SampleIDs provided in the mapping file are represented in the fasta file labels. [default: False]
+	-b, `-`-suppress_barcode_checks
+		Suppress barcode checks [default: False]
+	-p, `-`-suppress_primer_checks
+		Suppress primer checks [default: False]
 
 
 **Output:**

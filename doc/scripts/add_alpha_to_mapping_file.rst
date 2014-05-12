@@ -7,7 +7,7 @@
 
 **Description:**
 
-Add alpha diversity data to a mapping file for use with other QIIME scripts, i. e. `make_3d_plots.py <./make_3d_plots.html>`_. The resulting mapping file will contain three new columns per metric in the alpha diversity data; the first column being the raw value, the second being a normalized raw value and the third one a label classifying the bin where this value fits based on the normalized value.
+Add alpha diversity data to a mapping file for use with other QIIME scripts, i. e. `make_emperor.py <./make_emperor.html>`_. The resulting mapping file will contain three new columns per metric in the alpha diversity data; the first column being the raw value, the second being a normalized raw value and the third one a label classifying the bin where this value fits based on the normalized value.
 
 
 **Usage:** :file:`add_alpha_to_mapping_file.py [options]`
@@ -63,7 +63,7 @@ Add the alpha diversity values to a mapping file and classify the normalized val
 
 **Adding collated alpha diversity data:**
 
-Add the mean of the alpha diversity values at a specified rarefaction depth, this case is for use with the output of `collate_alpha.py <./collated_alpha.html>`_. It is recommended that the filenames are the name of the metric used in each file.
+Add the mean of the alpha diversity values at a specified rarefaction depth, this case is for use with the output of `collate_alpha.py <./collate_alpha.html>`_. It is recommended that the filenames are the name of the metric used in each file.
 
 ::
 

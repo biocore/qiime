@@ -5,16 +5,16 @@ __author__ = "Justin Kuzynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Justin Kuczynski"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
-__status__ = "Development"
 
 from qiime.principal_coordinates import pcoa
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 
 
 class FunctionTests(TestCase):
+
     """Tests of top-level functions"""
 
     def setUp(self):
@@ -26,9 +26,9 @@ sam3\t.44\t.66\t0""".split('\n')
     def test_pcoa(self):
         """ pcoa should throw no errors"""
         res = pcoa(self.distmtx_txt)
-        assert res # formatting tested elsewhere
+        assert res  # formatting tested elsewhere
 
 
-#run tests if called from command line
+# run tests if called from command line
 if __name__ == '__main__':
     main()

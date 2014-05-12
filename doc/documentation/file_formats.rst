@@ -31,13 +31,13 @@ Each column header MUST contain alphanumeric (a-z, A-Z and 1-9) and/or underscor
 
 Currently, the user has the ability to define their own column headers, however; QIIME will be adopting the MIMARKS standard, therefore all column headings MUST correspond the proper MIMARKS nomenclature (http://gensc.org/gc_wiki/index.php/MIMARKS). The following details the current mapping file guidelines:
 
-1. The first column header must be "#SampleID", and the data in this column must contain unique (short and meaningful) sample identifiers containing only alphanumeric and period (".") characters. Leading and trailing spaces will raise a warning when using `check_id_map.py <../scripts/check_id_map.html>`_.
-2. The second column header must be "BarcodeSequence", where each value in that column corresponds to the barcode used for each sample.  Only IUPAC DNA characters are acceptable. Leading and trailing spaces will raise a warning when using `check_id_map.py <../scripts/check_id_map.html>`_.
-3. The third column header must be “LinkerPrimerSequence”, where each value in that column corresponds to the primer used to amplify that sample.  Only IUPAC DNA characters are acceptable. Leading and trailing spaces will raise a warning when using `check_id_map.py <../scripts/check_id_map.html>`_.
+1. The first column header must be "#SampleID", and the data in this column must contain unique (short and meaningful) sample identifiers containing only alphanumeric and period (".") characters. Leading and trailing spaces will raise a warning when using `validate_mapping_file.py <../scripts/validate_mapping_file.html>`_.
+2. The second column header must be "BarcodeSequence", where each value in that column corresponds to the barcode used for each sample.  Only IUPAC DNA characters are acceptable. Leading and trailing spaces will raise a warning when using `validate_mapping_file.py <../scripts/validate_mapping_file.html>`_.
+3. The third column header must be “LinkerPrimerSequence”, where each value in that column corresponds to the primer used to amplify that sample.  Only IUPAC DNA characters are acceptable. Leading and trailing spaces will raise a warning when using `validate_mapping_file.py <../scripts/validate_mapping_file.html>`_.
 4. All subsequent column headers (except the last one) are metadata headers. For example, a "Smoker" column would include either "Yes" or "No". Note that the data in each column is assumed to be categorical unless specified otherwise. Categorical data columns must include at least 2 unique values per column. All metadata must be composed of only alphanumeric, underscore ("_"), period ("."), minus sign ("-"), plus sign ("+"), percentage ("%"), space (" "), semicolon (";"), colon (":"), comma (","), and/or forward slash ("/") characters. For missing data, write "NA"; do not leave blanks.
 5. The last column of the mapping file must be named "Description". Information in this column includes information that is unique to each sample, such as the medications taken by the patient, or any other descriptive information. The same character restrictions that apply to the metadata columns in guideline four apply to sample descriptions.  Sample/Run Description should be kept brief, if possible. Information that applies to all samples in a mapping file should go in the run description section, which is defined as lines starting with a "#" character, immediately following the header line (See example format below.) Information that is specific to a particular sample should go in the "Description" column.
 6. There should be no empty lines or comment lines (starting with #) throughout the metadata, with the exception of any additional run description lines that immediately follow the initial header line.
-7. Quotes (") will be stripped from the mapping file (header and data fields) when it is parsed by most scripts in QIIME. For `check_id_map.py <../scripts/check_id_map.html>`_, these will be flagged with a warning.
+7. Quotes (") will be stripped from the mapping file (header and data fields) when it is parsed by most scripts in QIIME. For `validate_mapping_file.py <../scripts/validate_mapping_file.html>`_, these will be flagged with a warning.
 8. Stripping of leading and trailing whitespace is only performed on table cells (including sample IDs), not on the column headers. If quote characters (") are present, these are removed first, followed by whitespace stripping.
 
 The header for this mapping file starts with a pound (#) character, and generally requires a "SampleID", "BarcodeSequence", "LinkerPrimerSequence", and a "Description", all tab separated.  The following example header represents the minimum field requirement for the mapping file:
@@ -50,7 +50,7 @@ Additional optional headers can follow the "LinkerPrimerSequence" header.  Any l
 
 Data fields do not start with a pound character.  These fields are tab separated, and have restrictions regarding character usage.  SampleID fields only accept alphanumeric and period (.) characters.  The other data fields will accept alphanumeric, period (.), underscore (_), percent (%), plus (+), minus (-), space ( ), semicolon (;), colon (:), comma (,), or forward slash (/) characters.
 
-You are highly encouraged to validate your mapping file using `check_id_map.py <../scripts/check_id_map.html>`_ before attempting to analyze your data. This tool will check for errors, and make suggestions for other aspects of the file to be edited (errors and warnings are output to a log file, and suggested changes to invalid characters are output to a "_corrected.txt" file).  The contents of a sample mapping file are shown here - as you can see, a nucleotide barcode sequence is provided for each of the 9 samples, as well as metadata related to treatment group and date of birth, and general run descriptions about the project:
+You are highly encouraged to validate your mapping file using `validate_mapping_file.py <../scripts/validate_mapping_file.html>`_ before attempting to analyze your data. This tool will check for errors, and make suggestions for other aspects of the file to be edited (errors and warnings are output to a log file, and suggested changes to invalid characters are output to a "_corrected.txt" file).  The contents of a sample mapping file are shown here - as you can see, a nucleotide barcode sequence is provided for each of the 9 samples, as well as metadata related to treatment group and date of birth, and general run descriptions about the project:
 
 .. note::
     
@@ -74,12 +74,12 @@ During demultiplexing with `split_libraries.py <../scripts/split_libraries.html>
 Generating a Mapping File by Hand
 +++++++++++++++++++++++++++++++++
 
-The easiest way to generate a mapping file is to use a spreadsheet program, such as Microsoft Excel.  Each header and field should be in its own column.  When saving the file, it is best to use the pre-built tab-delimited option.  If this is not available for a particular spreadsheet program, set the format to text csv, the field delimiter as a tab, and leave the text delimiter blank.  Once the file is saved, open it in a basic text editor to see if the formatting meets the criteria given above.  Finally, use `check_id_map.py <../scripts/check_id_map.html>`_ to test the file for QIIME compatibility.
+The easiest way to generate a mapping file is to use a spreadsheet program, such as Microsoft Excel.  Each header and field should be in its own column.  When saving the file, it is best to use the pre-built tab-delimited option.  If this is not available for a particular spreadsheet program, set the format to text csv, the field delimiter as a tab, and leave the text delimiter blank.  Once the file is saved, open it in a basic text editor to see if the formatting meets the criteria given above.  Finally, use `validate_mapping_file.py <../scripts/validate_mapping_file.html>`_ to test the file for QIIME compatibility.
 
 Fixing Problems in the Mapping File
 +++++++++++++++++++++++++++++++++++
 
-`check_id_map.py <../scripts/check_id_map.html>`_ will test for many problems in the mapping file, such as incorrect character usage.  A "_corrected.txt" form of the mapping file will be generated containing invalid characters replaced by allowed characters.  The following is an example of an incorrectly formatted mapping file, with invalid characters, duplicated values that should be unique ("SampleID", "BarcodeSequence"), non DNA characters in the "LinkerPrimerSequence", and a missing "Description" cell.
+`validate_mapping_file.py <../scripts/validate_mapping_file.html>`_ will test for many problems in the mapping file, such as incorrect character usage.  A "_corrected.txt" form of the mapping file will be generated containing invalid characters replaced by allowed characters.  The following is an example of an incorrectly formatted mapping file, with invalid characters, duplicated values that should be unique ("SampleID", "BarcodeSequence"), non DNA characters in the "LinkerPrimerSequence", and a missing "Description" cell.
 
 .. note::
 
@@ -113,7 +113,7 @@ The corrected mapping file will replace invalid characters and fill in missing "
    * PC.635	ACCGCAGAGTCA	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	Fasting_mouse__I.D._635
    * PC.636	ACGGTGAGTGTC	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	Fasting_mouse__I.D._636
 
-However, this corrected mapping file is still not usable.  The log file generated by `check_id_map.py <../scripts/check_id_map.html>`_ explains the remaining problems.  The barcode "AGCACGAGCCTA" is duplicated, and appears in the first two rows.  Rows two and three contain the same "SampleID" value.  These errors will have to be fixed by hand.  Secondly, the "Z" character in the fourth row "LinkerPrimerSequence" is not a valid IUPAC DNA character and needs to be replaced with a legitimate nucleotide code.
+However, this corrected mapping file is still not usable.  The log file generated by `validate_mapping_file.py <../scripts/validate_mapping_file.html>`_ explains the remaining problems.  The barcode "AGCACGAGCCTA" is duplicated, and appears in the first two rows.  Rows two and three contain the same "SampleID" value.  These errors will have to be fixed by hand.  Secondly, the "Z" character in the fourth row "LinkerPrimerSequence" is not a valid IUPAC DNA character and needs to be replaced with a legitimate nucleotide code.
 
 Mapping Files Without Barcodes and/or Primers
 +++++++++++++++++++++++++++++++++++++++++++++
@@ -139,9 +139,9 @@ To validate such a mapping file, the user will need to disable barcode and prime
 
 ::
 
-	check_id_map.py -m <mapping_filepath> -o check_id_output/ -p -b
+	validate_mapping_file.py -m <mapping_filepath> -o check_id_output/ -p -b
 
-
+The above mapping file will still show a warning-as it is lacking any barcodes, it has no way to differentiate sequences, and thus can not be used for demultiplexing. However, such warnings can be ignored if the mapping file is being used for steps downstream of demultiplexing.
 
 
 Demultiplexed sequences

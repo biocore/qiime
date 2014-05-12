@@ -5,10 +5,9 @@ __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2012, The QIIME project"
 __credits__ = ["Jai Ram Rideout", "Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
-__status__ = "Development"
 
 from os.path import basename, join
 from cogent.util.misc import create_dir
@@ -17,7 +16,7 @@ from qiime.util import (add_filename_suffix, parse_command_line_parameters,
                         get_options_lookup, make_option)
 
 from qiime.compare_taxa_summaries import (comparison_modes,
-        compare_taxa_summaries, correlation_types, tail_types)
+                                          compare_taxa_summaries, correlation_types, tail_types)
 
 options_lookup = get_options_lookup()
 
@@ -45,39 +44,39 @@ http://qiime.org/tutorials/taxa_summary_comparison.html.
 
 script_info['script_usage'] = []
 script_info['script_usage'].append(("Paired sample comparison",
-"Compare all samples that have matching sample IDs between the two input taxa "
-"summary files using the pearson correlation coefficient. The first input "
-"taxa summary file is from the overview tutorial, using the RDP classifier "
-"with a confidence level of 0.60 and the gg_otus_4feb2011 97% representative "
-"set. The second input taxa summary file was generated the same way, except "
-"for using a confidence level of 0.80.",
-"%prog -i ts_rdp_0.60.txt,ts_rdp_0.80.txt -m paired -o taxa_comp"))
+                                    "Compare all samples that have matching sample IDs between the two input taxa "
+                                    "summary files using the pearson correlation coefficient. The first input "
+                                    "taxa summary file is from the overview tutorial, using the RDP classifier "
+                                    "with a confidence level of 0.60 and the gg_otus_4feb2011 97% representative "
+                                    "set. The second input taxa summary file was generated the same way, except "
+                                    "for using a confidence level of 0.80.",
+                                    "%prog -i ts_rdp_0.60.txt,ts_rdp_0.80.txt -m paired -o taxa_comp"))
 
 script_info['script_usage'].append(("Paired sample comparison with sample ID "
-"map", "Compare samples based on the mappings in the sample ID map using the "
-"spearman correlation coefficient. The second input taxa summary file is "
-"simply the original ts_rdp_0.60.txt file with all sample IDs containing "
-"'PC.' renamed to 'S.'.",
-"%prog -i ts_rdp_0.80.txt,ts_rdp_0.60_renamed.txt -m paired -o "
-"taxa_comp_using_sample_id_map -s sample_id_map.txt -c spearman"))
+                                    "map", "Compare samples based on the mappings in the sample ID map using the "
+                                    "spearman correlation coefficient. The second input taxa summary file is "
+                                    "simply the original ts_rdp_0.60.txt file with all sample IDs containing "
+                                    "'PC.' renamed to 'S.'.",
+                                    "%prog -i ts_rdp_0.80.txt,ts_rdp_0.60_renamed.txt -m paired -o "
+                                    "taxa_comp_using_sample_id_map -s sample_id_map.txt -c spearman"))
 
 script_info['script_usage'].append(("Detailed paired sample comparison",
-"Compare all samples that have matching sample IDs between the two input taxa "
-"summary files using the pearson correlation coefficient. Additionally, "
-"compute the correlation coefficient between each pair of samples "
-"individually.",
-"%prog -i ts_rdp_0.60.txt,ts_rdp_0.80.txt -m paired -o taxa_comp_detailed "
-"--perform_detailed_comparisons"))
+                                    "Compare all samples that have matching sample IDs between the two input taxa "
+                                    "summary files using the pearson correlation coefficient. Additionally, "
+                                    "compute the correlation coefficient between each pair of samples "
+                                    "individually.",
+                                    "%prog -i ts_rdp_0.60.txt,ts_rdp_0.80.txt -m paired -o taxa_comp_detailed "
+                                    "--perform_detailed_comparisons"))
 
 script_info['script_usage'].append(("One-tailed test",
-"Compare all samples that have matching sample IDs between the two input taxa "
-"summary files using the pearson correlation coefficient. Perform a "
-"one-tailed (negative association) test of significance for both parametric "
-"and nonparametric tests. Additionally, compute a 90% confidence interval for "
-"the correlation coefficient. Note that the confidence interval will still be "
-"two-sided.",
-"%prog -i ts_rdp_0.60.txt,ts_rdp_0.80.txt -m paired -o taxa_comp_one_tailed "
-"-t low -l 0.90"))
+                                    "Compare all samples that have matching sample IDs between the two input taxa "
+                                    "summary files using the pearson correlation coefficient. Perform a "
+                                    "one-tailed (negative association) test of significance for both parametric "
+                                    "and nonparametric tests. Additionally, compute a 90% confidence interval for "
+                                    "the correlation coefficient. Note that the confidence interval will still be "
+                                    "two-sided.",
+                                    "%prog -i ts_rdp_0.60.txt,ts_rdp_0.80.txt -m paired -o taxa_comp_one_tailed "
+                                    "-t low -l 0.90"))
 
 script_info['output_description'] = """
 The script will always output at least three files to the specified output
@@ -108,71 +107,73 @@ that were performed.
 
 script_info['required_options'] = [
     make_option('-i', '--taxa_summary_fps', type='existing_filepaths',
-        help='the two input taxa summary filepaths, comma-separated. These '
-        'will usually be the files that are output by summarize_taxa.py. '
-        'These taxa summary files do not need to have the same taxa in the '
-        'same order, as the script will make them compatible before comparing '
-        'them'),
+                help='the two input taxa summary filepaths, comma-separated. These '
+                'will usually be the files that are output by summarize_taxa.py. '
+                'These taxa summary files do not need to have the same taxa in the '
+                'same order, as the script will make them compatible before comparing '
+                'them'),
     options_lookup['output_dir'],
     make_option('-m', '--comparison_mode', type='choice',
-        choices=comparison_modes, help='the type of comparison to '
-        'perform. Valid choices: ' + ' or '.join(comparison_modes) +
-        '. "paired" will compare each sample in the taxa summary '
-        'files that match based on sample ID, or that match given a sample ID '
-        'map (see the --sample_id_map_fp option for more information). '
-        '"expected" will compare each sample in the first taxa summary file '
-        'to an expected sample (contained in the second taxa summary file). '
-        'If "expected", the second taxa summary file must contain only a '
-        'single sample that all other samples will be compared to (unless the '
-        '--expected_sample_id option is provided)')
+                choices=comparison_modes, help='the type of comparison to '
+                'perform. Valid choices: ' + ' or '.join(comparison_modes) +
+                '. "paired" will compare each sample in the taxa summary '
+                'files that match based on sample ID, or that match given a sample ID '
+                'map (see the --sample_id_map_fp option for more information). '
+                '"expected" will compare each sample in the first taxa summary file '
+                'to an expected sample (contained in the second taxa summary file). '
+                'If "expected", the second taxa summary file must contain only a '
+                'single sample that all other samples will be compared to (unless the '
+                '--expected_sample_id option is provided)')
 ]
 script_info['optional_options'] = [
     make_option('-c', '--correlation_type', type='choice',
-        choices=correlation_types, help='the type of correlation coefficient '
-        'to compute. Valid choices: ' + ' or '.join(correlation_types) +
-        ' [default: %default]', default='pearson'),
+                choices=correlation_types, help='the type of correlation coefficient '
+                'to compute. Valid choices: ' + ' or '.join(correlation_types) +
+                ' [default: %default]', default='pearson'),
     make_option('-t', '--tail_type', type='choice',
-        choices=tail_types, help='the type of tail test to compute when '
-        'calculating the p-values. "high" specifies a one-tailed test for '
-        'values greater than the observed correlation coefficient (positive '
-        'association), while "low" specifies a one-tailed test for values '
-        'less than the observed correlation coefficient (negative '
-        'association). "two-sided" specifies a two-tailed test for values '
-        'greater in magnitude than the observed correlation coefficient. '
-        'Valid choices: ' + ' or '.join(tail_types) + ' [default: %default]',
-        default='two-sided'),
-    make_option('-n','--num_permutations', type='int',
-        help='the number of permutations to perform when calculating the '
-        'nonparametric p-value. Must be an integer greater than or equal to '
-        'zero. If zero, the nonparametric test of significance will not be '
-        'performed and the nonparametric p-value will be reported as "N/A" '
-        '[default: %default]', default=999),
+                choices=tail_types, help='the type of tail test to compute when '
+                'calculating the p-values. "high" specifies a one-tailed test for '
+                'values greater than the observed correlation coefficient (positive '
+                'association), while "low" specifies a one-tailed test for values '
+                'less than the observed correlation coefficient (negative '
+                'association). "two-sided" specifies a two-tailed test for values '
+                'greater in magnitude than the observed correlation coefficient. '
+                'Valid choices: ' +
+                ' or '.join(tail_types) + ' [default: %default]',
+                default='two-sided'),
+    make_option('-n', '--num_permutations', type='int',
+                help='the number of permutations to perform when calculating the '
+                'nonparametric p-value. Must be an integer greater than or equal to '
+                'zero. If zero, the nonparametric test of significance will not be '
+                'performed and the nonparametric p-value will be reported as "N/A" '
+                '[default: %default]', default=999),
     make_option('-l', '--confidence_level', type='float',
-        help='the confidence level of the correlation coefficient confidence '
-        'interval. Must be a value between 0 and 1 (exclusive). For example, '
-        'a 95% confidence interval would be 0.95 [default: %default]',
-        default=0.95),
-     make_option('-s','--sample_id_map_fp', type='existing_filepath',
-        help='map of original sample IDs to new sample IDs. Use this to match '
-        'up sample IDs that should be compared between the two taxa summary '
-        'files. Each line should contain an original sample ID, a tab, and '
-        'the new sample ID. All original sample IDs from the two input taxa '
-        'summary files must be mapped. This option only applies if the '
-        'comparison mode is "paired". If not provided, only sample IDs that '
-        'exist in both taxa summary files will be compared '
-        '[default: %default]', default=None),
-     make_option('-e','--expected_sample_id', type='string',
-        help='the sample ID in the second "expected" taxa summary file to '
-        'compare all samples to. This option only applies if the comparison '
-        'mode is "expected". If not provided, the second taxa summary file '
-        'must have only one sample [default: %default]', default=None),
+                help='the confidence level of the correlation coefficient confidence '
+                'interval. Must be a value between 0 and 1 (exclusive). For example, '
+                'a 95% confidence interval would be 0.95 [default: %default]',
+                default=0.95),
+    make_option('-s', '--sample_id_map_fp', type='existing_filepath',
+                help='map of original sample IDs to new sample IDs. Use this to match '
+                'up sample IDs that should be compared between the two taxa summary '
+                'files. Each line should contain an original sample ID, a tab, and '
+                'the new sample ID. All original sample IDs from the two input taxa '
+                'summary files must be mapped. This option only applies if the '
+                'comparison mode is "paired". If not provided, only sample IDs that '
+                'exist in both taxa summary files will be compared '
+                '[default: %default]', default=None),
+    make_option('-e', '--expected_sample_id', type='string',
+                help='the sample ID in the second "expected" taxa summary file to '
+                'compare all samples to. This option only applies if the comparison '
+                'mode is "expected". If not provided, the second taxa summary file '
+                'must have only one sample [default: %default]', default=None),
     make_option('--perform_detailed_comparisons', action='store_true',
-        help='Perform a comparison for each sample pair in addition to the '
-        'single overall comparison. The results will include the '
-        'Bonferroni-corrected p-values in addition to the original p-values '
-        '[default: %default]', default=False)
+                help='Perform a comparison for each sample pair in addition to the '
+                'single overall comparison. The results will include the '
+                'Bonferroni-corrected p-values in addition to the original p-values '
+                '[default: %default]', default=False)
 ]
 script_info['version'] = __version__
+
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
@@ -193,14 +194,14 @@ def main():
         sample_id_map = parse_sample_id_map(open(opts.sample_id_map_fp, 'U'))
 
     results = compare_taxa_summaries(
-            parse_taxa_summary_table(open(opts.taxa_summary_fps[0], 'U')),
-            parse_taxa_summary_table(open(opts.taxa_summary_fps[1], 'U')),
-            opts.comparison_mode, correlation_type=opts.correlation_type,
-            tail_type=opts.tail_type, num_permutations=opts.num_permutations,
-            confidence_level=opts.confidence_level,
-            perform_detailed_comparisons=opts.perform_detailed_comparisons,
-            sample_id_map=sample_id_map,
-            expected_sample_id=opts.expected_sample_id)
+        parse_taxa_summary_table(open(opts.taxa_summary_fps[0], 'U')),
+        parse_taxa_summary_table(open(opts.taxa_summary_fps[1], 'U')),
+        opts.comparison_mode, correlation_type=opts.correlation_type,
+        tail_type=opts.tail_type, num_permutations=opts.num_permutations,
+        confidence_level=opts.confidence_level,
+        perform_detailed_comparisons=opts.perform_detailed_comparisons,
+        sample_id_map=sample_id_map,
+        expected_sample_id=opts.expected_sample_id)
 
     # Write out the sorted and filled taxa summaries, basing their
     # filenames on the original input filenames. If the filenames are the same,

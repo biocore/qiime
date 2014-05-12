@@ -3,26 +3,27 @@
 """Tests for function in utils."""
 
 __author__ = "Jens Reeder"
-__copyright__ = "Copyright 2011, The QIIME Project" 
-__credits__ = ["Jens Reeder", "Rob Knight"]#remember to add yourself if you make changes
+__copyright__ = "Copyright 2011, The QIIME Project"
+# remember to add yourself if you make changes
+__credits__ = ["Jens Reeder", "Rob Knight"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Jens Reeder"
 __email__ = "jens.reeder@gmail.com"
-__status__ = "Development"
 
 from os import remove, rmdir
 from shutil import rmtree
 from os.path import exists
+from tempfile import mkdtemp
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 
 from cogent import Sequence
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import parse_fasta
 from cogent.parse.flowgram import Flowgram
 from cogent.parse.flowgram_collection import FlowgramCollection
 from cogent.app.util import ApplicationNotFoundError
-from qiime.util import get_tmp_filename
 from cogent.util.misc import remove_files, create_dir
 
 from qiime.util import get_qiime_project_dir
@@ -34,110 +35,127 @@ from qiime.denoiser.utils import make_stats, get_representatives,\
     cat_sff_files, FlowgramContainerFile, FlowgramContainerArray,\
     write_checkpoint, read_checkpoint
 
-class TestUtils(TestCase):
-   def setUp(self):
-        self.data = dict({"0": "ab", "1":"abababa", "2":"abab",
-                          "3":"baba", "4":"ababaa","5":"a", "6":"abababa",
-                          "7":"bab", "8":"babba"})
-        self.mapping = {"1":["0","2","5","6"],
-                        "3":[],
-                        "4":[],
-                        "8":["7"]}
-        self.test_map = {'1': ('a','b','c'),
-                         '2': ('d','e','f')}
 
-        #realistic test file
+class TestUtils(TestCase):
+
+    def setUp(self):
+        self.data = dict({"0": "ab", "1": "abababa", "2": "abab",
+                          "3": "baba", "4": "ababaa", "5": "a", "6": "abababa",
+                          "7": "bab", "8": "babba"})
+        self.mapping = {"1": ["0", "2", "5", "6"],
+                        "3": [],
+                        "4": [],
+                        "8": ["7"]}
+        self.test_map = {'1': ('a', 'b', 'c'),
+                         '2': ('d', 'e', 'f')}
+
+        # realistic test file
         self.tiny_test = get_qiime_project_dir() +\
             "/qiime/support_files/denoiser/TestData/tiny_test.sff.txt"
 
-        #set up test file
-        open("/tmp/denoiser_utils_dummy.tmp","w")
-        self.files_to_remove=["/tmp/denoiser_utils_dummy.tmp"]
-        self.tmpdir=""
-        
-   def tearDown(self):
-      """Clean up tmp files."""
-      remove_files(self.files_to_remove, False)
-      if self.tmpdir:
-         rmtree(self.tmpdir)
-         
-      #clean up the file from init_flowgram_file
-      if (hasattr(self,"tmp_filename") and exists(self.tmp_filename)):
-         remove(self.tmp_filename)
+        # set up test file
+        open("/tmp/denoiser_utils_dummy.tmp", "w")
+        self.files_to_remove = ["/tmp/denoiser_utils_dummy.tmp"]
+        self.tmpdir = ""
 
-   def test_get_denoiser_data_dir(self):
-      """get_denoiser_data_dir returns dir with error profiles"""
+    def tearDown(self):
+        """Clean up tmp files."""
+        remove_files(self.files_to_remove, False)
+        if self.tmpdir:
+            rmtree(self.tmpdir)
 
-      obs = get_denoiser_data_dir()
+        # clean up the file from init_flowgram_file
+        if (hasattr(self, "tmp_filename") and exists(self.tmp_filename)):
+            remove(self.tmp_filename)
 
-      self.assertTrue(exists(obs))
-      self.assertTrue(exists(obs + 'FLX_error_profile.dat'))
-      
-   def test_invert_mapping(self):
-      """invert_prefix_map inverts a dictionary mapping."""
-      
-      actual = invert_mapping(self.test_map)
-      self.assertEqual({'1':'1','a':'1', 'b':'1', 'c':'1','2':'2','d':'2','e':'2','f':'2'}, actual)
-      
-   def test_make_stats(self):
-      """make_stats produces meaningful statistics."""
-      map = self.mapping
-      stats = """Clustersize\t#
+    def test_get_denoiser_data_dir(self):
+        """get_denoiser_data_dir returns dir with error profiles"""
+
+        obs = get_denoiser_data_dir()
+
+        self.assertTrue(exists(obs))
+        self.assertTrue(exists(obs + 'FLX_error_profile.dat'))
+
+    def test_invert_mapping(self):
+        """invert_prefix_map inverts a dictionary mapping."""
+
+        actual = invert_mapping(self.test_map)
+        self.assertEqual(
+            {'1': '1',
+             'a': '1',
+             'b': '1',
+             'c': '1',
+             '2': '2',
+             'd': '2',
+             'e': '2',
+             'f': '2'},
+            actual)
+
+    def test_make_stats(self):
+        """make_stats produces meaningful statistics."""
+        map = self.mapping
+        stats = """Clustersize\t#
 1:\t\t2
 2:\t\t1
-5:\t\t1""" 
-       
-      self.assertEqual(make_stats(map), stats)
+5:\t\t1"""
 
-   def test_store_mapping(self):
-      """store_mapping writes mapping to file."""
+        self.assertEqual(make_stats(map), stats)
 
-      expected = ["1:\t0\t2\t5\t6\n",
-                  "3:\n",
-                  "4:\n",
-                  "8:\t7\n"]
+    def test_store_mapping(self):
+        """store_mapping writes mapping to file."""
 
-      self.files_to_remove.append("/tmp/test_store_mapping_mapping.txt")      
-      store_mapping(self.mapping,"/tmp/", prefix="test_store_mapping")
-      observed = list(open("/tmp/test_store_mapping_mapping.txt","U"))      
-      self.assertEqualItems(observed, expected)
+        expected = ["1:\t0\t2\t5\t6\n",
+                    "3:\n",
+                    "4:\n",
+                    "8:\t7\n"]
 
-   def test_store_cluster(self):
+        self.files_to_remove.append("/tmp/test_store_mapping_mapping.txt")
+        store_mapping(self.mapping, "/tmp/", prefix="test_store_mapping")
+        observed = list(open("/tmp/test_store_mapping_mapping.txt", "U"))
+        self.assertItemsEqual(observed, expected)
+
+    def test_store_cluster(self):
         """store_clusters stores the centroid seqs for each cluster."""
 
-        self.tmpdir = get_tmp_filename(tmp_dir="./", suffix="_store_clusters/")
-        create_dir(self.tmpdir)
+        self.tmpdir = mkdtemp(dir="./", suffix="_store_clusters/")
 
-        self.files_to_remove.append(self.tmpdir+"singletons.fasta")
-        self.files_to_remove.append(self.tmpdir+"centroids.fasta")
+        self.files_to_remove.append(self.tmpdir + "singletons.fasta")
+        self.files_to_remove.append(self.tmpdir + "centroids.fasta")
 
-        #empty map results in empty files
+        # empty map results in empty files
         store_clusters({}, self.tiny_test, self.tmpdir)
-        actual_centroids = list(MinimalFastaParser(open(self.tmpdir+"centroids.fasta")))
+        actual_centroids = list(
+            parse_fasta(open(self.tmpdir + "centroids.fasta")))
         self.assertEqual(actual_centroids, [])
-        actual_singletons = list(MinimalFastaParser(open(self.tmpdir+"singletons.fasta")))
+        actual_singletons = list(
+            parse_fasta(open(self.tmpdir + "singletons.fasta")))
         self.assertEqual(actual_singletons, [])
 
-        #non-empty map creates non-empty files, centroids sorted by size
-        mapping = {'FZTHQMS01B8T1H':[],
-                   'FZTHQMS01DE1KN':['FZTHQMS01EHAJG'],
-                   'FZTHQMS01EHAJG':[1,2,3]} # content doesn't really matter
-        
-        centroids = [('FZTHQMS01EHAJG | cluster size: 4', 'CATGCTGCCTCCCGTAGGAGTTTGGACCGTGTCTCAGTTCCAATGTGGGGGACCTTCCTCTCAGAACCCCTATCCATCGAAGGTTTGGTGAGCCGTTACCTCACCAACTGCCTAATGGAACGCATCCCCATCGATAACCGAAATTCTTTAATAACAAGACCATGCGGTCTGATTATACCATCGGGTATTAATCTTTCTTTCGAAAGGCTATCCCCGAGTTATCGGCAGGTTGGATACGTGTTACTCACCCGTGCGCCGGTCGCCA'),
-                     ('FZTHQMS01DE1KN | cluster size: 2','CATGCTGCCTCCCGTAGGAGTTTGGACCGTGTCTCAGTTCCAATGTGGGGGACCTTCCTCTCAGAACCCCTATCCATCGAAGGTTTGGTGAGCCGTTACCTCACCAACTGCCTAATGGAACGCATCCCCATCGATAACCGAAATTCTTTAATAACAAGACCATGCGGTCTGATTATACCATCGGGTATTAATCTTTCTTTCGAAAGGCTATCCCCGAGTTATCGGCAGGTTGGATACGTGTTACTCACCCGTGCGCCGGTCGCCA')]
+        # non-empty map creates non-empty files, centroids sorted by size
+        mapping = {'FZTHQMS01B8T1H': [],
+                   'FZTHQMS01DE1KN': ['FZTHQMS01EHAJG'],
+                   'FZTHQMS01EHAJG': [1, 2, 3]}  # content doesn't really matter
 
-        singletons= [('FZTHQMS01B8T1H', 'CATGCTGCCTCCCGTAGGAGTTTGGACCGTGTCTCAGTTCCAATGTGGGGGACCTTCCTCTCAGAACCCCTATCCATCGAAGGTTTGGTGAGCCGTTACCTCACCAACTGCCTAATGGAACGCATCCCCATCGATAACCGAAATTCTTTAATAATTAAACCATGCGGTTTTATTATACCATCGGGTATTAATCTTTCTTTCGAAAGGCTATCCCCGAGTTATCGGCAGGTTGGATACGTGTTACTCACCCGTGCGCCGGTCGCCATCACTTA')]
+        centroids = [(
+            'FZTHQMS01EHAJG | cluster size: 4', 'CATGCTGCCTCCCGTAGGAGTTTGGACCGTGTCTCAGTTCCAATGTGGGGGACCTTCCTCTCAGAACCCCTATCCATCGAAGGTTTGGTGAGCCGTTACCTCACCAACTGCCTAATGGAACGCATCCCCATCGATAACCGAAATTCTTTAATAACAAGACCATGCGGTCTGATTATACCATCGGGTATTAATCTTTCTTTCGAAAGGCTATCCCCGAGTTATCGGCAGGTTGGATACGTGTTACTCACCCGTGCGCCGGTCGCCA'),
+            ('FZTHQMS01DE1KN | cluster size: 2', 'CATGCTGCCTCCCGTAGGAGTTTGGACCGTGTCTCAGTTCCAATGTGGGGGACCTTCCTCTCAGAACCCCTATCCATCGAAGGTTTGGTGAGCCGTTACCTCACCAACTGCCTAATGGAACGCATCCCCATCGATAACCGAAATTCTTTAATAACAAGACCATGCGGTCTGATTATACCATCGGGTATTAATCTTTCTTTCGAAAGGCTATCCCCGAGTTATCGGCAGGTTGGATACGTGTTACTCACCCGTGCGCCGGTCGCCA')]
+
+        singletons = [(
+            'FZTHQMS01B8T1H',
+            'CATGCTGCCTCCCGTAGGAGTTTGGACCGTGTCTCAGTTCCAATGTGGGGGACCTTCCTCTCAGAACCCCTATCCATCGAAGGTTTGGTGAGCCGTTACCTCACCAACTGCCTAATGGAACGCATCCCCATCGATAACCGAAATTCTTTAATAATTAAACCATGCGGTTTTATTATACCATCGGGTATTAATCTTTCTTTCGAAAGGCTATCCCCGAGTTATCGGCAGGTTGGATACGTGTTACTCACCCGTGCGCCGGTCGCCATCACTTA')]
 
         store_clusters(mapping, self.tiny_test, self.tmpdir)
-        actual_centroids = list(MinimalFastaParser(open(self.tmpdir+"centroids.fasta")))
+        actual_centroids = list(
+            parse_fasta(open(self.tmpdir + "centroids.fasta")))
         self.assertEqual(actual_centroids, centroids)
-        actual_singletons = list(MinimalFastaParser(open(self.tmpdir+"singletons.fasta")))
-        self.assertEqual(actual_singletons,singletons)
+        actual_singletons = list(
+            parse_fasta(open(self.tmpdir + "singletons.fasta")))
+        self.assertEqual(actual_singletons, singletons)
 
-   def test_get_representatives(self):
-      """get_representatives should return the representatives as list of Sequence."""
+    def test_get_representatives(self):
+        """get_representatives should return the representatives as list of Sequence."""
 
-      result= """>1: 5
+        result = """>1: 5
 ABABABA
 >3: 1
 BABA
@@ -145,162 +163,163 @@ BABA
 ABABAA
 >8: 2
 BABBA"""
-      seqs = self.data.iteritems
-      mapping = self.mapping
-      test_result = list(get_representatives(mapping, seqs()))
-      test_result_as_fasta = "\n".join(map(lambda a: a.toFasta(),test_result))
-   
-      self.assertEqual(test_result_as_fasta, result)
+        seqs = self.data.iteritems
+        mapping = self.mapping
+        test_result = list(get_representatives(mapping, seqs()))
+        test_result_as_fasta = "\n".join(
+            map(lambda a: a.toFasta(), test_result))
 
-      #another example
-      mapping = {'1': ('a','b','c'),
-                 '2': ('d','e','f')}
-      seqs = [('1',"ACGT"), ('2', "TAGC"), ('a',"TTTTT")]
-       
-      observed = list(get_representatives(mapping, seqs))
-      expected = [Sequence(name = ">1", seq="ACGT"), Sequence(name='2',
+        self.assertEqual(test_result_as_fasta, result)
+
+        # another example
+        mapping = {'1': ('a', 'b', 'c'),
+                   '2': ('d', 'e', 'f')}
+        seqs = [('1', "ACGT"), ('2', "TAGC"), ('a', "TTTTT")]
+
+        observed = list(get_representatives(mapping, seqs))
+        expected = [Sequence(name=">1", seq="ACGT"), Sequence(name='2',
                                                               seq="TAGC")]
-      self.assertEqual(observed, expected)
+        self.assertEqual(observed, expected)
 
-   def test_squeeze_seq(self):
-      """squeeze should collapse homopolymers to one nuc."""
+    def test_squeeze_seq(self):
+        """squeeze should collapse homopolymers to one nuc."""
 
-      seq = "AAAGGGAAACCCGGGA"
-      self.assertEqual(squeeze_seq(seq), "AGACGA")
-      self.assertEqual(squeeze_seq("AAAATATTTAGGC"), "ATATAGC")
-      self.assertEqual(squeeze_seq(""), "")
-      self.assertEqual(squeeze_seq("ATGCATGCATGC"), "ATGCATGCATGC")
-        
-   def test_wait_for_file(self):
-      """wait_for_file should go to sleep if file is not present."""
-      
-      #wait_for_file has a debug/test mode, in which it raises an exception
-      # instead of going to sleep
-      # should not raise anything on valid file
-      try:
-         wait_for_file("/tmp/denoiser_utils_dummy.tmp", test_mode=True)
-      except RuntimeWarning:
-         self.fail("wait_for_file fails on valid file")
+        seq = "AAAGGGAAACCCGGGA"
+        self.assertEqual(squeeze_seq(seq), "AGACGA")
+        self.assertEqual(squeeze_seq("AAAATATTTAGGC"), "ATATAGC")
+        self.assertEqual(squeeze_seq(""), "")
+        self.assertEqual(squeeze_seq("ATGCATGCATGC"), "ATGCATGCATGC")
 
-      #but should raise on file not present
-      self.assertRaises(RuntimeWarning, wait_for_file, "/foo/bar/baz",
-                        test_mode=True)
-         
-  # def test_wait_for_cluster_ids(self):
-  #    """wait_for_cluster_ids sleeps until jobs are finished."""
-  #       
-   #   try:
-   #       wait_for_cluster_ids([])
-  #    except ApplicationNotFoundError:
-  #       self.fail("qstat not found. Can't run on cluster.")
-           
-      #Can we test a real scenario with submitting a simple sleep script?
+    def test_wait_for_file(self):
+        """wait_for_file should go to sleep if file is not present."""
 
-   def test_init_flowgram_file(self):
-      """init_flowgram_file opens an file and writes header."""
-      fh, tmp_filename = init_flowgram_file(n=100, l=400)
-      self.assert_(exists(tmp_filename))
-      self.tmp_filename = tmp_filename
-      fh.close()
-      result_file_content = list(open(tmp_filename))
+        # wait_for_file has a debug/test mode, in which it raises an exception
+        # instead of going to sleep
+        # should not raise anything on valid file
+        try:
+            wait_for_file("/tmp/denoiser_utils_dummy.tmp", test_mode=True)
+        except RuntimeWarning:
+            self.fail("wait_for_file fails on valid file")
 
-      self.assertEqual(result_file_content, ["100 400\n"])
+        # but should raise on file not present
+        self.assertRaises(RuntimeWarning, wait_for_file, "/foo/bar/baz",
+                          test_mode=True)
 
+    # def test_wait_for_cluster_ids(self):
+    #    """wait_for_cluster_ids sleeps until jobs are finished."""
+    #
+    #   try:
+    #       wait_for_cluster_ids([])
+    #    except ApplicationNotFoundError:
+    #       self.fail("qstat not found. Can't run on cluster.")
 
-   def test_append_to_flowgram_file(self):
-      """append_to_flowgram_file appends a flowgram to a flowgram file."""
-      
-      fh, tmp_filename = init_flowgram_file(n=100, l=400)
-      self.assert_(exists(tmp_filename))
-      self.tmp_filename = tmp_filename
+        # Can we test a real scenario with submitting a simple sleep script?
 
-      flow1 = Flowgram("0 1.2 2.1 3.4 0.02 0.01 1.02 0.08")
-      append_to_flowgram_file("test_id", flow1, fh)
+    def test_init_flowgram_file(self):
+        """init_flowgram_file opens an file and writes header."""
+        fh, tmp_filename = init_flowgram_file(n=100, l=400)
+        self.assert_(exists(tmp_filename))
+        self.tmp_filename = tmp_filename
+        fh.close()
+        result_file_content = list(open(tmp_filename))
 
-      flow2 = Flowgram('0.5 1.0 4.1 0.0 0.0 1.23 0.0 3.1',      
-                       Name = 'a', floworder = "TACG",
-                   header_info = {'Bases':'TACCCCAGGG', 'Clip Qual Right': 7,
-                                  'Flow Indexes': "1\t2\t3\t3\t3\t3\t6\t8\t8\t8"})
-      append_to_flowgram_file("test_id2", flow2, fh, trim=True)
-      #close and re-open to read from start, seek might work as well here...
-      fh.close()
-      fh=open(tmp_filename)
-      result_file_content = list(fh)
-      self.assertEqual(result_file_content, ["100 400\n",
-                                             "test_id 8 0.0 1.2 2.1 3.4 0.02 0.01 1.02 0.08\n",
-                                             "test_id2 6 0.5 1.0 4.1 0.0 0.0 1.23\n"])
+        self.assertEqual(result_file_content, ["100 400\n"])
 
-   def test_cat_sff_files(self):
-      "cat_sff_files cats sff_files"""
+    def test_append_to_flowgram_file(self):
+        """append_to_flowgram_file appends a flowgram to a flowgram file."""
 
-      expected_bases =  "tcagGCTAACTGTAACCCTCTTGGCACCCACTAAACGCCAATCTTGCTGGAG"+\
-          "TGTTTACCAGGCACCCAGCAATGTGAATAGTCActgagcgggctggcaaggc"
- 
-     #works with no file
-      obs_flows, obs_header = cat_sff_files([])
-      self.assertEqual(len(obs_flows),0)
-      self.assertEqual(obs_header,None)
+        fh, tmp_filename = init_flowgram_file(n=100, l=400)
+        self.assert_(exists(tmp_filename))
+        self.tmp_filename = tmp_filename
 
-      #works with one file
-      obs_flows, obs_header = cat_sff_files([sff_file])    
-      obs_flows = list(obs_flows)
-      self.assertEqual(obs_header['Magic Number'], "0x2E736666")
-      self.assertEqual(obs_flows[0].Bases, expected_bases)
-      self.assertEqual(len(obs_flows),2)
+        flow1 = Flowgram("0 1.2 2.1 3.4 0.02 0.01 1.02 0.08")
+        append_to_flowgram_file("test_id", flow1, fh)
 
-      #works with two files
-      obs_flows, obs_header = (cat_sff_files([sff_file, sff_file]))
-      obs_flows = list(obs_flows)
+        flow2 = Flowgram('0.5 1.0 4.1 0.0 0.0 1.23 0.0 3.1',
+                         Name='a', floworder="TACG",
+                         header_info={
+                             'Bases': 'TACCCCAGGG', 'Clip Qual Right': 7,
+                             'Flow Indexes': "1\t2\t3\t3\t3\t3\t6\t8\t8\t8"})
+        append_to_flowgram_file("test_id2", flow2, fh, trim=True)
+        # close and re-open to read from start, seek might work as well here...
+        fh.close()
+        fh = open(tmp_filename)
+        result_file_content = list(fh)
+        self.assertEqual(result_file_content, ["100 400\n",
+                                               "test_id 8 0.0 1.2 2.1 3.4 0.02 0.01 1.02 0.08\n",
+                                               "test_id2 6 0.5 1.0 4.1 0.0 0.0 1.23\n"])
 
-      self.assertEqual(obs_header['Magic Number'], "0x2E736666")
-      self.assertEqual(obs_flows[0].Bases, expected_bases)
-      self.assertEqual(obs_flows[2].Bases, expected_bases)
-      self.assertEqual(len(obs_flows),4)
+    def test_cat_sff_files(self):
+        "cat_sff_files cats sff_files"""
 
-   def test_read_denoiser_mapping(self):
+        expected_bases =  "tcagGCTAACTGTAACCCTCTTGGCACCCACTAAACGCCAATCTTGCTGGAG" +\
+            "TGTTTACCAGGCACCCAGCAATGTGAATAGTCActgagcgggctggcaaggc"
+
+       # works with no file
+        obs_flows, obs_header = cat_sff_files([])
+        self.assertEqual(len(obs_flows), 0)
+        self.assertEqual(obs_header, None)
+
+        # works with one file
+        obs_flows, obs_header = cat_sff_files([sff_file])
+        obs_flows = list(obs_flows)
+        self.assertEqual(obs_header['Magic Number'], "0x2E736666")
+        self.assertEqual(obs_flows[0].Bases, expected_bases)
+        self.assertEqual(len(obs_flows), 2)
+
+        # works with two files
+        obs_flows, obs_header = (cat_sff_files([sff_file, sff_file]))
+        obs_flows = list(obs_flows)
+
+        self.assertEqual(obs_header['Magic Number'], "0x2E736666")
+        self.assertEqual(obs_flows[0].Bases, expected_bases)
+        self.assertEqual(obs_flows[2].Bases, expected_bases)
+        self.assertEqual(len(obs_flows), 4)
+
+    def test_read_denoiser_mapping(self):
         """read_denoiser_mapping reads correctly"""
 
-        mapping ="""1:\t2\t3
+        mapping = """1:\t2\t3
 4:\t5\t6
 7:""".split("\n")
-        expected = {'1':['2','3'],
-                    '4':['5','6'],
-                    '7':[]}
+        expected = {'1': ['2', '3'],
+                    '4': ['5', '6'],
+                    '7': []}
         self.assertEqual(read_denoiser_mapping(mapping),
                          expected)
 
         # empty mapping gives empty result
         self.assertEqual(read_denoiser_mapping([]), {})
 
-   def test_read_denoiser_mapping_empty_lines(self):
+    def test_read_denoiser_mapping_empty_lines(self):
         """read_denoiser_mapping handles empty lines"""
 
-        mapping ="""1:\t2\t3
+        mapping = """1:\t2\t3
 4:\t5\t6
 7:
 """.split("\n")
-        expected = {'1':['2','3'],
-                    '4':['5','6'],
-                    '7':[]}
+        expected = {'1': ['2', '3'],
+                    '4': ['5', '6'],
+                    '7': []}
         self.assertEqual(read_denoiser_mapping(mapping),
                          expected)
 
         # empty mapping gives empty result
         self.assertEqual(read_denoiser_mapping([]), {})
 
-   def test_sort_ids(self):
+    def test_sort_ids(self):
         """sort_ids sorts by abundance"""
 
-        mapping = {"1":["0","2","5","6"],
-                   "3":[],
-                   "4":[],
-                   "11":[1,2,3,4,5,6,7,8,9],
-                   "8":["7"]}
+        mapping = {"1": ["0", "2", "5", "6"],
+                   "3": [],
+                   "4": [],
+                   "11": [1, 2, 3, 4, 5, 6, 7, 8, 9],
+                   "8": ["7"]}
 
-        self.assertEqual(sort_ids(["1","3","4","8","11"], mapping),
-                         ["11","1","8","4","3"])
+        self.assertEqual(sort_ids(["1", "3", "4", "8", "11"], mapping),
+                         ["11", "1", "8", "4", "3"])
 
-   def test_sort_seqs_by_clustersize(self):
+    def test_sort_seqs_by_clustersize(self):
         """sort_seqs_by_clustersize works"""
 
         seqs = {'0': "AAA",
@@ -313,108 +332,115 @@ BABBA"""
                 '7': "GGG",
                 '8': "GCG"}
 
-        mapping = {"8":["7","6"],
-                   "1":["0","2","5"],
-                   "4":["3"]}
+        mapping = {"8": ["7", "6"],
+                   "1": ["0", "2", "5"],
+                   "4": ["3"]}
 
         observed = list(sort_seqs_by_clustersize(seqs.iteritems(), mapping))
-        expected = [('1',"AAT"),('8',"GCG"),('4', 'TAA'), ('7', 'GGG'),
+        expected = [('1', "AAT"), ('8', "GCG"), ('4', 'TAA'), ('7', 'GGG'),
                     ('6', 'CCC'), ('5', 'TTA'), ('3', 'TTT'), ('2', 'ATT'),
                     ('0', 'AAA')]
         self.assertEqual(observed, expected)
 
-   def test_sort_ids(self):
+    def test_sort_ids(self):
         """sort_ids sorts by abundance"""
 
-        mapping = {"1":["0","2","5","6"],
-                   "3":[],
-                   "4":[],
-                   "11":[1,2,3,4,5,6,7,8,9],
-                   "8":["7"]}
+        mapping = {"1": ["0", "2", "5", "6"],
+                   "3": [],
+                   "4": [],
+                   "11": [1, 2, 3, 4, 5, 6, 7, 8, 9],
+                   "8": ["7"]}
 
-        self.assertEqual(sort_ids(["1","3","4","8","11"], mapping),\
-                            ["11","1","8","4","3"])
+        self.assertEqual(sort_ids(["1", "3", "4", "8", "11"], mapping),
+                         ["11", "1", "8", "4", "3"])
 
-   def test_checkpoints(self):
-      """storing and loading of checkpoints works"""
-      
-      self.tmpdir = get_tmp_filename(tmp_dir="./", suffix="_test_checkpoints/")
+    def test_checkpoints(self):
+        """storing and loading of checkpoints works"""
 
-      bestscores = dict({ 1 : 0.9,
-                          2 : 1.1,
-                          3 : 2.3,
-                          4 : 99.93232344})
-      
-      out_fp = write_checkpoint("Key", 99, self.mapping, [1,2,3,4], bestscores,
-                                [2,1,3,4],
-                                self.tmpdir)
+        self.tmpdir = mkdtemp(dir="./",
+                              suffix="_test_checkpoints/")
 
-      observed = read_checkpoint(out_fp)
-      
-      self.assertEqual(observed[0], "Key")
-      self.assertEqual(observed[1], 99)
-      self.assertEqual(observed[2], self.mapping)
-      self.assertEqual(observed[3], [1,2,3,4])
-      self.assertEqual(observed[4], bestscores)
-      self.assertEqual(observed[5], [2,1,3,4])
+        bestscores = dict({1: 0.9,
+                           2: 1.1,
+                           3: 2.3,
+                           4: 99.93232344})
+
+        out_fp = write_checkpoint(
+            "Key", 99, self.mapping, [1, 2, 3, 4], bestscores,
+            [2, 1, 3, 4],
+            self.tmpdir)
+
+        observed = read_checkpoint(out_fp)
+
+        self.assertEqual(observed[0], "Key")
+        self.assertEqual(observed[1], 99)
+        self.assertEqual(observed[2], self.mapping)
+        self.assertEqual(observed[3], [1, 2, 3, 4])
+        self.assertEqual(observed[4], bestscores)
+        self.assertEqual(observed[5], [2, 1, 3, 4])
+
 
 class TestFlowgramContainerFile(TestCase):
-   def setUp(self):
-      pass
 
-   def tearDown(self):
-      pass
+    def setUp(self):
+        pass
 
-   def test_container(self):
-      """FlowgramContainerFile works as expected"""
+    def tearDown(self):
+        pass
 
-      fc = FlowgramCollection({'a':'1.0 0.0 0.0 1.0 1.0 1.2 1.2 0.8',
-                                'b':'1.2 1.0 0.0 0.8 1.2 2.4 1.0 0.0'})
+    def test_container(self):
+        """FlowgramContainerFile works as expected"""
 
-      f_container = FlowgramContainerFile(header)
-      
-      for f in fc:
-         f_container.add(f)
-         
-      for f_obs, f_exp in zip(f_container,fc):
-         self.assertEqual(str(f_obs), str(f_exp))
-         
-      # adding after iter started raises errror
-      self.assertRaises(ValueError, f_container.add,f_obs)
+        fc = FlowgramCollection({'a': '1.0 0.0 0.0 1.0 1.0 1.2 1.2 0.8',
+                                 'b': '1.2 1.0 0.0 0.8 1.2 2.4 1.0 0.0'})
+
+        f_container = FlowgramContainerFile(header)
+
+        for f in fc:
+            f_container.add(f)
+
+        for f_obs, f_exp in zip(f_container, fc):
+            self.assertEqual(str(f_obs), str(f_exp))
+
+        # adding after iter started raises errror
+        self.assertRaises(ValueError, f_container.add, f_obs)
+
 
 class TestFlowgramContainerArray(TestCase):
-   def setUp(self):
-      pass
 
-   def tearDown(self):
-      pass
+    def setUp(self):
+        pass
 
-   def test_container(self):
-      """FlowgramContainerArray works as expectected"""
-      
-      fc = FlowgramCollection({'a':'1.0 0.0 0.0 1.0 1.0 1.2 1.2 0.8',
-                                'b':'1.2 1.0 0.0 0.8 1.2 2.4 1.0 0.0'})
+    def tearDown(self):
+        pass
 
-      f_container = FlowgramContainerArray(header)
-      
-      for f in fc:
-         f_container.add(f)
-         
-      for f_obs, f_exp in zip(f_container,fc):
-         self.assertEqual(str(f_obs), str(f_exp))
+    def test_container(self):
+        """FlowgramContainerArray works as expectected"""
+
+        fc = FlowgramCollection({'a': '1.0 0.0 0.0 1.0 1.0 1.2 1.2 0.8',
+                                 'b': '1.2 1.0 0.0 0.8 1.2 2.4 1.0 0.0'})
+
+        f_container = FlowgramContainerArray(header)
+
+        for f in fc:
+            f_container.add(f)
+
+        for f_obs, f_exp in zip(f_container, fc):
+            self.assertEqual(str(f_obs), str(f_exp))
 
 
-header = {'Version':"0001",
+header = {'Version': "0001",
           'Magic Number': '0x2E736666',
-          'Index Offset':  '7773224',
-          'Index Length':  '93365',
-          '# of Reads':    '114',
+          'Index Offset': '7773224',
+          'Index Length': '93365',
+          '# of Reads': '114',
           'Header Length': '440',
-          'Key Length':    '4',
-          '# of Flows':    '400',
+          'Key Length': '4',
+          '# of Flows': '400',
           'Flowgram Code': '1',
-          'Flow Chars':    'TACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACG',
-          'Key Sequence':  'TCAG'}
+          'Flow Chars':
+          'TACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACG',
+          'Key Sequence': 'TCAG'}
 
 
 sff_file = """Common Header:
@@ -475,6 +501,6 @@ Bases:	tcagAGACGCACTCAATTATTTCCATAGCTTGGGTAGTGTCAATAATGCTGCTATGAACATGGGAGTACAAAT
 Quality Scores:	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	38	38	38	40	40	40	40	40	40	40	40	40	40	40	40	40	40	40	40	40	40	40	40	40	40	40	40	40	40	40	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	34	34	34	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	36	36	36	36	36	38	25	25	25	38	37	37	37	37	37	37	33	33	34	37	37	37	37	37	37	37	38	34	20	20	26	26	20	34	38	37	37	37	37	37	37	37	37	37	38	38	38	37	37	37	37	37	37	37	37	37	37
 
 """.split('\n')
-      
+
 if __name__ == "__main__":
     main()

@@ -96,7 +96,7 @@ Post-OTU processing (parallel and serial, depending on step)
 
 #. Construct a new reference collection based on this OTU picking run. This new reference collection will be the combination of the full input reference collection, the new reference OTU representative sequences, and the clean-up OTU representative sequences. Note that this will not include representatives of the singleton OTUs by default. Also note that this differs from the representative set of sequences for this run in that it contains *all* of the input reference sequences, not only the ones that are represented in the current data set (which is what the representative sequences for this run contains).
 
-#. Taxonomy will be assigned to all OTUs (using RDP classifier by default) and representative sequences will be aligned and a tree will be constructed. Finally, an additional OTU table will be constructed that excludes reads that failed to align with PyNAST. It is recommended that this OTU table be used in downstream analysis.
+#. Taxonomy will be assigned to all OTUs (using the uclust consensus taxonomy assigner by default) and representative sequences will be aligned and a tree will be constructed. Finally, an additional OTU table will be constructed that excludes reads that failed to align with PyNAST. It is recommended that this OTU table be used in downstream analysis.
 
 To apply this analysis to ``seqs1.fna``, picking OTUs against the reference collection ``refseqs.fna`` you can run the following command. Your parameters file should contain the following::
 
@@ -185,7 +185,7 @@ Procrustes results are highly significant for the three comparisons, suggesting 
 
 OTU category significance
 -------------------------
-Here I confirm that the same taxonomy groups are identified as significantly different across the pH gradient in these soils using ANOVA, regardless of which OTU picking workflow is applied. These results were computed with the ``otu_category_significance.py`` script. To define a category for this test I binned the pH values by truncating the values to integers (so 5.0, 5.3, and 5.9 are all binned to pH 5) and using this binned pH as the category. Since I'm just looking for consistent results across the different OTU picking methods I don't think it's important that this isn't the most biologically relevant binning strategy. **Note that OTU ids are not directly comparable across all analyses, so it is best to compare the taxonomies.**
+Here I confirm that the same taxonomy groups are identified as significantly different across the pH gradient in these soils using ANOVA, regardless of which OTU picking workflow is applied. These results were computed with the ``group_significance.py`` script. To define a category for this test I binned the pH values by truncating the values to integers (so 5.0, 5.3, and 5.9 are all binned to pH 5) and using this binned pH as the category. Since I'm just looking for consistent results across the different OTU picking methods I don't think it's important that this isn't the most biologically relevant binning strategy. **Note that OTU ids are not directly comparable across all analyses, so it is best to compare the taxonomies.**
 
 Results
 ```````
@@ -293,7 +293,7 @@ Procrustes results are highly significant for the three comparisons, suggesting 
 
 OTU category significance
 -------------------------
-Here I confirm that the same taxonomy groups are identified as significantly different across the body sites in this study using ANOVA, regardless of which OTU picking workflow is applied. These results were computed with the ``otu_category_significance.py`` script. **Note that OTU ids are not directly comparable across all analyses, so it is best to compare the taxonomies.**
+Here I confirm that the same taxonomy groups are identified as significantly different across the body sites in this study using ANOVA, regardless of which OTU picking workflow is applied. These results were computed with the ``group_significance.py`` script. **Note that OTU ids are not directly comparable across all analyses, so it is best to compare the taxonomies.**
 
 Results
 ```````

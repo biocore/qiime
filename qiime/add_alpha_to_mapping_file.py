@@ -6,10 +6,9 @@ __author__ = "Yoshiki Vazquez-Baeza"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Yoshiki Vazquez-Baeza", "Antonio Gonzalez-Pena"]
 __license__ = "GPL"
-__version__ = "1.7.0-dev"
+__version__ = "1.8.0-dev"
 __maintainer__ = "Yoshiki Vazquez-Baeza"
 __email__ = "yoshiki89@gmail.com"
-__status__ = "Development"
 
 
 from copy import deepcopy
@@ -17,10 +16,11 @@ from qiime.stats import quantile
 from numpy import searchsorted, array
 from qiime.parse import parse_rarefaction
 
+
 def add_alpha_diversity_values_to_mapping_file(metrics, alpha_sample_ids,
-                                            alpha_data, mapping_file_headers,
-                                            mapping_file_data, bins, method='equal',
-                                            missing_value_name='N/A'):
+                                               alpha_data, mapping_file_headers,
+                                               mapping_file_data, bins, method='equal',
+                                               missing_value_name='N/A'):
     """add 3 columns in the mapping file representing the alpha diversity data
 
     Inputs:
@@ -46,14 +46,14 @@ def add_alpha_diversity_values_to_mapping_file(metrics, alpha_sample_ids,
     normalized values and bins
 
     """
-    norm = lambda x, x_min, x_max: (x-x_min)/(x_max-x_min)
+    norm = lambda x, x_min, x_max: (x - x_min) / (x_max - x_min)
 
     # data will be modified and returned so get your own copy
     new_mapping_file_data = deepcopy(mapping_file_data)
     new_mapping_file_headers = deepcopy(mapping_file_headers)
 
     # regular levels assigned based on equally spaced bins
-    overall_probs = [i/bins for i in range(1, bins)]
+    overall_probs = [i / bins for i in range(1, bins)]
 
     # if we are using the average method the levels are equal to the probs list
     if method == 'equal':
@@ -71,10 +71,11 @@ def add_alpha_diversity_values_to_mapping_file(metrics, alpha_sample_ids,
         new_mapping_file_headers.append('{0}_alpha_label'.format(metric))
 
         # when using the quantile method the levels change depending on the
-        # metric being used; hence the calculation and normalization of the data
+        # metric being used; hence the calculation and normalization of the
+        # data
         if method == 'quantile':
             levels = quantile([norm(element[0], metric_min, metric_max)
-                for element in data], overall_probs)
+                               for element in data], overall_probs)
 
         # get the normalized value of diversity and the tag for each value
         for value in data:
@@ -93,9 +94,10 @@ def add_alpha_diversity_values_to_mapping_file(metrics, alpha_sample_ids,
                 row.extend(map(str, data[data_index]))
             except ValueError:
                 row.extend([missing_value_name, missing_value_name,
-                    missing_value_name])
+                            missing_value_name])
 
     return new_mapping_file_data, new_mapping_file_headers
+
 
 def _get_level(value, levels, prefix=None):
     """accommodate a value into the 'levels' list; return a string or an integer
@@ -111,7 +113,10 @@ def _get_level(value, levels, prefix=None):
     the value is returned as an integer
 
     """
-    assert value <= 1 and value >= 0, "The value must be between 0 and 1"
+
+    if value > 1 or value < 0:
+        raise ValueError("Encountered invalid normalized alpha diversity value %s. "
+                         "Normalized values must be between 0 and 1." % value)
 
     check = [i for i in range(0, len(levels)) if levels[i] == value]
 
@@ -120,14 +125,15 @@ def _get_level(value, levels, prefix=None):
         value_level = check[0] + 2
     # if it is not a special case just use searchsorted
     else:
-        value_level = searchsorted(levels, value)+1
+        value_level = searchsorted(levels, value) + 1
 
-    if prefix != None:
-        output = '{0}_{1}_of_{2}'.format(prefix, value_level, len(levels)+1)
+    if prefix is not None:
+        output = '{0}_{1}_of_{2}'.format(prefix, value_level, len(levels) + 1)
     else:
         output = value_level
 
     return output
+
 
 def mean_alpha(alpha_dict, depth):
     """mean collated alpha diversity data at a given depth
@@ -147,8 +153,8 @@ def mean_alpha(alpha_dict, depth):
     depth for the different metrics, each column is a different metric.
     """
 
-    assert type(alpha_dict) == dict, "Input data must be a dictionary"
-    assert depth == None or (depth >= 0 and type(depth) == int), "The "+\
+    assert isinstance(alpha_dict, dict), "Input data must be a dictionary"
+    assert depth is None or (depth >= 0 and isinstance(depth, int)), "The " +\
         "specified depth must be a positive integer."
 
     metrics = []
@@ -160,7 +166,7 @@ def mean_alpha(alpha_dict, depth):
 
         # if depth is specified as None use the highest available, retrieve it
         # on a per file basis so you make sure the value exists for all files
-        if depth == None:
+        if depth is None:
             _depth = int(max([row[0] for row in rarefaction_data]))
         else:
             _depth = depth
@@ -168,26 +174,27 @@ def mean_alpha(alpha_dict, depth):
 
         # check there are elements with the desired rarefaction depth
         if sum([1 for row in rarefaction_data if row[0] == _depth]) == 0:
-            # get a sorted list of strings with the available rarefaction depths
+            # get a sorted list of strings with the available rarefaction
+            # depths
             available_rarefaction_depths = map(str, sorted(list(set([row[0] for
-                row in rarefaction_data]))))
-            raise ValueError, ("The depth %d does not exist in the collated "
-                "alpha diversity file for the metric: %s. The available depths "
-                "are: %s."%(_depth,key,', '.join(available_rarefaction_depths)))
+                                                                     row in rarefaction_data]))))
+            raise ValueError("The depth %d does not exist in the collated "
+                             "alpha diversity file for the metric: %s. The available depths "
+                             "are: %s." % (_depth, key, ', '.join(available_rarefaction_depths)))
 
         # check all the files have the same sample ids in the same order
         if sample_ids:
             if not sample_ids == identifiers[3:]:
-                raise ValueError, ("Non-matching sample ids were found in the "
-                    "collated alpha diversity files. Make sure all the files "
-                    "contain data for the same samples.")
+                raise ValueError("Non-matching sample ids were found in the "
+                                 "collated alpha diversity files. Make sure all the files "
+                                 "contain data for the same samples.")
         else:
             sample_ids = identifiers[3:]
 
         # find all the data at the desired depth and get the mean values, remove
         # the first two elements ([depth, iteration]) as those are not needed
-        data.append(array([row[2:] for row in rarefaction_data if\
-            row[0] == _depth]).mean(axis=0))
+        data.append(array([row[2:] for row in rarefaction_data if
+                           row[0] == _depth]).mean(axis=0))
 
     # transpose the data to match the formatting of non-collated alpha div data
     data = array(data).T.tolist()
