@@ -411,6 +411,9 @@ def select_unique_rand_bcs(rand_bcs):
 
     fasta_tempfile = tempfile.NamedTemporaryFile(dir=temp_dir, delete=False, mode='w')
     uclust_tempfile = tempfile.NamedTemporaryFile(dir=temp_dir, delete=False, mode='r')
+    uclust_tempfile_name = uclust_tempfile.name
+    fasta_tempfile_name = fasta_tempfile.name
+
     p_line = ""
     for count_rand_bc, rand_bc in enumerate(rand_bcs):
         p_line = p_line + ">" + str(rand_bc) + "\n" + rand_bc + "\n"
@@ -426,7 +429,7 @@ def select_unique_rand_bcs(rand_bcs):
             unique_rand_bcs[unique_rand_bc] = 1
     fasta_tempfile.close()
     uclust_tempfile.close()
-    os.unlink(fasta_tempfile)
-    os.unlink(uclust_tempfile)
+    os.unlink(fasta_tempfile_name)
+    os.unlink(uclust_tempfile_name)
 
     return unique_rand_bcs
