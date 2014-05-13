@@ -61,9 +61,10 @@ def extract_primer(seq, possible_primers, min_idx=None, max_idx=None):
     return before_primer, primer, after_primer
 
 
+
 def read_input_file(sequence_read_fps, mapping_fp, output_dir,
-                    barcode_type, max_barcode_errors,
-                    min_consensus, max_cluster_ratio, option_parser):
+                    barcode_type, barcode_correction_fn, max_barcode_errors,
+                    min_consensus, max_cluster_ratio):
     """
     Reads mapping file, input file, and other command line arguments
     fills dictionary called consensus_seq_lookup which will contain:
@@ -80,37 +81,8 @@ def read_input_file(sequence_read_fps, mapping_fp, output_dir,
 
     BARCODE_COLUMN = 'BarcodeSequence'
     REVERSE_PRIMER_COLUMN = 'ReversePrimer'
-
-    if barcode_type == 'golay_12':
-        barcode_correction_fn = decode_golay_12
-        barcode_len = 12
-    else:
-        barcode_correction_fn = None
-
-        try:
-            barcode_len = int(barcode_type)
-        except ValueError:
-            option_parser.error("Invalid barcode type '%s'. The barcode type "
-                                "must be either golay_12 or a positive "
-                                "integer indicating the barcode length." %
-                                barcode_type)
-
-    if max_barcode_errors < 0:
-        option_parser.error("--max_barcode_errors must be greater than or "
-                            "equal to zero. You provided %.4f." %
-                            max_barcode_errors)
-
-    if barcode_len < 1:
-        option_parser.error("Invalid barcode length: %d. Must be greater "
-                            "than zero." % barcode_len)
-
     seq_fps = sequence_read_fps
-
-    if len(seq_fps) != 2:
-        option_parser.error("You must provide exactly two sequence read "
-                            "filepaths, the first for forward reads and "
-                            "second for reverse reads. You specified %d "
-                            "filepaths." % len(seq_fps))
+    barcode_len = int(barcode_type)
 
     with open(mapping_fp, 'U') as map_f:
         #  Ensures that sample IDs and barcodes are unique, that barcodes are
@@ -129,7 +101,7 @@ def read_input_file(sequence_read_fps, mapping_fp, output_dir,
                 bc_to_rev_primers[md[BARCODE_COLUMN]] = expand_degeneracies
                 (md[REVERSE_PRIMER_COLUMN].upper().split(','))
             else:
-                option_parser.error("The %s column does not exist in the "
+                raise Exception("The %s column does not exist in the "
                                     "mapping file. %s is required." %
                                     (REVERSE_PRIMER_COLUMN,
                                      REVERSE_PRIMER_COLUMN))
@@ -138,7 +110,7 @@ def read_input_file(sequence_read_fps, mapping_fp, output_dir,
     #  this point) are the correct length that the user specified.
     barcode_len_in_map = len(bc_to_sid.keys()[0])
     if barcode_len_in_map != barcode_len:
-        option_parser.error("Barcodes in mapping file are of length %d, but "
+        raise Exception("Barcodes in mapping file are of length %d, but "
                             "expected barcodes of length %d." %
                             (barcode_len_in_map, barcode_len))
 
@@ -146,7 +118,7 @@ def read_input_file(sequence_read_fps, mapping_fp, output_dir,
         invalid_golay_barcodes = get_invalid_golay_barcodes(bc_to_sid.keys())
 
         if invalid_golay_barcodes:
-            option_parser.error("Some or all barcodes in the mapping file are "
+            raise Exception("Some or all barcodes in the mapping file are "
                                 "not valid golay codes. Do they need to be "
                                 "reverse complemented? If these are not golay "
                                 "barcodes pass --barcode_type 12 to disable "
