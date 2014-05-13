@@ -22,7 +22,7 @@ from types import GeneratorType
 from numpy import concatenate, repeat, zeros, nan, asarray
 from numpy.random import permutation
 
-from skbio.maths.stats.ordination import OrdinationResults
+from skbio.math.stats.ordination import OrdinationResults
 from skbio.parse.record_finder import LabeledRecordFinder
 from cogent.parse.tree import DndParser
 from skbio.parse.sequences import parse_fastq
