@@ -43,7 +43,7 @@ initial template molecule.
 script_info['script_usage'] = []
 script_info['script_usage'].append
 (("""
-    Example: %prog -i fwd.fq,rev.fq -m Mapping_file.txt -o output_dir""",
+    Example: %prog -i fwd_read.fq,rev_read.fq -m map.txt -o output_dir --barcode_type=7""",
     """""",
     """"""))
 script_info['output_description'] = """The %prog generates:\
@@ -89,7 +89,7 @@ script_info['version'] = __version__
 
 
 def main():
-    option_parser, opts, args = parse_command_line_parameters(**script_info)
+        option_parser, opts, args = parse_command_line_parameters(**script_info)
     barcode_type = opts.barcode_type
     max_barcode_errors = opts.max_barcode_errors
     mapping_fp = opts.mapping_fp
@@ -99,11 +99,43 @@ def main():
     output_dir = opts.output_dir
     create_dir(output_dir)
     consensus_outfile = open(os.path.join(output_dir, "seqs.fna"), "w")
+   
+    if barcode_type == 'golay_12':
+        barcode_correction_fn = decode_golay_12
+        barcode_len = 12
+    else:
+        barcode_correction_fn = None
+
+        try:
+            barcode_len = int(barcode_type)
+        except ValueError:
+            option_parser.error("Invalid barcode type '%s'. The barcode type "
+                                "must be either golay_12 or a positive "
+                                "integer indicating the barcode length." %
+                                barcode_type)
+
+    if max_barcode_errors < 0:
+        option_parser.error("--max_barcode_errors must be greater than or "
+                            "equal to zero. You provided %.4f." %
+                            max_barcode_errors)
+
+    if barcode_len < 1:
+        option_parser.error("Invalid barcode length: %d. Must be greater "
+                            "than zero." % barcode_len)
+
+
+
+    if len(seq_fps) != 2:
+        option_parser.error("You must provide exactly two sequence read "
+                            "filepaths, the first for forward reads and "
+                            "second for reverse reads. You specified %d "
+                            "filepaths." % len(seq_fps))
+
 
     consensus_seq_lookup = read_input_file(sequence_read_fps, mapping_fp,
-                                           output_dir, barcode_type,
+                                           output_dir, barcode_type, barcode_correction_fn,
                                            max_barcode_errors, min_consensus,
-                                           max_cluster_ratio, option_parser)
+                                           max_cluster_ratio)
 
     for sample_id in consensus_seq_lookup:
         for random_bc in consensus_seq_lookup[sample_id]:
