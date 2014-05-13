@@ -41,11 +41,12 @@ create an error-corrected consensus sequence for the\
 initial template molecule.
 """
 script_info['script_usage'] = []
-script_info['script_usage'].append
-(("""
-    Example: %prog -i fwd_read.fq,rev_read.fq -m map.txt -o output_dir --barcode_type=7""",
-    """""",
-    """"""))
+script_info['script_usage'].append(("""Example:""",
+                                    """Specify forward read and reverse read fasta files,
+                                    use the metadata mapping file map.txt,
+                                    and output the data to output_dir""",
+                                    """Example: %prog -i fwd_read.fq,rev_read.fq -m map.txt -o output_dir --barcode_type=7"""))
+
 script_info['output_description'] = """The %prog generates:\
 A fasta file called seqs.fna which contains\
 error corrected consensus sequence for the template DNA\
