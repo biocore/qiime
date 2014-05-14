@@ -22,7 +22,7 @@ from types import GeneratorType
 from numpy import concatenate, repeat, zeros, nan, asarray
 from numpy.random import permutation
 
-from skbio.maths.stats.ordination import OrdinationResults
+from skbio.math.stats.ordination import OrdinationResults
 from skbio.parse.record_finder import LabeledRecordFinder
 from cogent.parse.tree import DndParser
 from skbio.parse.sequences import parse_fastq
@@ -361,7 +361,7 @@ def parse_coords(lines):
     - list of percent variance explained
 
     For the file format check
-    skbio.maths.stats.ordination.OrdinationResults.from_file
+    skbio.math.stats.ordination.OrdinationResults.from_file
 
     Strategy: read the file using skbio's parser and return the objects
               we want

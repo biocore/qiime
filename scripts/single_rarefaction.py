@@ -12,7 +12,7 @@ __email__ = "justinak@gmail.com"
 
 from functools import partial
 
-from skbio.maths.subsample import subsample
+from skbio.math.subsample import subsample
 
 from qiime.util import parse_command_line_parameters
 from qiime.util import make_option
