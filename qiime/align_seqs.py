@@ -31,7 +31,6 @@ import brokit.clustalw
 import brokit.muscle_v38
 import brokit.mafft
 
-from cogent import DNA as DNA_cogent
 from cogent.parse.rfam import MinimalRfamParser, ChangedSequence
 from skbio.app.util import ApplicationNotFoundError
 from skbio.core.exception import RecordError
@@ -115,7 +114,7 @@ class CogentAligner(Aligner):
         seqs = self.getData(seq_path)
         params = dict(
             [(k, v) for (k, v) in self.Params.items() if k.startswith('-')])
-        result = module.align_unaligned_seqs(seqs, moltype=DNA_cogent, params=params)
+        result = module.align_unaligned_seqs(seqs, params=params)
         return result
 
     def __call__(self, result_path=None, log_path=None, *args, **kwargs):
@@ -131,7 +130,6 @@ class InfernalAligner(Aligner):
         """Return new InfernalAligner object with specified params.
         """
         _params = {
-            'moltype': DNA_cogent,
             'Application': 'Infernal',
         }
         _params.update(params)
@@ -152,8 +150,6 @@ class InfernalAligner(Aligner):
         except RecordError:
             raise ValueError(
                 "Template alignment must be in Stockholm format with corresponding secondary structure annotation when using InfernalAligner.")
-
-        moltype = self.Params['moltype']
 
         # Need to make separate mapping for unaligned sequences
         unaligned = SequenceCollection.from_fasta_records(
@@ -187,14 +183,13 @@ class InfernalAligner(Aligner):
         aligned, struct_string = cmalign_from_alignment(aln=template_alignment,
                                                         structure_string=struct,
                                                         seqs=mapped_seq_tuples,
-                                                        moltype=moltype,
                                                         include_aln=True,
                                                         params=cmalign_params,
                                                         cmbuild_params=cmbuild_params)
 
         # Pull out original sequences from full alignment.
         infernal_aligned = []
-        # Get a dict of the identifiers to sequences (note that this is a
+        # Get a dict of the ids to sequences (note that this is a
         # cogent alignment object, hence the call to NamedSeqs)
         aligned_dict = aligned.NamedSeqs
         for n, o in new_to_old_ids.iteritems():
@@ -273,12 +268,12 @@ class PyNastAligner(Aligner):
         logger.record(str(self))
 
         for i, seq in enumerate(pynast_failed):
-            skb_seq = DNASequence(str(seq), identifier=seq.Name)
+            skb_seq = DNASequence(str(seq), id=seq.Name)
             pynast_failed[i] = skb_seq
         pynast_failed = SequenceCollection(pynast_failed)
 
         for i, seq in enumerate(pynast_aligned):
-            skb_seq = DNASequence(str(seq), identifier=seq.Name)
+            skb_seq = DNASequence(str(seq), id=seq.Name)
             pynast_aligned[i] = skb_seq
         pynast_aligned = Alignment(pynast_aligned)
 

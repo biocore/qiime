@@ -673,7 +673,7 @@ def write_Fasta_from_name_seq_pairs(name_seqs, fh):
         raise ValueError("Need open file handle to write to.")
 
     for (name, seq) in name_seqs:
-        fh.write("%s\n" % BiologicalSequence(seq, identifier=name).to_fasta())
+        fh.write("%s\n" % BiologicalSequence(seq, id=name).to_fasta())
 
 
 def illumina_data_to_fastq(record_data, number_of_bases=None):

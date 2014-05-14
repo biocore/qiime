@@ -946,7 +946,7 @@ def degap_fasta_aln(seqs):
     """
 
     for (label, seq) in seqs:
-        yield DNASequence(seq, identifier=label).degap()
+        yield DNASequence(seq, id=label).degap()
 
 
 def write_degapped_fasta_to_file(seqs, tmp_dir="/tmp/"):

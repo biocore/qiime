@@ -120,7 +120,7 @@ The assumptions we do not check for are:
 # implement the requirement here. The KW test does assume that the distributions
 * from which the samples come are the same (although they may be non-normal)
 * except for their location parameter, and we do not check this.
-* G-test:
+* G-test: we check that the data are counts rather than relative abundance.
 * Mann-Whitney-U: Equality of variance between groups. Sample 1 is IID, Sample 2
 * is IID. Sample 1 and Sample 2 are mutually independent.
 * ANOVA: ANOVA assumes equality of variance between groups (homoscedasticity),
@@ -193,7 +193,10 @@ OTU - OTU id
 Test-Statistic - the value of the test statistic for the given test
 P - the raw P value returned by the given test.
 FDR_P - the P value corrected by the Benjamini-Hochberg FDR procedure for
- multiple comparisons.
+ multiple comparisons. This is the 'step up' procedure as described in 
+ 'Controlling the False Discovery Rate: A Practical and Powerful Approach to 
+ Multiple Testing' Yoav Benjamini and Yosef Hochberg. Journal of the Royal 
+ Statistical Society. Series B (Methodological), Vol. 57, No. 1 (1995) 289-300. 
 Bonferroni_P - the P value corrected by the Bonferroni procedure for multiple
  comparisons.
 groupX_mean - there will be as many of these headers as there are unique values
@@ -239,7 +242,7 @@ Taxonomy - this column will be present only if the biom table contained Taxonomy
 """
 script_info['required_options'] = [
     make_option('-i', '--otu_table_fp',
-                help='path to biom format table or to directory containing OTU tables',
+                help='path to biom format table',
                 type='existing_path'),
     make_option('-m', '--mapping_fp', type='existing_filepath',
                 help='path to category mapping file'),
