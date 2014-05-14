@@ -11,7 +11,7 @@ QIIME (canonically pronounced 'Chime') is a pipeline for performing microbial co
 
 **The quickest way to start using QIIME is with the** `QIIME virtual box <./install/virtual_box.html>`_. To stay up-to-date on what's new with QIIME, you should subscribe to the `blog <http://qiime.wordpress.com>`_.
 
-Rather than reimplementing commonly used algorithms, QIIME wraps popular implementations of those algorithms. This allows us to make use of the many excellent tools available in this area, and allows faster integration of new tools. If you use tools that you think would be useful additions to QIIME, consider submitting a feature request by `creating a new issue on our GitHub issue tracker <https://github.com/qiime/qiime/issues>`_ and labelling it as an *enhancement*. You will need to create a free GitHub account in order to create an issue.
+Rather than reimplementing commonly used algorithms, QIIME wraps popular implementations of those algorithms. This allows us to make use of the many excellent tools available in this area, and allows faster integration of new tools. If you use tools that you think would be useful additions to QIIME, consider submitting a feature request by `creating a new issue on our GitHub issue tracker <https://github.com/biocore/qiime/issues>`_ and labelling it as an *enhancement*. You will need to create a free GitHub account in order to create an issue.
 
 A standard QIIME analysis begins with sequence data from one or more sequencing platforms, including Sanger, Roche/454, and Illumina GAIIx. QIIME can perform library de-multiplexing and quality filtering; denoising with AmpliconNoise or the QIIME Denoiser; OTU and representative set picking with uclust, cdhit, mothur, BLAST, or other tools; taxonomy assignment with uclust, BLAST, the RDP classifier, tax2tree, mothur, or rtax; sequence alignment with PyNAST, muscle, infernal, or other tools; phylogeny reconstruction with FastTree, raxml, clearcut, or other tools; alpha diversity and rarefaction, including visualization of results, using over 20 metrics including Phylogenetic Diversity, chao1, and observed species; beta diversity and rarefaction, including visualization of results, using over 25 metrics including weighted and unweighted UniFrac, Euclidean distance, and Bray-Curtis; summarization and visualization of taxonomic composition of samples using area, bar and pie charts along with distance histograms; and many other features. While QIIME is primarily used for analysis of amplicon data, many of the downstream analysis pipeline (such as alpha rarefaction and jackknifed beta diversity) can be performed on any type of `sample x observation tables if they are formatted correctly <./documentation/file_formats.html#otu-table-format>`_. 
 
@@ -45,7 +45,7 @@ If installing QIIME natively, you'll need to choose between the release and deve
 
  * Development Version: QIIME is under very active development. To get the latest development version of QIIME, you access our git repository, which is hosted on GitHub. While this code is subject to minor changes in interface, it will provide access to the latest and greatest features. The official web documentation is likely to be out-of-date with respect to the development software. You should instead refer to the documentation in Qiime/doc. Check out the latest version of QIIME using git with the command::
 
-	git clone git://github.com/qiime/qiime.git Qiime
+	git clone git://github.com/biocore/qiime.git Qiime
 
 
 Learning QIIME
@@ -58,7 +58,7 @@ The only way to get help with QIIME is to search or ask questions in the `QIIME 
 
 Before requesting help with QIIME `review this discussion <http://groups.google.com/group/qiime-forum/browse_thread/thread/67e2ab4af75655ae>`_ to get information on what data to send to help us answer your question as quickly as possible.
 
-Users can also submit bug reports and feature requests via our `GitHub issue tracker <https://github.com/qiime/qiime/issues>`_.
+Users can also submit bug reports and feature requests via our `GitHub issue tracker <https://github.com/biocore/qiime/issues>`_.
 
 QIIME Development
 =================
