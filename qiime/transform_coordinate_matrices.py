@@ -13,8 +13,8 @@ __email__ = "gregcaporaso@gmail.com"
 
 from random import shuffle
 from numpy import array, mean, append, zeros, asarray
-from skbio.maths.stats.spatial import procrustes
-from skbio.maths.stats.ordination import OrdinationResults
+from skbio.math.stats.spatial import procrustes
+from skbio.math.stats.ordination import OrdinationResults
 
 from qiime.util import create_dir
 
