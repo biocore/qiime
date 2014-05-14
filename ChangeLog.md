@@ -7,6 +7,8 @@ QIIME 1.8.0-dev (changes since 1.8.0 go here)
 * -m/--mapping_fps is no longer required for split_libraries_fastq.py. The mapping file is not required when running with --barcode_type 'not-barcoded',but the mapping file would fail to validate when passing multiple sequence files and sample ids but a mapping file without barcodes (see #1400).
 * Added alphabetical sorting option (based on boxplot labels) to make_distance_boxplots.py. Sorting by boxplot median can now be performed by passing ``--sort median`` (this was previously invoked by passing ``--sort``). Sorting alphabetically can be performed by passing ``--sort alphabetical``.
 * Removed insert_seqs_into_tree.py. This code needs additional testing and documentation, and was not widely used. We plan to add this support back in the future, and progress on that can be followed on [#1499](https://github.com/biocore/qiime/issues/1499).
+* Added a feature (e.g., OTU) selection script, fizzy.py.
+* [PyFeast](https://github.com/EESI/PyFeast/releases/v1.0/) v1.0 is now an (optional) QIIME dependency.
 
 QIIME 1.8.0 (11 Dec 2013)
 =========================
