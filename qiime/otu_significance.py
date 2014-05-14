@@ -14,14 +14,12 @@ from biom.parse import parse_biom_table
 from qiime.parse import parse_mapping_file_to_dict
 from numpy import (array, argsort, vstack, isnan, inf, nan, apply_along_axis,
                    mean, zeros)
-# from qiime.pycogent_backports.test import (fisher_population_correlation,
-#                                            pearson, spearman, G_fit, ANOVA_one_way, kruskal_wallis, mw_t,
-#                                            mw_boot, t_paired, mc_t_two_sample, t_two_sample,
-#                                            fisher, kendall, assign_correlation_pval, cscore)
+
 from skbio.math.stats.test import (fisher_population_correlation,
-                                           pearson, spearman, G_fit, ANOVA_one_way, kruskal_wallis, mw_t,
-                                           mw_boot, t_paired, mc_t_two_sample, t_two_sample,
-                                           fisher, kendall, assign_correlation_pval, cscore)
+                                  pearson, spearman, G_fit, ANOVA_one_way, 
+                                  kruskal_wallis, mw_t, mw_boot, t_paired, 
+                                  mc_t_two_sample, t_two_sample, fisher, 
+                                  kendall, assign_correlation_pval, cscore)
 
 from qiime.util import biom_taxonomy_formatter
 from collections import defaultdict
