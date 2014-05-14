@@ -10,11 +10,13 @@ from collections import defaultdict
 from numpy import (nonzero, array, fromstring, repeat, bitwise_or,
     uint8, zeros, arange, finfo)
 
-from cogent import DNA
+from cogent import DNA as DNA_cogent
 from cogent.core.alignment import DenseAlignment
 from cogent.core.sequence import ModelDnaSequence
 from cogent.core.profile import Profile
 
+from skbio.core.alignment import Alignment
+from skbio.core.sequence import DNA
 from skbio.parse.sequences import parse_fasta
 
 
@@ -141,10 +143,10 @@ def remove_outliers(seqs, num_sigmas, fraction_seqs_for_stats=.95):
     fraction_seqs_for_stats are used
 
     seqs must be compatible with DenseAlignment:
-    aln = DenseAlignment(data=seqs, MolType=DNA) is called
+    aln = DenseAlignment(data=seqs, MolType=DNA_cogent) is called
     """
-    aln = DenseAlignment(data=seqs, MolType=DNA)
-    cons = DenseAlignment(data=aln.majorityConsensus(), MolType=DNA)
+    aln = DenseAlignment(data=seqs, MolType=DNA_cogent)
+    cons = DenseAlignment(data=aln.majorityConsensus(), MolType=DNA_cogent)
     diff_mtx = cons.SeqData[:, 0] != aln.SeqData
 
     # consider only a fraction of seqs for mean, std
