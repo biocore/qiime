@@ -20,7 +20,7 @@ from numpy import array
 from random import choice, randrange
 from tempfile import mkdtemp
 from unittest import TestCase, main
-from qiime.pycogent_backports.test import G_2_by_2
+from skbio.math.stats.test import G_2_by_2
 from qiime.make_otu_network import get_sample_info, get_connection_info, \
     get_num_con_cat, get_num_cat, make_table_file, make_stats_files,\
     make_props_files

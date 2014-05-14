@@ -335,7 +335,6 @@ foo	bar	N/A	N/A	N/A	N/A	N/A
                                                                      2.598076211353316, 0.060844967173160069, 0.12168993434632014,
                                                                      nan, nan]]
         obs = _perform_pairwise_tests(self.labels3, self.dists3, 'low', 0)
-        print obs
 
         self.compare_multiple_level_array(obs, exp)
 

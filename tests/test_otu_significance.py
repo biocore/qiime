@@ -18,8 +18,8 @@ from qiime.otu_significance import (get_sample_cats, get_cat_sample_groups,
                                     run_grouped_correlation, CORRELATION_TEST_CHOICES,
                                     grouped_correlation_formatter, correlation_row_generator,
                                     run_correlation_test)
-from qiime.pycogent_backports.test import (assign_correlation_pval, fisher,
-                                           fisher_population_correlation)
+from skbio.math.stats.test import (assign_correlation_pval, fisher,
+                                   fisher_population_correlation)
 from numpy import array, hstack, corrcoef
 from numpy.random import seed
 from numpy.testing import assert_almost_equal

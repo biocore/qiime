@@ -15,8 +15,8 @@ __email__ = "wdwvt1@gmail.com"
 
 from qiime.util import (parse_command_line_parameters, make_option,
                         sync_biom_and_mf)
-from qiime.pycogent_backports.test import (benjamini_hochberg_step_down,
-                                           bonferroni_correction)
+from skbio.math.stats.test import (benjamini_hochberg_step_down,
+                                   bonferroni_correction)
 from qiime.otu_significance import (get_sample_cats, get_sample_indices,
                                     get_cat_sample_groups, group_significance_row_generator,
                                     group_significance_output_formatter,
