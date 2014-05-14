@@ -84,8 +84,8 @@ def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     if opts.step <= 0:
-        option_parser.error("nonpositive step not allowed (%s was supplied)" %
-                            (opts.step,))
+        option_parser.error("step must be greater than 0")
+
     create_dir(opts.output_path, fail_on_exist=False)
     maker = RarefactionMaker(opts.input_path, opts.min, opts.max,
                              opts.step, opts.num_reps)
