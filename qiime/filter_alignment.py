@@ -23,8 +23,8 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso", "Justin Kuczynski", "Dan Knights"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
-__maintainer__ = "Dan Knights"
-__email__ = "danknights@gmail.com"
+__maintainer__ = "Greg Caporaso"
+__email__ = "gregcaporaso@gmail.com"
 
 """Contains code for filtering alignments before building trees from them
 """
@@ -159,19 +159,6 @@ def remove_outliers(seqs, num_sigmas, fraction_seqs_for_stats=.95):
 
     filtered_aln = aln.getSubAlignment(seq_idxs_to_keep)
     return filtered_aln
-
-
-def status(message, dest=stdout, overwrite=True, max_len=100):
-    """Writes a status message over the current line of stdout
-    """
-    message = str(message)
-    message_len = max(len(message), max_len)
-    if overwrite:
-        dest.write('\b' * (message_len + 2))
-    dest.write(message[0:message_len])
-    if not overwrite:
-        dest.write('\n')
-    dest.flush()
 
 
 def generate_lane_mask(infile, entropy_threshold, existing_mask=None):
