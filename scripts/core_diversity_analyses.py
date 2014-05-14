@@ -74,7 +74,7 @@ script_info['optional_options'] = [
                       ' [default: %default]')),
     make_option(
         '--nonphylogenetic_diversity', action='store_true', default=False,
-        help=('Apply non-phylogenetic alpha (chao1 and observed_species) and'
+        help=('Apply non-phylogenetic alpha (chao1 and observed_otus) and'
               ' beta (bray_curtis) diversity calculations. This'
               ' is useful if, for example, you are working with non-amplicon BIOM'
               ' tables, or if a reliable tree is not available (e.g., if you\'re '
@@ -149,7 +149,7 @@ def main():
         if 'metrics' not in params['beta_diversity']:
             params['beta_diversity']['metrics'] = 'bray_curtis'
         if 'metrics' not in params['alpha_diversity']:
-            params['alpha_diversity']['metrics'] = 'observed_species,chao1'
+            params['alpha_diversity']['metrics'] = 'observed_otus,chao1'
 
     jobs_to_start = opts.jobs_to_start
     default_jobs_to_start = qiime_config['jobs_to_start']

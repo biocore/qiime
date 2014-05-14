@@ -27,14 +27,14 @@ script_info['script_description'] = """This script performs like the\
 script_info['script_usage'] = []
 
 script_info['script_usage'].append(("""Example""",
-                                    """Apply the observed_species, chao1, PD_whole_tree metrics (-m) to all otu\
+                                    """Apply the observed_OTUs, chao1, PD_whole_tree metrics (-m) to all otu\
  tables in rarefied_otu_tables/ (-i) and write the resulting output files to\
  adiv/ (-o, will be created if it doesn't exist). Use the rep_set.tre (-t) to\
  compute phylogenetic diversity metrics. ALWAYS SPECIFY ABSOLUTE FILE PATHS\
  (absolute path represented here as $PWD, but will generally look something\
  like /home/ubuntu/my_analysis/).""",
                                     """%prog -i $PWD/rarefied_otu_tables -o $PWD/adiv\
- -m observed_species,chao1,PD_whole_tree -t $PWD/rep_set.tre"""))
+ -m observed_otus,chao1,PD_whole_tree -t $PWD/rep_set.tre"""))
 
 script_info['output_description'] = """The resulting output will be the same\
  number of files as supplied by the user. The resulting files are tab-delimited\
@@ -59,7 +59,7 @@ script_info['optional_options'] = [
     make_option('-m', '--metrics', type='multiple_choice',
                 mchoices=list_known_metrics(),
                 help='metrics to use, comma delimited',
-                default='PD_whole_tree,chao1,observed_species'),
+                default='PD_whole_tree,chao1,observed_otus'),
     options_lookup['retain_temp_files'],
     options_lookup['suppress_submit_jobs'],
     options_lookup['poll_directly'],
