@@ -5,17 +5,17 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso", "Dan Knights"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
-__maintainer__ = "Dan Knights"
-__email__ = "danknights@gmail.com"
-
-from numpy import array
+__maintainer__ = "Greg Caporaso"
+__email__ = "gregcaporaso@gmail.com"
 
 from unittest import TestCase, main
+
+from numpy import array
 from numpy.testing import assert_almost_equal
-from cogent import LoadSeqs
-from qiime.filter_alignment import apply_lane_mask, apply_gap_filter,\
-    apply_lane_mask_and_gap_filter, remove_outliers, freqs_from_aln_array,\
-    generate_lane_mask
+
+from qiime.filter_alignment import (
+    apply_lane_mask, apply_gap_filter, apply_lane_mask_and_gap_filter,
+    remove_outliers, freqs_from_aln_array, generate_lane_mask)
 
 
 class FilterAlignmentTests(TestCase):
