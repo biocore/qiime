@@ -38,8 +38,8 @@ from biom.table import table_factory, DenseOTUTable
 from skbio.core.distance import DistanceMatrix
 from skbio.util.misc import create_dir
 
-from qiime.pycogent_backports.test import (mantel_test, mc_t_two_sample,
-                                           pearson, permute_2d, spearman)
+from skbio.math.stats.test import (mantel_t, pearson, spearman, permute_2d,
+                                   mc_t_two_sample)
 from qiime.format import format_p_value_for_num_iters, format_biom_table
 from qiime.util import MetadataMap
 
@@ -160,6 +160,7 @@ def _perform_pairwise_tests(labels, dists, tail_type, num_permutations):
         stat[4] = stat[3] if stat[3] is nan else min(stat[3] * num_tests, 1)
         stat[6] = stat[5] if stat[5] is nan else min(stat[5] * num_tests, 1)
     return result
+
 
 
 def quantile(data, quantiles):
@@ -1467,8 +1468,8 @@ class Mantel(CorrelationStats):
         # We suppress the symmetry and hollowness check since we are
         # guaranteed to have DistanceMatrix instances (we don't need to check a
         # second time here).
-        results = mantel_test(m1.data, m2.data, num_perms, alt=alt,
-                              suppress_symmetry_and_hollowness_check=True)
+        results = mantel_t(m1.data, m2.data, num_perms, alt=alt,
+                           suppress_symmetry_and_hollowness_check=True)
 
         resultsDict = super(Mantel, self).__call__(num_perms)
         resultsDict['method_name'] = "Mantel"
