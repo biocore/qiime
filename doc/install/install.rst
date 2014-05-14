@@ -290,7 +290,7 @@ Latest Development Version
 --------------------------
 To get the latest development version of QIIME, you should check it out of our git repository, which is hosted on GitHub. While this code is subject to changes in interface and hasn't been as extensively tested as the release version, it will provide access to the latest and greatest QIIME features. The official web documentation is likely to be out-of-date with respect to the development software. You should instead refer to the documentation in ``Qiime/doc``. Check out the latest version of QIIME using git with the command::
 
-	git clone git://github.com/qiime/qiime.git Qiime
+	git clone git://github.com/biocore/qiime.git Qiime
 
 If you are using the latest development version of QIIME, you should periodically update your checkout by running the following command (from within your checkout)::
 

@@ -7,7 +7,7 @@ from math import ceil, e
 from numpy import array, zeros, concatenate, arange, log, sqrt, exp, asarray
 from numpy.random import gamma, shuffle
 from scipy.special import gammaln
-from skbio.maths.subsample import subsample
+from skbio.math.subsample import subsample
 
 from cogent.maths.optimisers import minimise
 from cogent.maths.scipy_optimize import fmin_powell
