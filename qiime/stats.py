@@ -33,13 +33,12 @@ from numpy import (argsort, array, ceil, empty, fill_diagonal, finfo,
                    log2, mean, ones, sqrt, tri, unique, zeros, ndarray, floor,
                    median, nan, min as np_min, max as np_max)
 from numpy.random import permutation
-from cogent.maths.stats.test import t_one_sample
 from biom.table import table_factory, DenseOTUTable
 from skbio.core.distance import DistanceMatrix
 from skbio.util.misc import create_dir
 
 from skbio.math.stats.test import (mantel_t, pearson, spearman, permute_2d,
-                                   mc_t_two_sample)
+                                   mc_t_two_sample, t_one_sample)
 from qiime.format import format_p_value_for_num_iters, format_biom_table
 from qiime.util import MetadataMap
 
