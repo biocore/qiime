@@ -16,7 +16,7 @@ from numpy import (array, argsort, vstack, isnan, inf, nan, apply_along_axis,
                    mean, zeros)
 
 from skbio.math.stats.test import (fisher_population_correlation,
-                                  pearson, spearman, G_fit, ANOVA_one_way, 
+                                  pearson, spearman, g_fit, ANOVA_one_way, 
                                   kruskal_wallis, mw_t, mw_boot, t_paired, 
                                   mc_t_two_sample, t_two_sample, fisher, 
                                   kendall, assign_correlation_pval, cscore)
@@ -54,7 +54,7 @@ row - row is used in several places (eg. row_generator). The 'row' being
 CORRELATION_TEST_CHOICES = {'pearson': pearson, 'spearman': spearman,
                             'kendall': kendall, 'cscore': cscore}
 
-GROUP_TEST_CHOICES = {'ANOVA': ANOVA_one_way, 'g_test': G_fit,
+GROUP_TEST_CHOICES = {'ANOVA': ANOVA_one_way, 'g_test': g_fit,
                       'kruskal_wallis': kruskal_wallis,
                       'parametric_t_test': t_two_sample,
                       'nonparametric_t_test': mc_t_two_sample,
@@ -147,7 +147,7 @@ def run_group_significance_test(data_generator, test, test_choices, reps=1000):
         elif test in ['parametric_t_test', 'mann_whitney_u']:
             test_stat, pval = test_choices[test](row[0], row[1])
         else:
-            # ANOVA, kruskal_wallis, G_fit will get caught here
+            # ANOVA, kruskal_wallis, g_fit will get caught here
             test_stat, pval = test_choices[test](row)
         test_stats.append(test_stat)
         pvals.append(pval)
