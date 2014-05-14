@@ -17,17 +17,25 @@ from qiime.alpha_diversity import (single_file_alpha, multiple_file_alpha,
 import os
 
 script_info = {}
-script_info[
-    'brief_description'] = """Calculate alpha diversity on each sample in an otu table, using a variety of alpha diversity metrics"""
-script_info[
-    'script_description'] = """This script calculates alpha diversity, or within-sample diversity, using an otu table. The QIIME pipeline allows users to conveniently calculate more than two dozen different diversity metrics. The full list of available metrics is available by passing the option -s to the script alpha_diversity.py, and documentation of those metrics can be found at http://qiime.org/scripts/alpha_diversity_metrics.html. Every metric has different strengths and limitations - technical discussion of each metric is readily available online and in ecology textbooks, but is beyond the scope of this document."""
+script_info['brief_description'] = """Calculate alpha diversity on each sample in an otu table, using a variety of alpha diversity metrics"""
+script_info['script_description'] = \
+"""This script calculates alpha diversity, or within-sample diversity, using an
+OTU table. The QIIME pipeline allows users to conveniently calculate more than
+two dozen different diversity metrics. The full list of available metrics is
+available by passing the -s option to this script.
+
+Documentation of the metrics can be found at
+http://scikit-bio.org/math.diversity.alpha.html. Every metric has different
+strengths and limitations - technical discussion of each metric is readily
+available online and in ecology textbooks, but is beyond the scope of this
+document.
+"""
 script_info['script_usage'] = []
 
 script_info['script_usage'].append(
     ("""Single File Alpha Diversity Example (non-phylogenetic):""",
      """To perform alpha diversity (e.g. chao1) on a single OTU table, where the results are output to "alpha_div.txt", you can use the following command:""",
      """%prog -i otu_table.biom -m chao1 -o adiv_chao1.txt"""))
-
 
 script_info['script_usage'].append(
     ("""Single File Alpha Diversity Example (phylogenetic):""",
@@ -94,8 +102,8 @@ def main():
     if opts.show_metrics:
         print("Known metrics are: %s\n"
               % (', '.join(list_known_metrics()),))
-        print(
-            "For more information, see http://qiime.org/scripts/alpha_diversity_metrics.html")
+        print("For more information, see "
+              "http://scikit-bio.org/math.diversity.alpha.html")
         exit(0)
     almost_required_options = ['input_path', 'output_path', 'metrics']
     for option in almost_required_options:
