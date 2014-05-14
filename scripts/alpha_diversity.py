@@ -16,7 +16,6 @@ from qiime.alpha_diversity import (single_file_alpha, multiple_file_alpha,
                                    list_known_metrics)
 import os
 
-# alpha_diversity.py
 script_info = {}
 script_info[
     'brief_description'] = """Calculate alpha diversity on each sample in an otu table, using a variety of alpha diversity metrics"""
@@ -49,9 +48,9 @@ script_info['output_description'] = """The resulting file(s) is a tab-delimited 
 
 Example Output:
 
-====== ======= ============= ================
-\      simpson PD_whole_tree observed_species
-====== ======= ============= ================
+====== ======= ============= =============
+\      simpson PD_whole_tree observed_otus
+====== ======= ============= =============
 PC.354 0.925   2.83739       16.0
 PC.355 0.915   3.06609       14.0
 PC.356 0.945   3.10489       19.0
@@ -61,7 +60,7 @@ PC.607 0.92    4.13397       16.0
 PC.634 0.9     3.71369       14.0
 PC.635 0.94    4.20239       18.0
 PC.636 0.925   3.78882       16.0
-====== ======= ============= ================
+====== ======= ============= =============
 """
 script_info['required_options'] = []
 script_info['optional_options'] = [
@@ -75,7 +74,7 @@ script_info['optional_options'] = [
                 type='new_path'),
     make_option('-m', '--metrics', type='multiple_choice',
                 mchoices=list_known_metrics(),
-                default='PD_whole_tree,chao1,observed_species',
+                default='PD_whole_tree,chao1,observed_otus',
                 help='Alpha-diversity metric(s) to use. A comma-separated list should' +
                 ' be provided when multiple metrics are specified. [default: %default]'),
     make_option('-s', '--show_metrics', action='store_true',

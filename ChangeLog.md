@@ -7,6 +7,12 @@ QIIME 1.8.0-dev (changes since 1.8.0 go here)
 * -m/--mapping_fps is no longer required for split_libraries_fastq.py. The mapping file is not required when running with --barcode_type 'not-barcoded',but the mapping file would fail to validate when passing multiple sequence files and sample ids but a mapping file without barcodes (see #1400).
 * Added alphabetical sorting option (based on boxplot labels) to make_distance_boxplots.py. Sorting by boxplot median can now be performed by passing ``--sort median`` (this was previously invoked by passing ``--sort``). Sorting alphabetically can be performed by passing ``--sort alphabetical``.
 * Removed insert_seqs_into_tree.py. This code needs additional testing and documentation, and was not widely used. We plan to add this support back in the future, and progress on that can be followed on [#1499](https://github.com/biocore/qiime/issues/1499).
+* Several changes to alpha_diversity.py:
+  - ``ACE`` is now ``ace``
+  - ``chao1_confidence`` is now ``chao1_ci``
+  - Added ``observed_otus``, which is equivalent to ``observed_species`` but is
+    generally a more accurate name.
+* Removed options ``-c``/``--ci_type``, ``-a``/``--alpha``, and ``-f``/``--f_ratio`` from conditional_uncovered_probability.py as these weren't being used by the script (i.e., supplying different values didn't change the computed CIs because the default were always used).
 
 QIIME 1.8.0 (11 Dec 2013)
 =========================
