@@ -8,20 +8,18 @@ __credits__ = ["Greg Caporaso", "Justin Kuczynski", "Dan Knights",
                "Doug Wendel", "William Walters", "John Chase"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
-__maintainer__ = "Doug Wendel"
-__email__ = "wendel@colorado.edu"
-
+__maintainer__ = "Greg Caporaso"
+__email__ = "gregcaporaso@gmail.com"
 
 from os.path import split, exists, splitext, getsize
 from os import mkdir, remove
 
 import numpy as np
 
-from qiime.util import load_qiime_config
-from qiime.filter_alignment import apply_lane_mask_and_gap_filter, \
-    remove_outliers, generate_lane_mask
-from qiime.util import parse_command_line_parameters
-from qiime.util import make_option
+from qiime.util import (load_qiime_config, parse_command_line_parameters,
+                        make_option)
+from qiime.filter_alignment import (apply_lane_mask_and_gap_filter,
+                                    remove_outliers, generate_lane_mask)
 
 script_info = {}
 script_info[
