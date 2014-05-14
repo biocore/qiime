@@ -22,9 +22,8 @@ from math import fsum, trunc
 from tempfile import mkstemp
 
 from cogent.app.util import ApplicationNotFoundError, ApplicationError
-from cogent.parse.flowgram_parser import lazy_parse_sff_handle
-from cogent.parse.flowgram import Flowgram, seq_to_flow
-from cogent.parse.flowgram_collection import FlowgramCollection
+from brokit.denoiser import (lazy_parse_sff_handle, Flowgram,
+                             FlowgramCollection, seq_to_flow)
 from skbio.parse.sequences import parse_fasta
 
 from qiime.format import write_Fasta_from_name_seq_pairs

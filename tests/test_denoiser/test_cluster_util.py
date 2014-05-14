@@ -21,7 +21,7 @@ from tempfile import mkstemp, mkdtemp
 
 from unittest import TestCase, main
 from skbio.parse.sequences import parse_fasta
-from cogent.parse.flowgram import Flowgram
+from brokit.denoiser import Flowgram
 from cogent import Sequence
 from cogent.app.util import ApplicationNotFoundError
 from cogent.util.misc import remove_files
