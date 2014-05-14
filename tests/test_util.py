@@ -1096,7 +1096,7 @@ class FunctionWithParamsTests(TestCase):
                     ('e', "")]
 
         expected_result = map(lambda a_b: DNASequence(a_b[1],
-                                                      identifier=a_b[0]),
+                                                      id=a_b[0]),
                               [("a", "AAAAAAAAAGGGG"),
                                ("b", "AAGGAGC"),
                                ('c', ""),
