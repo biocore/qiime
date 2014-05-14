@@ -2068,7 +2068,7 @@ def biom_taxonomy_formatter(bt, md_key):
     will print a warning and return None.
     """
     if bt.ObservationMetadata is None:
-        print 'No metadata in biom table.'
+        print 'Warning: No metadata in biom table. Won\'t calculations.'
         return None
     else:
         dtype = bt.ObservationMetadata[0][md_key]
