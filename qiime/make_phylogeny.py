@@ -18,7 +18,6 @@ already in cogent.app.*, to which wrappers for e.g. NAST need to be
 added..
 """
 
-from cogent import DNA as DNA_cogent
 from skbio.parse.sequences import parse_fasta
 from skbio.core.alignment import Alignment
 from skbio.core.sequence import DNA
@@ -109,7 +108,7 @@ class CogentTreeBuilder(TreeBuilder):
         # This ugly little line of code lets us pass a skbio Alignment when a
         # a cogent alignment is expected.
         seqs.getIntMap = seqs.int_map
-        result = module.build_tree_from_alignment(seqs, moltype=DNA_cogent)
+        result = module.build_tree_from_alignment(seqs)
 
         try:
             root_method = kwargs['root_method']

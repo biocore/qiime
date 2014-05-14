@@ -19,7 +19,7 @@ from re import compile
 
 from skbio.parse.sequences import parse_fastq
 from skbio.core.sequence import DNA
-from skbio.format.fastq import format_fastq_record
+from skbio.format.sequences import format_fastq_record
 
 from qiime.check_id_map import process_id_map
 from qiime.split_libraries_fastq import (check_header_match_pre180,

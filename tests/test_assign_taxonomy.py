@@ -415,7 +415,7 @@ class BlastTaxonAssignerTests(TestCase):
             f.write(id_to_taxonomy_string)
         with open(self.input_seqs_fp, 'w') as f:
             f.write(test_seq_coll.to_fasta())
-        self.test_seqs = [(e.identifier, str(e)) for e in test_seq_coll]
+        self.test_seqs = [(e.id, str(e)) for e in test_seq_coll]
         with open(self.reference_seqs_fp, 'w') as f:
             f.write(test_refseq_coll.to_fasta())
 
