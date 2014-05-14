@@ -22,7 +22,7 @@ from os import makedirs, close
 from itertools import imap
 from tempfile import mkstemp
 
-from cogent.parse.mothur import parse_otu_list as mothur_parse
+from brokit.mothur import parse_otu_list as mothur_parse
 
 from skbio.util.misc import remove_files, flatten
 from skbio.util.trie import CompressedTrie, fasta_to_pairlist
