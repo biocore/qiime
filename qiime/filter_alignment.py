@@ -172,9 +172,9 @@ def generate_lane_mask(infile, entropy_threshold, existing_mask=None):
      are removed.
 
     """
+    aln = Alignment.from_fasta_records(parse_fasta(infile), DNA)
+    uncertainty = aln.position_entropies(nan_on_non_standard_chars=False)
 
-    base_freqs = freqs_from_aln_array(infile, existing_mask)
-    uncertainty = base_freqs.columnUncertainty()
     uncertainty_sorted = sorted(uncertainty)
 
     cutoff_index = int(round((len(uncertainty_sorted) - 1) *
