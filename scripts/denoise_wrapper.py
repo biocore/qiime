@@ -104,7 +104,7 @@ def main():
                                  'Pass a valid one via -i.') % f)
     outdir = opts.output_dir
 
-    ret_val = create_dir(outdir, fail_on_exist=not opts.force)
+    create_dir(outdir, fail_on_exist=not opts.force)
 
     log_fh = None
 
