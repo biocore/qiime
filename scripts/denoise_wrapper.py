@@ -16,11 +16,9 @@ from os.path import exists, splitext, split
 from qiime.util import make_option
 from numpy import array
 
-from cogent.core.alignment import SequenceCollection
 from skbio.app.util import ApplicationError
 
-from qiime.util import parse_command_line_parameters, create_dir,\
-    handle_error_codes
+from qiime.util import parse_command_line_parameters, create_dir
 from qiime.denoise_wrapper import fast_denoiser
 from qiime.parse import parse_mapping_file
 from qiime.format import write_Fasta_from_name_seq_pairs
@@ -116,9 +114,8 @@ def main():
             # in to help users avoid overwriting previous output.
             option_parser.error("Output directory already exists. Please choose" +
                                 " a different directory, or force overwrite with -f.")
-
     else:
-        handle_error_codes(outdir, error_code=ret_val)
+        pass
 
     log_fh = None
 
