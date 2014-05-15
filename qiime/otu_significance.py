@@ -15,7 +15,7 @@ from qiime.parse import parse_mapping_file_to_dict
 from numpy import (array, argsort, vstack, isnan, inf, nan, apply_along_axis,
                    mean, zeros)
 
-from skbio.math.stats.test import (fisher_population_correlation,
+from qiime.stats import (fisher_population_correlation,
                                   pearson, spearman, g_fit, ANOVA_one_way, 
                                   kruskal_wallis, mw_t, mw_boot, t_paired, 
                                   mc_t_two_sample, t_two_sample, fisher, 

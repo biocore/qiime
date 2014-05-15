@@ -14,7 +14,7 @@ __email__ = "jai.rideout@gmail.com"
 
 from collections import defaultdict
 from numpy import array
-from skbio.math.stats.test import is_symmetric_and_hollow
+from qiime.stats import is_symmetric_and_hollow
 from qiime.parse import group_by_field
 
 

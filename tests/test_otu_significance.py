@@ -18,7 +18,7 @@ from qiime.otu_significance import (get_sample_cats, get_cat_sample_groups,
                                     run_grouped_correlation, CORRELATION_TEST_CHOICES,
                                     grouped_correlation_formatter, correlation_row_generator,
                                     run_correlation_test)
-from skbio.math.stats.test import (assign_correlation_pval, fisher,
+from qiime.stats import (assign_correlation_pval, fisher,
                                    fisher_population_correlation)
 from numpy import array, hstack, corrcoef
 from numpy.random import seed

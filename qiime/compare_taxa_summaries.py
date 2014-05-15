@@ -12,7 +12,7 @@ __email__ = "jai.rideout@gmail.com"
 """Contains functions used in the compare_taxa_summaries.py script."""
 
 from numpy import array, sqrt
-from skbio.math.stats.test import correlation_t
+from qiime.stats import correlation_t
 from qiime.format import (format_correlation_info, format_correlation_vector,
                           format_taxa_summary)
 

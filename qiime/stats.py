@@ -5,7 +5,8 @@ __author__ = "Michael Dwan"
 __copyright__ = "Copyright 2012, The QIIME project"
 __credits__ = ["Jai Ram Rideout", "Michael Dwan", "Logan Knecht",
                "Damien Coy", "Levi McCracken", "Andrew Cochran",
-               "Jose Carlos Clemente Litran", "Greg Caporaso"]
+               "Jose Carlos Clemente Litran", "Greg Caporaso",
+               "Will Van Treuren"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Jai Ram Rideout"
@@ -173,7 +174,6 @@ def _perform_pairwise_tests(labels, dists, tail_type, num_permutations):
     return result
 
 
-
 def quantile(data, quantiles):
     """calculates quantiles of a dataset matching a given list of probabilities
 
@@ -233,6 +233,7 @@ def _quantile(data, quantile):
 
 
 class DistanceMatrixStats(object):
+
     """Base class for distance matrix-based statistical methods.
 
     This class provides an interface to setting and accessing an arbitrary
@@ -317,6 +318,7 @@ class DistanceMatrixStats(object):
 
 
 class CorrelationStats(DistanceMatrixStats):
+
     """Base class for distance matrix correlation statistical methods.
 
     It is subclassed by correlation methods such as partial Mantel and Mantel
@@ -368,6 +370,7 @@ class CorrelationStats(DistanceMatrixStats):
 
 
 class CategoryStats(DistanceMatrixStats):
+
     """Base class for categorical statistical analyses.
 
     It is subclassed by categorical statistical methods such as DB-RDA or BEST.
@@ -573,6 +576,7 @@ class CategoryStats(DistanceMatrixStats):
 
 
 class Anosim(CategoryStats):
+
     """Class for the ANOSIM categorical statistical analysis.
 
     Briefly, ANOSIM tests whether two or more groups of samples are
@@ -776,6 +780,7 @@ class Anosim(CategoryStats):
 
 
 class Permanova(CategoryStats):
+
     """Class for the PERMANOVA statistical method.
 
     This is a non-parametric, permutation-based method to determine the
@@ -926,6 +931,7 @@ class Permanova(CategoryStats):
 
 
 class Best(CategoryStats):
+
     """Class for the BEST/BioEnv statistical analysis.
 
     Based on vegan::bioenv function, which is an implementation of the BEST
@@ -1025,6 +1031,7 @@ class Best(CategoryStats):
 
 
 class MantelCorrelogram(CorrelationStats):
+
     """Class for the Mantel correlogram statistical method.
 
     This class provides the functionality to run a Mantel correlogram analysis
@@ -1413,6 +1420,7 @@ class MantelCorrelogram(CorrelationStats):
 
 
 class Mantel(CorrelationStats):
+
     """Class for the Mantel matrix correlation statistical method.
 
     This class provides the functionality to run a Mantel analysis on two
@@ -1496,6 +1504,7 @@ class Mantel(CorrelationStats):
 
 
 class PartialMantel(CorrelationStats):
+
     """Class for the partial Mantel matrix correlation statistical method.
 
     This class provides the functionality to run a partial Mantel analysis on
@@ -1776,6 +1785,7 @@ def paired_difference_analyses(personal_ids_to_state_values,
     paired_difference_output_f.close()
 
     return output_fps, paired_difference_t_test_results
+
 
 class ZeroExpectedError(ValueError):
 
@@ -2270,7 +2280,7 @@ def t_one_observation(x, sample, tails=None, exp_diff=0,
             # The list varies.
             n = len(sample)
             t = ((x - sample_mean - exp_diff) / sample_std / sqrt((n + 1) /
-                                                                     n))
+                                                                  n))
             prob = t_tailed_prob(t, n - 1, tails)
             result = (t, prob)
     except (ZeroDivisionError, ValueError, AttributeError, TypeError,
@@ -2582,9 +2592,9 @@ def correlation_t(x_items, y_items, method='pearson', tails=None,
     if n > 3:
         try:
             ci_low = tanh(arctanh(corr_coeff) - (z_crit /
-                                                       sqrt(n - 3)))
+                                                 sqrt(n - 3)))
             ci_high = tanh(arctanh(corr_coeff) + (z_crit /
-                                                        sqrt(n - 3)))
+                                                  sqrt(n - 3)))
         except (ZeroDivisionError, FloatingPointError):
             # r/rho was presumably 1 or -1. Match what R does in this case.
             ci_low, ci_high = corr_coeff, corr_coeff

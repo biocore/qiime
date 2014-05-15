@@ -4,7 +4,8 @@ from __future__ import division
 __author__ = "Michael Dwan"
 __copyright__ = "Copyright 2012, The QIIME project"
 __credits__ = ["Jai Ram Rideout", "Michael Dwan", "Logan Knecht",
-               "Damien Coy", "Levi McCracken", "Andrew Cochran"]
+               "Damien Coy", "Levi McCracken", "Andrew Cochran",
+               "Will Van Treuren"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Jai Ram Rideout"
@@ -22,9 +23,8 @@ from unittest import TestCase, main
 from warnings import filterwarnings
 from numpy.testing import assert_almost_equal, assert_allclose
 from numpy import (array, asarray, roll, median, nan, arange, matrix,
-                   concatenate, nan, ndarray, number, ones, 
+                   concatenate, nan, ndarray, number, ones,
                    reshape, testing, tril, var, log, fill_diagonal)
-
 
 
 from numpy.random import permutation, shuffle, seed
@@ -37,30 +37,32 @@ from qiime.stats import (all_pairs_t_test, _perform_pairwise_tests,
                          Anosim, Best, CategoryStats, CorrelationStats,
                          DistanceMatrixStats, MantelCorrelogram, Mantel,
                          PartialMantel, Permanova, quantile, _quantile,
-                         paired_difference_analyses, 
+                         paired_difference_analyses,
                          G_2_by_2, g_fit, t_paired, t_one_sample,
-                                   t_two_sample, mc_t_two_sample,
-                                   _permute_observations, t_one_observation,
-                                   correlation_t, ZeroExpectedError, fisher,
-                                   safe_sum_p_log_p, permute_2d, mantel,
-                                   mantel_t, _flatten_lower_triangle, pearson,
-                                   spearman, ANOVA_one_way, mw_t,
-                                   mw_boot, is_symmetric_and_hollow,
-                                   reverse_tails, tail, fdr_correction,
-                                   benjamini_hochberg_step_down,
-                                   bonferroni_correction, fisher_z_transform,
-                                   fisher_population_correlation,
-                                   inverse_fisher_z_transform,
-                                   z_transform_pval, kruskal_wallis, kendall,
-                                   kendall_pval, assign_correlation_pval,
-                                   cscore, williams_correction)
+                         t_two_sample, mc_t_two_sample,
+                         _permute_observations, t_one_observation,
+                         correlation_t, ZeroExpectedError, fisher,
+                         safe_sum_p_log_p, permute_2d, mantel,
+                         mantel_t, _flatten_lower_triangle, pearson,
+                         spearman, ANOVA_one_way, mw_t,
+                         mw_boot, is_symmetric_and_hollow,
+                         reverse_tails, tail, fdr_correction,
+                         benjamini_hochberg_step_down,
+                         bonferroni_correction, fisher_z_transform,
+                         fisher_population_correlation,
+                         inverse_fisher_z_transform,
+                         z_transform_pval, kruskal_wallis, kendall,
+                         kendall_pval, assign_correlation_pval,
+                         cscore, williams_correction)
 
 from skbio.math.stats.distribution import chi_high, tprob
 from skbio.core.distance import DissimilarityMatrix, DistanceMatrix
 
 from qiime.util import MetadataMap, get_qiime_temp_dir
 
+
 class TestHelper(TestCase):
+
     """Helper class that instantiates some commonly-used objects.
 
     This class should be subclassed by any test classes that want to use its
@@ -183,6 +185,7 @@ class TestHelper(TestCase):
 
 
 class NonRandomShuffler(object):
+
     """Helper class for testing p-values that are calculated by permutations.
 
     Since p-values rely on randomness, it may be useful to use a non-random
@@ -211,6 +214,7 @@ class NonRandomShuffler(object):
 
 
 class StatsTests(TestHelper):
+
     """Tests for top-level functions in the stats module."""
 
     def setUp(self):
@@ -364,13 +368,14 @@ foo	bar	N/A	N/A	N/A	N/A	N/A
 
         self.compare_multiple_level_array(obs, exp)
 
-
         exp = [['foo', 'bar', nan, nan, nan, nan, nan]]
         obs = _perform_pairwise_tests(['foo', 'bar'], [[], [1, 2, 4]], 'high',
                                       20)
         self.compare_multiple_level_array(obs, exp)
 
+
 class DistanceMatrixStatsTests(TestHelper):
+
     """Tests for the DistanceMatrixStats class."""
 
     def setUp(self):
@@ -472,6 +477,7 @@ class DistanceMatrixStatsTests(TestHelper):
 
 
 class CorrelationStatsTests(TestHelper):
+
     """Tests for the CorrelationStats class."""
 
     def setUp(self):
@@ -497,7 +503,7 @@ class CorrelationStatsTests(TestHelper):
                           [self.single_ele_dm, mismatch])
         # Also test that constructor raises this error.
         self.assertRaises(ValueError, CorrelationStats, [self.single_ele_dm,
-                          mismatch])
+                                                         mismatch])
 
     def test_DistanceMatrices_setter_wrong_dims(self):
         """Test setting dms with mismatching dimensions."""
@@ -505,7 +511,7 @@ class CorrelationStatsTests(TestHelper):
                           [self.overview_dm, self.single_ele_dm])
         # Also test that constructor raises this error.
         self.assertRaises(ValueError, CorrelationStats, [self.overview_dm,
-                          self.single_ele_dm])
+                                                         self.single_ele_dm])
 
     def test_DistanceMatrices_setter_too_few(self):
         """Test setting dms with not enough of them."""
@@ -519,6 +525,7 @@ class CorrelationStatsTests(TestHelper):
 
 
 class CategoryStatsTests(TestHelper):
+
     """Tests for the CategoryStats class."""
 
     def setUp(self):
@@ -637,6 +644,7 @@ class CategoryStatsTests(TestHelper):
 
 
 class AnosimTests(TestHelper):
+
     """Tests for the Anosim class.
 
     This testing code is heavily based on Andrew Cochran's original suite of
@@ -977,6 +985,7 @@ class PermanovaTests(TestHelper):
 
 
 class BestTests(TestHelper):
+
     """Tests for the Best class."""
 
     def setUp(self):
@@ -1127,6 +1136,7 @@ class BestTests(TestHelper):
 
 
 class MantelCorrelogramTests(TestHelper):
+
     """Tests for the MantelCorrelogram class."""
 
     def setUp(self):
@@ -1211,9 +1221,9 @@ class MantelCorrelogramTests(TestHelper):
         self.assertEqual(obs_ax.get_xlabel(), "Distance class index")
         self.assertEqual(obs_ax.get_ylabel(), "Mantel correlation statistic")
         assert_almost_equal(obs_ax.get_xticks(), [0.57, 0.58, 0.59, 0.6,
-                                                    0.61, 0.62, 0.63, 0.64, 0.65])
+                                                  0.61, 0.62, 0.63, 0.64, 0.65])
         assert_almost_equal(obs_ax.get_yticks(), [0.1, 0.2, 0.3, 0.4, 0.5,
-                                                    0.6, 0.7, 0.8, 0.9])
+                                                  0.6, 0.7, 0.8, 0.9])
 
         # Test p-values and corrected p-values.
         found_match = False
@@ -1227,7 +1237,7 @@ class MantelCorrelogramTests(TestHelper):
             self.assertTrue(0.0 <= p_vals[1] <= 1.0)
             self.assertTrue(0.0 <= p_vals[2] <= 1.0)
             self.compare_multiple_level_array(corr_p_vals,
-                                  [p_val * 3 if p_val is not None else None for p_val in p_vals])
+                                              [p_val * 3 if p_val is not None else None for p_val in p_vals])
 
             if (p_vals[0] >= 0 and p_vals[0] <= 0.01 and p_vals[1] > 0.01 and
                     p_vals[1] <= 0.1 and p_vals[2] > 0.1 and p_vals[2] <= 0.5):
@@ -1260,9 +1270,9 @@ class MantelCorrelogramTests(TestHelper):
         self.assertEqual(obs_ax.get_xlabel(), "Distance class index")
         self.assertEqual(obs_ax.get_ylabel(), "Mantel correlation statistic")
         assert_almost_equal(obs_ax.get_xticks(), [2.85, 2.9, 2.95, 3., 3.05,
-                                                    3.1, 3.15, 3.2])
+                                                  3.1, 3.15, 3.2])
         assert_almost_equal(obs_ax.get_yticks(), [0.82, 0.83, 0.84, 0.85,
-                                                    0.86, 0.87, 0.88, 0.89, 0.9, 0.91])
+                                                  0.86, 0.87, 0.88, 0.89, 0.9, 0.91])
 
         # Test p-values and corrected p-values.
         found_match = False
@@ -1451,6 +1461,7 @@ class MantelCorrelogramTests(TestHelper):
 
 
 class MantelTests(TestHelper):
+
     """Tests for the Mantel class."""
 
     def setUp(self):
@@ -1534,6 +1545,7 @@ class MantelTests(TestHelper):
 
 
 class PartialMantelTests(TestHelper):
+
     """Tests for the PartialMantel class."""
 
     def setUp(self):
@@ -1725,14 +1737,15 @@ class PairedDifferenceTests(TestHelper):
             ymin=0.0,
             ymax=1.0)
         self.assertTrue(exists(join(self.test_out,
-                        'paired_difference_comparisons.txt')))
+                                    'paired_difference_comparisons.txt')))
         self.assertTrue(
             exists(join(self.test_out, 'firmicutes-abundance.pdf')))
         self.assertTrue(
             exists(join(self.test_out, 'bacteroidetes-abundance.pdf')))
         # three output paths returned
         self.assertEqual(len(actual[0]), 5)
-        # expected t values returned, they should be less than (firmicutes) or greater (bacteroidetes) than 2 
+        # expected t values returned, they should be less than (firmicutes) or
+        # greater (bacteroidetes) than 2
         self.assertLess(abs(actual[1]['firmicutes-abundance'][4]), 2)
         self.assertLess(2, abs(actual[1]['bacteroidetes-abundance'][4]))
 
@@ -1755,25 +1768,25 @@ class PairedDifferenceTests(TestHelper):
         self.assertItemsEqual(table.ObservationIds,
                               ['firmicutes-abundance', 'bacteroidetes-abundance'])
         assert_almost_equal(table
-                              [table.getObservationIndex(
-                                  'firmicutes-abundance')]
-                              [table.getSampleIndex('subject1')],
-                              0.1, 2)
+                            [table.getObservationIndex(
+                                'firmicutes-abundance')]
+                            [table.getSampleIndex('subject1')],
+                            0.1, 2)
         assert_almost_equal(table
-                              [table.getObservationIndex(
-                                  'bacteroidetes-abundance')]
-                              [table.getSampleIndex('subject1')],
-                              -0.07, 2)
+                            [table.getObservationIndex(
+                                'bacteroidetes-abundance')]
+                            [table.getSampleIndex('subject1')],
+                            -0.07, 2)
         assert_almost_equal(table
-                              [table.getObservationIndex(
-                                  'firmicutes-abundance')]
-                              [table.getSampleIndex('subject2')],
-                              0.41, 2)
+                            [table.getObservationIndex(
+                                'firmicutes-abundance')]
+                            [table.getSampleIndex('subject2')],
+                            0.41, 2)
         assert_almost_equal(table
-                              [table.getObservationIndex(
-                                  'bacteroidetes-abundance')]
-                              [table.getSampleIndex('subject2')],
-                              -0.10, 2)
+                            [table.getObservationIndex(
+                                'bacteroidetes-abundance')]
+                            [table.getSampleIndex('subject2')],
+                            -0.10, 2)
 
         # missing data should raise ValueError
         self.assertRaises(ValueError, paired_difference_analyses,
@@ -1798,14 +1811,15 @@ class PairedDifferenceTests(TestHelper):
             ymin=None,
             ymax=None)
         self.assertTrue(exists(join(self.test_out,
-                        'paired_difference_comparisons.txt')))
+                                    'paired_difference_comparisons.txt')))
         self.assertTrue(
             exists(join(self.test_out, 'firmicutes-abundance.pdf')))
         self.assertTrue(
             exists(join(self.test_out, 'bacteroidetes-abundance.pdf')))
         # three output paths returned
         self.assertEqual(len(actual[0]), 5)
-        # expected t values returned, they should be less than (firmicutes) or greater (bacteroidetes) than 2
+        # expected t values returned, they should be less than (firmicutes) or
+        # greater (bacteroidetes) than 2
         self.assertLess(0, actual[1]['firmicutes-abundance'][4])
         self.assertLess(actual[1]['bacteroidetes-abundance'][4], 0)
 
@@ -1820,7 +1834,7 @@ class PairedDifferenceTests(TestHelper):
             ymin=0.0,
             ymax=1.0)
         self.assertTrue(exists(join(self.test_out,
-                        'paired_difference_comparisons.txt')))
+                                    'paired_difference_comparisons.txt')))
         self.assertTrue(
             exists(join(self.test_out, 'firmicutes-abundance.pdf')))
         self.assertFalse(
@@ -1829,6 +1843,7 @@ class PairedDifferenceTests(TestHelper):
         self.assertEqual(len(actual[0]), 4)
         # expected t values returned
         assert_almost_equal(actual[1]['firmicutes-abundance'][4], 1.645, 3)
+
 
 class TestsHelper(TestCase):
 
@@ -1890,18 +1905,18 @@ class TestsTests(TestCase):
     def test_fisher(self):
         """fisher results should match p 795 Sokal and Rohlf"""
         assert_allclose(fisher([0.073, 0.086, 0.10, 0.080, 0.060]),
-                                   0.0045957946540917905, atol=10e-7)
+                        0.0045957946540917905, atol=10e-7)
 
     def test_permute_2d(self):
         """permute_2d permutes rows and cols of a matrix."""
         a = reshape(arange(9), (3, 3))
         assert_allclose(permute_2d(a, [0, 1, 2]), a)
         assert_allclose(permute_2d(a, [2, 1, 0]),
-                                   array([[8, 7, 6], [5, 4, 3],
-                                             [2, 1, 0]]))
+                        array([[8, 7, 6], [5, 4, 3],
+                               [2, 1, 0]]))
         assert_allclose(permute_2d(a, [1, 2, 0]),
-                                   array([[4, 5, 3], [7, 8, 6],
-                                             [1, 2, 0]]))
+                        array([[4, 5, 3], [7, 8, 6],
+                               [1, 2, 0]]))
 
 
 class GTests(TestCase):
@@ -1912,9 +1927,9 @@ class GTests(TestCase):
         """G_2_by_2 should return 0 if all cell counts are equal"""
         assert_allclose(0, G_2_by_2(1, 1, 1, 1, False, False)[0])
         assert_allclose(0, G_2_by_2(100, 100, 100, 100, False,
-                                               False)[0])
+                                    False)[0])
         assert_allclose(0, G_2_by_2(100, 100, 100, 100, True,
-                                               False)[0])
+                                    False)[0])
 
     def test_G_2_by_2_bad_data(self):
         """G_2_by_2 should raise ValueError if any counts are negative"""
@@ -1925,20 +1940,20 @@ class GTests(TestCase):
         # example from p 731, Sokal and Rohlf (1995)
         # without correction
         assert_allclose(G_2_by_2(12, 22, 16, 50, False, False)[0],
-                                   1.33249, 0.0001)
+                        1.33249, 0.0001)
         assert_allclose(G_2_by_2(12, 22, 16, 50, False, False)[1],
-                                   0.24836, 0.0001)
+                        0.24836, 0.0001)
         # with correction
         assert_allclose(G_2_by_2(12, 22, 16, 50, True, False)[0],
-                                   1.30277, 0.0001)
+                        1.30277, 0.0001)
         assert_allclose(G_2_by_2(12, 22, 16, 50, True, False)[1],
-                                   0.25371, 0.0001)
+                        0.25371, 0.0001)
 
     def test_G_2_by_2_1tailed_examples(self):
         """G_2_by_2 values should match values from codon_binding program"""
         # first up...the famous arginine case
         assert_allclose(G_2_by_2(36, 16, 38, 106), (29.111609, 0),
-                                   atol=10e-7)
+                        atol=10e-7)
         # then some other miscellaneous positive and negative values
         assert_allclose(
             G_2_by_2(0, 52, 12, 132), (-7.259930, 0.996474), atol=10e-7)
@@ -1958,7 +1973,7 @@ class GTests(TestCase):
         assert_allclose(obs_p, exp_p, atol=1e-7)
         # test with hand computed example and williams correction
         data = [array([75, 65, 48]), array([200]), array([10, 250, 13,
-                                                                   85])]
+                                                          85])]
         exp_G = 85.90859811005285 / 1.0018930430667
         exp_p = 2.4012235241479195e-19
         obs_G, obs_p = g_fit(data, williams=True)
@@ -1980,14 +1995,14 @@ class GTests(TestCase):
         G = 10.5783
         exp = 10.387855973813421
         assert_allclose(williams_correction(n, a, G), exp,
-                                   rtol=1e-5)
+                        rtol=1e-5)
         # test with an example from Sokal and Rohlf pg 699
         n = 241
         a = 8
         G = 8.82396
         exp = 8.76938
         assert_allclose(williams_correction(n, a, G), exp,
-                                   rtol=1e-5)
+                        rtol=1e-5)
 
     def test_safe_sum_p_log_p(self):
         """safe_sum_p_log_p should ignore zero elements, not raise error"""
@@ -2064,8 +2079,8 @@ class StatTests(TestsHelper):
         I = array([7.2, 7.1, 9.1, 7.2, 7.3, 7.2, 7.5])
         II = array([8.8, 7.5, 7.7, 7.6, 7.4, 6.7, 7.2])
         assert_allclose(t_two_sample(I, II),
-                                   (-0.1184, 0.45385 * 2),
-                                   atol=10e-3)
+                        (-0.1184, 0.45385 * 2),
+                        atol=10e-3)
 
     def test_t_two_sample_no_variance(self):
         """t_two_sample should properly handle lists that are invariant"""
@@ -2124,7 +2139,7 @@ class StatTests(TestsHelper):
         x = array(range(-5, 5))
         y = array(range(-1, 10))
         assert_allclose(t_one_sample(x), (-0.5222, 0.6141),
-                                   atol=10e-3)
+                        atol=10e-3)
         assert_allclose(t_one_sample(y), (4, 0.002518), atol=10e-3)
         # do some one-tailed tests as well
         assert_allclose(
@@ -2137,9 +2152,9 @@ class StatTests(TestsHelper):
         sample = array([4.02, 3.88, 3.34, 3.87, 3.18])
         x = array([3.02])
         assert_allclose(t_two_sample(x, sample),
-                                   (-1.5637254, 0.1929248))
+                        (-1.5637254, 0.1929248))
         assert_allclose(t_two_sample(sample, x),
-                                   (1.5637254, 0.1929248))
+                        (1.5637254, 0.1929248))
 
         # can't do the test if both samples have single item
         self.assertEqual(t_two_sample(x, x), (None, None))
@@ -2155,7 +2170,7 @@ class StatTests(TestsHelper):
         # note that this differs after the 3rd decimal place from what's in
         # the book, because Sokal and Rohlf round their intermediate steps...
         assert_allclose(t_one_observation(x, sample),
-                                   (-1.5637254, 0.1929248))
+                        (-1.5637254, 0.1929248))
 
     def test_t_one_observation_no_variance(self):
         """t_one_observation should correctly handle an invariant list."""
@@ -2352,8 +2367,8 @@ class StatTests(TestsHelper):
         self.assertEqual(len(obs[0][0]), len(I))
         self.assertEqual(len(obs[1][0]), len(II))
         assert_allclose(sorted(concatenate((obs[0][0],
-                                                          obs[1][0]))),
-                                   sorted(I + II))
+                                            obs[1][0]))),
+                        sorted(I + II))
 
     def test_reverse_tails(self):
         """reverse_tails should return 'high' if tails was 'low' or vice versa
@@ -2514,7 +2529,7 @@ class CorrelationTests(TestsHelper):
         self.assertTrue(is_symmetric_and_hollow(array([[0, 1], [1, 0]])))
         self.assertTrue(is_symmetric_and_hollow(matrix([[0, 1], [1, 0]])))
         self.assertTrue(is_symmetric_and_hollow(matrix([[0.0, 0],
-                                                           [0.0, 0]])))
+                                                        [0.0, 0]])))
         self.assertTrue(not is_symmetric_and_hollow(
             array([[0.001, 1], [1, 0]])))
         self.assertTrue(not is_symmetric_and_hollow(
@@ -2592,7 +2607,7 @@ class CorrelationTests(TestsHelper):
         obs = correlation_t(self.data1, self.data2, method='pearson',
                             confidence_level=0.90, permutations=990)
         assert_allclose(obs[:2], (-0.03760147,
-                                             0.91786297277172868), atol=10e-7)
+                                  0.91786297277172868), atol=10e-7)
         self.assertEqual(len(obs[2]), 990)
         for r in obs[2]:
             self.assertTrue(r >= -1.0 and r <= 1.0)
@@ -2609,7 +2624,7 @@ class CorrelationTests(TestsHelper):
                             confidence_level=0.90, permutations=990,
                             tails='low')
         assert_allclose(obs[:2], (-0.03760147,
-                                             0.45893148638586434), atol=10e-7)
+                                  0.45893148638586434), atol=10e-7)
         self.assertEqual(len(obs[2]), 990)
         for r in obs[2]:
             self.assertTrue(r >= -1.0 and r <= 1.0)
@@ -2629,7 +2644,7 @@ class CorrelationTests(TestsHelper):
         obs = correlation_t(self.data1, self.data2, method='spearman',
                             tails='high')
         assert_allclose(obs[:2], (-0.17575757575757578,
-                                             0.686405827612))
+                                  0.686405827612))
         self.assertEqual(len(obs[2]), 999)
         for rho in obs[2]:
             self.assertTrue(rho >= -1.0 and rho <= 1.0)
@@ -2639,7 +2654,7 @@ class CorrelationTests(TestsHelper):
                                   'tails': 'high'},
                                  p_val_idx=3)
         assert_allclose(obs[4], (-0.7251388558041697,
-                                            0.51034422964834503))
+                                 0.51034422964834503))
 
         # The p-value is off because the example uses a one-tailed test, while
         # we use a two-tailed test. Someone confirms the answer that we get
@@ -2649,7 +2664,7 @@ class CorrelationTests(TestsHelper):
         obs = correlation_t(self.data1, self.data2, method='spearman',
                             tails=None)
         assert_allclose(obs[:2], (-0.17575757575757578,
-                                             0.62718834477648433))
+                                  0.62718834477648433))
         self.assertEqual(len(obs[2]), 999)
         for rho in obs[2]:
             self.assertTrue(rho >= -1.0 and rho <= 1.0)
@@ -2658,7 +2673,7 @@ class CorrelationTests(TestsHelper):
                                  {'method': 'spearman', 'tails': None},
                                  p_val_idx=3)
         assert_allclose(obs[4], (-0.7251388558041697,
-                                            0.51034422964834503))
+                                 0.51034422964834503))
 
     def test_correlation_test_invalid_input(self):
         """Test correlation_t using invalid input."""
@@ -2782,16 +2797,16 @@ class CorrelationTests(TestsHelper):
              2., 4.4, 0.8, 6.5, 4.8, 1.5, 9.9, 9.1, 9.9, 6.2, 2.9,
              2.])
         v2 = array([6.6, 8.6, 3.9, 6.1, 0.9, 8.4, 10., 3.3, 0.4,
-                       3.9, 7.6, 8.2, 8.6, 3., 6.9, 0.6, 8.4, 8.1,
-                       6.3, 0.5, 5.2, 6.4, 8., 9.9, 1.2, 6.7, 8.4,
-                       2.7, 8.4, 4.1, 4.6, 5.1, 5.2, 5.3, 2.2, 2.2,
-                       4.3, 7.1, 1.4, 6.6, 7.6, 4.5, 7.8, 3.5, 7.1,
-                       0.6, 4.6, 3.2, 2.2, 0.2, 3.9, 5.9, 7.7, 8.8,
-                       1.3, 5.1, 5.6, 8.3, 8.8, 1.7, 5.2, 6.9, 1.3,
-                       1.4, 4.9, 9.4, 2.3, 3.7, 9.1, 3.4, 1.6, 4.1,
-                       9.7, 2.8, 9.9, 0.5, 2., 2.7, 3.3, 2.4, 3.6,
-                       7.9, 6.5, 7., 4.2, 1.8, 1.6, 1.9, 5.5, 0.,
-                       1.4, 2.2, 7.2, 8.2, 1.1, 2.5, 5.3, 0.2, 9., 0.2])
+                    3.9, 7.6, 8.2, 8.6, 3., 6.9, 0.6, 8.4, 8.1,
+                    6.3, 0.5, 5.2, 6.4, 8., 9.9, 1.2, 6.7, 8.4,
+                    2.7, 8.4, 4.1, 4.6, 5.1, 5.2, 5.3, 2.2, 2.2,
+                    4.3, 7.1, 1.4, 6.6, 7.6, 4.5, 7.8, 3.5, 7.1,
+                    0.6, 4.6, 3.2, 2.2, 0.2, 3.9, 5.9, 7.7, 8.8,
+                    1.3, 5.1, 5.6, 8.3, 8.8, 1.7, 5.2, 6.9, 1.3,
+                    1.4, 4.9, 9.4, 2.3, 3.7, 9.1, 3.4, 1.6, 4.1,
+                    9.7, 2.8, 9.9, 0.5, 2., 2.7, 3.3, 2.4, 3.6,
+                    7.9, 6.5, 7., 4.2, 1.8, 1.6, 1.9, 5.5, 0.,
+                    1.4, 2.2, 7.2, 8.2, 1.1, 2.5, 5.3, 0.2, 9., 0.2])
         exp_tau, exp_prob = (0.024867511238807951, 0.71392573687923555)
         obs_tau = kendall(v1, v2)
         obs_prob = kendall_pval(obs_tau, len(v1))
@@ -2872,16 +2887,16 @@ class PvalueTests(TestCase):
         #      0.6729639
         #  [8] 0.9340439 0.9351780 0.9340439
         pvals = array([0.64771481, 0.93517796, 0.7169902, 0.18223457,
-                          0.26918556, 0.1450153, 0.22448242, 0.74723508,
-                          0.89061034, 0.74007906])
+                       0.26918556, 0.1450153, 0.22448242, 0.74723508,
+                       0.89061034, 0.74007906])
         exp = array([0.9340439, 0.9351780, 0.9340439, 0.6729639, 0.6729639,
-                        0.6729639, 0.6729639, 0.9340439, 0.9351780, 0.9340439])
+                     0.6729639, 0.6729639, 0.9340439, 0.9351780, 0.9340439])
         obs = benjamini_hochberg_step_down(pvals)
         assert_allclose(obs, exp)
         # example 2
         pvals = array([1.32305426, 1.9345059, 0.87129877, 1.89957702,
-                          1.85712616, 0.68757988, 0.41248969, 0.20751712,
-                          1.97658599, 1.06209437])
+                       1.85712616, 0.68757988, 0.41248969, 0.20751712,
+                       1.97658599, 1.06209437])
         exp = array([1., 1., 1., 1., 1., 1., 1., 1., 1., 1.])
         obs = benjamini_hochberg_step_down(pvals)
         assert_allclose(obs, exp)
@@ -3029,9 +3044,9 @@ class PvalueTests(TestCase):
         self.assertEqual(obs, exp)
         # test using examples verified in ecosim
         v1 = array([4, 6, 12, 13, 14, 0, 0, 0, 14, 11, 9, 6, 0, 1, 1, 0, 0,
-                       4])
+                    4])
         v2 = array([4, 0, 0, 113, 1, 2, 20, 0, 1, 0, 19, 16, 0, 13, 6, 0, 5,
-                       4])
+                    4])
         # from R
         # library(vegan)
         # library(bipartite)

@@ -19,9 +19,9 @@ from qiime.parse import (parse_mapping_file_to_dict,
                          parse_rarefaction,
                          group_by_field,
                          parse_mapping_file)
-from skbio.math.stats.test import (mc_t_two_sample, t_two_sample,
-                                   benjamini_hochberg_step_down,
-                                   bonferroni_correction, fdr_correction)
+from qiime.stats import (mc_t_two_sample, t_two_sample,
+                         benjamini_hochberg_step_down,
+                         bonferroni_correction, fdr_correction)
 from itertools import combinations
 from collections import defaultdict
 
