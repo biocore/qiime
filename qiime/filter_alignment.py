@@ -195,26 +195,3 @@ def generate_lane_mask(infile, entropy_threshold, existing_mask=None):
             lane_mask += "1"
 
     return lane_mask
-
-
-def freqs_from_aln_array(seqs, existing_mask=None):
-    """Returns per-position freqs from arbitrary size alignment.
-
-    Warning: fails if all seqs aren't the same length.
-    written by Rob Knight
-
-    seqs = list of lines from aligned fasta file
-    """
-    result = None
-    for label, seq in parse_fasta(seqs):
-        if existing_mask is not None:
-            seq = get_masked_string(seq, existing_mask)
-
-        # Currently cogent does not support . characters for gaps, converting
-        # to - characters for compatability.
-        seq = ModelDnaSequence(seq.replace('.', '-'))
-        if result is None:
-            result = zeros((len(seq.Alphabet), len(seq)), dtype=int)
-            indices = arange(len(seq), dtype=int)
-        result[seq._data, indices] += 1
-    return Profile(result, seq.Alphabet)
