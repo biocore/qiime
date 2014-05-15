@@ -185,6 +185,7 @@ class FunctionWithParams(object):
         """Writes result to result_path. May need to format in subclasses."""
         f = open(result_path, 'w')
         f.write(self.formatResult(result))
+        f.write('\n')
         f.close()
 
     def getTree(self, tree_source):
@@ -2068,7 +2069,7 @@ def biom_taxonomy_formatter(bt, md_key):
     will print a warning and return None.
     """
     if bt.ObservationMetadata is None:
-        print 'No metadata in biom table.'
+        print 'Warning: No metadata in biom table. Won\'t alter calculations.'
         return None
     else:
         dtype = bt.ObservationMetadata[0][md_key]

@@ -249,7 +249,7 @@ class SingleFileCUPTests(TestCase):
             observed = out_f.readlines()
 
         expected = ["\tlladser_pe\tlladser_lower_bound\tlladser_upper_bound\n",
-                    "S1\tnan\tnan\tnan"]
+                    "S1\tnan\tnan\tnan\n"]
         self.assertEqual(observed, expected)
 
 

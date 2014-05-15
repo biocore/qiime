@@ -34,9 +34,8 @@ except ImportError as e:
 
 try:
     from tempfile import mkdtemp
-    from cogent.util.misc import remove_files
+    from skbio.util.misc import remove_files
     from skbio.app.util import ApplicationNotFoundError, ApplicationError
-    from cogent import __version__ as pycogent_lib_version
 except ImportError as e:
     raise ImportError("%s\n%s" % (e, core_dependency_missing_msg))
 
@@ -802,7 +801,6 @@ def main():
         print "%*s:\t%s" % (max_len, v[0], v[1])
 
     version_info = [
-        ("PyCogent version", pycogent_lib_version),
         ("NumPy version", numpy_lib_version),
         ("SciPy version", scipy_lib_version),
         ("matplotlib version", matplotlib_lib_version),

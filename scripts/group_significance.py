@@ -24,7 +24,7 @@ from qiime.otu_significance import (get_sample_cats, get_sample_indices,
                                     TWO_GROUP_TESTS, GROUP_TEST_CHOICES)
 from qiime.parse import parse_mapping_file_to_dict
 from biom.parse import parse_biom_table
-from numpy import array, where, seterr
+from numpy import array, where, seterr, allclose
 
 # set invalid comparisons error level to ignore. when nans are compared they
 # frequently trigger this error. its not informative from the user perspective
@@ -318,6 +318,18 @@ def main():
             raise ValueError('The number of samples is too small to use the ' +
                              'Mann-Whitney-U normal approximation. Review the script ' +
                              'documentation.')
+
+    # check that the G-test was not selected if the table appears to be 
+    # relative abundance
+    if opts.test == 'g_test':
+        if allclose(bt.sum(axis='sample'), 1.) or (bt.sum(axis='whole') == 1.):
+            raise ValueError('It appears that the biom table you have passed '
+                'is a relative abundance table where values i,j (obsevation i '
+                'count in sample j) are fractional and the sum of the columns '
+                'is 1.0. This will fail to work properly with the G-test. If '
+                'your data sums to 1 in each column but your data is not '
+                'relative abundance then the tests will fail anyway because '
+                'of the reduced number of observations.')
 
     # run actual tests
     data_feed = group_significance_row_generator(bt, cat_sam_indices)
