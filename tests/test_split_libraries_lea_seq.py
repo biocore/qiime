@@ -29,6 +29,9 @@ class WorkflowTests(TestCase):
         self.fasta_seqs_for_consensus = fasta_seqs_for_consensus
         self.fasta_file_for_consensus = tempfile.NamedTemporaryFile(delete=False, mode='w', dir=temp_dir)
         self.fasta_file_for_cluster_ratio = tempfile.NamedTemporaryFile(delete=False, mode='w', dir=temp_dir)
+        self.fasta_seq_for_primer = 'AATGCCCCC'
+        self.possible_primers = ['ATGC', 'ATTT']
+
 
     def tearDown(self):
         """remove all the files after completing tests """
@@ -77,7 +80,11 @@ class WorkflowTests(TestCase):
         self.assertEqual(actual, expected)
         
     def test_extract_primers(self):
-        pass
+        fasta_seq_for_primer = self.fasta_seq_for_primer
+        possible_primers = self.possible_primers
+        actual = extract_primer(fasta_seq_for_primer, possible_primers)
+        expected = ('A', 'ATGC', 'CCCC')
+        self.assertEqual(actual, expected)        
 
 fasta_seqs_for_uclust = """>abc|1
 ATTTTATTTTATTTTTATTTATTATATATTATATATATATAGCGCGCGCGCGCGG
