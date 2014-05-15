@@ -294,18 +294,18 @@ class FilterAlignmentTests(TestCase):
 
         # just remove ACT011
         res = remove_outliers(aln, 2)
-        self.assertEqual(len(res.getSeqNames()), 7)
-        for seqname_left in res.getSeqNames():
+        self.assertEqual(res.sequence_count(), 7)
+        for seqname_left in res.ids():
             self.assertTrue(seqname_left in seqnames)
-        self.assertTrue('ACT011' not in res.getSeqNames())
+        self.assertTrue('ACT011' not in res.ids())
 
         # now remove all that deviate have > 10/9 (2 or more) substitutions:
         res = remove_outliers(aln, 0)
-        self.assertEqual(len(res.getSeqNames()), 6)
-        for seqname_left in res.getSeqNames():
+        self.assertEqual(res.sequence_count(), 6)
+        for seqname_left in res.ids():
             self.assertTrue(seqname_left in seqnames)
-        self.assertTrue('ACT011' not in res.getSeqNames())
-        self.assertTrue('ACT009' not in res.getSeqNames())
+        self.assertTrue('ACT011' not in res.ids())
+        self.assertTrue('ACT009' not in res.ids())
 
     def test_generate_lane_mask(self):
         """ Generates correct lane mask for dynamic entropy filtering """

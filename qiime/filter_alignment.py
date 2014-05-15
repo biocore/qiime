@@ -8,12 +8,10 @@ from os import mkdir, remove
 from collections import defaultdict
 
 from numpy import (nonzero, array, fromstring, repeat, bitwise_or,
-    uint8, zeros, arange, finfo)
+    uint8, zeros, arange, finfo, mean, std)
 
 from cogent import DNA as DNA_cogent
 from cogent.core.alignment import DenseAlignment
-from cogent.core.sequence import ModelDnaSequence
-from cogent.core.profile import Profile
 
 from skbio.core.alignment import Alignment
 from skbio.core.sequence import DNA
@@ -132,34 +130,39 @@ def apply_lane_mask_and_gap_filter(fastalines, mask,
         yield "%s\n" % seq
 
 
-def remove_outliers(seqs, num_sigmas, fraction_seqs_for_stats=.95):
+def remove_outliers(seqs, num_stds, fraction_seqs_for_stats=.95):
     """ remove sequences very different from the majority consensus
 
-    given aligned seqs, will calculate a majority consensus (most common
-    symbol at each position of the alignment), and average edit distance
-    of each seq to that consensus.  any seq whose edit dist is > cutoff
-    (roughly seq_dist > num_sigmas * (average edit dist) ) is removed
-    when calculating mean and stddev edit distance, only the best
-    fraction_seqs_for_stats are used
+    given aligned sequences, will:
+     1. calculate a majority consensus (most common symbol at each position
+        of the alignment);
+     2. compute the mean/std edit distance of each seq to the consensus;
+     3. discard sequences whose edit dist is greater than the cutoff, which is
+        defined as being `num_sigmas` greater than the mean
 
-    seqs must be compatible with DenseAlignment:
-    aln = DenseAlignment(data=seqs, MolType=DNA_cogent) is called
     """
-    aln = DenseAlignment(data=seqs, MolType=DNA_cogent)
-    cons = DenseAlignment(data=aln.majorityConsensus(), MolType=DNA_cogent)
-    diff_mtx = cons.SeqData[:, 0] != aln.SeqData
-
-    # consider only a fraction of seqs for mean, std
-    seq_diffs = diff_mtx.sum(1)
-    num_to_consider = round(len(seq_diffs) * fraction_seqs_for_stats)
-    seq_diffs_considered_sorted = \
-        seq_diffs[seq_diffs.argsort()[:num_to_consider]]
-    diff_cutoff = seq_diffs_considered_sorted.mean() + \
-        num_sigmas * seq_diffs_considered_sorted.std()
-    # mean + e.g.: 4 sigma
-    seq_idxs_to_keep = arange(len(seq_diffs))[seq_diffs <= diff_cutoff]
-
-    filtered_aln = aln.getSubAlignment(seq_idxs_to_keep)
+    # load the alignment and compute the consensus sequence
+    aln = Alignment.from_fasta_records(parse_fasta(seqs), DNA)
+    consensus_seq = aln.majority_consensus()
+    # compute the hamming distance between all sequences in the alignment
+    # and the consensus sequence
+    dists_to_consensus = [s.distance(consensus_seq) for s in aln]
+    # compute the average and standard deviation distance from the consensus
+    average_distance = mean(dists_to_consensus)
+    std_distance = std(dists_to_consensus)
+    # compute the distance cutoff
+    dist_cutoff = average_distance + num_stds * std_distance
+    # for all sequences, determine if they're distance to the consensus
+    # is less then or equal to the cutoff distance. if so, add the sequence's
+    # identifier to the list of sequence identifiers to keep
+    seqs_to_keep = []
+    for seq_id, dist_to_consensus in zip(aln.ids(), dists_to_consensus):
+        if dist_to_consensus <= dist_cutoff:
+            seqs_to_keep.append(seq_id)
+    # filter the alignment to only keep the sequences identified in the step
+    # above
+    filtered_aln = aln.subalignment(seqs_to_keep=seqs_to_keep)
+    # and return the filtered alignment
     return filtered_aln
 
 
