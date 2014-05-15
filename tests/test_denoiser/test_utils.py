@@ -21,8 +21,7 @@ from numpy.testing import assert_almost_equal
 
 from cogent import Sequence
 from skbio.parse.sequences import parse_fasta
-from cogent.parse.flowgram import Flowgram
-from cogent.parse.flowgram_collection import FlowgramCollection
+from brokit.denoiser import Flowgram, FlowgramCollection
 from cogent.app.util import ApplicationNotFoundError
 from cogent.util.misc import remove_files, create_dir
 

@@ -20,8 +20,7 @@ from tempfile import mkdtemp
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
 from cogent.core.sequence import Sequence
-from cogent.parse.flowgram import Flowgram
-from cogent.parse.flowgram_collection import parse_sff, FlowgramCollection
+from brokit.denoiser import Flowgram, parse_sff, FlowgramCollection
 from cogent.app.util import ApplicationNotFoundError
 
 from qiime.denoiser.flowgram_clustering import *

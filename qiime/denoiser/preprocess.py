@@ -20,8 +20,8 @@ from tempfile import mkstemp
 
 from cogent.util.trie import build_prefix_map
 from skbio.parse.sequences import parse_fasta
-from cogent.parse.flowgram import Flowgram, build_averaged_flowgram
-from cogent.parse.flowgram_parser import lazy_parse_sff_handle
+from brokit.denoiser import (Flowgram, build_averaged_flowgram,
+                             lazy_parse_sff_handle)
 
 from qiime.util import load_qiime_config
 from qiime.denoiser.cluster_utils import submit_jobs

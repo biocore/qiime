@@ -14,6 +14,7 @@ QIIME 1.8.0-dev (changes since 1.8.0 go here)
     generally a more accurate name. ``observed_species`` is retained for
     backwards-compatibility.
 * Removed options ``-c``/``--ci_type``, ``-a``/``--alpha``, and ``-f``/``--f_ratio`` from conditional_uncovered_probability.py as these weren't being used by the script (i.e., supplying different values didn't change the computed CIs because the default were always used).
+* Removed tax2tree as a method in assign_taxonomy.py.
 
 QIIME 1.8.0 (11 Dec 2013)
 =========================
