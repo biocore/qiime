@@ -90,7 +90,7 @@ script_info['version'] = __version__
 
 
 def main():
-        option_parser, opts, args = parse_command_line_parameters(**script_info)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
     barcode_type = opts.barcode_type
     max_barcode_errors = opts.max_barcode_errors
     mapping_fp = opts.mapping_fp
