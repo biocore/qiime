@@ -18,13 +18,12 @@ from os.path import exists
 from StringIO import StringIO
 from socket import error
 from tempfile import mkstemp, mkdtemp
-
 from unittest import TestCase, main
-from skbio.parse.sequences import parse_fasta
+
 from brokit.denoiser import Flowgram
-from cogent import Sequence
-from cogent.app.util import ApplicationNotFoundError
-from cogent.util.misc import remove_files
+from skbio.parse.sequences import parse_fasta
+from skbio.app.util import ApplicationNotFoundError
+from skbio.util.misc import remove_files
 
 from qiime.util import load_qiime_config
 from qiime.denoiser.cluster_utils import submit_jobs, setup_server,\

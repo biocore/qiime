@@ -18,10 +18,9 @@ from collections import defaultdict
 from string import lowercase
 from tempfile import mkstemp
 
-from cogent.util.trie import build_prefix_map
 from skbio.parse.sequences import parse_fasta
 from brokit.denoiser import (Flowgram, build_averaged_flowgram,
-                             lazy_parse_sff_handle)
+                             lazy_parse_sff_handle, build_prefix_map)
 
 from qiime.util import load_qiime_config
 from qiime.denoiser.cluster_utils import submit_jobs
