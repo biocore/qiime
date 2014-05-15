@@ -6,6 +6,7 @@ from string import lowercase
 from os.path import split, exists, splitext
 from os import mkdir, remove
 from collections import defaultdict
+from itertools import izip
 
 from numpy import (nonzero, array, fromstring, repeat, bitwise_or,
     uint8, zeros, arange, finfo, mean, std)
@@ -153,7 +154,7 @@ def remove_outliers(seqs, num_stds, fraction_seqs_for_stats=.95):
     # is less then or equal to the cutoff distance. if so, add the sequence's
     # identifier to the list of sequence identifiers to keep
     seqs_to_keep = []
-    for seq_id, dist_to_consensus in zip(aln.ids(), dists_to_consensus):
+    for seq_id, dist_to_consensus in izip(aln.ids(), dists_to_consensus):
         if dist_to_consensus <= dist_cutoff:
             seqs_to_keep.append(seq_id)
     # filter the alignment to only keep the sequences identified in the step
