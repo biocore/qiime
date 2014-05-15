@@ -10,9 +10,6 @@ from collections import defaultdict
 from numpy import (nonzero, array, fromstring, repeat, bitwise_or,
     uint8, zeros, arange, finfo, mean, std)
 
-from cogent import DNA as DNA_cogent
-from cogent.core.alignment import DenseAlignment
-
 from skbio.core.alignment import Alignment
 from skbio.core.sequence import DNA
 from skbio.parse.sequences import parse_fasta
