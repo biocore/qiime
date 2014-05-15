@@ -21,7 +21,7 @@ from time import time
 from math import fsum, trunc
 from tempfile import mkstemp
 
-from cogent.app.util import ApplicationNotFoundError, ApplicationError
+from skbio.app.util import ApplicationNotFoundError, ApplicationError
 from brokit.denoiser import (lazy_parse_sff_handle, Flowgram,
                              FlowgramCollection, seq_to_flow)
 from skbio.parse.sequences import parse_fasta
