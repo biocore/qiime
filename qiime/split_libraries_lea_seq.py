@@ -268,6 +268,7 @@ def get_cluster_ratio(temp_file):
         return 1
 
 
+
 def get_consensus(fasta_tempfile, min_consensus):
     """
     Returns consensus sequence from a set of sequences
@@ -312,27 +313,40 @@ def get_consensus(fasta_tempfile, min_consensus):
                 seqs[this_seq_count] = line
 
     length = len(seqs[0])
-    # if length != old_length:
-    # print length, old_length
-    # raise SeqLengthMismatchError
-    # lookup is a 2D list
+    number_of_seqs = this_seq_count + 1
+    for j in range(number_of_seqs):
+        if len(seqs[j]) != len(seqs[0]):
+            raise SeqLengthMismatchError
+    
+    # freq_this_pos_this_base is a 2D list
     # It has N rows and M columns
     # N: number of seqs
     # M: length of the seqs(should be same)
 
-    lookup = {}
+    freq_this_pos_this_base = {}
+    seq_with_max_count= {}
     for i in range(length):
-        lookup[i] = {}
-        for j in range(this_seq_count):
-            lookup[i][j] = 0
+        freq_this_pos_this_base[i] = {}
+        seq_with_max_count[i] = {}
+        # for j in range(this_seq_count):
+            # freq_this_pos_this_base[i][j] = 0
 
     for i in range(length):
         for this_seq_count, seq in enumerate(seqs):
+            
             try:
-                lookup[i][seq[i]] += counts[this_seq_count]
+                freq_this_pos_this_base[i][seq[i]] += counts[this_seq_count]
+            
             except KeyError:
-                lookup[i][seq[i]] = counts[this_seq_count]
+                freq_this_pos_this_base[i][seq[i]] = counts[this_seq_count]
 
+            try: 
+                if counts[this_seq_count] > seq_with_max_count[i][seq[i]]:
+                    seq_with_max_count[i][seq[i]] = counts[this_seq_count]
+            except KeyError:
+                seq_with_max_count[i][seq[i]] = counts[this_seq_count]
+
+    
     consensus = ''      # consesus sequence
     con_score = ''
     # consensus score: string. At each position: range 0-9
@@ -342,14 +356,19 @@ def get_consensus(fasta_tempfile, min_consensus):
     count = 0
 
     for index in range(length):
-        sorted_bases = sorted(lookup[index].iteritems(), key=lambda x: x[1])
-        max_base = str(sorted_bases[-1])
+        sorted_bases = sorted(freq_this_pos_this_base[index].iteritems(), key=lambda x: x[1])
+        max_base, max_freq = sorted_bases[-1]
 
-        (base, num) = max_base.split(',')
-        num = num.replace(")", "")
-        base = base.replace("(", "")
-        base = base.replace("'", "")
-        num = int(num)
+        for (counter ,(b, n)) in enumerate(sorted_bases):
+            if max_freq == n:
+                try:     
+                    if seq_with_max_count[counter][b] > seq_with_max_count[counter][max_base]:
+                        max_base = b 
+                except KeyError:
+                    pass
+        
+        base = max_base
+        num = max_freq
         score = float(10 * float(num) / number_of_seqs)
 
         if score >= 9:
