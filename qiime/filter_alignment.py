@@ -135,7 +135,7 @@ def remove_outliers(seqs, num_stds, fraction_seqs_for_stats=.95):
         of the alignment);
      2. compute the mean/std edit distance of each seq to the consensus;
      3. discard sequences whose edit dist is greater than the cutoff, which is
-        defined as being `num_sigmas` greater than the mean
+        defined as being `num_stds` greater than the mean.
 
     """
     # load the alignment and compute the consensus sequence
