@@ -185,6 +185,8 @@ class FunctionWithParams(object):
         """Writes result to result_path. May need to format in subclasses."""
         f = open(result_path, 'w')
         f.write(self.formatResult(result))
+        print "this is it"
+        f.write('\n')
         f.close()
 
     def getTree(self, tree_source):
