@@ -16,8 +16,8 @@ from os import remove, rename, rmdir, makedirs, close
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import mkstemp
 
-from cogent.util.misc import create_dir
-from cogent.app.util import ApplicationNotFoundError
+from skbio.util.misc import create_dir
+from skbio.app.util import ApplicationNotFoundError
 from skbio.app.util import which
 
 
