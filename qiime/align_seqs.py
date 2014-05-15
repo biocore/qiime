@@ -91,7 +91,7 @@ class Aligner(FunctionWithParams):
         seq_path: path to file of sequences
         result_path: path to file of results. If specified, should
         dump the result to the desired path as fasta, otherwise should
-        return cogent.core.alignment.DenseAlignment object.
+        return skbio.core.alignment.Alignment object.
         log_path: path to log, which should include dump of params.
         """
         raise NotImplementedError("Aligner is an abstract class")
