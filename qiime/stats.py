@@ -166,11 +166,12 @@ def _perform_pairwise_tests(labels, dists, tail_type, num_permutations):
             if obs_t is not nan:
                 num_tests += 1
 
+    evals = [None, nan]  # vals to exclude
     # Correct the p-values for multiple comparisons, now that we know how many
     # tests succeeded.
     for stat in result:
-        stat[4] = stat[3] if stat[3] is nan else min(stat[3] * num_tests, 1)
-        stat[6] = stat[5] if stat[5] is nan else min(stat[5] * num_tests, 1)
+        stat[4] = stat[3] if stat[3] in evals else min(stat[3] * num_tests, 1)
+        stat[6] = stat[5] if stat[5] in evals else min(stat[5] * num_tests, 1)
     return result
 
 
