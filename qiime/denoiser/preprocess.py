@@ -174,7 +174,7 @@ def print_rep_seqs(mapping, seqs, out_fp):
     """
     out_fh = open(out_fp + "/prefix_dereplicated.fasta", "w")
     for s in (get_representatives(mapping, seqs.iteritems())):
-        out_fh.write(s.toFasta() + "\n")
+        out_fh.write(s.to_fasta())
     out_fh.close()
 
 
