@@ -236,8 +236,8 @@ class GroupSignificanceFunctionsTests(TestCase):
         sample_indices = {'cat1': [4, 1, 2], 'cat2': [5, 0, 3]}
         row_gen = group_significance_row_generator(bt, sample_indices)
         exp_test_stats = [2.0, 2.0, 2.0, 3.0, 2.0, 2.0]
-        exp_pvals = array([0.22977023, 0.21678322, 0.20979021, 0.42657343,
-                           0.21178821, 0.21778222])
+        exp_pvals = array([0.22977023, 0.2047952, 0.19280719, 0.44255744,
+                           0.18781219, 0.22477522])
         exp_means = [[39.666666666666664, 61.0],
                      [24.333333333333332, 40.0],
                      [27.0, 42.333333333333336],
@@ -255,8 +255,8 @@ class GroupSignificanceFunctionsTests(TestCase):
         sample_indices = {'cat1': [0, 1, 2, 3], 'cat2': [4, 5, 6, 7]}
         row_gen = group_significance_row_generator(bt_4, sample_indices)
         exp_test_stats = [6.0, 1.0, 5.0, 2.0, 1.0, 7.0]
-        exp_pvals = array([0.49050949, 0.03396603, 0.34265734, 0.07492507,
-                           0.03396603, 0.73026973])
+        exp_pvals = array([0.49050949, 0.01598402, 0.31968032, 0.06193806,
+                           0.02997003, 0.6953047])
         exp_means = [[52.25, 43.0],
                      [20.5, 44.0],
                      [29.25, 52.25],
