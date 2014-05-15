@@ -77,7 +77,7 @@ class TreeBuilder(FunctionWithParams):
         aln_path: path to file of aligned sequences
         result_path: path to file of results. If specified, should
         dump the result to the desired path as fasta, otherwise should
-        return cogent.core.alignment.DenseAlignment object.
+        return skbio.core.tree.TreeNode object.
         log_path: path to log, which should include dump of params.
         """
         raise NotImplementedError("TreeBuilder is an abstract class")
