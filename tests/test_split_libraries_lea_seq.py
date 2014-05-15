@@ -47,13 +47,23 @@ class WorkflowTests(TestCase):
     def test_get_consensus(self):
         fasta_seqs_for_consensus = self.fasta_seqs_for_consensus
         temp_file = self.fasta_file_for_consensus
-        temp_file.write(fasta_seqs_for_consensus)
+        temp_file.write(fasta_seqs_for_consensus_tie_G_C)
+        # at the last position, G and C have the same frequency
+        # therefore the function is expected to return
+        # consensus sequence with G, which is present in seq 
+        # that appears max times. (10, 10) while C appreared
+        # in sequence that have count: (9, 6, 5)
+        # If there is still a tie, the function will return
+        # the base that appeared first.
+        # This method is just for a consistent way
+        # to resolve ties        
         temp_file_name = temp_file.name
         temp_file.close()
         temp_file = open(temp_file_name, 'r')
         actual = get_consensus(temp_file, 2)
-        expected = 'ATGCATGC'
+        expected = 'ATTTTATTTTATTTTTATTTATTATATATTATATATATATAGCGCGCGCGCGCGG'
         self.assertEqual(actual, expected)
+
 
     def test_get_cluster_ratio(self):
         fasta_seqs_for_uclust = self.fasta_seqs_for_uclust
@@ -65,10 +75,7 @@ class WorkflowTests(TestCase):
         actual = get_cluster_ratio(temp_file_name)
         expected = 0.125
         self.assertEqual(actual, expected)
-
-    def test_read_input_file(self):
-        pass
-
+        
     def test_extract_primers(self):
         pass
 
@@ -99,10 +106,28 @@ GGTCGGTCGTGCGTGCTCGTCGTGCTCGTCGTCGTCGCTCGTCGTCGCTGCTCTC
 GGTCGGTCGTGCGTGCTCGTCGTGCTCGTCGTCGTCGCTCGTCGTCGCTGCTCTC
 """
 
-fasta_seqs_for_consensus=""">id1|1
+fasta_seqs_for_consensus = """>id1|1
 ATGCATGG
 >id2|14
 ATGCATGC
+"""
+
+fasta_seqs_for_consensus_unequal_length = """>id1|1
+ATGCATGG
+>id2|14
+ATGCATGCT
+"""
+
+fasta_seqs_for_consensus_tie_G_C = """>abc|10
+ATTTTATTTTATTTTTATTTATTATATATTATATATATATAGCGCGCGCGCGCGG
+>abc|9
+ATTTTATGGGCGGCGCGCCGCGCGCGCATTATATATATATAGCGCGCGCGCGCGC
+>abc|5
+ATTTTATTTTATTTTTATTTATTATATATTATATATATATAGCGCGCGCGCGCGC
+>abc|10
+ATTTTATTTTATTTTTATTTATTATATATTATATATATATAGCGCGCGCGCGCGG
+>abc|6
+ATTTTATTTTATTTTTATTTATTATATATTATATATATATAGCGCGCGCGCGCGC
 """
 
 fasta_seqs_of_rand_bcs = ['ATTGCATTGCATTGCATTGC', 'ATTGCATTGCATTGCATTGC', 'ATTGCATTGCATTGCATTG', 'ATTGCTTATTGCATTGCTTT']
