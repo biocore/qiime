@@ -126,11 +126,11 @@ def main():
 
 
 
-    if len(seq_fps) != 2:
+    if len(sequence_read_fps) != 2:
         option_parser.error("You must provide exactly two sequence read "
                             "filepaths, the first for forward reads and "
                             "second for reverse reads. You specified %d "
-                            "filepaths." % len(seq_fps))
+                            "filepaths." % len(sequence_read_fps))
 
 
     consensus_seq_lookup = read_input_file(sequence_read_fps, mapping_fp,
