@@ -25,7 +25,7 @@ create new statistical method implementations.
 from scipy.stats import (spearmanr, kruskal, mannwhitneyu, kendalltau,
                          power_divergence)
 
-from skbio.math.stats.special import MACHEP, ndtri
+from scipy.special import ndtri
 from skbio.math.stats.distribution import (chi_high, zprob, f_high, t_high,
                                            t_low, tprob)
 from os.path import join
@@ -43,7 +43,7 @@ from numpy import (argsort, array, ceil, empty, fill_diagonal, finfo,
                    arctanh, asarray, e, hstack, isinf, isnan,
                    log, mean, nan, nonzero, sqrt, std, take, tanh,
                    transpose, seterr as np_seterr, var, arange, corrcoef,
-                   trace, ravel)
+                   trace, ravel, float as np_float, finfo)
 
 from numpy.random import permutation, shuffle, randint
 from biom.table import table_factory, DenseOTUTable
@@ -53,7 +53,7 @@ from qiime.format import format_p_value_for_num_iters, format_biom_table
 from qiime.util import MetadataMap
 
 np_seterr(divide='raise')
-
+MACHEP = finfo(np_float).eps
 
 # Top-level stats functions.
 
@@ -2314,7 +2314,7 @@ def pearson(v1, v2):
 
     Examples
     --------
-    >>> from skbio.math.stats.test import pearson
+    >>> from qiime.stats import pearson
     >>> v1 = [.1, .2, .5, .3, .4]
     >>> v2 = [.9, .01, .5, .6, .7]
     >>> pearson(v1, v2)
@@ -2755,7 +2755,7 @@ def mw_boot(x, y, num_reps=999):
 
     Examples
     --------
-    >>> from skbio.math.stats.test import mw_boot
+    >>> from qiime.stats import mw_boot
     >>> x = [1.5, 4.6, 7.8, 10.2, 23.4]
     >>> y = [3.4, 10.1, 100.3, 45.6, 45.6, 78.9]
     >>> mw_boot(x, y, num_reps = 999)
@@ -2803,7 +2803,7 @@ def kruskal_wallis(data):
 
     Examples
     --------
-    >>> from skbio.math.stats.test import kruskal_wallis
+    >>> from qiime.stats import kruskal_wallis
     >>> data = [[1, 4.5, 67, 100, 2], [145, 100, 3, 14.5, -19], [2, 1.1, 5.5,
     ...         3.3, 16.7, 18, 100.3]]
     >>> rho, pval = kruskal_wallis(data)
@@ -2973,7 +2973,7 @@ def bonferroni_correction(pvals):
 
     Examples
     --------
-    >>> from skbio.math.stats.test import bonferroni_correction
+    >>> from qiime.stats import bonferroni_correction
     >>> bonferroni_correction([0.1, 0.21, 0.5, 0.2, 0.6])
     array([ 0.5 ,  1.05,  2.5 ,  1.  ,  3.  ])
     """
@@ -3006,7 +3006,7 @@ def fdr_correction(pvals):
 
     Examples
     --------
-    >>> from skbio.math.stats.test import fdr_correction
+    >>> from qiime.stats import fdr_correction
     >>> fdr_correction([.01, .2, .5, .1, .3])
     array([ 0.05      ,  0.33333333,  0.5       ,  0.25      ,  0.375     ])
     """
@@ -3040,7 +3040,7 @@ def benjamini_hochberg_step_down(pvals):
 
     Examples
     --------
-    >>> from skbio.math.stats.test import fdr_correction
+    >>> from qiime.stats import fdr_correction
     >>> benjamini_hochberg_step_down([0.1, 0.21, 0.5, 0.2, 0.6])
     array([ 0.35,  0.35,  0.6 ,  0.35,  0.6 ])
 
@@ -3170,7 +3170,7 @@ def fisher_population_correlation(corrcoefs, sample_sizes):
 
     Examples
     --------
-    >>> from skbio.math.stats.test import fisher_population_correlation
+    >>> from qiime.stats import fisher_population_correlation
     >>> cc = [.4, .6, .7, .9]
     >>> ss = [10, 25, 14, 50]
     >>> fisher_population_correlation(cc, ss)
