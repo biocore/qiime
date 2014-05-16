@@ -16,7 +16,7 @@ from os.path import exists, join, getsize
 from tempfile import mkdtemp
 
 from unittest import TestCase, main
-from cogent.util.misc import remove_files
+from skbio.util.misc import remove_files
 from qiime.util import load_qiime_config, get_qiime_temp_dir
 from qiime.parse import parse_qiime_parameters
 from qiime.test import (initiate_timeout,

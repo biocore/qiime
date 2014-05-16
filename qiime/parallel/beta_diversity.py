@@ -11,7 +11,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 from os.path import join, split, splitext
-from cogent.util.misc import create_dir
+from skbio.util.misc import create_dir
 from biom.parse import parse_biom_table
 from qiime.parallel.util import ParallelWrapper
 from qiime.format import format_distance_matrix

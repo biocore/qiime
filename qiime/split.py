@@ -11,7 +11,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 from skbio.parse.sequences import parse_fasta
-from cogent.util.misc import create_dir
+from skbio.util.misc import create_dir
 from qiime.parse import parse_mapping_file
 from qiime.filter import filter_mapping_file, sample_ids_from_metadata_description
 from qiime.format import format_mapping_file, format_biom_table
