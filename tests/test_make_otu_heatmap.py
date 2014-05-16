@@ -82,8 +82,8 @@ class TopLevelTests(TestCase):
         """Sample indices should be clustered within each category"""
         category_labels = ['A', 'B', 'A', 'B', 'A', 'B']
         obs = get_order_from_categories(self.otu_table, category_labels)
-        exp = [0, 4, 2, 1, 5, 3]
-        assert_almost_equal(obs, exp)
+        group_string = "".join([category_labels[i] for i in obs])
+        self.assertTrue("AAABBB" == group_string or group_string == "BBBAAA")
 
     def test_get_order_from_tree(self):
         obs = get_order_from_tree(
@@ -132,10 +132,9 @@ class TopLevelTests(TestCase):
     def test_get_clusters(self):
         data = asarray([val for val in self.otu_table.iterObservationData()])
         obs = get_clusters(data, axis='row')
-        exp = [0, 1, 2]
-        self.assertEqual(obs, exp)
+        self.assertTrue([0, 1, 2] == obs or obs == [1, 2, 0])
         obs = get_clusters(data, axis='column')
-        exp = [0, 5, 4, 1, 2, 3]
+        exp = [2, 3, 1, 4, 0, 5]
         self.assertEqual(obs, exp)
 
     def test_plot_heatmap(self):
