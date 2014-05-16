@@ -10,14 +10,15 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
+from os import close
 from os.path import exists, abspath
 from shutil import rmtree
 from numpy import array
 from matplotlib.axes import Subplot
+from tempfile import mkstemp, mkdtemp
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from cogent.util.misc import remove_files
-from qiime.util import get_tmp_filename
 from qiime.plot_rank_abundance_graph import make_sorted_frequencies,\
     plot_rank_abundance_graph, plot_rank_abundance_graphs
 from qiime.util import create_dir
@@ -43,46 +44,46 @@ class PlotRankAbundance(TestCase):
 
         # works on empty
         counts = array([])
-        self.assertEqual(make_sorted_frequencies(counts), [])
+        self.assertItemsEqual(make_sorted_frequencies(counts), [])
 
          # works on zeros
         counts = array([0, 0, 0, 0, 0, 0])
-        self.assertEqual(make_sorted_frequencies(counts), [])
+        self.assertItemsEqual(make_sorted_frequencies(counts), [])
 
         # works on flat data
         counts = array([3, 3, 3, 3, 3])
         expected_freqs = [0.2, 0.2, 0.2, 0.2, 0.2]
         observed_freqs = make_sorted_frequencies(counts)
-        self.assertEqual(observed_freqs, expected_freqs)
+        self.assertItemsEqual(observed_freqs, expected_freqs)
 
         # works on real data
         counts = array([1, 2, 0, 1, 0, 2, 4])
         expected_freqs = [0.4, 0.2, 0.2, 0.1, 0.1]
         observed_freqs = make_sorted_frequencies(counts)
-        self.assertEqual(observed_freqs, expected_freqs)
+        self.assertItemsEqual(observed_freqs, expected_freqs)
 
     def test_make_sorted_frequencies_abolute(self):
         """make_sorted_frequencies returns correct absolute values"""
 
         # works on empty
         counts = array([])
-        self.assertEqual(make_sorted_frequencies(counts, True), [])
+        self.assertItemsEqual(make_sorted_frequencies(counts, True), [])
 
         # works on zeros
         counts = array([0, 0, 0, 0, 0, 0])
-        self.assertEqual(make_sorted_frequencies(counts, True), [])
+        self.assertItemsEqual(make_sorted_frequencies(counts, True), [])
 
         # works on flat data
         counts = array([3, 3, 3, 3, 3])
         expected_freqs = [3, 3, 3, 3, 3]
         observed_freqs = make_sorted_frequencies(counts, True)
-        self.assertEqual(observed_freqs, expected_freqs)
+        self.assertItemsEqual(observed_freqs, expected_freqs)
 
         # works o real data
         counts = array([1, 2, 0, 1, 0, 2, 4])
         expected_freqs = [4, 2, 2, 1, 1]
         observed_freqs = make_sorted_frequencies(counts, True)
-        self.assertEqual(observed_freqs, expected_freqs)
+        self.assertItemsEqual(observed_freqs, expected_freqs)
 
     def test_plot_rank_abundance_graph(self):
         """plot_rank_abudance_graph plots something"""
@@ -98,11 +99,10 @@ class PlotRankAbundance(TestCase):
         """plot_rank_abundance_graphs works with all filetypes"""
 
         self.otu_table = parse_biom_table_str(otu_table_sparse)
-        self.dir = get_tmp_filename(tmp_dir=self.tmp_dir,
-                                    prefix="test_plot_rank_abundance",
-                                    suffix="/")
+        self.dir = mkdtemp(dir=self.tmp_dir,
+                           prefix="test_plot_rank_abundance",
+                           suffix="/")
 
-        create_dir(self.dir)
         self._dirs_to_remove.append(self.dir)
 
         # test all supported filetypes
@@ -121,12 +121,12 @@ class PlotRankAbundance(TestCase):
         """plot_rank_abundance_graphs works with any number of samples (SparseOTUTable)"""
 
         self.otu_table = parse_biom_table_str(otu_table_sparse)
-        self.dir = get_tmp_filename(tmp_dir=self.tmp_dir,
+        self.dir = mkdtemp(dir=self.tmp_dir,
                                     prefix="test_plot_rank_abundance",
                                     suffix="/")
-        create_dir(self.dir)
         self._dirs_to_remove.append(self.dir)
-        tmp_fname = get_tmp_filename(tmp_dir=self.dir)
+        fd, tmp_fname = mkstemp(dir=self.dir)
+        close(fd)
 
         # test empty sample name
         self.assertRaises(
@@ -158,12 +158,13 @@ class PlotRankAbundance(TestCase):
         """plot_rank_abundance_graphs works with any number of samples (DenseOTUTable)"""
 
         self.otu_table = parse_biom_table_str(otu_table_dense)
-        self.dir = get_tmp_filename(tmp_dir=self.tmp_dir,
-                                    prefix="test_plot_rank_abundance",
-                                    suffix="/")
+        self.dir = mkdtemp(dir=self.tmp_dir,
+                           prefix="test_plot_rank_abundance",
+                           suffix="/")
         create_dir(self.dir)
         self._dirs_to_remove.append(self.dir)
-        tmp_fname = get_tmp_filename(tmp_dir=self.dir)
+        fd, tmp_fname = mkstemp(dir=self.dir)
+        close(fd)
 
         # test empty sample name
         self.assertRaises(

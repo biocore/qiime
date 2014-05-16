@@ -9,7 +9,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import parse_fasta
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from sys import stdout
 from qiime.util import make_option
@@ -51,7 +51,7 @@ def main():
     else:
         fd = stdout
 
-    for label, seq in MinimalFastaParser(open(opts.input_fasta_fp, 'U')):
+    for label, seq in parse_fasta(open(opts.input_fasta_fp, 'U')):
         print >> fd, '>%s\n%s' % (
             label, seq.replace(' ', '').replace('.', '-'))
 

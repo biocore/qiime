@@ -9,7 +9,8 @@ __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = [
     "Dan Knights",
     "Jose Carlos Clemente Litran",
-    "Yoshiki Vazquez Baeza"]
+    "Yoshiki Vazquez Baeza",
+    "Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Dan Knights"
@@ -96,10 +97,21 @@ this flag is ignored.', default=False),
                 help='No UPGMA clustering of Samples (columns) is performed. If --map_fname is provided, \
 this flag is ignored.', default=False),
     make_option('--absolute_abundance', action="store_true",
-                help='Do not normalize samples to sum to 1.[default %default]', default=False),
+                help='Do not normalize samples to sum to 1.[default %default]',
+                default=False),
     make_option('--log_eps', type="float",
                 help='Small value to replace zeros for log transform. \
 [default: 1/2 the smallest non-zero entry].', default=None),
+    make_option('--color_scheme', default="jet",
+                help=("color scheme for figure. see"
+                      " http://wiki.scipy.org/Cookbook/Matplotlib/Show_colormaps"
+                      " for choices [default: %default]")),
+    make_option('--obs_md_level', default=None, type="int",
+                help=("the level of observation metadata to plot for "
+                      "hierarchical metadata [default: lowest level]")),
+    make_option('--obs_md_category', default="taxonomy",
+                help=("the level of observation metadata to plot for "
+                      "hierarchical metadata [default: %default]"))
 ]
 
 script_info['version'] = __version__
@@ -109,15 +121,32 @@ def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     otu_table = parse_biom_table(open(opts.otu_table_fp, 'U'))
-    lineages = []
-    if (otu_table.ObservationMetadata is None or 'taxonomy' not in otu_table.ObservationMetadata[0]):
-        print '\n\nWarning: The lineages are missing from the OTU table. If you used single_rarefaction.py to create your otu_table, make sure you included the OTU lineages.\n'
-        lineages = [''] * len(otu_table.ObservationIds)
+    obs_md_category = opts.obs_md_category
+    obs_md_level = opts.obs_md_level
+    if obs_md_level is None:
+        # grab the last level if the user didn't specify a level
+        obs_md_level = -1
     else:
-        for val, id, meta in otu_table.iterObservations():
-            lineages.append([v for v in meta['taxonomy']])
+        # convert to 0-based indexing
+        obs_md_level -= 1
+    obs_md = otu_table.ObservationMetadata
+    # create reference to the observation metadata for the first
+    # observation for convenient lookup
+    obs_md_0 = obs_md[0]
+    obs_md_labels = []
+    if (obs_md is None or obs_md_category not in obs_md_0):
+        obs_md_labels = [['']] * len(otu_table.ObservationIds)
+    else:
+        for _, _, md in otu_table.iterObservations():
+            current_md = md[obs_md_category]
+            if obs_md_level < len(current_md):
+                current_md_at_level = current_md[obs_md_level]
+            else:
+                current_md_at_level = ''
+            obs_md_labels.append([current_md_at_level])
 
-    otu_labels = make_otu_labels(otu_table.ObservationIds, lineages)
+    otu_labels = make_otu_labels(otu_table.ObservationIds, 
+                                 obs_md_labels)
 
     # Convert to relative abundance if requested
     if not opts.absolute_abundance:
@@ -212,7 +241,8 @@ def main():
     sample_ids = array(otu_table.SampleIds)[sample_order]
 
     plot_heatmap(otu_table, otu_labels, sample_ids,
-                 filename=join(dir_path, 'heatmap.pdf'))
+                 filename=join(dir_path, 'heatmap.pdf'),
+                 color_scheme=opts.color_scheme)
 
 
 if __name__ == "__main__":

@@ -13,10 +13,9 @@ __email__ = "jens.reeder@gmail.com"
 
 from random import sample
 
-from cogent.util.unit_test import TestCase, main
-from cogent.parse.fasta import MinimalFastaParser
-from cogent.parse.flowgram_collection import FlowgramCollection
-from cogent.parse.flowgram import Flowgram
+from unittest import TestCase, main
+from skbio.parse.sequences import parse_fasta
+from brokit.denoiser import FlowgramCollection, Flowgram
 
 from qiime.denoiser.preprocess import sample_mapped_keys, \
     _average_flowgrams, prefix_filter_flowgrams
@@ -43,7 +42,7 @@ class Test_preprocess(TestCase):
                # check that sampled key is in the full list
                 correct = list(self.test_map[key])
                 correct.append(key)
-                self.assertContains(correct, x)
+                self.assertTrue(x in correct)
 
     def test_average_flowgrams(self):
         """_average_flowgrams computes an averaged flowgram for each cluster."""

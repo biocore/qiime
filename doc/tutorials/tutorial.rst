@@ -385,11 +385,11 @@ You should see, among other information:
   |      Alpha-diversity metric(s) to use. A comma-separated
   |      list should be provided when multiple metrics are
   |      specified. [default:
-  |      PD_whole_tree,chao1,observed_species]
+  |      PD_whole_tree,chao1,observed_otus]
 
 to also use the shannon index, create a custom parameters file by typing: ::
 
-    echo "alpha_diversity:metrics shannon,PD_whole_tree,chao1,observed_species" > alpha_params.txt
+    echo "alpha_diversity:metrics shannon,PD_whole_tree,chao1,observed_otus" > alpha_params.txt
 
 Then run the workflow, which requires the OTU table (-i) and phylogenetic tree (-t) from `above`__, and the custom parameters file we just created: 
 
@@ -412,10 +412,10 @@ The directory :file:`wf_arare/rarefaction/` will contain many text files named :
 
 Step 2. Compute Alpha Diversity
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The rarefaction tables are the basis for calculating diversity metrics, which reflect the diversity within the sample based on the abundance of various taxa within a community. The QIIME pipeline allows users to conveniently calculate more than two dozen different diversity metrics. The full list of available metrics is available here: `alpha-diversity metrics <../scripts/alpha_diversity_metrics.html>`_. Every metric has different strengths and limitations - technical discussion of each metric is readily available online and in ecology textbooks, but it is beyond the scope of this document. By default, QIIME calculates three metrics:
+The rarefaction tables are the basis for calculating diversity metrics, which reflect the diversity within the sample based on the abundance of various taxa within a community. The QIIME pipeline allows users to conveniently calculate more than two dozen different diversity metrics. The full list of available metrics is available here: `alpha-diversity metrics <http://scikit-bio.org/math.diversity.alpha.html>`_. Every metric has different strengths and limitations - technical discussion of each metric is readily available online and in ecology textbooks, but it is beyond the scope of this document. By default, QIIME calculates three metrics:
 
 #. Chao1 metric estimates the species richness.
-#. The Observed Species metric is simply the count of unique OTUs found in the sample.
+#. The Observed OTUs (previously known as Observed Species) metric is simply the count of unique OTUs found in the sample.
 #. Phylogenetic Distance (PD_whole_tree) is the only phylogenetic metric used, and requires a phylogenetic tree.
 
 In addition, :file:`alpha_params.txt` specified above adds the shannon index to the list of alpha diversity measures calculated by QIIME.
@@ -428,7 +428,7 @@ Step 3. Collate Rarified OTU Tables
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The output directory :file:`wf_arare/alpha_div/` will contain one text file :file:`alpha_rarefaction_##_#` for every file input from :file:`wf_arare/rarefaction/`, where the numbers represent the number of samples and iterations as before. The content of this tab delimited file is the calculated metrics for each sample. To collapse the individual files into a single combined table, the workflow uses the script `collate_alpha.py <../scripts/collate_alpha.html>`_.
 
-In the newly created directory :file:`wf_arare/alpha_div_collated/`, there will be one matrix for every alpha diversity metric used. This matrix will contain the metric for every sample, arranged in ascending order from lowest number of sequences per sample to highest. A portion of the :file:`observed_species.txt` file are shown below:
+In the newly created directory :file:`wf_arare/alpha_div_collated/`, there will be one matrix for every alpha diversity metric used. This matrix will contain the metric for every sample, arranged in ascending order from lowest number of sequences per sample to highest. A portion of the :file:`observed_otus.txt` file are shown below:
 
 .. note::
 
@@ -467,7 +467,7 @@ Beta diversity represents the explicit comparison of microbial (or other) commun
 1. Rarify OTU table (for more information, refer to `single_rarefaction.py <../scripts/single_rarefaction.html>`_)
 2. Compute Beta Diversity (for more information, refer to `beta_diversity.py <../scripts/beta_diversity.html>`_)
 3. Generate Principal Coordinates (for more information, refer to `principal_coordinates.py <../scripts/principal_coordinates.html>`_)
-4. Generate Emperor PCoA plots (for more information, refer to `make_emperor.py <http://qiime.org/emperor/>`_)
+4. Generate Emperor PCoA plots (for more information, refer to `make_emperor.py <http://emperor.colorado.edu/>`_)
 
 To run the workflow, type the following command, which defines the input OTU table "-i" and tree file "-t" (from `pick_de_novo_otus.py <../scripts/pick_de_novo_otus.html>`_), the user-defined mapping file "-m", the output directory "-o", and the number of sequences per sample (sequencing depth) as 146: ::
 
@@ -524,7 +524,7 @@ The files :file:`wf_bdiv_even146/unweighted_unifrac_pc.txt` and :file:`wf_bdiv_e
 
 Step 4. Generate Emperor PCoA Plots
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-`Emperor <http://qiime.org/emperor/>` allows for the inspection of PCoA plots in three dimensions. html files are created in :file:`wf_bdiv_even146/unweighted_unifrac_emperor_pcoa_plot...` and :file:`wf_bdiv_even146/weighted_unifrac_emperor_pcoa_plot...` directories. For the "Treatment" column, all samples with the same "Treatment" will get the same color. For our tutorial, the five control samples are all red and the four Fast samples are all blue. This lets you easily visualize "clustering" by metadata category. The 3d visualization software allows you to rotate the axes to see the data from different perspectives. By default, the script will plot the first three dimensions in your file. Other combinations can be viewed using the "Axes" option in Emperor. The first 8 components can be viewed using the left bottom menu "Parallel" using a parallel coordinates plot.
+`Emperor <http://emperor.colorado.edu/>` allows for the inspection of PCoA plots in three dimensions. html files are created in :file:`wf_bdiv_even146/unweighted_unifrac_emperor_pcoa_plot...` and :file:`wf_bdiv_even146/weighted_unifrac_emperor_pcoa_plot...` directories. For the "Treatment" column, all samples with the same "Treatment" will get the same color. For our tutorial, the five control samples are all red and the four Fast samples are all blue. This lets you easily visualize "clustering" by metadata category. The 3d visualization software allows you to rotate the axes to see the data from different perspectives. By default, the script will plot the first three dimensions in your file. Other combinations can be viewed using the "Axes" option in Emperor. The first 8 components can be viewed using the left bottom menu "Parallel" using a parallel coordinates plot.
 
 .. image:: ../images/ pcoa1.png
    :align: center
@@ -545,7 +545,7 @@ This workflow uses jackknife replicates to estimate the uncertainty in PCoA plot
   5) Build UPGMA trees from rarefied distance matrices (for more information, refer to `upgma_cluster.py <../scripts/upgma_cluster.html>`_)
   6) Compare rarefied UPGMA trees and determine jackknife support for tree nodes. (for more information, refer to `tree_compare.py <../scripts/tree_compare.html>`_ and `consensus_tree.py <../scripts/consensus_tree.html>`_)
   7) Compute principal coordinates on each rarefied distance matrix (for more information, refer to `principal_coordinates.py <../scripts/principal_coordinates.html>`_)
-  8) Compare rarefied principal coordinates plots from each rarefied distance matrix (for more information, refer to `make_emperor.py <http://qiime.org/emperor/>`
+  8) Compare rarefied principal coordinates plots from each rarefied distance matrix (for more information, refer to `make_emperor.py <http://emperor.colorado.edu/>`
 
 
 To run the analysis, type the following:
@@ -630,7 +630,7 @@ The resulting pdf shows the tree with internal nodes colored, red for 75-100% su
 
 Generate 3D Bi-Plots
 ^^^^^^^^^^^^^^^^^^^^
-One can add taxa from the taxon summary files in the folder :file:`wf_taxa_summary/` to a 3D principal coordinates plot using Emperor's `make_emperor.py <http://qiime.org/emperor/>`_. The coordinates of a given taxon are plotted as a weighted average of the coordinates of all samples, where the weights are the relative abundances of the taxon in the samples. The size of the sphere representing a taxon is proportional to the mean relative abundance of the taxon across all samples. The following example creates a biplot displaying the 5 most abundant phylum-level taxa::
+One can add taxa from the taxon summary files in the folder :file:`wf_taxa_summary/` to a 3D principal coordinates plot using Emperor's `make_emperor.py <http://emperor.colorado.edu/>`_. The coordinates of a given taxon are plotted as a weighted average of the coordinates of all samples, where the weights are the relative abundances of the taxon in the samples. The size of the sphere representing a taxon is proportional to the mean relative abundance of the taxon across all samples. The following example creates a biplot displaying the 5 most abundant phylum-level taxa::
 
     make_emperor.py -i wf_bdiv_even146/unweighted_unifrac_pc.txt -m Fasting_Map.txt -t wf_taxa_summary/otu_table_L3.txt --n_taxa_to_keep 5 -o 3d_biplot
 

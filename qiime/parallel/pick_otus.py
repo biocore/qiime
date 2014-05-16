@@ -10,13 +10,16 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
-from cogent.app.formatdb import build_blast_db_from_fasta_path
-from qiime.parallel.util import ParallelWrapper, BufferedWriter
-from qiime.parallel.poller import basic_process_run_results_f
-from cogent.parse.fasta import MinimalFastaParser
 from math import ceil
 from os.path import basename, join
 from re import compile
+
+from brokit.formatdb import build_blast_db_from_fasta_path
+
+from skbio.parse.sequences import parse_fasta
+
+from qiime.parallel.util import ParallelWrapper, BufferedWriter
+from qiime.parallel.poller import basic_process_run_results_f
 
 
 class ParallelPickOtus(ParallelWrapper):
@@ -407,7 +410,7 @@ class ParallelPickOtusTrie(ParallelPickOtus):
         out_files = []
         buffered_handles = {}
         prefix_length = params['prefix_length'] or 1
-        for seq_id, seq in MinimalFastaParser(open(input_fp)):
+        for seq_id, seq in parse_fasta(open(input_fp)):
 
             if(len(seq) < prefix_length):
                 raise ValueError("Prefix length must be equal or longer than sequence.\n"

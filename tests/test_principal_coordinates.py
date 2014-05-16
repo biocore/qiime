@@ -10,7 +10,7 @@ __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
 from qiime.principal_coordinates import pcoa
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 
 
 class FunctionTests(TestCase):

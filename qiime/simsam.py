@@ -11,14 +11,16 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
-import numpy
-import random
 from os.path import join
+from operator import add
+
+from numpy import zeros
+from random import choice
 from biom.table import table_factory
+
 from qiime.format import format_mapping_file, format_biom_table
 from qiime.parse import parse_mapping_file
-from qiime.util import make_option, create_dir
-from qiime.util import parse_command_line_parameters
+from qiime.util import make_option, create_dir, parse_command_line_parameters
 from qiime.sort import natsort
 
 
@@ -42,9 +44,6 @@ def sim_otu_table(sample_ids, otu_ids, samples, otu_metadata, tree,
     some otu metadata:
     (res_sam_names, res_otus, res_otu_mtx, res_otu_metadata)
     """
-
-    tree_tips = [tip.Name for tip in tree.tips()]
-
     # hold sample abundance vector in a dict (sample_dict) temporarily
     # format of sample_dict: otu_id: num_seqs
     sample_dicts = []
@@ -85,6 +84,25 @@ def sim_otu_table(sample_ids, otu_ids, samples, otu_metadata, tree,
     return res_sam_names, res_otus, res_otu_mtx, res_otu_metadata
 
 
+def create_tip_index(tree):
+    """Create a tip lookup index on the tree"""
+    if hasattr(tree, '_tip_index'):
+        return
+    else:
+        tree._tip_index = {n.Name: n for n in tree.tips()}
+
+def cache_tip_names(tree):
+    """Cache tip names"""
+    if hasattr(tree, '_tip_names'):
+        return
+    else:
+        for n in tree.postorder():
+            if n.isTip():
+                n._tip_names = [n.Name]
+            else:
+                n._tip_names = reduce(add, [c._tip_names for c in n.Children])
+
+
 def get_new_otu_id(old_otu_id, tree, dissim):
     """ simulates an otu switching to related one
 
@@ -92,7 +110,10 @@ def get_new_otu_id(old_otu_id, tree, dissim):
     ouputs the name of the new, randomly chosen, tree tip
     output tip name may be the same as
     """
-    node = tree.getNodeMatchingName(old_otu_id)  # starts at tip
+    create_tip_index(tree)
+    cache_tip_names(tree)
+
+    node = tree._tip_index[old_otu_id]
     distance_up_tree = 0
     while (not node.isRoot()) and (distance_up_tree + node.Length < dissim):
         distance_up_tree += node.Length
@@ -103,7 +124,7 @@ def get_new_otu_id(old_otu_id, tree, dissim):
     if node.isTip():
         return node.Name
     else:
-        return random.choice([tip.Name for tip in node.tips()])
+        return choice(node._tip_names)
 
 
 def combine_sample_dicts(sample_dicts):
@@ -131,7 +152,7 @@ def combine_sample_dicts(sample_dicts):
     for i in range(len(all_otu_ids)):
         indices[all_otu_ids[i]] = i
 
-    otu_mtx = numpy.zeros((len(all_otu_ids), len(sample_dicts)), int)
+    otu_mtx = zeros((len(all_otu_ids), len(sample_dicts)), int)
     # otus (rows) by samples (cols)
     for i, sample_dict in enumerate(sample_dicts):
         for otu, abund in sample_dict.items():

@@ -29,7 +29,7 @@ rm -rf wf_taxa_summary ; summarize_taxa_through_plots.py -i otus/otu_table.biom 
 
 echo "Alpha rarefaction"
 #alpha_diversity.py -h
-echo "alpha_diversity:metrics shannon,PD_whole_tree,chao1,observed_species" > alpha_params.txt
+echo "alpha_diversity:metrics shannon,PD_whole_tree,chao1,observed_otus" > alpha_params.txt
 
 rm -rf wf_arare ; alpha_rarefaction.py -i otus/otu_table.biom -m Fasting_Map.txt -o wf_arare/ -p alpha_params.txt -t otus/rep_set.tre -a
 

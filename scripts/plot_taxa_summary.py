@@ -18,7 +18,7 @@ from qiime.util import parse_command_line_parameters, get_qiime_project_dir
 from qiime.util import make_option
 from qiime.util import create_dir
 from qiime.plot_taxa_summary import make_all_charts
-from cogent.util.misc import get_random_directory_name
+from tempfile import mkdtemp
 from qiime.colors import taxonomy_color_prefs_and_map_data_from_options
 import re
 import matplotlib

@@ -2,7 +2,8 @@
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Rob Knight", "Greg Caporaso", "Kyle Bittinger"]
+__credits__ = ["Rob Knight", "Greg Caporaso", "Kyle Bittinger",
+               "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Daniel McDonald"
@@ -19,12 +20,11 @@ This is heavily based on pick_otus.py.
 """
 
 from optparse import OptionParser
-from qiime.util import FunctionWithParams
+from qiime.util import FunctionWithParams, invert_dict
 from qiime.parse import fields_to_dict
 from random import choice
 from numpy import argmax
-from cogent.util.misc import InverseDictMulti  # inverts dict
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import parse_fasta
 
 label_to_name = lambda x: x.split()[0]
 
@@ -54,7 +54,7 @@ def unique_id_map(seqs):
 
     Result is {orig_id:unique_rep_id}.
     """
-    groups = InverseDictMulti(seqs)
+    groups = invert_dict(seqs)
     result = {}
     for v in groups.values():
         for i in v:
@@ -69,7 +69,7 @@ def unique_id_map(seqs):
 def make_most_abundant(seqs):
     """Makes function that chooses the most abundant seq from group"""
     seq_to_group = unique_id_map(seqs)
-    groups = InverseDictMulti(seq_to_group)
+    groups = invert_dict(seq_to_group)
 
     def most_abundant(ids, seqs='ignored'):
         """Returns most abundant seq from ids"""
@@ -155,7 +155,7 @@ class GenericRepSetPicker(RepSetPicker):
         # to avoid the overhead of loading large sequence collections
         # during this step.
         seq_f = open(seq_path, 'U')
-        seqs = dict(MinimalFastaParser(seq_f, label_to_name=label_to_name))
+        seqs = dict(parse_fasta(seq_f, label_to_name=label_to_name))
         seq_f.close()
 
         # Load the otu file
@@ -249,7 +249,7 @@ class ReferenceRepSetPicker(RepSetPicker):
         # during this step.
         if seq_path:
             seq_f = open(seq_path, 'U')
-            seqs = dict(MinimalFastaParser(seq_f, label_to_name=label_to_name))
+            seqs = dict(parse_fasta(seq_f, label_to_name=label_to_name))
             seq_f.close()
         else:
             # allows the user to not pass seqs, which can be useful when
@@ -261,7 +261,7 @@ class ReferenceRepSetPicker(RepSetPicker):
         # during this step.
         reference_f = open(reference_path, 'U')
         reference_seqs = dict(
-            MinimalFastaParser(reference_f, label_to_name=label_to_name))
+            parse_fasta(reference_f, label_to_name=label_to_name))
         reference_f.close()
 
         # Load the otu file

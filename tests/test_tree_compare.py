@@ -10,7 +10,8 @@ __email__ = "justinak@gmail.com"
 
 """tests the tree_compare.py module."""
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 from qiime.parse import parse_newick
 import qiime.tree_compare as tc
 
@@ -35,7 +36,7 @@ class TreeCompareTests(TestCase):
         t1 = parse_newick('((a:6,b:8.2):2,(c:1,d:2):7);')  # same structure
         t2 = parse_newick('((a:2,b:3,c:33):2,d:7);')  # abc are siblings
         new_master, bootstraps = tc.bootstrap_support(master_tree, [t1, t2])
-        self.assertFloatEqual(
+        assert_almost_equal(
             sorted(bootstraps.values()), sorted([1.0, .5, .5]))
 
     def test_bootstrap_support_labeled(self):
@@ -54,7 +55,7 @@ class TreeCompareTests(TestCase):
         t2 = parse_newick('((a:2,b:3,c:33)ho:2,d:7);')  # abc are siblings
         new_master, bootstraps = tc.bootstrap_support(master_tree, [t1, t2])
         expected = dict([('ab', .5), ('cd', .5), ('rt', 1.0)])
-        self.assertFloatEqual(bootstraps, expected)
+        self.assertDictEqual(bootstraps, expected)
 
     def test_bootstrap_support_subset(self):
         """ bootstrap_support should have correct bootstrap on a tree
@@ -75,7 +76,7 @@ class TreeCompareTests(TestCase):
         new_master, bootstraps = tc.bootstrap_support(master_tree,
                                                       [t1, t2, t3, t4])
         expected = dict([('cd', .75), ('rt', 1.0)])
-        self.assertFloatEqual(bootstraps, expected)
+        self.assertDictEqual(bootstraps, expected)
 
     def test_tree_support(self):
         """ tree_support should correctly modify node.bootstrap_support
@@ -90,7 +91,7 @@ class TreeCompareTests(TestCase):
         t2 = parse_newick('((a:2,b:3,c:33)ho:2,d:7);')  # abc are siblings
 
         tc.tree_support(master_tree, t2)
-        self.assertFloatEqual(
+        assert_almost_equal(
             master_tree.getNodeMatchingName('rt').bootstrap_support, 1.0)
 
     def test_setup_master_tree_alltips(self):

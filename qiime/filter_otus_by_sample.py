@@ -12,8 +12,9 @@ __email__ = "jesse.stombaugh@colorado.edu"
 
 from string import strip
 import re
-from cogent import LoadSeqs
 
+from skbio.core.alignment import SequenceCollection
+from skbio.core.sequence import DNA
 
 def filter_otus(otus, prefs):
     """filters the otus file based on which samples should be removed and
@@ -47,9 +48,9 @@ def filter_aln_by_otus(aln, prefs):
         be removed"""
     filtered_seqs = []
     removed_seqs = []
-    for j in range(aln.getNumSeqs()):
+    for j in range(aln.sequence_count()):
         remove = False
-        aln_name = aln.Names[j]
+        aln_name = aln[j].id
         stripped_aln_name = aln_name.split(' ')[0].split('_')
         if len(stripped_aln_name) > 1:
             new_aln_name = ''.join(stripped_aln_name[:-1])
@@ -61,9 +62,9 @@ def filter_aln_by_otus(aln, prefs):
                 remove = True
 
         if remove:
-            removed_seqs.append((aln_name, aln.getSeq(aln_name)))
+            removed_seqs.append((aln_name, str(aln[aln_name])))
         else:
-            filtered_seqs.append((aln_name, aln.getSeq(aln_name)))
+            filtered_seqs.append((aln_name, str(aln[aln_name])))
 
     return filtered_seqs, removed_seqs
 
@@ -110,24 +111,26 @@ def filter_samples(prefs, data, dir_path='', filename=None):
 
     # write a fasta containing list of sequences removed from
     # representative set
-    try:
-        removed_seqs = LoadSeqs(data=removed_seqs, aligned=False)
-    except:
+    if len(removed_seqs) > 0:
+        removed_seqs = SequenceCollection.from_fasta_records(
+                [(e[0], str(e[1])) for e in removed_seqs], DNA)
+    else:
         raise ValueError(
             'No sequences were removed.  Did you specify the correct Sample ID?')
     output_filepath2 = '%s/%s_sremoved.fasta' % (dir_path, filename)
     output_file2 = open(output_filepath2, 'w')
-    output_file2.write(removed_seqs.toFasta())
+    output_file2.write(removed_seqs.to_fasta())
     output_file2.close()
 
     # write a fasta containing the filtered representative seqs
-    try:
-        filtered_seqs = LoadSeqs(data=filtered_seqs, aligned=False)
-    except:
+    if len(filtered_seqs) > 0:
+        filtered_seqs = SequenceCollection.from_fasta_records(
+                [(e[0], str(e[1])) for e in filtered_seqs], DNA)
+    else:
         raise ValueError(
             'No sequences were remaining in the fasta file.  Did you remove all Sample ID\'s?')
 
     output_filepath = '%s/%s_sfiltered.fasta' % (dir_path, filename)
     output_file = open(output_filepath, 'w')
-    output_file.write(filtered_seqs.toFasta())
+    output_file.write(filtered_seqs.to_fasta())
     output_file.close()

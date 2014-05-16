@@ -17,17 +17,18 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
-from os import remove
-from os.path import abspath, join, exists
+from os import remove, close
+from os.path import abspath, join, exists, split
 from shutil import rmtree
+from tempfile import mkstemp
 
-from cogent.util.misc import create_dir
-from cogent.util.unit_test import TestCase, main
-from cogent.util.misc import remove_files
-from cogent import DNA
-from cogent.app.formatdb import build_blast_db_from_fasta_path
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
+from skbio.core.sequence import DNA
+from skbio.util.misc import create_dir, remove_files
+from brokit.formatdb import build_blast_db_from_fasta_path
 
-from qiime.util import get_tmp_filename, load_qiime_config, create_dir
+from qiime.util import load_qiime_config
 from qiime.pick_otus import (CdHitOtuPicker, OtuPicker,
                              MothurOtuPicker, PrefixSuffixOtuPicker, TrieOtuPicker, BlastOtuPicker,
                              expand_otu_map_seq_ids, map_otu_map_files, UclustOtuPicker,
@@ -75,8 +76,9 @@ class OtuPickerTests(TestCase):
 class MothurOtuPickerTests(TestCase):
 
     def setUp(self):
-        self.small_seq_path = get_tmp_filename(
-            prefix='MothurOtuPickerTest_', suffix='.fasta')
+        fd, self.small_seq_path = mkstemp(prefix='MothurOtuPickerTest_',
+                                         suffix='.fasta')
+        close(fd)
         f = open(self.small_seq_path, 'w')
         f.write(
             '>aaaaaa\nTAGGCTCTGATATAATAGCTCTC---------\n'
@@ -92,27 +94,27 @@ class MothurOtuPickerTests(TestCase):
         app = MothurOtuPicker({})
         observed_otus = app(self.small_seq_path)
         expected_otus = [['cccccc'], ['bbbbbb'], ['aaaaaa']]
-        self.assertEqualItems(observed_otus.keys(),
+        assert_almost_equal(observed_otus.keys(),
                               [0, 1, 2])
-        self.assertEqualItems(observed_otus.values(),
+        self.assertItemsEqual(observed_otus.values(),
                               expected_otus)
 
     def test_call_low_similarity(self):
         app = MothurOtuPicker({'Similarity': 0.35})
         observed_otus = app(self.small_seq_path)
         expected_otus = [['bbbbbb', 'cccccc'], ['aaaaaa']]
-        self.assertEqualItems(observed_otus.keys(),
+        assert_almost_equal(observed_otus.keys(),
                               [0, 1])
-        self.assertEqualItems(observed_otus.values(),
+        self.assertItemsEqual(observed_otus.values(),
                               expected_otus)
 
     def test_call_nearest_neighbor(self):
         app = MothurOtuPicker({'Algorithm': 'nearest', 'Similarity': 0.35})
         observed_otus = app(self.small_seq_path)
         expected_otus = [['bbbbbb', 'cccccc'], ['aaaaaa']]
-        self.assertEqualItems(observed_otus.keys(),
+        self.assertItemsEqual(observed_otus.keys(),
                               [0, 1])
-        self.assertEqualItems(observed_otus.values(),
+        self.assertItemsEqual(observed_otus.values(),
                               expected_otus)
 
 
@@ -143,10 +145,12 @@ class BlastxOtuPickerTests(TestCase):
             ('ref5', 'RATGEREL'),
         ]
 
-        self.seqs_fp = get_tmp_filename(
-            prefix='BlastOtuPickerTest_', suffix='.fasta')
-        self.reference_seqs_pr_fp = get_tmp_filename(
-            prefix='BlastOtuPickerTest_', suffix='.fasta')
+        fd, self.seqs_fp = mkstemp(prefix='BlastOtuPickerTest_',
+                                  suffix='.fasta')
+        close(fd)
+        fd, self.reference_seqs_pr_fp = mkstemp(prefix='BlastOtuPickerTest_',
+                                               suffix='.fasta')
+        close(fd)
 
         f = open(self.seqs_fp, 'w')
         f.write('\n'.join(['>%s\n%s' % s for s in self.seqs]))
@@ -236,18 +240,21 @@ class BlastOtuPickerTests(TestCase):
         ]
 
         self.ref_seqs_rc = [
-            ('ref1', DNA.rc('TGCAGCTTGAGCCACAGGAGAGAGAGAGCTTC')),
-            ('ref2', DNA.rc('ACCGATGAGATATTAGCACAGGGGAATTAGAACCA')),
-            ('ref3', DNA.rc('TGTCGAGAGTGAGATGAGATGAGAACA')),
-            ('ref4', DNA.rc('ACGTATTTTAATGGGGCATGGT')),
+            ('ref1', str(DNA('TGCAGCTTGAGCCACAGGAGAGAGAGAGCTTC').rc())),
+            ('ref2', str(DNA('ACCGATGAGATATTAGCACAGGGGAATTAGAACCA').rc())),
+            ('ref3', str(DNA('TGTCGAGAGTGAGATGAGATGAGAACA').rc())),
+            ('ref4', str(DNA('ACGTATTTTAATGGGGCATGGT').rc())),
         ]
 
-        self.seqs_fp = get_tmp_filename(
-            prefix='BlastOtuPickerTest_', suffix='.fasta')
-        self.reference_seqs_fp = get_tmp_filename(
-            prefix='BlastOtuPickerTest_', suffix='.fasta')
-        self.reference_seqs_rc_fp = get_tmp_filename(
-            prefix='BlastOtuPickerTest_', suffix='.fasta')
+        fd, self.seqs_fp = mkstemp(prefix='BlastOtuPickerTest_',
+                                  suffix='.fasta')
+        close(fd)
+        fd, self.reference_seqs_fp = mkstemp(prefix='BlastOtuPickerTest_',
+                                            suffix='.fasta')
+        close(fd)
+        fd, self.reference_seqs_rc_fp = mkstemp(prefix='BlastOtuPickerTest_',
+                                               suffix='.fasta')
+        close(fd)
 
         f = open(self.seqs_fp, 'w')
         f.write('\n'.join(['>%s\n%s' % s for s in self.seqs]))
@@ -375,10 +382,11 @@ class BlastOtuPickerTests(TestCase):
         ref_seqs = [
             ('r1', 'TGCAGCTTGAGCCACGCCGAATAGCCGAGTTTGACCGGGCCCAGGAGGAGAGAGAGAGCTTC')]
 
-        seqs_fp = get_tmp_filename(
-            prefix='BlastOtuPickerTest_', suffix='.fasta')
-        reference_seqs_fp = get_tmp_filename(
-            prefix='BlastOtuPickerTest_', suffix='.fasta')
+        fd, seqs_fp = mkstemp(prefix='BlastOtuPickerTest_', suffix='.fasta')
+        close(fd)
+        fd, reference_seqs_fp = mkstemp(prefix='BlastOtuPickerTest_',
+                                       suffix='.fasta')
+        close(fd)
 
         f = open(seqs_fp, 'w')
         f.write('\n'.join(['>%s\n%s' % s for s in seqs]))
@@ -447,7 +455,7 @@ class BlastOtuPickerTests(TestCase):
                     'ref2': ['s4'],
                     'ref3': ['s5']}
         actual = self.otu_picker(self.seqs_fp, blast_db=blast_db)
-        self.assertEqual(actual, expected)
+        self.assertItemsEqual(actual, expected)
 
     def test_call_multiple_blast_runs(self):
         """BLAST OTU Picker not affected by alt SeqsPerBlastRun
@@ -484,8 +492,9 @@ class PrefixSuffixOtuPickerTests(TestCase):
             ('s6', 'ACGTATTTTAATTTGGCATGGT'),
         ]
 
-        self.small_seq_path = get_tmp_filename(
-            prefix='PrefixSuffixOtuPickerTest_', suffix='.fasta')
+        fd, self.small_seq_path = mkstemp(prefix='PrefixSuffixOtuPickerTest_',
+                                         suffix='.fasta')
+        close(fd)
         self._files_to_remove = [self.small_seq_path]
         f = open(self.small_seq_path, 'w')
         f.write('\n'.join(['>%s\n%s' % s for s in self.seqs]))
@@ -523,8 +532,9 @@ class PrefixSuffixOtuPickerTests(TestCase):
              'ACGTAATGGTCCCCCCCCCGGGGGGGGCCCCCCGGG'),
             ('s2_dup', 'ATTTAATGGT'),
         ]
-        seq_path = get_tmp_filename(
-            prefix='PrefixSuffixOtuPickerTest_', suffix='.fasta')
+        fd, seq_path = mkstemp(prefix='PrefixSuffixOtuPickerTest_',
+                              suffix='.fasta')
+        close(fd)
         self._files_to_remove.append(seq_path)
         f = open(seq_path, 'w')
         f.write('\n'.join(['>%s\n%s' % s for s in seqs]))
@@ -542,21 +552,21 @@ class PrefixSuffixOtuPickerTests(TestCase):
                                  prefix_length=400, suffix_length=0)
         actual_clusters = actual.values()
         expected_clusters = expected.values()
-        self.assertEqualItems(actual_clusters, expected_clusters)
+        self.assertItemsEqual(actual_clusters, expected_clusters)
 
         # long suffixes collapses identical sequences
         actual = self.otu_picker(seq_path,
                                  prefix_length=0, suffix_length=400)
         actual_clusters = actual.values()
         expected_clusters = expected.values()
-        self.assertEqualItems(actual_clusters, expected_clusters)
+        self.assertItemsEqual(actual_clusters, expected_clusters)
 
         # long prefix and suffixes collapses identical sequences
         actual = self.otu_picker(seq_path,
                                  prefix_length=400, suffix_length=400)
         actual_clusters = actual.values()
         expected_clusters = expected.values()
-        self.assertEqualItems(actual_clusters, expected_clusters)
+        self.assertItemsEqual(actual_clusters, expected_clusters)
 
     def test_collapse_exact_matches_prefix_and_suffix(self):
         """Prefix/suffix: collapse_exact_matches fns with pref/suf len > 0
@@ -669,15 +679,17 @@ class TrieOtuPickerTests(TestCase):
             ('s7', 'AAAAATAAA')
         ]
 
-        self.small_seq_path = get_tmp_filename(
-            prefix='TrieOtuPickerTest_', suffix='.fasta')
+        fd, self.small_seq_path = mkstemp(prefix='TrieOtuPickerTest_',
+                                         suffix='.fasta')
+        close(fd)
         self._files_to_remove = [self.small_seq_path]
         f = open(self.small_seq_path, 'w')
         f.write('\n'.join(['>%s\n%s' % s for s in seqs]))
         f.close()
 
-        self.small_seq_path_rev = get_tmp_filename(
-            prefix='TrieOtuPickerTest_', suffix='.fasta')
+        fd, self.small_seq_path_rev = mkstemp(prefix='TrieOtuPickerTest_',
+                                             suffix='.fasta')
+        close(fd)
         self._files_to_remove.append(self.small_seq_path_rev)
         f = open(self.small_seq_path_rev, 'w')
         f.write('\n'.join(['>%s\n%s' % s for s in seqs_rev]))
@@ -724,30 +736,34 @@ class Usearch610DeNovoOtuPickerTests(TestCase):
             dna_seqs_usearch_97perc_id_len_diff
         self.dna_seqs_usearch_97perc_dups = dna_seqs_usearch_97perc_dups
 
-        self.tmp_seq_filepath_97perc_id = get_tmp_filename(
+        fd, self.tmp_seq_filepath_97perc_id = mkstemp(
             prefix='Usearch610DeNovoOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_seq_filepath_97perc_id, 'w')
         seq_file.write(self.dna_seqs_usearch_97perc_id)
         seq_file.close()
 
-        self.tmp_seq_filepath_97perc_id_rc = get_tmp_filename(
+        fd, self.tmp_seq_filepath_97perc_id_rc = mkstemp(
             prefix='Usearch610DeNovoOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_seq_filepath_97perc_id_rc, 'w')
         seq_file.write(self.dna_seqs_usearch_97perc_id_rc)
         seq_file.close()
 
-        self.tmp_seqs_usearch97perc_id_len_diff = get_tmp_filename(
+        fd, self.tmp_seqs_usearch97perc_id_len_diff = mkstemp(
             prefix="Usearch610DeNovoOtuPickerTest_",
             suffix=".fasta")
+        close(fd)
         seq_file = open(self.tmp_seqs_usearch97perc_id_len_diff, "w")
         seq_file.write(self.dna_seqs_usearch_97perc_id_len_diff)
         seq_file.close()
 
-        self.tmp_seqs_usearch_97perc_dups = get_tmp_filename(
+        fd, self.tmp_seqs_usearch_97perc_dups = mkstemp(
             prefix="Usearch610DeNovoOtuPickerTest_",
             suffix=".fasta")
+        close(fd)
         seq_file = open(self.tmp_seqs_usearch_97perc_dups, "w")
         seq_file.write(self.dna_seqs_usearch_97perc_dups)
         seq_file.close()
@@ -800,7 +816,7 @@ class Usearch610DeNovoOtuPickerTests(TestCase):
         expected_clusters = {'denovo0': ['usearch_ecoli_seq',
                                          'usearch_ecoli_seq_2bp_change', 'usearch_ecoli_seq_1bp_change']}
 
-        self.assertEqualItems(obs_clusters, expected_clusters)
+        self.assertItemsEqual(obs_clusters, expected_clusters)
 
     def test_call_default_params_and_higher_id(self):
         """ clusters seqs within 99% identity with default parameters """
@@ -821,8 +837,8 @@ class Usearch610DeNovoOtuPickerTests(TestCase):
 
         # should be exactly 3 clusters
         self.assertEqual(len(obs_clusters), 3)
-        self.assertEqualItems(obs_clusters.keys(), expected_clusters.keys())
-        self.assertEqualItems(
+        self.assertItemsEqual(obs_clusters.keys(), expected_clusters.keys())
+        self.assertItemsEqual(
             obs_clusters.values(),
             expected_clusters.values())
 
@@ -921,7 +937,7 @@ class Usearch610DeNovoOtuPickerTests(TestCase):
         expected_clusters = {'denovo0': ['usearch_ecoli_seq',
                                          'usearch_ecoli_seq_1bp_change', 'usearch_ecoli_seq_2bp_change']}
 
-        self.assertEqualItems(obs_clusters, expected_clusters)
+        self.assertItemsEqual(obs_clusters, expected_clusters)
 
     def test_call_default_params_minlen(self):
         """ Discards reads that fall below minlen setting """
@@ -958,7 +974,7 @@ class Usearch610DeNovoOtuPickerTests(TestCase):
         expected_clusters = {'test0': ['usearch_ecoli_seq',
                                        'usearch_ecoli_seq_2bp_change', 'usearch_ecoli_seq_1bp_change']}
 
-        self.assertEqualItems(obs_clusters, expected_clusters)
+        self.assertItemsEqual(obs_clusters, expected_clusters)
 
     def test_usearch61_length_sorting(self):
         """ Sorting according to length, clusters seqs """
@@ -1016,37 +1032,42 @@ class Usearch61ReferenceOtuPickerTests(TestCase):
         self.dna_seqs_usearch_97perc_dups = dna_seqs_usearch_97perc_dups
         self.dna_seqs_rc_single_seq = dna_seqs_rc_single_seq
 
-        self.tmp_seq_filepath_97perc_id = get_tmp_filename(
+        fd, self.tmp_seq_filepath_97perc_id = mkstemp(
             prefix='Usearch610DeNovoOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_seq_filepath_97perc_id, 'w')
         seq_file.write(self.dna_seqs_usearch_97perc_id)
         seq_file.close()
 
-        self.tmp_seq_filepath_97perc_id_rc = get_tmp_filename(
+        fd, self.tmp_seq_filepath_97perc_id_rc = mkstemp(
             prefix='Usearch610DeNovoOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_seq_filepath_97perc_id_rc, 'w')
         seq_file.write(self.dna_seqs_usearch_97perc_id_rc)
         seq_file.close()
 
-        self.tmp_seqs_usearch97perc_id_len_diff = get_tmp_filename(
+        fd, self.tmp_seqs_usearch97perc_id_len_diff = mkstemp(
             prefix="Usearch610DeNovoOtuPickerTest_",
             suffix=".fasta")
+        close(fd)
         seq_file = open(self.tmp_seqs_usearch97perc_id_len_diff, "w")
         seq_file.write(self.dna_seqs_usearch_97perc_id_len_diff)
         seq_file.close()
 
-        self.tmp_seqs_usearch_97perc_dups = get_tmp_filename(
+        fd, self.tmp_seqs_usearch_97perc_dups = mkstemp(
             prefix="Usearch610DeNovoOtuPickerTest_",
             suffix=".fasta")
+        close(fd)
         seq_file = open(self.tmp_seqs_usearch_97perc_dups, "w")
         seq_file.write(self.dna_seqs_usearch_97perc_dups)
         seq_file.close()
 
-        self.tmp_seqs_rc_single_seq = get_tmp_filename(
+        fd, self.tmp_seqs_rc_single_seq = mkstemp(
             prefix="Usearch610DeNovoOtuPickerTest_",
             suffix=".fasta")
+        close(fd)
         seq_file = open(self.tmp_seqs_rc_single_seq, "w")
         seq_file.write(self.dna_seqs_rc_single_seq)
         seq_file.close()
@@ -1390,7 +1411,7 @@ class Usearch61ReferenceOtuPickerTests(TestCase):
 
         expected_failures = ['usearch_ecoli_seq',
                              'usearch_ecoli_seq_2bp_change', 'usearch_ecoli_seq_1bp_change']
-        self.assertEqualItems(failures, expected_failures)
+        self.assertItemsEqual(failures, expected_failures)
 
     def test_closed_reference_with_match_usearch61(self):
         """ usearch61 does closed reference OTU picking successfully """
@@ -1487,30 +1508,34 @@ class UsearchOtuPickerTests(TestCase):
         self.ref_database = usearch_ref_seqs1
 
         self.temp_dir = load_qiime_config()['temp_dir']
-        self.tmp_seq_filepath1 = get_tmp_filename(
+        fd, self.tmp_seq_filepath1 = mkstemp(
             prefix='UsearchOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_seq_filepath1, 'w')
         seq_file.write(self.dna_seqs_3)
         seq_file.close()
 
-        self.tmp_seq_filepath1_derep = get_tmp_filename(
+        fd, self.tmp_seq_filepath1_derep = mkstemp(
             prefix='UsearchOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_seq_filepath1_derep, 'w')
         seq_file.write(self.dna_seqs_3_derep)
         seq_file.close()
 
-        self.tmp_seq_filepath2 = get_tmp_filename(
+        fd, self.tmp_seq_filepath2 = mkstemp(
             prefix='UsearchOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_seq_filepath2, 'w')
         seq_file.write(self.dna_seqs_4)
         seq_file.close()
 
-        self.tmp_ref_database = get_tmp_filename(
+        fd, self.tmp_ref_database = mkstemp(
             prefix='UsearchRefDatabase_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_ref_database, 'w')
         seq_file.write(self.ref_database)
         seq_file.close()
@@ -1529,9 +1554,10 @@ class UsearchOtuPickerTests(TestCase):
 
     def seqs_to_temp_fasta(self, seqs):
         """ """
-        fp = get_tmp_filename(
+        fd, fp = mkstemp(
             prefix='UsearchOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(fp, 'w')
         self._files_to_remove.append(fp)
         for s in seqs:
@@ -1863,14 +1889,16 @@ class UsearchOtuPickerTests(TestCase):
         # during ref based detection, then write the OTU mapping file in
         # QIIME format.
 
-        self.tmp_result_path = get_tmp_filename(
+        fd, self.tmp_result_path = mkstemp(
             prefix='UsearchOTUMapping_',
             suffix='.txt')
+        close(fd)
         f = open(self.tmp_result_path, "w")
 
-        self.tmp_failures_path = get_tmp_filename(
+        fd, self.tmp_failures_path = mkstemp(
             prefix='UsearchFailures_',
             suffix='.txt')
+        close(fd)
         f = open(self.tmp_failures_path, "w")
 
         self._files_to_remove.append(self.tmp_result_path)
@@ -1927,37 +1955,42 @@ class UsearchReferenceOtuPickerTests(TestCase):
         self.otu_ref_database = uclustref_query_seqs1
 
         self.temp_dir = load_qiime_config()['temp_dir']
-        self.tmp_seq_filepath1 = get_tmp_filename(
+        fd, self.tmp_seq_filepath1 = mkstemp(
             prefix='UsearchOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_seq_filepath1, 'w')
         seq_file.write(self.dna_seqs_3)
         seq_file.close()
 
-        self.tmp_seq_filepath1_derep = get_tmp_filename(
+        fd, self.tmp_seq_filepath1_derep = mkstemp(
             prefix='UsearchOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_seq_filepath1_derep, 'w')
         seq_file.write(self.dna_seqs_3_derep)
         seq_file.close()
 
-        self.tmp_seq_filepath2 = get_tmp_filename(
+        fd, self.tmp_seq_filepath2 = mkstemp(
             prefix='UsearchOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_seq_filepath2, 'w')
         seq_file.write(self.dna_seqs_4)
         seq_file.close()
 
-        self.tmp_ref_database = get_tmp_filename(
+        fd, self.tmp_ref_database = mkstemp(
             prefix='UsearchRefDatabase_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_ref_database, 'w')
         seq_file.write(self.ref_database)
         seq_file.close()
 
-        self.tmp_otu_ref_database = get_tmp_filename(
+        fd, self.tmp_otu_ref_database = mkstemp(
             prefix='UsearchRefOtuDatabase_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_otu_ref_database, 'w')
         seq_file.write(self.otu_ref_database)
         seq_file.close()
@@ -1977,9 +2010,10 @@ class UsearchReferenceOtuPickerTests(TestCase):
 
     def seqs_to_temp_fasta(self, seqs):
         """ """
-        fp = get_tmp_filename(
+        fd, fp = mkstemp(
             prefix='UsearchOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(fp, 'w')
         self._files_to_remove.append(fp)
         for s in seqs:
@@ -2350,14 +2384,16 @@ class UsearchReferenceOtuPickerTests(TestCase):
         # during ref based detection, then write the OTU mapping file in
         # QIIME format.
 
-        self.tmp_result_path = get_tmp_filename(
+        fd, self.tmp_result_path = mkstemp(
             prefix='UsearchOTUMapping_',
             suffix='.txt')
+        close(fd)
         f = open(self.tmp_result_path, "w")
 
-        self.tmp_failures_path = get_tmp_filename(
+        fd, self.tmp_failures_path = mkstemp(
             prefix='UsearchFailures_',
             suffix='.txt')
+        close(fd)
         f = open(self.tmp_failures_path, "w")
 
         self._files_to_remove.append(self.tmp_result_path)
@@ -2414,30 +2450,35 @@ class UclustOtuPickerTests(TestCase):
     def setUp(self):
         # create the temporary input files
         self.temp_dir = load_qiime_config()['temp_dir']
-        self.tmp_seq_filepath1 = get_tmp_filename(
+        fd, self.tmp_seq_filepath1 = mkstemp(
+            dir=self.temp_dir,
             prefix='UclustOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_seq_filepath1, 'w')
         seq_file.write(dna_seqs_3)
         seq_file.close()
 
-        self.tmp_seq_filepath2 = get_tmp_filename(
+        fd, self.tmp_seq_filepath2 = mkstemp(
             prefix='UclustOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_seq_filepath2, 'w')
         seq_file.write(dna_seqs_4)
         seq_file.close()
 
-        self.tmp_seq_filepath3 = get_tmp_filename(
+        fd, self.tmp_seq_filepath3 = mkstemp(
             prefix='UclustOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_seq_filepath3, 'w')
         seq_file.write(dna_seqs_5)
         seq_file.close()
 
-        self.tmp_seq_filepath4 = get_tmp_filename(
+        fd, self.tmp_seq_filepath4 = mkstemp(
             prefix='UclustOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_seq_filepath4, 'w')
         seq_file.write(dna_seqs_6)
         seq_file.close()
@@ -2451,9 +2492,10 @@ class UclustOtuPickerTests(TestCase):
 
     def seqs_to_temp_fasta(self, seqs):
         """ """
-        fp = get_tmp_filename(
+        fd, fp = mkstemp(
             prefix='UclustReferenceOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(fp, 'w')
         self._files_to_remove.append(fp)
         for s in seqs:
@@ -2629,8 +2671,7 @@ class UclustOtuPickerTests(TestCase):
                                       'output_dir': self.temp_dir})
         obs = app(self.tmp_seq_filepath1)
 
-        uc_fasta_fp = "_".join(self.tmp_seq_filepath1.split('_')[0:2])
-        uc_output_fp = uc_fasta_fp.replace('.fasta', '_clusters.uc')
+        uc_output_fp = self.tmp_seq_filepath1.replace('.fasta', '_clusters.uc')
 
         uc_output_f = open(uc_output_fp, "U")
         self._files_to_remove.append(uc_output_fp)
@@ -2767,9 +2808,10 @@ class UclustOtuPickerTests(TestCase):
         """UclustHitOtuPicker.__call__ output to file functions as expected
         """
 
-        tmp_result_filepath = get_tmp_filename(
+        fd, tmp_result_filepath = mkstemp(
             prefix='UclustOtuPickerTest.test_call_output_to_file_',
             suffix='.txt')
+        close(fd)
 
         app = UclustOtuPicker(params={'Similarity': 0.90,
                                       'suppress_sort': False,
@@ -2815,12 +2857,14 @@ class UclustOtuPickerTests(TestCase):
         """UclustOtuPicker.__call__ writes log when expected
         """
 
-        tmp_log_filepath = get_tmp_filename(
+        fd, tmp_log_filepath = mkstemp(
             prefix='UclustOtuPickerTest.test_call_output_to_file_l_',
             suffix='.txt')
-        tmp_result_filepath = get_tmp_filename(
+        close(fd)
+        fd, tmp_result_filepath = mkstemp(
             prefix='UclustOtuPickerTest.test_call_output_to_file_r_',
             suffix='.txt')
+        close(fd)
 
         app = UclustOtuPicker(params={'Similarity': 0.99,
                                       'save_uc_files': False})
@@ -2857,7 +2901,7 @@ class UclustOtuPickerTests(TestCase):
         # NOTE: Since app.params is a dict, the order of lines is not
         # guaranteed, so testing is performed to make sure that
         # the equal unordered lists of lines is present in actual and expected
-        self.assertEqualItems(log_file_str.split('\n'), log_file_99_exp)
+        self.assertItemsEqual(log_file_str.split('\n'), log_file_99_exp)
 
     def test_map_filtered_clusters_to_full_clusters(self):
         """UclustOtuPicker._map_filtered_clusters_to_full_clusters functions as expected
@@ -2904,16 +2948,19 @@ class UclustReferenceOtuPickerTests(TestCase):
     def setUp(self):
         """ """
         self.temp_dir = load_qiime_config()['temp_dir']
-        self.tmp_seq_filepath1 = get_tmp_filename(
+        fd, self.tmp_seq_filepath1 = mkstemp(
+            dir=self.temp_dir,
             prefix='UclustReferenceOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_seq_filepath1, 'w')
         seq_file.write(uclustref_query_seqs1)
         seq_file.close()
 
-        self.temp_ref_filepath1 = get_tmp_filename(
+        fd, self.temp_ref_filepath1 = mkstemp(
             prefix='UclustReferenceOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         ref_file = open(self.temp_ref_filepath1, 'w')
         ref_file.write(uclustref_ref_seqs1)
         ref_file.close()
@@ -2927,9 +2974,10 @@ class UclustReferenceOtuPickerTests(TestCase):
 
     def seqs_to_temp_fasta(self, seqs):
         """ """
-        fp = get_tmp_filename(
+        fd, fp = mkstemp(
             prefix='UclustReferenceOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(fp, 'w')
         self._files_to_remove.append(fp)
         for s in seqs:
@@ -3106,8 +3154,9 @@ class UclustReferenceOtuPickerTests(TestCase):
                                        'suppress_new_clusters': True,
                                        'save_uc_files': False,
                                        'prefilter_identical_sequences': False})
-        fail_path_no_prefilter = get_tmp_filename(
+        fd, fail_path_no_prefilter = mkstemp(
             prefix='UclustRefOtuPickerFailures', suffix='.txt')
+        close(fd)
         self._files_to_remove.append(fail_path_no_prefilter)
         obs_no_prefilter = uc(self.seqs_to_temp_fasta(seqs),
                               self.seqs_to_temp_fasta(ref_seqs),
@@ -3123,8 +3172,9 @@ class UclustReferenceOtuPickerTests(TestCase):
                                        'suppress_new_clusters': True,
                                        'save_uc_files': False,
                                        'prefilter_identical_sequences': True})
-        fail_path_prefilter = get_tmp_filename(
+        fd, fail_path_prefilter = mkstemp(
             prefix='UclustRefOtuPickerFailures', suffix='.txt')
+        close(fd)
         self._files_to_remove.append(fail_path_prefilter)
         obs_prefilter = uc(self.seqs_to_temp_fasta(seqs),
                            self.seqs_to_temp_fasta(ref_seqs),
@@ -3208,14 +3258,17 @@ class UclustReferenceOtuPickerTests(TestCase):
     def test_call_log_file(self):
         """UclustReferenceOtuPicker.__call__ writes log when expected
         """
-        tmp_log_filepath = get_tmp_filename(prefix='UclustReferenceOtuPicker',
-                                            suffix='log')
-        tmp_result_filepath = get_tmp_filename(
+        fd, tmp_log_filepath = mkstemp(prefix='UclustReferenceOtuPicker',
+                                      suffix='log')
+        close(fd)
+        fd, tmp_result_filepath = mkstemp(
             prefix='UclustReferenceOtuPicker',
             suffix='txt')
-        tmp_failure_filepath = get_tmp_filename(
+        close(fd)
+        fd, tmp_failure_filepath = mkstemp(
             prefix='UclustReferenceOtuPicker',
             suffix='txt')
+        close(fd)
         seqs = [('s1', 'ACCTTGTTACTTT'),
                 ('s2', 'ACCTAGTTACTTT'),
                 ('s3', 'TTGCGTAACGTTTGAC'),
@@ -3276,10 +3329,10 @@ class UclustReferenceOtuPickerTests(TestCase):
         # guaranteed, so testing is performed to make sure that
         # the equal unordered lists of lines is present in actual and expected
 
-        self.assertEqualItems(log_file_str.split('\n'), log_file_99_exp)
+        self.assertItemsEqual(log_file_str.split('\n'), log_file_99_exp)
 
         failures_file_99_exp = ["s3", "s4"]
-        self.assertEqualItems(fail_file_str.split('\n'), failures_file_99_exp)
+        self.assertItemsEqual(fail_file_str.split('\n'), failures_file_99_exp)
 
     def test_default_parameters_new_clusters_allowed(self):
         """UclustReferenceOtuPicker: default parameters, new clusters allowed
@@ -3357,8 +3410,7 @@ class UclustReferenceOtuPickerTests(TestCase):
         self.assertEqual(obs_cluster_ids, exp_cluster_ids)
         self.assertEqual(obs_clusters, exp_clusters)
 
-        uc_fasta_fp = "_".join(self.tmp_seq_filepath1.split('_')[0:2])
-        uc_output_fp = uc_fasta_fp.replace('.fasta', '_clusters.uc')
+        uc_output_fp = self.tmp_seq_filepath1.replace('.fasta', '_clusters.uc')
 
         uc_output_f = open(uc_output_fp, "U")
         self._files_to_remove.append(uc_output_fp)
@@ -3444,16 +3496,18 @@ class CdHitOtuPickerTests(TestCase):
 
     def setUp(self):
         # create the temporary input files
-        self.tmp_seq_filepath1 = get_tmp_filename(
+        fd, self.tmp_seq_filepath1 = mkstemp(
             prefix='CdHitOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_seq_filepath1, 'w')
         seq_file.write(dna_seqs_1)
         seq_file.close()
 
-        self.tmp_seq_filepath2 = get_tmp_filename(
+        fd, self.tmp_seq_filepath2 = mkstemp(
             prefix='CdHitOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_seq_filepath2, 'w')
         seq_file.write(dna_seqs_2)
         seq_file.close()
@@ -3507,9 +3561,10 @@ class CdHitOtuPickerTests(TestCase):
         """CdHitOtuPicker.__call__ output to file functions as expected
         """
 
-        tmp_result_filepath = get_tmp_filename(
+        fd, tmp_result_filepath = mkstemp(
             prefix='CdHitOtuPickerTest.test_call_output_to_file_',
             suffix='.txt')
+        close(fd)
 
         app = CdHitOtuPicker(params={'Similarity': 0.90})
         obs = app(self.tmp_seq_filepath1, result_path=tmp_result_filepath)
@@ -3530,12 +3585,14 @@ class CdHitOtuPickerTests(TestCase):
         """CdHitOtuPicker.__call__ writes log when expected
         """
 
-        tmp_log_filepath = get_tmp_filename(
+        fd, tmp_log_filepath = mkstemp(
             prefix='CdHitOtuPickerTest.test_call_output_to_file_l_',
             suffix='.txt')
-        tmp_result_filepath = get_tmp_filename(
+        close(fd)
+        fd, tmp_result_filepath = mkstemp(
             prefix='CdHitOtuPickerTest.test_call_output_to_file_r_',
             suffix='.txt')
+        close(fd)
 
         app = CdHitOtuPicker(params={'Similarity': 0.99})
         obs = app(self.tmp_seq_filepath1,
@@ -3558,7 +3615,7 @@ class CdHitOtuPickerTests(TestCase):
         # NOTE: Since app.params is a dict, the order of lines is not
         # guaranteed, so testing is performed to make sure that
         # the equal unordered lists of lines is present in actual and expected
-        self.assertEqualItems(log_file_str.split('\n'), log_file_99_exp)
+        self.assertItemsEqual(log_file_str.split('\n'), log_file_99_exp)
 
     def test_prefilter_exact_prefixes_no_filtering(self):
         """ CdHitOtuPicker._prefilter_exact_prefixes fns as expected when no seqs get filtered
@@ -3765,10 +3822,10 @@ class PickOtusStandaloneFunctions(TestCase):
         """expanding failures generated by chained otu picking fns as expected
         """
         expected_f1 = ['0', '2']
-        self.assertEqualItems(expand_failures(self.failures1, self.otu_map2),
+        self.assertItemsEqual(expand_failures(self.failures1, self.otu_map2),
                               expected_f1)
         expected_f2 = ['0', '1', '2']
-        self.assertEqualItems(expand_failures(self.failures2, self.otu_map2),
+        self.assertItemsEqual(expand_failures(self.failures2, self.otu_map2),
                               expected_f2)
 
     def test_expand_failures_two_otu_maps(self):
@@ -3778,7 +3835,7 @@ class PickOtusStandaloneFunctions(TestCase):
 
         actual = expand_failures(self.failures1,
                                  expand_otu_map_seq_ids(self.otu_map2, self.otu_map1))
-        self.assertEqualItems(actual, expected_f1)
+        self.assertItemsEqual(actual, expected_f1)
 
     def test_map_otu_map_files_failures_file_two_otu_maps1(self):
         """map_otu_map_files: correctly maps two otu files and failures

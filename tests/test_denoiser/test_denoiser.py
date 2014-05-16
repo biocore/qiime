@@ -19,8 +19,8 @@ from os import remove, rmdir
 from shutil import rmtree
 from subprocess import Popen, PIPE, STDOUT
 
-from cogent.util.unit_test import TestCase, main
-from cogent.parse.fasta import MinimalFastaParser
+from unittest import TestCase, main
+from skbio.parse.sequences import parse_fasta
 
 from qiime.util import get_qiime_project_dir
 from qiime.denoiser.utils import check_flowgram_ali_exe
@@ -115,7 +115,7 @@ FS8APND01CKOMZ:
         self.assertEqual(observed, expected)
 
         self.assertEqual(
-            len(list(MinimalFastaParser(open(self.result_dir + "singletons.fasta")))),
+            len(list(parse_fasta(open(self.result_dir + "singletons.fasta")))),
             6)
 
         observed = "".join(

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from qiime.parallel.merge_otus import mergetree, mergeorder, \
     initial_nodes_to_merge, initial_has_dependencies, job_complete, \
     torque_job, local_job, start_job, JobError, reset_internal_count

@@ -11,8 +11,12 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 from StringIO import StringIO
+from tempfile import mkstemp
+from os import close
+
 from numpy import inf
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 from cogent.parse.tree import DndParser
 from cogent.core.tree import PhyloNode
 from cogent.util.misc import remove_files
@@ -32,7 +36,7 @@ from qiime.filter import (filter_fasta, filter_samples_from_otu_table,
                           get_otu_ids_from_taxonomy_f,
                           sample_ids_from_metadata_description)
 from qiime.test import FakeFile
-from qiime.util import load_qiime_config, get_tmp_filename
+from qiime.util import load_qiime_config
 
 
 class fake_output_f():
@@ -87,19 +91,19 @@ class FilterTests(TestCase):
 
         tips_to_keep = ["S5", "Seq1", "s2"]
         expected = ["S7", "S3", "seq6"]
-        self.assertEqualItems(negate_tips_to_keep(tips_to_keep, t), expected)
+        self.assertItemsEqual(negate_tips_to_keep(tips_to_keep, t), expected)
 
         tips_to_keep = ["S5", "Seq1"]
         expected = ["S7", "S3", "seq6", "s2"]
-        self.assertEqualItems(negate_tips_to_keep(tips_to_keep, t), expected)
+        self.assertItemsEqual(negate_tips_to_keep(tips_to_keep, t), expected)
 
         tips_to_keep = []
         expected = ["S7", "S3", "seq6", "s2", "S5", "Seq1"]
-        self.assertEqualItems(negate_tips_to_keep(tips_to_keep, t), expected)
+        self.assertItemsEqual(negate_tips_to_keep(tips_to_keep, t), expected)
 
         tips_to_keep = ["S7", "S3", "seq6", "s2", "S5", "Seq1"]
         expected = []
-        self.assertEqualItems(negate_tips_to_keep(tips_to_keep, t), expected)
+        self.assertItemsEqual(negate_tips_to_keep(tips_to_keep, t), expected)
 
     def test_filter_mapping_file(self):
         """filter_mapping_file should filter map file according to sample ids"""
@@ -1105,28 +1109,30 @@ o2	s1_3	s1_4	s2_5
 """
 
         # write the test files
-        in_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
-                                 prefix='qiime_filter_test', suffix='.txt')
+        fd, in_fp = mkstemp(dir=self.tmp_dir,
+                        prefix='qiime_filter_test', suffix='.txt')
+        close(fd)
         fasting_seqs_f = open(in_fp, 'w')
         fasting_seqs_f.write(otu_map_in)
         fasting_seqs_f.close()
         self.files_to_remove.append(in_fp)
 
-        actual_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
-                                     prefix='qiime_filter_test', suffix='.txt')
+        fd, actual_fp = mkstemp(dir=self.tmp_dir,
+                            prefix='qiime_filter_test', suffix='.txt')
+        close(fd)
         self.files_to_remove.append(actual_fp)
 
         retained_otus = filter_otus_from_otu_map(in_fp, actual_fp, 2)
         self.assertEqual(open(actual_fp).read(), otu_map_no_single)
-        self.assertEqualItems(retained_otus, set(['o1 some comment', 'o2']))
+        self.assertEqual(retained_otus, set(['o1 some comment', 'o2']))
 
         retained_otus = filter_otus_from_otu_map(in_fp, actual_fp, 3)
         self.assertEqual(open(actual_fp).read(), otu_map_no_single_double)
-        self.assertEqualItems(retained_otus, set(['o2']))
+        self.assertEqual(retained_otus, set(['o2']))
 
         retained_otus = filter_otus_from_otu_map(in_fp, actual_fp, 2, 2)
         self.assertEqual(open(actual_fp).read(), otu_map_no_single_min_sample2)
-        self.assertEqualItems(retained_otus, set(['o2']))
+        self.assertEqual(retained_otus, set(['o2']))
 
 
 tree1 = "(aaa:10,(bbb:2,ccc:4):5);"

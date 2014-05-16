@@ -3,11 +3,13 @@ from __future__ import division
 
 __author__ = "William Walters"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["William Walters"]
+__credits__ = ["William Walters", "Daniel McDonald"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "William Walters"
 __email__ = "william.a.walters@gmail.com"
+
+import numpy as np
 
 from string import upper
 from itertools import izip, cycle
@@ -15,14 +17,14 @@ from os.path import join
 from os import rename
 from re import compile
 
-from cogent.parse.fastq import MinimalFastqParser
-from cogent import DNA
+from skbio.parse.sequences import parse_fastq
+from skbio.core.sequence import DNA
+from skbio.format.sequences import format_fastq_record
 
 from qiime.check_id_map import process_id_map
 from qiime.split_libraries_fastq import (check_header_match_pre180,
                                          check_header_match_180_or_later)
 from qiime.parse import is_casava_v180_or_later
-from qiime.format import format_fastq_record
 from qiime.pycogent_backports.fastq import FastqParseError
 
 
@@ -102,7 +104,7 @@ def extract_barcodes(fastq1,
         output_fastq2 = None
 
     if not fastq2:
-        fastq2 = cycle(["@", "AAAAAAAAAAAA", "+", "bbbbbbbbbbbb"])
+        fastq2 = cycle(["@", "AAAAAAAAAAAA", "+", "AAAAAAAAAAAA"])
         not_paired = True
     else:
         not_paired = False
@@ -112,8 +114,8 @@ def extract_barcodes(fastq1,
     header_index = 0
 
     for read1_data, read2_data in izip(
-            MinimalFastqParser(fastq1, strict=False),
-            MinimalFastqParser(fastq2, strict=False)):
+            parse_fastq(fastq1, strict=False),
+            parse_fastq(fastq2, strict=False)):
         if not disable_header_match:
             if not check_header_match_f(read1_data[header_index],
                                         read2_data[header_index]):
@@ -210,7 +212,7 @@ def process_barcode_single_end_data(read1_data,
     bc_read = read1_data[sequence_index][:bc1_len]
     bc_qual = read1_data[quality_index][:bc1_len]
     if rev_comp_bc1:
-        bc_read = DNA.rc(bc_read)
+        bc_read = str(DNA(bc_read).rc())
         bc_qual = bc_qual[::-1]
 
     bc_lines = format_fastq_record(read1_data[header_index], bc_read, bc_qual)
@@ -317,14 +319,15 @@ def process_barcode_paired_end_data(read1_data,
     bc_qual1 = read1[quality_index][0:bc1_len]
     bc_qual2 = read2[quality_index][0:bc2_len]
     if rev_comp_bc1:
-        bc_read1 = DNA.rc(bc_read1)
+        bc_read1 = str(DNA(bc_read1).rc())
         bc_qual1 = bc_qual1[::-1]
     if rev_comp_bc2:
-        bc_read2 = DNA.rc(bc_read2)
+        bc_read2 = str(DNA(bc_read2).rc())
         bc_qual2 = bc_qual2[::-1]
 
     bc_lines = format_fastq_record(read1[header_index],
-                                   bc_read1 + bc_read2, bc_qual1 + bc_qual2)
+                                   bc_read1 + bc_read2,
+                                   np.hstack([bc_qual1, bc_qual2]))
     output_bc.write(bc_lines)
     seq1_lines = format_fastq_record(read1[header_index],
                                      read1[sequence_index][bc1_len:], read1[quality_index][bc1_len:])
@@ -393,7 +396,7 @@ def process_barcode_paired_stitched(read_data,
         if not found_primer_match:
             for curr_primer in reverse_primers:
                 if curr_primer.search(read_data[sequence_index]):
-                    read_seq = DNA.rc(read_seq)
+                    read_seq = str(DNA(read_seq).rc())
                     read_qual = read_qual[::-1]
                     found_primer_match = True
                     break
@@ -411,10 +414,10 @@ def process_barcode_paired_stitched(read_data,
     bc_qual2 = read_qual[-bc2_len:]
 
     if rev_comp_bc1:
-        bc_read1 = DNA.rc(bc_read1)
+        bc_read1 = str(DNA(bc_read1).rc())
         bc_qual1 = bc_qual1[::-1]
     if rev_comp_bc2:
-        bc_read2 = DNA.rc(bc_read2)
+        bc_read2 = str(DNA(bc_read2).rc())
         bc_qual2 = bc_qual2[::-1]
 
     if switch_bc_order:
@@ -422,7 +425,8 @@ def process_barcode_paired_stitched(read_data,
         bc_qual1, bc_qual2 = bc_qual2, bc_qual1
 
     bc_lines = format_fastq_record(read_data[header_index],
-                                   bc_read1 + bc_read2, bc_qual1 + bc_qual2)
+                                   bc_read1 + bc_read2,
+                                   np.hstack([bc_qual1, bc_qual2]))
     output_bc.write(bc_lines)
     seq_lines = format_fastq_record(read_data[header_index],
                                     read_seq[bc1_len:-bc2_len], read_qual[bc1_len:-bc2_len])
@@ -451,10 +455,7 @@ def process_barcode_in_label(read1_data,
     char_delineator: Specify character that immediately precedes the barcode
         for input_type of barcode_in_label.
     """
-
     header_index = 0
-    sequence_index = 1
-    quality_index = 2
 
     # Check for char_delineator in sequence
     try:
@@ -466,21 +467,22 @@ def process_barcode_in_label(read1_data,
                          "Sequence header %s, character delineator %s" %
                          (read1_data[header_index], char_delineator))
 
-    # Create fake quality scores
-    bc1_qual = "F" * len(bc1_read)
+    # Create fake quality scores, using 6 here to match the existing qual fake
+    # qual scores that were all F.
+    bc1_qual = np.ones(len(bc1_read), dtype=np.int8) * 6
     if rev_comp_bc1:
-        bc1_read = DNA.rc(bc1_read)
+        bc1_read = str(DNA(bc1_read).rc())
 
     if read2_data:
         bc2_read =\
             read2_data[header_index].strip().split(
                 char_delineator)[-1][0:bc2_len]
-        bc2_qual = "F" * len(bc2_read)
+        bc2_qual = np.ones(len(bc2_read), dtype=np.int8) * 6
         if rev_comp_bc2:
-            bc2_read = DNA.rc(bc2_read)
+            bc2_read = str(DNA(bc2_read).rc())
     else:
         bc2_read = ""
-        bc2_qual = ""
+        bc2_qual = np.array([], dtype=np.int8)
 
     if not bc1_read and not bc2_read:
         raise ValueError("Came up with empty barcode sequence, please check "
@@ -488,7 +490,8 @@ def process_barcode_in_label(read1_data,
                          "%s" % read1_data[header_index])
 
     bc_lines = format_fastq_record(read1_data[header_index],
-                                   bc1_read + bc2_read, bc1_qual + bc2_qual)
+                                   bc1_read + bc2_read,
+                                   np.hstack([bc1_qual, bc2_qual]))
 
     output_bc_fastq.write(bc_lines)
 
@@ -529,11 +532,11 @@ def get_primers(header,
         # Split on commas to handle pool of primers
         raw_forward_primers.update([upper(primer).strip() for
                                     primer in line[primer_ix].split(',')])
-        raw_forward_rc_primers.update([DNA.rc(primer) for
+        raw_forward_rc_primers.update([str(DNA(primer).rc()) for
                                        primer in raw_forward_primers])
         raw_reverse_primers.update([upper(primer).strip() for
                                     primer in line[rev_primer_ix].split(',')])
-        raw_reverse_rc_primers.update([DNA.rc(primer) for
+        raw_reverse_rc_primers.update([str(DNA(primer).rc()) for
                                        primer in raw_reverse_primers])
 
     if not raw_forward_primers:

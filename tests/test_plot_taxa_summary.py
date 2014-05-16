@@ -16,7 +16,7 @@ use('Agg', warn=False)
 from numpy import array
 from os.path import exists
 from StringIO import StringIO
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from os import remove, mkdir, removedirs, listdir
 from qiime.plot_taxa_summary import (make_pie_chart, make_img_name,
                                      get_counts, write_html_file,
