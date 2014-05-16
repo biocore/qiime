@@ -19,12 +19,11 @@ from tempfile import mkdtemp
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
 
-from cogent import Sequence
+from skbio.core.sequence import BiologicalSequence
 from skbio.parse.sequences import parse_fasta
-from cogent.parse.flowgram import Flowgram
-from cogent.parse.flowgram_collection import FlowgramCollection
-from cogent.app.util import ApplicationNotFoundError
-from cogent.util.misc import remove_files, create_dir
+from brokit.denoiser import Flowgram, FlowgramCollection
+from skbio.app.util import ApplicationNotFoundError
+from skbio.util.misc import remove_files, create_dir
 
 from qiime.util import get_qiime_project_dir
 from qiime.denoiser.utils import make_stats, get_representatives,\
@@ -162,12 +161,13 @@ BABA
 >4: 1
 ABABAA
 >8: 2
-BABBA"""
+BABBA
+"""
         seqs = self.data.iteritems
         mapping = self.mapping
         test_result = list(get_representatives(mapping, seqs()))
-        test_result_as_fasta = "\n".join(
-            map(lambda a: a.toFasta(), test_result))
+        test_result_as_fasta = "".join(
+            map(lambda a: a.to_fasta(), test_result))
 
         self.assertEqual(test_result_as_fasta, result)
 
@@ -177,8 +177,8 @@ BABBA"""
         seqs = [('1', "ACGT"), ('2', "TAGC"), ('a', "TTTTT")]
 
         observed = list(get_representatives(mapping, seqs))
-        expected = [Sequence(name=">1", seq="ACGT"), Sequence(name='2',
-                                                              seq="TAGC")]
+        expected = [BiologicalSequence("ACGT", id="1"),
+                    BiologicalSequence("TAGC", id='2')]
         self.assertEqual(observed, expected)
 
     def test_squeeze_seq(self):

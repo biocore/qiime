@@ -330,16 +330,25 @@ class GroupTests(TestCase):
 
     def test_get_ordered_coordinates(self):
         """get_ordered_coordinates functions as expected """
-        pc_lines = ["pc vector number\t1\t2\t3\t4",
+        pc_lines = ["Eigvals\t4",
+                    "191.54\t169.99\t30.45\t19.19",
+                    "",
+                    "Proportion explained\t4",
+                    "18.13\t16.09\t2.88\t1.66",
+                    "",
+                    "Species\t0\t0",
+                    "",
+                    "Site\t5\t4",
                     "s1\t-0.049\t0.245\t0.146\t-0.036",
                     "s5\t-0.267\t-0.228\t-0.024\t-0.095",
                     "s3\t-0.285\t-0.260\t-0.017\t-0.070",
                     "s2\t-0.002\t0.216\t-0.052\t-0.085",
                     "s4\t-0.328\t-0.299\t-0.025\t0.051",
                     "",
+                    "Biplot\t0\t0",
                     "",
-                    "eigvals\t191.54\t169.99\t30.45\t19.19",
-                    "% variation explained\t18.13\t16.09\t2.88\t1.66"]
+                    "Site constraints\t0\t0",
+                    ""]
 
         pc = parse_coords(pc_lines)
         expected_coords = [[-0.049, 0.245, 0.146, -0.036],

@@ -24,10 +24,10 @@ from subprocess import Popen, PIPE, STDOUT
 import pickle
 from tempfile import mkstemp
 
-from cogent import Sequence
-from cogent.app.util import ApplicationNotFoundError, ApplicationError
-from cogent.util.misc import create_dir
-from cogent.parse.flowgram_parser import lazy_parse_sff_handle
+from skbio.core.sequence import BiologicalSequence
+from skbio.app.util import ApplicationNotFoundError, ApplicationError
+from skbio.util.misc import create_dir
+from brokit.denoiser import lazy_parse_sff_handle
 from skbio.app.util import which
 
 from qiime.util import get_qiime_project_dir, FileFormatError
@@ -211,9 +211,9 @@ def get_representatives(mapping, seqs):
     """
     for (label, seq) in seqs:
         if(label in mapping):
-            seq = Sequence(name="%s: %d" % (label, len(mapping[label]) + 1),
-                           seq=seq)
-            yield seq
+            seq = BiologicalSequence(
+                seq, id="%s: %d" % (label, len(mapping[label]) + 1))
+            yield seq.upper()
 
 
 def store_mapping(mapping, outdir, prefix):

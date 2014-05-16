@@ -385,25 +385,6 @@ def format_otu_table(sample_names, otu_names, data, taxonomy=None,
     return format_biom_table(otu_table)
 
 
-def format_coords(coord_header, coords, eigvals, pct_var, headers=True):
-    """formats coords given specified coords matrix etc."""
-    result = []
-    if (headers):
-        result.append('pc vector number\t' +
-                      '\t'.join(map(str, range(1, len(coords[0]) + 1))))
-        for name, row in zip(coord_header, coords):
-            result.append('\t'.join([name] + map(str, row)))
-        result.append('')
-        result.append('')
-        result.append('eigvals\t' + '\t'.join(map(str, eigvals)))
-        result.append('% variation explained\t' +
-                      '\t'.join(map(str, pct_var)))
-    else:
-        result = ['\t'.join(map(str, row)) for row in coords]
-        result.append('')
-    return '\n'.join(result)
-
-
 def format_nmds_coords(samples, points, stress):
     """ samples is list, points is samples by axis coord (typ many by 2 mtx)
     """
@@ -692,7 +673,7 @@ def write_Fasta_from_name_seq_pairs(name_seqs, fh):
         raise ValueError("Need open file handle to write to.")
 
     for (name, seq) in name_seqs:
-        fh.write("%s\n" % BiologicalSequence(seq, identifier=name).to_fasta())
+        fh.write("%s\n" % BiologicalSequence(seq, id=name).to_fasta())
 
 
 def illumina_data_to_fastq(record_data, number_of_bases=None):
