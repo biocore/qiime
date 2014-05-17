@@ -82,7 +82,7 @@ script_info['optional_options'] = [
                 type='new_path'),
     make_option('-m', '--metrics', type='multiple_choice',
                 mchoices=list_known_metrics(),
-                default='PD_whole_tree,chao1,observed_otus',
+                default='PD_whole_tree,chao1,observed_species',
                 help='Alpha-diversity metric(s) to use. A comma-separated list should' +
                 ' be provided when multiple metrics are specified. [default: %default]'),
     make_option('-s', '--show_metrics', action='store_true',
