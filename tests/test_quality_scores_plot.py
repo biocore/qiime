@@ -14,7 +14,7 @@ from shutil import rmtree
 
 from tempfile import mkdtemp, mkstemp
 from unittest import TestCase, main
-from cogent.util.misc import remove_files
+from skbio.util.misc import remove_files
 from skbio.util.misc import create_dir
 
 from qiime.quality_scores_plot import generate_histogram,\

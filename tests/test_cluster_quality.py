@@ -13,7 +13,7 @@ __email__ = "justinak@gmail.com"
 import numpy
 from os import remove
 
-from cogent.util.misc import create_dir
+from skbio.util.misc import create_dir
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
 

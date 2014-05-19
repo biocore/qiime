@@ -17,7 +17,7 @@ from os.path import exists, join
 from string import digits
 from tempfile import mkdtemp
 
-from cogent.util.misc import remove_files
+from skbio.util.misc import remove_files
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
 from numpy import array, asarray, roll, median, nan

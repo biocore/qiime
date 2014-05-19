@@ -33,6 +33,9 @@ pip-log.txt
 #OS X files
 .DS_Store
 
+.metadata
+build
+
 # compile denoiser files
 qiime/support_files/denoiser/FlowgramAlignment/ADPCombinators.hi
 qiime/support_files/denoiser/FlowgramAlignment/ADPCombinators.o

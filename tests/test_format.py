@@ -18,7 +18,7 @@ from os import remove, close
 from string import digits
 from tempfile import mkstemp
 from numpy import array, nan
-from cogent.util.misc import remove_files
+from skbio.util.misc import remove_files
 from unittest import TestCase, main
 from skbio.parse.sequences import parse_fasta
 from qiime.util import  get_qiime_library_version
