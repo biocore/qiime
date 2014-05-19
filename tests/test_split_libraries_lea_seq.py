@@ -15,8 +15,9 @@ from cogent.util.misc import remove_files
 from qiime.util import get_qiime_temp_dir
 from qiime.split_libraries_lea_seq import (get_cluster_ratio, get_consensus,
                                          read_input_file, extract_primer,
-                                         select_unique_rand_bcs)
+                                         select_unique_rand_bcs, SeqLengthMismatchError)
 import os
+
 
 
 class WorkflowTests(TestCase):
@@ -29,14 +30,20 @@ class WorkflowTests(TestCase):
         self.fasta_seqs_for_consensus = fasta_seqs_for_consensus
         self.fasta_file_for_consensus = tempfile.NamedTemporaryFile(delete=False, mode='w', dir=temp_dir)
         self.fasta_file_for_cluster_ratio = tempfile.NamedTemporaryFile(delete=False, mode='w', dir=temp_dir)
+        self.fasta_file_for_consensus_unequal_length = tempfile.NamedTemporaryFile(delete=False, mode='w', dir=temp_dir)
+        self.fasta_file_for_consensus_name = self.fasta_file_for_consensus.name
+        self.fasta_file_for_cluster_ratio_name = self.fasta_file_for_cluster_ratio.name
+        self.fasta_file_for_consensus_unequal_length_name = self.fasta_file_for_consensus_unequal_length.name
         self.fasta_seq_for_primer = 'AATGCCCCC'
         self.possible_primers = ['ATGC', 'ATTT']
 
 
     def tearDown(self):
         """remove all the files after completing tests """
-        os.unlink(self.fasta_file_for_consensus.name)
-        os.unlink(self.fasta_file_for_cluster_ratio.name)
+        os.unlink(self.fasta_file_for_consensus_name)
+        os.unlink(self.fasta_file_for_cluster_ratio_name)
+        os.unlink(self.fasta_file_for_consensus_unequal_length_name)
+        
         # delete = False in creation of tempfiles
         # as they need to be opened in functions
         # hence the need to remove them
@@ -67,6 +74,13 @@ class WorkflowTests(TestCase):
         expected = 'ATTTTATTTTATTTTTATTTATTATATATTATATATATATAGCGCGCGCGCGCGG'
         self.assertEqual(actual, expected)
 
+        temp_file = self.fasta_file_for_consensus_unequal_length
+        temp_file.write(fasta_seqs_for_consensus_unequal_length)
+        # Expected to throw SeqLengthMismatchError
+        temp_file_name = temp_file.name
+        temp_file.close()
+        temp_file = open(temp_file_name, 'r')
+        self.assertRaises(SeqLengthMismatchError)
 
     def test_get_cluster_ratio(self):
         fasta_seqs_for_uclust = self.fasta_seqs_for_uclust
