@@ -11,7 +11,7 @@ __email__ = "jai.rideout@gmail.com"
 
 from os.path import join
 from biom.parse import parse_biom_table
-from cogent.util.misc import create_dir
+from skbio.util.misc import create_dir
 from qiime.util import (parse_command_line_parameters, get_options_lookup,
                         make_option)
 
