@@ -10,9 +10,12 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Jose Antonio Navas Molina"
 __email__ = "josenavasmolina@gmail.com"
 
-from skbio.maths.stats.ordination import OrdinationResults
+from os import mkdir
+from os.path import join, exists
 
 import pandas as pd
+
+from skbio.maths.stats.ordination import OrdinationResults
 
 from qiime.util import parse_command_line_parameters, make_option
 from qiime.trajectory_analysis import (run_trajectory_analysis,
@@ -39,7 +42,7 @@ script_info['required_options'] = [
 script_info['optional_options'] = [
     make_option('-s', '--sort_by', type='string', default=None,
                 help="Category name of the mapping file to use to sort"),
-    make_option('--algorithm', type='choice', default=None,
+    make_option('--algorithm', type='choice', default='avg',
                 choices=TRAJECTORY_ALGORITHMS,
                 help="The algorithm used to create the vectors. The method "
                      "used can be RMS (either using 'avg' or 'trajectory'); or"
@@ -86,8 +89,8 @@ if __name__ == '__main__':
     ord_fp = opts.input_ordination_fp
     mapping_fp = opts.map_fp
     vector_category = opts.category
-    output_fp = opts.output_fp
-    sort_category = opts.sort_by
+    output_dir = opts.output_dir
+    sort_by = opts.sort_by
     algorithm = opts.algorithm
     vectors_axes = opts.vectors_axes
     weighted = opts.weight_by_vector
@@ -100,24 +103,37 @@ if __name__ == '__main__':
     # Parse the mapping file
     # Using dropna to remove comments - with how='all' removes a row
     # if all its column values are NA, which should occur only with in comments
-    metamap = pd.read_csv(mapping_fp, sep='\t', header=0).dropna(how='all')
+    metamap = pd.read_csv(mapping_fp, sep='\t', index_col=0).dropna(how='all')
 
     if vector_category not in metamap.keys():
         option_parser.error("Vector category %s does not exist in the mapping "
                             "file" % vector_category)
 
-    if sort_category and sort_category not in metamap.keys():
-        option_parser.error("Sort category %s does not exist in the mapping "
-                            "file" % sort_category)
+    if sort_by:
+        if sort_by == 'SampleID':
+            sort_category = None
+        elif sort_by not in metamap.keys():
+            option_parser.error("Sort category %s does not exist in the "
+                                "mapping file" % sort_by)
+        else:
+            sort_category = sort_by
 
     if vectors_axes < 0 or vectors_axes > len(ord_res.eigvals):
         option_parser.error("--vectors_axes should be between 0 and the max "
                             "number of axes available (%d), found: %d "
                             % (len(ord_res.eigvals), vectors_axes))
+    elif vectors_axes == 0:
+        # If vector_axes = 0, we generate all of them
+        vectors_axes = len(ord_res.eigvals)
 
-    if weighted and not sort_category:
-        option_parser.error("You should provide --sort_by if you want to "
-                            "weight the output")
+    if weighted:
+        if sort_by == 'SampleID':
+            option_parser.error("The weighting_vector can't be the SampleID, "
+                                "please specify a numeric column in the "
+                                "--sort_by option.")
+        elif not sort_category:
+            option_parser.error("You should provide --sort_by if you want to "
+                                "weight the output")
 
     if algorithm == 'wdiff':
         if not window_size:
@@ -127,13 +143,16 @@ if __name__ == '__main__':
             option_parser.error("--window_size should be a positive integer, "
                                 "%d found" % window_size)
 
-    # If vector_axes = 0, we generate all of them
-    if vectors_axes == 0:
-        vectors_axes = len(ord_res.eigvals)
-
     res = run_trajectory_analysis(ord_res, metamap, vector_category,
                                   sort_category, algorithm, vectors_axes,
                                   weighted, window_size)
 
-    with open(output_fp, 'w') as f:
+    if not exists(output_dir):
+        mkdir(output_dir)
+
+    vectors_fp = join(output_dir, 'vectors.txt')
+    vectors_raw_fp = join(output_dir, 'vectors_raw_values.txt')
+    with open(vectors_fp, 'w') as f:
+        f.write('\n'.join(res))
+    with open(vectors_raw_fp, 'w') as f:
         f.write('\n'.join(res))
