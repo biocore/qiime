@@ -24,10 +24,11 @@ create new statistical method implementations.
 
 from scipy.stats import (spearmanr, kruskal, mannwhitneyu, kendalltau,
                          power_divergence)
+from scipy.stats.distributions import (chi2, norm, f as fdist, t as tdist)
 
 from scipy.special import ndtri
-from skbio.math.stats.distribution import (chi_high, zprob, f_high, t_high,
-                                           t_low, tprob)
+from skbio.math.stats.distribution import (t_high, t_low, tprob)
+
 from os.path import join
 from types import ListType
 from copy import deepcopy
@@ -1866,7 +1867,7 @@ def G_2_by_2(a, b, c, d, williams=1, directional=1):
             (6 * n)
         G /= q
 
-    p = chi_high(max(G, 0), 1)
+    p = chi2prob(G, 1, direction='above') 
 
     # find which tail we were in if the test was directional
     if directional:
@@ -1942,7 +1943,7 @@ def g_fit(data, williams=True):
     G, p = power_divergence(r_data, lambda_="log-likelihood")
     if williams:
         G_corr = williams_correction(sum(r_data), len(r_data), G)
-        return G_corr, chi_high(G_corr, len(r_data) - 1)
+        return G_corr, chi2prob(G_corr, len(r_data) - 1, direction='above')
     else:
         return G, p
 
@@ -2397,7 +2398,7 @@ def kendall(v1, v2):
 def kendall_pval(tau, n):
     '''Calculate the p-value for the passed tau and vector length n.'''
     test_stat = tau / ((2 * (2 * n + 5)) / float(9 * n * (n - 1))) ** .5
-    return zprob(test_stat)
+    return normprob(test_stat, direction='both')
 
 
 def assign_correlation_pval(corr, n, method, permutations=None,
@@ -2610,7 +2611,7 @@ def fisher(probs):
     -2 * SUM(ln(P)) gives chi-squared distribution with 2n degrees of freedom.
     """
     try:
-        return chi_high(-2 * sum(log(probs)), 2 * len(probs))
+        return chi2prob(-2 * sum(log(probs)), 2 * len(probs), direction='above')
     except OverflowError:
         return 0.0
 
@@ -2655,7 +2656,7 @@ def ANOVA_one_way(a):
     dfn = len(group_means) - 1
     between_Groups = between_Groups / dfn
     F = between_Groups / within_Groups
-    return F, f_high(dfn, dfd, F)
+    return F, fprob(F, dfn, dfd, direction='above')
 
 
 def _average_rank(start_rank, end_rank):
@@ -3126,7 +3127,7 @@ def z_transform_pval(z, n):
     -------
     zprob : float
         Probability of getting a zscore as or more extreme than the passed z
-        given the total numger of samples that generated it (n).
+        given the total number of samples that generated it (n).
 
     References
     ----------
@@ -3136,7 +3137,161 @@ def z_transform_pval(z, n):
     if n <= 3:  # sample size must be greater than 3 otherwise this transform
         # isn't supported.
         return nan
-    return zprob(z * ((n - 3) ** .5))
+    return normprob(z * ((n - 3) ** .5), direction='both')
+
+
+def normprob(z, direction='above', mean=0, std=1):
+    '''Calculate probability from normal distribution 
+
+    Paramaters
+    ----------
+    z : float
+        Value of z statistic
+    direction : str
+        One of 'above', 'below', or 'both'. Determines the bounds of the
+        integration of the PDF. 'above' calculates the probability that a
+        random variable Z will take a value as great or greater than z. 'below'
+        will calculate the probability that Z will take a value less than or 
+        equal to z. 'both' will calculate the probability that Z will take a
+        value more extreme than z (i.e. abs(Z) >= z). 
+    mean : float 
+        Mean of the distirbution. 
+    std : float
+        Standard deviation of the distribution.
+
+    Returns
+    -------
+    p-value
+
+    Notes
+    -----
+    scipy.stats.norm calculates the 'lower tail' of the distribution, i.e. the 
+    probability of a random variable Z taking a value smaller than or equal to 
+    the given z value. 
+    '''
+    if direction == 'both':
+        if z >= 0:
+            return 2 * (1. - norm.cdf(z, mean, std))
+        else:
+            return 2 * norm.cdf(z, mean, std)
+    elif direction == 'above':
+        return 1 - norm.cdf(z, mean, std)
+    elif direction == 'below':
+        return norm.cdf(z, mean, std)
+    else:
+        raise ValueError('Unknown direction.')
+
+
+def chi2prob(x, df, direction='above'):
+    '''Return the chi-squared statistic.
+    
+    Paramaters
+    ----------
+    x : float
+        Value of x statistic.
+    direction : str
+        One of 'above' or 'below'. Determines the bounds of the
+        integration of the PDF. 'above' calculates the probability that a
+        random variable X will take a value as great or greater than x. 'below'
+        will calculate the probability that X will take a value less than or 
+        equal to x. 
+
+    Returns
+    -------
+    p-value
+
+    Notes
+    -----
+    scipy's chi2.cdf returns the 'lower tail' of the chi-squared distribution, 
+    that is p(X <= x). This necessitates adjustment of 1 - p for most qiime 
+    applications. However, with negative x a value of 0.0 is returned. Negative 
+    x are outside the domain of the CDF of chi-squared (and we should return a 
+    pval of nan in this case).
+    '''
+    if x <= 0:
+        return nan
+    elif direction == 'above':
+        return 1. - chi2.cdf(x, df)
+    elif direction == 'below':
+        return chi2.cdf(x, df)
+    else:
+        return ValueError('Unknown direction.')
+
+
+# def tprob(t, df, direction='above'):
+#     '''Calculate probability from t distribution 
+
+#     Paramaters
+#     ----------
+#     t : float
+#         Value of t statistic
+#     direction : str
+#         One of 'above', 'below', or 'both'. Determines the bounds of the
+#         integration of the PDF. 'above' calculates the probability that a
+#         random variable T will take a value as great or greater than t. 'below'
+#         will calculate the probability that T will take a value less than or 
+#         equal to t. 'both' will calculate the probability that T will take a
+#         value more extreme than t (i.e. abs(T) >= t).
+
+#     Returns
+#     -------
+#     p-value
+
+#     Notes
+#     -----
+#     scipy.stats.t calculates the 'lower tail' of the distribution, i.e. the 
+#     probability of a random variable T taking a value smaller than or equal to 
+#     the given t value.
+#     '''
+#     if direction == 'both':
+#         if t >= 0:
+#             return 2 * (1. - t.cdf(t, df))
+#         else:
+#             return 2 * t.cdf(t, df)
+#     elif direction == 'above':
+#         return 1 - t.cdf(t, df)
+#     elif direction == 'below':
+#         return t.cdf(t, df)
+#     else:
+#         raise ValueError('Unknown direction.')
+
+
+def fprob(f, dfn, dfd, direction='above'):
+    '''Calculate probability from F distribution 
+
+    Paramaters
+    ----------
+    f : float
+        Value of f statistic
+    dfn : float 
+        Degrees of freedom for ???
+    dfd : float
+        Degrees of freedom for ???
+    direction : str
+        One of 'above' or 'below'. Determines the bounds of the
+        integration of the PDF. 'above' calculates the probability that a
+        random variable F will take a value as great or greater than f. 'below'
+        will calculate the probability that F will take a value less than or 
+        equal to f. 
+
+    Returns
+    -------
+    p-value
+
+    Notes
+    -----
+    scipy.stats.f calculates the 'lower tail' of the F distribution, ie the 
+    probability of a random variable F taking a value smaller than or equal to 
+    the given f value.
+    '''
+    if f < 0.:
+        return nan
+    elif direction == 'above':
+        return 1. - fdist.cdf(f, dfn, dfd)
+    elif direction == 'below':
+        return fdist.cdf(f, dfn, dfd)
+    else:
+        raise ValueError('Unknown direction.')
 
 
 def fisher_population_correlation(corrcoefs, sample_sizes):
@@ -3202,7 +3357,7 @@ def fisher_population_correlation(corrcoefs, sample_sizes):
     rho = inverse_fisher_z_transform(z_bar)
     # calculate homogeneity
     x_2 = ((ns - 3) * (zs - z_bar) ** 2).sum()
-    h_val = chi_high(x_2, len(ns) - 1)
+    h_val = chi2prob(x_2, len(ns) - 1, direction='above')
     return rho, h_val
 
 
