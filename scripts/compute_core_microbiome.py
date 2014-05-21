@@ -15,7 +15,7 @@ from matplotlib import use
 use('Agg', warn=False)
 from pylab import xlim, ylim, xlabel, ylabel, plot, savefig
 from numpy import linspace
-from cogent.util.misc import create_dir
+from skbio.util.misc import create_dir
 from biom.parse import parse_biom_table
 from biom.exception import TableException
 from qiime.util import parse_command_line_parameters, make_option

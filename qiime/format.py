@@ -960,43 +960,6 @@ def format_jnlp_file_lines(web_flag, url, tep_fp):
     return lines
 
 
-def format_anosim_results(anosim_results):
-    """Returns a formatted string with results of the ANOSIM method.
-
-    Arguments:
-        anosim_results - a dictionary containing results, e.g. the output of
-            stats.Anosim.__call__()
-    """
-    num_perms = anosim_results['num_perms']
-    p_value = format_p_value_for_num_iters(anosim_results['p_value'],
-                                           num_perms)
-
-    result = 'Method name\tR statistic\tp-value\tNumber of permutations\n'
-    result += '%s\t%s\t%s\t%d\n' % (anosim_results['method_name'],
-                                    anosim_results['r_value'], p_value,
-                                    num_perms)
-    return result
-
-
-def format_permanova_results(permanova_results):
-    """Returns a formatted string with results of the PERMANOVA method.
-
-    Arguments:
-        permanova_results - a dictionary containing results, e.g. the output of
-            stats.Permanova.__call__()
-    """
-    num_perms = permanova_results['num_perms']
-    p_value = format_p_value_for_num_iters(permanova_results['p_value'],
-                                           num_perms)
-
-    result = 'Method name\tPseudo-F statistic\tp-value\t' + \
-             'Number of permutations\n'
-    result += '%s\t%s\t%s\t%d\n' % (permanova_results['method_name'],
-                                    permanova_results['f_value'], p_value,
-                                    num_perms)
-    return result
-
-
 def format_best_results(best_results):
     """Returns a formatted string with results of the BEST method.
 

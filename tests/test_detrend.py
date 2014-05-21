@@ -20,7 +20,7 @@ from tempfile import NamedTemporaryFile, mkdtemp, mkstemp
 from unittest import TestCase, main
 from skbio.app.util import ApplicationError
 
-from cogent.util.misc import remove_files
+from skbio.util.misc import remove_files
 from qiime.detrend import detrend_pcoa
 from numpy import array
 

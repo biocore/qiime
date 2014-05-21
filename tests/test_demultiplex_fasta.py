@@ -16,7 +16,7 @@ from tempfile import mkdtemp, mkstemp
 
 from skbio.util.misc import create_dir
 from unittest import TestCase, main
-from cogent.util.misc import remove_files
+from skbio.util.misc import remove_files
 
 from qiime.parse import parse_qual_score
 from qiime.demultiplex_fasta import (

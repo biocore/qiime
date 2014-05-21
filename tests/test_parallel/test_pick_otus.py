@@ -16,7 +16,7 @@ from os import close
 from os.path import exists, join
 from tempfile import mkstemp, mkdtemp
 
-from cogent.util.misc import remove_files
+from skbio.util.misc import remove_files
 from unittest import TestCase, main
 from qiime.parallel.pick_otus import (ParallelPickOtusUclustRef,
                                       ParallelPickOtusBlast,

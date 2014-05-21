@@ -14,7 +14,7 @@ from os.path import split, splitext, getsize, exists, abspath, join
 from shutil import copy, rmtree
 from numpy import inf
 from copy import deepcopy
-from cogent.util.misc import create_dir, remove_files
+from skbio.util.misc import create_dir, remove_files
 from skbio.parse.sequences import parse_fasta
 from qiime.util import (subsample_fasta)
 from qiime.filter import (filter_otus_from_otu_table,

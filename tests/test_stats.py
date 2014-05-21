@@ -18,7 +18,7 @@ from os.path import exists, join
 from string import digits
 from tempfile import mkdtemp
 
-from cogent.util.misc import remove_files
+from skbio.util.misc import remove_files
 from unittest import TestCase, main
 from warnings import filterwarnings
 from numpy.testing import assert_almost_equal, assert_allclose
@@ -34,7 +34,7 @@ from types import StringType, ListType, FloatType, TupleType
 from biom.parse import parse_biom_table
 
 from qiime.stats import (all_pairs_t_test, _perform_pairwise_tests,
-                         Anosim, Best, CategoryStats, CorrelationStats,
+                         Best, CategoryStats, CorrelationStats,
                          DistanceMatrixStats, MantelCorrelogram, Mantel,
                          PartialMantel, Permanova, quantile, _quantile,
                          paired_difference_analyses,
@@ -53,10 +53,10 @@ from qiime.stats import (all_pairs_t_test, _perform_pairwise_tests,
                          inverse_fisher_z_transform,
                          z_transform_pval, kruskal_wallis, kendall,
                          kendall_pval, assign_correlation_pval,
-                         cscore, williams_correction)
+                         cscore, williams_correction, Anosim)
 
 from skbio.math.stats.distribution import chi_high, tprob
-from skbio.core.distance import DissimilarityMatrix, DistanceMatrix
+from skbio.core.distance import (DissimilarityMatrix, DistanceMatrix)
 
 from qiime.util import MetadataMap, get_qiime_temp_dir
 
@@ -2157,7 +2157,7 @@ class StatTests(TestsHelper):
                         (1.5637254, 0.1929248))
 
         # can't do the test if both samples have single item
-        self.assertEqual(t_two_sample(x, x), (None, None))
+        assert_allclose(t_two_sample(x, x), (nan, nan))
 
         # Test special case if t=0.
         assert_allclose(t_two_sample([2], [1, 2, 3]), (0.0, 1.0))
