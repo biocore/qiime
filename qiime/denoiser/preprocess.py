@@ -18,10 +18,9 @@ from collections import defaultdict
 from string import lowercase
 from tempfile import mkstemp
 
-from cogent.util.trie import build_prefix_map
 from skbio.parse.sequences import parse_fasta
-from cogent.parse.flowgram import Flowgram, build_averaged_flowgram
-from cogent.parse.flowgram_parser import lazy_parse_sff_handle
+from brokit.denoiser import (Flowgram, build_averaged_flowgram,
+                             lazy_parse_sff_handle, build_prefix_map)
 
 from qiime.util import load_qiime_config
 from qiime.denoiser.cluster_utils import submit_jobs
@@ -175,7 +174,7 @@ def print_rep_seqs(mapping, seqs, out_fp):
     """
     out_fh = open(out_fp + "/prefix_dereplicated.fasta", "w")
     for s in (get_representatives(mapping, seqs.iteritems())):
-        out_fh.write(s.toFasta() + "\n")
+        out_fh.write(s.to_fasta())
     out_fh.close()
 
 

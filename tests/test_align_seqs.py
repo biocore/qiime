@@ -181,7 +181,7 @@ class InfernalAlignerTests(SharedSetupTestCase):
         expected_aln = self.infernal_test1_expected_aln
 
         expected_names = ['seq_1', 'seq_2', 'seq_3']
-        self.assertEqual(sorted(actual_aln.identifiers()), expected_names)
+        self.assertEqual(sorted(actual_aln.ids()), expected_names)
         self.assertEqual(actual_aln, expected_aln)
 
 
@@ -310,7 +310,7 @@ class PyNastAlignerTests(SharedSetupTestCase):
         expected_aln = self.pynast_test1_expected_aln
 
         expected_names = ['1 description field 1..23', '2 1..23']
-        self.assertEqual(actual_aln.identifiers(), expected_names)
+        self.assertEqual(actual_aln.ids(), expected_names)
         self.assertEqual(actual_aln, expected_aln)
 
     def test_call_pynast_template_aln_with_dots(self):
@@ -324,7 +324,7 @@ class PyNastAlignerTests(SharedSetupTestCase):
         expected_aln = self.pynast_test1_expected_aln
 
         expected_names = ['1 description field 1..23', '2 1..23']
-        self.assertEqual(actual_aln.identifiers(), expected_names)
+        self.assertEqual(actual_aln.ids(), expected_names)
         self.assertEqual(actual_aln, expected_aln)
 
     def test_call_pynast_template_aln_with_lower(self):
@@ -338,7 +338,7 @@ class PyNastAlignerTests(SharedSetupTestCase):
         expected_aln = self.pynast_test1_expected_aln
 
         expected_names = ['1 description field 1..23', '2 1..23']
-        self.assertEqual(actual_aln.identifiers(), expected_names)
+        self.assertEqual(actual_aln.ids(), expected_names)
         self.assertEqual(actual_aln, expected_aln)
 
     def test_call_pynast_template_aln_with_U(self):

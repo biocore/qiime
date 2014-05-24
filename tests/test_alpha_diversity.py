@@ -10,26 +10,24 @@ __email__ = "justinak@gmail.com"
 
 """Contains tests for performing alpha diversity analyses within each sample."""
 
-from numpy import array
-import numpy
-from shutil import rmtree
 from os import makedirs, close
 from os.path import exists
+from shutil import rmtree
 from tempfile import mkstemp
 from unittest import TestCase, main
-from numpy.testing import assert_almost_equal
 
+from biom.table import table_factory, DenseOTUTable
 from cogent.maths.unifrac.fast_unifrac import PD_whole_tree
-from qiime.pycogent_backports.alpha_diversity import (observed_species, osd)
-
+from numpy import array
+from numpy.testing import assert_almost_equal
+from skbio.math.diversity.alpha import observed_otus, osd
 from skbio.util.misc import remove_files
-from qiime.util import load_qiime_config
+
 from qiime.alpha_diversity import (AlphaDiversityCalc, AlphaDiversityCalcs,
                                    single_file_cup)
-import qiime.alpha_diversity
-from qiime.parse import parse_newick
 from qiime.format import format_biom_table
-from biom.table import table_factory, Table
+from qiime.parse import parse_newick
+from qiime.util import load_qiime_config
 
 
 class AlphaDiversitySharedSetUpTests(TestCase):
@@ -107,14 +105,14 @@ class AlphaDiversityCalcTests(AlphaDiversitySharedSetUpTests):
 
     def test_init(self):
         """AlphaDiversity __init__ should store metric, name, params"""
-        c = AlphaDiversityCalc(observed_species)
-        self.assertEqual(c.Metric, observed_species)
+        c = AlphaDiversityCalc(observed_otus)
+        self.assertEqual(c.Metric, observed_otus)
         self.assertEqual(c.Params, {})
 
     def test_call(self):
         """AlphaDiversityCalc __call__ should call metric on data
         and return correct result"""
-        c = AlphaDiversityCalc(observed_species)
+        c = AlphaDiversityCalc(observed_otus)
         assert_almost_equal(c(data_path=self.otu_table1_fp), [2, 4, 0])
 
     def test_multi_return(self):
@@ -129,7 +127,7 @@ class AlphaDiversityCalcTests(AlphaDiversitySharedSetUpTests):
 
     def test_1sample(self):
         """ should work if only testing one sample as well"""
-        c = AlphaDiversityCalc(qiime.alpha_diversity.alph.observed_species)
+        c = AlphaDiversityCalc(observed_otus)
         self.assertEqual(c(data_path=self.single_sample_otu_table_fp), [2])
 
     def test_call_phylogenetic(self):
@@ -172,7 +170,7 @@ class AlphaDiversityCalcsTests(AlphaDiversitySharedSetUpTests):
         """ checks that output from AlphaDiversityCalcs is the right shape
         when run on phylo, multiple return value nonphylo, and another nonphylo
         """
-        calc1 = AlphaDiversityCalc(metric=observed_species)
+        calc1 = AlphaDiversityCalc(metric=observed_otus)
         calc2 = AlphaDiversityCalc(metric=PD_whole_tree,
                                    is_phylogenetic=True)
         calc3 = AlphaDiversityCalc(metric=osd)
@@ -220,8 +218,7 @@ class SingleFileCUPTests(TestCase):
             fh.write(bt_string)
 
         single_file_cup(self.tmp_file, 'lladser_pe,lladser_ci',
-                        self.tmp_outfile, r=4, alpha=0.95, f=10,
-                        ci_type="ULCL")
+                        self.tmp_outfile, r=4)
 
         # Not much testing here, just make sure we get back a (formatted)
         # matrix with the right dimensions
@@ -246,14 +243,13 @@ class SingleFileCUPTests(TestCase):
             fh.write(bt_string)
 
         single_file_cup(self.tmp_file, ['lladser_pe', 'lladser_ci'],
-                        self.tmp_outfile, r=4, alpha=0.95, f=10,
-                        ci_type="ULCL")
+                        self.tmp_outfile, r=4)
 
         with open(self.tmp_outfile, 'U') as out_f:
             observed = out_f.readlines()
 
         expected = ["\tlladser_pe\tlladser_lower_bound\tlladser_upper_bound\n",
-                    "S1\tNaN\tNaN\tNaN"]
+                    "S1\tnan\tnan\tnan\n"]
         self.assertEqual(observed, expected)
 
 

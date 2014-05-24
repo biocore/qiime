@@ -22,6 +22,7 @@ from types import GeneratorType
 from numpy import concatenate, repeat, zeros, nan, asarray
 from numpy.random import permutation
 
+from skbio.math.stats.ordination import OrdinationResults
 from skbio.parse.record_finder import LabeledRecordFinder
 from cogent.parse.tree import DndParser
 from skbio.parse.sequences import parse_fastq
@@ -350,7 +351,8 @@ def parse_rarefaction(lines):
 
 
 def parse_coords(lines):
-    """Parse unifrac coord file into coords, labels, eigvals, pct_explained.
+    """Parse skbio's ordination results file into  coords, labels, eigvals,
+        pct_explained.
 
     Returns:
     - list of sample labels in order
@@ -358,55 +360,15 @@ def parse_coords(lines):
     - list of eigenvalues
     - list of percent variance explained
 
-    File format is tab-delimited with following contents:
-    - header line (starts 'pc vector number')
-    - one-per-line per-sample coords
-    - two blank lines
-    - eigvals
-    - % variation explained
+    For the file format check
+    skbio.math.stats.ordination.OrdinationResults.from_file
 
-    Strategy: just read the file into memory, find the lines we want
+    Strategy: read the file using skbio's parser and return the objects
+              we want
     """
-    if hasattr(lines, 'next'):
-        magic_check = lines.next().strip().split('\t')
-    else:
-        magic_check = lines[0].strip().split('\t')
-        lines = lines[1:]
-
-    if magic_check[0] != 'pc vector number':
-        raise QiimeParseError("The line with the vector number was not "
-                              "found, this information is required in "
-                              "coordinates files")
-
-    eigvals = None
-    pct_var = None
-    sample_ids = []
-    result = []  # could determine n_samples, and preallocate...
-    for line in lines:
-        line = line.strip()
-        if not line:
-            continue
-
-        fields = line.split('\t')
-        values = asarray(fields[1:], dtype=float)
-
-        if fields[0] == 'eigvals':
-            eigvals = values
-        elif fields[0] == '% variation explained':
-            pct_var = values
-        else:
-            sample_ids.append(fields[0])
-            result.append(values)
-
-    # check on this information post removal of blank lines
-    if eigvals is None:
-        raise QiimeParseError("The line containing the eigenvalues was not "
-                              "found, this information is required in coordinates files")
-    if pct_var is None:
-        raise QiimeParseError("The line with the percent of variation explained"
-                              " was not found, this information is required in coordinates files")
-
-    return sample_ids, asarray(result), eigvals, pct_var
+    pcoa_results = OrdinationResults.from_file(lines)
+    return (pcoa_results.site_ids, pcoa_results.site, pcoa_results.eigvals,
+            pcoa_results.proportion_explained)
 
 
 def parse_rarefaction_fname(name_string):

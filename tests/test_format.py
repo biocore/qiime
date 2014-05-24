@@ -17,14 +17,14 @@ import json
 from os import remove, close
 from string import digits
 from tempfile import mkstemp
-from numpy import array, nan, array_equal
-from cogent.util.misc import remove_files
+from numpy import array, nan
+from skbio.util.misc import remove_files
 from unittest import TestCase, main
 from skbio.parse.sequences import parse_fasta
 from qiime.util import  get_qiime_library_version
 from qiime.parse import fields_to_dict, parse_mapping_file
 from qiime.format import (format_distance_matrix, format_otu_table,
-                          format_coords, build_prefs_string, format_matrix, format_map_file,
+                          build_prefs_string, format_matrix, format_map_file,
                           format_histograms, write_Fasta_from_name_seq_pairs,
                           format_unifrac_sample_mapping, format_otu_map, write_otu_map,
                           format_summarize_taxa, write_summarize_taxa,
@@ -33,8 +33,8 @@ from qiime.format import (format_distance_matrix, format_otu_table,
                           format_correlation_info, format_qiime_parameters,
                           format_p_value_for_num_iters, format_mapping_file, illumina_data_to_fastq,
                           format_biom_table, format_mapping_html_data, format_te_prefs,
-                          format_tep_file_lines, format_jnlp_file_lines, format_anosim_results,
-                          format_best_results, format_permanova_results, format_fastq_record,
+                          format_tep_file_lines, format_jnlp_file_lines,
+                          format_best_results, format_fastq_record,
                           format_histograms_two_bins)
 from biom.parse import parse_biom_table, parse_classic_table_to_rich_table
 from biom.table import Table, to_sparse
@@ -461,17 +461,6 @@ class TopLevelTests(TestCase):
         self.assertTrue(array_equal(t.observation_ids, ('1', '2')))
         self.assertTrue(array_equal(t.sample_ids, ('a', 'b', 'c')))
 
-    def test_format_coords(self):
-        """format_coords should return tab-delimited table of coords"""
-        a = array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-        header = list('abc')
-        eigvals = [2, 4, 6]
-        pct_var = [3, 2, 1]
-        res = format_coords(header, a, eigvals, pct_var)
-        self.assertEqual(
-            res,
-            "pc vector number\t1\t2\t3\na\t1\t2\t3\nb\t4\t5\t6\nc\t7\t8\t9\n\n\neigvals\t2\t4\t6\n% variation explained\t3\t2\t1")
-
     def test_build_prefs_string(self):
         """build_prefs_string should return a properly formatted prefs string.
         """
@@ -788,40 +777,6 @@ y\t5\t6\tsample y""")
         obs1 = format_jnlp_file_lines(True, 'test', 'test.tep')
 
         self.assertEqual(''.join(obs1), exp_jnlp_web_url)
-
-    def test_format_anosim_results(self):
-        """Test formatting results of ANOSIM."""
-        exp = ('Method name\tR statistic\tp-value\tNumber of permutations\n'
-               'ANOSIM\t0.876553\t0.006\t999\n')
-        obs = format_anosim_results({'method_name': 'ANOSIM',
-                                     'r_value': 0.876553, 'p_value': 0.0056341,
-                                     'num_perms': 999})
-        self.assertEqual(obs, exp)
-
-        exp = ('Method name\tR statistic\tp-value\tNumber of permutations\n'
-               'ANOSIM\t0.876553\tToo few iters to compute p-value '
-               '(num_iters=0)\t0\n')
-        obs = format_anosim_results({'method_name': 'ANOSIM',
-                                     'r_value': 0.876553, 'p_value': 1.0,
-                                     'num_perms': 0})
-        self.assertEqual(obs, exp)
-
-    def test_format_permanova_results(self):
-        """Test formatting results of PERMANOVA."""
-        exp = ('Method name\tPseudo-F statistic\tp-value\tNumber of '
-               'permutations\nPERMANOVA\t0.123456789\t0.111\t999\n')
-        obs = format_permanova_results({'method_name': 'PERMANOVA',
-                                        'f_value': 0.1234567890,
-                                        'p_value': 0.11111, 'num_perms': 999})
-        self.assertEqual(obs, exp)
-
-        exp = ('Method name\tPseudo-F statistic\tp-value\tNumber of '
-               'permutations\nPERMANOVA\t0.123456789\tToo few iters to '
-               'compute p-value (num_iters=0)\t0\n')
-        obs = format_permanova_results({'method_name': 'PERMANOVA',
-                                        'f_value': 0.1234567890,
-                                        'p_value': 1.0, 'num_perms': 0})
-        self.assertEqual(obs, exp)
 
     def test_format_best_results(self):
         """Test formatting results of BEST."""

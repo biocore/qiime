@@ -2,7 +2,7 @@
 Automated script testing
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-QIIME is well-tested: we make automated software testing a high priority, as you can see by reviewing the ``Qiime/tests/`` directory `here <https://github.com/qiime/qiime/tree/master/tests>`_. After installing QIIME, users can run the automated test suite by changing to the ``Qiime/tests`` directory and running::
+QIIME is well-tested: we make automated software testing a high priority, as you can see by reviewing the ``Qiime/tests/`` directory `here <https://github.com/biocore/qiime/tree/master/tests>`_. After installing QIIME, users can run the automated test suite by changing to the ``Qiime/tests`` directory and running::
 
 	./all_tests.py
 

@@ -33,23 +33,17 @@ tax1    [or here]
 * param passing to metrics isn't supported
 """
 
-# note: might want to use make_safe_f to strip out additional params passed on.
-from numpy import array, zeros
 import os.path
-from optparse import OptionParser
-
+import sys
 import warnings
 warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
-import qiime.pycogent_backports.alpha_diversity as alph  # relying on backports
 
-from qiime.parse import make_envs_dict
-from qiime.util import FunctionWithParams, make_safe_f
+import skbio.math.diversity.alpha as alph
+from numpy import array, zeros
+
+from qiime.util import FunctionWithParams
 from qiime.format import format_matrix
 from sys import exit, stderr
-import sys
-import os.path
-#import qiime.alpha_diversity
-from biom.parse import parse_biom_table
 
 
 class AlphaDiversityCalc(FunctionWithParams):
@@ -89,7 +83,6 @@ class AlphaDiversityCalc(FunctionWithParams):
         AlphaDiversityCalc objects that combine multiple calculations, might
         be worth naming these if there are particular combinations that are
         routinely useful.
-        me
         """
         self.Metric = metric
         self.Name = metric.__name__
@@ -145,7 +138,7 @@ class AlphaDiversityCalc(FunctionWithParams):
 
         else:
             def metric(row):
-                return self.Metric(row, **self.Params)
+                return self.Metric(row.astype(int), **self.Params)
             result = map(metric, data)
 
             return array(result)
@@ -250,19 +243,29 @@ def list_known_metrics():
 
 import cogent.maths.unifrac.fast_unifrac as fast_unifrac
 # change name of function if returns multiple values:
-alph.chao1_confidence.return_names = ('chao1_lower_bound', 'chao1_upper_bound')
+alph.chao1_ci.return_names = ('chao1_lower_bound', 'chao1_upper_bound')
 alph.osd.return_names = ('observed', 'singles', 'doubles')
+alph.esty_ci.return_names = ('esty_lower_bound', 'esty_upper_bound')
+alph.lladser_ci.return_names = ('lladser_lower_bound', 'lladser_upper_bound')
 
 # hand curated lists of metrics, these either return one value, or
 # are modified above
 phylogenetic_metrics = [fast_unifrac.PD_whole_tree]
 
+# maintain additional aliases for backwards compatibility
+def observed_species(counts):
+    return alph.observed_otus(counts)
+
+
+def simpson_reciprocal(counts):
+    return alph.enspie(counts)
+
 nonphylogenetic_metrics = [
-    alph.ACE,
+    alph.ace,
     alph.berger_parker_d,
     alph.brillouin_d,
     alph.chao1,
-    alph.chao1_confidence,
+    alph.chao1_ci,
     alph.dominance,
     alph.doubles,
     alph.enspie,
@@ -278,9 +281,10 @@ nonphylogenetic_metrics = [
     alph.mcintosh_e,
     alph.menhinick,
     alph.michaelis_menten_fit,
-    alph.observed_species,
+    alph.observed_otus,
+    observed_species,
     alph.osd,
-    alph.simpson_reciprocal,
+    simpson_reciprocal,
     alph.robbins,
     alph.shannon,
     alph.simpson,
@@ -288,10 +292,7 @@ nonphylogenetic_metrics = [
     alph.singles,
     alph.strong]
 
-cup_metrics = [
-    alph.lladser_pe,
-    alph.lladser_ci]
-# starr, not yet needs tests]
+cup_metrics = [alph.lladser_pe, alph.lladser_ci]
 
 
 def single_file_alpha(infilepath, metrics, outfilepath, tree_path):
@@ -378,30 +379,19 @@ def multiple_file_alpha(input_path, output_path, metrics, tree_path=None):
                           output_fp, tree_path)
 
 
-def single_file_cup(otu_filepath, metrics, outfilepath, r, alpha, f, ci_type):
+def single_file_cup(otu_filepath, metrics, outfilepath, r):
     """Compute variations of the conditional uncovered probability.
 
-    otufilepath: path to otu_table file
+    otu_filepath: path to otu_table file
     metrics: comma separated list of required metrics; or list
     outfilepath: path to output file
-
     r: Number of new colors that are required for the next prediction
-    alpha: desired confidence level
-    f: ratio between upper and lower bound
-    ci_type: type of confidence interval. One of:
-             ULCL: upper and lower bounds with conservative lower bound
-             ULCU: upper and lower woth conservative upper bound
-             U: Upper bound only, lower bound fixed to 0
-             L: Lower bound only, upper bound fixed to 1
 
     The opposite of uncovered probability is sometimes called coverage.
     """
     calcs = []
 
-    params = {'r': r,
-              'alpha': alpha,
-              'f': f,
-              'ci_type': ci_type}
+    params = {'r': r}
 
     metrics_list = metrics
     try:

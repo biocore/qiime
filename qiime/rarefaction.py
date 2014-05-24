@@ -19,7 +19,7 @@ import os.path
 
 import numpy
 from numpy import inf
-from skbio.maths.subsample import subsample
+from skbio.math.subsample import subsample
 
 from qiime.util import FunctionWithParams
 from qiime.filter import filter_samples_from_otu_table, filter_otus_from_otu_table

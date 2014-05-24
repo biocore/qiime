@@ -23,8 +23,9 @@ use('Agg', warn=False)
 import matplotlib
 from matplotlib.pylab import *
 from qiime.beta_diversity import get_nonphylogenetic_metric
-from cogent.core.tree import PhyloNode
-from cogent.cluster.UPGMA import UPGMA_cluster
+from scipy.cluster.hierarchy import linkage
+from skbio.core.tree import TreeNode
+from skbio.core.distance import DistanceMatrix
 from qiime.parse import parse_newick, PhyloNode
 from qiime.filter import filter_samples_from_otu_table
 
@@ -172,14 +173,12 @@ def get_clusters(x_original, axis=['row', 'column'][0]):
         x = x.T
     nr = x.shape[0]
     metric_f = get_nonphylogenetic_metric('euclidean')
-    row_dissims = metric_f(x)
+    row_dissims = DistanceMatrix(metric_f(x), map(str, range(nr)))
     # do upgma - rows
-    BIG = 1e305
-    row_nodes = map(PhyloNode, map(str, range(nr)))
-    for i in range(len(row_dissims)):
-        row_dissims[i, i] = BIG
-    row_tree = UPGMA_cluster(row_dissims, row_nodes, BIG)
-    row_order = [int(tip.Name) for tip in row_tree.iterTips()]
+    # Average in SciPy's cluster.heirarchy.linkage is UPGMA
+    linkage_matrix = linkage(row_dissims.condensed_form(), method='average')
+    tree = TreeNode.from_linkage_matrix(linkage_matrix, row_dissims.ids)
+    row_order = [int(tip.name) for tip in tree.tips()]
     return row_order
 
 
@@ -204,8 +203,8 @@ def plot_heatmap(otu_table, row_labels, col_labels, filename='heatmap.pdf',
 
         'textborder' is the fraction of the figure allocated for the
         tick labels on the x and y axes
-        
-        color_scheme: choices can be found at 
+
+        color_scheme: choices can be found at
          http://wiki.scipy.org/Cookbook/Matplotlib/Show_colormaps
     """
     nrow = len(otu_table.observation_ids)

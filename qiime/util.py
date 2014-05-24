@@ -177,6 +177,7 @@ class FunctionWithParams(object):
         """Writes result to result_path. May need to format in subclasses."""
         f = open(result_path, 'w')
         f.write(self.formatResult(result))
+        f.write('\n')
         f.close()
 
     def getTree(self, tree_source):
@@ -938,7 +939,7 @@ def degap_fasta_aln(seqs):
     """
 
     for (label, seq) in seqs:
-        yield DNASequence(seq, identifier=label).degap()
+        yield DNASequence(seq, id=label).degap()
 
 
 def write_degapped_fasta_to_file(seqs, tmp_dir="/tmp/"):
@@ -2059,8 +2060,8 @@ def biom_taxonomy_formatter(bt, md_key):
     metadata. If no metadata could be found using the given key the function
     will print a warning and return None.
     """
-    if bt.observation_metadata is None:
-        print 'No metadata in biom table.'
+    if bt.ObservationMetadata is None:
+        print 'Warning: No metadata in biom table. Won\'t alter calculations.'
         return None
     else:
         dtype = bt.observation_metadata[0][md_key]

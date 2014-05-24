@@ -18,7 +18,7 @@ from tempfile import mkstemp, mkdtemp
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
 
-from cogent.util.misc import remove_files
+from skbio.util.misc import remove_files
 from qiime.util import load_qiime_config
 from cogent.core.tree import PhyloNode
 from cogent.maths.distance_transform import dist_chisq

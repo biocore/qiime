@@ -11,7 +11,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 from unittest import TestCase, main
-from cogent.util.misc import remove_files
+from skbio.util.misc import remove_files
 from qiime.parse import parse_mapping_file
 from biom.parse import parse_biom_table
 from qiime.sort import (sort_sample_ids_by_mapping_value,

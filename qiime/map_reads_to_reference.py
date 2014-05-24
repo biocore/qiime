@@ -11,7 +11,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 from os.path import join, splitext, exists
-from cogent.parse.blast import MinimalBlatParser9
+from brokit.blat import MinimalBlatParser9
 
 from brokit.blat import (assign_dna_reads_to_protein_database
                          as blat_assign_dna_reads_to_protein_database,
