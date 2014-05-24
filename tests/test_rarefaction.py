@@ -19,7 +19,7 @@ from unittest import TestCase, main
 
 from numpy.testing import assert_almost_equal
 import numpy
-from biom.table import table_factory, TableException
+from biom.table import Table, TableException
 from biom.parse import parse_biom_table
 
 from qiime.rarefaction import RarefactionMaker, get_rare_data
@@ -45,11 +45,11 @@ class FunctionTests(TestCase):
                              {'domain': 'Bacteria'},
                              {'domain': 'Bacteria'}]
 
-        self.otu_table = table_factory(self.otu_table_data,
-                                       self.sample_names,
-                                       self.taxon_names)
-        self.otu_table_meta = table_factory(self.otu_table_data,
-                                            self.sample_names, self.taxon_names,
+        self.otu_table = Table(self.otu_table_data,
+                                       self.taxon_names,
+                                       self.sample_names)
+        self.otu_table_meta = Table(self.otu_table_data,
+                                            self.taxon_names, self.taxon_names,
                                             observation_metadata=self.otu_metadata)
 
         self.otu_table_str = format_biom_table(self.otu_table)

@@ -44,7 +44,7 @@ def make_sample_node_table(bt, mf_dict):
     sids = bt.sample_ids
     header = '#NodeID\tNodeType\tAbundance\t' + \
         '\t'.join(mf_dict[sids[0]].keys())
-    lines = [header] + ['%s\tsample\t%s\t' % (sid, bt.sample_data(sid).sum()) +
+    lines = [header] + ['%s\tsample\t%s\t' % (sid, bt.data(sid, axis='sample').sum()) +
                         '\t'.join(mf_dict[sid].values()) for sid in sids]
     return lines
 
@@ -87,12 +87,12 @@ def make_otu_node_table(bt, md_key, md_fields):
         # formatted. if its not splittable on a semicolon (preferred for qiime)
         # no splitting will occur.
         for i, otu in enumerate(bt.observation_ids):
-            line = '%s\totu\t%s\t' % (otu, bt.observation_data(otu).sum())
+            line = '%s\totu\t%s\t' % (otu, bt.data(otu, 'observation').sum())
             line += bt.observation_metadata[i][md_key].replace(';', '\t')
             lines.append(line)
     if md_type is list:
         for i, otu in enumerate(bt.observation_ids):
-            line = '%s\totu\t%s\t' % (otu, bt.observation_data(otu).sum())
+            line = '%s\totu\t%s\t' % (otu, bt.data(otu, 'observation').sum())
             line += '\t'.join(bt.observation_metadata[i][md_key])
             lines.append(line)
     if md_type is defaultdict:
@@ -100,7 +100,7 @@ def make_otu_node_table(bt, md_key, md_fields):
         # empty lists or strs. these will cause TypeErrors in join.
         try:
             for i, otu in enumerate(bt.observation_ids):
-                line = '%s\totu\t%s\t' % (otu, bt.observation_data(otu).sum())
+                line = '%s\totu\t%s\t' % (otu, bt.data(otu, 'observation').sum())
                 line += '\t'.join([bt.observation_metadata[i][md_key][k] for k in
                                    md_fields])
                 lines.append(line)
@@ -111,7 +111,7 @@ def make_otu_node_table(bt, md_key, md_fields):
         # md_fields not found will cause keyerrors
         try:
             for i, otu in enumerate(bt.observation_ids):
-                line = '%s\totu\t%s\t' % (otu, bt.observation_data(otu).sum())
+                line = '%s\totu\t%s\t' % (otu, bt.data(otu, 'observation').sum())
                 line += '\t'.join([bt.observation_metadata[i][md_key][k] for k in
                                    md_fields])
                 lines.append(line)
@@ -210,12 +210,12 @@ def make_edge_table(bt):
     The abundance is occurrence of the OTU and will be used to weight the edges.
     Input is a biom table.
     '''
-    data = array([bt.observation_data(i) for i in bt.observation_ids])
+    data = array([bt.data(i, 'observation') for i in bt.observation_ids])
     oids = array(bt.observation_ids)
     header = '#Sample\tOTU\tAbundance'
     lines = [header]
     for sample in bt.sample_ids:
-        sample_ind = bt.get_sample_index(sample)
+        sample_ind = bt.index(sample, 'sample')
         otu_ids = oids[data[:, sample_ind].nonzero()[0]]
         otu_abs = data[:, sample_ind][data[:, sample_ind].nonzero()[0]]
         connections = ['%s\t%s\t%s' % (sample, otu, ab) for otu, ab in

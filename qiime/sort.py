@@ -178,9 +178,9 @@ def sort_otu_table(otu_table, sorted_sample_ids):
     # only keep the sample ids that are in the table
     safe_sorted_sample_ids = []
     for k in sorted_sample_ids:
-        if otu_table.sample_exists(k):
+        if otu_table.exists(k):
             safe_sorted_sample_ids.append(k)
-    sorted_table = otu_table.sort_sample_order(safe_sorted_sample_ids)
+    sorted_table = otu_table.sort_order(safe_sorted_sample_ids)
 
     return sorted_table
 

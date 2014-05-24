@@ -23,7 +23,7 @@ from cogent.util.misc import flatten
 from qiime.format import format_otu_table
 from qiime.parse import parse_otu_map
 from qiime.format import format_biom_table
-from biom.table import Table, table_factory
+from biom.table import Table
 
 
 def libs_from_seqids(seq_ids, delim='_'):
@@ -60,7 +60,7 @@ def make_otu_table(otu_map_f,
         raise NotImplementedError(
             "Passing of sample metadata to make_otu_table is not currently supported.")
     try:
-        otu_table = table_factory(data, sample_ids, otu_ids,
+        otu_table = Table(data, otu_ids, sample_ids,
                                   sample_metadata=sample_metadata,
                                   observation_metadata=otu_metadata,
                                   table_id=table_id,

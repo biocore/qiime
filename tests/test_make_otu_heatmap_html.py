@@ -21,7 +21,7 @@ from qiime.make_otu_heatmap_html import (
     get_log_transform,
     generate_heatmap_plots)
 from qiime.util import create_dir, get_qiime_project_dir
-from biom.table import table_factory
+from biom.table import Table
 
 
 class TopLevelTests(TestCase):
@@ -34,18 +34,18 @@ class TopLevelTests(TestCase):
 
         otu_table_vals = array([[0, 0], [1, 5]])
 
-        self.otu_table = table_factory(otu_table_vals,
-                                       ['Sample1', 'Sample2'],
+        self.otu_table = Table(otu_table_vals,
                                        ['OTU1', 'OTU2'],
+                                       ['Sample1', 'Sample2'],
                                        [None, None],
                                        [{"taxonomy": ["Bacteria"]},
                                         {"taxonomy": ["Archaea"]}])
 
         filt_otu_table_vals = array([[1, 5]])
 
-        self.filt_otu_table = table_factory(filt_otu_table_vals,
-                                            ['Sample1', 'Sample2'],
+        self.filt_otu_table = Table(filt_otu_table_vals,
                                             ['OTU2'],
+                                            ['Sample1', 'Sample2'],
                                             [None, None],
                                             [{"taxonomy": ["Archaea"]}])
 
@@ -82,7 +82,7 @@ javascript array"""
     def test_get_log_transform(self):
         orig_data = array([[0, 1, 2], [1000, 0, 0]])
 
-        orig_otu_table = table_factory(orig_data,
+        orig_otu_table = Table(orig_data,
                                        ['Sample1', 'Sample2', 'Sample3'],
                                        ['OTU1', 'OTU2'],
                                        [None, None, None],
@@ -90,7 +90,7 @@ javascript array"""
                                         {"taxonomy": ["Archaea"]}])
 
         exp_data = array([[0, 0.69314718, 1.38629436], [7.60090246, 0, 0]])
-        exp_otu_table = table_factory(exp_data,
+        exp_otu_table = Table(exp_data,
                                       ['Sample1', 'Sample2', 'Sample3'],
                                       ['OTU1', 'OTU2'],
                                       [None, None, None],
@@ -132,7 +132,7 @@ javascript array"""
         # generate otu_table object
         orig_data = array([[0, 1, 2], [1000, 0, 0]])
 
-        orig_otu_table = table_factory(orig_data,
+        orig_otu_table = Table(orig_data,
                                        ['Sample1', 'Sample2', 'Sample3'],
                                        ['OTU1', 'OTU2'],
                                        [None, None, None],

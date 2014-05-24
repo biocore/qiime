@@ -19,7 +19,7 @@ from matplotlib.pyplot import plot, gca,  ylim, xlim, show, legend, \
     savefig
 from os.path import join
 from qiime.colors import data_color_order, data_colors
-from biom.table import UnknownID
+from biom.table import UnknownIDError
 
 
 def make_sorted_frequencies(counts, absolute=False):
@@ -88,11 +88,11 @@ def plot_rank_abundance_graphs(result_fp, sample_names, otu_table,
     for sample_name, color in zip(user_sample_names, cycle(data_color_order)):
         color = data_colors[color].toHex()
         try:
-            otu_count_vector = otu_table.sample_data(sample_name)
-        except UnknownID:
+            otu_count_vector = otu_table.data(sample_name, 'sample')
+        except UnknownIDError:
             if log_fh:
                 log_fh.write(
-                    "UnknownID: Sample name %s not in OTU table - skipping." %
+                    "UnknownIDError: Sample name %s not in OTU table - skipping." %
                     sample_name)
             continue
 

@@ -22,7 +22,7 @@ from qiime.make_otu_heatmap import (extract_metadata_column,
                                     names_to_indices, get_log_transform, get_clusters,
                                     get_fontsize, plot_heatmap)
 
-from biom.table import table_factory
+from biom.table import Table
 
 
 class TopLevelTests(TestCase):
@@ -38,18 +38,18 @@ class TopLevelTests(TestCase):
         {(0, 2): 9.0, (0, 3): 5.0, (0, 4): 3.0, (0, 5): 1.0,
          (1, 0): 1.0, (1, 1): 5.0, (1, 2): 4.0, (1, 4): 3.0, (1, 5): 2.0,
          (2, 0): 2.0, (2, 1): 3.0, (2, 2): 1.0, (2, 3): 1.0, (2, 4): 2.0, (2, 5): 5.0}
-        self.otu_table = table_factory(self.otu_table_values,
+        self.otu_table = Table(self.otu_table_values,
+                                       ['OTU1', 'OTU2', 'OTU3'],
                                        ['Sample1', 'Sample2', 'Sample3',
                                         'Sample4', 'Sample5', 'Sample6'],
-                                       ['OTU1', 'OTU2', 'OTU3'],
                                        [None, None, None, None, None, None],
                                        [{"taxonomy": ['Bacteria']},
                                         {"taxonomy": ['Archaea']},
                                         {"taxonomy": ['Streptococcus']}])
-        self.otu_table_f = table_factory(self.otu_table_values,
+        self.otu_table_f = Table(self.otu_table_values,
+                                         ['OTU1', 'OTU2', 'OTU3'],
                                          ['Sample1', 'Sample2', 'Sample3',
                                           'Sample4', 'Sample5', 'Sample6'],
-                                         ['OTU1', 'OTU2', 'OTU3'],
                                          [None, None, None, None, None, None],
                                          [{"taxonomy": ['1A', '1B', '1C', 'Bacteria']},
                                           {"taxonomy":

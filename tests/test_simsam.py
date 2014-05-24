@@ -18,7 +18,7 @@ from itertools import izip
 from cogent.parse.tree import DndParser
 
 from biom.parse import parse_biom_table
-from biom.table import table_factory
+from biom.table import Table
 from qiime.parse import parse_mapping_file
 from qiime.util import load_qiime_config, get_qiime_temp_dir
 import qiime.simsam
@@ -238,7 +238,7 @@ class SimsamTests(TestCase):
         tree = DndParser("(A:0.1,B:0.2,(C:0.3,D:0.4):0.5);")
         num_replicates = 3
         dissimilarity = 0.15
-        rich_table = table_factory(otu_mtx, sample_ids, otu_ids,
+        rich_table = Table(otu_mtx, sample_ids, otu_ids,
                                    observation_metadata=otu_metadata)
         res_sam_names, res_otus, res_otu_mtx, res_otu_metadata = \
             qiime.simsam.sim_otu_table(
@@ -275,7 +275,7 @@ class SimsamTests(TestCase):
         # Huge dissimilarity to ensure we get new OTUs.
         dissimilarity = 100000
 
-        rich_table = table_factory(otu_mtx, sample_ids, otu_ids,
+        rich_table = Table(otu_mtx, sample_ids, otu_ids,
                                    observation_metadata=otu_metadata)
 
         otu_id_results = []

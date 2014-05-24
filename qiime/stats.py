@@ -34,7 +34,7 @@ from numpy import (argsort, array, ceil, empty, fill_diagonal, finfo,
                    median, nan, min as np_min, max as np_max)
 from numpy.random import permutation
 from cogent.maths.stats.test import t_one_sample
-from biom.table import table_factory, Table
+from biom.table import Table
 from skbio.core.distance import DistanceMatrix
 from skbio.util.misc import create_dir
 
@@ -1382,7 +1382,7 @@ def paired_difference_analyses(personal_ids_to_state_values,
     # a list of the sample ids that could be converted
     # to a mapping file for working with this biom table
 
-    biom_table = table_factory(biom_data,
+    biom_table = Table(biom_data,
                                personal_ids,
                                biom_observation_ids,
                                input_is_dense=True)

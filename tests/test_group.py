@@ -14,7 +14,7 @@ __email__ = "jai.rideout@gmail.com"
 
 from numpy import array, matrix
 from biom.parse import parse_biom_table
-from biom.exception import UnknownID
+from biom.exception import UnknownIDError
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
 
@@ -709,7 +709,7 @@ class GroupTests(TestCase):
 
         # invalid observation id
         self.assertRaises(
-            UnknownID,
+            UnknownIDError,
             extract_per_individual_state_metadata_from_sample_metadata_and_biom,
             self.individual_states_and_responses_map_f1,
             self.paired_difference_biom1,

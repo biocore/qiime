@@ -36,8 +36,8 @@ from qiime.format import (format_distance_matrix, format_otu_table,
                           format_tep_file_lines, format_jnlp_file_lines,
                           format_best_results, format_fastq_record,
                           format_histograms_two_bins)
-from biom.parse import parse_biom_table, parse_classic_table_to_rich_table
-from biom.table import Table, to_sparse
+from biom.parse import parse_biom_table
+from biom.table import Table
 from StringIO import StringIO
 
 
@@ -138,8 +138,7 @@ class TopLevelTests(TestCase):
 
         # BIOM format. Test by converting our expected output to a biom table
         # and comparing that to our observed table.
-        exp = parse_classic_table_to_rich_table(exp.split('\n'), None, None,
-                                                None)
+        exp = parse_biom_table(exp.split('\n'), None, None, None)
         obs = ''.join(list(format_summarize_taxa(self.taxa_summary,
                                                  self.taxa_header,
                                                  file_format='biom')))
@@ -165,8 +164,7 @@ class TopLevelTests(TestCase):
         # BIOM format.
         write_summarize_taxa(self.taxa_summary, self.taxa_header, self.tmp_fp2,
                              file_format='biom')
-        exp = parse_classic_table_to_rich_table(exp.split('\n'), None, None,
-                                                None)
+        exp = parse_biom_table(exp.split('\n'), None, None, None)
         obs = open(self.tmp_fp2).read()
         obs = parse_biom_table(obs)
         self.assertEqual(obs, exp)
@@ -190,8 +188,7 @@ class TopLevelTests(TestCase):
         # BIOM format.
         write_summarize_taxa(self.taxa_summary, self.taxa_header, self.tmp_fp2,
                              transposed_output=True, file_format='biom')
-        exp = parse_classic_table_to_rich_table(exp.split('\n'), None, None,
-                                                None)
+        exp = parse_biom_table(exp.split('\n'), None, None, None)
         obs = open(self.tmp_fp2).read()
         obs = parse_biom_table(obs)
         self.assertEqual(obs, exp)

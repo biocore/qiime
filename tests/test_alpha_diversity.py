@@ -16,7 +16,7 @@ from shutil import rmtree
 from tempfile import mkstemp
 from unittest import TestCase, main
 
-from biom.table import table_factory, DenseOTUTable
+from biom.table import Table
 from cogent.maths.unifrac.fast_unifrac import PD_whole_tree
 from numpy import array
 from numpy.testing import assert_almost_equal
@@ -43,7 +43,7 @@ class AlphaDiversitySharedSetUpTests(TestCase):
             # if test creates the temp dir, also remove it
             self.dirs_to_remove.append(self.tmp_dir)
 
-        self.otu_table1 = table_factory(data=array([[2, 0, 0, 1],
+        self.otu_table1 = Table(data=array([[2, 0, 0, 1],
                                                    [1, 1, 1, 1],
                                                    [0, 0, 0, 0]]).T,
                                         sample_ids=list('XYZ'),
@@ -56,7 +56,7 @@ class AlphaDiversitySharedSetUpTests(TestCase):
         open(self.otu_table1_fp, 'w').write(
             format_biom_table(self.otu_table1))
 
-        self.otu_table2 = table_factory(data=array([[2, 0, 0, 1],
+        self.otu_table2 = Table(data=array([[2, 0, 0, 1],
                                                    [1, 1, 1, 1],
                                                    [0, 0, 0, 0]]).T,
                                         sample_ids=list('XYZ'),
@@ -69,7 +69,7 @@ class AlphaDiversitySharedSetUpTests(TestCase):
         open(self.otu_table2_fp, 'w').write(
             format_biom_table(self.otu_table2))
 
-        self.single_sample_otu_table = table_factory(
+        self.single_sample_otu_table = Table(
             data=array([[2, 0, 0, 1]]).T,
             sample_ids=list('X'),
             observation_ids=list(

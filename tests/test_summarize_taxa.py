@@ -22,7 +22,7 @@ from qiime.summarize_taxa import make_summary, \
 from qiime.parse import parse_mapping_file
 from qiime.util import convert_otu_table_relative
 from numpy import array
-from biom.table import table_factory
+from biom.table import Table
 from biom.parse import parse_biom_table
 
 
@@ -41,7 +41,7 @@ class TopLevelTests(TestCase):
          (2, 1): 1.0, (2, 2): 1.0, (3, 0): 1.0,
          (3, 1): 2.0, (3, 2): 1.0}
 
-        self.otu_table = table_factory(self.otu_table_vals,
+        self.otu_table = Table(self.otu_table_vals,
                                        ['s1', 's2', 's3', 's4'],
                                        ['0', '1', '2', '3'],
                                        None,

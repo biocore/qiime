@@ -16,7 +16,7 @@ from operator import add
 
 from numpy import zeros
 from random import choice
-from biom.table import table_factory
+from biom.table import Table
 
 from qiime.format import format_mapping_file, format_biom_table
 from qiime.parse import parse_mapping_file
@@ -246,12 +246,12 @@ def simsam_range(table,
             output_sample_ids, output_otu_ids, output_data, output_metadata = \
                 sim_otu_table(table.sample_ids,
                               table.observation_ids,
-                              table.iter_samples(),
+                              table.iter(),
                               table.observation_metadata,
                               tree,
                               simulated_sample_size,
                               dissimilarity)
-            output_table = table_factory(output_data,
+            output_table = Table(output_data,
                                          output_sample_ids,
                                          output_otu_ids,
                                          observation_metadata=output_metadata)

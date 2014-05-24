@@ -12,7 +12,6 @@ __email__ = "gregcaporaso@gmail.com"
 
 from numpy import array
 from biom.exception import TableException
-from biom.table import table_factory
 
 
 def get_filter_to_core_f(table,
@@ -64,7 +63,7 @@ def filter_table_to_core(table,
 
     """
     filter_f = get_filter_to_core_f(table, sample_ids, fraction_for_core)
-    return table.filter_observations(filter_f)
+    return table.filter(filter_f, axis='observation')
 
 
 def core_observations_across_sample_ids(table,

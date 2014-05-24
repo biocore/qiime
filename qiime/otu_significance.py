@@ -103,7 +103,7 @@ def get_sample_indices(cat_sam_groups, bt):
     """
     cat_sam_indices = defaultdict(list)
     for k, v in cat_sam_groups.iteritems():
-        cat_sam_indices[k] = [bt.get_sample_index(i) for i in v]
+        cat_sam_indices[k] = [bt.index(i, axis='sample') for i in v]
     return cat_sam_indices
 
 
@@ -115,7 +115,7 @@ def group_significance_row_generator(bt, cat_sam_indices):
      bt - biom table object. Described at top of library.
      cat_sam_indices - dict, output of get_sample_indices.
     """
-    data = array([i for i in bt.iter_observation_data()])
+    data = array([i for i in bt.iter_data(axis='observation')])
     indices = cat_sam_indices.values()  # list of lists of column indices
     return izip(*[data.take(i, axis=1) for i in indices])
 
@@ -190,10 +190,10 @@ def grouped_correlation_row_generator(bt, pmf, category, gc_to_samples):
      tuple of category values (in order of computation), the metadata values,
       and the otu values.
     """
-    data = array([i for i in bt.iter_observation_data()])
+    data = array([i for i in bt.iter_data(axis='observation')])
     category_values = gc_to_samples.keys()
     samples = gc_to_samples.values()
-    sample_inds = [[bt.get_sample_index(i) for i in group] for group in samples]
+    sample_inds = [[bt.index(i, axis='sample') for i in group] for group in samples]
     try:
         md_vals = []
         for grp in samples:
@@ -282,7 +282,7 @@ def correlation_row_generator(bt, pmf, category):
      cat_sam_indices - dict, output of get_sample_indices.
      category - str, category to pull continuous sample metadata from.
     """
-    data = array([i for i in bt.iter_observation_data()])
+    data = array([i for i in bt.iter_data(axis='observation')])
     # ensure that the order of the category vector sample values is the same
     # as the order of the samples in data. otherwise will have hard to
     # diagnose correspondence issues

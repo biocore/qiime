@@ -18,7 +18,7 @@ from os import walk
 from os.path import join, splitext, exists, isfile, abspath
 
 from skbio.core.sequence import BiologicalSequence
-from biom.table import Table, Table, table_factory
+from biom.table import Table
 
 from qiime.util import get_qiime_library_version, load_qiime_config
 from qiime.colors import data_color_hsv
@@ -114,7 +114,7 @@ def format_summarize_taxa(summary, header, delimiter=';',
             observation_ids.append(delimiter.join(row[0]))
             data.append(row[1:])
 
-        table = table_factory(asarray(data), observation_ids, sample_ids,
+        table = Table(asarray(data), observation_ids, sample_ids,
                               constructor=Table)
         yield format_biom_table(table)
     else:
@@ -724,7 +724,7 @@ def illumina_data_to_fastq(record_data, number_of_bases=None):
 def format_biom_table(biom_table):
     """ Given a biom-format Table object, returns that Table as a BIOM string"""
     generated_by_str = "QIIME " + get_qiime_library_version()
-    return biom_table.get_biom_format_json_string(generated_by_str)
+    return biom_table.from_json(generated_by_str)
 
 
 def format_mapping_html_data(header,

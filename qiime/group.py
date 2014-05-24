@@ -614,12 +614,12 @@ def extract_per_individual_state_metadata_from_sample_metadata_and_biom(
     if observation_ids is None:
         observation_ids = biom_table.observation_ids
     for observation_id in observation_ids:
-        observation_data = biom_table.observation_data(observation_id)
+        observation_data = biom_table.data(observation_id, 'observation')
         results[observation_id] = {}
         for individual_id, sample_ids in per_individual_states.items():
             per_state_metadata_values = []
             for sample_id in sample_ids:
-                sample_index = biom_table.get_sample_index(sample_id)
+                sample_index = biom_table.index(sample_id, 'sample')
                 per_state_metadata_values.append(
                     observation_data[sample_index])
             results[observation_id][individual_id] = per_state_metadata_values
