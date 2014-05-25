@@ -23,11 +23,11 @@ create new statistical method implementations.
 """
 
 from scipy.stats import (spearmanr, kruskal, mannwhitneyu, kendalltau,
-                         power_divergence)
+                         power_divergence, ttest_1samp, ttest_ind)
 from scipy.stats.distributions import (chi2, norm, f as fdist, t as tdist)
 
 from scipy.special import ndtri
-from skbio.math.stats.distribution import (t_high, t_low, tprob)
+
 
 from os.path import join
 from types import ListType
@@ -44,7 +44,8 @@ from numpy import (argsort, array, ceil, empty, fill_diagonal, finfo,
                    arctanh, asarray, e, hstack, isinf, isnan,
                    log, mean, nan, nonzero, sqrt, std, take, tanh,
                    transpose, seterr as np_seterr, var, arange, corrcoef,
-                   trace, ravel, float as np_float, finfo)
+                   trace, ravel, float as np_float, finfo, asarray, isnan,
+                   isinf)
 
 from numpy.random import permutation, shuffle, randint
 from biom.table import table_factory, DenseOTUTable
@@ -53,7 +54,7 @@ from skbio.util.misc import create_dir
 from qiime.format import format_p_value_for_num_iters, format_biom_table
 from qiime.util import MetadataMap
 
-np_seterr(divide='raise')
+np_seterr(divide='warn')
 MACHEP = finfo(np_float).eps
 
 # Top-level stats functions.
@@ -141,11 +142,6 @@ def _perform_pairwise_tests(labels, dists, tail_type, num_permutations):
     Computes corrected p-values in addition to uncorrected.
     """
     result = []
-
-    # Convert our notion of tail type into the format expected by
-    # PyCogent.
-    if tail_type == 'two-sided':
-        tail_type = None
 
     # Compare each pair of distributions, keeping track of the number of actual
     # tests that were successfully performed so that we can correct for
@@ -1976,7 +1972,7 @@ def williams_correction(n, a, G):
     return G / q
 
 
-def t_paired(a, b, tails=None, exp_diff=0):
+def t_paired(a, b, tails='two-sided', exp_diff=0):
     """Returns t and prob for TWO RELATED samples of scores a and b.
 
     From Sokal and Rohlf (1995), p. 354.
@@ -1990,169 +1986,180 @@ def t_paired(a, b, tails=None, exp_diff=0):
     tails should be None (default), 'high', or 'low'.
     exp_diff should be the expected difference in means (a-b); 0 by default.
     """
-    n = len(a)
-    if n != len(b):
+    if len(a) != len(b):
         raise ValueError('Unequal length lists in ttest_paired.')
-    try:
-        diffs = array(a) - array(b)
-        return t_one_sample(diffs, popmean=exp_diff, tails=tails)
-    except (ZeroDivisionError, ValueError, AttributeError, TypeError,
-            FloatingPointError):
-        return (None, None)
+    return t_one_sample(array(a) - array(b), popmean=exp_diff, tails=tails)
 
 
-def t_one_sample(a, popmean=0, tails=None):
-    """Returns t for ONE group of scores a, given a population mean.
-
-    Usage:   t, prob = t_one_sample(a, popmean, tails)
-
-    t is a float; prob is a probability.
-    a should support Mean, StandardDeviation, and Count.
-    popmean should be the expected mean; 0 by default.
-    tails should be None (default), 'high', or 'low'.
-    """
-    try:
-        n = len(a)
-        t = (mean(a) - popmean) / (std(a, ddof=1) / sqrt(n))
-    except (ZeroDivisionError, ValueError, AttributeError, TypeError,
-            FloatingPointError):
-        return None, None
+def t_one_sample(a, popmean=0, tails='two-sided'):
+    '''scipy t_one_sample'''
+    t, _ = ttest_1samp(a, popmean)  # returns array([t]), p
     if isnan(t) or isinf(t):
-        return None, None
+        return nan, nan
+    p = tprob(t, len(a) - 1, tails)
+    return float(t), p  # cast t to a float rather than 0-d array
 
-    prob = t_tailed_prob(t, n - 1, tails)
-    return t, prob
+
+# def t_one_sample(a, popmean=0, tails='two-sided'):
+#     """Returns t for ONE group of scores a, given a population mean.
+
+#     Usage:   t, prob = t_one_sample(a, popmean, tails)
+
+#     t is a float; prob is a probability.
+#     a should support Mean, StandardDeviation, and Count.
+#     popmean should be the expected mean; 0 by default.
+#     tails should be None (default), 'high', or 'low'.
+#     """
+#     try:
+#         n = len(a)
+#         t = (mean(a) - popmean) / (std(a, ddof=1) / sqrt(n))
+#     except (ZeroDivisionError, ValueError, AttributeError, TypeError,
+#             FloatingPointError):
+#         return None, None
+#     if isnan(t) or isinf(t):
+#         return None, None
+
+#     prob = t_tailed_prob(t, n - 1, tails)
+#     return t, prob
 
 
-def t_two_sample(a, b, tails=None, exp_diff=0, none_on_zero_variance=True):
-    """Returns t, prob for two INDEPENDENT samples of scores a, and b.
-
-    From Sokal and Rohlf, p 223.
-
-    Usage:   t, prob = t_two_sample(a,b, tails, exp_diff)
-
-    t is a float; prob is a probability.
-    a and b should be sequences of observations (numbers). Need not be equal
-        lengths.
-    tails should be None (default), 'high', or 'low'.
-    exp_diff should be the expected difference in means (a-b); 0 by default.
-    none_on_zero_variance: if True, will return (None,None) if both a and b
-        have zero variance (e.g. a=[1,1,1] and b=[2,2,2]). If False, the
-        following values will be returned:
-
-            Two-tailed test (tails=None):
-                a < b: (-inf,0.0)
-                a > b: (+inf,0.0)
-
-            One-tailed 'high':
-                a < b: (-inf,1.0)
-                a > b: (+inf,0.0)
-
-            One-tailed 'low':
-                a < b: (-inf,0.0)
-                a > b: (+inf,1.0)
-
-        If a and b both have no variance and have the same single value (e.g.
-        a=[1,1,1] and b=[1,1,1]), (None,None) will always be returned.
-    """
-    if tails is not None and tails != 'high' and tails != 'low':
-        raise ValueError("Invalid tail type '%s'. Must be either None, "
-                         "'high', or 'low'." % tails)
-
-    try:
-        # see if we need to back off to the single-observation for single-item
-        # groups
-        n1 = len(a)
-        if n1 < 2:
-            t, prob = \
-                t_one_observation(sum(a), b, tails, exp_diff,
-                                  none_on_zero_variance=none_on_zero_variance)
-            return t, prob
-
-        n2 = len(b)
-        if n2 < 2:
-            t, prob = \
-                t_one_observation(sum(b), a, reverse_tails(tails),
-                                  exp_diff,
-                                  none_on_zero_variance=none_on_zero_variance)
-
-            # Negate the t-statistic because we swapped the order of the inputs
-            # in the t_one_observation call, as well as tails.
-            if t != 0:
-                t = -1 * t
-
-            return (t, prob)
-
-        # otherwise, calculate things properly
-        x1 = mean(a)
-        x2 = mean(b)
-
-        # pass ddof=1 to estimate the unbiased variance
-        var1 = var(a, ddof=1)
-        var2 = var(b, ddof=1)
-
-        if var1 == 0 and var2 == 0:
-            # Both lists do not vary.
-            if x1 == x2 or none_on_zero_variance:
-                result = (None, None)
-            else:
-                result = _t_test_no_variance(x1, x2, tails)
+def t_two_sample(a, b, tails='two-sided', exp_diff=0):
+    '''scipy t_two_sample.'''
+    if len(a) == 1 or len(b) == 1: #need to use t_one_observation
+        if len(a) <= len(b):
+            t, p = t_one_observation(a, b, tails, exp_diff)
         else:
-            # At least one list varies.
-            df = n1 + n2 - 2
-            svar = ((n1 - 1) * var1 + (n2 - 1) * var2) / df
-            t = (x1 - x2 - exp_diff) / sqrt(svar * (1 / n1 + 1 / n2))
-
-            if isnan(t) or isinf(t):
-                result = (None, None)
-            else:
-                prob = t_tailed_prob(t, df, tails)
-                result = (t, prob)
-    except (ZeroDivisionError, ValueError, AttributeError, TypeError,
-            FloatingPointError) as e:
-        # invalidate if the sample sizes are wrong, the values
-        # aren't numeric or aren't present, etc.
-        result = (None, None)
-
-    return result
+            t, p = t_one_observation(b, a, tails, exp_diff)
+        return t, p
+    t, _ = ttest_ind(asarray(a) - exp_diff, asarray(b), axis=0, equal_var=True)
+    if isnan(t) or isinf(t):
+        return nan, nan
+    p = tprob(t, len(a) + len(b) - 2., tails)
+    return float(t), p
 
 
-def _t_test_no_variance(mean1, mean2, tails):
-    """Handles case where two distributions have no variance."""
-    if tails is not None and tails != 'high' and tails != 'low':
-        raise ValueError("Invalid tail type '%s'. Must be either None, "
-                         "'high', or 'low'." % tails)
+# def t_two_sample(a, b, tails='two-sided', exp_diff=0, none_on_zero_variance=True):
+#     """Returns t, prob for two INDEPENDENT samples of scores a, and b.
 
-    if tails is None:
-        if mean1 < mean2:
-            result = (float('-inf'), 0.0)
-        else:
-            result = (float('inf'), 0.0)
-    elif tails == 'high':
-        if mean1 < mean2:
-            result = (float('-inf'), 1.0)
-        else:
-            result = (float('inf'), 0.0)
-    else:
-        if mean1 < mean2:
-            result = (float('-inf'), 0.0)
-        else:
-            result = (float('inf'), 1.0)
+#     From Sokal and Rohlf, p 223.
 
-    return result
+#     Usage:   t, prob = t_two_sample(a,b, tails, exp_diff)
+
+#     t is a float; prob is a probability.
+#     a and b should be sequences of observations (numbers). Need not be equal
+#         lengths.
+#     tails should be None (default), 'high', or 'low'.
+#     exp_diff should be the expected difference in means (a-b); 0 by default.
+#     none_on_zero_variance: if True, will return (None,None) if both a and b
+#         have zero variance (e.g. a=[1,1,1] and b=[2,2,2]). If False, the
+#         following values will be returned:
+
+#             Two-tailed test (tails='two-sided'):
+#                 a < b: (-inf,0.0)
+#                 a > b: (+inf,0.0)
+
+#             One-tailed 'high':
+#                 a < b: (-inf,1.0)
+#                 a > b: (+inf,0.0)
+
+#             One-tailed 'low':
+#                 a < b: (-inf,0.0)
+#                 a > b: (+inf,1.0)
+
+#         If a and b both have no variance and have the same single value (e.g.
+#         a=[1,1,1] and b=[1,1,1]), (None,None) will always be returned.
+#     """
+
+#     try:
+#         # see if we need to back off to the single-observation for single-item
+#         # groups
+#         n1 = len(a)
+#         if n1 < 2:
+#             t, prob = \
+#                 t_one_observation(sum(a), b, tails, exp_diff,
+#                                   none_on_zero_variance=none_on_zero_variance)
+#             return t, prob
+
+#         n2 = len(b)
+#         if n2 < 2:
+#             t, prob = \
+#                 t_one_observation(sum(b), a, reverse_tails(tails),
+#                                   exp_diff,
+#                                   none_on_zero_variance=none_on_zero_variance)
+
+#             # Negate the t-statistic because we swapped the order of the inputs
+#             # in the t_one_observation call, as well as tails.
+#             if t != 0:
+#                 t = -1 * t
+
+#             return (t, prob)
+
+#         # otherwise, calculate things properly
+#         x1 = mean(a)
+#         x2 = mean(b)
+
+#         # pass ddof=1 to estimate the unbiased variance
+#         var1 = var(a, ddof=1)
+#         var2 = var(b, ddof=1)
+
+#         if var1 == 0 and var2 == 0:
+#             # Both lists do not vary.
+#             if x1 == x2 or none_on_zero_variance:
+#                 result = (None, None)
+#             else:
+#                 result = _t_test_no_variance(x1, x2, tails)
+#         else:
+#             # At least one list varies.
+#             df = n1 + n2 - 2
+#             svar = ((n1 - 1) * var1 + (n2 - 1) * var2) / df
+#             t = (x1 - x2 - exp_diff) / sqrt(svar * (1 / n1 + 1 / n2))
+
+#             if isnan(t) or isinf(t):
+#                 result = (None, None)
+#             else:
+#                 prob = tprob(t, df, tails)
+#                 result = (t, prob)
+#     except (ZeroDivisionError, ValueError, AttributeError, TypeError,
+#             FloatingPointError) as e:
+#         # invalidate if the sample sizes are wrong, the values
+#         # aren't numeric or aren't present, etc.
+#         result = (None, None)
+
+#     return result
 
 
-def reverse_tails(tails):
-    """Swaps high for low or vice versa, leaving other values alone."""
-    if tails == 'high':
-        return 'low'
-    elif tails == 'low':
-        return 'high'
-    else:
-        return tails
+# def _t_test_no_variance(mean1, mean2, tails):
+#     """Handles case where two distributions have no variance."""
+#     if tails == 'two-sided':
+#         if mean1 < mean2:
+#             result = (float('-inf'), 0.0)
+#         else:
+#             result = (float('inf'), 0.0)
+#     elif tails == 'high':
+#         if mean1 < mean2:
+#             result = (float('-inf'), 1.0)
+#         else:
+#             result = (float('inf'), 0.0)
+#     else:
+#         if mean1 < mean2:
+#             result = (float('-inf'), 0.0)
+#         else:
+#             result = (float('inf'), 1.0)
+
+#     return result
 
 
-def mc_t_two_sample(x_items, y_items, tails=None, permutations=999,
+# def reverse_tails(tails):
+#     """Swaps high for low or vice versa, leaving other values alone."""
+#     if tails == 'high':
+#         return 'low'
+#     elif tails == 'low':
+#         return 'high'
+#     else:
+#         return tails
+
+
+def mc_t_two_sample(x_items, y_items, tails='two-sided', permutations=999,
                     exp_diff=0):
     """Performs a two-sample t-test with Monte Carlo permutations.
 
@@ -2178,9 +2185,6 @@ def mc_t_two_sample(x_items, y_items, tails=None, permutations=999,
             and the nonparametric p-value will be None
         exp_diff - the expected difference in means (x_items - y_items)
     """
-    if tails is not None and tails != 'high' and tails != 'low':
-        raise ValueError("Invalid tail type '%s'. Must be either None, "
-                         "'high', or 'low'." % tails)
     if permutations < 0:
         raise ValueError("Invalid number of permutations: %d. Must be greater "
                          "than or equal to zero." % permutations)
@@ -2193,25 +2197,23 @@ def mc_t_two_sample(x_items, y_items, tails=None, permutations=999,
 
     # Perform t-test using original observations.
     obs_t, param_p_val = t_two_sample(x_items, y_items, tails=tails,
-                                      exp_diff=exp_diff,
-                                      none_on_zero_variance=False)
+                                      exp_diff=exp_diff)
 
     # Only perform the Monte Carlo test if we got a sane answer back from the
     # initial t-test and we have been specified permutations.
     nonparam_p_val = nan
     perm_t_stats = []
-    if permutations > 0 and obs_t is not None and param_p_val is not None:
+    if permutations > 0 and not isnan(obs_t) and not isnan(param_p_val):
         # Permute observations between x_items and y_items the specified number
         # of times.
         perm_x_items, perm_y_items = _permute_observations(x_items, y_items,
                                                            permutations)
         perm_t_stats = [t_two_sample(perm_x_items[n], perm_y_items[n],
-                                     tails=tails, exp_diff=exp_diff,
-                                     none_on_zero_variance=False)[0]
+                                     tails=tails, exp_diff=exp_diff)[0]
                         for n in range(permutations)]
 
         # Compute nonparametric p-value based on the permuted t-test results.
-        if tails is None:
+        if tails == 'two-sided':
             better = (absolute(array(perm_t_stats)) >=
                       absolute(obs_t)).sum()
         elif tails == 'low':
@@ -2256,7 +2258,7 @@ def _permute_observations(x, y, num_perms):
     return xs, ys
 
 
-def t_one_observation(x, sample, tails=None, exp_diff=0,
+def t_one_observation(x, sample, tails='two-sided', exp_diff=0,
                       none_on_zero_variance=True):
     """Returns t-test for significance of single observation versus a sample.
 
@@ -2274,20 +2276,21 @@ def t_one_observation(x, sample, tails=None, exp_diff=0,
 
         if sample_std == 0:
             # The list does not vary.
-            if sample_mean == x or none_on_zero_variance:
-                result = (None, None)
-            else:
-                result = _t_test_no_variance(x, sample_mean, tails)
+            # if sample_mean == x or none_on_zero_variance:
+            #     result = (None, None)
+            # else:
+            #     result = _t_test_no_variance(x, sample_mean, tails)
+            return nan, nan
         else:
             # The list varies.
             n = len(sample)
             t = ((x - sample_mean - exp_diff) / sample_std / sqrt((n + 1) /
                                                                   n))
-            prob = t_tailed_prob(t, n - 1, tails)
-            result = (t, prob)
+            prob = tprob(t, n - 1, tails)
+            result = (t[0], prob)
     except (ZeroDivisionError, ValueError, AttributeError, TypeError,
             FloatingPointError):
-        result = (None, None)
+        result = (nan, nan)
 
     return result
 
@@ -2475,7 +2478,7 @@ def assign_correlation_pval(corr, n, method, permutations=None,
         raise ValueError("'%s' method is unknown." % method)
 
 
-def correlation_t(x_items, y_items, method='pearson', tails=None,
+def correlation_t(x_items, y_items, method='pearson', tails='two-sided',
                   permutations=999, confidence_level=0.95):
     """Computes the correlation between two vectors and its significance.
 
@@ -2530,9 +2533,6 @@ def correlation_t(x_items, y_items, method='pearson', tails=None,
     else:
         raise ValueError("Invalid method '%s'. Must be either 'pearson' or "
                          "'spearman'." % method)
-    if tails is not None and tails != 'high' and tails != 'low':
-        raise ValueError("Invalid tail type '%s'. Must be either None, "
-                         "'high', or 'low'." % tails)
     if permutations < 0:
         raise ValueError("Invalid number of permutations: %d. Must be greater "
                          "than or equal to zero." % permutations)
@@ -2552,7 +2552,7 @@ def correlation_t(x_items, y_items, method='pearson', tails=None,
     else:
         try:
             t = corr_coeff / sqrt((1 - (corr_coeff * corr_coeff)) / df)
-            parametric_p_val = t_tailed_prob(t, df, tails)
+            parametric_p_val = tprob(t, df, tails)
         except (ZeroDivisionError, FloatingPointError):
             # r/rho was presumably 1.
             parametric_p_val = 0
@@ -2566,7 +2566,7 @@ def correlation_t(x_items, y_items, method='pearson', tails=None,
         permuted_corr_coeff = corr_fn(x_items, permuted_y_items)
         permuted_corr_coeffs.append(permuted_corr_coeff)
 
-        if tails is None:
+        if tails == 'two-sided':
             if abs(round(permuted_corr_coeff, 10)) >= \
                abs(round(corr_coeff, 10)):
                 better += 1
@@ -2909,14 +2909,14 @@ def mantel_t(m1, m2, n, alt="two sided",
     return (better + 1) / (n + 1), orig_stat, perm_stats
 
 
-def t_tailed_prob(t, df, tails):
-    """Return appropriate p-value for given t and df, depending on tails."""
-    if tails == 'high':
-        return t_high(t, df)
-    elif tails == 'low':
-        return t_low(t, df)
-    else:
-        return tprob(t, df)
+# def t_tailed_prob(t, df, tails):
+#     """Return appropriate p-value for given t and df, depending on tails."""
+#     if tails == 'high':
+#         return t_high(t, df)
+#     elif tails == 'low':
+#         return t_low(t, df)
+#     else:
+#         return tprob(t, df)
 
 
 def is_symmetric_and_hollow(matrix):
@@ -3218,42 +3218,42 @@ def chi2prob(x, df, direction='above'):
         return ValueError('Unknown direction.')
 
 
-# def tprob(t, df, direction='above'):
-#     '''Calculate probability from t distribution 
+def tprob(t, df, tails='high'):
+    '''Calculate probability from t distribution 
 
-#     Paramaters
-#     ----------
-#     t : float
-#         Value of t statistic
-#     direction : str
-#         One of 'above', 'below', or 'both'. Determines the bounds of the
-#         integration of the PDF. 'above' calculates the probability that a
-#         random variable T will take a value as great or greater than t. 'below'
-#         will calculate the probability that T will take a value less than or 
-#         equal to t. 'both' will calculate the probability that T will take a
-#         value more extreme than t (i.e. abs(T) >= t).
+    Paramaters
+    ----------
+    t : float
+        Value of t statistic
+    tails : str
+        One of 'above', 'below', or 'both'. Determines the bounds of the
+        integration of the PDF. 'above' calculates the probability that a
+        random variable T will take a value as great or greater than t. 'below'
+        will calculate the probability that T will take a value less than or 
+        equal to t. 'both' will calculate the probability that T will take a
+        value more extreme than t (i.e. abs(T) >= t).
 
-#     Returns
-#     -------
-#     p-value
+    Returns
+    -------
+    p-value
 
-#     Notes
-#     -----
-#     scipy.stats.t calculates the 'lower tail' of the distribution, i.e. the 
-#     probability of a random variable T taking a value smaller than or equal to 
-#     the given t value.
-#     '''
-#     if direction == 'both':
-#         if t >= 0:
-#             return 2 * (1. - t.cdf(t, df))
-#         else:
-#             return 2 * t.cdf(t, df)
-#     elif direction == 'above':
-#         return 1 - t.cdf(t, df)
-#     elif direction == 'below':
-#         return t.cdf(t, df)
-#     else:
-#         raise ValueError('Unknown direction.')
+    Notes
+    -----
+    scipy.stats.t calculates the 'lower tail' of the distribution, i.e. the 
+    probability of a random variable T taking a value smaller than or equal to 
+    the given t value.
+    '''
+    if tails == 'two-sided':
+        if t >= 0:
+            return 2 * (1. - tdist.cdf(t, df))
+        else:
+            return 2 * tdist.cdf(t, df)
+    elif tails == 'high':
+        return 1 - tdist.cdf(t, df)
+    elif tails == 'low':
+        return tdist.cdf(t, df)
+    else:
+        raise ValueError('Unknown direction.')
 
 
 def fprob(f, dfn, dfd, direction='above'):
