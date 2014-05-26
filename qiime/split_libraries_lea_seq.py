@@ -237,11 +237,12 @@ def get_cluster_ratio(temp_file):
     Uses uclust to calculate cluster ratio
     cluster_ratio=num_of_seq_in_cluster_with_max_seq/num_of_seq_in cluster_with_second_higest_seq
     """
+    cluster_percent_id = 0.98
     temp_dir = get_qiime_temp_dir()
     uclust_tempfile = tempfile.NamedTemporaryFile(dir=temp_dir, mode='w', delete=False)
     uclust_tempfile_name = uclust_tempfile.name
     command = "uclust --usersort --input " + temp_file +\
-              " --uc " + uclust_tempfile_name + " --id 0.98 --log log"
+              " --uc " + uclust_tempfile_name + " --id "+ str(cluster_percent_id) +" --log log"
     qiime_system_call(command)
     uclust_tempfile.close()
     uclust_tempfile = open (uclust_tempfile_name, 'r')
