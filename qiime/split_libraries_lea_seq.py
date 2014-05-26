@@ -6,7 +6,7 @@ from qiime.parse import parse_mapping_file_to_dict
 from qiime.split_libraries import check_map, expand_degeneracies
 from qiime.split_libraries_fastq import correct_barcode, FastqParseError
 from skbio.parse.sequences import parse_fastq
-from qiime.util import create_dir, qiime_system_call, get_qiime_temp_dir
+from qiime.util import qiime_system_call, get_qiime_temp_dir
 import re
 import tempfile
 import os
