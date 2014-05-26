@@ -53,9 +53,9 @@ from qiime.stats import (all_pairs_t_test, _perform_pairwise_tests,
                          inverse_fisher_z_transform,
                          z_transform_pval, kruskal_wallis, kendall,
                          kendall_pval, assign_correlation_pval,
-                         cscore, williams_correction, Anosim)
+                         cscore, williams_correction, Anosim, t_one_observation,
+                         normprob, tprob, fprob, chi2prob)
 
-from qiime.stats import tprob, chi2prob
 from skbio.core.distance import (DissimilarityMatrix, DistanceMatrix)
 
 from qiime.util import MetadataMap, get_qiime_temp_dir
@@ -2018,20 +2018,10 @@ class StatTests(TestsHelper):
     def setUp(self):
         super(StatTests, self).setUp()
 
-        self.x = [
-            7.33, 7.49, 7.27, 7.93, 7.56,
-            7.81, 7.46, 6.94, 7.49, 7.44,
-            7.95, 7.47, 7.04, 7.10, 7.64,
-        ]
-
-        self.y = [
-            7.53, 7.70, 7.46, 8.21, 7.81,
-            8.01, 7.72, 7.13, 7.68, 7.66,
-            8.11, 7.66, 7.20, 7.25, 7.79,
-        ]
-
-        # silence warnings that will be raised by t_one_sample
-        filterwarnings('ignore', category=RuntimeWarning)
+        self.x = [7.33, 7.49, 7.27, 7.93, 7.56, 7.81, 7.46, 6.94, 7.49, 7.44,
+                  7.95, 7.47, 7.04, 7.10, 7.64]
+        self.y = [7.53, 7.70, 7.46, 8.21, 7.81, 8.01, 7.72, 7.13, 7.68, 7.66,
+                  8.11, 7.66, 7.20, 7.25, 7.79]
 
     def test_t_paired_2tailed(self):
         """t_paired should match values from Sokal & Rohlf p 353"""
@@ -2091,58 +2081,19 @@ class StatTests(TestsHelper):
         self.assertEqual(t_two_sample(x, x), (nan, nan))
         self.assertEqual(t_two_sample(x, y), (nan, nan))
 
-        # Test none_on_zero_variance=False on various tail types. We use
-        # self.assertEqual instead of assert_allclose because the latter
-        # sees inf and -inf as being equal.
-
-        # # Two tailed: a < b
-        # self.assertEqual(t_two_sample(y, x, none_on_zero_variance=False),
-        #                  (float('-inf'), 0.0))
-
-        # # Two tailed: a > b
-        # self.assertEqual(t_two_sample(x, y, none_on_zero_variance=False),
-        #                  (float('inf'), 0.0))
-
-        # # One-tailed 'high': a < b
-        # self.assertEqual(t_two_sample(y, x, tails='high',
-        #                               none_on_zero_variance=False),
-        #                  (float('-inf'), 1.0))
-
-        # # One-tailed 'high': a > b
-        # self.assertEqual(t_two_sample(x, y, tails='high',
-        #                               none_on_zero_variance=False),
-        #                  (float('inf'), 0.0))
-
-        # # One-tailed 'low': a < b
-        # self.assertEqual(t_two_sample(y, x, tails='low',
-        #                               none_on_zero_variance=False),
-        #                  (float('-inf'), 0.0))
-
-        # # One-tailed 'low': a > b
-        # self.assertEqual(t_two_sample(x, y, tails='low',
-        #                               none_on_zero_variance=False),
-        #                  (float('inf'), 1.0))
-
-        # Should still receive (None, None) if the lists have no variance and
+        # Should still receive (nan, nan) if the lists have no variance and
         # have the same single value.
         self.assertEqual(t_two_sample(x, x), (nan, nan))
         self.assertEqual(t_two_sample(x, [1, 1]), (nan, nan))
-
-    # def test_t_two_sample_invalid_input(self):
-    #     """t_two_sample should raise an error on invalid input."""
-    #     self.assertRaises(ValueError, t_two_sample, [1, 2, 3], [4, 5, 6],
-    #                       tails='foo')
 
     def test_t_one_sample(self):
         """t_one_sample results should match those from R"""
         x = array(range(-5, 5))
         y = array(range(-1, 10))
-        assert_allclose(t_one_sample(x), (-0.5222, 0.6141),
-                        atol=10e-3)
+        assert_allclose(t_one_sample(x), (-0.5222, 0.6141), atol=10e-3)
         assert_allclose(t_one_sample(y), (4, 0.002518), atol=10e-3)
         # do some one-tailed tests as well
-        assert_allclose(
-            t_one_sample(y, tails='low'), (4, 0.9987), atol=10e-3)
+        assert_allclose(t_one_sample(y, tails='low'), (4, 0.9987), atol=10e-3)
         assert_allclose(
             t_one_sample(y, tails='high'), (4, 0.001259), atol=10e-3)
 
@@ -2150,10 +2101,8 @@ class StatTests(TestsHelper):
         """t_two_sample should call t_one_observation if 1 item in sample."""
         sample = array([4.02, 3.88, 3.34, 3.87, 3.18])
         x = array([3.02])
-        assert_allclose(t_two_sample(x, sample),
-                        (-1.5637254, 0.1929248))
-        assert_allclose(t_two_sample(sample, x),
-                        (-1.5637254, 0.1929248))
+        assert_allclose(t_two_sample(x, sample), (-1.5637254, 0.1929248))
+        assert_allclose(t_two_sample(sample, x), (-1.5637254, 0.1929248))
 
         # can't do the test if both samples have single item
         assert_allclose(t_two_sample(x, x), (nan, nan))
@@ -2162,35 +2111,21 @@ class StatTests(TestsHelper):
         assert_allclose(t_two_sample([2], [1, 2, 3]), (0.0, 1.0))
         assert_allclose(t_two_sample([1, 2, 3], [2]), (0.0, 1.0))
 
-    # def test_t_one_observation(self):
-    #     """t_one_observation should match p. 228 of Sokal and Rohlf"""
-    #     sample = array([4.02, 3.88, 3.34, 3.87, 3.18])
-    #     x = 3.02
-    #     # note that this differs after the 3rd decimal place from what's in
-    #     # the book, because Sokal and Rohlf round their intermediate steps...
-    #     assert_allclose(t_one_observation(x, sample),
-    #                     (-1.5637254, 0.1929248))
+    def test_t_one_observation(self):
+        """t_one_observation should match p. 228 of Sokal and Rohlf"""
+        sample = array([4.02, 3.88, 3.34, 3.87, 3.18])
+        x = 3.02
+        # note that this differs after the 3rd decimal place from what's in
+        # the book, because Sokal and Rohlf round their intermediate steps...
+        assert_allclose(t_one_observation(x, sample), (-1.5637254, 0.1929248))
 
-    # def test_t_one_observation_no_variance(self):
-    #     """t_one_observation should correctly handle an invariant list."""
-    #     sample = array([1.0, 1.0, 1.0])
+    def test_t_one_observation_no_variance(self):
+        """t_one_observation should correctly handle an invariant list."""
+        sample = array([1.0, 1.0, 1.0])
 
-    #     # Can't perform test if invariant list's single value matches x,
-    #     # regardless of none_on_zero_variance.
-    #     self.assertEqual(t_one_observation(1, sample), (None, None))
-    #     self.assertEqual(t_one_observation(1, sample,
-    #                                        none_on_zero_variance=False),
-    #                      (None, None))
-
-    #     # Test correct handling of none_on_zero_variance.
-    #     self.assertEqual(t_one_observation(2, sample), (None, None))
-    #     self.assertEqual(t_one_observation(2, sample,
-    #                                        none_on_zero_variance=False),
-    #                      (float('inf'), 0.0))
-    #     self.assertEqual(t_one_observation(2, sample,
-    #                                        none_on_zero_variance=False,
-    #                                        tails='low'),
-    #                      (float('inf'), 1.0))
+        assert_allclose(t_one_observation(1, sample), (nan, nan))
+        assert_allclose(t_one_observation(2, sample, exp_diff=3), (nan, nan))
+        assert_allclose(t_one_observation(2, sample, tails='low'), (nan, nan))
 
     def test_mc_t_two_sample(self):
         """Test gives correct results with valid input data."""
@@ -2332,14 +2267,6 @@ class StatTests(TestsHelper):
         assert_allclose(sorted(concatenate((obs[0][0],
                                             obs[1][0]))),
                         sorted(I + II))
-
-    # def test_reverse_tails(self):
-    #     """reverse_tails should return 'high' if tails was 'low' or vice versa
-    #     """
-    #     self.assertEqual(reverse_tails('high'), 'low')
-    #     self.assertEqual(reverse_tails('low'), 'high')
-    #     self.assertEqual(reverse_tails(None), None)
-    #     self.assertEqual(reverse_tails(3), 3)
 
     def test_tail(self):
         """tail should return prob/2 if test is true, or 1-(prob/2) if false
@@ -3019,5 +2946,100 @@ class PvalueTests(TestCase):
         exp = 9
         obs = cscore(v1, v2)
         self.assertEqual(obs, exp)
+
+
+class DistributionTests(TestCase):
+    '''Test that the distributions from scipy are perfoming as we expect.'''
+
+    def setUp(self):
+        '''Nothing needed for all tests.'''
+        pass
+
+    def test_normal_probability_distribution(self):
+        '''Test that the normal probability distribution performs correctly.'''
+        # test against R
+        # library('stats')
+        # pnorm(4.5, mean = 0, sd=1, lower.tail=TRUE)
+        # 0.9999966
+        p = normprob(4.5, direction='low', mean=0, std=1)
+        assert_allclose(p, 0.9999966)
+        # pnorm(-14.5, mean = -5, sd=20, lower.tail=FALSE)
+        # 0.3173935
+        p = normprob(-14.5, direction='two-sided', mean=-5, std=20)
+        assert_allclose(p, 0.3173935*2)
+        # > pnorm(4.5, mean = 0, sd=1, lower.tail=FALSE)
+        # [1] 3.397673e-06
+        p = normprob(4.5, direction='high', mean=0, std=1)
+        assert_allclose(p, 3.397673e-06)
+        p = normprob(4.5, direction='two-sided', mean=0, std=1)
+        assert_allclose(p, 3.397673e-06*2)
+        # test that a ValueError is correctly raised
+        self.assertRaises(ValueError, normprob, 4.5, direction='dne')
+
+    def test_chi2_probability_distribution(self):
+        '''Test that chi2 probability distribution performs correctly.'''
+        # test against R
+        # library('stats')
+        # pchisq(13.4, 4, lower.tail=TRUE)
+        # 0.990522
+        p = chi2prob(13.4, 4, direction='low')
+        assert_allclose(p, 0.990522)
+        # > pchisq(13.4, 4, lower.tail=FALSE)
+        # [1] 0.009478022
+        p = chi2prob(13.4, 4, direction='high')
+        assert_allclose(p, 0.009478022)
+        # test when we have a negative chi2 stat
+        p = chi2prob(-10, 5, direction='high')
+        assert_allclose(p, nan)
+        # test another value
+        # > pchisq(45, 35)
+        # [1] 0.8800662
+        p = chi2prob(45, 35, direction='low')
+        assert_allclose(p, 0.8800662)
+        # test that a ValueError is correctly raised
+        self.assertRaises(ValueError, chi2prob, 4.5, 3, direction='dne')
+
+    def test_t_probability_distribution(self):
+        '''Test that the t probability distribution performs correctly.'''
+        # test against R
+        # library('stats')
+        # pt(2.5, 10, lower.tail=TRUE)
+        # 0.9842766
+        t = tprob(2.5, 10, tails='low')
+        assert_allclose(t, 0.9842766, atol=1e-7)
+        # pt(2.5, 10, lower.tail=FALSE)
+        # 0.01572342
+        t = tprob(2.5, 10, tails='high')
+        assert_allclose(t, 0.01572342, atol=1e-7)
+        # both tails
+        t = tprob(2.5, 10, tails='two-sided')
+        assert_allclose(t, 2*0.01572342, atol=1e-7)
+        # > pt(-6.7,2)
+        # [1] 0.01077945
+        t = tprob(-6.7, 2, tails='two-sided')
+        assert_allclose(t, 2*0.01077945, atol=1e-7)
+        # test that a ValueError is correctly raised
+        self.assertRaises(ValueError, tprob, 4.5, 3, tails='dne')
+
+    def test_f_probability_distribution(self):
+        '''Test that the f probability distribution performs correctly.'''
+        # test against R
+        # library('stats')
+        # pf(4.5, 3, 5)
+        # 0.9305489
+        p = fprob(4.5, 3, 5, direction='low')
+        assert_allclose(p, 0.9305489, atol=1e-7)
+        p = fprob(4.5, 3, 5, direction='high')
+        assert_allclose(p, 1 - 0.9305489, atol=1e-7)
+        # pf(33.5, 2, 5)
+        # 0.9987292
+        p = fprob(33.5, 2, 5, direction='low')
+        assert_allclose(p, 0.9987292, atol=1e-7)
+        # test when we have a negative f stat
+        p = fprob(-10, 5, 6, direction='high')
+        assert_allclose(p, nan)
+        # test that a ValueError is correctly raised
+        self.assertRaises(ValueError, fprob, 4.5, 3, 5, direction='dne')
+
 if __name__ == "__main__":
     main()

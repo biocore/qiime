@@ -382,11 +382,6 @@ def _compute_correlation(ts1, ts2, comparison_mode, correlation_type,
             to. If not provided, ts2 must only contain a single sample, and all
             samples in ts1 will be compared to it
     """
-    # Convert our notion of tail type into the format expected by skbios's
-    # correlation_t().
-    if tail_type == 'two-sided':
-        tail_type = None
-
     if comparison_mode != 'paired' and comparison_mode != 'expected':
         raise ValueError("Invalid comparison mode '%s'. Must be one of %r." %
                          (comparison_mode, comparison_modes))

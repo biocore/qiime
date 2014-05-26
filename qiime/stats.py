@@ -1863,7 +1863,7 @@ def G_2_by_2(a, b, c, d, williams=1, directional=1):
             (6 * n)
         G /= q
 
-    p = chi2prob(G, 1, direction='above') 
+    p = chi2prob(G, 1, direction='high') 
 
     # find which tail we were in if the test was directional
     if directional:
@@ -1939,7 +1939,7 @@ def g_fit(data, williams=True):
     G, p = power_divergence(r_data, lambda_="log-likelihood")
     if williams:
         G_corr = williams_correction(sum(r_data), len(r_data), G)
-        return G_corr, chi2prob(G_corr, len(r_data) - 1, direction='above')
+        return G_corr, chi2prob(G_corr, len(r_data) - 1, direction='high')
     else:
         return G, p
 
@@ -1992,7 +1992,24 @@ def t_paired(a, b, tails='two-sided', exp_diff=0):
 
 
 def t_one_sample(a, popmean=0, tails='two-sided'):
-    '''scipy t_one_sample'''
+    '''Peform a one sample t-test against a given population mean. 
+
+    Parameters
+    ----------
+    a : array-like
+        A vector of observations.
+    popmean : float
+        The population mean to test against.
+    tails : str
+        The hypothesis to test, one of 'low', 'high', 'two-sided'. 
+
+    Returns
+    -------
+    t : float
+        t statstic. 
+    p : float
+        p-value assocaited with the t-statistic given the tails. 
+    '''
     t, _ = ttest_1samp(a, popmean)  # returns array([t]), p
     if isnan(t) or isinf(t):
         return nan, nan
@@ -2093,9 +2110,9 @@ def _permute_observations(x, y, num_perms):
 
     Returns
     -------
-    xs
+    xs : list of arrays
         Permuted vectors x
-    ys
+    ys : list of arrays
         Permuted vectors y
     """
     vals = hstack([array(x), array(y)])
@@ -2114,41 +2131,55 @@ def _permute_observations(x, y, num_perms):
     return xs, ys
 
 
-def t_one_observation(x, sample, tails='two-sided', exp_diff=0,
-                      none_on_zero_variance=True):
+def t_one_observation(x, sample, tails='two-sided', exp_diff=0):
     """Returns t-test for significance of single observation versus a sample.
 
-    Equation for 1-observation t (Sokal and Rohlf 1995 p 228):
+    Parameters
+    ----------
+    x : float
+        The single observation to test against the sample. 
+    sample : array-like
+        Vector of observations for the sample to test against x. 
+    tails : str
+        The hypothesis to test, one of 'low', 'high', 'two-sided'. 
+    exp_diff : float
+        The expected difference between the sample mean and the observation.
+
+    Returns
+    -------
+    t : float
+        t statstic. 
+    p : float
+        p-value assocaited with the t-statistic given the tails.
+
+    Notes
+    -----
+    Equation for 1-observation t [1]_ p 228:
     t = obs - mean - exp_diff / (var * sqrt((n+1)/n))
     df = n - 1
 
-    none_on_zero_variance: see t_two_sample for details. If sample has no
-        variance and its single value is the same as x (e.g. x=1 and
-        sample=[1,1,1]), (None,None) will always be returned
+    References
+    ----------
+    .. [1] Sokal and Rohlf. "Biometry: The Principles and Practices of
+       Statistics in Biological Research". ISBN: 978-0716724117
+
     """
     try:
         sample_mean = mean(sample)
         sample_std = std(sample, ddof=1)
 
-        if sample_std == 0:
-            # The list does not vary.
-            # if sample_mean == x or none_on_zero_variance:
-            #     result = (None, None)
-            # else:
-            #     result = _t_test_no_variance(x, sample_mean, tails)
-            return nan, nan
-        else:
-            # The list varies.
+        if sample_std == 0:  # no variance means can't compute t, p
+            return (nan, nan)
+
+        else:  # The list varies.
             n = len(sample)
-            t = ((x - sample_mean - exp_diff) / sample_std / sqrt((n + 1) /
-                                                                  n))
+            t = ((x - sample_mean - exp_diff) / sample_std / sqrt((n + 1) / n))
             prob = tprob(t, n - 1, tails)
-            result = (t[0], prob)
+            return (float(t), prob)
+
     except (ZeroDivisionError, ValueError, AttributeError, TypeError,
             FloatingPointError):
-        result = (nan, nan)
-
-    return result
+        return (nan, nan)
 
 
 def pearson(v1, v2):
@@ -2257,7 +2288,7 @@ def kendall(v1, v2):
 def kendall_pval(tau, n):
     '''Calculate the p-value for the passed tau and vector length n.'''
     test_stat = tau / ((2 * (2 * n + 5)) / float(9 * n * (n - 1))) ** .5
-    return normprob(test_stat, direction='both')
+    return normprob(test_stat, direction='two-sided')
 
 
 def assign_correlation_pval(corr, n, method, permutations=None,
@@ -2306,7 +2337,8 @@ def assign_correlation_pval(corr, n, method, permutations=None,
                              "Can't Continue.")
         try:
             ts = corr * ((df / (1. - corr ** 2)) ** .5)
-            return tprob(ts, df)  # two tailed test because H0 is corr=0
+            return tprob(ts, df, tails='two-sided')
+            # two tailed test because H0 is corr=0
         except (ValueError, FloatingPointError, ZeroDivisionError):
             # something unpleasant happened, most likely r or rho where +- 1
             # which means the parametric p val should be 1 or 0 or nan
@@ -2467,7 +2499,7 @@ def fisher(probs):
     -2 * SUM(ln(P)) gives chi-squared distribution with 2n degrees of freedom.
     """
     try:
-        return chi2prob(-2 * sum(log(probs)), 2 * len(probs), direction='above')
+        return chi2prob(-2 * sum(log(probs)), 2 * len(probs), direction='high')
     except OverflowError:
         return 0.0
 
@@ -2512,7 +2544,7 @@ def ANOVA_one_way(a):
     dfn = len(group_means) - 1
     between_Groups = between_Groups / dfn
     F = between_Groups / within_Groups
-    return F, fprob(F, dfn, dfd, direction='above')
+    return F, fprob(F, dfn, dfd, direction='high')
 
 
 def _average_rank(start_rank, end_rank):
@@ -2983,10 +3015,10 @@ def z_transform_pval(z, n):
     if n <= 3:  # sample size must be greater than 3 otherwise this transform
         # isn't supported.
         return nan
-    return normprob(z * ((n - 3) ** .5), direction='both')
+    return normprob(z * ((n - 3) ** .5), direction='two-sided')
 
 
-def normprob(z, direction='above', mean=0, std=1):
+def normprob(z, direction='two-sided', mean=0, std=1):
     '''Calculate probability from normal distribution 
 
     Paramaters
@@ -2994,12 +3026,12 @@ def normprob(z, direction='above', mean=0, std=1):
     z : float
         Value of z statistic
     direction : str
-        One of 'above', 'below', or 'both'. Determines the bounds of the
-        integration of the PDF. 'above' calculates the probability that a
-        random variable Z will take a value as great or greater than z. 'below'
+        One of 'low', 'high', or 'two-sided'. Determines the bounds of the
+        integration of the PDF. 'high' calculates the probability that a
+        random variable Z will take a value as great or greater than z. 'low'
         will calculate the probability that Z will take a value less than or 
-        equal to z. 'both' will calculate the probability that Z will take a
-        value more extreme than z (i.e. abs(Z) >= z). 
+        equal to z. 'two-sided' will calculate the probability that Z will take
+        a value more extreme than z (i.e. abs(Z) >= z). 
     mean : float 
         Mean of the distirbution. 
     std : float
@@ -3015,20 +3047,20 @@ def normprob(z, direction='above', mean=0, std=1):
     probability of a random variable Z taking a value smaller than or equal to 
     the given z value. 
     '''
-    if direction == 'both':
+    if direction == 'two-sided':
         if z >= 0:
             return 2 * (1. - norm.cdf(z, mean, std))
         else:
             return 2 * norm.cdf(z, mean, std)
-    elif direction == 'above':
+    elif direction == 'high':
         return 1 - norm.cdf(z, mean, std)
-    elif direction == 'below':
+    elif direction == 'low':
         return norm.cdf(z, mean, std)
     else:
         raise ValueError('Unknown direction.')
 
 
-def chi2prob(x, df, direction='above'):
+def chi2prob(x, df, direction='high'):
     '''Return the chi-squared statistic.
     
     Paramaters
@@ -3036,9 +3068,9 @@ def chi2prob(x, df, direction='above'):
     x : float
         Value of x statistic.
     direction : str
-        One of 'above' or 'below'. Determines the bounds of the
-        integration of the PDF. 'above' calculates the probability that a
-        random variable X will take a value as great or greater than x. 'below'
+        One of 'low' or 'high'. Determines the bounds of the
+        integration of the PDF. 'high' calculates the probability that a
+        random variable X will take a value as great or greater than x. 'low'
         will calculate the probability that X will take a value less than or 
         equal to x. 
 
@@ -3056,12 +3088,12 @@ def chi2prob(x, df, direction='above'):
     '''
     if x <= 0:
         return nan
-    elif direction == 'above':
+    elif direction == 'high':
         return 1. - chi2.cdf(x, df)
-    elif direction == 'below':
+    elif direction == 'low':
         return chi2.cdf(x, df)
     else:
-        return ValueError('Unknown direction.')
+        raise ValueError('Unknown direction.')
 
 
 def tprob(t, df, tails='high'):
@@ -3072,12 +3104,12 @@ def tprob(t, df, tails='high'):
     t : float
         Value of t statistic
     tails : str
-        One of 'above', 'below', or 'both'. Determines the bounds of the
-        integration of the PDF. 'above' calculates the probability that a
-        random variable T will take a value as great or greater than t. 'below'
+        One of 'low', 'high', or 'two-sided'. Determines the bounds of the
+        integration of the PDF. 'high' calculates the probability that a
+        random variable T will take a value as great or greater than t. 'low'
         will calculate the probability that T will take a value less than or 
-        equal to t. 'both' will calculate the probability that T will take a
-        value more extreme than t (i.e. abs(T) >= t).
+        equal to t. 'two-sided' will calculate the probability that T will take
+        a value more extreme than t (i.e. abs(T) >= t).
 
     Returns
     -------
@@ -3102,7 +3134,7 @@ def tprob(t, df, tails='high'):
         raise ValueError('Unknown direction.')
 
 
-def fprob(f, dfn, dfd, direction='above'):
+def fprob(f, dfn, dfd, direction='high'):
     '''Calculate probability from F distribution 
 
     Paramaters
@@ -3114,9 +3146,9 @@ def fprob(f, dfn, dfd, direction='above'):
     dfd : float
         Degrees of freedom for ???
     direction : str
-        One of 'above' or 'below'. Determines the bounds of the
-        integration of the PDF. 'above' calculates the probability that a
-        random variable F will take a value as great or greater than f. 'below'
+        One of 'low' or 'high'. Determines the bounds of the
+        integration of the PDF. 'high' calculates the probability that a
+        random variable F will take a value as great or greater than f. 'low'
         will calculate the probability that F will take a value less than or 
         equal to f. 
 
@@ -3132,9 +3164,9 @@ def fprob(f, dfn, dfd, direction='above'):
     '''
     if f < 0.:
         return nan
-    elif direction == 'above':
+    elif direction == 'high':
         return 1. - fdist.cdf(f, dfn, dfd)
-    elif direction == 'below':
+    elif direction == 'low':
         return fdist.cdf(f, dfn, dfd)
     else:
         raise ValueError('Unknown direction.')
@@ -3203,7 +3235,7 @@ def fisher_population_correlation(corrcoefs, sample_sizes):
     rho = inverse_fisher_z_transform(z_bar)
     # calculate homogeneity
     x_2 = ((ns - 3) * (zs - z_bar) ** 2).sum()
-    h_val = chi2prob(x_2, len(ns) - 1, direction='above')
+    h_val = chi2prob(x_2, len(ns) - 1, direction='high')
     return rho, h_val
 
 
