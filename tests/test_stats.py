@@ -2878,7 +2878,7 @@ class PvalueTests(TestCase):
         r = .86519
         n = 12
         ts = 5.45618  # only 5 sig figs in sokal and rohlf
-        exp = tprob(ts, n - 2)
+        exp = tprob(ts, n - 2, tails='two-sided')
         obs = assign_correlation_pval(r, n, 'parametric_t_distribution')
         assert_allclose(exp, obs, rtol=1e-5)
         # test with too few samples
