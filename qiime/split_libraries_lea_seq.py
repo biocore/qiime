@@ -1,3 +1,14 @@
+#!/usr/bin/env python
+from __future__ import division
+
+__author__ = "Charudatta Navare"
+__copyright__ = "Copyright 2014, The QIIME Project"
+__credits__ = ["Charudatta Navare", "Jai Ram Rideout"]
+__license__ = "GPL"
+__version__ = "1.8.0-dev"
+__maintainer__ = "Charudatta Navare"
+__email__ = "charudatta.navare@gmail.com"
+
 from collections import defaultdict
 from optparse import OptionParser
 from itertools import izip
