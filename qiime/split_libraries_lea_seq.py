@@ -181,7 +181,7 @@ def read_input_file(sequence_read_fps, mapping_fp, output_dir,
 
         if sample_id is None:
             barcode_not_in_map_count += 1
-            continue  # not sure about indentation
+            continue
 
         # Extract the random barcode and primer from the forward read.
         possible_primers = bc_to_fwd_primers[corrected_barcode].keys()
