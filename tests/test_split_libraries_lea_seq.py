@@ -13,11 +13,10 @@ import tempfile
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files
 from qiime.util import get_qiime_temp_dir
-from qiime.split_libraries_lea_seq import (get_cluster_ratio, get_consensus,
+from lib_split_libraries_lea_seq import (get_cluster_ratio, get_consensus,
                                          read_input_file, extract_primer,
                                          select_unique_rand_bcs, SeqLengthMismatchError)
 import os
-
 
 
 class WorkflowTests(TestCase):
@@ -51,7 +50,7 @@ class WorkflowTests(TestCase):
     def test_select_unique_rand_bcs(self):
         fasta_seqs_of_rand_bcs = self.fasta_seqs_of_rand_bcs
         actual = select_unique_rand_bcs(fasta_seqs_of_rand_bcs)
-        expected = {'ATTGCATTGCATTGCATTGC': 1, 'ATTGCATTGCATTGCATTG': 0, 'ATTGCTTATTGCATTGCTTT': 1}
+        expected = set(['ATTGCATTGCATTGCATTGC', 'ATTGCTTATTGCATTGCTTT'])
         self.assertEqual(actual, expected)
 
     def test_get_consensus(self):
