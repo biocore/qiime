@@ -13,7 +13,7 @@ import tempfile
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files
 from qiime.util import get_qiime_temp_dir
-from split_libraries_lea_seq import (get_cluster_ratio, get_consensus,
+from qiime.split_libraries_lea_seq import (get_cluster_ratio, get_consensus,
                                          read_input_file, extract_primer,
                                          select_unique_rand_bcs, SeqLengthMismatchError)
 import os
