@@ -19,7 +19,7 @@ from qiime.split_libraries_lea_seq import read_input_file
 
 script_info = {}
 script_info[
-    'brief_description'] = "Implements Low-Error Amplicon Sequencing (LEA-Seq)"
+    'brief_description'] = "Demultiplexes Low-Error Amplicon Sequencing (LEA-Seq) data"
 script_info[
     'script_description'] = """Implements Low-Error Amplicon Sequencing (LEA-Seq) method,
 described in: Faith, Jeremiah J., et al.
