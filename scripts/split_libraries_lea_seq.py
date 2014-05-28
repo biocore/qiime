@@ -21,22 +21,22 @@ script_info = {}
 script_info[
     'brief_description'] = "Implements Low-Error Amplicon Sequencing (LEA-Seq)"
 script_info[
-    'script_description'] = """Implements Low-Error Amplicon Sequencing (LEA-Seq) method, \
-described in: Faith, Jeremiah J., et al. \
-The long-term stability of the human gut microbiota.\
-Science 341.6141 (2013).\
-This method is based on redundant sequencing of a set of linear PCR\
-template extensionsof 16S rRNA genes. The oligonucleotide primer\
-that is used for PCR template extensions is labeled with a random barcode\
-5' to the universal 16S rRNA primer sequence. This PCR pool is then\
-amplified with exponential PCR, using primers that specifically\
-amplify only the linear PCR molecules. An index primer is added to\
+    'script_description'] = """Implements Low-Error Amplicon Sequencing (LEA-Seq) method,
+described in: Faith, Jeremiah J., et al.
+The long-term stability of the human gut microbiota.
+Science 341.6141 (2013).
+This method is based on redundant sequencing of a set of linear PCR 
+template extensionsof 16S rRNA genes. The oligonucleotide primer 
+that is used for PCR template extensions is labeled with a random barcode 
+5' to the universal 16S rRNA primer sequence. This PCR pool is then 
+amplified with exponential PCR, using primers that specifically 
+amplify only the linear PCR molecules. An index primer is added to 
 the amplicons along with a primer specific for each sample.
-This exponential PCR pool is then sequenced redundantly (20x coverage).\
-The resulting sequences are separated by sample, using the index sequence.\
-The amplicon sequences within each sample are separated by the random\
-barcodes. The large number of reads for each barcode helps to\
-create an error-corrected consensus sequence for the\
+This exponential PCR pool is then sequenced redundantly (20x coverage). 
+The resulting sequences are separated by sample, using the index sequence. 
+The amplicon sequences within each sample are separated by the random 
+barcodes. The large number of reads for each barcode helps to 
+create an error-corrected consensus sequence for the 
 initial template molecule.
 """
 script_info['script_usage'] = []
@@ -71,23 +71,23 @@ script_info['optional_options'] = [
                 'if passing --barcode_type golay_12 [default: %default]',
                 default=1.5),
     make_option('--min_consensus', type='float',
-                help='threshold for consensus score'
-                'the minimum score allowable at any position in sequence'
-                'where the score is calulated as:'
+                help='threshold for consensus score: '
+                'the minimum score allowable at any position in sequence. '
+                'where the score is calulated as: '
                 'occurence of base in consensus sequence/ total sequences'
                 '[default: %default]',
                 default=0.66),
     make_option('--max_cluster_ratio', type='float',
-                help='threshold for cluster ratio'
-                'the maximum allowable cluster ratio'
-                'above which you need to find the consensus sequence'
-                'for the given sequences'
+                help='threshold for cluster ratio: '
+                'the maximum allowable cluster ratio '
+                'above which you need to find the consensus sequence '
+                'for the given sequences.'
                 '[default: %default]',
                 default=2.5),
     make_option('--min_difference_in_bcs', type='float',
-                help='threshold for selecting unique barcodes.'
-                'Barcodes that are more similar to each other'
-                'than this value will be discarded'
+                help='threshold for selecting unique barcodes: '
+                'Barcodes that are more similar to each other '
+                'than this value will be discarded.'
                 '[default: %default]',
                 default=0.86)
 
