@@ -252,7 +252,7 @@ def get_cluster_ratio(temp_file):
     uclust_tempfile = tempfile.NamedTemporaryFile(dir=temp_dir, mode='w', delete=False)
     uclust_tempfile_name = uclust_tempfile.name
     command = "uclust --usersort --input " + temp_file +\
-              " --uc " + uclust_tempfile_name + " --id "+ str(cluster_percent_id) +" --log log"
+              " --uc " + uclust_tempfile_name + " --id "+ str(cluster_percent_id)
     qiime_system_call(command)
     uclust_tempfile.close()
     uclust_tempfile = open (uclust_tempfile_name, 'r')
@@ -424,7 +424,7 @@ def select_unique_rand_bcs(rand_bcs):
 
     qiime_system_call("uclust --usersort --input " + fasta_tempfile_name
                       + " --uc " + uclust_tempfile_name + " --id " +
-                      str(unique_threshold) + " --log log")
+                      str(unique_threshold))
     for line in uclust_tempfile:
         if re.search('^C', line):
             pieces = line.split('\t')
