@@ -85,7 +85,15 @@ script_info['optional_options'] = [
                 'above which you need to find the consensus sequence'
                 'for the given sequences'
                 '[default: %default]',
-                default=2.5)
+                default=2.5),
+    make_option('--min_difference_in_bcs', type='float',
+                help='threshold for selecting unique barcodes.'
+                'Barcodes that are more similar to each other'
+                'than this value will be discarded'
+                '[default: %default]',
+                default=0.86)
+
+
 ]
 script_info['version'] = __version__
 
@@ -99,6 +107,7 @@ def main():
     min_consensus = opts.min_consensus
     max_cluster_ratio = opts.threshold_for_cluster_ratio
     output_dir = opts.output_dir
+    min_difference_in_bcs = opts.min_difference_in_bcs
     create_dir(output_dir)
     consensus_outfile = open(os.path.join(output_dir, "seqs.fna"), "w")
    
@@ -137,7 +146,7 @@ def main():
     consensus_seq_lookup = read_input_file(sequence_read_fps, mapping_fp,
                                            output_dir, barcode_type, barcode_correction_fn,
                                            max_barcode_errors, min_consensus,
-                                           max_cluster_ratio)
+                                           max_cluster_ratio, min_difference_in_bcs)
 
     for sample_id in consensus_seq_lookup:
         for random_bc in consensus_seq_lookup[sample_id]:
