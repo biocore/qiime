@@ -418,7 +418,7 @@ def select_unique_rand_bcs(rand_bcs):
     fasta_tempfile_name = fasta_tempfile.name
 
     p_line = ""
-    for count_rand_bc, rand_bc in enumerate(rand_bcs):
+    for rand_bc in rand_bcs:
         p_line = p_line + ">" + str(rand_bc) + "\n" + rand_bc + "\n"
     fasta_tempfile.write(p_line)
     fasta_tempfile.close()
