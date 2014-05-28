@@ -19,31 +19,31 @@ from qiime.split_libraries_lea_seq import read_input_file
 
 script_info = {}
 script_info[
-    'brief_description'] = "Demultiplexes Low-Error Amplicon Sequencing (LEA-Seq) data"
+    'brief_description'] = """Demultiplexes Low-Error Amplicon Sequencing (LEA-Seq) data"""
 script_info[
     'script_description'] = """Implements Low-Error Amplicon Sequencing 
 (LEA-Seq) method,described in: Faith, Jeremiah J., et al. 
-The long-term stability of the human gut microbiota.Science 341.6141 (2013).\ 
+The long-term stability of the human gut microbiota.Science 341.6141 (2013). 
 This method is based on redundant sequencing of a set of linear PCR template  
 extensions of 16S rRNA genes. The oligonucleotide primer that is used for 
 PCR template extensions is labeled with a random barcode 
 5' to the universal 16S rRNA primer sequence. This PCR pool is then 
 amplified with exponential PCR, using primers that specifically 
 amplify only the linear PCR molecules. An index primer is added to 
-the amplicons along with a primer specific for each sample.\
-This exponential PCR pool is then sequenced redundantly (20x coverage).\ 
-The resulting sequences are separated by sample, using the index sequence.\ 
+the amplicons along with a primer specific for each sample.
+This exponential PCR pool is then sequenced redundantly (20x coverage). 
+The resulting sequences are separated by sample, using the index sequence. 
 The amplicon sequences within each sample are separated by the random 
-barcodes. The large number of reads for each barcode helps to 
-create an error-corrected consensus sequence for the initial template molecule.
+barcodes. The large number of reads for each barcode helps to create an 
+error-corrected consensus sequence for the initial template molecule.
 """
 script_info['script_usage'] = []
-script_info['script_usage'].append(("""Example:""",
-                                    """Specify forward read and reverse read fasta files,
-                                    use the metadata mapping file map.txt,
-                                    and output the data to output_dir""",
-                                    """%prog -i fwd_read.fq,rev_read.fq -m map.txt -o output_dir --barcode_type=7"""))
-
+script_info['script_usage'].append(("""Example: Specify forward read and reverse read \
+fasta files, use the metadata mapping file map.txt,\
+and output the data to output_dir""",
+"""output_dir""",
+"""%prog -i fwd_read.fq,rev_read.fq -m map.txt -o output_dir --barcode_type=7"""
+))
 script_info['output_description'] = """The %prog generates:\
 A fasta file called seqs.fna which contains\
 error corrected consensus sequence for the template DNA\
