@@ -14,7 +14,7 @@ import os
 from qiime.util import create_dir
 from qcli import parse_command_line_parameters, make_option
 from qiime.golay import decode_golay_12
-from qiime.split_libraries_lea_seq import read_input_file
+from qiime.split_libraries_lea_seq import get_LEA_seq_consensus_seq
 
 
 script_info = {}
@@ -139,7 +139,7 @@ def main():
                             "filepaths." % len(sequence_read_fps))
 
 
-    consensus_seq_lookup = read_input_file(sequence_read_fps, mapping_fp,
+    consensus_seq_lookup = get_LEA_seq_consensus_seq(sequence_read_fps, mapping_fp,
                                            output_dir, barcode_type, barcode_correction_fn,
                                            max_barcode_errors, min_consensus,
                                            max_cluster_ratio, min_difference_in_bcs)
