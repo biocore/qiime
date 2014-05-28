@@ -49,7 +49,7 @@ class WorkflowTests(TestCase):
 
     def test_select_unique_rand_bcs(self):
         fasta_seqs_of_rand_bcs = self.fasta_seqs_of_rand_bcs
-        actual = select_unique_rand_bcs(fasta_seqs_of_rand_bcs)
+        actual = select_unique_rand_bcs(fasta_seqs_of_rand_bcs, 0.86)
         expected = set(['ATTGCATTGCATTGCATTGC', 'ATTGCTTATTGCATTGCTTT'])
         self.assertEqual(actual, expected)
 
