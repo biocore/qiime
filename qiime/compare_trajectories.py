@@ -13,10 +13,10 @@ __email__ = "josenavasmolina@gmail.com"
 from future.builtins import zip
 
 import pandas as pd
-from skbio.maths.gradient import (AverageGradientANOVA,
-                                  TrajectoryGradientANOVA,
-                                  FirstDifferenceGradientANOVA,
-                                  WindowDifferenceGradientANOVA)
+from skbio.math.gradient import (AverageGradientANOVA,
+                                 TrajectoryGradientANOVA,
+                                 FirstDifferenceGradientANOVA,
+                                 WindowDifferenceGradientANOVA)
 
 
 TRAJECTORY_ALGORITHMS = ['avg', 'trajectory', 'diff', 'wdiff']
@@ -68,23 +68,23 @@ def run_trajectory_analysis(ord_res, metadata_map, trajectory_categories=None,
     coords = pd.DataFrame.from_dict(coords_dict, orient='index')
 
     if algorithm == 'avg':
-        res = AverageGradientANOVA(coords, ord_res.prop_expl, metadata_map,
-                                   trajectory_categories, sort_category,
-                                   axes, weighted)
+        alg = AverageGradientANOVA(coords, ord_res.proportion_explained,
+                                   metadata_map, trajectory_categories,
+                                   sort_category, axes, weighted)
     elif algorithm == 'trajectory':
-        res = TrajectoryGradientANOVA(coords, ord_res.prop_expl, metadata_map,
-                                      trajectory_categories, sort_category,
-                                      axes, weighted)
+        alg = TrajectoryGradientANOVA(coords, ord_res.proportion_explained,
+                                      metadata_map, trajectory_categories,
+                                      sort_category, axes, weighted)
     elif algorithm == 'diff':
-        res = FirstDifferenceGradientANOVA(coords, ord_res.prop_expl,
-                                           metadata_map, trajectory_categories,
-                                           sort_category, axes, weighted)
+        alg = FirstDifferenceGradientANOVA(
+            coords, ord_res.proportion_explained, metadata_map,
+            trajectory_categories, sort_category, axes, weighted)
     elif algorithm == 'wdiff':
-        res = WindowDifferenceGradientANOVA(coords, ord_res.prop_expl,
-                                            metadata_map, window_size,
-                                            trajectory_categories,
-                                            sort_category, axes, weighted)
+        alg = WindowDifferenceGradientANOVA(
+            coords, ord_res.proportion_explained, metadata_map, window_size,
+            trajectory_categories=trajectory_categories,
+            sort_category=sort_category, axes=axes, weighted=weighted)
     else:
         raise ValueError("Algorithm %s not recognized" % algorithm)
 
-    return res
+    return alg.get_trajectories()
