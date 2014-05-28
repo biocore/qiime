@@ -107,9 +107,9 @@ script_info['version'] = __version__
 if __name__ == '__main__':
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
-    ord_fp = opts.input_ordination_fp
+    ord_fp = opts.input_fp
     mapping_fp = opts.map_fp
-    categories = opts.categories
+    categories = opts.categories.split(',')
     output_dir = opts.output_dir
     sort_by = opts.sort_by
     algorithm = opts.algorithm
@@ -131,6 +131,7 @@ if __name__ == '__main__':
             option_parser.error("Category %s does not exist in the mapping "
                                 "file" % categories)
 
+    sort_category = None
     if sort_by:
         if sort_by == 'SampleID':
             sort_category = None
