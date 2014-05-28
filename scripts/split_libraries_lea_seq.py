@@ -106,6 +106,7 @@ def main():
     min_difference_in_bcs = opts.min_difference_in_bcs
     create_dir(output_dir)
     consensus_outfile = open(os.path.join(output_dir, "seqs.fna"), "w")
+    log_file = open(os.path.join(output_dir, "log.txt"), "w")
    
     if barcode_type == 'golay_12':
         barcode_correction_fn = decode_golay_12
@@ -142,7 +143,7 @@ def main():
     consensus_seq_lookup = get_LEA_seq_consensus_seq(sequence_read_fps, mapping_fp,
                                            output_dir, barcode_type, barcode_correction_fn,
                                            max_barcode_errors, min_consensus,
-                                           max_cluster_ratio, min_difference_in_bcs)
+                                           max_cluster_ratio, min_difference_in_bcs, log_file)
 
     for sample_id in consensus_seq_lookup:
         for random_bc_count, random_bc in enumerate(consensus_seq_lookup[sample_id]):

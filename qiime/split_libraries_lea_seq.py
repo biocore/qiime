@@ -18,6 +18,7 @@ from qiime.split_libraries import check_map, expand_degeneracies
 from qiime.split_libraries_fastq import correct_barcode, FastqParseError
 from skbio.parse.sequences import parse_fastq
 from qiime.util import qiime_system_call, get_qiime_temp_dir
+from brokit.uclust import get_clusters_from_fasta_filepath
 import re
 import tempfile
 import os
@@ -75,7 +76,7 @@ def extract_primer(seq, possible_primers, min_idx=None, max_idx=None):
 
 def get_LEA_seq_consensus_seq(sequence_read_fps, mapping_fp, output_dir,
                     barcode_type, barcode_correction_fn, max_barcode_errors,
-                    min_consensus, max_cluster_ratio, min_difference_in_bcs):
+                    min_consensus, max_cluster_ratio, min_difference_in_bcs, log_file):
     """
     Reads mapping file, input file, and other command line arguments
     fills dictionary called consensus_seq_lookup which will contain:
@@ -199,12 +200,14 @@ def get_LEA_seq_consensus_seq(sequence_read_fps, mapping_fp, output_dir,
             primer_mismatch_count += 1
             continue
 
-        possible_primers = bc_to_rev_primers[corrected_barcode]
+
+        possible_primers = bc_to_rev_primers[corrected_barcode].keys()
+        # Error:
+        # AttributeError: 'function' object has no attribute 'keys'
 
         try:
             phase_seq, _, clean_rev_seq = extract_primer(rev_seq,
             possible_primers)
-            pass
         except PrimerMismatchError:
             primer_mismatch_count += 1
             continue
@@ -236,7 +239,7 @@ def get_LEA_seq_consensus_seq(sequence_read_fps, mapping_fp, output_dir,
                 rev_cluster_ratio = get_cluster_ratio(rev_fasta_tempfile_name)
                 # name is passed because there is system call inside the function
                 # function does not open the file
-                if fwd_cluster_ratio < max_cluster_ratio && rev_cluster_ratio < max_cluster_ratio:
+                if fwd_cluster_ratio < max_cluster_ratio and rev_cluster_ratio < max_cluster_ratio:
                     consensus_seq = majority_seq
                 else:
                     fwd_fasta_tempfile = open(fwd_fasta_tempfile_name, 'r')
@@ -250,6 +253,15 @@ def get_LEA_seq_consensus_seq(sequence_read_fps, mapping_fp, output_dir,
                 os.unlink(fwd_fasta_tempfile_name)
                 os.unlink(rev_fasta_tempfile_name)
 
+    if log_f != None:
+    log_str = format_split_libraries_fastq_log(barcode_errors_exceed_max_count,
+        barcode_not_in_map_count,
+        primer_mismatch_count
+        )
+    # I also want to add number of samples and number of random_bcs
+    # How do you get length of defaultdict objects?
+    log_f.write(log_str)
+    log_f.close()
     fwd_read_f.close()
     rev_read_f.close()
     return consensus_seq_lookup
@@ -425,8 +437,6 @@ def select_unique_rand_bcs(rand_bcs, min_difference_in_bcs):
     temp_dir = get_qiime_temp_dir()
 
     fasta_tempfile = tempfile.NamedTemporaryFile(dir=temp_dir, delete=False, mode='w')
-    uclust_tempfile = tempfile.NamedTemporaryFile(dir=temp_dir, delete=False, mode='r')
-    uclust_tempfile_name = uclust_tempfile.name
     fasta_tempfile_name = fasta_tempfile.name
 
     p_line = ""
@@ -435,14 +445,11 @@ def select_unique_rand_bcs(rand_bcs, min_difference_in_bcs):
     fasta_tempfile.write(p_line)
     fasta_tempfile.close()
 
-    qiime_system_call("uclust --usersort --input " + fasta_tempfile_name
-                      + " --uc " + uclust_tempfile_name + " --id " +
-                      str(unique_threshold))
-    for line in uclust_tempfile:
-        if re.search('^C', line):
-            pieces = line.split('\t')
-            unique_rand_bc = pieces[8]
-            unique_rand_bcs.add(unique_rand_bc)
+    unique_rand_bcs = get_clusters_from_fasta_filepath(
+        fasta_tempfile_name,
+        percent_ID=unique_threshold,
+        save_uc_files=False)
+
     uclust_tempfile.close()
     # os.unlink(fasta_tempfile_name)
     # os.unlink(uclust_tempfile_name)
