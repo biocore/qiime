@@ -213,7 +213,7 @@ def read_input_file(sequence_read_fps, mapping_fp, output_dir,
     random_bc_keep = select_unique_rand_bcs(random_bcs)
     for sample_id in random_bc_lookup:
         for random_bc in random_bc_lookup[sample_id]:
-            if random_bc_keep[random_bc] == 1:
+            if random_bc in random_bc_keep:
                 fasta_tempfile = tempfile.NamedTemporaryFile(dir=output_dir, delete=False)
                 fasta_tempfile_name = fasta_tempfile.name
                 max_freq = 0
@@ -398,6 +398,7 @@ def get_consensus(fasta_tempfile, min_consensus):
             return consensus
 
 
+
 def select_unique_rand_bcs(rand_bcs):
     """
     Attempts to select true barcodes from set of barcodes
@@ -405,11 +406,10 @@ def select_unique_rand_bcs(rand_bcs):
     due to sequencing errors.
     Uses uclust to remove barcodes that are similar thatn
     threshold.
-    returns: a dictionary which has value of 1 for unique
-    barcodes, and 0 for others.
+    returns: a set containing random unique random barcodes.
     """
     unique_threshold = 0.86
-    unique_rand_bcs = {}
+    unique_rand_bcs = set()
     temp_dir = get_qiime_temp_dir()
 
     fasta_tempfile = tempfile.NamedTemporaryFile(dir=temp_dir, delete=False, mode='w')
@@ -420,21 +420,19 @@ def select_unique_rand_bcs(rand_bcs):
     p_line = ""
     for count_rand_bc, rand_bc in enumerate(rand_bcs):
         p_line = p_line + ">" + str(rand_bc) + "\n" + rand_bc + "\n"
-        unique_rand_bcs[rand_bc] = 0
     fasta_tempfile.write(p_line)
     fasta_tempfile.close()
-    
+
     qiime_system_call("uclust --usersort --input " + fasta_tempfile_name
                       + " --uc " + uclust_tempfile_name + " --id " +
                       str(unique_threshold) + " --log log")
-    
     for line in uclust_tempfile:
         if re.search('^C', line):
             pieces = line.split('\t')
             unique_rand_bc = pieces[8]
-            unique_rand_bcs[unique_rand_bc] = 1
+            unique_rand_bcs.add(unique_rand_bc)
     uclust_tempfile.close()
-    os.unlink(fasta_tempfile_name)
-    os.unlink(uclust_tempfile_name)
+    # os.unlink(fasta_tempfile_name)
+    # os.unlink(uclust_tempfile_name)
 
     return unique_rand_bcs
