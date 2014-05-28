@@ -209,7 +209,6 @@ def read_input_file(sequence_read_fps, mapping_fp, output_dir,
 
         random_bc_lookup[sample_id][random_bc][(clean_fwd_seq, clean_rev_seq)] += 1
     cluster_ratios = list()
-    temp_dir = get_qiime_temp_dir
     random_bc_keep = select_unique_rand_bcs(random_bcs, min_difference_in_bcs)
     for sample_id in random_bc_lookup:
         for random_bc in random_bc_lookup[sample_id]:
