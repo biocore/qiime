@@ -77,7 +77,7 @@ script_info['optional_options'] = [
                 'occurence of base in consensus sequence/ total sequences'
                 '[default: %default]',
                 default=0.66),
-    make_option('--threshold_for_cluster_ratio', type='float',
+    make_option('--max_cluster_ratio', type='float',
                 help='threshold for cluster ratio'
                 'the maximum allowable cluster ratio'
                 'above which you need to find the consensus sequence'
@@ -103,7 +103,7 @@ def main():
     mapping_fp = opts.mapping_fp
     sequence_read_fps = opts.sequence_read_fps
     min_consensus = opts.min_consensus
-    max_cluster_ratio = opts.threshold_for_cluster_ratio
+    max_cluster_ratio = opts.max_cluster_ratio
     output_dir = opts.output_dir
     min_difference_in_bcs = opts.min_difference_in_bcs
     create_dir(output_dir)
