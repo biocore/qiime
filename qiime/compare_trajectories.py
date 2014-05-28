@@ -10,49 +10,81 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Jose Antonio Navas Molina"
 __email__ = "josenavasmolina@gmail.com"
 
-from skbio.maths.gradient import (AverageVectors, TrajectoryVectors,
-                                  DifferenceVectors, WindowDifferenceVectors)
+from future.builtins import zip
+
+import pandas as pd
+from skbio.maths.gradient import (AverageGradientANOVA,
+                                  TrajectoryGradientANOVA,
+                                  FirstDifferenceGradientANOVA,
+                                  WindowDifferenceGradientANOVA)
 
 
 TRAJECTORY_ALGORITHMS = ['avg', 'trajectory', 'diff', 'wdiff']
 
 
-def run_trajectory_analysis(ord_res, metamap, vector_category,
-                            sort_category=None, algorithm='avg',
-                            vectors_axes=3, weighted=False,
-                            window_size=None):
-    """
+def run_trajectory_analysis(ord_res, metadata_map, trajectory_categories=None,
+                            sort_category=None, algorithm='avg', axes=3,
+                            weighted=False, window_size=None):
+    """Executes the volatility analysis using 'algorithm' on the input data
+
     Parameters
     ----------
     ord_res : skbio.maths.stats.ordination.OrdinationResults
         The ordination results
-    metamap : pandas.DataFrame
+    metadata_map : pandas.DataFrame
         The metadata map where index are samples ids and columns are the
         metadata categories
-    vector_category : str
+    trajectory_categories : list of str, optional
+        A list of metadata categories to use to create the trajectories. If
+        None is passed, the trajectories for all metadata categories are
+        computed. Default: None, compute all of them.
     sort_category : str, optional
+        The metadata category to use to sort the trajectories. Default: None,
+        sort by sample id.
     algorithm : str, optional
-    vectors_axes : int, optional
+        The algorithm used to perform the volatility analysis. Default: avg.
+    axes : int, optional
+        The number of axes to account while doing the trajectory specific
+        calculations. Pass 0 to compute all of them. Default: 3
     weighted : bool, optional
-    window_size : int, optional
+        If true, the output is weighted by the space between samples in the
+        `sort_category` column
+    window_size : int or long, optional
+        If `algorithm` is 'wdiff', the window size to use while computing the
+        difference
 
     Returns
     -------
+    skbio.maths.gradient.GradientANOVAResults
+        The results of running the volatility analysis over the input data
+
+    Raises
+    ------
+    ValueError
+        If `algorithm` is not a recognized.
     """
+    coords_dict = {sid: coord for sid, coord in zip(ord_res.site_ids,
+                                                    ord_res.site)}
+    coords = pd.DataFrame.from_dict(coords_dict, orient='index')
+
     if algorithm == 'avg':
-        vecs = AverageVectors(ord_res, metamap, vector_category, sort_category,
-                              vectors_axes, weighted)
+        res = AverageGradientANOVA(coords, ord_res.prop_expl, metadata_map,
+                                   trajectory_categories, sort_category,
+                                   axes, weighted)
     elif algorithm == 'trajectory':
-        vecs = TrajectoryVectors(ord_res, metamap, vector_category,
-                                 sort_category, vectors_axes, weighted)
+        res = TrajectoryGradientANOVA(coords, ord_res.prop_expl, metadata_map,
+                                      trajectory_categories, sort_category,
+                                      axes, weighted)
     elif algorithm == 'diff':
-        vecs = DifferenceVectors(ord_res, metamap, vector_category,
-                                 sort_category, vectors_axes, weighted)
+        res = FirstDifferenceGradientANOVA(coords, ord_res.prop_expl,
+                                           metadata_map, trajectory_categories,
+                                           sort_category, axes, weighted)
     elif algorithm == 'wdiff':
-        vecs = WindowDifferenceVectors(ord_res, metamap, vector_category,
-                                       window_size, sort_category,
-                                       vectors_axes, weighted)
+        res = WindowDifferenceGradientANOVA(coords, ord_res.prop_expl,
+                                            metadata_map, window_size,
+                                            trajectory_categories,
+                                            sort_category, axes, weighted)
     else:
         raise ValueError("Algorithm %s not recognized" % algorithm)
 
-    return vecs
+    return res
