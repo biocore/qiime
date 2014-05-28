@@ -112,10 +112,11 @@ def read_input_file(sequence_read_fps, mapping_fp, output_dir,
                 bc_to_rev_primers[md[BARCODE_COLUMN]] = expand_degeneracies
                 (md[REVERSE_PRIMER_COLUMN].upper().split(','))
             else:
-                raise Exception("The %s column does not exist in the "
-                                    "mapping file. %s is required." %
-                                    (REVERSE_PRIMER_COLUMN,
-                                     REVERSE_PRIMER_COLUMN))
+                raise Exception(
+                    "The %s column does not exist in the "
+                    "mapping file. %s is required." %
+                    (REVERSE_PRIMER_COLUMN,
+                    REVERSE_PRIMER_COLUMN))
 
     #  Make sure our barcodes(which are guaranteed to be the same length at
     #  this point) are the correct length that the user specified.
@@ -129,15 +130,16 @@ def read_input_file(sequence_read_fps, mapping_fp, output_dir,
         invalid_golay_barcodes = get_invalid_golay_barcodes(bc_to_sid.keys())
 
         if invalid_golay_barcodes:
-            raise Exception("Some or all barcodes in the mapping file are "
-                                "not valid golay codes. Do they need to be "
-                                "reverse complemented? If these are not golay "
-                                "barcodes pass --barcode_type 12 to disable "
-                                "barcode error correction, or pass "
-                                "--barcode_type  # if the barcodes are not 12 "
-                                "base pairs, where   #  is the size of the "
-                                "barcodes.\n\nInvalid barcodes: %s" %
-                                ' '.join(invalid_golay_barcodes))
+            raise Exception(
+                "Some or all barcodes in the mapping file are "
+                "not valid golay codes. Do they need to be "
+                "reverse complemented? If these are not golay "
+                "barcodes pass --barcode_type 12 to disable "
+                "barcode error correction, or pass "
+                "--barcode_type  # if the barcodes are not 12 "
+                "base pairs, where   #  is the size of the "
+                "barcodes.\n\nInvalid barcodes: %s" %
+                ' '.join(invalid_golay_barcodes))
 
     header_idx = 0
     seq_idx = 1
@@ -154,11 +156,12 @@ def read_input_file(sequence_read_fps, mapping_fp, output_dir,
             # Confirm match between read headers.
 
         if fwd_read[header_idx] != rev_read[header_idx]:
-            raise PairedEndParseError("Headers of forward and reverse reads "
-                                      "do not match. Confirm that the forward "
-                                      "and reverse read fastq files that you "
-                                      "provided have headers that match one "
-                                      "another.")
+            raise PairedEndParseError(
+                "Headers of forward and reverse reads "
+                "do not match. Confirm that the forward "
+                "and reverse read fastq files that you "
+                "provided have headers that match one "
+                "another.")
         else:
             header = fwd_read[header_idx]
 
