@@ -229,7 +229,7 @@ def read_input_file(sequence_read_fps, mapping_fp, output_dir,
                     num_seq_this_barcode = seq_count_this_barcode
                     if random_bc_lookup[sample_id][random_bc][fwd_rev_seq] > max_freq:
                         max_freq = random_bc_lookup[sample_id][random_bc][fwd_rev_seq]
-                        majority_seq = fwd_seq + "^" + rev_seq
+                        majority_seq = fwd_seq + ", " + rev_seq
                 fwd_fasta_tempfile.close()
                 rev_fasta_tempfile.close()
                 fwd_cluster_ratio = get_cluster_ratio(fwd_fasta_tempfile_name)
@@ -243,10 +243,12 @@ def read_input_file(sequence_read_fps, mapping_fp, output_dir,
                     rev_fasta_tempfile = open(rev_fasta_tempfile_name, 'r')
                     fwd_consensus = get_consensus(fwd_fasta_tempfile, min_consensus)
                     rev_consensus = get_consensus(rev_fasta_tempfile, min_consensus)
-                    consensus_seq = fwd_consensus + "^" + rev_consensus
+                    consensus_seq = fwd_consensus + ", " + rev_consensus
                 consensus_seq_lookup[sample_id][random_bc] = consensus_seq
-                fasta_tempfile.close()
-                os.unlink(fasta_tempfile_name)
+                fwd_fasta_tempfile.close()
+                rev_fasta_tempfile.close()
+                os.unlink(fwd_fasta_tempfile_name)
+                os.unlink(rev_fasta_tempfile_name)
 
     fwd_read_f.close()
     rev_read_f.close()
