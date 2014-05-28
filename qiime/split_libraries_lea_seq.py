@@ -401,7 +401,7 @@ def get_consensus(fasta_tempfile, min_consensus):
 
 
 
-def select_unique_rand_bcs(rand_bcs):
+def select_unique_rand_bcs(rand_bcs, min_difference_in_bcs):
     """
     Attempts to select true barcodes from set of barcodes
     i.e. removes barcodes that might be artifacts
@@ -410,7 +410,7 @@ def select_unique_rand_bcs(rand_bcs):
     threshold.
     returns: a set containing random unique random barcodes.
     """
-    unique_threshold = 0.86
+    unique_threshold = min_difference_in_bcs
     unique_rand_bcs = set()
     temp_dir = get_qiime_temp_dir()
 
