@@ -202,40 +202,48 @@ def read_input_file(sequence_read_fps, mapping_fp, output_dir,
         possible_primers = bc_to_rev_primers[corrected_barcode]
 
         try:
-            # phase_seq, _, clean_rev_seq = extract_primer(rev_seq,
-            # possible_primers)
+            phase_seq, _, clean_rev_seq = extract_primer(rev_seq,
+            possible_primers)
             pass
         except PrimerMismatchError:
             primer_mismatch_count += 1
-            # continue
-        clean_rev_seq = fwd_seq
+            continue
+
 
         random_bc_lookup[sample_id][random_bc][(clean_fwd_seq, clean_rev_seq)] += 1
-    cluster_ratios = list()
     random_bc_keep = select_unique_rand_bcs(random_bcs, min_difference_in_bcs)
     for sample_id in random_bc_lookup:
         for random_bc in random_bc_lookup[sample_id]:
             if random_bc in random_bc_keep:
-                fasta_tempfile = tempfile.NamedTemporaryFile(dir=output_dir, delete=False)
-                fasta_tempfile_name = fasta_tempfile.name
+                fwd_fasta_tempfile = tempfile.NamedTemporaryFile(dir=output_dir, delete=False)
+                rev_fasta_tempfile = tempfile.NamedTemporaryFile(dir=output_dir, delete=False)
+                fwd_fasta_tempfile_name = fwd_fasta_tempfile.name
+                rev_fasta_tempfile_name = rev_fasta_tempfile.name
                 max_freq = 0
                 for seq_count_this_barcode, fwd_rev_seq in enumerate(random_bc_lookup[sample_id][random_bc]):
                     fwd_seq, rev_seq = fwd_rev_seq
-                    p_line = ">" + random_bc + "|" + str(random_bc_lookup[sample_id][random_bc][fwd_rev_seq]) + "\n" + fwd_seq + "\n"
-                    fasta_tempfile.write(p_line)
+                    fwd_line = ">" + random_bc + "|" + str(random_bc_lookup[sample_id][random_bc][fwd_rev_seq]) + "\n" + fwd_seq + "\n"
+                    rev_line = ">" + random_bc + "|" + str(random_bc_lookup[sample_id][random_bc][fwd_rev_seq]) + "\n" + rev_seq + "\n"
+                    fwd_fasta_tempfile.write(fwd_line)
+                    rev_fasta_tempfile.write(rev_line)
                     num_seq_this_barcode = seq_count_this_barcode
                     if random_bc_lookup[sample_id][random_bc][fwd_rev_seq] > max_freq:
                         max_freq = random_bc_lookup[sample_id][random_bc][fwd_rev_seq]
-                        majority_seq = fwd_seq
-                fasta_tempfile = open(fasta_tempfile_name, 'r')
-                cluster_ratio = get_cluster_ratio(fasta_tempfile_name)
+                        majority_seq = fwd_seq + "^" + rev_seq
+                fwd_fasta_tempfile.close()
+                rev_fasta_tempfile.close()
+                fwd_cluster_ratio = get_cluster_ratio(fwd_fasta_tempfile_name)
+                rev_cluster_ratio = get_cluster_ratio(rev_fasta_tempfile_name)
                 # name is passed because there is system call inside the function
                 # function does not open the file
-                cluster_ratios.append(cluster_ratio)
-                if cluster_ratio < max_cluster_ratio:
+                if fwd_cluster_ratio < max_cluster_ratio && rev_cluster_ratio < max_cluster_ratio:
                     consensus_seq = majority_seq
                 else:
-                    consensus_seq = get_consensus(fasta_tempfile, min_consensus)
+                    fwd_fasta_tempfile = open(fwd_fasta_tempfile_name, 'r')
+                    rev_fasta_tempfile = open(rev_fasta_tempfile_name, 'r')
+                    fwd_consensus = get_consensus(fwd_fasta_tempfile, min_consensus)
+                    rev_consensus = get_consensus(rev_fasta_tempfile, min_consensus)
+                    consensus_seq = fwd_consensus + "^" + rev_consensus
                 consensus_seq_lookup[sample_id][random_bc] = consensus_seq
                 fasta_tempfile.close()
                 os.unlink(fasta_tempfile_name)
@@ -245,7 +253,7 @@ def read_input_file(sequence_read_fps, mapping_fp, output_dir,
     return consensus_seq_lookup
 
 
-def get_cluster_ratio(temp_file):
+def get_cluster_ratio(fasta_tempfile_name):
     """
     Uses uclust to calculate cluster ratio
     cluster_ratio=num_of_seq_in_cluster_with_max_seq/num_of_seq_in cluster_with_second_higest_seq
@@ -254,7 +262,7 @@ def get_cluster_ratio(temp_file):
     temp_dir = get_qiime_temp_dir()
     uclust_tempfile = tempfile.NamedTemporaryFile(dir=temp_dir, mode='w', delete=False)
     uclust_tempfile_name = uclust_tempfile.name
-    command = "uclust --usersort --input " + temp_file +\
+    command = "uclust --usersort --input " + fasta_tempfile_name +\
               " --uc " + uclust_tempfile_name + " --id "+ str(cluster_percent_id)
     qiime_system_call(command)
     uclust_tempfile.close()

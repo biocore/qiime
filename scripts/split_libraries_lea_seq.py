@@ -147,7 +147,7 @@ def main():
     for sample_id in consensus_seq_lookup:
         for random_bc_count, random_bc in enumerate(consensus_seq_lookup[sample_id]):
             consensus_seq = consensus_seq_lookup[sample_id][random_bc]
-            consensus_outfile.write(">" + sample_id + "_" + random_bc_count
+            consensus_outfile.write(">" + sample_id + "_" + str(random_bc_count)
                                     + "\n" + consensus_seq + "\n")
 
 if __name__ == "__main__":
