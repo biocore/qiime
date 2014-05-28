@@ -75,7 +75,7 @@ def extract_primer(seq, possible_primers, min_idx=None, max_idx=None):
 
 def read_input_file(sequence_read_fps, mapping_fp, output_dir,
                     barcode_type, barcode_correction_fn, max_barcode_errors,
-                    min_consensus, max_cluster_ratio):
+                    min_consensus, max_cluster_ratio, min_difference_in_bcs):
     """
     Reads mapping file, input file, and other command line arguments
     fills dictionary called consensus_seq_lookup which will contain:
@@ -210,7 +210,7 @@ def read_input_file(sequence_read_fps, mapping_fp, output_dir,
         random_bc_lookup[sample_id][random_bc][(clean_fwd_seq, clean_rev_seq)] += 1
     cluster_ratios = list()
     temp_dir = get_qiime_temp_dir
-    random_bc_keep = select_unique_rand_bcs(random_bcs)
+    random_bc_keep = select_unique_rand_bcs(random_bcs, min_difference_in_bcs)
     for sample_id in random_bc_lookup:
         for random_bc in random_bc_lookup[sample_id]:
             if random_bc in random_bc_keep:
