@@ -14,9 +14,7 @@ import os
 from qiime.util import create_dir
 from qcli import parse_command_line_parameters, make_option
 from qiime.golay import decode_golay_12
-from qiime.split_libraries_lea_seq import (get_cluster_ratio, get_consensus,
-                                         read_input_file, extract_primer,
-                                         select_unique_rand_bcs)
+from qiime.split_libraries_lea_seq import read_input_file
 
 
 script_info = {}
