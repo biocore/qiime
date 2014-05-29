@@ -494,7 +494,7 @@ def get_seqs_to_keep_lookup_from_seq_id_file(id_to_keep_f):
     """generate a lookup dict of chimeras in chimera file."""
     return (
         set([l.split()[0].strip()
-            for l in id_to_keep_f if not l.startswith('#') and l])
+            for l in id_to_keep_f if l.strip() and not l.startswith('#')])
     )
 get_seq_ids_from_seq_id_file = get_seqs_to_keep_lookup_from_seq_id_file
 
