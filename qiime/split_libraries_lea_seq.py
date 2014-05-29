@@ -74,7 +74,7 @@ def extract_primer(seq, possible_primers, min_idx=None, max_idx=None):
 
 
 
-def get_LEA_seq_consensus_seq(sequence_read_fps, mapping_fp, output_dir,
+def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
                     barcode_type, barcode_correction_fn, max_barcode_errors,
                     min_consensus, max_cluster_ratio, min_difference_in_bcs, log_file):
     """
@@ -201,17 +201,17 @@ def get_LEA_seq_consensus_seq(sequence_read_fps, mapping_fp, output_dir,
             continue
 
 
-        possible_primers = bc_to_rev_primers[corrected_barcode].keys()
+        #possible_primers = bc_to_rev_primers[corrected_barcode].keys()
         # Error:
         # AttributeError: 'function' object has no attribute 'keys'
 
-        try:
-            phase_seq, _, clean_rev_seq = extract_primer(rev_seq,
-            possible_primers)
-        except PrimerMismatchError:
-            primer_mismatch_count += 1
-            continue
-
+        #try:
+        #    phase_seq, _, clean_rev_seq = extract_primer(rev_seq,
+        #    possible_primers)
+        #except PrimerMismatchError:
+        #    primer_mismatch_count += 1
+        #    continue
+        clean_rev_seq = clean_fwd_seq
 
         random_bc_lookup[sample_id][random_bc][(clean_fwd_seq, clean_rev_seq)] += 1
     random_bc_keep = select_unique_rand_bcs(random_bcs, min_difference_in_bcs)
@@ -225,8 +225,8 @@ def get_LEA_seq_consensus_seq(sequence_read_fps, mapping_fp, output_dir,
                 max_freq = 0
                 for seq_count_this_barcode, fwd_rev_seq in enumerate(random_bc_lookup[sample_id][random_bc]):
                     fwd_seq, rev_seq = fwd_rev_seq
-                    fwd_line = ">" + random_bc + "|" + str(random_bc_lookup[sample_id][random_bc][fwd_rev_seq]) + "\n" + fwd_seq + "\n"
-                    rev_line = ">" + random_bc + "|" + str(random_bc_lookup[sample_id][random_bc][fwd_rev_seq]) + "\n" + rev_seq + "\n"
+                    fwd_line = ">" + str(seq_count_this_barcode)+ random_bc + "|" + str(random_bc_lookup[sample_id][random_bc][fwd_rev_seq]) + "\n" + fwd_seq + "\n"
+                    rev_line = ">" + str(seq_count_this_barcode)+ random_bc + "|" + str(random_bc_lookup[sample_id][random_bc][fwd_rev_seq]) + "\n" + rev_seq + "\n"
                     fwd_fasta_tempfile.write(fwd_line)
                     rev_fasta_tempfile.write(rev_line)
                     num_seq_this_barcode = seq_count_this_barcode
@@ -253,14 +253,14 @@ def get_LEA_seq_consensus_seq(sequence_read_fps, mapping_fp, output_dir,
                 os.unlink(fwd_fasta_tempfile_name)
                 os.unlink(rev_fasta_tempfile_name)
 
-    log_str = format_split_libraries_fastq_log(barcode_errors_exceed_max_count,
+    log_str = (barcode_errors_exceed_max_count,
         barcode_not_in_map_count,
         primer_mismatch_count
         )
     # I also want to add number of samples and number of random_bcs
     # How do you get length of defaultdict objects?
-    log_f.write(log_str)
-    log_f.close()
+    log_file.write(str(log_str))
+    log_file.close()
     fwd_read_f.close()
     rev_read_f.close()
     return consensus_seq_lookup
@@ -273,35 +273,22 @@ def get_cluster_ratio(fasta_tempfile_name):
     """
     cluster_percent_id = 0.98
     temp_dir = get_qiime_temp_dir()
-    uclust_tempfile = tempfile.NamedTemporaryFile(dir=temp_dir, mode='w', delete=False)
-    uclust_tempfile_name = uclust_tempfile.name
-    command = "uclust --usersort --input " + fasta_tempfile_name +\
-              " --uc " + uclust_tempfile_name + " --id "+ str(cluster_percent_id)
-    qiime_system_call(command)
-    uclust_tempfile.close()
-    uclust_tempfile = open (uclust_tempfile_name, 'r')
-    count = 0
+
+    clusters, _, _ = get_clusters_from_fasta_filepath(
+        fasta_tempfile_name,
+        original_fasta_path=None,
+        percent_ID=cluster_percent_id,
+        save_uc_files=False,
+        output_dir=temp_dir)
+
     count_lookup = {}
-
-    for line in uclust_tempfile:
-        if re.search(r'^C', line):
-            pieces = line.split('\t')
-            try:
-                count_lookup[pieces[1]] += pieces[2]
-            except KeyError:
-                count_lookup[pieces[1]] = pieces[2]
-            except IndexError:
-                pass
-            count += 1
-
+    for n, i in enumerate(clusters):
+        count_lookup[str(n)] = len(i)
     sorted_counts_in_clusters = sorted(count_lookup.iteritems(), key=lambda x: x[1])
-    uclust_tempfile.close()    
-    os.unlink(uclust_tempfile.name)
     try:
         return float(str(sorted_counts_in_clusters[0][1]))/float(str(sorted_counts_in_clusters[1][1]))
     except IndexError:
         return 1
-
 
 
 def get_consensus(fasta_tempfile, min_consensus):
@@ -432,7 +419,7 @@ def select_unique_rand_bcs(rand_bcs, min_difference_in_bcs):
     returns: a set containing random unique random barcodes.
     """
     unique_threshold = min_difference_in_bcs
-    unique_rand_bcs = set()
+    
     temp_dir = get_qiime_temp_dir()
 
     fasta_tempfile = tempfile.NamedTemporaryFile(dir=temp_dir, delete=False, mode='w')
@@ -444,12 +431,15 @@ def select_unique_rand_bcs(rand_bcs, min_difference_in_bcs):
     fasta_tempfile.write(p_line)
     fasta_tempfile.close()
 
-    unique_rand_bcs = get_clusters_from_fasta_filepath(
+    _, _, unique_rand_bcs = get_clusters_from_fasta_filepath(
         fasta_tempfile_name,
+        original_fasta_path=None,
         percent_ID=unique_threshold,
-        save_uc_files=False)
+        save_uc_files=False,
+        output_dir=temp_dir)
 
-    uclust_tempfile.close()
+    unique_rand_bcs = set(unique_rand_bcs)
+
     # os.unlink(fasta_tempfile_name)
     # os.unlink(uclust_tempfile_name)
 
