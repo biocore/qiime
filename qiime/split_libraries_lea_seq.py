@@ -253,7 +253,6 @@ def get_LEA_seq_consensus_seq(sequence_read_fps, mapping_fp, output_dir,
                 os.unlink(fwd_fasta_tempfile_name)
                 os.unlink(rev_fasta_tempfile_name)
 
-    if log_f != None:
     log_str = format_split_libraries_fastq_log(barcode_errors_exceed_max_count,
         barcode_not_in_map_count,
         primer_mismatch_count
