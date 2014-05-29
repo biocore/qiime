@@ -17,6 +17,7 @@ import pandas as pd
 
 from skbio.math.stats.ordination import OrdinationResults
 
+from qiime.parse import parse_mapping_file_to_dict
 from qiime.util import parse_command_line_parameters, make_option
 from qiime.compare_trajectories import (run_trajectory_analysis,
                                         TRAJECTORY_ALGORITHMS)
@@ -122,9 +123,9 @@ if __name__ == '__main__':
         ord_res = OrdinationResults.from_file(f)
 
     # Parse the mapping file
-    # Using dropna to remove comments - with how='all' removes a row
-    # if all its column values are NA, which should occur only with in comments
-    metamap = pd.read_csv(mapping_fp, sep='\t', index_col=0).dropna(how='all')
+    with open(mapping_fp, 'U') as f:
+        map_dict = parse_mapping_file_to_dict(f)[0]
+    metamap = pd.DataFrame.from_dict(map_dict, orient='index')
 
     for category in categories:
         if category not in metamap.keys():
