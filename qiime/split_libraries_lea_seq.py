@@ -110,8 +110,7 @@ def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
         bc_to_rev_primers = {}
         for sid, md in metadata_map.items():
             if REVERSE_PRIMER_COLUMN in md:
-                bc_to_rev_primers[md[BARCODE_COLUMN]] = expand_degeneracies
-                (md[REVERSE_PRIMER_COLUMN].upper().split(','))
+                bc_to_rev_primers[md[BARCODE_COLUMN]] = expand_degeneracies(md[REVERSE_PRIMER_COLUMN].upper().split(','))
             else:
                 raise Exception(
                     "The %s column does not exist in the "
@@ -201,17 +200,17 @@ def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
             continue
 
 
-        #possible_primers = bc_to_rev_primers[corrected_barcode].keys()
+        possible_primers = bc_to_rev_primers[barcode]
         # Error:
         # AttributeError: 'function' object has no attribute 'keys'
 
-        #try:
-        #    phase_seq, _, clean_rev_seq = extract_primer(rev_seq,
-        #    possible_primers)
-        #except PrimerMismatchError:
-        #    primer_mismatch_count += 1
-        #    continue
-        clean_rev_seq = clean_fwd_seq
+        try:
+            phase_seq, _, clean_rev_seq = extract_primer(rev_seq,
+            possible_primers)
+        except PrimerMismatchError:
+            primer_mismatch_count += 1
+            continue
+        # clean_rev_seq = clean_fwd_seq
 
         random_bc_lookup[sample_id][random_bc][(clean_fwd_seq, clean_rev_seq)] += 1
     random_bc_keep = select_unique_rand_bcs(random_bcs, min_difference_in_bcs)
