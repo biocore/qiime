@@ -205,8 +205,6 @@ def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
             
 
         possible_primers = bc_to_rev_primers[barcode]
-        # Error:
-        # AttributeError: 'function' object has no attribute 'keys'
 
         try:
             phase_seq, _, clean_rev_seq = extract_primer(rev_seq,
