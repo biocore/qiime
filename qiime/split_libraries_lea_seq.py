@@ -90,8 +90,7 @@ def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
                                                defaultdict(int)))
 
     consensus_seq_lookup = defaultdict(lambda:
-                                       defaultdict(lambda:
-                                                   defaultdict(int)))
+                                       defaultdict(str))
 
     BARCODE_COLUMN = 'BarcodeSequence'
     REVERSE_PRIMER_COLUMN = 'ReversePrimer'
@@ -258,13 +257,8 @@ def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
                 os.unlink(fwd_fasta_tempfile_name)
                 os.unlink(rev_fasta_tempfile_name)
 
-    log_str = (barcode_errors_exceed_max_count,
-        barcode_not_in_map_count,
-        primer_mismatch_count
-        )
-    # I also want to add number of samples and number of random_bcs
-    # How do you get length of defaultdict objects?
-    log_file.write(str(log_str))
+    log_str = "barcodes errors that exceed max count: " + str(barcode_errors_exceed_max_count) + "\n" + "barcode_not_in_map_count: " + str(barcode_not_in_map_count)+ "\n" + "primer_mismatch_count: " + str(primer_mismatch_count)+ "\n"
+    log_file.write(log_str)
     log_file.close()
     fwd_read_f.close()
     rev_read_f.close()
