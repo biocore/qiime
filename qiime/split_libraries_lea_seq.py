@@ -66,7 +66,9 @@ def extract_primer(seq, possible_primers, min_idx=None, max_idx=None):
                 break
 
     if primer_idx is None:
-        raise PrimerMismatchError
+        raise PrimerMismatchError(
+            "Sequence does not contain any primers from the mapping file, "
+            "Please verify your mapping file.")
 
     before_primer = seq[:primer_idx]
     after_primer = seq.replace(before_primer + primer, '', 1)
@@ -149,7 +151,7 @@ def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
     primer_mismatch_count = 0
     fwd_read_f = open(seq_fps[0], 'U')
     rev_read_f = open(seq_fps[1], 'U')
-    random_bcs = list()
+    random_bcs = {}
     for fwd_read, rev_read in izip(
             parse_fastq(fwd_read_f, strict=False),
             parse_fastq(rev_read_f, strict=False)):
@@ -194,11 +196,14 @@ def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
                                                          possible_primers,
                                                          min_idx=5,
                                                          max_idx=20)
-            random_bcs.append(random_bc)
+            random_bcs[sample_id].append(random_bc)
         except PrimerMismatchError:
             primer_mismatch_count += 1
             continue
-
+        except KeyError:
+            random_bcs[sample_id] = list()
+            random_bcs[sample_id].append(random_bc)
+            
 
         possible_primers = bc_to_rev_primers[barcode]
         # Error:
@@ -210,13 +215,14 @@ def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
         except PrimerMismatchError:
             primer_mismatch_count += 1
             continue
-        # clean_rev_seq = clean_fwd_seq
 
         random_bc_lookup[sample_id][random_bc][(clean_fwd_seq, clean_rev_seq)] += 1
-    random_bc_keep = select_unique_rand_bcs(random_bcs, min_difference_in_bcs)
+    random_bc_keep = {}
+
     for sample_id in random_bc_lookup:
+        random_bc_keep[sample_id] = select_unique_rand_bcs(random_bcs[sample_id], min_difference_in_bcs)
         for random_bc in random_bc_lookup[sample_id]:
-            if random_bc in random_bc_keep:
+            if random_bc in random_bc_keep[sample_id]:
                 fwd_fasta_tempfile = tempfile.NamedTemporaryFile(dir=output_dir, delete=False)
                 rev_fasta_tempfile = tempfile.NamedTemporaryFile(dir=output_dir, delete=False)
                 fwd_fasta_tempfile_name = fwd_fasta_tempfile.name
