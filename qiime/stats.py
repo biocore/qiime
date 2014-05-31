@@ -45,7 +45,7 @@ from numpy import (argsort, array, ceil, empty, fill_diagonal, finfo,
                    log, mean, nan, nonzero, sqrt, std, take, tanh,
                    transpose, seterr as np_seterr, var, arange, corrcoef,
                    trace, ravel, float as np_float, finfo, asarray, isnan,
-                   isinf)
+                   isinf, abs)
 
 from numpy.random import permutation, shuffle, randint
 from biom.table import table_factory, DenseOTUTable
@@ -1721,22 +1721,19 @@ def mc_t_two_sample(x_items, y_items, tails='two-sided', permutations=999,
     nonparam_p_val = nan
     perm_t_stats = []
     if permutations > 0 and not isnan(obs_t) and not isnan(param_p_val):
-        # Permute observations between x_items and y_items the specified number
-        # of times.
-        perm_x_items, perm_y_items = _permute_observations(x_items, y_items,
-                                                           permutations)
-        perm_t_stats = [t_two_sample(perm_x_items[n], perm_y_items[n],
-                                     tails=tails, exp_diff=exp_diff)[0]
-                        for n in range(permutations)]
+        perm_t_stats = zeros(permutations, dtype=float)
+        px, py = _permute_observations(x_items, y_items, permutations)
+        for i in range(permutations):
+            perm_t_stats[i] = t_two_sample(px[i], py[i], tails=tails,
+                                           exp_diff=exp_diff)[0]
 
         # Compute nonparametric p-value based on the permuted t-test results.
         if tails == 'two-sided':
-            better = (absolute(array(perm_t_stats)) >=
-                      absolute(obs_t)).sum()
+            better = (abs(perm_t_stats) >= abs(obs_t)).sum()
         elif tails == 'low':
-            better = (array(perm_t_stats) <= obs_t).sum()
+            better = ((perm_t_stats) <= obs_t).sum()
         elif tails == 'high':
-            better = (array(perm_t_stats) >= obs_t).sum()
+            better = ((perm_t_stats) >= obs_t).sum()
         nonparam_p_val = (better + 1) / (permutations + 1)
 
     return obs_t, param_p_val, perm_t_stats, nonparam_p_val
@@ -2090,31 +2087,25 @@ def correlation_t(x_items, y_items, method='pearson', tails='two-sided',
             parametric_p_val = 0
 
     # Perform the nonparametric test.
-    permuted_corr_coeffs = []
+    perm_ccs = zeros(permutations, dtype=float)
     nonparametric_p_val = None
     better = 0
     for i in range(permutations):
-        permuted_y_items = y_items[permutation(n)]
-        permuted_corr_coeff = corr_fn(x_items, permuted_y_items)
-        permuted_corr_coeffs.append(permuted_corr_coeff)
+        perm_ccs[i] = corr_fn(x_items, y_items[permutation(n)])
 
-        if tails == 'two-sided':
-            if abs(round(permuted_corr_coeff, 10)) >= \
-               abs(round(corr_coeff, 10)):
-                better += 1
-        elif tails == 'high':
-            if round(permuted_corr_coeff, 10) >= round(corr_coeff, 10):
-                better += 1
-        elif tails == 'low':
-            if round(permuted_corr_coeff, 10) <= round(corr_coeff, 10):
-                better += 1
-        else:
-            # Not strictly necessary since this was checked above, but included
-            # for safety in case the above check gets removed or messed up. We
-            # don't want to return a p-value of 0 if someone passes in a bogus
-            # tail type somehow.
-            raise ValueError("Invalid tail type '%s'. Must be either None, "
-                             "'high', or 'low'." % tails)
+    if tails == 'two-sided':
+        better = (abs(perm_ccs.round(15)) >= abs(round(corr_coeff, 15))).sum()
+    elif tails == 'high':
+        better = (perm_ccs.round(15) >= round(corr_coeff, 15)).sum()
+    elif tails == 'low':
+        better = (perm_ccs.round(15) <= round(corr_coeff, 15)).sum()
+    else:
+        # Not strictly necessary since this was checked above, but included
+        # for safety in case the above check gets removed or messed up. We
+        # don't want to return a p-value of 0 if someone passes in a bogus
+        # tail type somehow.
+        raise ValueError("Invalid tail type '%s'. Must be either None, "
+                         "'high', or 'low'." % tails)
     if permutations > 0:
         nonparametric_p_val = (better + 1) / (permutations + 1)
 
@@ -2133,7 +2124,7 @@ def correlation_t(x_items, y_items, method='pearson', tails='two-sided',
             # r/rho was presumably 1 or -1. Match what R does in this case.
             ci_low, ci_high = corr_coeff, corr_coeff
 
-    return (corr_coeff, parametric_p_val, permuted_corr_coeffs,
+    return (corr_coeff, parametric_p_val, perm_ccs,
             nonparametric_p_val, (ci_low, ci_high))
 
 
@@ -2199,7 +2190,7 @@ def _average_rank(start_rank, end_rank):
 
 def _get_bootstrap_sample(x, y, num_reps):
     """yields num_reps random samples drawn with replacement from x and y"""
-    combined = array(list(x) + list(y))
+    combined = hstack([x, y])
     total_obs = len(combined)
     num_x = len(x)
     for i in range(num_reps):
@@ -2300,10 +2291,7 @@ def mw_boot(x, y, num_reps=999):
        ts.mannwhitneyu.html
     """
     tol = MACHEP * 100
-    combined = array(list(x) + list(y))
     observed_stat, obs_p = mw_t(x, y)
-    total_obs = len(combined)
-    num_x = len(x)
     u_stats_as_or_more_extreme = 0
     for sampled_x, sampled_y in _get_bootstrap_sample(x, y, num_reps):
         try:
@@ -2351,10 +2339,6 @@ def kruskal_wallis(data):
 def permute_2d(m, p):
     """Performs 2D permutation of matrix m according to p."""
     return m[p][:, p]
-    # unused below
-    m_t = transpose(m)
-    r_t = take(m_t, p, axis=0)
-    return take(transpose(r_t), p, axis=0)
 
 
 def mantel(m1, m2, n):

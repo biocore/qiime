@@ -1530,6 +1530,7 @@ class TestsHelper(TestCase):
         This is primarily used for testing the Mantel and correlation_test
         functions.
         """
+
         found_match = False
         for i in range(self.p_val_tests):
             if args is not None and kwargs is not None:
@@ -1545,7 +1546,6 @@ class TestsHelper(TestCase):
                 p_val = float(obs)
             except TypeError:
                 p_val = obs[p_val_idx]
-
             self.assertTrue(0.0 <= p_val <= 1.0)
             if p_val >= exp_min and p_val <= exp_max:
                 found_match = True
