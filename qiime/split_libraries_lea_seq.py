@@ -40,8 +40,6 @@ class SeqLengthMismatchError(Exception):
     pass
 
 
-
-
 def extract_primer(seq, possible_primers, min_idx=None, max_idx=None):
     """
     Extracts primers from sequence, given possible primers
@@ -75,7 +73,6 @@ def extract_primer(seq, possible_primers, min_idx=None, max_idx=None):
     return before_primer, primer, after_primer
 
 
-
 def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
                     barcode_type, barcode_correction_fn, max_barcode_errors,
                     min_consensus, max_cluster_ratio, min_difference_in_bcs, log_file):
@@ -103,9 +100,6 @@ def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
         #  and primers only contain valid characters.
         _, _, bc_to_sid, _, _, bc_to_fwd_primers, _ = check_map(map_f, False)
         map_f.seek(0)
-
-        #  TODO: add reverse primer validation similar to what check_map does
-        # (probably just modify check_map to account for reverse primer).
 
         metadata_map = parse_mapping_file_to_dict(map_f)[0]
         bc_to_rev_primers = {}
@@ -195,7 +189,6 @@ def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
                                                          possible_primers,
                                                          min_idx=5,
                                                          max_idx=20)
-            random_bcs[sample_id].append(random_bc)
         except PrimerMismatchError:
             primer_mismatch_count += 1
             continue
@@ -203,7 +196,6 @@ def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
             random_bcs[sample_id] = list()
             random_bcs[sample_id].append(random_bc)
             
-
         possible_primers = bc_to_rev_primers[barcode]
 
         try:
@@ -403,7 +395,6 @@ def get_consensus(fasta_tempfile, min_consensus):
 
     if con_score >= min_consensus:
             return consensus
-
 
 
 def select_unique_rand_bcs(rand_bcs, min_difference_in_bcs):
