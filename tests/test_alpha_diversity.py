@@ -44,11 +44,10 @@ class AlphaDiversitySharedSetUpTests(TestCase):
             self.dirs_to_remove.append(self.tmp_dir)
 
         self.otu_table1 = Table(data=array([[2, 0, 0, 1],
-                                                   [1, 1, 1, 1],
-                                                   [0, 0, 0, 0]]).T,
+                                            [1, 1, 1, 1],
+                                            [0, 0, 0, 0]]).T,
                                         sample_ids=list('XYZ'),
-                                        observation_ids=list('abcd'),
-                                        constructor=Table)
+                                        observation_ids=list('abcd'))
         fd, self.otu_table1_fp = mkstemp(dir=self.tmp_dir,
                                               prefix='alpha_diversity_tests',
                                               suffix='.biom')
@@ -60,8 +59,7 @@ class AlphaDiversitySharedSetUpTests(TestCase):
                                                    [1, 1, 1, 1],
                                                    [0, 0, 0, 0]]).T,
                                         sample_ids=list('XYZ'),
-                                        observation_ids=['a', 'b', 'c', 'd_'],
-                                        constructor=Table)
+                                        observation_ids=['a', 'b', 'c', 'd_'])
         fd, self.otu_table2_fp = mkstemp(dir=self.tmp_dir,
                                               prefix='alpha_diversity_tests',
                                               suffix='.biom')
@@ -73,8 +71,7 @@ class AlphaDiversitySharedSetUpTests(TestCase):
             data=array([[2, 0, 0, 1]]).T,
             sample_ids=list('X'),
             observation_ids=list(
-                'abcd'),
-            constructor=Table)
+                'abcd'))
         fd, self.single_sample_otu_table_fp = mkstemp(
             dir=self.tmp_dir,
             prefix='alpha_diversity_tests',
