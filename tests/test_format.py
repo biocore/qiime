@@ -17,7 +17,7 @@ import json
 from os import remove, close
 from string import digits
 from tempfile import mkstemp
-from numpy import array, nan
+from numpy import array, nan, array_equal
 from skbio.util.misc import remove_files
 from unittest import TestCase, main
 from skbio.parse.sequences import parse_fasta
@@ -451,12 +451,12 @@ class TopLevelTests(TestCase):
         samples = ['a', 'b', 'c']
         otus = [1, 2]
         taxa = ['Bacteria', 'Archaea']
-        res = format_otu_table(samples, otus, to_sparse(a))
+        res = format_otu_table(samples, otus, a)
         # confirm that parsing the res gives us a valid biom file with
         # expected observation and sample ids
         t = parse_biom_table(res.split('\n'))
-        self.assertTrue(array_equal(t.observation_ids, ('1', '2')))
-        self.assertTrue(array_equal(t.sample_ids, ('a', 'b', 'c')))
+        self.assertTrue(array_equal(t.observation_ids, [1, 2]))
+        self.assertTrue(array_equal(t.sample_ids, [u'a', u'b', u'c']))
 
     def test_build_prefs_string(self):
         """build_prefs_string should return a properly formatted prefs string.
