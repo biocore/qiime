@@ -115,9 +115,9 @@ class UsearchDatabaseAssignmentTests(DatabaseAssignmentTests):
         self.assertTrue(exists(observation_map_fp))
         observation_table_fp = join(self.test_out, 'observation_table.biom')
         table = parse_biom_table(open(observation_table_fp, 'U'))
-        self.assertItemsEqual(table.SampleIds, ['s2', 's1'])
+        self.assertItemsEqual(table.sample_ids, ['s2', 's1'])
         self.assertItemsEqual(
-            table.ObservationIds,
+            table.observation_ids,
             ['eco:b0122-pr',
              'eco:b0015-pr'])
         self.assertEqual(table.sum(), 5)
@@ -138,9 +138,9 @@ class BlatDatabaseAssignmentTests(DatabaseAssignmentTests):
         self.assertTrue(exists(observation_map_fp))
         observation_table_fp = join(self.test_out, 'observation_table.biom')
         table = parse_biom_table(open(observation_table_fp, 'U'))
-        self.assertItemsEqual(table.SampleIds, ['s2', 's1'])
+        self.assertItemsEqual(table.sample_ids, ['s2', 's1'])
         self.assertItemsEqual(
-            table.ObservationIds,
+            table.observation_ids,
             ['eco:b0122-pr',
              'eco:b0015-pr'])
         self.assertEqual(table.sum(), 5)
@@ -158,8 +158,8 @@ class BlatDatabaseAssignmentTests(DatabaseAssignmentTests):
         self.assertTrue(exists(observation_map_fp))
         observation_table_fp = join(self.test_out, 'observation_table.biom')
         table = parse_biom_table(open(observation_table_fp, 'U'))
-        self.assertItemsEqual(table.SampleIds, ['s2', 's1'])
-        self.assertItemsEqual(table.ObservationIds,
+        self.assertItemsEqual(table.sample_ids, ['s2', 's1'])
+        self.assertItemsEqual(table.observation_ids,
                               ['eco:b0122-pr', 'eco:b0015-pr', 'eco:b0001-pr'])
         self.assertEqual(table.sum(), 6)
 
@@ -178,9 +178,9 @@ class BlatNtAssignmentTests(DatabaseAssignmentTests):
         self.assertTrue(exists(observation_map_fp))
         observation_table_fp = join(self.test_out, 'observation_table.biom')
         table = parse_biom_table(open(observation_table_fp, 'U'))
-        self.assertItemsEqual(table.SampleIds, ['s2', 's1'])
+        self.assertItemsEqual(table.sample_ids, ['s2', 's1'])
         self.assertItemsEqual(
-            table.ObservationIds,
+            table.observation_ids,
             ['r1',
              'r2',
              'r3',
@@ -200,8 +200,8 @@ class BlatNtAssignmentTests(DatabaseAssignmentTests):
         self.assertTrue(exists(observation_map_fp))
         observation_table_fp = join(self.test_out, 'observation_table.biom')
         table = parse_biom_table(open(observation_table_fp, 'U'))
-        self.assertItemsEqual(table.SampleIds, ['s2', 's1'])
-        self.assertItemsEqual(table.ObservationIds, ['r2', 'r3', 'r4', 'r5'])
+        self.assertItemsEqual(table.sample_ids, ['s2', 's1'])
+        self.assertItemsEqual(table.observation_ids, ['r2', 'r3', 'r4', 'r5'])
         self.assertEqual(table.sum(), 5)
 
 
@@ -218,9 +218,9 @@ class BwaShortAssignmentTests(DatabaseAssignmentTests):
         self.assertTrue(exists(observation_map_fp))
         observation_table_fp = join(self.test_out, 'observation_table.biom')
         table = parse_biom_table(open(observation_table_fp, 'U'))
-        self.assertItemsEqual(table.SampleIds, ['s2', 's1'])
+        self.assertItemsEqual(table.sample_ids, ['s2', 's1'])
         self.assertItemsEqual(
-            table.ObservationIds,
+            table.observation_ids,
             ['r1',
              'r2',
              'r3',
@@ -239,8 +239,8 @@ class BwaShortAssignmentTests(DatabaseAssignmentTests):
         self.assertTrue(exists(observation_map_fp))
         observation_table_fp = join(self.test_out, 'observation_table.biom')
         table = parse_biom_table(open(observation_table_fp, 'U'))
-        self.assertItemsEqual(table.SampleIds, ['s2', 's1'])
-        self.assertItemsEqual(table.ObservationIds, ['r2', 'r3', 'r4', 'r5'])
+        self.assertItemsEqual(table.sample_ids, ['s2', 's1'])
+        self.assertItemsEqual(table.observation_ids, ['r2', 'r3', 'r4', 'r5'])
         self.assertEqual(table.sum(), 5)
         # float can also be passed for max_diff
         bwa_short_database_mapper(query_fp=self.inseqs2_fp,
@@ -265,9 +265,9 @@ class BwaSwAssignmentTests(DatabaseAssignmentTests):
         self.assertTrue(exists(observation_map_fp))
         observation_table_fp = join(self.test_out, 'observation_table.biom')
         table = parse_biom_table(open(observation_table_fp, 'U'))
-        self.assertItemsEqual(table.SampleIds, ['s2', 's1'])
+        self.assertItemsEqual(table.sample_ids, ['s2', 's1'])
         self.assertItemsEqual(
-            table.ObservationIds,
+            table.observation_ids,
             ['r1',
              'r2',
              'r3',

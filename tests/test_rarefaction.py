@@ -19,7 +19,7 @@ from unittest import TestCase, main
 
 from numpy.testing import assert_almost_equal
 import numpy
-from biom.table import table_factory, TableException
+from biom.table import Table, TableException
 from biom.parse import parse_biom_table
 
 from qiime.rarefaction import RarefactionMaker, get_rare_data
@@ -45,11 +45,11 @@ class FunctionTests(TestCase):
                              {'domain': 'Bacteria'},
                              {'domain': 'Bacteria'}]
 
-        self.otu_table = table_factory(self.otu_table_data,
-                                       self.sample_names,
-                                       self.taxon_names)
-        self.otu_table_meta = table_factory(self.otu_table_data,
-                                            self.sample_names, self.taxon_names,
+        self.otu_table = Table(self.otu_table_data,
+                                       self.taxon_names,
+                                       self.sample_names)
+        self.otu_table_meta = Table(self.otu_table_data,
+                                            self.taxon_names, self.taxon_names,
                                             observation_metadata=self.otu_metadata)
 
         self.otu_table_str = format_biom_table(self.otu_table)
@@ -84,14 +84,14 @@ class FunctionTests(TestCase):
         """
         maker = RarefactionMaker(self.otu_table_fp, 0, 1, 1, 1)
         res = maker.rarefy_to_list(include_full=True)
-        self.assertItemsEqual(res[-1][2].SampleIds, self.otu_table.SampleIds)
+        self.assertItemsEqual(res[-1][2].sample_ids, self.otu_table.sample_ids)
         self.assertItemsEqual(
-            res[-1][2].ObservationIds,
-            self.otu_table.ObservationIds)
+            res[-1][2].observation_ids,
+            self.otu_table.observation_ids)
         self.assertEqual(res[-1][2], self.otu_table)
 
         sample_value_sum = []
-        for val in res[1][2].iterSampleData():
+        for val in res[1][2].iter_sample_data():
             sample_value_sum.append(val.sum())
         assert_almost_equal(sample_value_sum, [1.0, 1.0])
 
@@ -109,12 +109,12 @@ class FunctionTests(TestCase):
         otu_table = parse_biom_table(open(fname, 'U'))
 
         self.assertItemsEqual(
-            otu_table.SampleIds,
-            self.otu_table.SampleIds[:2])
+            otu_table.sample_ids,
+            self.otu_table.sample_ids[:2])
         # third sample had 0 seqs, so it's gone
         self.assertItemsEqual(
-            otu_table.ObservationIds,
-            self.otu_table.ObservationIds)
+            otu_table.observation_ids,
+            self.otu_table.observation_ids)
 
     def test_rarefy_to_files2(self):
         """rarefy_to_files should write valid files with some metadata on otus
@@ -130,12 +130,12 @@ class FunctionTests(TestCase):
         otu_table = parse_biom_table(open(fname, 'U'))
 
         self.assertItemsEqual(
-            otu_table.SampleIds,
-            self.otu_table.SampleIds[:2])
+            otu_table.sample_ids,
+            self.otu_table.sample_ids[:2])
         # third sample had 0 seqs, so it's gone
         self.assertItemsEqual(
-            otu_table.ObservationIds,
-            self.otu_table.ObservationIds)
+            otu_table.observation_ids,
+            self.otu_table.observation_ids)
 
     def test_get_empty_rare(self):
         """get_rare_data should be empty when depth > # seqs in any sample"""
@@ -148,14 +148,14 @@ class FunctionTests(TestCase):
         here, rare depth > any sample, and include_small... = True"""
         rare_otu_table = get_rare_data(self.otu_table,
                                        50, include_small_samples=True)
-        self.assertEqual(len(rare_otu_table.SampleIds), 3)
+        self.assertEqual(len(rare_otu_table.sample_ids), 3)
         # 4 observations times 3 samples = size 12 before
-        self.assertEqual(len(rare_otu_table.ObservationIds), 4)
-        for sam in self.otu_table.SampleIds:
-            for otu in self.otu_table.ObservationIds:
-                rare_val = rare_otu_table.getValueByIds(otu, sam)
-                self.assertEqual(rare_otu_table.getValueByIds(otu, sam),
-                                 self.otu_table.getValueByIds(otu, sam))
+        self.assertEqual(len(rare_otu_table.observation_ids), 4)
+        for sam in self.otu_table.sample_ids:
+            for otu in self.otu_table.observation_ids:
+                rare_val = rare_otu_table.get_value_by_ids(otu, sam)
+                self.assertEqual(rare_otu_table.get_value_by_ids(otu, sam),
+                                 self.otu_table.get_value_by_ids(otu, sam))
 
     def test_get_11depth_rare(self):
         """get_rare_data should get only sample X
@@ -163,11 +163,11 @@ class FunctionTests(TestCase):
         """
         rare_otu_table = get_rare_data(self.otu_table,
                                        11, include_small_samples=False)
-        self.assertEqual(rare_otu_table.SampleIds, ('X',))
+        self.assertEqual(rare_otu_table.sample_ids, ('X',))
 
         # a very complicated way to test things
         rare_values = [val[0]
-                       for (val, otu_id, meta) in rare_otu_table.iterObservations()]
+                       for (val, otu_id, meta) in rare_otu_table.iter_observations()]
         self.assertEqual(rare_values, [1.0, 5.0, 3.0, 2.0])
 
 if __name__ == '__main__':

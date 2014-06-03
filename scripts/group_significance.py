@@ -284,7 +284,7 @@ def main():
     # test error conditions for overlapping mf and bt
     if not opts.biom_samples_are_superset:
         # user indicates biom sample should be subset of mapping file samples
-        if any([i in nonshared_samples for i in tmp_bt.SampleIds]):
+        if any([i in nonshared_samples for i in tmp_bt.sample_ids]):
             raise ValueError('The samples in the biom table are a superset of' +
                              ' the samples in the mapping file. The script will abort in' +
                              ' this case even though the calculations wouldn\'t be' +

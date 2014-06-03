@@ -16,7 +16,7 @@ from shutil import rmtree
 from tempfile import mkstemp
 from unittest import TestCase, main
 
-from biom.table import table_factory, DenseOTUTable
+from biom.table import Table
 from cogent.maths.unifrac.fast_unifrac import PD_whole_tree
 from numpy import array
 from numpy.testing import assert_almost_equal
@@ -43,12 +43,12 @@ class AlphaDiversitySharedSetUpTests(TestCase):
             # if test creates the temp dir, also remove it
             self.dirs_to_remove.append(self.tmp_dir)
 
-        self.otu_table1 = table_factory(data=array([[2, 0, 0, 1],
+        self.otu_table1 = Table(data=array([[2, 0, 0, 1],
                                                    [1, 1, 1, 1],
                                                    [0, 0, 0, 0]]).T,
                                         sample_ids=list('XYZ'),
                                         observation_ids=list('abcd'),
-                                        constructor=DenseOTUTable)
+                                        constructor=Table)
         fd, self.otu_table1_fp = mkstemp(dir=self.tmp_dir,
                                               prefix='alpha_diversity_tests',
                                               suffix='.biom')
@@ -56,12 +56,12 @@ class AlphaDiversitySharedSetUpTests(TestCase):
         open(self.otu_table1_fp, 'w').write(
             format_biom_table(self.otu_table1))
 
-        self.otu_table2 = table_factory(data=array([[2, 0, 0, 1],
+        self.otu_table2 = Table(data=array([[2, 0, 0, 1],
                                                    [1, 1, 1, 1],
                                                    [0, 0, 0, 0]]).T,
                                         sample_ids=list('XYZ'),
                                         observation_ids=['a', 'b', 'c', 'd_'],
-                                        constructor=DenseOTUTable)
+                                        constructor=Table)
         fd, self.otu_table2_fp = mkstemp(dir=self.tmp_dir,
                                               prefix='alpha_diversity_tests',
                                               suffix='.biom')
@@ -69,12 +69,12 @@ class AlphaDiversitySharedSetUpTests(TestCase):
         open(self.otu_table2_fp, 'w').write(
             format_biom_table(self.otu_table2))
 
-        self.single_sample_otu_table = table_factory(
+        self.single_sample_otu_table = Table(
             data=array([[2, 0, 0, 1]]).T,
             sample_ids=list('X'),
             observation_ids=list(
                 'abcd'),
-            constructor=DenseOTUTable)
+            constructor=Table)
         fd, self.single_sample_otu_table_fp = mkstemp(
             dir=self.tmp_dir,
             prefix='alpha_diversity_tests',
@@ -136,8 +136,8 @@ class AlphaDiversityCalcTests(AlphaDiversitySharedSetUpTests):
         c = AlphaDiversityCalc(metric=PD_whole_tree,
                                is_phylogenetic=True)
         assert_almost_equal(c(data_path=self.otu_table1_fp, tree_path=self.tree1,
-                            taxon_names=self.otu_table1.ObservationIds,
-                            sample_names=self.otu_table1.SampleIds),
+                            taxon_names=self.otu_table1.observation_ids,
+                            sample_names=self.otu_table1.sample_ids),
                             [13, 17, 0])
 
     def test_call_phylogenetic_escaped_names(self):
@@ -149,13 +149,13 @@ class AlphaDiversityCalcTests(AlphaDiversitySharedSetUpTests):
 
         non_escaped_result = c(data_path=self.otu_table1_fp,
                                tree_path=self.tree1,
-                               taxon_names=self.otu_table1.ObservationIds,
-                               sample_names=self.otu_table1.SampleIds)
+                               taxon_names=self.otu_table1.observation_ids,
+                               sample_names=self.otu_table1.sample_ids)
 
         escaped_result = c(data_path=self.otu_table2_fp,
                            tree_path=self.tree2,
-                           taxon_names=self.otu_table2.ObservationIds,
-                           sample_names=self.otu_table2.SampleIds)
+                           taxon_names=self.otu_table2.observation_ids,
+                           sample_names=self.otu_table2.sample_ids)
 
         assert_almost_equal(non_escaped_result, expected)
         assert_almost_equal(escaped_result, expected)

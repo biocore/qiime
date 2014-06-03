@@ -26,7 +26,7 @@ from qiime.make_otu_network import get_sample_info, get_connection_info, \
     make_props_files
 from qiime.util import load_qiime_config
 from qiime.format import format_biom_table
-from biom.table import table_factory
+from biom.table import Table
 
 
 class OtuNetworkTests(TestCase):
@@ -75,12 +75,7 @@ class OtuNetworkTests(TestCase):
                                      [2, 0, 0, 5, 0],
                                      [0, 2, 0, 4, 0]])
 
-        otu_table_str = format_biom_table(table_factory(self.otu_table_vals,
-                                                        ['1',
-                                                         '2',
-                                                         '3',
-                                                         '4',
-                                                         '5'],
+        otu_table_str = format_biom_table(Table(self.otu_table_vals,
                                                         ['otu_1',
                                                          'otu_2',
                                                          'otu_3',
@@ -91,6 +86,11 @@ class OtuNetworkTests(TestCase):
                                                          'otu_8',
                                                          'otu_9',
                                                          'otu_10'],
+                                                        ['1',
+                                                         '2',
+                                                         '3',
+                                                         '4',
+                                                         '5'],
                                                         [None,
                                                          None,
                                                          None,

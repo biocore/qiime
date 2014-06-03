@@ -81,7 +81,7 @@ def split_otu_table_on_sample_metadata(otu_table_f, mapping_f, mapping_field):
             mapping_f, valid_states_str="%s:%s" % (mapping_field, v))
 
         try:
-            filtered_otu_table = otu_table.filterSamples(
+            filtered_otu_table = otu_table.filter(
                 lambda values, id_, metadata: id_ in sample_ids_to_keep)
         except TableException:
             # all samples are filtered out, so no otu table to write

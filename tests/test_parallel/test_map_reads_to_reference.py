@@ -175,9 +175,9 @@ class ParallelDatabaseMapperBwaShortTests(ParallelDatabaseMapperTests):
         self.assertTrue(exists(observation_map_fp))
         observation_table_fp = join(self.test_out, 'observation_table.biom')
         table = parse_biom_table(open(observation_table_fp, 'U'))
-        self.assertItemsEqual(table.SampleIds, ['s2', 's1'])
+        self.assertItemsEqual(table.sample_ids, ['s2', 's1'])
         self.assertItemsEqual(
-            table.ObservationIds,
+            table.observation_ids,
             ['r1',
              'r2',
              'r3',
@@ -200,8 +200,8 @@ class ParallelDatabaseMapperBwaShortTests(ParallelDatabaseMapperTests):
         self.assertTrue(exists(observation_map_fp))
         observation_table_fp = join(self.test_out, 'observation_table.biom')
         table = parse_biom_table(open(observation_table_fp, 'U'))
-        self.assertItemsEqual(table.SampleIds, ['s2', 's1'])
-        self.assertItemsEqual(table.ObservationIds, ['r2', 'r3', 'r4', 'r5'])
+        self.assertItemsEqual(table.sample_ids, ['s2', 's1'])
+        self.assertItemsEqual(table.observation_ids, ['r2', 'r3', 'r4', 'r5'])
         self.assertEqual(table.sum(), 5)
 
 refseqs1 = """>eco:b0001-pr

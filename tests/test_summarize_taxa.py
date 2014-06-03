@@ -22,7 +22,7 @@ from qiime.summarize_taxa import make_summary, \
 from qiime.parse import parse_mapping_file
 from qiime.util import convert_otu_table_relative
 from numpy import array
-from biom.table import table_factory
+from biom.table import Table
 from biom.parse import parse_biom_table
 
 
@@ -41,7 +41,7 @@ class TopLevelTests(TestCase):
          (2, 1): 1.0, (2, 2): 1.0, (3, 0): 1.0,
          (3, 1): 2.0, (3, 2): 1.0}
 
-        self.otu_table = table_factory(self.otu_table_vals,
+        self.otu_table = Table(self.otu_table_vals,
                                        ['s1', 's2', 's3', 's4'],
                                        ['0', '1', '2', '3'],
                                        None,
@@ -118,7 +118,7 @@ s4\tTTTT\tExp\tDisease mouse, I.D. 357""".split('\n')
         #otu_table = parse_otu_table(self.otu_table, float)
         #otu_table = parse_biom_table(self.otu_table, float)
         #otu_table = convert_otu_table_relative(otu_table)
-        otu_table = self.otu_table.normObservationBySample()
+        otu_table = self.otu_table.norm_observation_by_sample()
         summary, header = make_summary(
             otu_table, 3, upper_percentage, lower_percentage)
         self.assertEqual(header, ['Taxon', 's1', 's2', 's3', 's4'])

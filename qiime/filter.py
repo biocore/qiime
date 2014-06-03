@@ -24,7 +24,7 @@ from biom.parse import parse_biom_table
 def get_otu_ids_from_taxonomy_f(positive_taxa=None,
                                 negative_taxa=None,
                                 metadata_field="taxonomy"):
-    """ return function to pass to Table.filterObservations for taxon-based filtering
+    """ return function to pass to Table.filter_observations for taxon-based filtering
 
         positive_taxa : a list of strings that will be compared to each
          taxonomy level in an observation's (i.e., OTU's) metadata_field. If
@@ -75,7 +75,7 @@ def get_otu_ids_from_taxonomy_f(positive_taxa=None,
                          "These lists must be mutually exclusive.\n"
                          "Offending values are: %s" % ' '.join(positive_taxa & negative_taxa))
 
-    # Define the function that can be passed to Table.filterObservations
+    # Define the function that can be passed to Table.filter_observations
     def result(v, oid, md):
         positive_hit = False
         negative_hit = False
@@ -216,7 +216,7 @@ def sample_ids_from_category_state_coverage(mapping_f,
         # file.
         required_states = set(map(str, required_states))
         valid_coverage_states = set(metadata_map.getCategoryValues(
-            metadata_map.SampleIds, coverage_category))
+            metadata_map.sample_ids, coverage_category))
         invalid_coverage_states = required_states - valid_coverage_states
 
         if invalid_coverage_states:
@@ -249,7 +249,7 @@ def sample_ids_from_category_state_coverage(mapping_f,
 
     if splitter_category is None:
         results = _filter_sample_ids_from_category_state_coverage(
-            metadata_map, metadata_map.SampleIds, coverage_category,
+            metadata_map, metadata_map.sample_ids, coverage_category,
             subject_category, consider_state, min_num_states,
             required_states)
     else:
@@ -257,7 +257,7 @@ def sample_ids_from_category_state_coverage(mapping_f,
         # match the current splitter category state and using those for the
         # actual filtering.
         splitter_category_states = defaultdict(list)
-        for samp_id in metadata_map.SampleIds:
+        for samp_id in metadata_map.sample_ids:
             splitter_category_state = \
                 metadata_map.getCategoryValue(samp_id, splitter_category)
             splitter_category_states[splitter_category_state].append(samp_id)
@@ -531,7 +531,7 @@ def filter_samples_from_otu_table(
                                    min_count,
                                    max_count,
                                    0, inf)
-    return otu_table.filterSamples(filter_f)
+    return otu_table.filter_samples(filter_f)
 
 
 def filter_otus_from_otu_table(otu_table, ids_to_keep, min_count, max_count,
@@ -541,7 +541,7 @@ def filter_otus_from_otu_table(otu_table, ids_to_keep, min_count, max_count,
                                    max_count,
                                    min_samples, max_samples,
                                    negate_ids_to_keep)
-    return otu_table.filterObservations(filter_f)
+    return otu_table.filter_observations(filter_f)
 
 # end functions used by filter_samples_from_otu_table.py and
 # filter_otus_from_otu_table.py
@@ -554,7 +554,7 @@ def filter_otu_table_to_n_samples(otu_table, n):
          ValueError will be raised.
     """
     try:
-        ids_to_keep = sample(otu_table.SampleIds, n)
+        ids_to_keep = sample(otu_table.sample_ids, n)
     except ValueError:
         raise ValueError(
             "Number of samples to filter must be between 0 and the number of samples.")

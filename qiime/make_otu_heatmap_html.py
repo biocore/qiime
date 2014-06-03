@@ -130,7 +130,7 @@ def create_javascript_array(otu_table, use_floats=False):
                 'var i=0;\n'
                 'for (i==0;i<%i;i++) {\n'
                 'OTU_table[i]=new Array();}\n' %
-                (len(otu_table.SampleIds) + 2)]
+                (len(otu_table.sample_ids) + 2)]
 
     # 0 ['#OTU ID', 'OTU2', 'OTU3']
     #1 ['Sample1', 1, 2]
@@ -139,12 +139,12 @@ def create_javascript_array(otu_table, use_floats=False):
 
     # OTU ids first
     js_array.append("OTU_table[0][0]='#OTU ID';\n")
-    for (idx, otu_id) in enumerate(otu_table.ObservationIds):
+    for (idx, otu_id) in enumerate(otu_table.observation_ids):
         js_array.append("OTU_table[0][%i]='%s';\n" % (idx + 1, otu_id))
 
     # Sample ids and values in the table
     i = 1
-    for (sam_val, sam_id, meta) in otu_table.iterSamples():
+    for (sam_val, sam_id, meta) in otu_table.iter_samples():
         js_array.append("OTU_table[%i][0]='%s';\n" % (i, sam_id))
         for (idx, v) in enumerate(sam_val):
             if use_floats:
@@ -157,10 +157,10 @@ def create_javascript_array(otu_table, use_floats=False):
         i += 1
 
     # Consensus lineages for each OTU
-    last_idx = len(otu_table.SampleIds) + 1
+    last_idx = len(otu_table.sample_ids) + 1
     js_array.append("OTU_table[%i][0]='Consensus Lineage';\n" % last_idx)
     i = 1
-    for (otu_val, otu_id, meta) in otu_table.iterObservations():
+    for (otu_val, otu_id, meta) in otu_table.iter_observations():
         js_array.append("OTU_table[%i][%i]='%s';\n" %
                         (last_idx, i, ";".join(meta['taxonomy']).strip('"')))
         i += 1
@@ -172,7 +172,7 @@ def filter_by_otu_hits(num_otu_hits, otu_table):
     """Filter the OTU table by the number of otus per sample"""
     # Filter out rows with sum > num_otu_hits
     new_otu_table = filter_otus_from_otu_table(
-        otu_table, otu_table.ObservationIds,
+        otu_table, otu_table.observation_ids,
         num_otu_hits, inf, 0, inf)
 
     return new_otu_table
@@ -186,13 +186,13 @@ def get_log_transform(otu_table, eps=None):
     # explicit conversion to float: transform
     def f(s_v, s_id, s_md):
         return float64(s_v)
-    float_otu_table = otu_table.transformSamples(f)
+    float_otu_table = otu_table.transform_samples(f)
 
     if eps is None:
         # get the minimum among nonzero entries and divide by two
         eps = inf
         for (obs, sam) in float_otu_table.nonzero():
-            eps = minimum(eps, float_otu_table.getValueByIds(obs, sam))
+            eps = minimum(eps, float_otu_table.get_value_by_ids(obs, sam))
         if eps == inf:
             raise ValueError('All values in the OTU table are zero!')
 
@@ -207,22 +207,22 @@ def get_log_transform(otu_table, eps=None):
     def g_m(s_v, s_id, s_md):
         return asarray(map(g, s_v))
 
-    eps_otu_table = float_otu_table.transformSamples(g_m)
+    eps_otu_table = float_otu_table.transform_samples(g_m)
 
     # take log of all values with transform
     def h(s_v, s_id, s_md):
         return log(s_v)
-    log_otu_table = eps_otu_table.transformSamples(h)
+    log_otu_table = eps_otu_table.transform_samples(h)
 
     # one more transform
     min_val = inf
-    for val in log_otu_table.iterSampleData():
+    for val in log_otu_table.iter_sample_data():
         min_val = minimum(min_val, val.min())
 
     def i(s_v, s_id, s_md):
         return s_v - min_val
 
-    res_otu_table = log_otu_table.transformSamples(i)
+    res_otu_table = log_otu_table.transform_samples(i)
 
     return res_otu_table
 
@@ -235,8 +235,8 @@ def get_otu_counts(fpath):
     except (TypeError, IOError):
         raise MissingFileError('OTU table file required for this analysis')
 
-    if (otu_table.ObservationMetadata is None or
-            otu_table.ObservationMetadata[0]['taxonomy'] is None):
+    if (otu_table.observation_metadata is None or
+            otu_table.observation_metadata[0]['taxonomy'] is None):
         raise ValueError(
             '\n\nThe lineages are missing from the OTU table. Make sure you included the lineages for the OTUs in your OTU table. \n')
 
@@ -255,26 +255,26 @@ def generate_heatmap_plots(
     if otu_sort:
         # Since the BIOM object comes back with fewer Observation_ids, we need to
         # remove those from the original sort_order
-        actual_observations = filtered_otu_table.ObservationIds
+        actual_observations = filtered_otu_table.observation_ids
         new_otu_sort_order = []
         for i in otu_sort:
             if i in actual_observations:
                 new_otu_sort_order.append(i)
 
-        filtered_otu_table = filtered_otu_table.sortObservationOrder(
+        filtered_otu_table = filtered_otu_table.sort_observation_order(
             new_otu_sort_order)
 
     # This sorts the samples by the order supplied
     if sample_sort:
         # Since the BIOM object may come back with fewer Sampleids, we need to
         # remove those from the original sample_sort
-        actual_samples = filtered_otu_table.SampleIds
+        actual_samples = filtered_otu_table.sample_ids
         new_sample_sort_order = []
         for i in sample_sort:
             if i in actual_samples:
                 new_sample_sort_order.append(i)
 
-        filtered_otu_table = filtered_otu_table.sortSampleOrder(
+        filtered_otu_table = filtered_otu_table.sort_sample_order(
             new_sample_sort_order)
 
     # Convert OTU counts into a javascript array

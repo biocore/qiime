@@ -129,7 +129,7 @@ def main():
     else:
         # convert to 0-based indexing
         obs_md_level -= 1
-    obs_md = otu_table.ObservationMetadata
+    obs_md = otu_table.observation_metadata
     # create reference to the observation metadata for the first
     # observation for convenient lookup
     obs_md_0 = obs_md[0]
@@ -137,7 +137,7 @@ def main():
     if (obs_md is None or obs_md_category not in obs_md_0):
         obs_md_labels = [['']] * len(otu_table.ObservationIds)
     else:
-        for _, _, md in otu_table.iterObservations():
+        for _, _, md in otu_table.iter_observations():
             current_md = md[obs_md_category]
             if obs_md_level < len(current_md):
                 current_md_at_level = current_md[obs_md_level]
@@ -150,7 +150,7 @@ def main():
 
     # Convert to relative abundance if requested
     if not opts.absolute_abundance:
-        otu_table = otu_table.normObservationBySample()
+        otu_table = otu_table.norm_observation_by_sample()
 
     # Get log transform if requested
     if not opts.no_log_transform:
@@ -173,7 +173,7 @@ def main():
 
     # Re-order samples by tree if provided
     if not opts.sample_tree is None:
-        sample_order = get_order_from_tree(otu_table.SampleIds,
+        sample_order = get_order_from_tree(otu_table.sample_ids,
                                            open(opts.sample_tree, 'U'))
 
     # if there's no sample tree, sort samples by mapping file
@@ -187,7 +187,7 @@ def main():
         # if there's a category, do clustering within each category
         if not opts.category is None:
             category_labels = \
-                extract_metadata_column(otu_table.SampleIds,
+                extract_metadata_column(otu_table.sample_ids,
                                         metadata, opts.category)
             sample_order = \
                 get_order_from_categories(otu_table, category_labels)
@@ -195,10 +195,10 @@ def main():
         else:
             ordered_sample_ids = []
             for sample_id in map_sample_ids:
-                if sample_id in otu_table.SampleIds:
+                if sample_id in otu_table.sample_ids:
                     ordered_sample_ids.append(sample_id)
             sample_order = names_to_indices(
-                otu_table.SampleIds,
+                otu_table.sample_ids,
                 ordered_sample_ids)
     # if no tree or mapping file, perform upgma euclidean
     elif not opts.suppress_column_clustering:
@@ -206,7 +206,7 @@ def main():
         sample_order = get_clusters(data, axis='column')
     # else just use OTU table ordering
     else:
-        sample_order = arange(len(otu_table.SampleIds))
+        sample_order = arange(len(otu_table.sample_ids))
 
     # re-order OTUs by tree (if provided), or clustering
     if not opts.otu_tree is None:
@@ -230,7 +230,7 @@ def main():
     # otu_order and sample_order should be ids, rather than indices
     #  to use in sortObservationOrder/sortSampleOrder
     otu_id_order = [otu_table.ObservationIds[i] for i in otu_order]
-    sample_id_order = [otu_table.SampleIds[i] for i in sample_order]
+    sample_id_order = [otu_table.sample_ids[i] for i in sample_order]
 
     # Re-order otu table, sampleids, etc. as necessary
     otu_table = otu_table.sortObservationOrder(otu_id_order)
@@ -238,7 +238,7 @@ def main():
     otu_ids = array(otu_table.ObservationIds)[otu_order]
     otu_labels = array(otu_labels)[otu_order]
     otu_table = otu_table.sortSampleOrder(sample_id_order)
-    sample_ids = array(otu_table.SampleIds)[sample_order]
+    sample_ids = array(otu_table.sample_ids)[sample_order]
 
     plot_heatmap(otu_table, otu_labels, sample_ids,
                  filename=join(dir_path, 'heatmap.pdf'),

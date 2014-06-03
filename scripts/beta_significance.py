@@ -75,7 +75,7 @@ def main():
 
     otu_table_fp = opts.input_path
     otu_table = parse_biom_table(open(otu_table_fp, 'U'))
-    sample_ids = otu_table.SampleIds
+    sample_ids = otu_table.sample_ids
     otu_ids = otu_table.ObservationIds
     # This is not memory safe: need to be able to load the otu table as ints
     otu_table_array = array(list(otu_table.iterObservationData()), dtype='int')

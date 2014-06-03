@@ -81,7 +81,7 @@ class ParallelBetaDiversitySingle(ParallelBetaDiversity):
         commands = []
         result_filepaths = []
 
-        sids = parse_biom_table(open(input_fp, 'U')).SampleIds
+        sids = parse_biom_table(open(input_fp, 'U')).sample_ids
 
         if params['full_tree']:
             full_tree_str = '-f'

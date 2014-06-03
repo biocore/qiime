@@ -18,7 +18,7 @@ from os import walk
 from os.path import join, splitext, exists, isfile, abspath
 
 from skbio.core.sequence import BiologicalSequence
-from biom.table import DenseOTUTable, SparseTaxonTable, table_factory
+from biom.table import Table
 
 from qiime.util import get_qiime_library_version, load_qiime_config
 from qiime.colors import data_color_hsv
@@ -114,8 +114,8 @@ def format_summarize_taxa(summary, header, delimiter=';',
             observation_ids.append(delimiter.join(row[0]))
             data.append(row[1:])
 
-        table = table_factory(asarray(data), sample_ids, observation_ids,
-                              constructor=SparseTaxonTable)
+        table = Table(asarray(data), observation_ids, sample_ids,
+                              constructor=Table)
         yield format_biom_table(table)
     else:
         raise ValueError("Invalid file format '%s'. Must be either 'classic' "
@@ -378,10 +378,10 @@ def format_otu_table(sample_names, otu_names, data, taxonomy=None,
         def strip_f(s):
             return s.strip()
         taxonomy = [{'taxonomy': map(strip_f, t.split(';'))} for t in taxonomy]
-    otu_table = DenseOTUTable(Data=data,
-                              SampleIds=sample_names,
-                              ObservationIds=otu_names,
-                              ObservationMetadata=taxonomy)
+    otu_table = Table(data=data,
+                      sample_ids=sample_names,
+                      observation_ids=otu_names,
+                      observation_metadata=taxonomy)
     return format_biom_table(otu_table)
 
 
@@ -724,7 +724,7 @@ def illumina_data_to_fastq(record_data, number_of_bases=None):
 def format_biom_table(biom_table):
     """ Given a biom-format Table object, returns that Table as a BIOM string"""
     generated_by_str = "QIIME " + get_qiime_library_version()
-    return biom_table.getBiomFormatJsonString(generated_by_str)
+    return biom_table.from_json(generated_by_str)
 
 
 def format_mapping_html_data(header,
@@ -899,21 +899,21 @@ def format_tep_file_lines(otu_table_data, mapping_lines, tree_lines,
     lines += '\n'
 
     # get otu table data
-    if(otu_table_data.ObservationMetadata):
+    if(otu_table_data.observation_metadata):
         lines += ['>>otm\n#OTU ID\tOTU Metadata\n']
-        for i in range(len(otu_table_data.ObservationIds)):
-            new_string = otu_table_data.ObservationIds[i] + '\t'
-            for m in otu_table_data.ObservationMetadata[i]['taxonomy']:
+        for i in range(len(otu_table_data.observation_ids)):
+            new_string = otu_table_data.observation_ids[i] + '\t'
+            for m in otu_table_data.observation_metadata[i]['taxonomy']:
                 new_string += m + ';'
             lines += [new_string]
             lines += '\n'
 
     # format and write otu table and taxonomy lines
     lines += ['>>osm\n']
-    if otu_table_data.ObservationMetadata is None:
-        lines += [str(otu_table_data.delimitedSelf())]
-    elif "taxonomy" in otu_table_data.ObservationMetadata[0]:
-        lines += [str(otu_table_data.delimitedSelf(header_key="taxonomy",
+    if otu_table_data.observation_metadata is None:
+        lines += [str(otu_table_data.delimited_self())]
+    elif "taxonomy" in otu_table_data.observation_metadata[0]:
+        lines += [str(otu_table_data.delimited_self(header_key="taxonomy",
                                                    header_value="Consensus Lineage",
                                                    metadata_formatter=lambda x: ';'.join(x)))]
 

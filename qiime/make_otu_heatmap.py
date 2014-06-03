@@ -36,7 +36,7 @@ def get_overlapping_samples(map_rows, otu_table):
        Returns: new_map_rows, new_otu_table
     """
     map_sample_ids = zip(*map_rows)[0]
-    shared_ids = set(map_sample_ids) & set(otu_table.SampleIds)
+    shared_ids = set(map_sample_ids) & set(otu_table.sample_ids)
 
     otu_table = filter_samples_from_otu_table(otu_table, shared_ids, 0, inf)
 
@@ -70,13 +70,13 @@ def get_order_from_categories(otu_table, category_labels):
 
     for label in unique(category_labels):
         label_ix = category_labels == label
-        selected = [s for (i, s) in zip(label_ix, otu_table.SampleIds) if i]
+        selected = [s for (i, s) in zip(label_ix, otu_table.sample_ids) if i]
         sub_otu_table = filter_samples_from_otu_table(
             otu_table,
             selected,
             0,
             inf)
-        data = asarray([val for val in sub_otu_table.iterObservationData()])
+        data = asarray([val for val in sub_otu_table.iter_observation_data()])
         label_ix_ix = get_clusters(data, axis='column')
 
         sample_order += list(nonzero(label_ix)[0][array(label_ix_ix)])
@@ -138,7 +138,7 @@ def get_log_transform(otu_table, eps=None):
     # explicit conversion to float: transform
     def f(s_v, s_id, s_md):
         return float64(s_v)
-    float_otu_table = otu_table.transformSamples(f)
+    float_otu_table = otu_table.transform_samples(f)
 
     if eps is None:
         # get the minimum among nonzero entries and divide by two
@@ -156,12 +156,12 @@ def get_log_transform(otu_table, eps=None):
     def g_m(s_v, s_id, s_md):
         return asarray(map(g, s_v))
 
-    eps_otu_table = float_otu_table.transformSamples(g_m)
+    eps_otu_table = float_otu_table.transform_samples(g_m)
 
     # take log of all values
     def h(s_v, s_id, s_md):
         return log10(s_v)
-    log_otu_table = eps_otu_table.transformSamples(h)
+    log_otu_table = eps_otu_table.transform_samples(h)
 
     return log_otu_table
 
@@ -207,8 +207,8 @@ def plot_heatmap(otu_table, row_labels, col_labels, filename='heatmap.pdf',
         color_scheme: choices can be found at
          http://wiki.scipy.org/Cookbook/Matplotlib/Show_colormaps
     """
-    nrow = len(otu_table.ObservationIds)
-    ncol = len(otu_table.SampleIds)
+    nrow = len(otu_table.observation_ids)
+    ncol = len(otu_table.sample_ids)
 
     # determine appropriate font sizes for tick labels
     row_fontsize = get_fontsize(nrow)
@@ -220,7 +220,7 @@ def plot_heatmap(otu_table, row_labels, col_labels, filename='heatmap.pdf',
     # numpy magic: [:,::-1] actually means fliplr()
     #imshow(x[:,::-1],interpolation='nearest', aspect='auto', cmap=my_cmap)
 
-    data = [val for val in otu_table.iterObservationData()]
+    data = [val for val in otu_table.iter_observation_data()]
     imshow(fliplr(data), interpolation='nearest', aspect='auto', cmap=my_cmap)
     ax = fig.axes[0]
 

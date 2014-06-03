@@ -145,7 +145,7 @@ def main():
 
         # write the otu id and corresponding metadata for all core otus
         otu_count = 0
-        for value, id_, md in core_table.iterObservations():
+        for value, id_, md in core_table.iter_observations():
             output_f.write('%s\t%s\n' % (id_, md[otu_md]))
             otu_count += 1
         output_f.close()

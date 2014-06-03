@@ -38,15 +38,7 @@ from numpy.ma.extras import apply_along_axis
 
 from biom.util import compute_counts_per_sample_stats
 from biom.parse import parse_biom_table
-from biom.table import (DenseFunctionTable, DenseGeneTable,
-                        DenseMetaboliteTable, DenseOTUTable,
-                        DenseOrthologTable, DensePathwayTable, DenseTable,
-                        DenseTaxonTable, FunctionTable, GeneTable,
-                        MetaboliteTable, OTUTable, OrthologTable,
-                        PathwayTable, SparseFunctionTable, SparseGeneTable,
-                        SparseMetaboliteTable, SparseOTUTable,
-                        SparseOrthologTable, SparsePathwayTable,
-                        SparseTable, SparseTaxonTable)
+from biom.table import Table
 
 from cogent.parse.tree import DndParser
 from cogent.cluster.procrustes import procrustes
@@ -238,7 +230,7 @@ class FunctionWithParams(object):
                     [DenseFunctionTable,
                      DenseGeneTable,
                      DenseMetaboliteTable,
-                     DenseOTUTable,
+                     Table,
                      DenseOrthologTable,
                      DensePathwayTable,
                      DenseTable,
@@ -256,7 +248,7 @@ class FunctionWithParams(object):
                      SparseOrthologTable,
                      SparsePathwayTable,
                      SparseTable,
-                     SparseTaxonTable]]):
+                     Table]]):
                 otu_table = data
                 return otu_table
             else:
@@ -1746,7 +1738,7 @@ class MetadataMap():
         Arguments:
             category - the category that will be checked
         """
-        category_values = self.getCategoryValues(self.SampleIds, category)
+        category_values = self.getCategoryValues(self.sample_ids, category)
 
         is_numeric = True
         for category_value in category_values:
@@ -1762,10 +1754,10 @@ class MetadataMap():
         Arguments:
             category - the category that will be checked for uniqueness
         """
-        category_values = self.getCategoryValues(self.SampleIds, category)
+        category_values = self.getCategoryValues(self.sample_ids, category)
 
         is_unique = False
-        if len(set(category_values)) == len(self.SampleIds):
+        if len(set(category_values)) == len(self.sample_ids):
             is_unique = True
         return is_unique
 
@@ -1778,7 +1770,7 @@ class MetadataMap():
         Arguments:
             category - the category that will be checked
         """
-        category_values = self.getCategoryValues(self.SampleIds, category)
+        category_values = self.getCategoryValues(self.sample_ids, category)
 
         single_value = False
         if len(set(category_values)) == 1:
@@ -1786,7 +1778,7 @@ class MetadataMap():
         return single_value
 
     @property
-    def SampleIds(self):
+    def sample_ids(self):
         """Returns the IDs of all samples in the metadata map.
 
         The sample IDs are returned as a list of strings in alphabetical order.
@@ -1800,8 +1792,8 @@ class MetadataMap():
         The category names are returned as a list of strings in alphabetical
         order.
         """
-        return sorted(self.getSampleMetadata(self.SampleIds[0]).keys()) \
-            if len(self.SampleIds) > 0 else []
+        return sorted(self.getSampleMetadata(self.sample_ids[0]).keys()) \
+            if len(self.sample_ids) > 0 else []
 
     def filterSamples(self, sample_ids_to_keep, strict=True):
         """Remove samples that are not in ``sample_ids_to_keep``.
@@ -1810,12 +1802,12 @@ class MetadataMap():
         sample IDs in ``sample_ids_to_keep`` cannot be found in the metadata
         map.
         """
-        for sid in self.SampleIds:
+        for sid in self.sample_ids:
             if sid not in sample_ids_to_keep:
                 del self._metadata[sid]
 
         if strict:
-            extra_samples = set(sample_ids_to_keep) - set(self.SampleIds)
+            extra_samples = set(sample_ids_to_keep) - set(self.sample_ids)
 
             if extra_samples:
                 raise ValueError("Could not find the following sample IDs in "
@@ -2032,7 +2024,7 @@ def sync_biom_and_mf(pmf, bt):
     will be an empty set.
     """
     mf_samples = set(pmf)
-    bt_samples = set(bt.SampleIds)
+    bt_samples = set(bt.sample_ids)
     if mf_samples == bt_samples:
         # agreement, can continue without fear of breaking code
         return pmf, bt, set()
@@ -2048,12 +2040,12 @@ def sync_biom_and_mf(pmf, bt):
 
         def _f(sv, sid, smd):
             return sid in shared_samples
-        nbt = bt.filterSamples(_f)
+        nbt = bt.filter_samples(_f)
     return npmf, nbt, nonshared_samples
 
 
 def biom_taxonomy_formatter(bt, md_key):
-    """Return md strings from bt using md_key in order of bt.ObservationMetadata
+    """Return md strings from bt using md_key in order of bt.observation_metadata
 
     There are multiple legacy formats for metadata encoding in biom formats
     including as lists, dicts, and strings. This function attempts to figure out
@@ -2064,31 +2056,31 @@ def biom_taxonomy_formatter(bt, md_key):
     Inputs:
      bt - biom table object
      md_key - string, the key to return the metadata from the biom table.
-    Outputs a list of strings (in order of bt.ObservationMetadata entries) of
+    Outputs a list of strings (in order of bt.observation_metadata entries) of
     metadata. If no metadata could be found using the given key the function
     will print a warning and return None.
     """
-    if bt.ObservationMetadata is None:
+    if bt.observation_metadata is None:
         print 'Warning: No metadata in biom table. Won\'t alter calculations.'
         return None
     else:
-        dtype = bt.ObservationMetadata[0][md_key]
+        dtype = bt.observation_metadata[0][md_key]
     if isinstance(dtype, dict):
         data = []
-        for md in bt.ObservationMetadata:
+        for md in bt.observation_metadata:
             tmp = []
             for k, v in md[md_key].iteritems():
                 tmp.append('%s_%s' % (k, v))
             data.append(' '.join(tmp))
         # data = [' '.join(['%s_%s' % (k,v) for k,v in md[md_key].items()]) for \
-        #     md in bt.ObservationMetadata]
+        #     md in bt.observation_metadata]
         return map(str, data)
     elif isinstance(dtype, list):
         return (
-            map(str, [';'.join(md[md_key]) for md in bt.ObservationMetadata])
+            map(str, [';'.join(md[md_key]) for md in bt.observation_metadata])
         )
     elif isinstance(dtype, (str, unicode)):
-        return map(str, [md[md_key] for md in bt.ObservationMetadata])
+        return map(str, [md[md_key] for md in bt.observation_metadata])
     else:
         print ('Metadata format could not be determined or metadata key (%s) ' +
                'was incorrect. Metadata will not be returned.') % md_key

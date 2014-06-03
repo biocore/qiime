@@ -27,8 +27,8 @@ def _calc_shared_phylotypes_pairwise(otu_table, i, j):
     j: a sample id in the OTU table
     """
     shared_phylos = logical_and(
-        otu_table.sampleData(i),
-        otu_table.sampleData(j))
+        otu_table.data(i, 'sample'),
+        otu_table.data(j, 'sample'))
     #shared_phylos = logical_and(otu_table[:,i], otu_table[:,j])
 
     return shared_phylos.sum()
@@ -45,11 +45,11 @@ def _calc_shared_phylotypes_multiple(otu_table, idxs):
         raise ValueError(
             "calc_shared_phylotypes_multiple needs at least two sampleIDs to comapre")
     #shared_phylos = ones(len(otu_table[:,1]))
-    shared_phylos = ones(len(otu_table.ObservationIds))
+    shared_phylos = ones(len(otu_table.observation_ids))
     # for idx in idxs:
     for id_ in idxs:
         #shared_phylos = logical_and(shared_phylos, otu_table[:,idx])
-        shared_phylos = logical_and(shared_phylos, otu_table.sampleData(id_))
+        shared_phylos = logical_and(shared_phylos, otu_table.data(id_, 'sample'))
 
     return shared_phylos.sum()
 
@@ -70,10 +70,10 @@ def calc_shared_phylotypes(infile, reference_sample=None):
         #ref_idx = sample_ids.index(reference_sample)
         ref_idx = reference_sample
 
-    num_samples = len(otu_table.SampleIds)
+    num_samples = len(otu_table.sample_ids)
     result_array = zeros((num_samples, num_samples), dtype=int)
-    for i, samp1_id in enumerate(otu_table.SampleIds):
-        for j, samp2_id in enumerate(otu_table.SampleIds[:i + 1]):
+    for i, samp1_id in enumerate(otu_table.sample_ids):
+        for j, samp2_id in enumerate(otu_table.sample_ids[:i + 1]):
             if reference_sample:
                 result_array[i, j] = result_array[j, i] = \
                     _calc_shared_phylotypes_multiple(otu_table,
@@ -83,4 +83,4 @@ def calc_shared_phylotypes(infile, reference_sample=None):
                     _calc_shared_phylotypes_pairwise(otu_table, samp1_id,
                                                      samp2_id)
 
-    return format_distance_matrix(otu_table.SampleIds, result_array) + "\n"
+    return format_distance_matrix(otu_table.sample_ids, result_array) + "\n"

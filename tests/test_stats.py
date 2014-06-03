@@ -608,7 +608,6 @@ class CategoryStatsTests(TestHelper):
                                              self.single_ele_dm]
         self.assertRaises(ValueError, self.cs_overview)
 
-
 class BestTests(TestHelper):
     """Tests for the Best class."""
 
@@ -1384,28 +1383,28 @@ class PairedDifferenceTests(TestHelper):
         self.assertTrue(exists(biom_table_fp))
         self.assertTrue(exists(join(self.test_out, 'differences_sids.txt')))
         table = parse_biom_table(open(biom_table_fp, 'U'))
-        self.assertItemsEqual(table.SampleIds, ['subject1', 'subject2'])
-        self.assertItemsEqual(table.ObservationIds,
+        self.assertItemsEqual(table.sample_ids, ['subject1', 'subject2'])
+        self.assertItemsEqual(table.observation_ids,
                               ['firmicutes-abundance', 'bacteroidetes-abundance'])
         assert_almost_equal(table
-                              [table.getObservationIndex(
-                                  'firmicutes-abundance')]
-                              [table.getSampleIndex('subject1')],
+                              [(table.get_observation_index(
+                                  'firmicutes-abundance'),
+                               table.get_sample_index('subject1'))],
                               0.1, 2)
         assert_almost_equal(table
-                              [table.getObservationIndex(
-                                  'bacteroidetes-abundance')]
-                              [table.getSampleIndex('subject1')],
+                              [(table.get_observation_index(
+                                  'bacteroidetes-abundance'),
+                              table.get_sample_index('subject1'))],
                               -0.07, 2)
         assert_almost_equal(table
-                              [table.getObservationIndex(
-                                  'firmicutes-abundance')]
-                              [table.getSampleIndex('subject2')],
+                              [(table.get_observation_index(
+                                  'firmicutes-abundance'),
+                              table.get_sample_index('subject2'))],
                               0.41, 2)
         assert_almost_equal(table
-                              [table.getObservationIndex(
-                                  'bacteroidetes-abundance')]
-                              [table.getSampleIndex('subject2')],
+                              [(table.get_observation_index(
+                                  'bacteroidetes-abundance'),
+                              table.get_sample_index('subject2'))],
                               -0.10, 2)
 
         # missing data should raise ValueError
