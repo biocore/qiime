@@ -189,6 +189,8 @@ def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
                                                          possible_primers,
                                                          min_idx=5,
                                                          max_idx=20)
+                                                        
+            random_bcs[sample_id].append(random_bc)
         except PrimerMismatchError:
             primer_mismatch_count += 1
             continue
