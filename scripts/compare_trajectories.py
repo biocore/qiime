@@ -14,7 +14,6 @@ from os import mkdir
 from os.path import join, exists
 
 import pandas as pd
-
 from skbio.math.stats.ordination import OrdinationResults
 
 from qiime.parse import parse_mapping_file_to_dict
@@ -31,17 +30,17 @@ script_info['script_description'] = (
     "series data, but they can be applied to any data that contains a gradient"
     ". The methods available are RMS (either using 'avg' or 'trajectory'); or "
     "the first difference (using 'diff'), or 'wdiff' for a modified first "
-    "difference algorithm. The trajectories are computed as follows. For `avg`"
+    "difference algorithm. The trajectories are computed as follows. For 'avg'"
     " it calculates the average point within a group and then computes the "
     "norm of the distance of each sample from the averaged value. For "
     "'trajectory' each component of the result trajectory is computed as "
     "taking the sorted list of samples in the group and taking the norm of the"
     " coordinates of the 2nd samples minus the 1st sample, 3rd sample minus "
-    "2nd sample and so on. For `diff` it calculates the norm for all the "
+    "2nd sample and so on. For 'diff' it calculates the norm for all the "
     "time-points and then calculates the first difference for each resulting "
-    "point. For `wdiff`, it calculates the norm for all the time-points and "
+    "point. For 'wdiff', it calculates the norm for all the time-points and "
     "substracts the mean of the next number of elements, specified using the "
-    "`--window_size` parameters, and the current element.")
+    "'--window_size' parameters, and the current element.")
 script_info['script_usage'] = [
     ("Average method",
      "Execute the analysis of volatility using the average method, grouping "
@@ -73,14 +72,14 @@ script_info['required_options'] = [
                 help="Input ordination results filepath"),
     make_option('-m', '--map_fp', type='existing_filepath',
                 help="Input metadata mapping filepath"),
-    make_option('-c', '--categories', type='string',
+    make_option('-c', '--categories', type='str',
                 help="Comma-separated list of category names of the mapping "
                      "file to use to create the trajectories"),
     make_option('-o', '--output_dir', type='new_dirpath',
                 help="Name of the output directory to save the results")
 ]
 script_info['optional_options'] = [
-    make_option('-s', '--sort_by', type='string', default=None,
+    make_option('-s', '--sort_by', type='str', default=None,
                 help="Category name of the mapping file to use to sort"),
     make_option('--algorithm', type='choice', default='avg',
                 choices=TRAJECTORY_ALGORITHMS,
@@ -103,6 +102,13 @@ script_info['optional_options'] = [
                      " per element subtraction, the resulting trajectory. "
                      "[default: %default]")
 ]
+script_info['output_description'] = (
+    "This script generates two files in the output directory, "
+    "'trajectories.txt' and 'trajectories_raw_values.txt'. The "
+    "'trajectories.txt' file includes the resulting statistics and a list of "
+    "categories that did not passed the tests to run the analysis. The "
+    "'trajectories_raw_values.txt' file includes the resulting trajectory for "
+    "each used category.")
 script_info['version'] = __version__
 
 if __name__ == '__main__':
@@ -138,7 +144,8 @@ if __name__ == '__main__':
             sort_category = None
         elif sort_by not in metamap.keys():
             option_parser.error("Sort category %s does not exist in the "
-                                "mapping file" % sort_by)
+                                "mapping file. Available categories are: %s" %
+                                (sort_by, metamap.keys()))
         else:
             sort_category = sort_by
 
@@ -146,9 +153,6 @@ if __name__ == '__main__':
         option_parser.error("--axes should be between 0 and the max "
                             "number of axes available (%d), found: %d "
                             % (len(ord_res.eigvals), axes))
-    elif axes == 0:
-        # If axes = 0, we generate all of them
-        axes = len(ord_res.eigvals)
 
     if weighted:
         if sort_by == 'SampleID':
@@ -156,8 +160,8 @@ if __name__ == '__main__':
                                 "please specify a numeric column in the "
                                 "--sort_by option.")
         elif not sort_category:
-            option_parser.error("You should provide --sort_by if you want to "
-                                "weight the output")
+            option_parser.error("To weight the output, provide a metadata "
+                                "category using the --sort_by option")
 
     if algorithm == 'wdiff':
         if not window_size:
