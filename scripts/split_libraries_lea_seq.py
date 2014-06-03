@@ -88,8 +88,6 @@ script_info['optional_options'] = [
                 'than this value will be discarded.'
                 '[default: %default]',
                 default=0.86)
-
-
 ]
 script_info['version'] = __version__
 
@@ -131,14 +129,11 @@ def main():
         option_parser.error("Invalid barcode length: %d. Must be greater "
                             "than zero." % barcode_len)
 
-
-
     if len(sequence_read_fps) != 2:
         option_parser.error("You must provide exactly two sequence read "
                             "filepaths, the first for forward reads and "
                             "second for reverse reads. You specified %d "
                             "filepaths." % len(sequence_read_fps))
-
 
     consensus_seq_lookup = get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp,
                                            output_dir, barcode_type, barcode_correction_fn,
