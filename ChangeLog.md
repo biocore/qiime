@@ -16,6 +16,7 @@ QIIME 1.8.0-dev (changes since 1.8.0 go here)
 * Removed options ``-c``/``--ci_type``, ``-a``/``--alpha``, and ``-f``/``--f_ratio`` from conditional_uncovered_probability.py as these weren't being used by the script (i.e., supplying different values didn't change the computed CIs because the default were always used).
 * Removed tax2tree as a method in assign_taxonomy.py.
 * ANOSIM and PERMANOVA (available in compare_categories.py) are considerably faster than previous implementations and provide more useful information in the output file.
+* Added script compare_trajectories.py, which provides access to analysis of volatility using different algorithms.
 
 QIIME 1.8.0 (11 Dec 2013)
 =========================
