@@ -13,7 +13,7 @@ from collections import defaultdict
 from unittest import TestCase, main
 import gzip
 
-from biom.parse import parse_biom_table, parse_biom_table
+from biom.parse import parse_biom_table
 
 from numpy.testing import assert_almost_equal
 

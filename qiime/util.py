@@ -226,29 +226,7 @@ class FunctionWithParams(object):
                 otu_table = parse_biom_table(qiime_open(data, 'U'))
                 return otu_table
         except TypeError:
-            if any([type(data) in
-                    [DenseFunctionTable,
-                     DenseGeneTable,
-                     DenseMetaboliteTable,
-                     Table,
-                     DenseOrthologTable,
-                     DensePathwayTable,
-                     DenseTable,
-                     DenseTaxonTable,
-                     FunctionTable,
-                     GeneTable,
-                     MetaboliteTable,
-                     OTUTable,
-                     OrthologTable,
-                     PathwayTable,
-                     SparseFunctionTable,
-                     SparseGeneTable,
-                     SparseMetaboliteTable,
-                     SparseOTUTable,
-                     SparseOrthologTable,
-                     SparsePathwayTable,
-                     SparseTable,
-                     Table]]):
+            if type(data) == Table:
                 otu_table = data
                 return otu_table
             else:
@@ -701,7 +679,7 @@ def convert_otu_table_relative(otu_table):
     """
     sample_ids, otu_ids, otu_counts, consensus = otu_table
     otu_counts = asarray(otu_counts, float)
-    otu_counts = otu_counts / otu_counts.sum(axis=0)
+    otu_counts = otu_counts / otu_counts.sum()
     otu_counts = where(isnan(otu_counts), 0.0, otu_counts)
     return (sample_ids, otu_ids, otu_counts, consensus)
 
@@ -2040,7 +2018,7 @@ def sync_biom_and_mf(pmf, bt):
 
         def _f(sv, sid, smd):
             return sid in shared_samples
-        nbt = bt.filter_samples(_f)
+        nbt = bt.filter(_f, axis='sample')
     return npmf, nbt, nonshared_samples
 
 
