@@ -76,7 +76,7 @@ def get_order_from_categories(otu_table, category_labels):
             selected,
             0,
             inf)
-        data = asarray([val for val in sub_otu_table.iter_observation_data()])
+        data = asarray([val for val in sub_otu_table.iter_data(axis='observation')])
         label_ix_ix = get_clusters(data, axis='column')
 
         sample_order += list(nonzero(label_ix)[0][array(label_ix_ix)])
@@ -138,7 +138,7 @@ def get_log_transform(otu_table, eps=None):
     # explicit conversion to float: transform
     def f(s_v, s_id, s_md):
         return float64(s_v)
-    float_otu_table = otu_table.transform_samples(f)
+    float_otu_table = otu_table.transform(f, axis='sample', inplace=False)
 
     if eps is None:
         # get the minimum among nonzero entries and divide by two
@@ -156,12 +156,12 @@ def get_log_transform(otu_table, eps=None):
     def g_m(s_v, s_id, s_md):
         return asarray(map(g, s_v))
 
-    eps_otu_table = float_otu_table.transform_samples(g_m)
+    eps_otu_table = float_otu_table.transform(g_m, axis='sample', inplace=False)
 
     # take log of all values
     def h(s_v, s_id, s_md):
         return log10(s_v)
-    log_otu_table = eps_otu_table.transform_samples(h)
+    log_otu_table = eps_otu_table.transform(h, axis='sample', inplace=False)
 
     return log_otu_table
 
@@ -220,7 +220,7 @@ def plot_heatmap(otu_table, row_labels, col_labels, filename='heatmap.pdf',
     # numpy magic: [:,::-1] actually means fliplr()
     #imshow(x[:,::-1],interpolation='nearest', aspect='auto', cmap=my_cmap)
 
-    data = [val for val in otu_table.iter_observation_data()]
+    data = [val for val in otu_table.iter_data(axis='observation')]
     imshow(fliplr(data), interpolation='nearest', aspect='auto', cmap=my_cmap)
     ax = fig.axes[0]
 

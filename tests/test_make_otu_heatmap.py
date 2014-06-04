@@ -42,19 +42,19 @@ class TopLevelTests(TestCase):
                                        ['OTU1', 'OTU2', 'OTU3'],
                                        ['Sample1', 'Sample2', 'Sample3',
                                         'Sample4', 'Sample5', 'Sample6'],
-                                       [None, None, None, None, None, None],
                                        [{"taxonomy": ['Bacteria']},
                                         {"taxonomy": ['Archaea']},
-                                        {"taxonomy": ['Streptococcus']}])
+                                        {"taxonomy": ['Streptococcus']}],
+                                        [None, None, None, None, None, None])
         self.otu_table_f = Table(self.otu_table_values,
                                          ['OTU1', 'OTU2', 'OTU3'],
                                          ['Sample1', 'Sample2', 'Sample3',
                                           'Sample4', 'Sample5', 'Sample6'],
-                                         [None, None, None, None, None, None],
                                          [{"taxonomy": ['1A', '1B', '1C', 'Bacteria']},
                                           {"taxonomy":
                                            ['2A', '2B', '2C', 'Archaea']},
-                                          {"taxonomy": ['3A', '3B', '3C', 'Streptococcus']}])
+                                          {"taxonomy": ['3A', '3B', '3C', 'Streptococcus']}],
+                                          [None, None, None, None, None, None])
 
         self.full_lineages = [['1A', '1B', '1C', 'Bacteria'],
                               ['2A', '2B', '2C', 'Archaea'],
@@ -94,7 +94,7 @@ class TopLevelTests(TestCase):
 
     def test_make_otu_labels(self):
         lineages = []
-        for val, id, meta in self.otu_table.iter_observations():
+        for val, id, meta in self.otu_table.iter(axis='observation'):
             lineages.append([v for v in meta['taxonomy']])
         obs = make_otu_labels(self.otu_table.observation_ids,
                               lineages, n_levels=1)
@@ -102,7 +102,7 @@ class TopLevelTests(TestCase):
         self.assertEqual(obs, exp)
 
         full_lineages = []
-        for val, id, meta in self.otu_table_f.iter_observations():
+        for val, id, meta in self.otu_table_f.iter(axis='observation'):
             full_lineages.append([v for v in meta['taxonomy']])
         obs = make_otu_labels(self.otu_table_f.observation_ids,
                               full_lineages, n_levels=3)
@@ -122,15 +122,15 @@ class TopLevelTests(TestCase):
         eps = .01
         obs = get_log_transform(self.otu_table, eps=eps)
 
-        data = [val for val in self.otu_table.iter_observation_data()]
+        data = [val for val in self.otu_table.iter_data(axis='observation')]
         xform = asarray(data, dtype=float64)
         xform[xform == 0] = eps
 
-        for (i, val) in enumerate(obs.iter_observation_data()):
+        for (i, val) in enumerate(obs.iter_data(axis='observation')):
             assert_almost_equal(val, log10(xform[i]))
 
     def test_get_clusters(self):
-        data = asarray([val for val in self.otu_table.iter_observation_data()])
+        data = asarray([val for val in self.otu_table.iter_data(axis='observation')])
         obs = get_clusters(data, axis='row')
         self.assertTrue([0, 1, 2] == obs or obs == [1, 2, 0])
         obs = get_clusters(data, axis='column')
