@@ -39,6 +39,7 @@ from brokit.formatdb import build_blast_db_from_fasta_path
 from brokit.mothur import Mothur
 from brokit.cd_hit import cdhit_clusters_from_seqs
 from brokit.uclust import get_clusters_from_fasta_filepath
+#from brokit.sortmerna_v2 import sortmerna_ref_cluster
 from brokit.usearch import (usearch_qf,
                             usearch61_denovo_cluster,
                             usearch61_ref_cluster)
@@ -168,6 +169,31 @@ class OtuPicker(FunctionWithParams):
                 full_cluster += filter_map[seq_id]
             results.append(full_cluster)
         return results
+
+class SortmernaV2OtuPicker(OtuPicker):
+
+    """ SortMeRNA-based version 2 OTU picker: clusters queries by their 'best' alignment to a reference seed.
+
+        The 'best' alignment for a query is the one with:
+            1. the lowest E-value score (at most 1) 
+            2. percent sequence identity greater than or equal to the OTU 
+                similarity threshold (default in Params['similarity'] = 0.97)
+            3. percent query coverage greater than or equal to the OTU 
+                coverage threshold (default in Params['QueryCoverage'] = 0.97)
+    """
+
+    def __init__(self, params):
+        """ Return a new SortmernaV2OtuPicker object with specified params.
+        """
+
+        _params = {'max_e_value': 1,
+                    'similarity': 0.97,
+                    'coverage': 0.97,
+                    'best': 1,
+                    'min_lis': 2,
+                    'threads': 1}
+        _params.update(params)
+        OtuPicker.__init__(self, _params)
 
 
 class BlastOtuPicker(OtuPicker):
@@ -1744,7 +1770,8 @@ otu_picking_method_constructors = {
     'usearch': UsearchOtuPicker,
     'usearch_ref': UsearchReferenceOtuPicker,
     'usearch61': Usearch610DeNovoOtuPicker,
-    'usearch61_ref': Usearch61ReferenceOtuPicker
+    'usearch61_ref': Usearch61ReferenceOtuPicker,
+    'sortmerna': SortmernaV2OtuPicker
 }
 
 otu_picking_method_choices = otu_picking_method_constructors.keys()

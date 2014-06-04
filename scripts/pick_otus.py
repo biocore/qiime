@@ -12,7 +12,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
-from os.path import splitext, split, exists, abspath
+from os.path import splitext, split, exists, abspath, isfile
 from os import makedirs
 from multiprocessing import cpu_count
 
@@ -53,7 +53,11 @@ Quality filtering pipeline with usearch 5.X is described as usearch_qf "usearch 
 
 9. usearch61_ref (Edgar, RC 2010, version v6.1.544), as usearch61, but takes a reference database to use as seeds.  New clusters can be toggled on or off.
 
+10. sortmerna_v2 (Kopylova, E. et al., 2012), takes a reference database to use as seeds. 
+
+
 Chimera checking with usearch 6.X is implemented in identify_chimeric_seqs.py.  Chimera checking should be done first with usearch 6.X, and the filtered resulting fasta file can then be clustered.
+
 
 The primary inputs for pick_otus.py are:
 
@@ -188,12 +192,37 @@ script_info['optional_options'] = [
 
     make_option('-r', '--refseqs_fp', type='existing_filepath',
                 help=('Path to reference sequences to search against when using -m '
-                      'blast, -m uclust_ref, -m usearch_ref, or -m '
+                      'blast, -m sortmerna, -m uclust_ref, -m usearch_ref, or -m '
                       'usearch61_ref [default: %default]')),
 
     make_option('-b', '--blast_db', type='blast_db',
                 help=('Pre-existing database to blast against when using -m blast '
                       '[default: %default]')),
+
+    make_option('-e', '--max_e_value_blast', type='float', default=1e-10,
+                help=('Max E-value when clustering with BLAST [default: %default]')),
+
+# SortMeRNA specific parameters
+    make_option('--sortmerna_db', type='string', 
+                help=('Pre-existing database to search against when using -m sortmerna '
+                      '[default: %default]')),
+
+    make_option('--sortmerna_e_value', type='float', default=1,
+                help=('Maximum E-value when clustering [default = %default]')),
+
+    make_option('--sortmerna_coverage', type='float', default=0.97,
+                help=('Mininum percent query coverage (of an alignment) '
+                      'to consider a hit [default: %default]')),
+
+    make_option('--sortmerna_tabular', default=False, action='store_true',
+                help=('Output alignments in the Blast tabular format '
+                      'with two additional columns including the CIGAR '
+                      'string and the percent query coverage [default: %default]')),
+
+    make_option('--sortmerna_best_N_alignments', type='int',
+                help=('If --sortmerna_tabular is set, this option '
+                      'will output the best N alignments per read [default: %default]')),
+# end SortMeRNA specific parameters
 
     make_option('--min_aligned_percent',
                 help=('Minimum percent of query sequence that can be aligned to '
@@ -202,12 +231,8 @@ script_info['optional_options'] = [
 
     make_option('-s', '--similarity', type='float', default=0.97,
                 help=('Sequence similarity threshold (for blast, cdhit, uclust, '
-                      'uclust_ref, usearch, usearch_ref, usearch61, or usearch61_ref'
+                      'uclust_ref, usearch, usearch_ref, usearch61, usearch61_ref or sortmerna'
                       ') [default: %default]')),
-
-    make_option('-e', '--max_e_value', type='float', default=1e-10,
-                help=(
-                    'Max E-value when clustering with BLAST [default: %default]')),
 
     make_option('-q', '--trie_reverse_seqs', action='store_true',
                 default=False,
@@ -407,11 +432,11 @@ script_info['optional_options'] = [
 
     make_option('--threads', default='one_per_cpu', help=(
                 "Specify number of threads per core to be used for  "
-                "usearch61 commands that utilize multithreading. By default, "
-                "will calculate the number of cores to utilize so a single "
+                "usearch61 and sortmerna commands that utilize multithreading. "
+                "By default, will calculate the number of cores to utilize so a single "
                 "thread will be used per CPU. Specify a fractional number, e.g."
                 " 1.0 for 1 thread per core, or 0.5 for a single thread on "
-                "a two core CPU. Only applies to usearch61. "
+                "a two core CPU. Only applies to usearch61 and sortmerna. "
                 "[default: %default]"))
 
 ]
@@ -451,6 +476,13 @@ def main():
     chimeras_retention = opts.non_chimeras_retention
     verbose = opts.verbose
     threads = opts.threads
+
+    # sortmerna specific parameters
+    sortmerna_db = opts.sortmerna_db
+    sortmerna_e_value = opts.sortmerna_e_value
+    sortmerna_coverage = opts.sortmerna_coverage
+    sortmerna_tabular = opts.sortmerna_tabular
+    sortmerna_best_N_alignments = opts.sortmerna_best_N_alignments
 
     # usearch specific parameters
     percent_id_err = opts.percent_id_err
@@ -601,6 +633,41 @@ def main():
         except ValueError:
             option_parser.error("--threads must be a float value if "
                                 "default 'one_per_cpu' value overridden.")
+
+
+    if otu_picking_method == 'sortmerna':
+
+    # check sortmerna_db exists
+
+    # check sortmerna_e_value is a float and positive
+        try:
+            sortmerna_e_value = float(sortmerna_e_value)
+        except ValueError:
+            option_parser.error("--sortmerna_e_value must be a float.")
+        if sortmerna_e_value < 0:
+            option_parser.error("--sortmerna_e_value must be positive.")
+
+    # check sortmerna_coverage is a float and in [0,1]
+        try:
+            sortmerna_coverage = float(sortmerna_coverage)
+        except ValueError:
+            option_parser.error("--sortmerna_coverage must be a float.")
+        if sortmerna_e_value < 0:
+            option_parser.error("--sortmerna_coverage must be positive.")
+
+    # check that if sortmerna_best_N_alignments is set then so is sortmerna_tabular
+        if sortmerna_best_N_alignments != 'default':
+            if sortmerna_tabular:
+                option_parser.error("must enable --sortmerna_tabular with --sortmerna_best_N_alignments.")
+
+    # check FASTA reference file or the indexed database were provided
+        if refseqs_fp is None:
+            if sortmerna_db is None:
+                option_parser.error('sortmerna requires refseqs_fp or sortmerna_db')
+            elif isfile(sortmerna_db + '.stats') is False:
+                option_parser.error('%s does not exist, make sure you have indexed the database using indexdb_rna' % (sortmerna_db + '.stats'))
+        
+
 
     # End input validation
 
@@ -816,13 +883,21 @@ def main():
 
     # blast
     elif otu_picking_method == 'blast':
-        params = {'max_e_value': opts.max_e_value,
+        params = {'max_e_value': opts.max_e_value_blast,
                   'Similarity': opts.similarity,
                   'min_aligned_percent': min_aligned_percent}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,
                    result_path=result_path, log_path=log_path,
                    blast_db=opts.blast_db, refseqs_fp=opts.refseqs_fp)
+
+    # sortmerna
+    elif otu_picking_method == 'sortmerna':
+        params = {}
+        otu_picker = otu_picker_constructor(params)
+        otu_picker(input_seqs_filepath,
+                    result_path=result_path, log_path=log_path,
+                    sortmerna_db=opts.sortmerna_db, refseqs_fp=opts.refseqs_fp)
 
     # other -- shouldn't be able to get here as a KeyError would have
     # been raised earlier
