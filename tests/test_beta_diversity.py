@@ -74,17 +74,16 @@ class BetaDiversityCalcTests(TestCase):
         self.l19_taxon_names_w_underscore = ['ta_x1', 'tax2', 'tax3', 'tax4',
                                              'endbigtaxon', 'tax6', 'tax7', 'tax8', 'tax9']
 
-        l19_str = format_biom_table(Table(self.l19_data.T),
-                                                  self.l19_taxon_names,  
-                                                  self.l19_sample_names)
+        l19_str = format_biom_table(Table(self.l19_data.T, self.l19_taxon_names,
+                                          self.l19_sample_names))
         fd, self.l19_fp = mkstemp(dir=self.tmp_dir,
                                 prefix='test_bdiv_otu_table', suffix='.blom')
         close(fd)
         open(self.l19_fp, 'w').write(l19_str)
 
-        l19_str_w_underscore = format_biom_table(Table(self.l19_data.T),
-                                                               self.l19_taxon_names_w_underscore,
-                                                               self.l19_sample_names)
+        l19_str_w_underscore = format_biom_table(Table(self.l19_data.T,
+                                                       self.l19_taxon_names_w_underscore,
+                                                       self.l19_sample_names))
         fd, self.l19_str_w_underscore_fp = mkstemp(dir=self.tmp_dir,
                                                   prefix='test_bdiv_otu_table', suffix='.blom')
         close(fd)
