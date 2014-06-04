@@ -20,7 +20,7 @@ from numpy.testing import assert_almost_equal
 from cogent.parse.tree import DndParser
 from cogent.core.tree import PhyloNode
 from skbio.util.misc import remove_files
-from biom.parse import Table
+from biom.parse import parse_biom_table
 from qiime.parse import (parse_distmat, parse_mapping_file,
                          parse_metadata_state_descriptions)
 from qiime.filter import (filter_fasta, filter_samples_from_otu_table,
@@ -73,7 +73,7 @@ class FilterTests(TestCase):
         self.tree2 = DndParser(tree2)
         self.tutorial_mapping_f = FakeFile(tutorial_mapping_f)
 
-        self.otu_table2 = Table.from_json(sparse_otu_table2)
+        self.otu_table2 = parse_biom_table(sparse_otu_table2)
 
         # For sample_ids_from_category_state_coverage() tests.
         self.exp_empty = (set([]), 0, set([]))
@@ -324,7 +324,7 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
 
     def test_filter_otus_from_otu_table_ids(self):
         """filter_otus_from_otu_table functions with list of OTU ids"""
-        otu_table = Table(dense_otu_table1, input_is_dense=True)
+        otu_table = parse_biom_table(dense_otu_table1, input_is_dense=True)
         filtered_otu_table = filter_otus_from_otu_table(otu_table,
                                                         set(otu_table.observation_ids) - set(['34', '155', '152']), 0, inf, 0, inf)
         expected_otu_ids = set(otu_table.observation_ids) - \
@@ -335,7 +335,7 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
 
     def test_filter_otus_from_otu_table_ids_negate(self):
         """filter_otus_from_otu_table functions with list of OTU ids and negate option"""
-        otu_table = Table(dense_otu_table1, input_is_dense=True)
+        otu_table = parse_biom_table(dense_otu_table1, input_is_dense=True)
         filtered_otu_table = filter_otus_from_otu_table(otu_table,
                                                         set(otu_table.observation_ids) - set(['34', '155', '152']), 0, inf, 0, inf, negate_ids_to_keep=True)
         expected_otu_ids = set(['34', '155', '152'])
@@ -345,7 +345,7 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
 
     def test_filter_otus_from_otu_table_counts_dense(self):
         """filter_otus_from_otu_table functions with count-based filtering (dense OTU table)"""
-        otu_table = Table(dense_otu_table1, input_is_dense=True)
+        otu_table = parse_biom_table(dense_otu_table1, input_is_dense=True)
 
         # min and max
         filtered_otu_table = filter_otus_from_otu_table(
@@ -407,7 +407,7 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
 
     def test_filter_otus_from_otu_table_counts_sparse(self):
         """filter_otus_from_otu_table functions with count-based filtering (sparse OTU table)"""
-        otu_table = Table(sparse_otu_table1)
+        otu_table = parse_biom_table(sparse_otu_table1)
 
         # min and max
         filtered_otu_table = filter_otus_from_otu_table(
@@ -469,7 +469,7 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
 
     def test_filter_otus_from_otu_table_samples_sparse(self):
         """filter_otus_from_otu_table functions with sample-based filtering (sparse OTU table)"""
-        otu_table = Table(sparse_otu_table1)
+        otu_table = parse_biom_table(sparse_otu_table1)
 
         # min and max
         filtered_otu_table = filter_otus_from_otu_table(
@@ -553,7 +553,7 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
 
     def test_filter_otus_from_otu_table_samples_dense(self):
         """filter_otus_from_otu_table functions with sample-based filtering (dense OTU table)"""
-        otu_table = Table(dense_otu_table1, input_is_dense=True)
+        otu_table = parse_biom_table(dense_otu_table1, input_is_dense=True)
 
         # min and max
         filtered_otu_table = filter_otus_from_otu_table(
@@ -637,7 +637,7 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
 
     def test_filter_samples_from_otu_table_counts_dense(self):
         """filter_samples_from_otu_table functions with count-based filtering (dense OTU table)"""
-        otu_table = Table(dense_otu_table1, input_is_dense=True)
+        otu_table = parse_biom_table(dense_otu_table1, input_is_dense=True)
 
         # min and max
         filtered_otu_table = filter_samples_from_otu_table(
@@ -685,7 +685,7 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
 
     def test_filter_samples_from_otu_table_sample_ids_dense(self):
         """filter_samples_from_otu_table functions with count-based filtering (dense OTU table)"""
-        otu_table = Table(dense_otu_table1, input_is_dense=True)
+        otu_table = parse_biom_table(dense_otu_table1, input_is_dense=True)
 
         # keep two samples
         expected_sample_ids = set(['PC.593', 'PC.607'])
@@ -712,7 +712,7 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
     def test_filter_otu_table_to_n_samples(self):
         """filter_otu_table_to_n_samples returns randomly selected subset of samples
         """
-        otu_table = Table(dense_otu_table1, input_is_dense=True)
+        otu_table = parse_biom_table(dense_otu_table1, input_is_dense=True)
 
         # keep two samples
         filtered_otu_table = filter_otu_table_to_n_samples(otu_table, 2)
@@ -744,7 +744,7 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
 
     def test_filter_samples_from_otu_table_counts_sparse(self):
         """filter_samples_from_otu_table functions with count-based filtering (sparse OTU table)"""
-        otu_table = Table(sparse_otu_table1)
+        otu_table = parse_biom_table(sparse_otu_table1)
 
         # min and max
         filtered_otu_table = filter_samples_from_otu_table(
@@ -792,7 +792,7 @@ PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._59
 
     def test_filter_samples_from_otu_table_sample_ids_sparse(self):
         """filter_samples_from_otu_table functions with count-based filtering (sparse OTU table)"""
-        otu_table = Table(sparse_otu_table1)
+        otu_table = parse_biom_table(sparse_otu_table1)
 
         # keep two samples
         expected_sample_ids = set(['PC.593', 'PC.607'])

@@ -531,7 +531,7 @@ def filter_samples_from_otu_table(
                                    min_count,
                                    max_count,
                                    0, inf)
-    return otu_table.filter_samples(filter_f)
+    return otu_table.filter(filter_f, axis='sample', inplace=False)
 
 
 def filter_otus_from_otu_table(otu_table, ids_to_keep, min_count, max_count,
@@ -541,7 +541,7 @@ def filter_otus_from_otu_table(otu_table, ids_to_keep, min_count, max_count,
                                    max_count,
                                    min_samples, max_samples,
                                    negate_ids_to_keep)
-    return otu_table.filter_observations(filter_f)
+    return otu_table.filter(filter_f, axis='observation', inplace=False)
 
 # end functions used by filter_samples_from_otu_table.py and
 # filter_otus_from_otu_table.py
