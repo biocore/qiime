@@ -144,7 +144,7 @@ def get_log_transform(otu_table, eps=None):
         # get the minimum among nonzero entries and divide by two
         eps = inf
         for (obs, sam) in float_otu_table.nonzero():
-            eps = minimum(eps, float_otu_table.getValueByIds(obs, sam))
+            eps = minimum(eps, float_otu_table.get_value_by_ids(obs, sam))
         if eps == inf:
             raise ValueError('All values in the OTU table are zero!')
         else:
