@@ -159,7 +159,7 @@ def main():
             "Deprecated. Please use --absolute_abundances to disable relative abundance")
 
     if not opts.absolute_abundance:
-        otu_table = otu_table.norm_observation_by_sample()
+        otu_table = otu_table.norm(axis='sample', inplace=False)
 
     # introduced output directory to will allow for multiple outputs
     if opts.output_dir:

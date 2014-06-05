@@ -144,7 +144,7 @@ def create_javascript_array(otu_table, use_floats=False):
 
     # Sample ids and values in the table
     i = 1
-    for (sam_val, sam_id, meta) in otu_table.iter_samples():
+    for (sam_val, sam_id, meta) in otu_table.iter(axis='sample'):
         js_array.append("OTU_table[%i][0]='%s';\n" % (i, sam_id))
         for (idx, v) in enumerate(sam_val):
             if use_floats:
@@ -160,7 +160,7 @@ def create_javascript_array(otu_table, use_floats=False):
     last_idx = len(otu_table.sample_ids) + 1
     js_array.append("OTU_table[%i][0]='Consensus Lineage';\n" % last_idx)
     i = 1
-    for (otu_val, otu_id, meta) in otu_table.iter_observations():
+    for (otu_val, otu_id, meta) in otu_table.iter(axis='observation'):
         js_array.append("OTU_table[%i][%i]='%s';\n" %
                         (last_idx, i, ";".join(meta['taxonomy']).strip('"')))
         i += 1
@@ -183,10 +183,36 @@ def get_log_transform(otu_table, eps=None):
     the non-negative transform at the end of this function. Dan Knights suggests this might
     be due to this script not being able to handle negative values, hence the transform.
     """
+    # new_table = otu_table.copy()
+    # nonzeros = new_table.nonzero()
+    # def h(s_v, s_id, s_md):
+    #     return log(s_v)
+    # new_table.transform(h, axis='sample')
+    # def nonzeromin(a, b):
+    #     if a == 0:
+    #         return b
+    #     elif b == 0:
+    #         return a
+    #     else:
+    #         return min(a, b)
+    # minval = new_table.reduce(nonzeromin, axis='sample').min()
+    # if minval < 0:
+    #     minval = 2 * abs(minval)
+    # def addval(s_v, s_id, s_md):
+    #    return s_v + minval
+
+    # new_table.transform(addval, axis='sample')
+    # # for (obs, sam) in nonzeros:
+    # #      new_table._data[obs, sam] =  new_table[obs, sam] + minval
+
+    # return new_table
+
+
+
     # explicit conversion to float: transform
     def f(s_v, s_id, s_md):
         return float64(s_v)
-    float_otu_table = otu_table.transform_samples(f)
+    float_otu_table = otu_table.transform(f, axis='sample', inplace=False)
 
     if eps is None:
         # get the minimum among nonzero entries and divide by two
@@ -207,22 +233,22 @@ def get_log_transform(otu_table, eps=None):
     def g_m(s_v, s_id, s_md):
         return asarray(map(g, s_v))
 
-    eps_otu_table = float_otu_table.transform_samples(g_m)
+    eps_otu_table = float_otu_table.transform(g_m, axis='sample', inplace=False)
 
     # take log of all values with transform
     def h(s_v, s_id, s_md):
         return log(s_v)
-    log_otu_table = eps_otu_table.transform_samples(h)
+    log_otu_table = eps_otu_table.transform(h, axis='sample', inplace=False)
 
     # one more transform
     min_val = inf
-    for val in log_otu_table.iter_sample_data():
+    for val in log_otu_table.iter_data(axis='sample'):
         min_val = minimum(min_val, val.min())
 
     def i(s_v, s_id, s_md):
         return s_v - min_val
 
-    res_otu_table = log_otu_table.transform_samples(i)
+    res_otu_table = log_otu_table.transform(i, axis='sample', inplace=False)
 
     return res_otu_table
 
@@ -261,8 +287,8 @@ def generate_heatmap_plots(
             if i in actual_observations:
                 new_otu_sort_order.append(i)
 
-        filtered_otu_table = filtered_otu_table.sort_observation_order(
-            new_otu_sort_order)
+        filtered_otu_table = filtered_otu_table.sort_order(
+            new_otu_sort_order, axis='observation')
 
     # This sorts the samples by the order supplied
     if sample_sort:
@@ -274,8 +300,8 @@ def generate_heatmap_plots(
             if i in actual_samples:
                 new_sample_sort_order.append(i)
 
-        filtered_otu_table = filtered_otu_table.sort_sample_order(
-            new_sample_sort_order)
+        filtered_otu_table = filtered_otu_table.sort_order(
+            new_sample_sort_order, axis='sample')
 
     # Convert OTU counts into a javascript array
     js_array = create_javascript_array(filtered_otu_table, fractional_values)

@@ -1383,8 +1383,8 @@ def paired_difference_analyses(personal_ids_to_state_values,
     # to a mapping file for working with this biom table
 
     biom_table = Table(biom_data,
-                               personal_ids,
                                biom_observation_ids,
+                               personal_ids,
                                input_is_dense=True)
     biom_table_f = open(biom_table_fp, 'w')
     biom_table_f.write(format_biom_table(biom_table))

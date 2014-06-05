@@ -37,17 +37,17 @@ class TopLevelTests(TestCase):
         self.otu_table = Table(otu_table_vals,
                                        ['OTU1', 'OTU2'],
                                        ['Sample1', 'Sample2'],
-                                       [None, None],
                                        [{"taxonomy": ["Bacteria"]},
-                                        {"taxonomy": ["Archaea"]}])
+                                        {"taxonomy": ["Archaea"]}],
+                                       [None, None],)
 
         filt_otu_table_vals = array([[1, 5]])
 
         self.filt_otu_table = Table(filt_otu_table_vals,
                                             ['OTU2'],
                                             ['Sample1', 'Sample2'],
-                                            [None, None],
-                                            [{"taxonomy": ["Archaea"]}])
+                                            [{"taxonomy": ["Archaea"]}],
+                                            [None, None])
 
         self.num_otu_hits = 5
         self._folders_to_cleanup = []
@@ -77,32 +77,32 @@ javascript array"""
         obs = filter_by_otu_hits(self.num_otu_hits, self.otu_table)
 
         # see note in test_get_log_transform about this assert
-        self.assertEqual(obs._data.items(), self.filt_otu_table._data.items())
+        self.assertEqual(obs, self.filt_otu_table)
 
     def test_get_log_transform(self):
         orig_data = array([[0, 1, 2], [1000, 0, 0]])
 
         orig_otu_table = Table(orig_data,
-                                       ['Sample1', 'Sample2', 'Sample3'],
                                        ['OTU1', 'OTU2'],
-                                       [None, None, None],
+                                       ['Sample1', 'Sample2', 'Sample3'],
                                        [{"taxonomy": ["Bacteria"]},
-                                        {"taxonomy": ["Archaea"]}])
+                                        {"taxonomy": ["Archaea"]}],
+                                        [None, None, None])
 
         exp_data = array([[0, 0.69314718, 1.38629436], [7.60090246, 0, 0]])
         exp_otu_table = Table(exp_data,
-                                      ['Sample1', 'Sample2', 'Sample3'],
                                       ['OTU1', 'OTU2'],
-                                      [None, None, None],
+                                      ['Sample1', 'Sample2', 'Sample3'],
                                       [{"taxonomy": ["Bacteria"]},
-                                       {"taxonomy": ["Archaea"]}])
+                                       {"taxonomy": ["Archaea"]}],
+                                      [None, None, None])
 
         log_otu_table = get_log_transform(orig_otu_table, eps=None)
 
         # comparing directly log_otu_table against exp_otu_table doesn't work,
         #  needs to be modified in the otu table object
-        assert_almost_equal(list(log_otu_table.iter_sample_data()),
-                            list(exp_otu_table.iter_sample_data()))
+        assert_almost_equal(list(log_otu_table.iter_data(axis='sample')),
+                            list(exp_otu_table.iter_data(axis='sample')))
 
     def test_generate_heatmap_plots(self):
         """generate_heatmap_plots: create default output files"""
@@ -133,11 +133,11 @@ javascript array"""
         orig_data = array([[0, 1, 2], [1000, 0, 0]])
 
         orig_otu_table = Table(orig_data,
-                                       ['Sample1', 'Sample2', 'Sample3'],
                                        ['OTU1', 'OTU2'],
-                                       [None, None, None],
+                                       ['Sample1', 'Sample2', 'Sample3'],
                                        [{"taxonomy": ["Bacteria"]},
-                                        {"taxonomy": ["Archaea"]}])
+                                        {"taxonomy": ["Archaea"]}],
+                                       [None, None, None])
 
         # put in an OTU sort order and sample order
         otu_sort = ['OTU2', 'OTU1']
