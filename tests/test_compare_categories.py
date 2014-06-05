@@ -172,21 +172,9 @@ class CompareCategoriesTests(TestCase):
 
         # Only a single category value.
         for method in self.cat_methods + self.num_methods:
-            if method == 'best':
-                # BEST is okay with this type of category.
-                compare_categories(self.dm1_fp,
-                                   self.map1_fp, method, ['Single'], self.num_perms,
-                                   self.test_dir)
-                results_fp = join(self.test_dir, '%s_results.txt' % method)
-                self.files_to_remove.append(results_fp)
-                results_f = open(results_fp, 'U')
-                results = results_f.readlines()
-                results_f.close()
-                self.assertTrue(len(results) > 0)
-            else:
-                self.assertRaises(ValueError, compare_categories, self.dm1_fp,
-                                  self.map1_fp, method, ['Single'], self.num_perms,
-                                  self.test_dir)
+            self.assertRaises(ValueError, compare_categories, self.dm1_fp,
+                              self.map1_fp, method, ['Single'], self.num_perms,
+                              self.test_dir)
 
         # Bad number of permutations.
         for method in self.cat_methods:

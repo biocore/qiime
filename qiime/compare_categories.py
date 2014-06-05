@@ -15,11 +15,9 @@ from types import ListType
 
 import pandas as pd
 from skbio.core.distance import DistanceMatrix
-from skbio.math.stats.distance import ANOSIM, PERMANOVA
+from skbio.math.stats.distance import ANOSIM, PERMANOVA, bioenv
 
-from qiime.format import format_best_results
 from qiime.parse import parse_mapping_file_to_dict
-from qiime.stats import Best
 from qiime.util import get_qiime_temp_dir, MetadataMap, RExecutor
 
 methods = ['adonis', 'anosim', 'best', 'morans_i', 'mrpp', 'permanova',
@@ -62,30 +60,29 @@ def compare_categories(dm_fp, map_fp, method, categories, num_perms, out_dir):
                          "Please use a different metadata column to perform "
                          "statistical tests on.")
 
-    with open(dm_fp, 'U') as dm_f:
-        dm = DistanceMatrix.from_file(dm_f)
+    dm = DistanceMatrix.from_file(dm_fp)
 
-    # These methods are in skbio. There are still methods in qiime.stats that
-    # need to be ported to skbio, at which point a lot of this logic can be
-    # simplified.
-    if method in ('anosim', 'permanova'):
-        if method == 'anosim':
-            method_cls = ANOSIM
-        elif method == 'permanova':
-            method_cls = PERMANOVA
-        else:
-            # Should never get here...
-            pass
-
+    if method in ('anosim', 'permanova', 'best'):
         with open(map_fp, 'U') as map_f:
             md_dict = parse_mapping_file_to_dict(map_f)[0]
         df = pd.DataFrame.from_dict(md_dict, orient='index')
 
-        method_inst = method_cls(dm, df, column=categories[0])
-        results = method_inst(num_perms)
+        out_fp = join(out_dir, '%s_results.txt' % method)
 
-        with open(join(out_dir, '%s_results.txt' % method), 'w') as out_f:
-            out_f.write(results.summary())
+        if method in ('anosim', 'permanova'):
+            if method == 'anosim':
+                method_cls = ANOSIM
+            elif method == 'permanova':
+                method_cls = PERMANOVA
+
+            method_inst = method_cls(dm, df, column=categories[0])
+            results = method_inst(num_perms)
+
+            with open(out_fp, 'w') as out_f:
+                out_f.write(results.summary())
+        elif method == 'best':
+            best_results = bioenv(dm, df, columns=categories)
+            best_results.to_csv(out_fp, sep='\t')
     else:
         # Remove any samples from the mapping file that aren't in the distance
         # matrix (important for validation checks). Use strict=True so that an
@@ -150,12 +147,6 @@ def compare_categories(dm_fp, map_fp, method, categories, num_perms, out_dir):
 
             rex = RExecutor(TmpDir=get_qiime_temp_dir())
             rex(command_args, '%s.r' % method, output_dir=out_dir)
-        elif method == 'best':
-            best = Best(dm, md_map, categories)
-            best_results = best()
-
-            with open(join(out_dir, '%s_results.txt' % method), 'w') as out_f:
-                out_f.write(format_best_results(best_results))
         else:
             raise ValueError("Unrecognized method '%s'. Valid methods: %r"
                              % (method, methods))
