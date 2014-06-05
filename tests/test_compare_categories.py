@@ -75,7 +75,7 @@ class CompareCategoriesTests(TestCase):
 
         self.cat_methods = ['adonis', 'anosim', 'mrpp', 'permanova',
                             'permdisp', 'dbrda']
-        self.num_methods = ['best', 'morans_i']
+        self.num_methods = ['bioenv', 'morans_i']
         self.cat_categories = ['Treatment']
         self.num_categories = ['DOB']
         self.num_perms = 42
@@ -130,7 +130,7 @@ class CompareCategoriesTests(TestCase):
 
     def test_compare_categories_invalid_input(self):
         """Test compare_categories() on invalid input that should error out."""
-        # Non-numeric categories with BEST and Moran's I.
+        # Non-numeric categories with BIO-ENV and Moran's I.
         for method in self.num_methods:
             self.assertRaises(TypeError, compare_categories, self.dm1_fp,
                               self.map1_fp, method, self.cat_categories, self.num_perms,

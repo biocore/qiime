@@ -20,7 +20,7 @@ from skbio.math.stats.distance import ANOSIM, PERMANOVA, bioenv
 from qiime.parse import parse_mapping_file_to_dict
 from qiime.util import get_qiime_temp_dir, MetadataMap, RExecutor
 
-methods = ['adonis', 'anosim', 'best', 'morans_i', 'mrpp', 'permanova',
+methods = ['adonis', 'anosim', 'bioenv', 'morans_i', 'mrpp', 'permanova',
            'permdisp', 'dbrda']
 
 
@@ -35,11 +35,11 @@ def compare_categories(dm_fp, map_fp, method, categories, num_perms, out_dir):
         map_fp - filepath to the input metadata mapping file
         categories - list of categories in the metadata mapping file to
             consider in the statistical test. Multiple categories will only be
-            considered if method is 'best', otherwise only the first category
+            considered if method is 'bioenv', otherwise only the first category
             will be considered
         num_perms - the number of permutations to use when calculating the
-            p-value. If method is 'best' or 'morans_i', this parameter will be
-            ignored as they are not permutation-based methods
+            p-value. If method is 'bioenv' or 'morans_i', this parameter will
+            be ignored as they are not permutation-based methods
         out_dir - path to the output directory where results files will be
             written. It is assumed that this directory already exists and we
             have write permissions to it
@@ -56,13 +56,13 @@ def compare_categories(dm_fp, map_fp, method, categories, num_perms, out_dir):
         raise ValueError("Cannot use SampleID as a category because it is a "
                          "unique identifier for each sample, and thus does "
                          "not create groups of samples (nor can it be used as "
-                         "a numeric category in Moran's I or BEST analyses). "
-                         "Please use a different metadata column to perform "
-                         "statistical tests on.")
+                         "a numeric category in Moran's I or BIO-ENV "
+                         "analyses). Please choose a different metadata "
+                         "column to perform statistical tests on.")
 
     dm = DistanceMatrix.from_file(dm_fp)
 
-    if method in ('anosim', 'permanova', 'best'):
+    if method in ('anosim', 'permanova', 'bioenv'):
         with open(map_fp, 'U') as map_f:
             md_dict = parse_mapping_file_to_dict(map_f)[0]
         df = pd.DataFrame.from_dict(md_dict, orient='index')
@@ -80,9 +80,9 @@ def compare_categories(dm_fp, map_fp, method, categories, num_perms, out_dir):
 
             with open(out_fp, 'w') as out_f:
                 out_f.write(results.summary())
-        elif method == 'best':
-            best_results = bioenv(dm, df, columns=categories)
-            best_results.to_csv(out_fp, sep='\t')
+        elif method == 'bioenv':
+            results = bioenv(dm, df, columns=categories)
+            results.to_csv(out_fp, sep='\t')
     else:
         # Remove any samples from the mapping file that aren't in the distance
         # matrix (important for validation checks). Use strict=True so that an
