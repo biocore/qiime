@@ -258,7 +258,7 @@ setup(name='qiime',
       install_requires=['numpy >= 1.5.1, <= 1.7.1',
                         'matplotlib >= 1.1.0, <= 1.3.1',
                         'pynast == 1.2.2', 'qcli', 'gdata',
-                        'biom-format == 1.3.1', 'emperor == 0.9.3-dev',
+                        'biom-format == 2.0.1', 'emperor == 0.9.3-dev',
                         'scikit-bio == 0.1.1', 'brokit == 0.0.0-dev'],
       dependency_links=[
           'https://github.com/biocore/brokit/archive/master.zip#egg=brokit-0.0.0-dev',
