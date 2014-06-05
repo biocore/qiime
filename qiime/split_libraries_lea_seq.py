@@ -10,14 +10,13 @@ __maintainer__ = "Charudatta Navare"
 __email__ = "charudatta.navare@gmail.com"
 
 from collections import defaultdict
-from optparse import OptionParser
 from itertools import izip
-from qiime.golay import decode_golay_12, get_invalid_golay_barcodes
+from qiime.golay import get_invalid_golay_barcodes
 from qiime.parse import parse_mapping_file_to_dict
 from qiime.split_libraries import check_map, expand_degeneracies
-from qiime.split_libraries_fastq import correct_barcode, FastqParseError
+from qiime.split_libraries_fastq import correct_barcode
 from skbio.parse.sequences import parse_fastq
-from qiime.util import qiime_system_call, get_qiime_temp_dir
+from qiime.util import get_qiime_temp_dir
 from brokit.uclust import get_clusters_from_fasta_filepath
 import re
 import tempfile
@@ -74,7 +73,7 @@ def extract_primer(seq, possible_primers, min_idx=None, max_idx=None):
 
 
 def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
-                    barcode_type, barcode_correction_fn, max_barcode_errors,
+                    barcode_type, barcode_len, barcode_correction_fn, max_barcode_errors,
                     min_consensus, max_cluster_ratio, min_difference_in_bcs, log_file):
     """
     Reads mapping file, input file, and other command line arguments
@@ -92,7 +91,6 @@ def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
     BARCODE_COLUMN = 'BarcodeSequence'
     REVERSE_PRIMER_COLUMN = 'ReversePrimer'
     seq_fps = sequence_read_fps
-    barcode_len = int(barcode_type)
 
     with open(mapping_fp, 'U') as map_f:
         #  Ensures that sample IDs and barcodes are unique, that barcodes are
@@ -429,5 +427,5 @@ def select_unique_rand_bcs(rand_bcs, min_difference_in_bcs):
         output_dir=temp_dir)
 
     unique_rand_bcs = set(unique_rand_bcs)
-
+    os.unlink(fasta_tempfile_name)
     return unique_rand_bcs

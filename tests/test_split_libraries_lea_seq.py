@@ -10,8 +10,7 @@ __maintainer__ = "Charudatta Navare"
 __email__ = "charudatta.navare@gmail.com"
 
 import tempfile
-from cogent.util.unit_test import TestCase, main
-from cogent.util.misc import remove_files
+from unittest import TestCase, main
 from qiime.util import get_qiime_temp_dir
 from qiime.split_libraries_lea_seq import (get_cluster_ratio, get_consensus,
                                          get_LEA_seq_consensus_seqs, extract_primer,
@@ -141,6 +140,7 @@ class WorkflowTests(TestCase):
         mapping_fp_name = self.mapping_fp_name
         temp_dir = self.temp_dir 
         barcode_type = int(7)
+        barcode_len = 7
         barcode_correction_fn = None
         max_barcode_errors = 1.5
         min_consensus = 0.66
@@ -148,7 +148,7 @@ class WorkflowTests(TestCase):
         min_difference_in_bcs = 0.86
         log_file = self.log_file
         function_call = get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp_name,
-                                           temp_dir, barcode_type, barcode_correction_fn,
+                                           temp_dir, barcode_type, barcode_len, barcode_correction_fn,
                                            max_barcode_errors, min_consensus,
                                            max_cluster_ratio, min_difference_in_bcs, log_file)
         actual = function_call['Sample1']['AGCTACGAGCTATTGC']

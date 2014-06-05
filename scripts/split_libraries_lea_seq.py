@@ -136,7 +136,7 @@ def main():
                             "filepaths." % len(sequence_read_fps))
 
     consensus_seq_lookup = get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp,
-                                           output_dir, barcode_type, barcode_correction_fn,
+                                           output_dir, barcode_type, barcode_len, barcode_correction_fn,
                                            max_barcode_errors, min_consensus,
                                            max_cluster_ratio, min_difference_in_bcs, log_file)
 
@@ -145,6 +145,7 @@ def main():
             consensus_seq = consensus_seq_lookup[sample_id][random_bc]
             consensus_outfile.write(">" + sample_id + "_" + str(random_bc_count)
                                     + "\n" + consensus_seq + "\n")
+    consensus_outfile.close()
 
 if __name__ == "__main__":
     main()
