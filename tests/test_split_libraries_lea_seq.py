@@ -23,48 +23,79 @@ class WorkflowTests(TestCase):
 
     def setUp(self):
         """setup the test values"""
-        temp_dir = get_qiime_temp_dir()
+        # define test data
         self.fasta_seqs_of_rand_bcs = fasta_seqs_of_rand_bcs
         self.fasta_seqs_for_uclust = fasta_seqs_for_uclust
         self.fasta_seqs_for_consensus = fasta_seqs_for_consensus
-        self.fasta_file_for_consensus = tempfile.NamedTemporaryFile(delete=False, mode='w', dir=temp_dir)
-        self.fasta_file_for_cluster_ratio = tempfile.NamedTemporaryFile(delete=False, mode='w', dir=temp_dir)
-        self.fasta_file_for_consensus_unequal_length = tempfile.NamedTemporaryFile(delete=False, mode='w', dir=temp_dir)
-
         self.fwd_read_data = fwd_read_data
         self.rev_read_data = rev_read_data
         self.mapping_data = mapping_data
+        self.fasta_seq_for_primer = fasta_seq_for_primer
+        self.possible_primers = possible_primers
+        self.fasta_seqs_for_consensus_tie_G_C = fasta_seqs_for_consensus_tie_G_C
+        self.fasta_seqs_for_consensus_unequal_length = fasta_seqs_for_consensus_unequal_length
+
+        # open temporary files needed
+        temp_dir = get_qiime_temp_dir()
+        self.fasta_file_for_consensus_tie_G_C = tempfile.NamedTemporaryFile(delete=False, mode='w', dir=temp_dir)
+        self.fasta_file_for_cluster_ratio = tempfile.NamedTemporaryFile(delete=False, mode='w', dir=temp_dir)
+        self.fasta_file_for_consensus_unequal_length = tempfile.NamedTemporaryFile(delete=False, mode='w', dir=temp_dir)
         self.mapping_fp = tempfile.NamedTemporaryFile(delete=False, mode='w', dir=temp_dir)
         self.rev_read_fp = tempfile.NamedTemporaryFile(delete=False, mode='w', dir=temp_dir)
         self.fwd_read_fp = tempfile.NamedTemporaryFile(delete=False, mode='w', dir=temp_dir)
+        self.log_file = tempfile.NamedTemporaryFile(mode='w', dir=temp_dir)
+
+        # define temp dir
+        self.temp_dir = temp_dir
+
+        # write test data in temp files
         self.mapping_fp.write(self.mapping_data)
         self.fwd_read_fp.write(self.fwd_read_data)
         self.rev_read_fp.write(self.rev_read_data)
-        self.sequence_read_fps = (self.fwd_read_fp.name ,self.rev_read_fp.name)
-        self.log_file = tempfile.NamedTemporaryFile(mode='w', dir=temp_dir)
+        self.fasta_file_for_cluster_ratio.write(self.fasta_seqs_for_uclust)
+        self.fasta_file_for_consensus_tie_G_C.write(self.fasta_seqs_for_consensus_tie_G_C)
+        self.fasta_file_for_consensus_unequal_length.write(self.fasta_seqs_for_consensus_unequal_length)
+        # self.log_file does not need any data
+
+        # save names of the files
+        # so it can be used for system calls 
+        # after they are closed
+        self.fasta_file_for_consensus_tie_G_C_name = self.fasta_file_for_consensus_tie_G_C.name
+        self.fasta_file_for_consensus_unequal_length_name = self.fasta_file_for_consensus_unequal_length.name
+        self.fasta_file_for_cluster_ratio_name = self.fasta_file_for_cluster_ratio.name
         self.mapping_fp_name = self.mapping_fp.name
         self.rev_read_fp_name = self.rev_read_fp.name
         self.fwd_read_fp_name = self.fwd_read_fp.name
+
+        self.sequence_read_fps = (self.fwd_read_fp.name, self.rev_read_fp.name)
+        # close and open the files that are needed to be in read mode
+        self.fasta_file_for_consensus_tie_G_C.close()
+        self.fasta_file_for_consensus_unequal_length.close()
+        self.fasta_file_for_consensus_tie_G_C = open(self.fasta_file_for_consensus_tie_G_C_name, 'r')
+        self.fasta_file_for_consensus_unequal_length = open(self.fasta_file_for_consensus_unequal_length_name, 'r')
+        
+        # close files that don't need to be open
+        # 1. (some of which are only needed for system calls)
+        # 2. test_get_LEA_seq_consensus_seqs is the main library function
+        # which only requires names, and it will open the files
+        self.fasta_file_for_cluster_ratio.close()
         self.mapping_fp.close()
         self.rev_read_fp.close()
         self.fwd_read_fp.close()
-        self.fasta_file_for_consensus_name = self.fasta_file_for_consensus.name
-        self.fasta_file_for_cluster_ratio_name = self.fasta_file_for_cluster_ratio.name
-        self.fasta_file_for_consensus_unequal_length_name = self.fasta_file_for_consensus_unequal_length.name
-
-        self.fasta_seq_for_primer = 'AATGCCCCC'
-        self.possible_primers = ['ATGC', 'ATTT']
 
 
     def tearDown(self):
         """remove all the files after completing tests """
-        os.unlink(self.fasta_file_for_consensus_name)
-        os.unlink(self.fasta_file_for_cluster_ratio_name)
-        os.unlink(self.fasta_file_for_consensus_unequal_length_name)
-        self.log_file.close()
         # delete = False in creation of tempfiles
         # as they need to be opened in functions
         # hence the need to remove them
+        os.unlink(self.fasta_file_for_consensus_tie_G_C_name)
+        os.unlink(self.fasta_file_for_consensus_unequal_length_name)
+        os.unlink(self.fasta_file_for_cluster_ratio_name)
+        os.unlink(self.mapping_fp_name)
+        os.unlink(self.rev_read_fp_name)
+        os.unlink(self.fwd_read_fp_name)
+        self.log_file.close() # will be deleted
 
     def test_select_unique_rand_bcs(self):
         fasta_seqs_of_rand_bcs = self.fasta_seqs_of_rand_bcs
@@ -73,9 +104,10 @@ class WorkflowTests(TestCase):
         self.assertEqual(actual, expected)
 
     def test_get_consensus(self):
-        fasta_seqs_for_consensus = self.fasta_seqs_for_consensus
-        temp_file = self.fasta_file_for_consensus
-        temp_file.write(fasta_seqs_for_consensus_tie_G_C)
+        fasta_file_for_consensus_unequal_length = self.fasta_file_for_consensus_unequal_length
+        fasta_file_for_consensus_tie_G_C = self.fasta_file_for_consensus_tie_G_C
+
+        actual = get_consensus(fasta_file_for_consensus_tie_G_C, 2)
         # at the last position, G and C have the same frequency
         # therefore the function is expected to return
         # consensus sequence with G, which is present in seq 
@@ -85,29 +117,15 @@ class WorkflowTests(TestCase):
         # the base that appeared first.
         # This method is just for a consistent way
         # to resolve ties        
-        temp_file_name = temp_file.name
-        temp_file.close()
-        temp_file = open(temp_file_name, 'r')
-        actual = get_consensus(temp_file, 2)
         expected = 'ATTTTATTTTATTTTTATTTATTATATATTATATATATATAGCGCGCGCGCGCGG'
         self.assertEqual(actual, expected)
 
-        temp_file = self.fasta_file_for_consensus_unequal_length
-        temp_file.write(fasta_seqs_for_consensus_unequal_length)
-        # Expected to throw SeqLengthMismatchError
-        temp_file_name = temp_file.name
-        temp_file.close()
-        temp_file = open(temp_file_name, 'r')
-        self.assertRaises(SeqLengthMismatchError)
+        # Sequences having unequal length: 
+        self.assertRaises(SeqLengthMismatchError, get_consensus, fasta_file_for_consensus_unequal_length, 2)
 
     def test_get_cluster_ratio(self):
-        fasta_seqs_for_uclust = self.fasta_seqs_for_uclust
-        temp_dir = get_qiime_temp_dir()
-        temp_file = self.fasta_file_for_cluster_ratio
-        temp_file.write(fasta_seqs_for_uclust)
-        temp_file_name = temp_file.name
-        temp_file.close()
-        actual = get_cluster_ratio(temp_file_name)
+        fasta_file_for_cluster_ratio_name = self.fasta_file_for_cluster_ratio_name
+        actual = get_cluster_ratio(fasta_file_for_cluster_ratio_name)
         expected = 0.125
         self.assertEqual(actual, expected)
         
@@ -119,11 +137,9 @@ class WorkflowTests(TestCase):
         self.assertEqual(actual, expected)   
 
     def test_get_LEA_seq_consensus_seqs(self):
-        fwd_read_data = self.fwd_read_data
-        rev_read_data = self.rev_read_data
-        mapping_data = self.mapping_data
-        temp_dir = get_qiime_temp_dir()
-        temp_dir = temp_dir 
+        sequence_read_fps = self.sequence_read_fps
+        mapping_fp_name = self.mapping_fp_name
+        temp_dir = self.temp_dir 
         barcode_type = int(7)
         barcode_correction_fn = None
         max_barcode_errors = 1.5
@@ -131,7 +147,7 @@ class WorkflowTests(TestCase):
         max_cluster_ratio = 2.5
         min_difference_in_bcs = 0.86
         log_file = self.log_file
-        function_call = get_LEA_seq_consensus_seqs(self.sequence_read_fps, self.mapping_fp.name,
+        function_call = get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp_name,
                                            temp_dir, barcode_type, barcode_correction_fn,
                                            max_barcode_errors, min_consensus,
                                            max_cluster_ratio, min_difference_in_bcs, log_file)
@@ -204,9 +220,11 @@ CCGGCAGAGCTACGAGCTATTGCGGGCCGTGTCTCAGTAAAAAAAAAAAAAAAAAA
 $
 """
 mapping_data = """#SampleID	BarcodeSequence	LinkerPrimerSequence	ReversePrimer	Description
-Sample1	CCGGCAG	AGAGTTTGATCCTGGCTCAG	GGGCCGTGTCTCAGT	Sample1 description
+Sample1	CCGGCAG	AGAGTTTGATCCTGGCTCAG	GGGCCGTGTCTCAGT	Sample1	description
 """
 
+fasta_seq_for_primer = 'AATGCCCCC'
+possible_primers = ['ATGC', 'ATTT']
 
 # run tests if called from command line
 if __name__ == '__main__':
