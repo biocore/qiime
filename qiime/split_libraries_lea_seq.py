@@ -21,7 +21,7 @@ from brokit.uclust import get_clusters_from_fasta_filepath
 import re
 import tempfile
 import os
-
+from skbio.parse.sequences import parse_fasta
 
 class PairedEndParseError(Exception):
     pass
@@ -293,79 +293,41 @@ def get_consensus(fasta_tempfile, min_consensus):
 
     where: number = number of times the particular seq has appeared with this random_barcode
     """
-
-    length = 0
-    seqs = []  # list of sequences in fasta file
-    counts = []  # count of occurence of sequnces
-    this_seq_count = -1  # counter for sequence
-    number_of_seqs = 0
-    # I have not used a function from skitbio for reading the
-    # fasta file, because of the particular format of fasta file.
-    # i.e. random barcode, and count in ID line
-    
+    seqs = list()  
+    counts = list()  
     fasta_tempfile_name =fasta_tempfile.name
 
-    # read the fasta file
-    # store seqs and counts
-    for line in fasta_tempfile:
-        if re.search(r'\>', line):
-            this_seq_count += 1
-            seqs.append("")
-            counts.append(0)
-            RE_output = re.search(r'\>\w+\|(\d+)', line)
-            counts[this_seq_count] = RE_output.group(1)
-            counts[this_seq_count] = int(counts[this_seq_count])
-            number_of_seqs += counts[this_seq_count]
-        else:
-            line = line.rstrip('\n')
-            try:
-                seqs[this_seq_count] = seqs[this_seq_count] + line
-            except IndexError:
-                seqs[this_seq_count] = line
+    for label, seq in parse_fasta(fasta_tempfile):
+        RE_output = re.search(r'\w+\|(\d+)', label)
+        counts.append(int(RE_output.group(1)))
+        seqs.append(seq)
 
     length = len(seqs[0])
-    number_of_seqs = this_seq_count + 1
-    for j in range(number_of_seqs):
-        if len(seqs[j]) != len(seqs[0]):
+    number_of_seqs = len(seqs)
+
+    for seq_index in range(number_of_seqs):
+        if len(seqs[seq_index]) != length:
             raise SeqLengthMismatchError
-    
-    # freq_this_pos_this_base is a 2D list
-    # It has N rows and M columns
-    # N: number of seqs
-    # M: length of the seqs(should be same)
 
-    freq_this_pos_this_base = {}
-    seq_with_max_count= {}
-    for i in range(length):
-        freq_this_pos_this_base[i] = {}
-        seq_with_max_count[i] = {}
-        # for j in range(this_seq_count):
-            # freq_this_pos_this_base[i][j] = 0
+    freq_this_pos_this_base = dict()
+    count_of_seq_with_max_count = dict()
 
-    for i in range(length):
+    for x in range(length):
+        freq_this_pos_this_base[x]= dict()  
+        count_of_seq_with_max_count[x] = dict()      
+
+    for x in range(length):
+        for y in ('A', 'T', 'G', 'C', 'N'):
+            freq_this_pos_this_base[x][y] = 0        
+            count_of_seq_with_max_count[x][y] = 0
+
+    for base_index in range(length):
         for this_seq_count, seq in enumerate(seqs):
-            
-            try:
-                freq_this_pos_this_base[i][seq[i]] += counts[this_seq_count]
-            
-            except KeyError:
-                freq_this_pos_this_base[i][seq[i]] = counts[this_seq_count]
-
-            try: 
-                if counts[this_seq_count] > seq_with_max_count[i][seq[i]]:
-                    seq_with_max_count[i][seq[i]] = counts[this_seq_count]
-            except KeyError:
-                seq_with_max_count[i][seq[i]] = counts[this_seq_count]
-
+            freq_this_pos_this_base[base_index][seq[base_index]] += counts[this_seq_count]
+            if counts[this_seq_count] > count_of_seq_with_max_count[base_index][seq[base_index]]:
+                count_of_seq_with_max_count[base_index][seq[base_index]] = counts[this_seq_count]
     
-    consensus = ''      # consesus sequence
-    con_score = ''
-    # consensus score: string. At each position: range 0-9
-    # at each position, 10 * occurence of max base / number_of_seqs
-    # 10 is converted to 9
-
-    count = 0
-
+    consensus = list()
     for index in range(length):
         sorted_bases = sorted(freq_this_pos_this_base[index].iteritems(), key=lambda x: x[1])
         max_base, max_freq = sorted_bases[-1]
@@ -373,28 +335,18 @@ def get_consensus(fasta_tempfile, min_consensus):
         for (counter ,(b, n)) in enumerate(sorted_bases):
             if max_freq == n:
                 try:     
-                    if seq_with_max_count[counter][b] > seq_with_max_count[counter][max_base]:
+                    if count_of_seq_with_max_count[counter][b] > count_of_seq_with_max_count[counter][max_base]:
                         max_base = b 
                 except KeyError:
                     pass
-        
-        base = max_base
-        num = max_freq
-        score = float(10 * float(num) / number_of_seqs)
 
-        if score >= 9:
-            score = 9
-
+        score = float(10 * float(max_freq) / number_of_seqs)
         if score < min_consensus:
             raise LowConsensusScoreError
+        consensus.append(max_base)
 
-        score = str(int(score))
-        consensus = consensus+base
-        con_score += score
-        count += 1
-
-    if con_score >= min_consensus:
-            return consensus
+    consensus_seq = ''.join(map(str, consensus))
+    return consensus_seq
 
 
 def select_unique_rand_bcs(rand_bcs, min_difference_in_bcs):

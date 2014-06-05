@@ -141,9 +141,9 @@ def main():
                                            max_cluster_ratio, min_difference_in_bcs, log_file)
 
     for sample_id in consensus_seq_lookup:
-        for random_bc_count, random_bc in enumerate(consensus_seq_lookup[sample_id]):
+        for random_bc_index, random_bc in enumerate(consensus_seq_lookup[sample_id]):
             consensus_seq = consensus_seq_lookup[sample_id][random_bc]
-            consensus_outfile.write(">" + sample_id + "_" + str(random_bc_count)
+            consensus_outfile.write(">" + sample_id + "_" + str(random_bc_index)
                                     + "\n" + consensus_seq + "\n")
     consensus_outfile.close()
 
