@@ -92,12 +92,9 @@ def compare_categories(dm_fp, map_fp, method, categories, num_perms, out_dir):
             md_map = MetadataMap.parseMetadataMap(map_f)
         md_map.filterSamples(dm.ids, strict=True)
 
-        # Run the specified statistical method.
+        # These methods are run in R. Input validation must be done here before
+        # running the R commands.
         if method in ['adonis', 'morans_i', 'mrpp', 'permdisp', 'dbrda']:
-            # These methods are run in R. Input validation must be done here
-            # before running the R commands. The pure-Python implementations
-            # perform all validation in the classes in the stats module.
-
             # Check to make sure all categories passed in are in mapping file
             # and are not all the same value.
             for category in categories:
