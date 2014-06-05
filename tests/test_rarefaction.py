@@ -49,7 +49,7 @@ class FunctionTests(TestCase):
                                        self.taxon_names,
                                        self.sample_names)
         self.otu_table_meta = Table(self.otu_table_data,
-                                            self.taxon_names, self.taxon_names,
+                                            self.taxon_names, self.sample_names,
                                             observation_metadata=self.otu_metadata)
 
         self.otu_table_str = format_biom_table(self.otu_table)
@@ -91,7 +91,7 @@ class FunctionTests(TestCase):
         self.assertEqual(res[-1][2], self.otu_table)
 
         sample_value_sum = []
-        for val in res[1][2].iter_sample_data():
+        for val in res[1][2].iter_data(axis='sample'):
             sample_value_sum.append(val.sum())
         assert_almost_equal(sample_value_sum, [1.0, 1.0])
 
@@ -167,7 +167,7 @@ class FunctionTests(TestCase):
 
         # a very complicated way to test things
         rare_values = [val[0]
-                       for (val, otu_id, meta) in rare_otu_table.iter_observations()]
+                       for (val, otu_id, meta) in rare_otu_table.iter(axis='observation')]
         self.assertEqual(rare_values, [1.0, 5.0, 3.0, 2.0])
 
 if __name__ == '__main__':

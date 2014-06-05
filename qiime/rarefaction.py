@@ -39,7 +39,7 @@ class SingleRarefactionMaker(FunctionWithParams):
         self.otu_table = self.getBiomData(otu_path)
 
         self.max_num_taxa = -1
-        for val in self.otu_table.iter_observation_data():
+        for val in self.otu_table.iter_data(axis='observation'):
             self.max_num_taxa = max(self.max_num_taxa, val.sum())
 
     def rarefy_to_file(self, output_fname, small_included=False,
@@ -52,7 +52,7 @@ class SingleRarefactionMaker(FunctionWithParams):
             for rep in range(self.num_reps):"""
 
         if not include_lineages:
-            for (val, id, meta) in self.otu_table.iter_observations():
+            for (val, id, meta) in self.otu_table.iter(axis='observation'):
                 del meta['taxonomy']
 
         sub_otu_table = get_rare_data(self.otu_table,
@@ -91,7 +91,7 @@ class RarefactionMaker(FunctionWithParams):
         self.otu_table = self.getBiomData(otu_path)
         self.max_num_taxa = -1
         tmp = -1
-        for val in self.otu_table.iter_observation_data():
+        for val in self.otu_table.iter_data(axis='observation'):
             if val.sum() > tmp:
                 tmp = val.sum()
         self.max_num_taxa = tmp
@@ -103,7 +103,7 @@ class RarefactionMaker(FunctionWithParams):
 
         this prevents large memory usage"""
         if not include_lineages:
-            for (val, id, meta) in self.otu_table.iter_observations():
+            for (val, id, meta) in self.otu_table.iter(axis='observation'):
                 try:
                     del meta['taxonomy']
                 except (TypeError, KeyError) as e:
@@ -187,6 +187,6 @@ def get_rare_data(otu_table,
         else:
             return subsample_f(x.astype(int), seqs_per_sample)
 
-    subsampled_otu_table = otu_table.transform_samples(func)
+    subsampled_otu_table = otu_table.transform(func, axis='sample')
 
     return subsampled_otu_table
