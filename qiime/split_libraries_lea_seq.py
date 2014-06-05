@@ -430,7 +430,4 @@ def select_unique_rand_bcs(rand_bcs, min_difference_in_bcs):
 
     unique_rand_bcs = set(unique_rand_bcs)
 
-    # os.unlink(fasta_tempfile_name)
-    # os.unlink(uclust_tempfile_name)
-
     return unique_rand_bcs
