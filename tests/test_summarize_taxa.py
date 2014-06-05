@@ -42,9 +42,8 @@ class TopLevelTests(TestCase):
          (3, 1): 2.0, (3, 2): 1.0}
 
         self.otu_table = Table(self.otu_table_vals,
-                                       ['s1', 's2', 's3', 's4'],
                                        ['0', '1', '2', '3'],
-                                       None,
+                                       ['s1', 's2', 's3', 's4'],
                                        [{"taxonomy": ["Root", "Bacteria", "Actinobacteria", "Actinobacteria", "Coriobacteridae", "Coriobacteriales", "Coriobacterineae", "Coriobacteriaceae"]},
                                         {"taxonomy": ["Root",
                                                       "Bacteria",
@@ -54,7 +53,8 @@ class TopLevelTests(TestCase):
                                                       "Bacteria",
                                                       "Firmicutes",
                                                       "\"Clostridia\""]},
-                                        {"taxonomy": ["Root", "Bacteria"]}])
+                                        {"taxonomy": ["Root", "Bacteria"]}],
+                                        None,)
 
 # self.otu_table="""#Full OTU Counts
 # OTU ID\ts1\ts2\ts3\ts4\tConsensus Lineage
@@ -118,7 +118,7 @@ s4\tTTTT\tExp\tDisease mouse, I.D. 357""".split('\n')
         #otu_table = parse_otu_table(self.otu_table, float)
         #otu_table = parse_biom_table(self.otu_table, float)
         #otu_table = convert_otu_table_relative(otu_table)
-        otu_table = self.otu_table.norm_observation_by_sample()
+        otu_table = self.otu_table.norm(axis='sample', inplace=False)
         summary, header = make_summary(
             otu_table, 3, upper_percentage, lower_percentage)
         self.assertEqual(header, ['Taxon', 's1', 's2', 's3', 's4'])
