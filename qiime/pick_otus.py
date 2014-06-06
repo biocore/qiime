@@ -39,7 +39,7 @@ from brokit.formatdb import build_blast_db_from_fasta_path
 from brokit.mothur import Mothur
 from brokit.cd_hit import cdhit_clusters_from_seqs
 from brokit.uclust import get_clusters_from_fasta_filepath
-#from brokit.sortmerna_v2 import sortmerna_ref_cluster
+from brokit.sortmerna_v2 import build_database_sortmerna
 from brokit.usearch import (usearch_qf,
                             usearch61_denovo_cluster,
                             usearch61_ref_cluster)
@@ -179,21 +179,51 @@ class SortmernaV2OtuPicker(OtuPicker):
             2. percent sequence identity greater than or equal to the OTU 
                 similarity threshold (default in Params['similarity'] = 0.97)
             3. percent query coverage greater than or equal to the OTU 
-                coverage threshold (default in Params['QueryCoverage'] = 0.97)
+                coverage threshold (default in Params['coverage'] = 0.97)
     """
 
     def __init__(self, params):
         """ Return a new SortmernaV2OtuPicker object with specified params.
         """
 
-        _params = {'max_e_value': 1,
-                    'similarity': 0.97,
-                    'coverage': 0.97,
-                    'best': 1,
-                    'min_lis': 2,
-                    'threads': 1}
-        _params.update(params)
-        OtuPicker.__init__(self, _params)
+        #_params = {'max_e_value': 1,
+        #            'similarity': 0.97,
+        #            'coverage': 0.97,
+        #            'best': 1,          # output one best alignment per read
+        #            'min_lis': 2,       # search all candidate references with the top 2 best LIS       
+        #            'blast': 3,         # blast tabular with CIGAR and coverage
+        #            'otumap': True,     # output an OTU map
+        #           'denovo_otu': True, # output a FASTA file of failures
+        #            'max_pos': 10000    # maximum positions to store per seed in index
+        #            } 
+        #_params.update(params)
+
+        #OtuPicker.__init__(self, _params)
+        OtuPicker.__init__(self, params)
+
+    def __call__(self, seq_path, result_path=None, log_path=None,
+                sortmerna_db=None, refseqs_fp=None):
+
+        self.log_lines = []
+
+        if not sortmerna_db:
+            self.sortmerna_db, self.db_files_to_remove = \
+                build_database_sortmerna(abspath(refseqs_fp),
+                                                    max_pos=self.Params['max_pos'],
+                                                    output_dir=get_qiime_temp_dir())
+            self.log_lines.append('Reference seqs fp (to build sortmerna database): %s' %
+                                    abspath(refseqs_fp))
+        else:
+            self.sortmerna_db = sortmerna_db
+            self.db_files_to_remove = []
+
+        self.log_lines.append('SortMeRNA database: %s' % self.sortmerna_db)
+
+        # call sortmerna for reference clustering, return a pointer to the OTU map
+        # and FASTA file for de novo clustering
+        clusters_fp, failures_fp = sortmerna_ref_cluster(parse_fasta(open(seq_path)))
+
+        #self.log_lines.append('Num OTUs: %d' % len(clusters))
 
 
 class BlastOtuPicker(OtuPicker):

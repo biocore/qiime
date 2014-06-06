@@ -222,6 +222,10 @@ script_info['optional_options'] = [
     make_option('--sortmerna_best_N_alignments', type='int',
                 help=('If --sortmerna_tabular is set, this option '
                       'will output the best N alignments per read [default: %default]')),
+
+    make_option('--sortmerna_max_pos', type='int', default=10000,
+                help=('The maximum number of positions per seed to store in the '
+                      ' indexed database [default: %default]')),
 # end SortMeRNA specific parameters
 
     make_option('--min_aligned_percent',
@@ -483,6 +487,7 @@ def main():
     sortmerna_coverage = opts.sortmerna_coverage
     sortmerna_tabular = opts.sortmerna_tabular
     sortmerna_best_N_alignments = opts.sortmerna_best_N_alignments
+    sortmerna_max_pos = opts.sortmerna_max_pos
 
     # usearch specific parameters
     percent_id_err = opts.percent_id_err
@@ -637,8 +642,6 @@ def main():
 
     if otu_picking_method == 'sortmerna':
 
-    # check sortmerna_db exists
-
     # check sortmerna_e_value is a float and positive
         try:
             sortmerna_e_value = float(sortmerna_e_value)
@@ -651,23 +654,24 @@ def main():
         try:
             sortmerna_coverage = float(sortmerna_coverage)
         except ValueError:
-            option_parser.error("--sortmerna_coverage must be a float.")
+            option_parser.error('--sortmerna_coverage must be a float.')
         if sortmerna_e_value < 0:
-            option_parser.error("--sortmerna_coverage must be positive.")
+            option_parser.error('--sortmerna_coverage must be positive.')
 
     # check that if sortmerna_best_N_alignments is set then so is sortmerna_tabular
-        if sortmerna_best_N_alignments != 'default':
-            if sortmerna_tabular:
-                option_parser.error("must enable --sortmerna_tabular with --sortmerna_best_N_alignments.")
+        if sortmerna_best_N_alignments != None:
+            if sortmerna_tabular is False:
+                option_parser.error('must enable --sortmerna_tabular with '
+                                    '--sortmerna_best_N_alignments.')
 
-    # check FASTA reference file or the indexed database were provided
+    # check FASTA reference file or the indexed database (with the FASTA reference file) were provided
         if refseqs_fp is None:
-            if sortmerna_db is None:
-                option_parser.error('sortmerna requires refseqs_fp or sortmerna_db')
-            elif isfile(sortmerna_db + '.stats') is False:
-                option_parser.error('%s does not exist, make sure you have indexed the database using indexdb_rna' % (sortmerna_db + '.stats'))
+            option_parser.error('sortmerna always requires refseqs_fp (with or without sortmerna_db)')
+        elif sortmerna_db:
+            if isfile(sortmerna_db + '.stats') is False:
+                option_parser.error('%s does not exist, make sure you have indexed '
+                                    'the database using indexdb_rna' % (sortmerna_db + '.stats'))
         
-
 
     # End input validation
 
@@ -696,7 +700,7 @@ def main():
 
     # cd-hit
     if otu_picking_method == 'cdhit':
-        params = {'Similarity': opts.similarity,
+        params = {'Similarity': similarity,
                   '-M': opts.max_cdhit_memory}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,
@@ -706,7 +710,7 @@ def main():
 
     # uclust (de novo)
     elif otu_picking_method == 'uclust':
-        params = {'Similarity': opts.similarity,
+        params = {'Similarity': similarity,
                   'enable_rev_strand_matching': opts.enable_rev_strand_match,
                   'optimal': opts.optimal_uclust,
                   'exact': opts.exact_uclust,
@@ -729,7 +733,7 @@ def main():
 
     ## usearch (usearch_qf)
     elif otu_picking_method == 'usearch':
-        params = {'percent_id': opts.similarity,
+        params = {'percent_id': similarity,
                   'maxrejects': max_rejects,
                   'w': word_length,
                   'save_intermediate_files': save_uc_files,
@@ -755,7 +759,7 @@ def main():
 
     # usearch (usearch_qf) with reference OTU picking
     elif otu_picking_method == 'usearch_ref':
-        params = {'percent_id': opts.similarity,
+        params = {'percent_id': similarity,
                   'maxrejects': max_rejects,
                   'w': word_length,
                   'save_intermediate_files': save_uc_files,
@@ -785,7 +789,7 @@ def main():
     elif otu_picking_method == 'usearch61':
         otu_prefix = opts.uclust_otu_id_prefix or 'denovo'
         params = {
-            'percent_id': opts.similarity,
+            'percent_id': similarity,
             'wordlength': word_length,
             'save_intermediate_files': save_uc_files,
             'output_dir': output_dir,
@@ -810,7 +814,7 @@ def main():
     elif otu_picking_method == 'usearch61_ref':
         otu_prefix = opts.uclust_otu_id_prefix or 'denovo'
         params = {
-            'percent_id': opts.similarity,
+            'percent_id': similarity,
             'wordlength': word_length,
             'save_intermediate_files': save_uc_files,
             'output_dir': output_dir,
@@ -834,7 +838,7 @@ def main():
 
     ## uclust (reference-based)
     elif otu_picking_method == 'uclust_ref':
-        params = {'Similarity': opts.similarity,
+        params = {'Similarity': similarity,
                   'enable_rev_strand_matching': opts.enable_rev_strand_match,
                   'optimal': opts.optimal_uclust,
                   'exact': opts.exact_uclust,
@@ -868,7 +872,7 @@ def main():
 
     # mothur
     elif otu_picking_method == 'mothur':
-        params = {'Similarity': opts.similarity,
+        params = {'Similarity': similarity,
                   'Algorithm': opts.clustering_algorithm}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,
@@ -884,20 +888,26 @@ def main():
     # blast
     elif otu_picking_method == 'blast':
         params = {'max_e_value': opts.max_e_value_blast,
-                  'Similarity': opts.similarity,
+                  'Similarity': similarity,
                   'min_aligned_percent': min_aligned_percent}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,
                    result_path=result_path, log_path=log_path,
-                   blast_db=opts.blast_db, refseqs_fp=opts.refseqs_fp)
+                   blast_db=blast_db, refseqs_fp=refseqs_fp)
 
     # sortmerna
     elif otu_picking_method == 'sortmerna':
-        params = {}
+        params = {'max_e_value': sortmerna_e_value,
+                  'similarity': similarity,
+                  'coverage': sortmerna_coverage,
+                  'threads': threads,
+                  'tabular': sortmerna_tabular,
+                  'best': sortmerna_best_N_alignments,
+                  'max_pos': sortmerna_max_pos}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,
                     result_path=result_path, log_path=log_path,
-                    sortmerna_db=opts.sortmerna_db, refseqs_fp=opts.refseqs_fp)
+                    sortmerna_db=sortmerna_db, refseqs_fp=refseqs_fp)
 
     # other -- shouldn't be able to get here as a KeyError would have
     # been raised earlier
