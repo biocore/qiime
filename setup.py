@@ -259,11 +259,12 @@ setup(name='qiime',
                         'matplotlib >= 1.1.0, <= 1.3.1',
                         'pynast == 1.2.2', 'qcli', 'gdata',
                         'biom-format == 1.3.1', 'emperor == 0.9.3-dev',
-                        'scikit-bio == 0.1.1', 'brokit == 0.0.0-dev',
+                        'scikit-bio == 0.1.1-dev', 'brokit == 0.0.0-dev',
                         'pandas >= 0.13.1', 'future'],
       dependency_links=[
           'https://github.com/biocore/brokit/archive/master.zip#egg=brokit-0.0.0-dev',
-          'https://github.com/biocore/emperor/archive/master.zip#egg=emperor-0.9.3-dev'
+          'https://github.com/biocore/emperor/archive/master.zip#egg=emperor-0.9.3-dev',
+          'https://github.com/biocore/scikit-bio/archive/master.zip#egg=scikit-bio-0.1.1-dev'
       ],
       extras_require={'all': ['ipython', 'tornado', 'pyzmq', 'sphinx >= 0.3',
                               # the following are optional for pycogent, should
