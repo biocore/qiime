@@ -1154,24 +1154,24 @@ class PairedDifferenceTests(TestHelper):
         self.assertItemsEqual(table.observation_ids,
                               ['firmicutes-abundance', 'bacteroidetes-abundance'])
         assert_almost_equal(table
-                              [(table.get_observation_index(
-                                  'firmicutes-abundance'),
-                               table.get_sample_index('subject1'))],
+                              [(table.index('firmicutes-abundance',
+                                            axis='observation'),
+                               table.index('subject1', axis='sample'))],
                               0.1, 2)
         assert_almost_equal(table
-                              [(table.get_observation_index(
-                                  'bacteroidetes-abundance'),
-                              table.get_sample_index('subject1'))],
+                              [(table.index('bacteroidetes-abundance',
+                                            axis='observation'),
+                              table.index('subject1', axis='sample'))],
                               -0.07, 2)
         assert_almost_equal(table
-                              [(table.get_observation_index(
-                                  'firmicutes-abundance'),
-                              table.get_sample_index('subject2'))],
+                              [(table.index('firmicutes-abundance',
+                                            axis='observation'),
+                              table.index('subject2', axis='sample'))],
                               0.41, 2)
         assert_almost_equal(table
-                              [(table.get_observation_index(
-                                  'bacteroidetes-abundance'),
-                              table.get_sample_index('subject2'))],
+                              [(table.index('bacteroidetes-abundance',
+                                            axis='observation'),
+                              table.index('subject2', axis='sample'))],
                               -0.10, 2)
 
         # missing data should raise ValueError
