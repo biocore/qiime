@@ -225,6 +225,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
                                             command_handler=call_commands_serially,
                                             params=self.params,
                                             prefilter_refseqs_fp=None,
+                                            prefilter_percent_id=0.60,
                                             qiime_config=self.qiime_config,
                                             step1_otu_map_fp=None,
                                             step1_failures_fasta_fp=None,
