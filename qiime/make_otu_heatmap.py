@@ -125,45 +125,16 @@ def names_to_indices(names, ordered_names):
     return array(indices)
 
 
-def get_log_transform(otu_table, eps=None):
-    """Returns log10 of the data, setting zero values to eps.
-
-       If eps is None, eps is set to 1/2 the smallest nonzero value.
-    """
-    # NOTE: compared with qiime.make_otu_heatmap_html, this function does
-    # *not* do a data = data - (data).min() before returning value.
-    # This behavior is correct according to Dan Knights, but consider if
-    # we ever merge these two scripts
-
-    # explicit conversion to float: transform
-    def f(s_v, s_id, s_md):
-        return float64(s_v)
-    float_otu_table = otu_table.transform(f, axis='sample', inplace=False)
-
-    if eps is None:
-        # get the minimum among nonzero entries and divide by two
-        eps = inf
-        for (obs, sam) in float_otu_table.nonzero():
-            eps = minimum(eps, float_otu_table.get_value_by_ids(obs, sam))
-        if eps == inf:
-            raise ValueError('All values in the OTU table are zero!')
-        else:
-            eps = eps / 2
-
-    # set zero entries to eps/2 using a transform
-    g = lambda x: x if (x != 0) else eps
-
-    def g_m(s_v, s_id, s_md):
-        return asarray(map(g, s_v))
-
-    eps_otu_table = float_otu_table.transform(g_m, axis='sample', inplace=False)
+def get_log_transform(otu_table):
+    """Returns log10 of the data"""
+    if otu_table.nnz == 0:
+        raise ValueError('All values in the OTU table are zero!')
 
     # take log of all values
     def h(s_v, s_id, s_md):
         return log10(s_v)
-    log_otu_table = eps_otu_table.transform(h, axis='sample', inplace=False)
 
-    return log_otu_table
+    return otu_table.transform(h, axis='sample', inplace=False)
 
 
 def get_clusters(x_original, axis=['row', 'column'][0]):

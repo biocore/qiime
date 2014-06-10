@@ -1,11 +1,9 @@
 # python test_compare_categories.py
 # python test_core_microbiome.py
-# python test_make_otu_heatmap.py
 # python test_make_otu_heatmap_html.py
 # python test_make_otu_network.py
 # python test_parallel/test_multiple_rarefactions.py
 # python test_split.py
-# python test_stats.py
 # python test_util.py
 # python test_workflow/test_core_diversity_analyses.py
 # python test_workflow/test_downstream.py

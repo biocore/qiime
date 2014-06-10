@@ -63,7 +63,7 @@ def filter_table_to_core(table,
 
     """
     filter_f = get_filter_to_core_f(table, sample_ids, fraction_for_core)
-    return table.filter(filter_f, axis='observation')
+    return table.filter(filter_f, axis='observation',inplace=False)
 
 
 def core_observations_across_sample_ids(table,
@@ -83,6 +83,7 @@ def core_observations_across_sample_ids(table,
         result = list(filter_table_to_core(table,
                                            sample_ids,
                                            fraction_for_core).observation_ids)
+                
     except TableException:
         result = []
     return result
