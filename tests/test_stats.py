@@ -83,9 +83,6 @@ class TestHelper(TestCase):
         else:
             self.assertEqual(observed, expected)
 
-    # def compare_multiple_level_array(self, observed, expected):
-    #     ''''''
-    #     assert_allclose(observed, expected, atol=1e-5)
     def setUp(self):
         """Define some useful test objects."""
         # The unweighted unifrac distance matrix from the overview tutorial.
