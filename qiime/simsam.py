@@ -245,16 +245,16 @@ def simsam_range(table,
             # create the simulated otu table
             output_sample_ids, output_otu_ids, output_data, output_metadata = \
                 sim_otu_table(table.sample_ids,
-                              table.observation_ids,
+                              table.observation_ids.tolist(),
                               table.iter(),
                               table.observation_metadata,
                               tree,
                               simulated_sample_size,
                               dissimilarity)
             output_table = Table(output_data,
-                                         output_sample_ids,
-                                         output_otu_ids,
-                                         observation_metadata=output_metadata)
+                                 output_otu_ids,
+                                 output_sample_ids,
+                                 observation_metadata=output_metadata)
             yield (output_table,
                    output_mapping_lines,
                    simulated_sample_size,

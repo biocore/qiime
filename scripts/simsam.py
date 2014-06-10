@@ -16,7 +16,6 @@ from qiime.util import (add_filename_suffix, create_dir, get_options_lookup,
                         parse_command_line_parameters, make_option)
 from qiime.simsam import simsam_range_to_files
 from qiime.format import format_biom_table
-from biom.table import table_factory
 from biom.parse import parse_biom_table
 
 options_lookup = get_options_lookup()

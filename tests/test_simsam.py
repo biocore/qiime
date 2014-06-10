@@ -204,7 +204,7 @@ class SimsamTests(TestCase):
                     exp)
 
         # same otu ids
-        self.assertEqual(res_table.observation_ids, orig_table.observation_ids)
+        self.assertEqual(res_table.observation_ids.tolist(), orig_table.observation_ids.tolist())
 
         # same otu table, just replicated thrice
         # note this requires the same sorting of otus, input is correct sorting
