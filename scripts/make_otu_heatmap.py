@@ -99,9 +99,6 @@ this flag is ignored.', default=False),
     make_option('--absolute_abundance', action="store_true",
                 help='Do not normalize samples to sum to 1.[default %default]',
                 default=False),
-    make_option('--log_eps', type="float",
-                help='Small value to replace zeros for log transform. \
-[default: 1/2 the smallest non-zero entry].', default=None),
     make_option('--color_scheme', default="jet",
                 help=("color scheme for figure. see"
                       " http://wiki.scipy.org/Cookbook/Matplotlib/Show_colormaps"
@@ -145,7 +142,7 @@ def main():
                 current_md_at_level = ''
             obs_md_labels.append([current_md_at_level])
 
-    otu_labels = make_otu_labels(otu_table.ObservationIds, 
+    otu_labels = make_otu_labels(otu_table.ObservationIds,
                                  obs_md_labels)
 
     # Convert to relative abundance if requested
@@ -154,10 +151,7 @@ def main():
 
     # Get log transform if requested
     if not opts.no_log_transform:
-        if not opts.log_eps is None and opts.log_eps <= 0:
-            print "Parameter 'log_eps' must be positive. Value was", opts.log_eps
-            exit(1)
-        otu_table = get_log_transform(otu_table, opts.log_eps)
+        otu_table = get_log_transform(otu_table)
 
     if opts.output_dir:
         if os.path.exists(opts.output_dir):

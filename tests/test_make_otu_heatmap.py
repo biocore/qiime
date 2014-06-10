@@ -13,7 +13,7 @@ from os import close
 from os.path import exists
 from tempfile import mkstemp
 
-from numpy import array, log10, asarray, float64
+from numpy import array, log10, asarray, float64, argwhere
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
 from skbio.util.misc import remove_files
@@ -119,15 +119,15 @@ class TopLevelTests(TestCase):
         assert_almost_equal(obs, exp)
 
     def test_get_log_transform(self):
-        eps = .01
-        obs = get_log_transform(self.otu_table, eps=eps)
+        obs = get_log_transform(self.otu_table)
 
         data = [val for val in self.otu_table.iter_data(axis='observation')]
         xform = asarray(data, dtype=float64)
-        xform[xform == 0] = eps
 
         for (i, val) in enumerate(obs.iter_data(axis='observation')):
-            assert_almost_equal(val, log10(xform[i]))
+            non_zeros = argwhere(xform[i] != 0)
+            xform[i, non_zeros] = log10(xform[i, non_zeros])
+            assert_almost_equal(val, xform[i])
 
     def test_get_clusters(self):
         data = asarray([val for val in self.otu_table.iter_data(axis='observation')])
