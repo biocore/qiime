@@ -18,8 +18,8 @@ from qiime.otu_significance import (get_sample_cats, get_cat_sample_groups,
                                     run_grouped_correlation, CORRELATION_TEST_CHOICES,
                                     grouped_correlation_formatter, correlation_row_generator,
                                     run_correlation_test)
-from qiime.pycogent_backports.test import (assign_correlation_pval, fisher,
-                                           fisher_population_correlation)
+from qiime.stats import (assign_correlation_pval, fisher,
+                                   fisher_population_correlation)
 from numpy import array, hstack, corrcoef
 from numpy.random import seed
 from numpy.testing import assert_almost_equal
@@ -235,8 +235,9 @@ class GroupSignificanceFunctionsTests(TestCase):
         # test with bootstrapped mann_whitney_u
         sample_indices = {'cat1': [4, 1, 2], 'cat2': [5, 0, 3]}
         row_gen = group_significance_row_generator(bt, sample_indices)
-        exp_test_stats = [7.0, 7.0, 7.0, 6.0, 7.0, 7.0]
-        exp_pvals = [0.333, 0.305, 0.3, 0.623, 0.295, 0.334]
+        exp_test_stats = [2.0, 2.0, 2.0, 3.0, 2.0, 2.0]
+        exp_pvals = array([0.22977023, 0.2047952, 0.19280719, 0.44255744,
+                           0.18781219, 0.22477522])
         exp_means = [[39.666666666666664, 61.0],
                      [24.333333333333332, 40.0],
                      [27.0, 42.333333333333336],
@@ -253,8 +254,9 @@ class GroupSignificanceFunctionsTests(TestCase):
         # test with BT_4
         sample_indices = {'cat1': [0, 1, 2, 3], 'cat2': [4, 5, 6, 7]}
         row_gen = group_significance_row_generator(bt_4, sample_indices)
-        exp_test_stats = [10.0, 15.0, 11.0, 14.0, 15.0, 9.0]
-        exp_pvals = [0.605, 0.033, 0.414, 0.097, 0.041, 0.814]
+        exp_test_stats = [6.0, 1.0, 5.0, 2.0, 1.0, 7.0]
+        exp_pvals = array([0.49050949, 0.01598402, 0.31968032, 0.06193806,
+                           0.02997003, 0.6953047])
         exp_means = [[52.25, 43.0],
                      [20.5, 44.0],
                      [29.25, 52.25],
@@ -272,10 +274,8 @@ class GroupSignificanceFunctionsTests(TestCase):
         # test with parametric mann whitney u
         sample_indices = {'cat1': [0, 3, 1], 'cat2': [4, 2, 5]}
         row_gen = group_significance_row_generator(bt, sample_indices)
-        exp_test_stats = [6.0, 6.0, 5.0, 5.0, 6.0, 5.0]
-        exp_pvals = [0.51269076026192328, 0.51269076026192328,
-                     0.82725934656271127, 0.82725934656271127, 0.51269076026192328,
-                     0.82725934656271127]
+        exp_test_stats = [3.0, 3.0, 4.0, 4.0, 3.0, 4.0]
+        exp_pvals = array([0.66252058, 0.66252058, 1., 1., 0.66252058, 1.])
         exp_means = [[52.666666666666664, 48.0],
                      [23.666666666666668, 40.666666666666664],
                      [34.0, 35.333333333333336],
@@ -291,10 +291,9 @@ class GroupSignificanceFunctionsTests(TestCase):
         # test with BT_4
         sample_indices = {'cat1': [0, 1, 2, 3], 'cat2': [4, 5, 6, 7]}
         row_gen = group_significance_row_generator(bt_4, sample_indices)
-        exp_test_stats = [10.0, 15.0, 11.0, 14.0, 15.0, 9.0]
-        exp_pvals = [0.5637028616507731, 0.043308142810791955,
-                     0.38363032713198975, 0.083264516663550406, 0.043308142810791955,
-                     0.77282999268444752]
+        exp_test_stats = [6.0, 1.0, 5.0, 2.0, 1.0, 7.0]
+        exp_pvals = array([0.66500554, 0.06060197, 0.46782508, 0.1123512,
+                           0.06060197, 0.88523391])
         exp_means = [[52.25, 43.0],
                      [20.5, 44.0],
                      [29.25, 52.25],
