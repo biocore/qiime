@@ -267,8 +267,8 @@ class TopLevelTests(TestCase):
             self.mapping_file, category=category, depth=depth,
             test_type=test_type, num_permutations=num_permutations)
         exp_tcomps = {('1xDose', '2xDose'): (1.7650193854830403, 0.13),
-                      ('Control', '1xDose'): (0.43618805086434992, 0.83), ('Control',
-                                                                           '2xDose'): (1.1746048668554037, 0.62)}
+                      ('Control', '1xDose'): (0.43618805086434992, 0.83), 
+                      ('Control', '2xDose'): (1.1746048668554037, 0.62)}
         # test each key in expected results -- this won't catch if
         # obs_tcomps has extra entries, but test that via the next call
         for k in exp_tcomps:

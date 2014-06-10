@@ -34,7 +34,8 @@ from qiime.filter import (filter_fasta, filter_samples_from_otu_table,
                           filter_mapping_file_from_mapping_f,
                           filter_mapping_file_by_metadata_states,
                           get_otu_ids_from_taxonomy_f,
-                          sample_ids_from_metadata_description)
+                          sample_ids_from_metadata_description,
+                          get_seq_ids_from_seq_id_file)
 from qiime.test import FakeFile
 from qiime.util import load_qiime_config
 
@@ -72,6 +73,7 @@ class FilterTests(TestCase):
         self.tree1 = DndParser(tree1)
         self.tree2 = DndParser(tree2)
         self.tutorial_mapping_f = FakeFile(tutorial_mapping_f)
+        self.seq_ids_lines = seq_ids_lines.split('\n')
 
         self.otu_table2 = parse_biom_table(sparse_otu_table2)
 
@@ -1134,6 +1136,12 @@ o2	s1_3	s1_4	s2_5
         self.assertEqual(open(actual_fp).read(), otu_map_no_single_min_sample2)
         self.assertEqual(retained_otus, set(['o2']))
 
+    def test_get_seq_ids_from_seq_id_file(self):
+        """tests qiime.filter.get_seqs_to_keep_lookup_from_seq_id_file"""
+        exp = set(['x', '1', '42'])
+        self.assertEqual(get_seq_ids_from_seq_id_file(self.seq_ids_lines),
+                         exp)
+
 
 tree1 = "(aaa:10,(bbb:2,ccc:4):5);"
 tree2 = "(aaa:10,('bbb':2,ccc:4):5);"
@@ -1196,9 +1204,14 @@ T
 s
 """
 
-input_seqs_to_discard1 = """x
+seq_ids_lines = """
+x
 1 some comment
-42 not a real otu id"""
+
+
+42 not a real otu id
+
+"""
 
 input_dm1 = """\tABC\tDEF\tGHI\tXYZ
 ABC\t0.0\t0.75\t0.00\t0.0063

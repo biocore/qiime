@@ -34,8 +34,7 @@ from qiime.format import (format_distance_matrix, format_otu_table,
                           format_p_value_for_num_iters, format_mapping_file, illumina_data_to_fastq,
                           format_biom_table, format_mapping_html_data, format_te_prefs,
                           format_tep_file_lines, format_jnlp_file_lines,
-                          format_best_results, format_fastq_record,
-                          format_histograms_two_bins)
+                          format_fastq_record, format_histograms_two_bins)
 from biom.parse import parse_biom_table
 from biom.table import Table
 from StringIO import StringIO
@@ -774,26 +773,6 @@ y\t5\t6\tsample y""")
         obs1 = format_jnlp_file_lines(True, 'test', 'test.tep')
 
         self.assertEqual(''.join(obs1), exp_jnlp_web_url)
-
-    def test_format_best_results(self):
-        """Test formatting results of BEST."""
-        # Single category.
-        exp = ('Method name\tNumber of categories\tCategories\t'
-               'rho statistics\nBEST\t1\tDOB = 1\t(-0.001, \'1\')\n')
-        obs = format_best_results({'method_name': 'BEST', 'num_vars': 1,
-                                   'vars': ['DOB = 1'],
-                                   'rho_vals': [(-0.0010, '1')]})
-        self.assertEqual(obs, exp)
-
-        # Multiple categories.
-        exp = ('Method name\tNumber of categories\tCategories\t'
-               'rho statistics\nBEST\t2\tDOB = 1, pH = 2\t(-0.001, \'1\'), '
-               '(0.99909, \'1,2\')\n')
-        obs = format_best_results({'method_name': 'BEST', 'num_vars': 2,
-                                   'vars': ['DOB = 1', 'pH = 2'],
-                                   'rho_vals': [(-0.0010, '1'),
-                                                (0.99909, '1,2')]})
-        self.assertEqual(obs, exp)
 
     def test_format_fastq_record(self):
         """ Returns fastq record in the correct format """
