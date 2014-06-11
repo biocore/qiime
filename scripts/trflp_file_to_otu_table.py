@@ -10,13 +10,14 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Antonio Gonzalez Pena"
 __email__ = "antgonza@gmail.com"
 
-from biom.table import Table
-from qiime.util import make_option
-from qiime.util import parse_command_line_parameters, get_options_lookup
-from qiime.parse import parse_trflp
-from qiime.format import format_biom_table
 from os.path import isfile
 from sys import stderr
+
+from biom.table import Table
+
+from qiime.util import (make_option, write_biom_table,
+                        parse_command_line_parameters, get_options_lookup)
+from qiime.parse import parse_trflp
 
 options_lookup = get_options_lookup()
 
@@ -43,8 +44,7 @@ script_info['version'] = __version__
 
 
 def main():
-    option_parser, opts, args =\
-        parse_command_line_parameters(**script_info)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     if not isfile(opts.input_path):
         raise IOError(
@@ -53,10 +53,8 @@ def main():
 
     samples, otus, data = parse_trflp(open(opts.input_path, 'U'))
 
-    output_f = open(opts.output_path, 'w')
     t = Table(data, otus, samples)
-    output_f.write(format_biom_table(t))
-    output_f.close()
+    write_biom_table(t, opts.output_path)
 
 
 if __name__ == "__main__":
