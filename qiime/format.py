@@ -114,9 +114,7 @@ def format_summarize_taxa(summary, header, delimiter=';',
             observation_ids.append(delimiter.join(row[0]))
             data.append(row[1:])
 
-        table = Table(asarray(data), observation_ids, sample_ids,
-                              constructor=Table)
-        yield format_biom_table(table)
+        yield Table(asarray(data), observation_ids, sample_ids)
     else:
         raise ValueError("Invalid file format '%s'. Must be either 'classic' "
                          "or 'biom'." % file_format)
