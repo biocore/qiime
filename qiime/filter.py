@@ -19,7 +19,7 @@ from qiime.parse import (
     parse_distmat, parse_mapping_file, parse_metadata_state_descriptions
 )
 from qiime.format import (
-    format_otu_table, format_distance_matrix, format_mapping_file
+    format_distance_matrix, format_mapping_file
 )
 from qiime.util import MetadataMap
 from biom.parse import parse_biom_table

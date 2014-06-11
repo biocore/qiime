@@ -23,9 +23,9 @@ from unittest import TestCase, main
 from skbio.parse.sequences import parse_fasta
 from qiime.util import  get_qiime_library_version
 from qiime.parse import fields_to_dict, parse_mapping_file
-from qiime.format import (format_distance_matrix, format_otu_table,
-                          build_prefs_string, format_matrix, format_map_file,
-                          format_histograms, write_Fasta_from_name_seq_pairs,
+from qiime.format import (format_distance_matrix, build_prefs_string,
+                          format_matrix, format_map_file, format_histograms,
+                          write_Fasta_from_name_seq_pairs,
                           format_unifrac_sample_mapping, format_otu_map, write_otu_map,
                           format_summarize_taxa, write_summarize_taxa,
                           format_add_taxa_summary_mapping, write_add_taxa_summary_mapping,
@@ -442,20 +442,6 @@ class TopLevelTests(TestCase):
             del obs[e]
             del exp[e]
         self.assertEqual(obs, exp)
-
-    def test_format_otu_table(self):
-        """format_otu_table should return biom-formatted string"""
-        a = array([[1, 2, 3],
-                   [4, 5, 2718281828459045]])
-        samples = ['a', 'b', 'c']
-        otus = [1, 2]
-        taxa = ['Bacteria', 'Archaea']
-        res = format_otu_table(samples, otus, a)
-        # confirm that parsing the res gives us a valid biom file with
-        # expected observation and sample ids
-        t = parse_biom_table(res.split('\n'))
-        self.assertTrue(array_equal(t.observation_ids, [1, 2]))
-        self.assertTrue(array_equal(t.sample_ids, [u'a', u'b', u'c']))
 
     def test_build_prefs_string(self):
         """build_prefs_string should return a properly formatted prefs string.

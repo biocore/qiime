@@ -369,22 +369,6 @@ def format_matrix(data, row_names, col_names):
     return '\n'.join(lines)
 
 
-def format_otu_table(sample_names, otu_names, data, taxonomy=None,
-                     comment=None, skip_empty=False, legacy=True):
-    """Returns string representing OTU table as biom file
-    """
-    print "Deprecation Warning: you should not be using format_otu_table. Instead use qiime.format.format_biom_table"
-    if taxonomy is not None:
-        def strip_f(s):
-            return s.strip()
-        taxonomy = [{'taxonomy': map(strip_f, t.split(';'))} for t in taxonomy]
-    otu_table = Table(data=data,
-                      sample_ids=sample_names,
-                      observation_ids=otu_names,
-                      observation_metadata=taxonomy)
-    return format_biom_table(otu_table)
-
-
 def format_nmds_coords(samples, points, stress):
     """ samples is list, points is samples by axis coord (typ many by 2 mtx)
     """
