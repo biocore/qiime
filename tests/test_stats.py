@@ -31,7 +31,8 @@ from numpy.random import permutation, shuffle, seed
 
 from itertools import izip
 from types import StringType, ListType, FloatType, TupleType
-from biom.parse import parse_biom_table
+from biom import Table
+from biom.util import biom_open
 
 from qiime.stats import (all_pairs_t_test, _perform_pairwise_tests,
                          CorrelationStats,
@@ -357,7 +358,7 @@ foo	bar	N/A	N/A	N/A	N/A	N/A
 
     def test_perform_pairwise_tests_too_few_obs(self):
         """Test on dataset w/ too few observations."""
-        exp = [['foo', 'bar', nan, nan, nan, nan, nan], 
+        exp = [['foo', 'bar', nan, nan, nan, nan, nan],
                ['foo', 'baz', -7.794228634059948, 0.008032650971672552,
                 0.016065301943345104, nan, nan],
                ['bar', 'baz', -2.598076211353316, 0.060844967173160069,
@@ -1149,7 +1150,8 @@ class PairedDifferenceTests(TestHelper):
         biom_table_fp = join(self.test_out, 'differences.biom')
         self.assertTrue(exists(biom_table_fp))
         self.assertTrue(exists(join(self.test_out, 'differences_sids.txt')))
-        table = parse_biom_table(open(biom_table_fp, 'U'))
+        with biom_open(biom_table_fp) as biom_file:
+            table = Table.from_hdf5(biom_file)
         self.assertItemsEqual(table.sample_ids, ['subject1', 'subject2'])
         self.assertItemsEqual(table.observation_ids,
                               ['firmicutes-abundance', 'bacteroidetes-abundance'])
