@@ -14,9 +14,9 @@ from itertools import izip
 from numpy import inf, isinf
 from skbio.parse.sequences import parse_fasta
 from biom.parse import parse_biom_table
-from qiime.util import parse_command_line_parameters, make_option
+from qiime.util import (parse_command_line_parameters, make_option,
+                        write_biom_table)
 from qiime.filter import filter_otus_from_otu_table
-from qiime.format import format_biom_table
 
 script_info = {}
 script_info[
@@ -76,8 +76,7 @@ script_info['version'] = __version__
 
 
 def main():
-    option_parser, opts, args =\
-        parse_command_line_parameters(**script_info)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     input_fp = opts.input_fp
     output_fp = opts.output_fp
@@ -112,8 +111,6 @@ def main():
         min_count = otu_table.sum() * min_count_fraction
         print otu_table.sum(), min_count
 
-    output_f = open(opts.output_fp, 'w')
-
     otu_ids_to_keep = set(otu_table.observation_ids)
 
     if otu_ids_to_exclude_fp:
@@ -134,8 +131,7 @@ def main():
                                                     min_samples,
                                                     max_samples,
                                                     negate_ids_to_exclude)
-    output_f.write(format_biom_table(filtered_otu_table))
-    output_f.close()
+    write_biom_table(filtered_otu_table, opts.output_fp)
 
 if __name__ == "__main__":
     main()
