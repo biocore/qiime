@@ -74,9 +74,9 @@ def main():
 
     filter_fn = get_otu_ids_from_taxonomy_f(positive_taxa, negative_taxa,
                                             metadata_field)
-    output_table = input_table.filterObservations(filter_fn)
+    input_table.filter(filter_fn, axis='observation')
 
-    write_biom_table(output_table, output_table_fp)
+    write_biom_table(input_table, output_table_fp)
 
 
 if __name__ == "__main__":
