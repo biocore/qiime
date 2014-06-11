@@ -114,7 +114,7 @@ def main():
 
     output_f = open(opts.output_fp, 'w')
 
-    otu_ids_to_keep = set(otu_table.ObservationIds)
+    otu_ids_to_keep = set(otu_table.observation_ids)
 
     if otu_ids_to_exclude_fp:
         if otu_ids_to_exclude_fp.endswith('.fasta') or \

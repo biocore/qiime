@@ -100,7 +100,7 @@ class UpstreamWorkflowTests(TestCase):
 
         # expected number of sequences in OTU table
         number_seqs_in_otu_table = sum([v.sum()
-                                       for v in otu_table.iter_sample_data()])
+                                       for v in otu_table.iter_data()])
         self.assertEqual(number_seqs_in_otu_table, 117)
 
         # One tax assignment per otu
@@ -148,7 +148,7 @@ class UpstreamWorkflowTests(TestCase):
 
         # expected number of sequences in OTU table
         number_seqs_in_otu_table = sum([v.sum()
-                                       for v in otu_table.iter_sample_data()])
+                                       for v in otu_table.iter_data()])
         self.assertEqual(number_seqs_in_otu_table, 117)
 
         # One tax assignment per otu
@@ -237,7 +237,7 @@ class UpstreamWorkflowTests(TestCase):
         # number of sequences in the full otu table equals the number of
         # input sequences
         number_seqs_in_otu_table = sum([v.sum()
-                                       for v in otu_table.iter_sample_data()])
+                                       for v in otu_table.iter_data()])
         self.assertEqual(number_seqs_in_otu_table,
                          count_seqs(self.test_data['seqs'][0])[0])
 
@@ -323,7 +323,7 @@ class UpstreamWorkflowTests(TestCase):
         # number of sequences in the full otu table equals the number of
         # input sequences
         number_seqs_in_otu_table = sum([v.sum()
-                                       for v in otu_table.iter_sample_data()])
+                                       for v in otu_table.iter_data()])
         self.assertEqual(number_seqs_in_otu_table, count_seqs(self.test_data['seqs'][0])[0])
 
         # Check that the log file is created and has size > 0
@@ -407,7 +407,7 @@ class UpstreamWorkflowTests(TestCase):
         # number of sequences in the full otu table equals the number of
         # input sequences
         number_seqs_in_otu_table = sum([v.sum()
-                                       for v in otu_table.iter_sample_data()])
+                                       for v in otu_table.iter_data()])
         self.assertEqual(number_seqs_in_otu_table, count_seqs(self.test_data['seqs'][0])[0])
 
         # Check that the log file is created and has size > 0
@@ -492,7 +492,7 @@ class UpstreamWorkflowTests(TestCase):
         # number of sequences in the full otu table equals the number of
         # input sequences
         number_seqs_in_otu_table = sum([v.sum()
-                                       for v in otu_table.iter_sample_data()])
+                                       for v in otu_table.iter_data()])
         self.assertEqual(number_seqs_in_otu_table, count_seqs(self.test_data['seqs'][0])[0])
 
 if __name__ == "__main__":

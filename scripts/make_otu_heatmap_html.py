@@ -127,7 +127,7 @@ def main():
 
     fractional_values = False
     max_val = -1
-    for val in otu_table.iterObservationData():
+    for val in otu_table.iter_data(axis='observation'):
         max_val = maximum(max_val, val.max())
 
     # the data cannot be of mixed types: if one is float, all are float

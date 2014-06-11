@@ -160,7 +160,7 @@ def main():
 
     if biom_table_fp:
         biom_table = parse_biom_table(open(biom_table_fp, 'U'))
-        analysis_categories = observation_ids or biom_table.ObservationIds
+        analysis_categories = observation_ids or biom_table.observation_ids
         personal_ids_to_state_values = \
             extract_per_individual_state_metadata_from_sample_metadata_and_biom(
                 mapping_data,

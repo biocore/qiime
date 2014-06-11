@@ -10,7 +10,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Antonio Gonzalez Pena"
 __email__ = "antgonza@gmail.com"
 
-from biom.table import table_factory
+from biom.table import Table
 from qiime.util import make_option
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.parse import parse_trflp
@@ -54,7 +54,7 @@ def main():
     samples, otus, data = parse_trflp(open(opts.input_path, 'U'))
 
     output_f = open(opts.output_path, 'w')
-    t = table_factory(data, samples, otus)
+    t = Table(data, otus, samples)
     output_f.write(format_biom_table(t))
     output_f.close()
 
