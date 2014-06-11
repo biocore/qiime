@@ -19,6 +19,7 @@ from cogent.parse.tree import DndParser
 
 from biom.parse import parse_biom_table
 from biom.table import Table
+from biom.util import biom_open
 from qiime.parse import parse_mapping_file
 from qiime.util import load_qiime_config, get_qiime_temp_dir
 import qiime.simsam
@@ -111,14 +112,12 @@ class SimsamTests(TestCase):
 
         num_replicates = 3  # ensure this matches cmd above
 
-        res = open(
-            os.path.join(
-                out_dir,
-                'otuf_n%d_d0.003.biom' %
-                num_replicates),
-            'U')
+        result_fp = os.path.join(out_dir, 'otuf_n%d_d0.003.biom' %
+                                 num_replicates)
+        with biom_open(result_fp) as biom_file:
+            res_table = Table.from_hdf5(biom_file)
+
         orig_table = parse_biom_table(open(otuf, 'U'))
-        res_table = parse_biom_table(res)
 
         # 3 samples per input sample
         self.assertEqual(
@@ -181,14 +180,12 @@ class SimsamTests(TestCase):
             raise RuntimeError('script returned stderr: ' + scripterr)
 
         num_replicates = 3  # ensure this matches cmd above
-        res = open(
-            os.path.join(
-                out_dir,
-                'otuf_n%d_d0.0.biom' %
-                num_replicates),
-            'U')
+        result_fp = os.path.join(out_dir, 'otuf_n%d_d0.0.biom' %
+                                 num_replicates)
+        with biom_open(result_fp) as biom_file:
+            res_table = Table.from_hdf5(biom_file)
+
         orig_table = parse_biom_table(open(otuf, 'U'))
-        res_table = parse_biom_table(res)
 
         # 3 samples per input sample
         self.assertEqual(
@@ -419,7 +416,8 @@ class SimsamTests(TestCase):
         self.assertTrue(exists('%s/world_n2_d0.1.txt' % self.test_out))
 
         # confirm same sample ids in table and mapping file
-        t = parse_biom_table(open('%s/hello_n2_d0.1.biom' % self.test_out))
+        with biom_open('%s/hello_n2_d0.1.biom' % self.test_out) as biom_file:
+            t = Table.from_hdf5(biom_file)
         d, _, _ = \
             parse_mapping_file(open('%s/world_n2_d0.1.txt' % self.test_out))
         mapping_sample_ids = [e[0] for e in d]
