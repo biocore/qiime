@@ -11,6 +11,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 from os.path import join
+
 from qiime.make_otu_table import make_otu_table
 from qiime.parse import parse_observation_metadata
 from qiime.parallel.pick_otus import ParallelPickOtus
@@ -37,12 +38,10 @@ class ParallelDatabaseMapper(ParallelPickOtus):
             else:
                 observation_metadata = None
             biom_fp = join(output_dir, 'observation_table.biom')
-            biom_f = open(biom_fp, 'w')
-            biom_f.write(
-                make_otu_table(
-                    open(join(output_dir, 'observation_map.txt'), 'U'),
-                    observation_metadata))
-            biom_f.close()
+            biom_table = make_otu_table(
+                open(join(output_dir, 'observation_map.txt'), 'U'),
+                observation_metadata))
+            write_biom_table(biom_table, biom_fp)
         else:
             # can't construct the final biom file if not polling
             # directly as the final observation map won't have been created yet
