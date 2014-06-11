@@ -15,13 +15,14 @@ M3FclSwb_1023. Will not work if this assumption is not met. Splits on last
 underscore only so should be relatively robust to underscore in sample id.
 """
 
+from datetime import datetime
 from collections import defaultdict
 from string import strip
 from sys import stderr
 from numpy import array, zeros
 from cogent.util.misc import flatten
 from qiime.parse import parse_otu_map
-from qiime.format import format_biom_table
+from qiime.util import get_generated_by_for_biom_tables
 from biom.table import Table
 
 
@@ -36,36 +37,45 @@ def seqids_from_otu_to_seqid(otu_to_seqid):
     return set(flatten(otu_to_seqid.values()))
 
 
-def make_otu_table(otu_map_f,
-                   otu_to_taxonomy=None,
-                   delim='_',
-                   table_id=None,
-                   sample_metadata=None,
-                   constructor=Table):
+def make_otu_table(otu_map_f, otu_to_taxonomy=None, delim='_', table_id=None,
+                   sample_metadata=None):
+    """Generate a BIOM table from an OTU map
 
+    Parameters
+    ----------
+    otu_map_f : file-like object
+        The OTU map. Jagged tab-separated file where the first column contains
+        the OTU ID and subsequent columns contain sequence IDs belonging to
+        that OTU
+    otu_to_taxonomy : dict, optional
+        Defaults to ``None``. If supplied, the dict maps OTU IDs to taxonomies
+    delim : str, optional
+        Defaults to "_". The delimiter that is used in the sequence IDs to join
+        the sample ID to the sequence number
+    table_id : object, optional
+        Defaults to ``None``. The identifier that will be given to the
+        generated BIOM table
+    sample_metadata : iterable of dicts, optional
+        Defaults to ``None``. This option is not currently supported.
+    """
     data, sample_ids, otu_ids = parse_otu_map(otu_map_f, delim)
 
     if otu_to_taxonomy is not None:
         otu_metadata = []
         for o in otu_ids:
-            try:
-                otu_metadata.append({'taxonomy': otu_to_taxonomy[o]})
-            except KeyError:
-                otu_metadata.append({'taxonomy': ["None"]})
+            otu_metadata.append({'taxonomy': otu_to_taxonomy.get(o, ["None"])})
     else:
         otu_metadata = None
 
     if sample_metadata is not None:
-        raise NotImplementedError(
-            "Passing of sample metadata to make_otu_table is not currently supported.")
+        raise NotImplementedError("Passing of sample metadata to "
+                                  "make_otu_table is not currently supported.")
     try:
-        otu_table = Table(data, otu_ids, sample_ids,
-                                  sample_metadata=sample_metadata,
-                                  observation_metadata=otu_metadata,
-                                  table_id=table_id,
-                                  constructor=constructor,
-                                  dtype=int)
+        return Table(data, otu_ids, sample_ids,
+                     observation_metadata=otu_metadata, 
+                     sample_metadata=sample_metadata, table_id=table_id,
+                     generated_by=get_generated_by_for_biom_tables,
+                     create_date=datetime.now().isoformat())
     except ValueError as e:
         raise ValueError("Couldn't create OTU table. Is your OTU map empty?"
                          " Original error message: %s" % (str(e)))
-    return format_biom_table(otu_table)
