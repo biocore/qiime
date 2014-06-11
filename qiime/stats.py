@@ -51,8 +51,8 @@ from numpy.random import permutation, shuffle, randint
 from biom.table import Table
 from skbio.core.distance import DistanceMatrix
 from skbio.util.misc import create_dir
-from qiime.format import format_p_value_for_num_iters, format_biom_table
-from qiime.util import MetadataMap
+from qiime.format import format_p_value_for_num_iters
+from qiime.util import MetadataMap, write_biom_table
 
 np_seterr(divide='warn')
 MACHEP = finfo(np_float).eps
@@ -1096,9 +1096,7 @@ def paired_difference_analyses(personal_ids_to_state_values,
                                biom_observation_ids,
                                personal_ids,
                                input_is_dense=True)
-    biom_table_f = open(biom_table_fp, 'w')
-    biom_table_f.write(format_biom_table(biom_table))
-    biom_table_f.close()
+    write_biom_table(biom_table, biom_table_fp)
     biom_sids_f = open(biom_sids_fp, 'w')
     biom_sids_f.write('#SampleID\n')
     biom_sids_f.write('\n'.join(personal_ids))
@@ -1201,7 +1199,7 @@ def G_2_by_2(a, b, c, d, williams=1, directional=1):
             (6 * n)
         G /= q
 
-    p = chi2prob(G, 1, direction='high') 
+    p = chi2prob(G, 1, direction='high')
 
     # find which tail we were in if the test was directional
     if directional:
@@ -1330,7 +1328,7 @@ def t_paired(a, b, tails='two-sided', exp_diff=0):
 
 
 def t_one_sample(a, popmean=0, tails='two-sided'):
-    '''Peform a one sample t-test against a given population mean. 
+    '''Peform a one sample t-test against a given population mean.
 
     Parameters
     ----------
@@ -1339,14 +1337,14 @@ def t_one_sample(a, popmean=0, tails='two-sided'):
     popmean : float
         The population mean to test against.
     tails : str
-        The hypothesis to test, one of 'low', 'high', 'two-sided'. 
+        The hypothesis to test, one of 'low', 'high', 'two-sided'.
 
     Returns
     -------
     t : float
-        t statstic. 
+        t statstic.
     p : float
-        p-value assocaited with the t-statistic given the tails. 
+        p-value assocaited with the t-statistic given the tails.
     '''
     t, _ = ttest_1samp(a, popmean)  # returns array([t]), p
     if isnan(t) or isinf(t):
@@ -1472,18 +1470,18 @@ def t_one_observation(x, sample, tails='two-sided', exp_diff=0):
     Parameters
     ----------
     x : float
-        The single observation to test against the sample. 
+        The single observation to test against the sample.
     sample : array-like
-        Vector of observations for the sample to test against x. 
+        Vector of observations for the sample to test against x.
     tails : str
-        The hypothesis to test, one of 'low', 'high', 'two-sided'. 
+        The hypothesis to test, one of 'low', 'high', 'two-sided'.
     exp_diff : float
         The expected difference between the sample mean and the observation.
 
     Returns
     -------
     t : float
-        t statstic. 
+        t statstic.
     p : float
         p-value assocaited with the t-statistic given the tails.
 
@@ -2341,7 +2339,7 @@ def z_transform_pval(z, n):
 
 
 def normprob(z, direction='two-sided', mean=0, std=1):
-    '''Calculate probability from normal distribution 
+    '''Calculate probability from normal distribution
 
     Paramaters
     ----------
@@ -2351,11 +2349,11 @@ def normprob(z, direction='two-sided', mean=0, std=1):
         One of 'low', 'high', or 'two-sided'. Determines the bounds of the
         integration of the PDF. 'high' calculates the probability that a
         random variable Z will take a value as great or greater than z. 'low'
-        will calculate the probability that Z will take a value less than or 
+        will calculate the probability that Z will take a value less than or
         equal to z. 'two-sided' will calculate the probability that Z will take
-        a value more extreme than z (i.e. abs(Z) >= z). 
-    mean : float 
-        Mean of the distirbution. 
+        a value more extreme than z (i.e. abs(Z) >= z).
+    mean : float
+        Mean of the distirbution.
     std : float
         Standard deviation of the distribution.
 
@@ -2365,9 +2363,9 @@ def normprob(z, direction='two-sided', mean=0, std=1):
 
     Notes
     -----
-    scipy.stats.norm calculates the 'lower tail' of the distribution, i.e. the 
-    probability of a random variable Z taking a value smaller than or equal to 
-    the given z value. 
+    scipy.stats.norm calculates the 'lower tail' of the distribution, i.e. the
+    probability of a random variable Z taking a value smaller than or equal to
+    the given z value.
     '''
     if direction == 'two-sided':
         if z >= 0:
@@ -2384,7 +2382,7 @@ def normprob(z, direction='two-sided', mean=0, std=1):
 
 def chi2prob(x, df, direction='high'):
     '''Return the chi-squared statistic.
-    
+
     Paramaters
     ----------
     x : float
@@ -2393,8 +2391,8 @@ def chi2prob(x, df, direction='high'):
         One of 'low' or 'high'. Determines the bounds of the
         integration of the PDF. 'high' calculates the probability that a
         random variable X will take a value as great or greater than x. 'low'
-        will calculate the probability that X will take a value less than or 
-        equal to x. 
+        will calculate the probability that X will take a value less than or
+        equal to x.
 
     Returns
     -------
@@ -2402,10 +2400,10 @@ def chi2prob(x, df, direction='high'):
 
     Notes
     -----
-    scipy's chi2.cdf returns the 'lower tail' of the chi-squared distribution, 
-    that is p(X <= x). This necessitates adjustment of 1 - p for most qiime 
-    applications. However, with negative x a value of 0.0 is returned. Negative 
-    x are outside the domain of the CDF of chi-squared (and we should return a 
+    scipy's chi2.cdf returns the 'lower tail' of the chi-squared distribution,
+    that is p(X <= x). This necessitates adjustment of 1 - p for most qiime
+    applications. However, with negative x a value of 0.0 is returned. Negative
+    x are outside the domain of the CDF of chi-squared (and we should return a
     pval of nan in this case).
     '''
     if x <= 0:
@@ -2419,7 +2417,7 @@ def chi2prob(x, df, direction='high'):
 
 
 def tprob(t, df, tails='high'):
-    '''Calculate probability from t distribution 
+    '''Calculate probability from t distribution
 
     Paramaters
     ----------
@@ -2429,7 +2427,7 @@ def tprob(t, df, tails='high'):
         One of 'low', 'high', or 'two-sided'. Determines the bounds of the
         integration of the PDF. 'high' calculates the probability that a
         random variable T will take a value as great or greater than t. 'low'
-        will calculate the probability that T will take a value less than or 
+        will calculate the probability that T will take a value less than or
         equal to t. 'two-sided' will calculate the probability that T will take
         a value more extreme than t (i.e. abs(T) >= t).
 
@@ -2439,8 +2437,8 @@ def tprob(t, df, tails='high'):
 
     Notes
     -----
-    scipy.stats.t calculates the 'lower tail' of the distribution, i.e. the 
-    probability of a random variable T taking a value smaller than or equal to 
+    scipy.stats.t calculates the 'lower tail' of the distribution, i.e. the
+    probability of a random variable T taking a value smaller than or equal to
     the given t value.
     '''
     if tails == 'two-sided':
@@ -2457,13 +2455,13 @@ def tprob(t, df, tails='high'):
 
 
 def fprob(f, dfn, dfd, direction='high'):
-    '''Calculate probability from F distribution 
+    '''Calculate probability from F distribution
 
     Paramaters
     ----------
     f : float
         Value of f statistic
-    dfn : float 
+    dfn : float
         Degrees of freedom for ???
     dfd : float
         Degrees of freedom for ???
@@ -2471,8 +2469,8 @@ def fprob(f, dfn, dfd, direction='high'):
         One of 'low' or 'high'. Determines the bounds of the
         integration of the PDF. 'high' calculates the probability that a
         random variable F will take a value as great or greater than f. 'low'
-        will calculate the probability that F will take a value less than or 
-        equal to f. 
+        will calculate the probability that F will take a value less than or
+        equal to f.
 
     Returns
     -------
@@ -2480,8 +2478,8 @@ def fprob(f, dfn, dfd, direction='high'):
 
     Notes
     -----
-    scipy.stats.f calculates the 'lower tail' of the F distribution, ie the 
-    probability of a random variable F taking a value smaller than or equal to 
+    scipy.stats.f calculates the 'lower tail' of the F distribution, ie the
+    probability of a random variable F taking a value smaller than or equal to
     the given f value.
     '''
     if f < 0.:
