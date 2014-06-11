@@ -901,12 +901,12 @@ def main():
                   'similarity': similarity,
                   'coverage': sortmerna_coverage,
                   'threads': threads,
-                  'tabular': sortmerna_tabular,
+                  'blast': sortmerna_tabular,
                   'best': sortmerna_best_N_alignments,
                   'max_pos': sortmerna_max_pos}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,
-                    result_path=result_path, log_path=log_path,
+                    output_dir=output_dir, log_path=log_path,
                     sortmerna_db=sortmerna_db, refseqs_fp=refseqs_fp)
 
     # other -- shouldn't be able to get here as a KeyError would have

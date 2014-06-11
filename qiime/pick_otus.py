@@ -21,6 +21,7 @@ from os.path import splitext, split, abspath, join
 from os import makedirs, close
 from itertools import imap
 from tempfile import mkstemp
+import re
 
 from brokit.mothur import parse_otu_list as mothur_parse
 
@@ -39,7 +40,8 @@ from brokit.formatdb import build_blast_db_from_fasta_path
 from brokit.mothur import Mothur
 from brokit.cd_hit import cdhit_clusters_from_seqs
 from brokit.uclust import get_clusters_from_fasta_filepath
-from brokit.sortmerna_v2 import build_database_sortmerna
+from brokit.sortmerna_v2 import (build_database_sortmerna, 
+                                 sortmerna_ref_cluster)
 from brokit.usearch import (usearch_qf,
                             usearch61_denovo_cluster,
                             usearch61_ref_cluster)
@@ -186,31 +188,20 @@ class SortmernaV2OtuPicker(OtuPicker):
         """ Return a new SortmernaV2OtuPicker object with specified params.
         """
 
-        #_params = {'max_e_value': 1,
-        #            'similarity': 0.97,
-        #            'coverage': 0.97,
-        #            'best': 1,          # output one best alignment per read
-        #            'min_lis': 2,       # search all candidate references with the top 2 best LIS       
-        #            'blast': 3,         # blast tabular with CIGAR and coverage
-        #            'otumap': True,     # output an OTU map
-        #           'denovo_otu': True, # output a FASTA file of failures
-        #            'max_pos': 10000    # maximum positions to store per seed in index
-        #            } 
-        #_params.update(params)
-
-        #OtuPicker.__init__(self, _params)
         OtuPicker.__init__(self, params)
 
-    def __call__(self, seq_path, result_path=None, log_path=None,
-                sortmerna_db=None, refseqs_fp=None):
+    def __call__(self, seq_path, output_dir=None, log_path=None,
+                sortmerna_db=None, refseqs_fp=None,HALT_EXEC=False):
 
         self.log_lines = []
 
         if not sortmerna_db:
+
             self.sortmerna_db, self.db_files_to_remove = \
                 build_database_sortmerna(abspath(refseqs_fp),
-                                                    max_pos=self.Params['max_pos'],
-                                                    output_dir=get_qiime_temp_dir())
+                                        max_pos=self.Params['max_pos'],
+                                        output_dir=get_qiime_temp_dir())
+
             self.log_lines.append('Reference seqs fp (to build sortmerna database): %s' %
                                     abspath(refseqs_fp))
         else:
@@ -221,9 +212,40 @@ class SortmernaV2OtuPicker(OtuPicker):
 
         # call sortmerna for reference clustering, return a pointer to the OTU map
         # and FASTA file for de novo clustering
-        clusters_fp, failures_fp = sortmerna_ref_cluster(parse_fasta(open(seq_path)))
+        output_files = sortmerna_ref_cluster(
+                                            abspath(seq_path),
+                                            self.sortmerna_db,
+                                            abspath(refseqs_fp),
+                                            abspath(output_dir),
+                                            max_e_value=self.Params['max_e_value'],
+                                            similarity=self.Params['similarity'],
+                                            coverage=self.Params['coverage'],
+                                            threads=self.Params['threads'],
+                                            tabular=self.Params['blast'],
+                                            best=self.Params['best'],
+                                            HALT_EXEC=HALT_EXEC)
 
-        #self.log_lines.append('Num OTUs: %d' % len(clusters))
+        # get number of clusters
+        num_clusters = 0
+        num_failures = 0
+        f = output_files['LogFile']
+        for line in f:
+            if "Total OTUs" in line:
+                num_clusters = (re.split('Total OTUs = ', line)[1]).strip()
+            elif "non-aligned reads" in line:
+                num_failures = (re.split('non-aligned reads = | \(', line)[1]).strip()
+
+        self.log_lines.append('Num OTUs: %d' % int(num_clusters))
+        self.log_lines.append('Num failures: %d' % int(num_failures))
+
+        if log_path:
+            # if the user provided a log file path, log the run
+            log_file = open(log_path, 'w')
+            self.log_lines = [str(self)] + self.log_lines
+            log_file.write('\n'.join(self.log_lines))
+            log_file.write('\n')
+
+        remove_files(self.db_files_to_remove, error_on_missing=False)
 
 
 class BlastOtuPicker(OtuPicker):
