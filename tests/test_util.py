@@ -14,6 +14,7 @@ from unittest import TestCase, main
 import gzip
 
 from biom.parse import parse_biom_table
+from biom import example_table
 
 from numpy.testing import assert_almost_equal
 
@@ -50,7 +51,8 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
                         RExecutor, duplicates_indices, trim_fasta, get_qiime_temp_dir,
                         qiime_blastx_seqs, add_filename_suffix, is_valid_git_refname,
                         is_valid_git_sha1, sync_biom_and_mf,
-                        biom_taxonomy_formatter, invert_dict)
+                        biom_taxonomy_formatter, invert_dict,
+                        write_biom_table)
 
 import numpy
 from numpy import array, asarray
@@ -101,6 +103,13 @@ class TopLevelTests(TestCase):
         for dir in self.dirs_to_remove:
             if exists(dir):
                 rmdir(dir)
+
+    def test_write_biom_table(self):
+        """HDF5-format BIOM file can be written"""
+        fd, output_fp = mkstemp(prefix="test_biom_")
+        self.files_to_remove.append(output_fp)
+        write_biom_table(example_table, output_fp)
+        self.assertTrue(exists(output_fp))
 
     def test_expand_otu_ids(self):
         """expand otu ids functions as expected """
