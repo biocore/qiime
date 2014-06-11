@@ -147,10 +147,13 @@ class WorkflowTests(TestCase):
         max_cluster_ratio = 2.5
         min_difference_in_bcs = 0.86
         log_file = self.log_file
+        fwd_length = 64
+        rev_length = 77
+        min_reads_per_random_bc = 1
         function_call = get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp_name,
                                            temp_dir, barcode_type, barcode_len, barcode_correction_fn,
                                            max_barcode_errors, min_consensus,
-                                           max_cluster_ratio, min_difference_in_bcs, log_file)
+                                           max_cluster_ratio, min_difference_in_bcs, log_file, fwd_length, rev_length, min_reads_per_random_bc)
         actual = function_call['Sample1']['AGCTACGAGCTATTGC']
         expected = 'AAAAAAAAAAAAAAAAAAA, AAAAAAAAAAAAAAAAAA'
         self.assertEqual(actual, expected)   

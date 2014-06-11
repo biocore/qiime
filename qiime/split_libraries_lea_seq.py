@@ -10,18 +10,23 @@ __maintainer__ = "Charudatta Navare"
 __email__ = "charudatta.navare@gmail.com"
 
 from collections import defaultdict
-from itertools import izip
 from qiime.golay import get_invalid_golay_barcodes
 from qiime.parse import parse_mapping_file_to_dict
 from qiime.split_libraries import check_map, expand_degeneracies
 from qiime.split_libraries_fastq import correct_barcode
-from skbio.parse.sequences import parse_fastq
-from qiime.util import get_qiime_temp_dir
+from skbio.parse.sequences import parse_fasta, parse_fastq
+from qiime.util import get_qiime_temp_dir, qiime_system_call
 from brokit.uclust import get_clusters_from_fasta_filepath
+from skbio.app.util import ApplicationError
+from tempfile import mkstemp
+from itertools import izip
+from os import close, path, mkdir, unlink, rmdir
 import re
-import tempfile
-import os
-from skbio.parse.sequences import parse_fasta
+
+#	$front_len = 64; # should be 63-65 for MP
+#	$front_len = 62; # should be 63-65 for MP
+#	#$back_len = 79; # should be 9=79-81 for MP
+#	$back_len = 77; # should be 9=79-81 for MP
 
 class PairedEndParseError(Exception):
     pass
@@ -74,7 +79,7 @@ def extract_primer(seq, possible_primers, min_idx=None, max_idx=None):
 
 def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
                     barcode_type, barcode_len, barcode_correction_fn, max_barcode_errors,
-                    min_consensus, max_cluster_ratio, min_difference_in_bcs, log_file):
+                    min_consensus, max_cluster_ratio, min_difference_in_bcs, log_file, fwd_length, rev_length, min_reads_per_random_bc):
     """
     Reads mapping file, input file, and other command line arguments
     fills dictionary called consensus_seq_lookup which will contain:
@@ -87,6 +92,10 @@ def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
 
     consensus_seq_lookup = defaultdict(lambda:
                                        defaultdict(str))
+
+    random_bc_reads = defaultdict(lambda:
+                                 defaultdict(int))
+ 
 
     BARCODE_COLUMN = 'BarcodeSequence'
     REVERSE_PRIMER_COLUMN = 'ReversePrimer'
@@ -205,17 +214,26 @@ def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
             primer_mismatch_count += 1
             continue
 
+
+        clean_fwd_seq = clean_fwd_seq[:fwd_length] 
+        clean_rev_seq = clean_rev_seq[:rev_length]
+        random_bc_reads[sample_id][random_bc] += 1
         random_bc_lookup[sample_id][random_bc][(clean_fwd_seq, clean_rev_seq)] += 1
+
+    fwd_read_f.close()
+    rev_read_f.close()
     random_bc_keep = {}
 
     for sample_id in random_bc_lookup:
         random_bc_keep[sample_id] = select_unique_rand_bcs(random_bcs[sample_id], min_difference_in_bcs)
         for random_bc in random_bc_lookup[sample_id]:
-            if random_bc in random_bc_keep[sample_id]:
-                fwd_fasta_tempfile = tempfile.NamedTemporaryFile(dir=output_dir, delete=False)
-                rev_fasta_tempfile = tempfile.NamedTemporaryFile(dir=output_dir, delete=False)
-                fwd_fasta_tempfile_name = fwd_fasta_tempfile.name
-                rev_fasta_tempfile_name = rev_fasta_tempfile.name
+            if random_bc in random_bc_keep[sample_id] and random_bc_reads[sample_id][random_bc] >= min_reads_per_random_bc:
+                fwd_fd, fwd_fasta_tempfile_name = mkstemp(dir=output_dir, prefix='fwd', suffix='.fas')
+                rev_fd, rev_fasta_tempfile_name = mkstemp(dir=output_dir, prefix='rev', suffix='.fas')
+                close(fwd_fd)
+                close(rev_fd)
+                fwd_fasta_tempfile = open(fwd_fasta_tempfile_name, 'w')
+                rev_fasta_tempfile = open(rev_fasta_tempfile_name, 'w')
                 max_freq = 0
                 for seq_count_this_barcode, fwd_rev_seq in enumerate(random_bc_lookup[sample_id][random_bc]):
                     fwd_seq, rev_seq = fwd_rev_seq
@@ -229,31 +247,30 @@ def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
                         majority_seq = fwd_seq + ", " + rev_seq
                 fwd_fasta_tempfile.close()
                 rev_fasta_tempfile.close()
+
                 fwd_cluster_ratio = get_cluster_ratio(fwd_fasta_tempfile_name)
                 rev_cluster_ratio = get_cluster_ratio(rev_fasta_tempfile_name)
-                # name is passed because there is system call inside the function
-                # function does not open the file
-                if fwd_cluster_ratio < max_cluster_ratio and rev_cluster_ratio < max_cluster_ratio:
+                if fwd_cluster_ratio ==0 or rev_cluster_ratio == 0:
+                    consensus_seq = "No consensus"
+                elif fwd_cluster_ratio < max_cluster_ratio and rev_cluster_ratio < max_cluster_ratio:
                     consensus_seq = majority_seq
                 else:
                     fwd_fasta_tempfile = open(fwd_fasta_tempfile_name, 'r')
                     rev_fasta_tempfile = open(rev_fasta_tempfile_name, 'r')
                     fwd_consensus = get_consensus(fwd_fasta_tempfile, min_consensus)
                     rev_consensus = get_consensus(rev_fasta_tempfile, min_consensus)
+                    fwd_fasta_tempfile.close()
+                    rev_fasta_tempfile.close()
                     consensus_seq = fwd_consensus + ", " + rev_consensus
+
                 consensus_seq_lookup[sample_id][random_bc] = consensus_seq
-                fwd_fasta_tempfile.close()
-                rev_fasta_tempfile.close()
-                os.unlink(fwd_fasta_tempfile_name)
-                os.unlink(rev_fasta_tempfile_name)
+                unlink(fwd_fasta_tempfile_name)
+                unlink(rev_fasta_tempfile_name)
 
     log_str = "barcodes errors that exceed max count: " + str(barcode_errors_exceed_max_count) + "\n" + "barcode_not_in_map_count: " + str(barcode_not_in_map_count)+ "\n" + "primer_mismatch_count: " + str(primer_mismatch_count)+ "\n"
     log_file.write(log_str)
     log_file.close()
-    fwd_read_f.close()
-    rev_read_f.close()
     return consensus_seq_lookup
-
 
 def get_cluster_ratio(fasta_tempfile_name):
     """
@@ -261,24 +278,34 @@ def get_cluster_ratio(fasta_tempfile_name):
     cluster_ratio=num_of_seq_in_cluster_with_max_seq/num_of_seq_in cluster_with_second_higest_seq
     """
     cluster_percent_id = 0.98
-    temp_dir = get_qiime_temp_dir()
-
-    clusters, _, _ = get_clusters_from_fasta_filepath(
-        fasta_tempfile_name,
-        original_fasta_path=None,
-        percent_ID=cluster_percent_id,
-        save_uc_files=False,
-        output_dir=temp_dir)
+    temp_dir = get_qiime_temp_dir() 
+    fd_uc, uclust_tempfile_name = mkstemp(dir=temp_dir, suffix='.uc')
+    close(fd_uc)
 
     count_lookup = {}
-    for n, i in enumerate(clusters):
-        count_lookup[str(n)] = len(i)
+    count = 0
+    command = "uclust --usersort --input " + fasta_tempfile_name +\
+              " --uc " + uclust_tempfile_name + " --id 0.98"
+    qiime_system_call(command)
+    uclust_tempfile = open (uclust_tempfile_name, 'r')
+    for line in uclust_tempfile:
+        if re.search(r'^C', line):
+            pieces = line.split('\t')
+            try:
+                count_lookup[pieces[1]] += pieces[2]
+            except KeyError:
+                count_lookup[pieces[1]] = pieces[2]
+            except IndexError:
+                pass
+            count += 1
+    uclust_tempfile.close()
+    unlink(uclust_tempfile_name)
+
     sorted_counts_in_clusters = sorted(count_lookup.iteritems(), key=lambda x: x[1])
     try:
         return float(str(sorted_counts_in_clusters[0][1]))/float(str(sorted_counts_in_clusters[1][1]))
     except IndexError:
         return 1
-
 
 def get_consensus(fasta_tempfile, min_consensus):
     """
@@ -359,15 +386,13 @@ def select_unique_rand_bcs(rand_bcs, min_difference_in_bcs):
     returns: a set containing random unique random barcodes.
     """
     unique_threshold = min_difference_in_bcs
-    
     temp_dir = get_qiime_temp_dir()
-
-    fasta_tempfile = tempfile.NamedTemporaryFile(dir=temp_dir, delete=False, mode='w')
-    fasta_tempfile_name = fasta_tempfile.name
-
+    fasta_fd, fasta_tempfile_name = mkstemp(dir=temp_dir, prefix='tmp', suffix='.fas')
+    rand_bcs = set(rand_bcs)
+    fasta_tempfile = open(fasta_tempfile_name, "w")
     p_line = ""
     for rand_bc in rand_bcs:
-        p_line = p_line + ">" + str(rand_bc) + "\n" + rand_bc + "\n"
+        p_line = p_line + ">" + rand_bc + "\n" + rand_bc + "\n"
     fasta_tempfile.write(p_line)
     fasta_tempfile.close()
 
@@ -379,5 +404,5 @@ def select_unique_rand_bcs(rand_bcs, min_difference_in_bcs):
         output_dir=temp_dir)
 
     unique_rand_bcs = set(unique_rand_bcs)
-    os.unlink(fasta_tempfile_name)
+    unlink(fasta_tempfile_name)
     return unique_rand_bcs

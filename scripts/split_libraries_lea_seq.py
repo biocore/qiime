@@ -87,7 +87,25 @@ script_info['optional_options'] = [
                 'Barcodes that are more similar to each other '
                 'than this value will be discarded.'
                 '[default: %default]',
-                default=0.86)
+                default=0.86),
+    make_option('--fwd_length', type='int',
+                help='removes phasing from forward read'
+                'by truncating it to standard length for the region'
+                '[default: %default]',
+                default=64),
+    make_option('--rev_length', type='int',
+                help='removes phasing from reverse read'
+                'by truncating it to standard length for the region'
+                '[default: %default]',
+                default=77),
+    make_option('--min_reads_per_random_bc', type='int',
+                help='minimum number of reads per random'
+                'barcode, attempts to remove random barcodes'
+                ' that are sequencing errors of true barcodes'
+                'might be useful in saving memory and time'
+                '[default: %default]',
+                default=1),
+
 ]
 script_info['version'] = __version__
 
@@ -102,6 +120,10 @@ def main():
     max_cluster_ratio = opts.max_cluster_ratio
     output_dir = opts.output_dir
     min_difference_in_bcs = opts.min_difference_in_bcs
+    fwd_length = opts.fwd_length
+    rev_length = opts.rev_length
+    min_reads_per_random_bc = opts.min_reads_per_random_bc    
+
     create_dir(output_dir)
     consensus_outfile = open(os.path.join(output_dir, "seqs.fna"), "w")
     log_file = open(os.path.join(output_dir, "log.txt"), "w")
@@ -138,12 +160,12 @@ def main():
     consensus_seq_lookup = get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp,
                                            output_dir, barcode_type, barcode_len, barcode_correction_fn,
                                            max_barcode_errors, min_consensus,
-                                           max_cluster_ratio, min_difference_in_bcs, log_file)
+                                           max_cluster_ratio, min_difference_in_bcs, log_file, fwd_length, rev_length, min_reads_per_random_bc)
 
     for sample_id in consensus_seq_lookup:
         for random_bc_index, random_bc in enumerate(consensus_seq_lookup[sample_id]):
             consensus_seq = consensus_seq_lookup[sample_id][random_bc]
-            consensus_outfile.write(">" + sample_id + "_" + str(random_bc_index)
+            consensus_outfile.write(">" + sample_id + "_" + str(random_bc)
                                     + "\n" + consensus_seq + "\n")
     consensus_outfile.close()
 
