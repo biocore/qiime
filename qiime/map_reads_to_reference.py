@@ -76,10 +76,9 @@ class DatabaseMapper(object):
         else:
             observation_metadata = None
 
-        biom_table_f = open(output_biom_fp, 'w')
-        biom_table_f.write(make_otu_table(open(observation_map_fp, 'U'),
-                                          observation_metadata))
-        biom_table_f.close()
+        biom_table = make_otu_table(open(observation_map_fp, 'U'),
+                                    observation_metadata)
+        write_biom_table(biom_table, output_biom_fp)
 
     def _assign_dna_reads_to_database(self,
                                       query_fasta_fp,
