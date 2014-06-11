@@ -4,16 +4,16 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 from biom.parse import parse_biom_table
-from qiime.format import format_biom_table
 from qiime.filter import get_otu_ids_from_taxonomy_f
-from qiime.util import parse_command_line_parameters, make_option
+from qiime.util import (parse_command_line_parameters, make_option,
+                        write_biom_table)
 
 script_info = {}
 script_info['brief_description'] = "Filter taxa from an OTU table"
@@ -54,11 +54,10 @@ script_info['version'] = __version__
 
 
 def main():
-    option_parser, opts, args =\
-        parse_command_line_parameters(**script_info)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     input_table = parse_biom_table(open(opts.input_otu_table_fp, 'U'))
-    output_table_f = open(opts.output_otu_table_fp, 'w')
+    output_table_fp = opts.output_otu_table_fp
     metadata_field = opts.metadata_field
     positive_taxa = opts.positive_taxa
     negative_taxa = opts.negative_taxa
@@ -73,13 +72,11 @@ def main():
     else:
         negative_taxa = None
 
-    filter_fn = get_otu_ids_from_taxonomy_f(
-        positive_taxa,
-        negative_taxa,
-        metadata_field)
+    filter_fn = get_otu_ids_from_taxonomy_f(positive_taxa, negative_taxa,
+                                            metadata_field)
     output_table = input_table.filterObservations(filter_fn)
-    output_table_f.write(format_biom_table(output_table))
-    output_table_f.close()
+
+    write_biom_table(output_table, output_table_fp)
 
 
 if __name__ == "__main__":
