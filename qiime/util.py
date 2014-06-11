@@ -36,7 +36,7 @@ from numpy import (array, zeros, shape, vstack, ndarray, asarray,
 from numpy.ma import MaskedArray
 from numpy.ma.extras import apply_along_axis
 
-from biom.util import compute_counts_per_sample_stats
+from biom.util import compute_counts_per_sample_stats, biom_open
 from biom.parse import parse_biom_table
 from biom.table import Table
 
@@ -482,6 +482,24 @@ def write_seqs_to_fasta(fp, seqs, write_mode='w'):
     for s in seqs:
         f.write('>%s\n%s\n' % (s))
     f.close()
+
+
+def write_biom_table(biom_table, biom_table_fp, compress=True):
+    """Writes a BIOM table to the specified filepath
+
+    Parameters
+    ----------
+    biom_table : biom.Table
+        The table object to write out
+    biom_tabl_fp : str
+        The path to the output file
+    compress : bool, optional
+        Defaults to ``True``. If True, built-in compression on the output HDF5
+        file will be enabled
+    """
+    with biom_open(biom_table_fp, 'w') as biom_file:
+        generated_by_str = "QIIME " + get_qiime_library_version()
+        biom_table.to_hdf5(biom_file, generated_by_str, compress)
 
 
 def split_fasta_on_sample_ids_to_files(seqs,

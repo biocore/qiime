@@ -19,7 +19,6 @@ from os.path import join, splitext, exists, isfile, abspath
 
 from skbio.core.sequence import BiologicalSequence
 from biom.table import Table
-from biom.util import biom_open
 
 from qiime.util import get_qiime_library_version, load_qiime_config
 from qiime.colors import data_color_hsv
@@ -720,24 +719,6 @@ def illumina_data_to_fastq(record_data, number_of_bases=None):
         record_data[7])
 
     return '@%s\n%s\n+\n%s' % (header, seq, qual), pass_filter
-
-
-def write_biom_table(biom_table, biom_table_fp, compress=True):
-    """Writes a BIOM table to the specified filepath
-
-    Parameters
-    ----------
-    biom_table : biom.Table
-        The table object to write out
-    biom_tabl_fp : str
-        The path to the output file
-    compress : bool, optional
-        Defaults to ``True``. If True, built-in compression on the output HDF5
-        file will be enabled
-    """
-    with biom_open(biom_table_fp, 'w') as biom_file:
-        generated_by_str = "QIIME " + get_qiime_library_version()
-        biom_table.to_hdf5(biom_file, generated_by_str, compress)
 
 
 def format_mapping_html_data(header,
