@@ -508,7 +508,7 @@ def write_biom_table(biom_table, biom_table_fp, compress=True):
         file will be enabled
     """
     with biom_open(biom_table_fp, 'w') as biom_file:
-        biom_table.to_hdf5(biom_file, get_generated_by_for_biom_tables,
+        biom_table.to_hdf5(biom_file, get_generated_by_for_biom_tables(),
                            compress)
 
 

@@ -19,11 +19,13 @@ from datetime import datetime
 from collections import defaultdict
 from string import strip
 from sys import stderr
+
 from numpy import array, zeros
 from cogent.util.misc import flatten
+from biom.table import Table
+
 from qiime.parse import parse_otu_map
 from qiime.util import get_generated_by_for_biom_tables
-from biom.table import Table
 
 
 def libs_from_seqids(seq_ids, delim='_'):
@@ -78,7 +80,7 @@ def make_otu_table(otu_map_f, otu_to_taxonomy=None, delim='_', table_id=None,
         return Table(data, otu_ids, sample_ids,
                      observation_metadata=otu_metadata, 
                      sample_metadata=sample_metadata, table_id=table_id,
-                     generated_by=get_generated_by_for_biom_tables,
+                     generated_by=get_generated_by_for_biom_tables(),
                      create_date=datetime.now().isoformat())
     except ValueError as e:
         raise ValueError("Couldn't create OTU table. Is your OTU map empty?"
