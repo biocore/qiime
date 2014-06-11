@@ -11,10 +11,10 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 
-from qiime.util import make_option
+from biom.parse import parse_biom_table
+
 from qiime.util import (parse_command_line_parameters, make_option,
                         write_biom_table, get_options_lookup)
-from biom.parse import parse_biom_table
 
 options_lookup = get_options_lookup()
 
