@@ -20,7 +20,6 @@ from string import strip
 from sys import stderr
 from numpy import array, zeros
 from cogent.util.misc import flatten
-from qiime.format import format_otu_table
 from qiime.parse import parse_otu_map
 from qiime.format import format_biom_table
 from biom.table import Table
