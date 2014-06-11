@@ -214,6 +214,8 @@ def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
             primer_mismatch_count += 1
             continue
 
+        if len(clean_fwd_seq) < fwd_length:
+            continue
 
         clean_fwd_seq = clean_fwd_seq[:fwd_length] 
         clean_rev_seq = clean_rev_seq[:rev_length]

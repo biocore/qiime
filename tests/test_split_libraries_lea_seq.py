@@ -147,8 +147,8 @@ class WorkflowTests(TestCase):
         max_cluster_ratio = 2.5
         min_difference_in_bcs = 0.86
         log_file = self.log_file
-        fwd_length = 64
-        rev_length = 77
+        fwd_length = 19
+        rev_length = 19
         min_reads_per_random_bc = 1
         function_call = get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp_name,
                                            temp_dir, barcode_type, barcode_len, barcode_correction_fn,
