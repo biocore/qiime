@@ -6,7 +6,7 @@ __credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso",
                "Justin Kuczynski", "Jens Reeder", "Catherine Lozupone",
                "Jai Ram Rideout", "Logan Knecht", "Michael Dwan",
                "Levi McCracken", "Damien Coy", "Yoshiki Vazquez Baeza",
-               "Will Van Treuren"]  # remember to add yourself if you make changes
+               "Will Van Treuren", "Adam Robbins-Pianka"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"

@@ -2,7 +2,7 @@
 # make_otu_table: makes sample x OTU table
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Rob Knight", "Justin Kuczynski"]  # remember to add yourself
+__credits__ = ["Rob Knight", "Justin Kuczynski", "Adam Robbins-Pianka"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"

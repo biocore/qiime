@@ -8,7 +8,8 @@ __credits__ = [
     "Rob Knight",
     "Justin Kuczynski",
     "Jesse Stombaugh",
-    "Greg Caporaso"]
+    "Greg Caporaso",
+    "Adam Robbins-Pianka"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
