@@ -38,7 +38,7 @@ def seqids_from_otu_to_seqid(otu_to_seqid):
 
 
 def make_otu_table(otu_map_f, otu_to_taxonomy=None, delim='_', table_id=None,
-                   sample_metadata=None):
+                   otu_ids_to_exclude=None, sample_metadata=None):
     """Generate a BIOM table from an OTU map
 
     Parameters
@@ -55,10 +55,14 @@ def make_otu_table(otu_map_f, otu_to_taxonomy=None, delim='_', table_id=None,
     table_id : object, optional
         Defaults to ``None``. The identifier that will be given to the
         generated BIOM table
+    otu_ids_to_exclude : iterable, optional
+        Defaults to ``None``. If present, these OTUs will not be added to the
+        OTU table from the OTU map
     sample_metadata : iterable of dicts, optional
         Defaults to ``None``. This option is not currently supported.
     """
-    data, sample_ids, otu_ids = parse_otu_map(otu_map_f, delim)
+    data, sample_ids, otu_ids = parse_otu_map(
+        otu_map_f, delim=delim, otu_ids_to_exclude=otu_ids_to_exclude)
 
     if otu_to_taxonomy is not None:
         otu_metadata = []
