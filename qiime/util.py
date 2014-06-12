@@ -223,7 +223,8 @@ class FunctionWithParams(object):
         """returns a biom object regardless of whether path or object given"""
         try:
             if isfile(data):
-                otu_table = parse_biom_table(qiime_open(data, 'U'))
+                with biom_open(data, 'U') as biom_file:
+                    otu_table = parse_biom_table(biom_file)
                 return otu_table
         except TypeError:
             if type(data) == Table:
