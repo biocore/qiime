@@ -125,7 +125,8 @@ def main():
     min_reads_per_random_bc = opts.min_reads_per_random_bc    
 
     create_dir(output_dir)
-    consensus_outfile = open(os.path.join(output_dir, "seqs.fna"), "w")
+    fwd_consensus_outfile = open(os.path.join(output_dir, "fwd.fna"), "w")
+    rev_consensus_outfile = open(os.path.join(output_dir, "rev.fna"), "w")
     log_file = open(os.path.join(output_dir, "log.txt"), "w")
    
     if barcode_type == 'golay_12':
@@ -165,9 +166,15 @@ def main():
     for sample_id in consensus_seq_lookup:
         for random_bc_index, random_bc in enumerate(consensus_seq_lookup[sample_id]):
             consensus_seq = consensus_seq_lookup[sample_id][random_bc]
-            consensus_outfile.write(">" + sample_id + "_" + str(random_bc)
-                                    + "\n" + consensus_seq + "\n")
-    consensus_outfile.close()
+            fwd_consensus =  
+            rev_consensus = 
+            fwd_consensus_outfile.write(">" + sample_id + "_" + str(random_bc_index)
+                                    + "\n" + fwd_consensus + "\n")
+            rev_consensus_outfile.write(">" + sample_id + "_" + str(random_bc_index)
+                                    + "\n" + rev_consensus + "\n")
+
+    fwd_consensus_outfile.close()
+    rev_consensus_outfile.close()
 
 if __name__ == "__main__":
     main()

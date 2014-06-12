@@ -23,10 +23,6 @@ from itertools import izip
 from os import close, path, mkdir, unlink, rmdir
 import re
 
-#	$front_len = 64; # should be 63-65 for MP
-#	$front_len = 62; # should be 63-65 for MP
-#	#$back_len = 79; # should be 9=79-81 for MP
-#	$back_len = 77; # should be 9=79-81 for MP
 
 class PairedEndParseError(Exception):
     pass
