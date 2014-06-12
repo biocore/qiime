@@ -38,7 +38,7 @@ from numpy import asarray
 import cogent.maths.distance_transform as distance_transform
 from biom.parse import parse_biom_table
 from biom.table import Table
-from biom.util import biom_open
+from biom import load_table
 
 from qiime.util import (FunctionWithParams, TreeMissingError,
                         OtuMissingError)
@@ -175,8 +175,7 @@ class BetaDiversityCalc(FunctionWithParams):
         else:
             tree = None
 
-        with biom_open(data_path, 'U') as biom_file:
-            otu_table = parse_biom_table(biom_file)
+        otu_table = load_table(data_path)
         otumtx = asarray([v for v in otu_table.iter_data(axis='sample')])
 
         # get the 2d dist matrix from beta diversity analysis
@@ -213,8 +212,7 @@ def single_file_beta(input_path, metrics, tree_path, output_dir,
     except AttributeError:
         pass
 
-    with biom_open(input_path, 'U') as biom_file:
-        otu_table = parse_biom_table(biom_file)
+    otu_table = load_table(input_path)
 
     otumtx = asarray([v for v in otu_table.iter_data(axis='sample')])
 
