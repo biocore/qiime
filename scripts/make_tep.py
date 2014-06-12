@@ -14,7 +14,7 @@ from os.path import split, splitext
 import os
 
 from biom.parse import parse_biom_table
-from biom.util import biom_open
+from biom import load_table
 
 from qiime.util import parse_command_line_parameters, make_option
 from qiime.util import load_qiime_config, create_dir, get_options_lookup
@@ -85,8 +85,7 @@ def main():
     create_dir(output_dir)
 
     # open files for parsing
-    with biom_open(otu_table_fp, 'U') as biom_file:
-        otu_table_data = parse_biom_table(biom_file)
+    otu_table_data = load_table(otu_table_fp)
 
     mapping_lines = open(mapping_fp, 'U')
     tree_lines = open(tree_fp, 'U')
