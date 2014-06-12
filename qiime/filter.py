@@ -15,14 +15,12 @@ from collections import defaultdict
 from random import shuffle, sample
 from numpy import array, inf
 from skbio.parse.sequences import parse_fasta
-from qiime.parse import (
-    parse_distmat, parse_mapping_file, parse_metadata_state_descriptions
-)
-from qiime.format import (
-    format_distance_matrix, format_mapping_file
-)
+from biom import load_table
+
+from qiime.parse import (parse_distmat, parse_mapping_file,
+                         parse_metadata_state_descriptions)
+from qiime.format import format_distance_matrix, format_mapping_file
 from qiime.util import MetadataMap
-from biom.parse import parse_biom_table
 
 
 def get_otu_ids_from_taxonomy_f(positive_taxa=None,
@@ -490,7 +488,7 @@ def negate_tips_to_keep(tips_to_keep, tree):
 
 
 def get_seqs_to_keep_lookup_from_biom(biom_f):
-    otu_table = parse_biom_table(biom_f)
+    otu_table = load_table(biom_f)
     return {}.fromkeys(otu_table.observation_ids)
 
 
