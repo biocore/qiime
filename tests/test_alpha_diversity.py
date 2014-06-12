@@ -25,9 +25,8 @@ from skbio.util.misc import remove_files
 
 from qiime.alpha_diversity import (AlphaDiversityCalc, AlphaDiversityCalcs,
                                    single_file_cup)
-from qiime.format import format_biom_table
 from qiime.parse import parse_newick
-from qiime.util import load_qiime_config
+from qiime.util import load_qiime_config, write_biom_table
 
 
 class AlphaDiversitySharedSetUpTests(TestCase):
@@ -46,14 +45,13 @@ class AlphaDiversitySharedSetUpTests(TestCase):
         self.otu_table1 = Table(data=array([[2, 0, 0, 1],
                                             [1, 1, 1, 1],
                                             [0, 0, 0, 0]]).T,
-                                        sample_ids=list('XYZ'),
-                                        observation_ids=list('abcd'))
+                                           sample_ids=list('XYZ'),
+                                           observation_ids=list('abcd'))
         fd, self.otu_table1_fp = mkstemp(dir=self.tmp_dir,
                                               prefix='alpha_diversity_tests',
                                               suffix='.biom')
         close(fd)
-        open(self.otu_table1_fp, 'w').write(
-            format_biom_table(self.otu_table1))
+        write_biom_table(self.otu_table1, self.otu_table1_fp)
 
         self.otu_table2 = Table(data=array([[2, 0, 0, 1],
                                                    [1, 1, 1, 1],
@@ -64,8 +62,7 @@ class AlphaDiversitySharedSetUpTests(TestCase):
                                               prefix='alpha_diversity_tests',
                                               suffix='.biom')
         close(fd)
-        open(self.otu_table2_fp, 'w').write(
-            format_biom_table(self.otu_table2))
+        write_biom_table(self.otu_table2, self.otu_table2_fp)
 
         self.single_sample_otu_table = Table(
             data=array([[2, 0, 0, 1]]).T,
@@ -77,8 +74,8 @@ class AlphaDiversitySharedSetUpTests(TestCase):
             prefix='alpha_diversity_tests',
             suffix='.biom')
         close(fd)
-        open(self.single_sample_otu_table_fp, 'w').write(
-            format_biom_table(self.single_sample_otu_table))
+        write_biom_table(self.single_sample_otu_table,
+                         self.single_sample_otu_table_fp)
 
         self.tree1 = parse_newick('((a:2,b:3):2,(c:1,d:2):7);')
         self.tree2 = parse_newick("((a:2,'b':3):2,(c:1,'d_':2):7);")
