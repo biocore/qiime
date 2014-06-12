@@ -11,8 +11,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 
-from biom.parse import parse_biom_table
-from biom.util import biom_open
+from biom import load_table
 
 from qiime.util import (parse_command_line_parameters,
                         get_options_lookup, make_option)
@@ -71,8 +70,7 @@ def main():
 
     output_f = open(opts.output_distance_matrix, 'w')
     if opts.otu_table_fp:
-        with biom_open(opts.otu_table_fp) as biom_file:
-            otu_table = parse_biom_table(biom_file)
+        otu_table = load_table(opts.otu_table_fp)
         samples_to_keep = otu_table.sample_ids
         # samples_to_keep = \
         # sample_ids_from_otu_table(open(opts.otu_table_fp,'U'))
