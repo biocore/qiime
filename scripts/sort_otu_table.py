@@ -12,6 +12,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 from biom.parse import parse_biom_table
+from biom.util import biom_open
 
 from qiime.parse import parse_mapping_file
 from qiime.util import (parse_command_line_parameters, get_options_lookup,
@@ -76,7 +77,8 @@ def sample_ids_from_f(lines):
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
-    otu_table_data = parse_biom_table(open(opts.input_otu_table, 'U'))
+    with biom_open(opts.input_otu_table, 'U') as biom_file:
+        otu_table_data = parse_biom_table(biom_file)
     sort_field = opts.sort_field
     mapping_fp = opts.mapping_fp
     sorted_sample_ids_fp = opts.sorted_sample_ids_fp
