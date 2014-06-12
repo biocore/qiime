@@ -229,22 +229,27 @@ def main():
         except (TypeError, IOError):
             raise MissingFileError("Couldn't read tree file at path: %s" %
                                    opts.otu_tree)
-        otu_order = get_order_from_tree(otu_table.ObservationIds, f)
+        otu_order = get_order_from_tree(otu_table.observation_ids, f)
+        print otu_order
         f.close()
     # if no tree or mapping file, perform upgma euclidean
     elif not opts.suppress_row_clustering:
         data = np.asarray([i for i in otu_table.iter_data(axis='observation')])
         otu_order = get_clusters(data, axis='row')
+        #print otu_order
     # else just use OTU table ordering
     else:
-        otu_order = np.arange(len(otu_table.ObservationIds))
+        otu_order = np.arange(len(otu_table.observation_ids))
 
     # otu_order and sample_order should be ids, rather than indices
     #  to use in sortObservationOrder/sortSampleOrder
+    print otu_order
     otu_id_order = [otu_table.observation_ids[i] for i in otu_order]
     sample_id_order = [otu_table.sample_ids[i] for i in sample_order]
 
     # Re-order otu table, sampleids, etc. as necessary
+    print len(otu_id_order)
+    print len(otu_table.observation_ids)
     otu_table = otu_table.sort_order(otu_id_order, axis='observation')
     # otu_ids not used after: tagged for deletion
     otu_ids = np.array(otu_table.observation_ids)[otu_order]
