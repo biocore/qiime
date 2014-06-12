@@ -94,7 +94,7 @@ class Test_shared_phylotypes(TestCase):
     def test_calc_shared_phylotypes(self):
         """calc_shared_phylotypes computes correct matrix"""
 
-        observed = calc_shared_phylotypes(self.biom_as_string)
+        observed = calc_shared_phylotypes(self.otu_table)
         expected = """\tS1\tS2\tS3
 S1\t5\t2\t3
 S2\t2\t2\t1
