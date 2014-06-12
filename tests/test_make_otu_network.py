@@ -24,8 +24,7 @@ from qiime.stats import G_2_by_2
 from qiime.make_otu_network import get_sample_info, get_connection_info, \
     get_num_con_cat, get_num_cat, make_table_file, make_stats_files,\
     make_props_files
-from qiime.util import load_qiime_config
-from qiime.format import format_biom_table
+from qiime.util import load_qiime_config, write_biom_table
 from biom.table import Table
 
 
@@ -75,68 +74,41 @@ class OtuNetworkTests(TestCase):
                                      [2, 0, 0, 5, 0],
                                      [0, 2, 0, 4, 0]])
 
-        otu_table_str = format_biom_table(Table(self.otu_table_vals,
-                                                        ['otu_1',
-                                                         'otu_2',
-                                                         'otu_3',
-                                                         'otu_4',
-                                                         'otu_5',
-                                                         'otu_6',
-                                                         'otu_7',
-                                                         'otu_8',
-                                                         'otu_9',
-                                                         'otu_10'],
-                                                        ['1',
-                                                         '2',
-                                                         '3',
-                                                         '4',
-                                                         '5'],
-                                                        [None,
-                                                         None,
-                                                         None,
-                                                         None,
-                                                         None],
-                                                        [{"taxonomy": ["Bacteria", "Actinobacteria", "Coriobacteridae"]},
-                                                         {"taxonomy": ["Bacteria",
-                                                                       "Bacteroidetes",
-                                                                       "Bacteroidales",
-                                                                       "Bacteroidaceae"]},
-                                                            {"taxonomy": ["Bacteria",
-                                                                          "Firmicutes",
-                                                                          "Clostridia",
-                                                                          "Clostridiales"]},
-                                                            {"taxonomy": ["Bacteria",
-                                                                          "Spirochaetes",
-                                                                          "Spirochaetales",
-                                                                          "Spirochaetaceae"]},
-                                                            {"taxonomy": ["Bacteria",
-                                                                          "Bacteroidetes",
-                                                                          "Bacteroidales",
-                                                                          "Rikenellaceae"]},
-                                                            {"taxonomy": ["Bacteria",
-                                                                          "Bacteroidetes",
-                                                                          "Bacteroidales",
-                                                                          "Dysgonomonaceae"]},
-                                                            {"taxonomy": ["Bacteria",
-                                                                          "Bacteroidetes",
-                                                                          "Bacteroidales",
-                                                                          "Odoribacteriaceae"]},
-                                                            {"taxonomy": ["Bacteria",
-                                                                          "Bacteroidetes",
-                                                                          "Bacteroidales",
-                                                                          "Dysgonomonaceae",
-                                                                          "otu_425"]},
-                                                            {"taxonomy": ["Bacteria",
-                                                                          "Bacteroidetes",
-                                                                          "Bacteroidales",
-                                                                          "Dysgonomonaceae",
-                                                                          "otu_425"]},
-                                                            {"taxonomy": ["Bacteria", "Firmicutes", "Mollicutes", "Clostridium_aff_innocuum_CM970"]}]))
+        otu_table = Table(self.otu_table_vals,
+                          ['otu_1', 'otu_2', 'otu_3', 'otu_4', 'otu_5',
+                           'otu_6', 'otu_7', 'otu_8', 'otu_9', 'otu_10'],
+                          ['1', '2', '3', '4', '5'],
+                          [{"taxonomy": ["Bacteria", "Actinobacteria",
+                                         "Coriobacteridae"]},
+                           {"taxonomy": ["Bacteria", "Bacteroidetes",
+                                         "Bacteroidales", "Bacteroidaceae"]},
+                           {"taxonomy": ["Bacteria", "Firmicutes",
+                                         "Clostridia", "Clostridiales"]},
+                           {"taxonomy": ["Bacteria", "Spirochaetes",
+                                         "Spirochaetales", "Spirochaetaceae"]},
+                           {"taxonomy": ["Bacteria", "Bacteroidetes",
+                                         "Bacteroidales", "Rikenellaceae"]},
+                           {"taxonomy": ["Bacteria", "Bacteroidetes",
+                                         "Bacteroidales", "Dysgonomonaceae"]},
+                           {"taxonomy": ["Bacteria", "Bacteroidetes",
+                                         "Bacteroidales",
+                                         "Odoribacteriaceae"]},
+                           {"taxonomy": ["Bacteria", "Bacteroidetes",
+                                         "Bacteroidales", "Dysgonomonaceae",
+                                         "otu_425"]},
+                           {"taxonomy": ["Bacteria", "Bacteroidetes",
+                                         "Bacteroidales", "Dysgonomonaceae",
+                                         "otu_425"]},
+                           {"taxonomy": ["Bacteria", "Firmicutes",
+                                         "Mollicutes",
+                                         "Clostridium_aff_innocuum_CM970"]}],
+                          [None, None, None, None, None])
 
-        fd, self.otu_table_fp = mkstemp(dir=self.tmp_dir,
-                                             prefix='test_make_otu_network_otu_table', suffix='.biom')
+        fd, self.otu_table_fp = mkstemp(
+            dir=self.tmp_dir, prefix='test_make_otu_network_otu_table',
+            suffix='.biom')
         close(fd)
-        open(self.otu_table_fp, 'w').write(otu_table_str)
+        write_biom_table(otu_table, self.otu_table_fp)
 
         self.otu_sample_file = """#Full OTU Counts
 #OTU ID	1	2	3	4	5	Consensus Lineage
