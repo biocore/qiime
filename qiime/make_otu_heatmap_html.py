@@ -11,13 +11,14 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 
-from numpy import array, concatenate, asarray, transpose, log, invert, asarray,\
-    float32, float64, minimum, inf
-from optparse import OptionParser
-from qiime.util import MissingFileError
 import os
+
+from numpy import (array, concatenate, asarray, transpose, log, invert,
+                   asarray, float32, float64, minimum, inf)
+from biom import load_table
+
 from qiime.filter import filter_otus_from_otu_table
-from biom.parse import parse_biom_table
+from qiime.util import MissingFileError
 
 
 def make_html_doc(js_filename):
@@ -257,7 +258,7 @@ def get_otu_counts(fpath):
     """Reads the OTU table file into memory"""
 
     try:
-        otu_table = parse_biom_table(open(fpath, 'U'))
+        otu_table = load_table(fpath)
     except (TypeError, IOError):
         raise MissingFileError('OTU table file required for this analysis')
 
