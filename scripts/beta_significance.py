@@ -21,8 +21,7 @@ from cogent.maths.unifrac.fast_unifrac import fast_unifrac_permutations_file, TE
 from cogent.maths.unifrac.fast_unifrac import fast_p_test_file
 from qiime.util import parse_command_line_parameters
 from qiime.format import format_unifrac_sample_mapping
-from biom.parse import parse_biom_table
-from biom.util import biom_open
+from biom import load_table
 
 
 script_info = {}
@@ -74,8 +73,7 @@ def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
     otu_table_fp = opts.input_path
 
-    with biom_open(otu_table_fp) as biom_file:
-        otu_table = parse_biom_table(biom_file)
+    otu_table = load_table(otu_table_fp)
 
     sample_ids = otu_table.sample_ids
     otu_ids = otu_table.observation_ids
