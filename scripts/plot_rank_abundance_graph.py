@@ -11,7 +11,7 @@ __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
 from biom.parse import parse_biom_table
-from biom.util import biom_open
+from biom import load_table
 
 from qiime.util import make_option
 from qiime.plot_rank_abundance_graph import plot_rank_abundance_graphs
@@ -93,8 +93,7 @@ def main():
     log_fh.write("OTU table file: %s\n" % otu_table_fp)
     log_fh.write("sample names: %s\n" % sample_name)
 
-    with biom_open(opts.otu_table_fp, 'U') as biom_file:
-        otu_table = parse_biom_table(biom_file)
+    otu_table = load_table(opts.otu_table_fp)
 
     plot_rank_abundance_graphs(opts.result_fp, opts.sample_name, otu_table,
                                opts.file_type,
