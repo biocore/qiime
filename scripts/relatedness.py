@@ -14,8 +14,6 @@ __email__ = "wdwvt1@gmail.com"
 
 from sys import stdout
 
-from biom.util import biom_open
-
 from qiime.parse import parse_newick, PhyloNode
 from qiime.relatedness_library import nri, nti
 from qiime.util import parse_command_line_parameters, make_option
