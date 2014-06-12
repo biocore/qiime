@@ -17,8 +17,7 @@ __email__ = "gregcaporaso@gmail.com"
 
 from itertools import izip
 from numpy import inf, isinf
-from biom.parse import parse_biom_table
-from biom.util import biom_open
+from biom import load_table
 
 from qiime.util import (parse_command_line_parameters, make_option,
                         write_biom_table)
@@ -102,8 +101,7 @@ def main():
         option_parser.error("Must provide input mapping file to generate"
                             " output mapping file.")
 
-    with biom_open(opts.input_fp) as biom_file:
-        otu_table = parse_biom_table(biom_file)
+    otu_table =  load_table(opts.input_fp)
 
     if mapping_fp and valid_states:
         sample_ids_to_keep = sample_ids_from_metadata_description(

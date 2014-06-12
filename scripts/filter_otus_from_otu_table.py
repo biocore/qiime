@@ -13,8 +13,7 @@ __email__ = "gregcaporaso@gmail.com"
 from itertools import izip
 from numpy import inf, isinf
 from skbio.parse.sequences import parse_fasta
-from biom.parse import parse_biom_table
-from biom.util import biom_open
+from biom import load_table
 
 from qiime.util import (parse_command_line_parameters, make_option,
                         write_biom_table)
@@ -107,8 +106,7 @@ def main():
                             "min counts, max counts, min samples, max samples, min_count_fraction, "
                             "or exclude_fp (or some combination of those).")
 
-    with biom_open(opts.input_fp) as biom_file:
-        otu_table = parse_biom_table(biom_file)
+    otu_table = load_table(opts.input_fp)
 
     if min_count_fraction > 0:
         min_count = otu_table.sum() * min_count_fraction

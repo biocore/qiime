@@ -10,8 +10,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
-from biom.parse import parse_biom_table
-from biom.util import biom_open
+from biom import load_table
 
 from qiime.filter import get_otu_ids_from_taxonomy_f
 from qiime.util import (parse_command_line_parameters, make_option,
@@ -63,8 +62,7 @@ def main():
     positive_taxa = opts.positive_taxa
     negative_taxa = opts.negative_taxa
 
-    with biom_open(opts.input_otu_table_fp) as biom_file:
-        input_table = parse_biom_table(biom_file)
+    input_table = load_table(opts.input_otu_table_fp)
 
     if positive_taxa is not None:
         positive_taxa = positive_taxa.split(',')
