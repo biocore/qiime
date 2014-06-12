@@ -37,6 +37,7 @@ from numpy.ma import MaskedArray
 from numpy.ma.extras import apply_along_axis
 
 from biom.util import compute_counts_per_sample_stats, biom_open
+from biom import load_table
 from biom.parse import parse_biom_table
 from biom.table import Table
 
@@ -223,9 +224,7 @@ class FunctionWithParams(object):
         """returns a biom object regardless of whether path or object given"""
         try:
             if isfile(data):
-                with biom_open(data, 'U') as biom_file:
-                    otu_table = parse_biom_table(biom_file)
-                return otu_table
+                return load_table(data)
         except TypeError:
             if type(data) == Table:
                 otu_table = data
