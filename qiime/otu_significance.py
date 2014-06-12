@@ -10,7 +10,6 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Luke Ursell"
 __email__ = "lkursell@gmail.com"
 
-from biom.parse import parse_biom_table
 from qiime.parse import parse_mapping_file_to_dict
 from numpy import (array, argsort, vstack, isnan, inf, nan, apply_along_axis,
                    mean, zeros)
