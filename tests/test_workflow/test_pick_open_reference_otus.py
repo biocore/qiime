@@ -19,7 +19,9 @@ from unittest import TestCase, main
 
 from skbio.core.tree import TreeNode
 from skbio.util.misc import remove_files
-from biom.parse import parse_biom_table
+# from biom.parse import parse_biom_table
+from biom import Table
+from biom.util import biom_open
 
 from qiime.util import (load_qiime_config,
                         count_seqs,
@@ -141,11 +143,11 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             "PyNAST failures file doesn't exist")
 
         # all OTUs in final OTU table occur more than once
-        otu_table = parse_biom_table(open(otu_table_fp, 'U'))
-        for row in otu_table.iter_observation_data():
-            self.assertTrue(
-                sum(row) >= 2,
-                "Singleton OTU detected in OTU table.")
+        with biom_open(otu_table_fp) as biom_file:
+            otu_table = Table.from_hdf5(biom_file)
+        for row in otu_table.iter_data(axis='observation'):
+            self.assertTrue(sum(row) >= 2,
+                            "Singleton OTU detected in OTU table.")
         # number of OTUs in final OTU table equals the number of seequences in
         # the alignment...
         self.assertEqual(len(otu_table.observation_ids), count_seqs(aln_fp)[0])
@@ -191,17 +193,18 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # OTU table without singletons or pynast failures has same number of
         # otus as there are aligned sequences
-        otu_table = parse_biom_table(open(otu_table_fp, 'U'))
+        with biom_open(otu_table_fp) as biom_file:
+            otu_table = Table.from_hdf5(biom_file)
         self.assertEqual(len(otu_table.observation_ids), num_align_seqs)
 
         # Reference OTUs have correct taxonomy assignment (can't confirm the )
-        obs_idx = otu_table.get_observation_index('295053')
+        obs_idx = otu_table.index('295053', axis='observation')
         self.assertEqual(otu_table.observation_metadata[obs_idx]['taxonomy'],
                          ["k__Bacteria", "p__Proteobacteria", "c__Gammaproteobacteria",
                           "o__Enterobacteriales", "f__Enterobacteriaceae", "g__", "s__"])
         # All observations have 'taxonomy' metadata, and are at least assigned
         # to 'bacteria'
-        for o in otu_table.iter_observations():
+        for o in otu_table.iter(axis='observation'):
             self.assertTrue(
                 o[2]['taxonomy'][0] in ['k__Bacteria', 'Unassigned'])
 
@@ -269,11 +272,11 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             "rdp taxonomy assignment result doesn't exist")
 
         # all OTUs in final OTU table occur more than once
-        otu_table = parse_biom_table(open(otu_table_fp, 'U'))
-        for row in otu_table.iter_observation_data():
-            self.assertTrue(
-                sum(row) >= 2,
-                "Singleton OTU detected in OTU table.")
+        with biom_open(otu_table_fp) as biom_file:
+            otu_table = Table.from_hdf5(biom_file)
+        for row in otu_table.iter_data(axis='observation'):
+            self.assertTrue(sum(row) >= 2,
+                            "Singleton OTU detected in OTU table.")
         # number of OTUs in final OTU table equals the number of seequences in
         # the alignment...
         self.assertEqual(len(otu_table.observation_ids), count_seqs(aln_fp)[0])
@@ -319,16 +322,17 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # OTU table without singletons or pynast failures has same number of
         # otus as there are aligned sequences
-        otu_table = parse_biom_table(open(otu_table_fp, 'U'))
+        with biom_open(otu_table_fp) as biom_file:
+            otu_table = Table.from_hdf5(biom_file)
         self.assertEqual(len(otu_table.observation_ids), num_align_seqs)
 
         # Reference OTUs have correct taxonomy assignment (can't confirm the )
-        obs_idx = otu_table.get_observation_index('295053')
+        obs_idx = otu_table.index('295053', axis='observation')
         self.assertEqual(otu_table.observation_metadata[obs_idx]['taxonomy'],
                          ["k__Bacteria", "p__Proteobacteria", "c__Gammaproteobacteria",
                           "o__Enterobacteriales", "f__Enterobacteriaceae", "g__", "s__"])
         # All observations have 'taxonomy' metadata
-        for o in otu_table.iter_observations():
+        for o in otu_table.iter(axis='observation'):
             self.assertTrue(
                 o[2]['taxonomy'][0] in ['k__Bacteria', 'Unassigned'])
 
@@ -388,11 +392,11 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             "PyNAST failures file doesn't exist")
 
         # all OTUs in final OTU table occur more than once
-        otu_table = parse_biom_table(open(otu_table_fp, 'U'))
-        for row in otu_table.iter_observation_data():
-            self.assertTrue(
-                sum(row) >= 2,
-                "Singleton OTU detected in OTU table.")
+        with biom_open(otu_table_fp) as biom_file:
+            otu_table = Table.from_hdf5(biom_file)
+        for row in otu_table.iter_data(axis='observation'):
+            self.assertTrue(sum(row) >= 2,
+                            "Singleton OTU detected in OTU table.")
         # number of OTUs in final OTU table equals the number of seequences in
         # the alignment...
         self.assertEqual(len(otu_table.observation_ids), count_seqs(aln_fp)[0])
@@ -437,17 +441,18 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # OTU table without singletons or pynast failures has same number of
         # otus as there are aligned sequences
-        otu_table = parse_biom_table(open(otu_table_fp, 'U'))
+        with biom_open(otu_table_fp) as biom_file:
+            otu_table = Table.from_hdf5(biom_file)
         self.assertEqual(len(otu_table.observation_ids), num_align_seqs)
 
         # Reference OTUs have correct taxonomy assignment (can't confirm the )
-        obs_idx = otu_table.get_observation_index('295053')
+        obs_idx = otu_table.index('295053', axis='observation')
         self.assertEqual(otu_table.observation_metadata[obs_idx]['taxonomy'],
                          ["k__Bacteria", "p__Proteobacteria", "c__Gammaproteobacteria",
                           "o__Enterobacteriales", "f__Enterobacteriaceae", "g__", "s__"])
         # All observations have 'taxonomy' metadata, and are at least assigned
         # to 'bacteria'
-        for o in otu_table.iter_observations():
+        for o in otu_table.iter(axis='observation'):
             self.assertTrue(
                 o[2]['taxonomy'][0] in ['k__Bacteria', 'Unassigned'])
 
@@ -565,11 +570,11 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             "PyNAST failures file doesn't exist")
 
         # all OTUs in final OTU table occur more than once
-        otu_table = parse_biom_table(open(otu_table_fp, 'U'))
-        for row in otu_table.iter_observation_data():
-            self.assertTrue(
-                sum(row) >= 2,
-                "Singleton OTU detected in OTU table.")
+        with biom_open(otu_table_fp) as biom_file:
+            otu_table = Table.from_hdf5(biom_file)
+        for row in otu_table.iter_data(axis='observation'):
+            self.assertTrue(sum(row) >= 2,
+                            "Singleton OTU detected in OTU table.")
         # number of OTUs in final OTU table equals the number of seequences in
         # the alignment...
         self.assertEqual(len(otu_table.observation_ids), count_seqs(aln_fp)[0])
@@ -616,17 +621,18 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # OTU table without singletons or pynast failures has same number of
         # otus as there are aligned sequences
-        otu_table = parse_biom_table(open(otu_table_fp, 'U'))
+        with biom_open(otu_table_fp) as biom_file:
+            otu_table = Table.from_hdf5(biom_file)
         self.assertEqual(len(otu_table.observation_ids), num_align_seqs)
 
         # Reference OTUs have correct taxonomy assignment (can't confirm the )
-        obs_idx = otu_table.get_observation_index('295053')
+        obs_idx = otu_table.index('295053', axis='observation')
         self.assertEqual(otu_table.observation_metadata[obs_idx]['taxonomy'],
                          ["k__Bacteria", "p__Proteobacteria", "c__Gammaproteobacteria",
                           "o__Enterobacteriales", "f__Enterobacteriaceae", "g__", "s__"])
         # All observations have 'taxonomy' metadata, and are at least assigned
         # to 'bacteria'
-        for o in otu_table.iter_observations():
+        for o in otu_table.iter(axis='observation'):
             self.assertTrue(
                 o[2]['taxonomy'][0] in ['k__Bacteria', 'Unassigned'])
 
@@ -684,11 +690,11 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             "PyNAST failures file doesn't exist")
 
         # all OTUs in final OTU table occur more than once
-        otu_table = parse_biom_table(open(otu_table_fp, 'U'))
-        for row in otu_table.iter_observation_data():
-            self.assertTrue(
-                sum(row) >= 2,
-                "Singleton OTU detected in OTU table.")
+        with biom_open(otu_table_fp) as biom_file:
+            otu_table = Table.from_hdf5(biom_file)
+        for row in otu_table.iter_data(axis='observation'):
+            self.assertTrue(sum(row) >= 2,
+                            "Singleton OTU detected in OTU table.")
         # number of OTUs in final OTU table equals the number of seequences in
         # the alignment...
         self.assertEqual(len(otu_table.observation_ids), count_seqs(aln_fp)[0])
@@ -734,17 +740,18 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # OTU table without singletons or pynast failures has same number of
         # otus as there are aligned sequences
-        otu_table = parse_biom_table(open(otu_table_fp, 'U'))
+        with biom_open(otu_table_fp) as biom_file:
+            otu_table = Table.from_hdf5(biom_file)
         self.assertEqual(len(otu_table.observation_ids), num_align_seqs)
 
         # Reference OTUs have correct taxonomy assignment (can't confirm the )
-        obs_idx = otu_table.get_observation_index('295053')
+        obs_idx = otu_table.index('295053', axis='observation')
         self.assertEqual(otu_table.observation_metadata[obs_idx]['taxonomy'],
                          ["k__Bacteria", "p__Proteobacteria", "c__Gammaproteobacteria",
                           "o__Enterobacteriales", "f__Enterobacteriaceae", "g__", "s__"])
         # All observations have 'taxonomy' metadata, and are at least assigned
         # to 'bacteria'
-        for o in otu_table.iter_observations():
+        for o in otu_table.iter(axis='observation'):
             self.assertTrue(
                 o[2]['taxonomy'][0] in ['k__Bacteria', 'Unassigned'])
 
@@ -808,11 +815,11 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             "PyNAST failures file doesn't exist")
 
         # all OTUs in final OTU table occur more than once
-        otu_table = parse_biom_table(open(otu_table_fp, 'U'))
-        for row in otu_table.iter_observation_data():
-            self.assertTrue(
-                sum(row) >= 2,
-                "Singleton OTU detected in OTU table.")
+        with biom_open(otu_table_fp) as biom_file:
+            otu_table = Table.from_hdf5(biom_file)
+        for row in otu_table.iter_data(axis='observation'):
+            self.assertTrue(sum(row) >= 2,
+                            "Singleton OTU detected in OTU table.")
         # number of OTUs in final OTU table equals the number of sequences in
         # the alignment...
         self.assertEqual(len(otu_table.observation_ids), count_seqs(aln_fp)[0])
@@ -861,17 +868,18 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # OTU table without singletons or pynast failures has same number of
         # otus as there are aligned sequences
-        otu_table = parse_biom_table(open(otu_table_fp, 'U'))
+        with biom_open(otu_table_fp) as biom_file:
+            otu_table = Table.from_hdf5(biom_file)
         self.assertEqual(len(otu_table.observation_ids), num_align_seqs)
 
         # Reference OTUs have correct taxonomy assignment (can't confirm the )
-        obs_idx = otu_table.get_observation_index('295053')
+        obs_idx = otu_table.index('295053', axis='observation')
         self.assertEqual(otu_table.observation_metadata[obs_idx]['taxonomy'],
                          ["k__Bacteria", "p__Proteobacteria", "c__Gammaproteobacteria",
                           "o__Enterobacteriales", "f__Enterobacteriaceae", "g__", "s__"])
         # All observations have 'taxonomy' metadata, and are at least assigned
         # to 'bacteria'
-        for o in otu_table.iter_observations():
+        for o in otu_table.iter(axis='observation'):
             self.assertTrue(
                 o[2]['taxonomy'][0] in ['k__Bacteria', 'Unassigned'])
 
@@ -955,11 +963,11 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
                         "Iteration 1 OTU map with singletons doesn't exist")
 
         # all OTUs in final OTU table occur more than once
-        otu_table = parse_biom_table(open(otu_table_fp, 'U'))
-        for row in otu_table.iter_observation_data():
-            self.assertTrue(
-                sum(row) >= 2,
-                "Singleton OTU detected in OTU table.")
+        with biom_open(otu_table_fp) as biom_file:
+            otu_table = Table.from_hdf5(biom_file)
+        for row in otu_table.iter_data(axis='observation'):
+            self.assertTrue(sum(row) >= 2,
+                            "Singleton OTU detected in OTU table.")
         # number of OTUs in final OTU table equals the number of seequences in
         # the alignment...
         self.assertEqual(len(otu_table.observation_ids), count_seqs(aln_fp)[0])
@@ -1019,13 +1027,13 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         self.assertEqual(len(otu_table.observation_ids), num_align_seqs)
 
         # Reference OTUs have correct taxonomy assignment (can't confirm the )
-        obs_idx = otu_table.get_observation_index('295053')
+        obs_idx = otu_table.index('295053', axis='observation')
         self.assertEqual(otu_table.observation_metadata[obs_idx]['taxonomy'],
                          ["k__Bacteria", "p__Proteobacteria", "c__Gammaproteobacteria",
                           "o__Enterobacteriales", "f__Enterobacteriaceae", "g__", "s__"])
         # All observations have 'taxonomy' metadata, and are at least assigned
         # to 'bacteria'
-        for o in otu_table.iter_observations():
+        for o in otu_table.iter(axis='observation'):
             self.assertTrue(
                 o[2]['taxonomy'][0] in ['k__Bacteria', 'Unassigned'])
 
@@ -1086,11 +1094,11 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
                         "Iteration 1 OTU map with singletons doesn't exist")
 
         # all OTUs in final OTU table occur more than once
-        otu_table = parse_biom_table(open(otu_table_fp, 'U'))
-        for row in otu_table.iter_observation_data():
-            self.assertTrue(
-                sum(row) >= 2,
-                "Singleton OTU detected in OTU table.")
+        with biom_open(otu_table_fp) as biom_file:
+            otu_table = Table.from_hdf5(biom_file)
+        for row in otu_table.iter_data(axis='observation'):
+            self.assertTrue(sum(row) >= 2,
+                            "Singleton OTU detected in OTU table.")
         # number of OTUs in final OTU table equals the number of seequences in
         # the alignment...
         self.assertEqual(len(otu_table.observation_ids), count_seqs(aln_fp)[0])
@@ -1150,13 +1158,13 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         self.assertEqual(len(otu_table.observation_ids), num_align_seqs)
 
         # Reference OTUs have correct taxonomy assignment (can't confirm the )
-        obs_idx = otu_table.get_observation_index('295053')
+        obs_idx = otu_table.index('295053', axis='observation')
         self.assertEqual(otu_table.observation_metadata[obs_idx]['taxonomy'],
                          ["k__Bacteria", "p__Proteobacteria", "c__Gammaproteobacteria",
                           "o__Enterobacteriales", "f__Enterobacteriaceae", "g__", "s__"])
         # All observations have 'taxonomy' metadata, and are at least assigned
         # to 'bacteria'
-        for o in otu_table.iter_observations():
+        for o in otu_table.iter(axis='observation'):
             self.assertTrue(
                 o[2]['taxonomy'][0] in ['k__Bacteria', 'Unassigned'])
 
@@ -1217,11 +1225,11 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
                         "Iteration 1 OTU map with singletons doesn't exist")
 
         # all OTUs in final OTU table occur more than once
-        otu_table = parse_biom_table(open(otu_table_fp, 'U'))
-        for row in otu_table.iter_observation_data():
-            self.assertTrue(
-                sum(row) >= 2,
-                "Singleton OTU detected in OTU table.")
+        with biom_open(otu_table_fp) as biom_file:
+            otu_table = Table.from_hdf5(biom_file)
+        for row in otu_table.iter_data(axis='observation'):
+            self.assertTrue(sum(row) >= 2,
+                            "Singleton OTU detected in OTU table.")
         # number of OTUs in final OTU table equals the number of seequences in
         # the alignment...
         self.assertEqual(len(otu_table.observation_ids), count_seqs(aln_fp)[0])
@@ -1281,13 +1289,13 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         self.assertEqual(len(otu_table.observation_ids), num_align_seqs)
 
         # Reference OTUs have correct taxonomy assignment (can't confirm the )
-        obs_idx = otu_table.get_observation_index('295053')
+        obs_idx = otu_table.index('295053',axis='observation')
         self.assertEqual(otu_table.observation_metadata[obs_idx]['taxonomy'],
                          ["k__Bacteria", "p__Proteobacteria", "c__Gammaproteobacteria",
                           "o__Enterobacteriales", "f__Enterobacteriaceae", "g__", "s__"])
         # All observations have 'taxonomy' metadata, and are at least assigned
         # to 'bacteria'
-        for o in otu_table.iter_observations():
+        for o in otu_table.iter(axis='observation'):
             self.assertTrue(
                 o[2]['taxonomy'][0] in ['k__Bacteria', 'Unassigned'])
 
