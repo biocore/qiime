@@ -21,7 +21,7 @@ from cogent.maths.unifrac.fast_unifrac import fast_unifrac_permutations_file, TE
 from cogent.maths.unifrac.fast_unifrac import fast_p_test_file
 from qiime.util import parse_command_line_parameters
 from qiime.format import format_unifrac_sample_mapping
-from biom.parse import parse_biom_table
+from biom import load_table
 
 
 script_info = {}
@@ -70,15 +70,17 @@ script_info['version'] = __version__
 
 
 def main():
-    option_parser, opts, args =\
-        parse_command_line_parameters(**script_info)
-
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
     otu_table_fp = opts.input_path
-    otu_table = parse_biom_table(open(otu_table_fp, 'U'))
+
+    otu_table = load_table(otu_table_fp)
+
     sample_ids = otu_table.sample_ids
     otu_ids = otu_table.observation_ids
+
     # This is not memory safe: need to be able to load the otu table as ints
-    otu_table_array = array(list(otu_table.iterObservationData()), dtype='int')
+    otu_table_array = array(list(otu_table.iter_data(axis='observation')),
+                            dtype='int')
 
     if opts.type_of_test == 'all_together':
         type_of_test = TEST_ON_TREE
