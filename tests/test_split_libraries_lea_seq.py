@@ -15,6 +15,7 @@ from qiime.util import get_qiime_temp_dir
 from qiime.split_libraries_lea_seq import (get_cluster_ratio, get_consensus,
                                          get_LEA_seq_consensus_seqs, extract_primer,
                                          select_unique_rand_bcs, SeqLengthMismatchError)
+from skbio.util.misc import remove_files
 import os
 
 
@@ -33,6 +34,7 @@ class WorkflowTests(TestCase):
         self.possible_primers = possible_primers
         self.fasta_seqs_for_consensus_tie_G_C = fasta_seqs_for_consensus_tie_G_C
         self.fasta_seqs_for_consensus_unequal_length = fasta_seqs_for_consensus_unequal_length
+        self.min_difference_within_clusters = min_difference_within_clusters
 
         # open temporary files needed
         temp_dir = get_qiime_temp_dir()
@@ -88,12 +90,14 @@ class WorkflowTests(TestCase):
         # delete = False in creation of tempfiles
         # as they need to be opened in functions
         # hence the need to remove them
-        os.unlink(self.fasta_file_for_consensus_tie_G_C_name)
-        os.unlink(self.fasta_file_for_consensus_unequal_length_name)
-        os.unlink(self.fasta_file_for_cluster_ratio_name)
-        os.unlink(self.mapping_fp_name)
-        os.unlink(self.rev_read_fp_name)
-        os.unlink(self.fwd_read_fp_name)
+        files_to_be_removed = list()
+        files_to_be_removed.append(self.fasta_file_for_consensus_tie_G_C_name)
+        files_to_be_removed.append(self.fasta_file_for_consensus_unequal_length_name)
+        files_to_be_removed.append(self.fasta_file_for_cluster_ratio_name)
+        files_to_be_removed.append(self.mapping_fp_name)
+        files_to_be_removed.append(self.rev_read_fp_name)
+        files_to_be_removed.append(self.fwd_read_fp_name)
+        remove_files(files_to_be_removed)
         self.log_file.close() # will be deleted
 
     def test_select_unique_rand_bcs(self):
@@ -123,8 +127,9 @@ class WorkflowTests(TestCase):
         self.assertRaises(SeqLengthMismatchError, get_consensus, fasta_file_for_consensus_unequal_length, 2)
 
     def test_get_cluster_ratio(self):
+        min_difference_within_clusters = self.min_difference_within_clusters
         fasta_file_for_cluster_ratio_name = self.fasta_file_for_cluster_ratio_name
-        actual = get_cluster_ratio(fasta_file_for_cluster_ratio_name)
+        actual = get_cluster_ratio(fasta_file_for_cluster_ratio_name, min_difference_within_clusters)
         expected = 0.125
         self.assertEqual(actual, expected)
         
@@ -150,12 +155,15 @@ class WorkflowTests(TestCase):
         fwd_length = 19
         rev_length = 19
         min_reads_per_random_bc = 1
+        min_difference_within_clusters = self.min_difference_within_clusters
         function_call = get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp_name,
-                                           temp_dir, barcode_type, barcode_len, barcode_correction_fn,
-                                           max_barcode_errors, min_consensus,
-                                           max_cluster_ratio, min_difference_in_bcs, log_file, fwd_length, rev_length, min_reads_per_random_bc)
+            temp_dir, barcode_type, barcode_len, barcode_correction_fn,
+            max_barcode_errors, min_consensus, max_cluster_ratio, min_difference_in_bcs,
+            log_file, fwd_length, rev_length, min_reads_per_random_bc,
+            min_difference_within_clusters)
+
         actual = function_call['Sample1']['AGCTACGAGCTATTGC']
-        expected = 'AAAAAAAAAAAAAAAAAAA, AAAAAAAAAAAAAAAAAA'
+        expected = 'AAAAAAAAAAAAAAAAAAA^AAAAAAAAAAAAAAAAAA'
         self.assertEqual(actual, expected)   
 
 fasta_seqs_for_uclust = """>1abc|1
@@ -226,6 +234,7 @@ mapping_data = """#SampleID	BarcodeSequence	LinkerPrimerSequence	ReversePrimer	D
 Sample1	CCGGCAG	AGAGTTTGATCCTGGCTCAG	GGGCCGTGTCTCAGT	Sample1	description
 """
 
+min_difference_within_clusters = 0.98
 fasta_seq_for_primer = 'AATGCCCCC'
 possible_primers = ['ATGC', 'ATTT']
 

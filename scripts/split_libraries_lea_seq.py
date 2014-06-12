@@ -98,6 +98,14 @@ script_info['optional_options'] = [
                 'by truncating it to standard length for the region'
                 '[default: %default]',
                 default=77),
+    make_option('--min_difference_within_clusters', type='float',
+                help='the percent identity threshold while using '
+                'uclust to cluster sequence reads, which is helpful'
+                'in measuring quality of sequencing.'                
+                '[default: %default]',
+                default=0.98),
+
+
     make_option('--min_reads_per_random_bc', type='int',
                 help='minimum number of reads per random'
                 'barcode, attempts to remove random barcodes'
@@ -123,6 +131,7 @@ def main():
     fwd_length = opts.fwd_length
     rev_length = opts.rev_length
     min_reads_per_random_bc = opts.min_reads_per_random_bc    
+    min_difference_within_clusters = opts.min_difference_within_clusters
 
     create_dir(output_dir)
     fwd_consensus_outfile = open(os.path.join(output_dir, "fwd.fna"), "w")
@@ -161,13 +170,13 @@ def main():
     consensus_seq_lookup = get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp,
                                            output_dir, barcode_type, barcode_len, barcode_correction_fn,
                                            max_barcode_errors, min_consensus,
-                                           max_cluster_ratio, min_difference_in_bcs, log_file, fwd_length, rev_length, min_reads_per_random_bc)
+                                           max_cluster_ratio, min_difference_in_bcs, log_file, fwd_length,
+                                           rev_length, min_reads_per_random_bc, min_difference_within_clusters)
 
     for sample_id in consensus_seq_lookup:
         for random_bc_index, random_bc in enumerate(consensus_seq_lookup[sample_id]):
             consensus_seq = consensus_seq_lookup[sample_id][random_bc]
-            fwd_consensus =  
-            rev_consensus = 
+            fwd_consensus, rev_consensus =  consensus_seq.split('^')
             fwd_consensus_outfile.write(">" + sample_id + "_" + str(random_bc_index)
                                     + "\n" + fwd_consensus + "\n")
             rev_consensus_outfile.write(">" + sample_id + "_" + str(random_bc_index)

@@ -20,7 +20,8 @@ from brokit.uclust import get_clusters_from_fasta_filepath
 from skbio.app.util import ApplicationError
 from tempfile import mkstemp
 from itertools import izip
-from os import close, path, mkdir, unlink, rmdir
+from os import close, path, mkdir, rmdir
+from skbio.util.misc import remove_files
 import re
 
 
@@ -74,8 +75,9 @@ def extract_primer(seq, possible_primers, min_idx=None, max_idx=None):
 
 
 def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
-                    barcode_type, barcode_len, barcode_correction_fn, max_barcode_errors,
-                    min_consensus, max_cluster_ratio, min_difference_in_bcs, log_file, fwd_length, rev_length, min_reads_per_random_bc):
+    barcode_type, barcode_len, barcode_correction_fn, max_barcode_errors,
+    min_consensus, max_cluster_ratio, min_difference_in_bcs, log_file,
+    fwd_length, rev_length, min_reads_per_random_bc, min_difference_within_clusters):
     """
     Reads mapping file, input file, and other command line arguments
     fills dictionary called consensus_seq_lookup which will contain:
@@ -242,12 +244,12 @@ def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
                     num_seq_this_barcode = seq_count_this_barcode
                     if random_bc_lookup[sample_id][random_bc][fwd_rev_seq] > max_freq:
                         max_freq = random_bc_lookup[sample_id][random_bc][fwd_rev_seq]
-                        majority_seq = fwd_seq + ", " + rev_seq
+                        majority_seq = fwd_seq + "^" + rev_seq
                 fwd_fasta_tempfile.close()
                 rev_fasta_tempfile.close()
 
-                fwd_cluster_ratio = get_cluster_ratio(fwd_fasta_tempfile_name)
-                rev_cluster_ratio = get_cluster_ratio(rev_fasta_tempfile_name)
+                fwd_cluster_ratio = get_cluster_ratio(fwd_fasta_tempfile_name, min_difference_within_clusters)
+                rev_cluster_ratio = get_cluster_ratio(rev_fasta_tempfile_name, min_difference_within_clusters)
                 if fwd_cluster_ratio ==0 or rev_cluster_ratio == 0:
                     consensus_seq = "No consensus"
                 elif fwd_cluster_ratio < max_cluster_ratio and rev_cluster_ratio < max_cluster_ratio:
@@ -259,23 +261,25 @@ def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
                     rev_consensus = get_consensus(rev_fasta_tempfile, min_consensus)
                     fwd_fasta_tempfile.close()
                     rev_fasta_tempfile.close()
-                    consensus_seq = fwd_consensus + ", " + rev_consensus
+                    consensus_seq = fwd_consensus + "^" + rev_consensus
 
                 consensus_seq_lookup[sample_id][random_bc] = consensus_seq
-                unlink(fwd_fasta_tempfile_name)
-                unlink(rev_fasta_tempfile_name)
+                files_to_be_removed = list()                
+                files_to_be_removed.append(fwd_fasta_tempfile_name)
+                files_to_be_removed.append(rev_fasta_tempfile_name)
+                remove_files(files_to_be_removed)
 
     log_str = "barcodes errors that exceed max count: " + str(barcode_errors_exceed_max_count) + "\n" + "barcode_not_in_map_count: " + str(barcode_not_in_map_count)+ "\n" + "primer_mismatch_count: " + str(primer_mismatch_count)+ "\n"
     log_file.write(log_str)
     log_file.close()
     return consensus_seq_lookup
 
-def get_cluster_ratio(fasta_tempfile_name):
+def get_cluster_ratio(fasta_tempfile_name, min_difference_within_clusters):
     """
     Uses uclust to calculate cluster ratio
     cluster_ratio=num_of_seq_in_cluster_with_max_seq/num_of_seq_in cluster_with_second_higest_seq
     """
-    cluster_percent_id = 0.98
+    cluster_percent_id = min_difference_within_clusters
     temp_dir = get_qiime_temp_dir() 
     fd_uc, uclust_tempfile_name = mkstemp(dir=temp_dir, suffix='.uc')
     close(fd_uc)
@@ -297,7 +301,9 @@ def get_cluster_ratio(fasta_tempfile_name):
                 pass
             count += 1
     uclust_tempfile.close()
-    unlink(uclust_tempfile_name)
+    files_to_be_removed = list()                
+    files_to_be_removed.append(uclust_tempfile_name)
+    remove_files(files_to_be_removed)
 
     sorted_counts_in_clusters = sorted(count_lookup.iteritems(), key=lambda x: x[1])
     try:
@@ -402,5 +408,9 @@ def select_unique_rand_bcs(rand_bcs, min_difference_in_bcs):
         output_dir=temp_dir)
 
     unique_rand_bcs = set(unique_rand_bcs)
-    unlink(fasta_tempfile_name)
+
+    files_to_be_removed = list()                
+    files_to_be_removed.append(fasta_tempfile_name)
+    remove_files(files_to_be_removed)
+
     return unique_rand_bcs
