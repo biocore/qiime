@@ -14,7 +14,7 @@ from os.path import join, split, splitext
 
 from cogent.parse.tree import DndParser
 from biom.parse import parse_biom_table
-from biom.util import biom_open
+from biom import load_table
 
 from qiime.util import (add_filename_suffix, create_dir, get_options_lookup,
                         parse_command_line_parameters, make_option)
@@ -96,8 +96,7 @@ def main():
     create_dir(output_dir)
 
     otu_table_fp = opts.otu_table
-    with biom_open(otu_table_fp, 'U') as biom_file:
-        otu_table = parse_biom_table(biom_file)
+    otu_table = load_table(otu_table_fp)
 
     tree_fh = open(opts.tree_file, 'U')
     tree = DndParser(tree_fh)
