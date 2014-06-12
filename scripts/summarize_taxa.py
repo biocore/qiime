@@ -22,6 +22,7 @@ from qiime.format import write_summarize_taxa, write_add_taxa_summary_mapping,\
     format_summarize_taxa, format_add_taxa_summary_mapping
 from os.path import split, splitext, join
 from biom.parse import parse_biom_table
+from biom.util import biom_open
 
 options_lookup = get_options_lookup()
 
@@ -119,7 +120,8 @@ def main():
     lower_percentage = opts.lower_percentage
     upper_percentage = opts.upper_percentage
     otu_table_fp = opts.otu_table_fp
-    otu_table = parse_biom_table(open(otu_table_fp, 'U'))
+    with biom_open(otu_table_fp, 'U') as biom_file:
+        otu_table = parse_biom_table(biom_file)
     delimiter = opts.delimiter
     mapping_fp = opts.mapping
     md_as_string = opts.md_as_string
