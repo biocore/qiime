@@ -12,8 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 
 from os.path import join, split, splitext
 from skbio.util.misc import create_dir
-from biom.parse import parse_biom_table
-from biom.util import biom_open
+from biom import load_table
 
 from qiime.parallel.util import ParallelWrapper
 from qiime.format import format_distance_matrix
@@ -83,8 +82,7 @@ class ParallelBetaDiversitySingle(ParallelBetaDiversity):
         commands = []
         result_filepaths = []
 
-        with biom_open(input_fp) as biom_file:
-            sids = parse_biom_table(biom_file).sample_ids
+        sids = load_table(biom_file).sample_ids
 
         if params['full_tree']:
             full_tree_str = '-f'
