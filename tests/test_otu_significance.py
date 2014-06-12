@@ -26,8 +26,6 @@ from numpy.testing import assert_almost_equal
 from os import remove
 from qiime.parse import parse_mapping_file_to_dict, parse_otu_table
 from biom.parse import parse_biom_table
-from qiime.format import format_biom_table
-
 
 class GroupSignificanceFunctionsTests(TestCase):
 
