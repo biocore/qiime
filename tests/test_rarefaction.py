@@ -17,14 +17,14 @@ from shutil import rmtree
 from tempfile import mkstemp, mkdtemp
 from unittest import TestCase, main
 
-from numpy.testing import assert_almost_equal
-import numpy
+import numpy.testing as npt
+import numpy as np
 from biom.table import Table, TableException
 from biom.parse import parse_biom_table
+from biom.util import biom_open
 
 from qiime.rarefaction import RarefactionMaker, get_rare_data
-from qiime.util import load_qiime_config
-from qiime.format import format_biom_table
+from qiime.util import load_qiime_config, write_biom_table
 
 
 class FunctionTests(TestCase):
@@ -34,10 +34,10 @@ class FunctionTests(TestCase):
         self.qiime_config = load_qiime_config()
         self.tmp_dir = self.qiime_config['temp_dir'] or '/tmp/'
 
-        self.otu_table_data = numpy.array([[2, 1, 0],
-                                           [0, 5, 0],
-                                           [0, 3, 0],
-                                           [1, 2, 0]])
+        self.otu_table_data = np.array([[2, 1, 0],
+                                        [0, 5, 0],
+                                        [0, 3, 0],
+                                        [1, 2, 0]])
         self.sample_names = list('YXZ')
         self.taxon_names = list('bacd')
         self.otu_metadata = [{'domain': 'Archaea'},
@@ -46,27 +46,27 @@ class FunctionTests(TestCase):
                              {'domain': 'Bacteria'}]
 
         self.otu_table = Table(self.otu_table_data,
-                                       self.taxon_names,
-                                       self.sample_names)
-        self.otu_table_meta = Table(self.otu_table_data,
-                                            self.taxon_names, self.sample_names,
-                                            observation_metadata=self.otu_metadata)
+                               self.taxon_names,
+                               self.sample_names)
 
-        self.otu_table_str = format_biom_table(self.otu_table)
-        self.otu_table_meta_str = format_biom_table(self.otu_table_meta)
+        self.otu_table_meta = Table(self.otu_table_data,
+                                    self.taxon_names, self.sample_names,
+                                    observation_metadata=self.otu_metadata)
 
         fd, self.otu_table_fp = mkstemp(dir=self.tmp_dir,
-                                       prefix='test_rarefaction', suffix='.biom')
+                                        prefix='test_rarefaction',
+                                        suffix='.biom')
         close(fd)
         fd, self.otu_table_meta_fp = mkstemp(dir=self.tmp_dir,
-                                            prefix='test_rarefaction', suffix='.biom')
+                                             prefix='test_rarefaction',
+                                             suffix='.biom')
         close(fd)
 
         self.rare_dir = mkdtemp(dir=self.tmp_dir,
-                                   prefix='test_rarefaction_dir', suffix='')
+                                prefix='test_rarefaction_dir', suffix='')
 
-        open(self.otu_table_fp, 'w').write(self.otu_table_str)
-        open(self.otu_table_meta_fp, 'w').write(self.otu_table_meta_str)
+        write_biom_table(self.otu_table, self.otu_table_fp)
+        write_biom_table(self.otu_table_meta, self.otu_table_meta_fp)
 
         self._paths_to_clean_up = [self.otu_table_fp, self.otu_table_meta_fp]
         self._dirs_to_clean_up = [self.rare_dir]
@@ -93,7 +93,7 @@ class FunctionTests(TestCase):
         sample_value_sum = []
         for val in res[1][2].iter_data(axis='sample'):
             sample_value_sum.append(val.sum())
-        assert_almost_equal(sample_value_sum, [1.0, 1.0])
+        npt.assert_almost_equal(sample_value_sum, [1.0, 1.0])
 
     def test_rarefy_to_files(self):
         """rarefy_to_files should write valid files
@@ -106,15 +106,13 @@ class FunctionTests(TestCase):
             include_lineages=False)
 
         fname = os.path.join(self.rare_dir, "rarefaction_1_0.biom")
-        otu_table = parse_biom_table(open(fname, 'U'))
+        with biom_open(fname, 'U') as biom_file:
+            otu_table = Table.from_hdf5(biom_file)
 
         self.assertItemsEqual(
             otu_table.sample_ids,
             self.otu_table.sample_ids[:2])
         # third sample had 0 seqs, so it's gone
-        self.assertItemsEqual(
-            otu_table.observation_ids,
-            self.otu_table.observation_ids)
 
     def test_rarefy_to_files2(self):
         """rarefy_to_files should write valid files with some metadata on otus
@@ -127,15 +125,13 @@ class FunctionTests(TestCase):
             include_lineages=False)
 
         fname = os.path.join(self.rare_dir, "rarefaction_1_0.biom")
-        otu_table = parse_biom_table(open(fname, 'U'))
+        with biom_open(fname, 'U') as biom_file:
+            otu_table = Table.from_hdf5(biom_file)
 
         self.assertItemsEqual(
             otu_table.sample_ids,
             self.otu_table.sample_ids[:2])
         # third sample had 0 seqs, so it's gone
-        self.assertItemsEqual(
-            otu_table.observation_ids,
-            self.otu_table.observation_ids)
 
     def test_get_empty_rare(self):
         """get_rare_data should be empty when depth > # seqs in any sample"""
