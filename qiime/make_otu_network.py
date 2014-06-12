@@ -26,7 +26,7 @@ from string import strip
 import os
 from time import strftime
 from random import choice, randrange
-from qiime.pycogent_backports.test import G_2_by_2
+from qiime.stats import G_2_by_2
 from qiime.colors import iter_color_groups, Color, data_colors
 from qiime.parse import parse_mapping_file
 from biom.parse import parse_biom_table

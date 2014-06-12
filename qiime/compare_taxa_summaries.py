@@ -12,7 +12,7 @@ __email__ = "jai.rideout@gmail.com"
 """Contains functions used in the compare_taxa_summaries.py script."""
 
 from numpy import array, sqrt
-from qiime.pycogent_backports.test import correlation_test
+from qiime.stats import correlation_t
 from qiime.format import (format_correlation_info, format_correlation_vector,
                           format_taxa_summary)
 
@@ -382,11 +382,6 @@ def _compute_correlation(ts1, ts2, comparison_mode, correlation_type,
             to. If not provided, ts2 must only contain a single sample, and all
             samples in ts1 will be compared to it
     """
-    # Convert our notion of tail type into the format expected by PyCogent's
-    # correlation_test().
-    if tail_type == 'two-sided':
-        tail_type = None
-
     if comparison_mode != 'paired' and comparison_mode != 'expected':
         raise ValueError("Invalid comparison mode '%s'. Must be one of %r." %
                          (comparison_mode, comparison_modes))
@@ -462,7 +457,7 @@ def _compute_correlation(ts1, ts2, comparison_mode, correlation_type,
         if perform_detailed_comparisons:
             # Compare the current sample and its pair.
             corr_coeff, param_p_val, unused, nonparam_p_val, conf_interval = \
-                correlation_test(ts1_data, ts2_data,
+                correlation_t(ts1_data, ts2_data,
                                  method=correlation_type,
                                  tails=tail_type,
                                  permutations=num_permutations,
@@ -478,7 +473,7 @@ def _compute_correlation(ts1, ts2, comparison_mode, correlation_type,
                              nonparam_p_val_corr, conf_interval))
 
     # Compare all paired samples at once.
-    results = correlation_test(all_ts1_data, all_ts2_data,
+    results = correlation_t(all_ts1_data, all_ts2_data,
                                method=correlation_type, tails=tail_type,
                                permutations=num_permutations,
                                confidence_level=confidence_level)

@@ -960,23 +960,6 @@ def format_jnlp_file_lines(web_flag, url, tep_fp):
     return lines
 
 
-def format_best_results(best_results):
-    """Returns a formatted string with results of the BEST method.
-
-    Arguments:
-        best_results - a dictionary containing results, e.g. the output of
-            stats.Best.__call__()
-    """
-    rho_vals = [str(rho_val) for rho_val in best_results['rho_vals']]
-
-    result = 'Method name\tNumber of categories\tCategories\trho statistics\n'
-    result += '%s\t%d\t%s\t%s\n' % (best_results['method_name'],
-                                    best_results['num_vars'],
-                                    ', '.join(best_results['vars']),
-                                    ', '.join(rho_vals))
-    return result
-
-
 def format_fastq_record(label,
                         seq,
                         qual):
