@@ -22,6 +22,7 @@ from tempfile import mkstemp
 from itertools import izip
 from os import close, path, mkdir, rmdir
 from skbio.util.misc import remove_files
+from skbio.core.sequence import DNASequence
 import re
 
 
@@ -346,9 +347,8 @@ def get_consensus(fasta_tempfile, min_consensus):
     for x in range(length):
         freq_this_pos_this_base[x]= dict()  
         count_of_seq_with_max_count[x] = dict()      
-
     for x in range(length):
-        for y in ('A', 'T', 'G', 'C', 'N'):
+        for y in DNASequence.iupac_characters():
             freq_this_pos_this_base[x][y] = 0        
             count_of_seq_with_max_count[x][y] = 0
 
