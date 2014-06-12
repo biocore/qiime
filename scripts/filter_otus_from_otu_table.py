@@ -14,6 +14,8 @@ from itertools import izip
 from numpy import inf, isinf
 from skbio.parse.sequences import parse_fasta
 from biom.parse import parse_biom_table
+from biom.util import biom_open
+
 from qiime.util import (parse_command_line_parameters, make_option,
                         write_biom_table)
 from qiime.filter import filter_otus_from_otu_table
@@ -105,7 +107,8 @@ def main():
                             "min counts, max counts, min samples, max samples, min_count_fraction, "
                             "or exclude_fp (or some combination of those).")
 
-    otu_table = parse_biom_table(open(opts.input_fp, 'U'))
+    with biom_open(opts.input_fp) as biom_file:
+        otu_table = parse_biom_table(biom_file)
 
     if min_count_fraction > 0:
         min_count = otu_table.sum() * min_count_fraction
