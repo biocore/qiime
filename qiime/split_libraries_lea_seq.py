@@ -78,7 +78,7 @@ def extract_primer(seq, possible_primers, min_idx=None, max_idx=None):
 def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
                                barcode_type, barcode_len, barcode_correction_fn, max_barcode_errors,
                                min_consensus, max_cluster_ratio, min_difference_in_bcs, log_file,
-                               fwd_length, rev_length, min_reads_per_random_bc, min_difference_within_clusters):
+                               fwd_length, rev_length, min_reads_per_random_bc, min_difference_in_clusters):
     """
     Reads mapping file, input file, and other command line arguments
     fills dictionary called consensus_seq_lookup which will contain:
@@ -262,10 +262,10 @@ def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
 
                 fwd_cluster_ratio = get_cluster_ratio(
                     fwd_fasta_tempfile_name,
-                    min_difference_within_clusters)
+                    min_difference_in_clusters)
                 rev_cluster_ratio = get_cluster_ratio(
                     rev_fasta_tempfile_name,
-                    min_difference_within_clusters)
+                    min_difference_in_clusters)
                 if fwd_cluster_ratio == 0 or rev_cluster_ratio == 0:
                     consensus_seq = "No consensus"
                 elif fwd_cluster_ratio < max_cluster_ratio and rev_cluster_ratio < max_cluster_ratio:
@@ -296,12 +296,12 @@ def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
     return consensus_seq_lookup
 
 
-def get_cluster_ratio(fasta_tempfile_name, min_difference_within_clusters):
+def get_cluster_ratio(fasta_tempfile_name, min_difference_in_clusters):
     """
     Uses uclust to calculate cluster ratio
     cluster_ratio=num_of_seq_in_cluster_with_max_seq/num_of_seq_in cluster_with_second_higest_seq
     """
-    cluster_percent_id = min_difference_within_clusters
+    cluster_percent_id = min_difference_in_clusters
     temp_dir = get_qiime_temp_dir()
     fd_uc, uclust_tempfile_name = mkstemp(dir=temp_dir, suffix='.uc')
     close(fd_uc)
