@@ -105,10 +105,6 @@ script_info['optional_options'] = [
                 dest='delimiter', default=';',
                 help='Delimiter separating taxonomy levels. '
                 '[default: %default]'),
-    make_option('-r', '--relative_abundance', action='store',
-                dest='relative_abundance', default='',
-                help='DEPRECATED: please use -a/--absolute_abundance to '
-                'disable relative abundance [default: %default]'),
     make_option('-a', '--absolute_abundance', action='store_true',
                 dest='absolute_abundance', default=False,
                 help='If present, the absolute abundance of the lineage in '
@@ -145,7 +141,6 @@ script_info['option_label'] = {'otu_table_fp': 'OTU table filepath',
                                'mapping': 'QIIME-formatted mapping filepath',
                                'level': 'Summarize level',
                                'delimiter': 'Taxonomic delimiter',
-                               'relative_abundance': 'Use relative abundance',
                                'absolute_abundance': 'Use absolute abundance',
                                'lower_percentage': 'Top % of OTUs to remove',
                                'upper_percentage': 'Bottom % of OTUs to '
@@ -197,10 +192,6 @@ def main():
         if suppress_classic_table_output and suppress_biom_table_output:
             option_parser.error("Both classic and BIOM output formats were "
                                 "suppressed.")
-
-    if opts.relative_abundance != '':
-        option_parser.error("Deprecated. Please use --absolute_abundances to "
-                            "disable relative abundance")
 
     if not opts.absolute_abundance:
         otu_table = otu_table.norm(axis='sample', inplace=False)
