@@ -76,9 +76,13 @@ def extract_primer(seq, possible_primers, min_idx=None, max_idx=None):
 
 
 def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
-                               barcode_type, barcode_len, barcode_correction_fn, max_barcode_errors,
-                               min_consensus, max_cluster_ratio, min_difference_in_bcs, log_file,
-                               fwd_length, rev_length, min_reads_per_random_bc, min_difference_in_clusters):
+                               barcode_type, barcode_len,
+                               barcode_correction_fn, max_barcode_errors,
+                               min_consensus, max_cluster_ratio,
+                               min_difference_in_bcs, log_file,
+                               fwd_length, rev_length,
+                               min_reads_per_random_bc,
+                               min_difference_in_clusters):
     """
     Reads mapping file, input file, and other command line arguments
     fills dictionary called consensus_seq_lookup which will contain:
@@ -243,15 +247,15 @@ def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
                 fwd_fasta_tempfile = open(fwd_fasta_tempfile_name, 'w')
                 rev_fasta_tempfile = open(rev_fasta_tempfile_name, 'w')
                 max_freq = 0
-                for seq_count_this_barcode, fwd_rev_seq in enumerate(random_bc_lookup[sample_id][random_bc]):
+                for seq_index, fwd_rev_seq in enumerate(random_bc_lookup[sample_id][random_bc]):
                     fwd_seq, rev_seq = fwd_rev_seq
-                    fwd_line = ">" + str(seq_count_this_barcode) + random_bc + "|" + str(
+                    fwd_line = ">" + str(seq_index) + random_bc + "|" + str(
                         random_bc_lookup[sample_id][random_bc][fwd_rev_seq]) + "\n" + fwd_seq + "\n"
-                    rev_line = ">" + str(seq_count_this_barcode) + random_bc + "|" + str(
+                    rev_line = ">" + str(seq_index) + random_bc + "|" + str(
                         random_bc_lookup[sample_id][random_bc][fwd_rev_seq]) + "\n" + rev_seq + "\n"
                     fwd_fasta_tempfile.write(fwd_line)
                     rev_fasta_tempfile.write(rev_line)
-                    num_seq_this_barcode = seq_count_this_barcode
+                    num_seq_this_barcode = random_bc_lookup[sample_id][random_bc][fwd_rev_seq]
                     if random_bc_lookup[sample_id][
                             random_bc][fwd_rev_seq] > max_freq:
                         max_freq = random_bc_lookup[
@@ -331,8 +335,11 @@ def get_cluster_ratio(fasta_tempfile_name, min_difference_in_clusters):
         count_lookup.iteritems(),
         key=lambda x: x[1])
     try:
-        return float(str(
-            sorted_counts_in_clusters[0][1])) / float(str(sorted_counts_in_clusters[1][1]))
+        max_cluster_count = \
+            float(str(sorted_counts_in_clusters[0][1]))
+        second_cluster_count = \
+            float(str(sorted_counts_in_clusters[1][1]))
+        return max_cluster_count/second_cluster_count
     except IndexError:
         return 1
 
