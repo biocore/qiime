@@ -23,9 +23,8 @@ from biom.parse import parse_biom_table
 from qiime.test import initiate_timeout, disable_timeout
 from qiime.util import get_qiime_temp_dir
 from qiime.parse import parse_otu_map
-from qiime.parallel.map_reads_to_reference import \
-    (ParallelDatabaseMapperUsearch, ParallelDatabaseMapperBlat,
-     ParallelDatabaseMapperBwaShort)
+from qiime.parallel.map_reads_to_reference import (ParallelDatabaseMapperUsearch, ParallelDatabaseMapperBlat,
+    ParallelDatabaseMapperBwaShort)
 
 
 class ParallelDatabaseMapperTests(TestCase):
