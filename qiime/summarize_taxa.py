@@ -59,13 +59,6 @@ def make_summary(otu_table,
     collapse_f = lambda id_, md: md[md_identifier][level-1]
     collapsed = otu_table.collapse(collapse_f, norm=False, min_group_size=0,axis='observation')
 
-    print '\n\n\n\n'
-    print otu_table
-    print '---------'
-    print level, taxonomy_summary, header
-    print '---------'
-    print collapsed
-
     return taxonomy_summary, header
 
 
