@@ -19,30 +19,32 @@ from qiime.split_libraries_lea_seq import get_LEA_seq_consensus_seqs
 
 script_info = {}
 script_info[
-    'brief_description'] = """Demultiplexes Low-Error Amplicon Sequencing (LEA-Seq) data"""
+    'brief_description'] = """Demultiplexes Low-Error Amplicon Sequencing
+(LEA-Seq) data"""
 script_info[
-    'script_description'] = """Implements Low-Error Amplicon Sequencing 
-(LEA-Seq) method,described in: Faith, Jeremiah J., et al. 
-The long-term stability of the human gut microbiota.Science 341.6141 (2013). 
-This method is based on redundant sequencing of a set of linear PCR template  
-extensions of 16S rRNA genes. The oligonucleotide primer that is used for 
-PCR template extensions is labeled with a random barcode 
-5' to the universal 16S rRNA primer sequence. This PCR pool is then 
-amplified with exponential PCR, using primers that specifically 
-amplify only the linear PCR molecules. An index primer is added to 
-the amplicons along with a primer specific for each sample.
-This exponential PCR pool is then sequenced redundantly (20x coverage). 
-The resulting sequences are separated by sample, using the index sequence. 
-The amplicon sequences within each sample are separated by the random 
-barcodes. The large number of reads for each barcode helps to create an 
-error-corrected consensus sequence for the initial template molecule.
+    'script_description'] = """Implements Low-Error Amplicon Sequencing
+ (LEA-Seq) method,described in: Faith, Jeremiah J., et al.
+ The long-term stability of the human gut microbiota.Science 341.6141 (2013).
+ This method is based on redundant sequencing of a set of linear PCR template
+ extensions of 16S rRNA genes. The oligonucleotide primer that is used for
+ PCR template extensions is labeled with a random barcode
+ 5' to the universal 16S rRNA primer sequence. This PCR pool is then
+ amplified with exponential PCR, using primers that specifically
+ amplify only the linear PCR molecules. An index primer is added to
+ the amplicons along with a primer specific for each sample.
+ This exponential PCR pool is then sequenced redundantly (20x coverage).
+ The resulting sequences are separated by sample, using the index sequence.
+ The amplicon sequences within each sample are separated by the random
+ barcodes. The large number of reads for each barcode helps to create an
+ error-corrected consensus sequence for the initial template molecule.
 """
 script_info['script_usage'] = []
-script_info['script_usage'].append(("""Example: Specify forward read and reverse read \
-fasta files, use the metadata mapping file map.txt,\
-and output the data to output_dir""",
-"""output_dir""",
-"""%prog -i fwd_read.fq,rev_read.fq -m map.txt -o output_dir --barcode_type=7"""
+script_info['script_usage'].append((
+    """Example: Specify forward read and reverse read \
+    fasta files, use the metadata mapping file map.txt,\
+    and output the data to output_dir""",
+    """output_dir""",
+    """%prog -i fwd_read.fq,rev_read.fq -m map.txt -o output_dir --barcode_type=7"""
 ))
 script_info['output_description'] = """The %prog generates:\
 A fasta file called seqs.fna which contains\
@@ -101,11 +103,9 @@ script_info['optional_options'] = [
     make_option('--min_difference_within_clusters', type='float',
                 help='the percent identity threshold while using '
                 'uclust to cluster sequence reads, which is helpful'
-                'in measuring quality of sequencing.'                
+                'in measuring quality of sequencing.'
                 '[default: %default]',
                 default=0.98),
-
-
     make_option('--min_reads_per_random_bc', type='int',
                 help='minimum number of reads per random'
                 'barcode, attempts to remove random barcodes'
@@ -132,7 +132,6 @@ def main():
     rev_length = opts.rev_length
     min_reads_per_random_bc = opts.min_reads_per_random_bc    
     min_difference_within_clusters = opts.min_difference_within_clusters
-
     create_dir(output_dir)
     fwd_consensus_outfile = open(os.path.join(output_dir, "fwd.fna"), "w")
     rev_consensus_outfile = open(os.path.join(output_dir, "rev.fna"), "w")
@@ -176,7 +175,7 @@ def main():
     for sample_id in consensus_seq_lookup:
         for random_bc_index, random_bc in enumerate(consensus_seq_lookup[sample_id]):
             consensus_seq = consensus_seq_lookup[sample_id][random_bc]
-            fwd_consensus, rev_consensus =  consensus_seq.split('^')
+            fwd_consensus, rev_consensus = consensus_seq.split('^')
             fwd_consensus_outfile.write(">" + sample_id + "_" + str(random_bc_index)
                                     + "\n" + fwd_consensus + "\n")
             rev_consensus_outfile.write(">" + sample_id + "_" + str(random_bc_index)
