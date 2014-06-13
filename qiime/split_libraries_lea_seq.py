@@ -250,12 +250,13 @@ def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
                 for seq_index, fwd_rev_seq in enumerate(random_bc_lookup[sample_id][random_bc]):
                     fwd_seq, rev_seq = fwd_rev_seq
                     fwd_line = ">" + str(seq_index) + random_bc + "|" + str(
-                        random_bc_lookup[sample_id][random_bc][fwd_rev_seq]) + "\n" + fwd_seq + "\n"
+                        random_bc_lookup[sample_id][random_bc][fwd_rev_seq]) +\
+                        "\n" + fwd_seq + "\n"
                     rev_line = ">" + str(seq_index) + random_bc + "|" + str(
-                        random_bc_lookup[sample_id][random_bc][fwd_rev_seq]) + "\n" + rev_seq + "\n"
+                        random_bc_lookup[sample_id][random_bc][fwd_rev_seq]) +\
+                        "\n" + rev_seq + "\n"
                     fwd_fasta_tempfile.write(fwd_line)
                     rev_fasta_tempfile.write(rev_line)
-                    num_seq_this_barcode = random_bc_lookup[sample_id][random_bc][fwd_rev_seq]
                     if random_bc_lookup[sample_id][
                             random_bc][fwd_rev_seq] > max_freq:
                         max_freq = random_bc_lookup[
@@ -355,7 +356,7 @@ def get_consensus(fasta_tempfile, min_consensus):
     seq
     ....
 
-    where: number = number of times the particular seq has appeared with this random_barcode
+    number = number of times this seq has appeared with this random_barcode
     """
     seqs = list()
     counts = list()
