@@ -1,4 +1,4 @@
-#SampleID	BarcodeSequence	LinkerPrimerSequence	Description	GENDER
-S3	ATGC	AAAAAA	This is the third sample, in the first row	Female
-S1	CGTA	TTTTTT	This is the first sample in the second row	Female
-S2	AGCT	GGGGGG	the second sample	Male
+#SampleID	BarcodeSequence	LinkerPrimerSequence	GENDER	Description
+S3	ATGC	AAAAAA	Female	This is the third sample, in the first row
+S1	CGTA	TTTTTT	Male	This is the first sample in the second row
+S2	AGCT	GGGGGG	Female	the second sample
