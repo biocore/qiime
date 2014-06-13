@@ -166,8 +166,13 @@ def main():
                             "second for reverse reads. You specified %d "
                             "filepaths." % len(sequence_read_fps))
 
-    consensus_seq_lookup = get_LEA_seq_consensus_seqs(sequence_read_fps,
-                                                      mapping_fp,
+    fwd_read_f = open(sequence_read_fps[0], 'U')
+    rev_read_f = open(sequence_read_fps[1], 'U')
+    map_f = open(mapping_fp, 'U')
+
+    consensus_seq_lookup = get_LEA_seq_consensus_seqs(fwd_read_f,
+                                                      rev_read_f,
+                                                      map_f,
                                                       output_dir,
                                                       barcode_type,
                                                       barcode_len,
@@ -176,7 +181,7 @@ def main():
                                                       min_consensus,
                                                       max_cluster_ratio,
                                                       min_difference_in_bcs,
-                                                      log_file, fwd_length,
+                                                      fwd_length,
                                                       rev_length,
                                                       min_reads_per_random_bc,
                                                       min_diff_in_clusters)
@@ -191,7 +196,8 @@ def main():
             rev_consensus_outfile.write(">" + sample_id + "_" +
                                         str(bc_index) +
                                         "\n" + rev_consensus + "\n")
-
+    fwd_read_f.close()
+    rev_read_f.close()
     fwd_consensus_outfile.close()
     rev_consensus_outfile.close()
 

@@ -75,11 +75,12 @@ def extract_primer(seq, possible_primers, min_idx=None, max_idx=None):
     return before_primer, primer, after_primer
 
 
-def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
+def get_LEA_seq_consensus_seqs(fwd_read_f, rev_read_f,
+                               map_f, output_dir,
                                barcode_type, barcode_len,
                                barcode_correction_fn, max_barcode_errors,
                                min_consensus, max_cluster_ratio,
-                               min_difference_in_bcs, log_file,
+                               min_difference_in_bcs,
                                fwd_length, rev_length,
                                min_reads_per_random_bc,
                                min_difference_in_clusters):
@@ -101,28 +102,27 @@ def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
 
     BARCODE_COLUMN = 'BarcodeSequence'
     REVERSE_PRIMER_COLUMN = 'ReversePrimer'
-    seq_fps = sequence_read_fps
 
-    with open(mapping_fp, 'U') as map_f:
-        #  Ensures that sample IDs and barcodes are unique, that barcodes are
-        #  all the same length, and that primers are present. Ensures barcodes
-        #  and primers only contain valid characters.
-        _, _, bc_to_sid, _, _, bc_to_fwd_primers, _ = check_map(map_f, False)
-        map_f.seek(0)
 
-        metadata_map = parse_mapping_file_to_dict(map_f)[0]
-        bc_to_rev_primers = {}
-        for sid, md in metadata_map.items():
-            if REVERSE_PRIMER_COLUMN in md:
-                bc_to_rev_primers[
-                    md[BARCODE_COLUMN]] = expand_degeneracies(
-                    md[REVERSE_PRIMER_COLUMN].upper().split(','))
-            else:
-                raise Exception(
-                    "The %s column does not exist in the "
-                    "mapping file. %s is required." %
-                    (REVERSE_PRIMER_COLUMN,
-                     REVERSE_PRIMER_COLUMN))
+    #  Ensures that sample IDs and barcodes are unique, that barcodes are
+    #  all the same length, and that primers are present. Ensures barcodes
+    #  and primers only contain valid characters.
+    _, _, bc_to_sid, _, _, bc_to_fwd_primers, _ = check_map(map_f, False)
+    map_f.seek(0)
+
+    metadata_map = parse_mapping_file_to_dict(map_f)[0]
+    bc_to_rev_primers = {}
+    for sid, md in metadata_map.items():
+        if REVERSE_PRIMER_COLUMN in md:
+            bc_to_rev_primers[
+                md[BARCODE_COLUMN]] = expand_degeneracies(
+                md[REVERSE_PRIMER_COLUMN].upper().split(','))
+        else:
+            raise Exception(
+                "The %s column does not exist in the "
+                "mapping file. %s is required." %
+                (REVERSE_PRIMER_COLUMN,
+                 REVERSE_PRIMER_COLUMN))
 
     #  Make sure our barcodes(which are guaranteed to be the same length at
     #  this point) are the correct length that the user specified.
@@ -153,8 +153,7 @@ def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
     barcode_errors_exceed_max_count = 0
     barcode_not_in_map_count = 0
     primer_mismatch_count = 0
-    fwd_read_f = open(seq_fps[0], 'U')
-    rev_read_f = open(seq_fps[1], 'U')
+
     random_bcs = {}
     for fwd_read, rev_read in izip(
             parse_fastq(fwd_read_f, strict=False),
@@ -227,8 +226,6 @@ def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
         random_bc_lookup[sample_id][random_bc][
             (clean_fwd_seq, clean_rev_seq)] += 1
 
-    fwd_read_f.close()
-    rev_read_f.close()
     random_bc_keep = {}
 
     for sample_id in random_bc_lookup:
@@ -296,12 +293,11 @@ def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
 
     log_str = "barcodes errors that exceed max count: " + str(barcode_errors_exceed_max_count) + "\n" + "barcode_not_in_map_count: " + str(
         barcode_not_in_map_count) + "\n" + "primer_mismatch_count: " + str(primer_mismatch_count) + "\n"
-    log_file.write(log_str)
-    log_file.close()
+
     return consensus_seq_lookup
 
 
-def get_cluster_ratio(fasta_tempfile_name, min_difference_in_clusters):
+def get_cluster_ratio(fasta_seqs, min_difference_in_clusters):
     """
     Uses uclust to calculate cluster ratio
     cluster_ratio=num_of_seq_in_cluster_with_max_seq/num_of_seq_in cluster_with_second_higest_seq
@@ -310,7 +306,11 @@ def get_cluster_ratio(fasta_tempfile_name, min_difference_in_clusters):
     temp_dir = get_qiime_temp_dir()
     fd_uc, uclust_tempfile_name = mkstemp(dir=temp_dir, suffix='.uc')
     close(fd_uc)
-
+    fd_fas, fasta_tempfile_name = mkstemp(dir=temp_dir, suffix='.uc')
+    close(fd_fas)
+    fasta_tempfile = open(fasta_tempfile_name, 'w')
+    fasta_tempfile.write(fasta_seqs)
+    fasta_tempfile.close()
     count_lookup = {}
     count = 0
     command = "uclust --usersort --input " + fasta_tempfile_name +\
@@ -345,7 +345,7 @@ def get_cluster_ratio(fasta_tempfile_name, min_difference_in_clusters):
         return 1
 
 
-def get_consensus(fasta_tempfile, min_consensus):
+def get_consensus(fasta_seqs, min_consensus):
     """
     Returns consensus sequence from a set of sequences
     input: fasta file, min_consensus
@@ -360,12 +360,25 @@ def get_consensus(fasta_tempfile, min_consensus):
     """
     seqs = list()
     counts = list()
-    fasta_tempfile_name = fasta_tempfile.name
 
+    temp_dir = get_qiime_temp_dir()
+    fd_fas, fasta_tempfile_name = mkstemp(dir=temp_dir, suffix='.fas')
+    close(fd_fas)
+
+    fasta_tempfile = open(fasta_tempfile_name, 'w')
+    fasta_tempfile.write(fasta_seqs)
+    fasta_tempfile.close()
+
+    fasta_tempfile = open(fasta_tempfile_name, 'r')
     for label, seq in parse_fasta(fasta_tempfile):
         RE_output = re.search(r'\w+\|(\d+)', label)
         counts.append(int(RE_output.group(1)))
         seqs.append(seq)
+    fasta_tempfile.close()
+
+    files_to_be_removed = list()
+    files_to_be_removed.append(fasta_tempfile_name)
+    remove_files(files_to_be_removed)    
 
     length = len(seqs[0])
     number_of_seqs = len(seqs)
@@ -454,3 +467,49 @@ def select_unique_rand_bcs(rand_bcs, min_difference_in_bcs):
     remove_files(files_to_be_removed)
 
     return unique_rand_bcs
+
+def format_split_libraries_fastq_log(count_barcode_not_in_map,
+                                     count_too_short,
+                                     count_too_many_N,
+                                     count_bad_illumina_qual_digit,
+                                     count_barcode_errors_exceed_max,
+                                     input_sequence_count,
+                                     sequence_lengths,
+                                     seqs_per_sample_counts):
+    """ Format the split libraries log """
+    log_out = ["Quality filter results"]
+    log_out.append(
+        "Total number of input sequences: %d" %
+        input_sequence_count)
+    log_out.append(
+        "Barcode not in mapping file: %d" %
+        count_barcode_not_in_map)
+    log_out.append(
+        "Read too short after quality truncation: %d" %
+        count_too_short)
+    log_out.append(
+        "Count of N characters exceeds limit: %d" %
+        count_too_many_N)
+    log_out.append(
+        "Illumina quality digit = 0: %d" %
+        count_bad_illumina_qual_digit)
+    log_out.append(
+        "Barcode errors exceed max: %d" %
+        count_barcode_errors_exceed_max)
+
+    log_out.append("")
+
+    log_out.append("Result summary (after quality filtering)")
+    log_out.append("Median sequence length: %1.2f" % median(sequence_lengths))
+    counts = sorted([(v, k) for k, v in seqs_per_sample_counts.items()])
+    counts.reverse()
+    for sequence_count, sample_id in counts:
+        log_out.append('%s\t%d' % (sample_id, sequence_count))
+
+    total_seqs_written = 0
+    for curr_count in counts:
+        total_seqs_written += curr_count[0]
+
+    log_out.append('\nTotal number seqs written\t%d' % total_seqs_written)
+    return '\n'.join(log_out)
+
