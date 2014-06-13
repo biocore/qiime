@@ -73,7 +73,7 @@ script_info['script_usage'].append(
      "rep_set.tre"))
 script_info['script_usage'].append(
     ("",
-     "Group the heatmap columns by metadata category (e.g., GENDER), then "
+     "Group the heatmap columns by metadata category (e.g., Treatment), then "
      "cluster within each group:""",
      "%prog -i otu_table.biom -o otu_heatmap -m mapping_file.txt -c "
      "'Treatment'"))
