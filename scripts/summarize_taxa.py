@@ -16,10 +16,12 @@ __email__ = "wasade@gmail.com"
 from os.path import split, splitext, join
 from sys import stdout, stderr
 
+import numpy as np
+from biom.table import Table
 from biom import load_table
 
 from qiime.util import (parse_command_line_parameters, make_option,
-                        get_options_lookup, create_dir)
+                        get_options_lookup, create_dir, write_biom_table)
 from qiime.summarize_taxa import make_summary, add_summary_mapping
 from qiime.parse import parse_mapping_file
 from qiime.format import (
@@ -241,14 +243,25 @@ def main():
                                            md_as_string,
                                            md_identifier)
 
+            sample_ids = header[1:]
+
+            observation_ids = []
+            data = []
+            for row in summary:
+                # Join taxonomic levels to create an observation ID.
+                observation_ids.append(delimiter.join(row[0]))
+                data.append(row[1:])
+
+            table = Table(np.asarray(data), observation_ids, sample_ids)
+            if opts.transposed_output:
+                table = table.transpose()
+
             if not suppress_classic_table_output:
-                write_summarize_taxa(summary, header, output_fname + '.txt',
-                                     delimiter, opts.transposed_output,
-                                     file_format='classic')
+                with open(output_fname + '.txt', 'w') as outfile:
+                    outfile.write(table.to_tsv())
+
             if not suppress_biom_table_output:
-                write_summarize_taxa(summary, header, output_fname + '.biom',
-                                     delimiter, opts.transposed_output,
-                                     file_format='biom')
+                write_biom_table(table, output_fname + '.biom')
 
 
 if __name__ == "__main__":
