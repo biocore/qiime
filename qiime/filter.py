@@ -517,13 +517,13 @@ def get_filter_function(ids_to_keep, min_count, max_count,
     if negate_ids_to_keep:
         def f(data_vector, id_, metadata):
             return (id_ not in ids_to_keep) and \
-                   (min_count <= data_vector.size <= max_count) and \
-                   (min_nonzero <= len(data_vector.non_zero()) <= max_nonzero)
+                   (min_count <= data_vector.sum() <= max_count) and \
+                   (min_nonzero <= (data_vector > 0).sum() <= max_nonzero)
     else:
         def f(data_vector, id_, metadata):
             return (id_ in ids_to_keep) and \
-                   (min_count <= data_vector.size <= max_count) and \
-                   (min_nonzero <= len(data_vector.nonzero())<= max_nonzero)
+                   (min_count <= data_vector.sum() <= max_count) and \
+                   (min_nonzero <= (data_vector > 0).sum() <= max_nonzero)
     return f
 
 
