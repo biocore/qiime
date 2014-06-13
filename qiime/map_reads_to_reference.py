@@ -26,7 +26,7 @@ from brokit.bwa import (assign_dna_reads_to_dna_database
 from qiime.format import format_observation_map
 from qiime.parse import parse_taxonomy, MinimalSamParser
 from qiime.make_otu_table import make_otu_table
-from qiime.util import get_qiime_temp_dir, create_dir
+from qiime.util import get_qiime_temp_dir, create_dir, write_biom_table
 
 
 class DatabaseMapper(object):
