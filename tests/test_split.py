@@ -24,7 +24,6 @@ from qiime.split import (split_mapping_file_on_field,
                          split_otu_table_on_sample_metadata,
                          split_fasta)
 from qiime.util import get_qiime_temp_dir, remove_files
-from qiime.format import format_biom_table
 
 
 class SplitTests(TestCase):
@@ -36,7 +35,7 @@ class SplitTests(TestCase):
         self.mapping_f1 = mapping_f1.split('\n')
         self.mapping_f2 = mapping_f2.split('\n')
         self.mapping_exp = list(mapping_exp)
-        self.otu_table_f1 = otu_table_f1.split('\n')
+        self.otu_table_f1 = parse_biom_table(otu_table_f1)
 
     def test_split_mapping_file_on_field(self):
         """ split_mapping_file_on_field functions as expected with valid input
@@ -50,23 +49,19 @@ class SplitTests(TestCase):
 
     def test_split_otu_table_on_sample_metadata(self):
         """ split_otu_table_on_sample_metadata functions as expected with valid input """
+
         actual = list(split_otu_table_on_sample_metadata(self.otu_table_f1,
                                                          self.mapping_f1,
                                                          "Treatment"))
-        for id_, e in actual:
-            try:
-                parse_biom_table(e)
-            except:
-                print e
-        actual = [(id_, parse_biom_table(e)) for id_, e in actual]
+
+        actual = [(id_, e) for id_, e in actual]
         exp = [(id_, parse_biom_table(e)) for id_, e in otu_table_exp1]
 
         actual.sort()
         exp.sort()
 
         for a, e in zip(actual, exp):
-            self.assertEqual(a, e, "OTU tables are not equal:\n%s\n%s" %
-                             (format_biom_table(a[1]), format_biom_table(e[1])))
+            self.assertTrue(a == e)
 
     def test_split_otu_table_on_sample_metadata_extra_mapping_entries(self):
         """ split_otu_table_on_sample_metadata functions as expected with extra mapping data """
@@ -74,15 +69,14 @@ class SplitTests(TestCase):
                                                          self.mapping_f2,
                                                          "Treatment"))
 
-        actual = [(id_, parse_biom_table(e)) for id_, e in actual]
+        actual = [(id_, e) for id_, e in actual]
         exp = [(id_, parse_biom_table(e)) for id_, e in otu_table_exp1]
 
         actual.sort()
         exp.sort()
 
         for a, e in zip(actual, exp):
-            self.assertEqual(a, e, "OTU tables are not equal:\n%s\n%s" %
-                             (format_biom_table(a[1]), format_biom_table(e[1])))
+            self.assertTrue(a == e)
 
     def test_split_fasta_equal_num_seqs_per_file(self):
         """split_fasta funcs as expected when equal num seqs go to each file

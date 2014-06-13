@@ -14,8 +14,7 @@ from skbio.parse.sequences import parse_fasta
 from skbio.util.misc import create_dir
 from qiime.parse import parse_mapping_file
 from qiime.filter import filter_mapping_file, sample_ids_from_metadata_description
-from qiime.format import format_mapping_file, format_biom_table
-from biom.parse import parse_biom_table
+from qiime.format import format_mapping_file
 from biom.table import TableException
 
 
@@ -68,12 +67,11 @@ def split_mapping_file_on_field(mapping_f,
         yield v_fp_str, format_mapping_file(mapping_headers, mapping_data)
 
 
-def split_otu_table_on_sample_metadata(otu_table_f, mapping_f, mapping_field):
+def split_otu_table_on_sample_metadata(otu_table, mapping_f, mapping_field):
     """ split otu table into sub otu tables where each represent samples corresponding to only a certain value in mapping_field
     """
     mapping_f = list(mapping_f)
     mapping_values = get_mapping_values(mapping_f, mapping_field)
-    otu_table = parse_biom_table(otu_table_f)
 
     for v in mapping_values:
         v_fp_str = v.replace(' ', '_')
@@ -81,12 +79,14 @@ def split_otu_table_on_sample_metadata(otu_table_f, mapping_f, mapping_field):
             mapping_f, valid_states_str="%s:%s" % (mapping_field, v))
 
         try:
+            # filtering cannot be inplace otherwise we lose data
             filtered_otu_table = otu_table.filter(
-                lambda values, id_, metadata: id_ in sample_ids_to_keep)
+                lambda values, id_, metadata: id_ in sample_ids_to_keep,
+                axis='observation', inplace=False)
         except TableException:
             # all samples are filtered out, so no otu table to write
             continue
-        yield v_fp_str, format_biom_table(filtered_otu_table)
+        yield v_fp_str, filtered_otu_table
 
 
 def split_fasta(infile, seqs_per_file, outfile_prefix, working_dir=''):

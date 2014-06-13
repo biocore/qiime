@@ -14,6 +14,7 @@ __email__ = "gregcaporaso@gmail.com"
 from os.path import split
 
 from biom.parse import parse_biom_table
+from biom import load_table
 
 from qiime.util import (parse_command_line_parameters, get_options_lookup,
                         create_dir, make_option, write_biom_table)
@@ -66,7 +67,7 @@ def split_otu_table_on_taxonomy_to_files(otu_table_fp, level, output_dir,
     """ Split OTU table by taxonomic level, writing otu tables to output dir
     """
     results = []
-    otu_table = parse_biom_table(open(otu_table_fp, 'U'))
+    otu_table = load_table(otu_table_fp)
     create_dir(output_dir)
 
     def split_f(id_, obs_md):

@@ -21,9 +21,9 @@ import numpy
 from numpy import inf
 from skbio.math.subsample import subsample
 
-from qiime.util import FunctionWithParams
-from qiime.filter import filter_samples_from_otu_table, filter_otus_from_otu_table
-from qiime.format import format_biom_table
+from qiime.util import FunctionWithParams, write_biom_table
+from qiime.filter import (filter_samples_from_otu_table,
+                          filter_otus_from_otu_table)
 
 
 class SingleRarefactionMaker(FunctionWithParams):
@@ -72,9 +72,7 @@ class SingleRarefactionMaker(FunctionWithParams):
         """
         if sub_otu_table.is_empty():
             return
-        f = open(fname, 'w')
-        f.write(format_biom_table(sub_otu_table))
-        f.close()
+        write_biom_table(sub_otu_table, fname)
 
 
 class RarefactionMaker(FunctionWithParams):
@@ -87,7 +85,6 @@ class RarefactionMaker(FunctionWithParams):
         """
         self.rare_depths = range(min, max + 1, step)
         self.num_reps = num_reps
-        #self.otu_table = parse_biom_table(open(otu_path,'U'))
         self.otu_table = self.getBiomData(otu_path)
         self.max_num_taxa = -1
         tmp = -1
@@ -119,8 +116,8 @@ class RarefactionMaker(FunctionWithParams):
                                               subsample_f=subsample_f)
                 if empty_otus_removed:
                     sub_otu_table = filter_otus_from_otu_table(
-                        sub_otu_table,
-                        sub_otu_table.observation_ids, 1, inf, 0, inf)
+                        sub_otu_table, sub_otu_table.observation_ids, 1, inf,
+                        0, inf)
 
                 self._write_rarefaction(depth, rep, sub_otu_table)
 
@@ -157,9 +154,8 @@ class RarefactionMaker(FunctionWithParams):
             return
 
         fname = 'rarefaction_' + str(depth) + '_' + str(rep) + '.biom'
-        f = open(os.path.join(self.output_dir, fname), 'w')
-        f.write(format_biom_table(sub_otu_table))
-        f.close()
+        fname = os.path.join(self.output_dir, fname)
+        write_biom_table(sub_otu_table, fname)
 
 
 def get_rare_data(otu_table,

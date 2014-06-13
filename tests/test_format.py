@@ -32,7 +32,7 @@ from qiime.format import (format_distance_matrix, build_prefs_string,
                           format_taxa_summary, format_correlation_vector,
                           format_correlation_info, format_qiime_parameters,
                           format_p_value_for_num_iters, format_mapping_file, illumina_data_to_fastq,
-                          format_biom_table, format_mapping_html_data, format_te_prefs,
+                          format_mapping_html_data, format_te_prefs,
                           format_tep_file_lines, format_jnlp_file_lines,
                           format_fastq_record, format_histograms_two_bins)
 from biom.parse import parse_biom_table
@@ -85,12 +85,6 @@ class TopLevelTests(TestCase):
 
     def tearDown(self):
         remove_files(self.files_to_remove)
-
-    def test_format_biom_table(self):
-        """ Formatting of BIOM table correctly includes "generated-by" information
-        """
-        generated_by = "QIIME " + get_qiime_library_version()
-        self.assertTrue(generated_by in format_biom_table(self.biom1))
 
     def test_format_mapping_file(self):
         """ format_mapping file should match expected result"""

@@ -4,26 +4,33 @@ from __future__ import division
 
 __author__ = "Meg Pirrung"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Meg Pirrung", "Jesse Stombaugh"]
+__credits__ = ["Meg Pirrung", "Jesse Stombaugh", "Adam Robbins-Pianka"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Meg Pirrung"
 __email__ = "meganap@gmail.com"
 
 from os.path import split, splitext
+import os
+
+from biom.parse import parse_biom_table
+from biom import load_table
+
 from qiime.util import parse_command_line_parameters, make_option
 from qiime.util import load_qiime_config, create_dir, get_options_lookup
-from qiime.format import format_tep_file_lines, format_jnlp_file_lines, \
-    format_te_prefs
-from biom.parse import parse_biom_table
-import os
+from qiime.format import (format_tep_file_lines, format_jnlp_file_lines,
+                          format_te_prefs)
 
 options_lookup = get_options_lookup()
 
 script_info = {}
 script_info['brief_description'] = "Makes TopiaryExplorer project file"
-script_info[
-    'script_description'] = "This script makes a TopiaryExplorer project file (.tep) and a jnlp file with the data location preloaded.\n\nWARNING: The jnlp file relies on an absolute path, if you move the .tep file, the generated jnlp will no longer work. However, you can still open the .tep file from your normal TopiaryExplorer install."
+script_info['script_description'] = (
+    "This script makes a TopiaryExplorer project file (.tep) and a jnlp file "
+    "with the data location preloaded.\n\nWARNING: The jnlp file relies on an "
+    "absolute path, if you move the .tep file, the generated jnlp will no "
+    "longer work. However, you can still open the .tep file from your normal "
+    "TopiaryExplorer install.")
 
 script_info['script_usage'] = []
 
@@ -32,8 +39,9 @@ script_info['script_usage'].append(
      "Create .tep file and .jnlp file:",
      "%prog -i otu_table.biom -m Fasting_Map.txt -t rep_set.tre"))
 
-script_info[
-    'output_description'] = "The result of this script is written to a .tep file and a .jnlp file, both with the name supplied by -o"
+script_info['output_description'] = (
+    "The result of this script is written to a .tep file and a .jnlp file, "
+    "both with the name supplied by -o")
 
 script_info['required_options'] = [
     options_lookup['otu_table_as_primary_input'],
@@ -52,14 +60,15 @@ script_info['optional_options'] = [
     make_option('-w', '--web_flag', action='store_true', default=False,
                 help='web codebase jnlp flag [default: %default]'),
     make_option('-u', '--url', type="string",
-                help='url path for the tep file. Note: when passing this flag, it will overwrite the supplied OTU table, Mapping and Tree files.')
+                help='url path for the tep file. Note: when passing this '
+                'flag, it will overwrite the supplied OTU table, Mapping and '
+                'Tree files.')
 ]
 script_info['version'] = __version__
 
 
 def main():
-    option_parser, opts, args =\
-        parse_command_line_parameters(**script_info)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     # get command line arguments
     otu_table_fp = opts.otu_table_fp
@@ -76,7 +85,8 @@ def main():
     create_dir(output_dir)
 
     # open files for parsing
-    otu_table_data = parse_biom_table(open(otu_table_fp, 'U'))
+    otu_table_data = load_table(otu_table_fp)
+
     mapping_lines = open(mapping_fp, 'U')
     tree_lines = open(tree_fp, 'U')
     prefs_dict = {}

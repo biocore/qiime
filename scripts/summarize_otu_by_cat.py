@@ -13,7 +13,9 @@ __maintainer__ = "Daniel McDonald"
 __email__ = "wasade@gmail.com"
 
 from os import getcwd, makedirs
+
 from biom.parse import parse_biom_table
+from biom.util import biom_open
 
 from qiime.parse import (parse_mapping_file_to_dict, parse_mapping_file,
                          mapping_file_to_dict)
@@ -99,7 +101,8 @@ def main():
         mapping = combine_map_label_cols(combinecolorby, new_mapping)
 
     sample_metadata = mapping_file_to_dict(mapping, headers)
-    table = parse_biom_table(open(otu_table_fp, 'U'))
+    with biom_open(otu_table_fp, 'U') as biom_file:
+        table = parse_biom_table(biom_file)
     table.add_metadata(sample_metadata)
     # create a new OTU table where samples are binned based on their return
     # value from bin_function

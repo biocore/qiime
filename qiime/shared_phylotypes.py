@@ -12,7 +12,6 @@ __email__ = "jose.clemente@gmail.com"
 
 """Computes shared phylotypes between samples"""
 
-from biom.parse import parse_biom_table
 from numpy import logical_and, zeros, ones
 from qiime.format import format_distance_matrix
 
@@ -29,7 +28,6 @@ def _calc_shared_phylotypes_pairwise(otu_table, i, j):
     shared_phylos = logical_and(
         otu_table.data(i, 'sample'),
         otu_table.data(j, 'sample'))
-    #shared_phylos = logical_and(otu_table[:,i], otu_table[:,j])
 
     return shared_phylos.sum()
 
@@ -42,32 +40,27 @@ def _calc_shared_phylotypes_multiple(otu_table, idxs):
     """
 
     if len(idxs) < 2:
-        raise ValueError(
-            "calc_shared_phylotypes_multiple needs at least two sampleIDs to comapre")
-    #shared_phylos = ones(len(otu_table[:,1]))
+        raise ValueError("calc_shared_phylotypes_multiple needs at least two "
+                         "sampleIDs to comapre")
+
     shared_phylos = ones(len(otu_table.observation_ids))
-    # for idx in idxs:
+
     for id_ in idxs:
-        #shared_phylos = logical_and(shared_phylos, otu_table[:,idx])
         shared_phylos = logical_and(shared_phylos, otu_table.data(id_, 'sample'))
 
     return shared_phylos.sum()
 
 
-def calc_shared_phylotypes(infile, reference_sample=None):
+def calc_shared_phylotypes(otu_table, reference_sample=None):
     """Calculates number of shared phylotypes for each pair of sample.
 
     infile: otu table filehandle
 
-    reference_sample: if set, will use this sample name to calculate shared OTUs
-                      between reference sample, and pair of samples. Useful,
-                      e.g. when the reference sample is the Donor in a transplant study
+    reference_sample: if set, will use this sample name to calculate shared
+        OTUs between reference sample, and pair of samples. Useful, e.g. when
+        the reference sample is the Donor in a transplant study
     """
-
-    otu_table = parse_biom_table(infile)
-
     if reference_sample:
-        #ref_idx = sample_ids.index(reference_sample)
         ref_idx = reference_sample
 
     num_samples = len(otu_table.sample_ids)
@@ -77,7 +70,8 @@ def calc_shared_phylotypes(infile, reference_sample=None):
             if reference_sample:
                 result_array[i, j] = result_array[j, i] = \
                     _calc_shared_phylotypes_multiple(otu_table,
-                                                     [samp1_id, samp2_id, ref_idx])
+                                                     [samp1_id, samp2_id,
+                                                      ref_idx])
             else:
                 result_array[i, j] = result_array[j, i] = \
                     _calc_shared_phylotypes_pairwise(otu_table, samp1_id,

@@ -79,31 +79,6 @@ javascript array"""
         # see note in test_get_log_transform about this assert
         self.assertEqual(obs, self.filt_otu_table)
 
-    def test_get_log_transform(self):
-        orig_data = array([[0, 1, 2], [1000, 0, 0]])
-
-        orig_otu_table = Table(orig_data,
-                                       ['OTU1', 'OTU2'],
-                                       ['Sample1', 'Sample2', 'Sample3'],
-                                       [{"taxonomy": ["Bacteria"]},
-                                        {"taxonomy": ["Archaea"]}],
-                                        [None, None, None])
-
-        exp_data = array([[0, 0.69314718, 1.38629436], [7.60090246, 0, 0]])
-        exp_otu_table = Table(exp_data,
-                                      ['OTU1', 'OTU2'],
-                                      ['Sample1', 'Sample2', 'Sample3'],
-                                      [{"taxonomy": ["Bacteria"]},
-                                       {"taxonomy": ["Archaea"]}],
-                                      [None, None, None])
-
-        log_otu_table = get_log_transform(orig_otu_table, eps=None)
-
-        # comparing directly log_otu_table against exp_otu_table doesn't work,
-        #  needs to be modified in the otu table object
-        assert_almost_equal(list(log_otu_table.iter_data(axis='sample')),
-                            list(exp_otu_table.iter_data(axis='sample')))
-
     def test_generate_heatmap_plots(self):
         """generate_heatmap_plots: create default output files"""
 

@@ -11,7 +11,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 
-from biom.parse import parse_biom_table
+from biom import load_table
 
 from qiime.util import (parse_command_line_parameters, make_option,
                         write_biom_table, get_options_lookup)
@@ -44,9 +44,10 @@ def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
     input_fps = opts.input_fps
 
-    master = parse_biom_table(open(input_fps[0], 'U'))
+    master = load_table(input_fps[0])
+
     for input_fp in input_fps[1:]:
-        master = master.merge(parse_biom_table(open(input_fp, 'U')))
+        master = master.merge(load_table(input_fp))
 
     write_biom_table(master, opts.output_fp)
 
