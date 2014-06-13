@@ -15,6 +15,7 @@ from os.path import join
 from qiime.make_otu_table import make_otu_table
 from qiime.parse import parse_observation_metadata
 from qiime.parallel.pick_otus import ParallelPickOtus
+from qiime.util import write_biom_table
 
 
 class ParallelDatabaseMapper(ParallelPickOtus):
@@ -40,7 +41,7 @@ class ParallelDatabaseMapper(ParallelPickOtus):
             biom_fp = join(output_dir, 'observation_table.biom')
             biom_table = make_otu_table(
                 open(join(output_dir, 'observation_map.txt'), 'U'),
-                observation_metadata))
+                observation_metadata)
             write_biom_table(biom_table, biom_fp)
         else:
             # can't construct the final biom file if not polling
