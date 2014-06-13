@@ -55,6 +55,17 @@ def make_summary(otu_table,
         new_row.extend(otu_counts)
         taxonomy_summary.append(new_row)
 
+    # We need level-1 cause biom starts from 0
+    collapse_f = lambda id_, md: md[md_identifier][level-1]
+    collapsed = otu_table.collapse(collapse_f, norm=False, min_group_size=0,axis='observation')
+
+    print '\n\n\n\n'
+    print otu_table
+    print '---------'
+    print level, taxonomy_summary, header
+    print '---------'
+    print collapsed
+
     return taxonomy_summary, header
 
 
