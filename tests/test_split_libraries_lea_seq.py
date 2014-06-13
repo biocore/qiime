@@ -13,8 +13,8 @@ import tempfile
 from unittest import TestCase, main
 from qiime.util import get_qiime_temp_dir
 from qiime.split_libraries_lea_seq import (get_cluster_ratio, get_consensus,
-                                         get_LEA_seq_consensus_seqs, extract_primer,
-                                         select_unique_rand_bcs, SeqLengthMismatchError)
+                                           get_LEA_seq_consensus_seqs, extract_primer,
+                                           select_unique_rand_bcs, SeqLengthMismatchError)
 from skbio.util.misc import remove_files
 import os
 
@@ -38,12 +38,30 @@ class WorkflowTests(TestCase):
 
         # open temporary files needed
         temp_dir = get_qiime_temp_dir()
-        self.fasta_file_for_consensus_tie_G_C = tempfile.NamedTemporaryFile(delete=False, mode='w', dir=temp_dir)
-        self.fasta_file_for_cluster_ratio = tempfile.NamedTemporaryFile(delete=False, mode='w', dir=temp_dir)
-        self.fasta_file_for_consensus_unequal_length = tempfile.NamedTemporaryFile(delete=False, mode='w', dir=temp_dir)
-        self.mapping_fp = tempfile.NamedTemporaryFile(delete=False, mode='w', dir=temp_dir)
-        self.rev_read_fp = tempfile.NamedTemporaryFile(delete=False, mode='w', dir=temp_dir)
-        self.fwd_read_fp = tempfile.NamedTemporaryFile(delete=False, mode='w', dir=temp_dir)
+        self.fasta_file_for_consensus_tie_G_C = tempfile.NamedTemporaryFile(
+            delete=False,
+            mode='w',
+            dir=temp_dir)
+        self.fasta_file_for_cluster_ratio = tempfile.NamedTemporaryFile(
+            delete=False,
+            mode='w',
+            dir=temp_dir)
+        self.fasta_file_for_consensus_unequal_length = tempfile.NamedTemporaryFile(
+            delete=False,
+            mode='w',
+            dir=temp_dir)
+        self.mapping_fp = tempfile.NamedTemporaryFile(
+            delete=False,
+            mode='w',
+            dir=temp_dir)
+        self.rev_read_fp = tempfile.NamedTemporaryFile(
+            delete=False,
+            mode='w',
+            dir=temp_dir)
+        self.fwd_read_fp = tempfile.NamedTemporaryFile(
+            delete=False,
+            mode='w',
+            dir=temp_dir)
         self.log_file = tempfile.NamedTemporaryFile(mode='w', dir=temp_dir)
 
         # define temp dir
@@ -54,12 +72,14 @@ class WorkflowTests(TestCase):
         self.fwd_read_fp.write(self.fwd_read_data)
         self.rev_read_fp.write(self.rev_read_data)
         self.fasta_file_for_cluster_ratio.write(self.fasta_seqs_for_uclust)
-        self.fasta_file_for_consensus_tie_G_C.write(self.fasta_seqs_for_consensus_tie_G_C)
-        self.fasta_file_for_consensus_unequal_length.write(self.fasta_seqs_for_consensus_unequal_length)
+        self.fasta_file_for_consensus_tie_G_C.write(
+            self.fasta_seqs_for_consensus_tie_G_C)
+        self.fasta_file_for_consensus_unequal_length.write(
+            self.fasta_seqs_for_consensus_unequal_length)
         # self.log_file does not need any data
 
         # save names of the files
-        # so it can be used for system calls 
+        # so it can be used for system calls
         # after they are closed
         self.fasta_file_for_consensus_tie_G_C_name = self.fasta_file_for_consensus_tie_G_C.name
         self.fasta_file_for_consensus_unequal_length_name = self.fasta_file_for_consensus_unequal_length.name
@@ -72,9 +92,13 @@ class WorkflowTests(TestCase):
         # close and open the files that are needed to be in read mode
         self.fasta_file_for_consensus_tie_G_C.close()
         self.fasta_file_for_consensus_unequal_length.close()
-        self.fasta_file_for_consensus_tie_G_C = open(self.fasta_file_for_consensus_tie_G_C_name, 'r')
-        self.fasta_file_for_consensus_unequal_length = open(self.fasta_file_for_consensus_unequal_length_name, 'r')
-        
+        self.fasta_file_for_consensus_tie_G_C = open(
+            self.fasta_file_for_consensus_tie_G_C_name,
+            'r')
+        self.fasta_file_for_consensus_unequal_length = open(
+            self.fasta_file_for_consensus_unequal_length_name,
+            'r')
+
         # close files that don't need to be open
         # 1. (some of which are only needed for system calls)
         # 2. test_get_LEA_seq_consensus_seqs is the main library function
@@ -84,7 +108,6 @@ class WorkflowTests(TestCase):
         self.rev_read_fp.close()
         self.fwd_read_fp.close()
 
-
     def tearDown(self):
         """remove all the files after completing tests """
         # delete = False in creation of tempfiles
@@ -92,13 +115,14 @@ class WorkflowTests(TestCase):
         # hence the need to remove them
         files_to_be_removed = list()
         files_to_be_removed.append(self.fasta_file_for_consensus_tie_G_C_name)
-        files_to_be_removed.append(self.fasta_file_for_consensus_unequal_length_name)
+        files_to_be_removed.append(
+            self.fasta_file_for_consensus_unequal_length_name)
         files_to_be_removed.append(self.fasta_file_for_cluster_ratio_name)
         files_to_be_removed.append(self.mapping_fp_name)
         files_to_be_removed.append(self.rev_read_fp_name)
         files_to_be_removed.append(self.fwd_read_fp_name)
         remove_files(files_to_be_removed)
-        self.log_file.close() # will be deleted
+        self.log_file.close()  # will be deleted
 
     def test_select_unique_rand_bcs(self):
         fasta_seqs_of_rand_bcs = self.fasta_seqs_of_rand_bcs
@@ -113,37 +137,43 @@ class WorkflowTests(TestCase):
         actual = get_consensus(fasta_file_for_consensus_tie_G_C, 2)
         # at the last position, G and C have the same frequency
         # therefore the function is expected to return
-        # consensus sequence with G, which is present in seq 
+        # consensus sequence with G, which is present in seq
         # that appears max times. (10, 10) while C appreared
         # in sequence that have count: (9, 6, 5)
         # If there is still a tie, the function will return
         # the base that appeared first.
         # This method is just for a consistent way
-        # to resolve ties        
+        # to resolve ties
         expected = 'ATTTTATTTTATTTTTATTTATTATATATTATATATATATAGCGCGCGCGCGCGG'
         self.assertEqual(actual, expected)
 
-        # Sequences having unequal length: 
-        self.assertRaises(SeqLengthMismatchError, get_consensus, fasta_file_for_consensus_unequal_length, 2)
+        # Sequences having unequal length:
+        self.assertRaises(
+            SeqLengthMismatchError,
+            get_consensus,
+            fasta_file_for_consensus_unequal_length,
+            2)
 
     def test_get_cluster_ratio(self):
         min_difference_within_clusters = self.min_difference_within_clusters
         fasta_file_for_cluster_ratio_name = self.fasta_file_for_cluster_ratio_name
-        actual = get_cluster_ratio(fasta_file_for_cluster_ratio_name, min_difference_within_clusters)
+        actual = get_cluster_ratio(
+            fasta_file_for_cluster_ratio_name,
+            min_difference_within_clusters)
         expected = 0.125
         self.assertEqual(actual, expected)
-        
+
     def test_extract_primers(self):
         fasta_seq_for_primer = self.fasta_seq_for_primer
         possible_primers = self.possible_primers
         actual = extract_primer(fasta_seq_for_primer, possible_primers)
         expected = ('A', 'ATGC', 'CCCC')
-        self.assertEqual(actual, expected)   
+        self.assertEqual(actual, expected)
 
     def test_get_LEA_seq_consensus_seqs(self):
         sequence_read_fps = self.sequence_read_fps
         mapping_fp_name = self.mapping_fp_name
-        temp_dir = self.temp_dir 
+        temp_dir = self.temp_dir
         barcode_type = int(7)
         barcode_len = 7
         barcode_correction_fn = None
@@ -157,14 +187,14 @@ class WorkflowTests(TestCase):
         min_reads_per_random_bc = 1
         min_difference_within_clusters = self.min_difference_within_clusters
         function_call = get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp_name,
-            temp_dir, barcode_type, barcode_len, barcode_correction_fn,
-            max_barcode_errors, min_consensus, max_cluster_ratio, min_difference_in_bcs,
-            log_file, fwd_length, rev_length, min_reads_per_random_bc,
-            min_difference_within_clusters)
+                                                   temp_dir, barcode_type, barcode_len, barcode_correction_fn,
+                                                   max_barcode_errors, min_consensus, max_cluster_ratio, min_difference_in_bcs,
+                                                   log_file, fwd_length, rev_length, min_reads_per_random_bc,
+                                                   min_difference_within_clusters)
 
         actual = function_call['Sample1']['AGCTACGAGCTATTGC']
         expected = 'AAAAAAAAAAAAAAAAAAA^AAAAAAAAAAAAAAAAAA'
-        self.assertEqual(actual, expected)   
+        self.assertEqual(actual, expected)
 
 fasta_seqs_for_uclust = """>1abc|1
 ATTTTATTTTATTTTTATTTATTATATATTATATATATATAGCGCGCGCGCGCGG
@@ -217,7 +247,11 @@ ATTTTATTTTATTTTTATTTATTATATATTATATATATATAGCGCGCGCGCGCGG
 ATTTTATTTTATTTTTATTTATTATATATTATATATATATAGCGCGCGCGCGCGC
 """
 
-fasta_seqs_of_rand_bcs = ['ATTGCATTGCATTGCATTGC', 'ATTGCATTGCATTGCATTGC', 'ATTGCATTGCATTGCATTG', 'ATTGCTTATTGCATTGCTTT']
+fasta_seqs_of_rand_bcs = [
+    'ATTGCATTGCATTGCATTGC',
+    'ATTGCATTGCATTGCATTGC',
+    'ATTGCATTGCATTGCATTG',
+    'ATTGCTTATTGCATTGCTTT']
 
 
 fwd_read_data = """@1____

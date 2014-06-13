@@ -76,9 +76,9 @@ def extract_primer(seq, possible_primers, min_idx=None, max_idx=None):
 
 
 def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
-    barcode_type, barcode_len, barcode_correction_fn, max_barcode_errors,
-    min_consensus, max_cluster_ratio, min_difference_in_bcs, log_file,
-    fwd_length, rev_length, min_reads_per_random_bc, min_difference_within_clusters):
+                               barcode_type, barcode_len, barcode_correction_fn, max_barcode_errors,
+                               min_consensus, max_cluster_ratio, min_difference_in_bcs, log_file,
+                               fwd_length, rev_length, min_reads_per_random_bc, min_difference_within_clusters):
     """
     Reads mapping file, input file, and other command line arguments
     fills dictionary called consensus_seq_lookup which will contain:
@@ -93,8 +93,7 @@ def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
                                        defaultdict(str))
 
     random_bc_reads = defaultdict(lambda:
-                                 defaultdict(int))
- 
+                                  defaultdict(int))
 
     BARCODE_COLUMN = 'BarcodeSequence'
     REVERSE_PRIMER_COLUMN = 'ReversePrimer'
@@ -111,21 +110,23 @@ def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
         bc_to_rev_primers = {}
         for sid, md in metadata_map.items():
             if REVERSE_PRIMER_COLUMN in md:
-                bc_to_rev_primers[md[BARCODE_COLUMN]] = expand_degeneracies(md[REVERSE_PRIMER_COLUMN].upper().split(','))
+                bc_to_rev_primers[
+                    md[BARCODE_COLUMN]] = expand_degeneracies(
+                    md[REVERSE_PRIMER_COLUMN].upper().split(','))
             else:
                 raise Exception(
                     "The %s column does not exist in the "
                     "mapping file. %s is required." %
                     (REVERSE_PRIMER_COLUMN,
-                    REVERSE_PRIMER_COLUMN))
+                     REVERSE_PRIMER_COLUMN))
 
     #  Make sure our barcodes(which are guaranteed to be the same length at
     #  this point) are the correct length that the user specified.
     barcode_len_in_map = len(bc_to_sid.keys()[0])
     if barcode_len_in_map != barcode_len:
         raise Exception("Barcodes in mapping file are of length %d, but "
-                            "expected barcodes of length %d." %
-                            (barcode_len_in_map, barcode_len))
+                        "expected barcodes of length %d." %
+                        (barcode_len_in_map, barcode_len))
 
     if barcode_type == 'golay_12':
         invalid_golay_barcodes = get_invalid_golay_barcodes(bc_to_sid.keys())
@@ -176,7 +177,7 @@ def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
 
         #  Correct the barcode(if applicable) and map to sample ID.
         num_barcode_errors, corrected_barcode, _, sample_id =\
-        correct_barcode(barcode, bc_to_sid, barcode_correction_fn)
+            correct_barcode(barcode, bc_to_sid, barcode_correction_fn)
 
         #  Skip barcodes with too many errors.
         if num_barcode_errors > max_barcode_errors:
@@ -195,7 +196,7 @@ def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
                                                          possible_primers,
                                                          min_idx=5,
                                                          max_idx=20)
-                                                        
+
             random_bcs[sample_id].append(random_bc)
         except PrimerMismatchError:
             primer_mismatch_count += 1
@@ -203,12 +204,12 @@ def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
         except KeyError:
             random_bcs[sample_id] = list()
             random_bcs[sample_id].append(random_bc)
-            
+
         possible_primers = bc_to_rev_primers[barcode]
 
         try:
             phase_seq, _, clean_rev_seq = extract_primer(rev_seq,
-            possible_primers)
+                                                         possible_primers)
         except PrimerMismatchError:
             primer_mismatch_count += 1
             continue
@@ -216,21 +217,27 @@ def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
         if len(clean_fwd_seq) < fwd_length:
             continue
 
-        clean_fwd_seq = clean_fwd_seq[:fwd_length] 
+        clean_fwd_seq = clean_fwd_seq[:fwd_length]
         clean_rev_seq = clean_rev_seq[:rev_length]
         random_bc_reads[sample_id][random_bc] += 1
-        random_bc_lookup[sample_id][random_bc][(clean_fwd_seq, clean_rev_seq)] += 1
+        random_bc_lookup[sample_id][random_bc][
+            (clean_fwd_seq, clean_rev_seq)] += 1
 
     fwd_read_f.close()
     rev_read_f.close()
     random_bc_keep = {}
 
     for sample_id in random_bc_lookup:
-        random_bc_keep[sample_id] = select_unique_rand_bcs(random_bcs[sample_id], min_difference_in_bcs)
+        random_bc_keep[sample_id] = select_unique_rand_bcs(
+            random_bcs[sample_id],
+            min_difference_in_bcs)
         for random_bc in random_bc_lookup[sample_id]:
-            if random_bc in random_bc_keep[sample_id] and random_bc_reads[sample_id][random_bc] >= min_reads_per_random_bc:
-                fwd_fd, fwd_fasta_tempfile_name = mkstemp(dir=output_dir, prefix='fwd', suffix='.fas')
-                rev_fd, rev_fasta_tempfile_name = mkstemp(dir=output_dir, prefix='rev', suffix='.fas')
+            if random_bc in random_bc_keep[sample_id] and random_bc_reads[
+                    sample_id][random_bc] >= min_reads_per_random_bc:
+                fwd_fd, fwd_fasta_tempfile_name = mkstemp(
+                    dir=output_dir, prefix='fwd', suffix='.fas')
+                rev_fd, rev_fasta_tempfile_name = mkstemp(
+                    dir=output_dir, prefix='rev', suffix='.fas')
                 close(fwd_fd)
                 close(rev_fd)
                 fwd_fasta_tempfile = open(fwd_fasta_tempfile_name, 'w')
@@ -238,42 +245,56 @@ def get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp, output_dir,
                 max_freq = 0
                 for seq_count_this_barcode, fwd_rev_seq in enumerate(random_bc_lookup[sample_id][random_bc]):
                     fwd_seq, rev_seq = fwd_rev_seq
-                    fwd_line = ">" + str(seq_count_this_barcode)+ random_bc + "|" + str(random_bc_lookup[sample_id][random_bc][fwd_rev_seq]) + "\n" + fwd_seq + "\n"
-                    rev_line = ">" + str(seq_count_this_barcode)+ random_bc + "|" + str(random_bc_lookup[sample_id][random_bc][fwd_rev_seq]) + "\n" + rev_seq + "\n"
+                    fwd_line = ">" + str(seq_count_this_barcode) + random_bc + "|" + str(
+                        random_bc_lookup[sample_id][random_bc][fwd_rev_seq]) + "\n" + fwd_seq + "\n"
+                    rev_line = ">" + str(seq_count_this_barcode) + random_bc + "|" + str(
+                        random_bc_lookup[sample_id][random_bc][fwd_rev_seq]) + "\n" + rev_seq + "\n"
                     fwd_fasta_tempfile.write(fwd_line)
                     rev_fasta_tempfile.write(rev_line)
                     num_seq_this_barcode = seq_count_this_barcode
-                    if random_bc_lookup[sample_id][random_bc][fwd_rev_seq] > max_freq:
-                        max_freq = random_bc_lookup[sample_id][random_bc][fwd_rev_seq]
+                    if random_bc_lookup[sample_id][
+                            random_bc][fwd_rev_seq] > max_freq:
+                        max_freq = random_bc_lookup[
+                            sample_id][random_bc][fwd_rev_seq]
                         majority_seq = fwd_seq + "^" + rev_seq
                 fwd_fasta_tempfile.close()
                 rev_fasta_tempfile.close()
 
-                fwd_cluster_ratio = get_cluster_ratio(fwd_fasta_tempfile_name, min_difference_within_clusters)
-                rev_cluster_ratio = get_cluster_ratio(rev_fasta_tempfile_name, min_difference_within_clusters)
-                if fwd_cluster_ratio ==0 or rev_cluster_ratio == 0:
+                fwd_cluster_ratio = get_cluster_ratio(
+                    fwd_fasta_tempfile_name,
+                    min_difference_within_clusters)
+                rev_cluster_ratio = get_cluster_ratio(
+                    rev_fasta_tempfile_name,
+                    min_difference_within_clusters)
+                if fwd_cluster_ratio == 0 or rev_cluster_ratio == 0:
                     consensus_seq = "No consensus"
                 elif fwd_cluster_ratio < max_cluster_ratio and rev_cluster_ratio < max_cluster_ratio:
                     consensus_seq = majority_seq
                 else:
                     fwd_fasta_tempfile = open(fwd_fasta_tempfile_name, 'r')
                     rev_fasta_tempfile = open(rev_fasta_tempfile_name, 'r')
-                    fwd_consensus = get_consensus(fwd_fasta_tempfile, min_consensus)
-                    rev_consensus = get_consensus(rev_fasta_tempfile, min_consensus)
+                    fwd_consensus = get_consensus(
+                        fwd_fasta_tempfile,
+                        min_consensus)
+                    rev_consensus = get_consensus(
+                        rev_fasta_tempfile,
+                        min_consensus)
                     fwd_fasta_tempfile.close()
                     rev_fasta_tempfile.close()
                     consensus_seq = fwd_consensus + "^" + rev_consensus
 
                 consensus_seq_lookup[sample_id][random_bc] = consensus_seq
-                files_to_be_removed = list()                
+                files_to_be_removed = list()
                 files_to_be_removed.append(fwd_fasta_tempfile_name)
                 files_to_be_removed.append(rev_fasta_tempfile_name)
                 remove_files(files_to_be_removed)
 
-    log_str = "barcodes errors that exceed max count: " + str(barcode_errors_exceed_max_count) + "\n" + "barcode_not_in_map_count: " + str(barcode_not_in_map_count)+ "\n" + "primer_mismatch_count: " + str(primer_mismatch_count)+ "\n"
+    log_str = "barcodes errors that exceed max count: " + str(barcode_errors_exceed_max_count) + "\n" + "barcode_not_in_map_count: " + str(
+        barcode_not_in_map_count) + "\n" + "primer_mismatch_count: " + str(primer_mismatch_count) + "\n"
     log_file.write(log_str)
     log_file.close()
     return consensus_seq_lookup
+
 
 def get_cluster_ratio(fasta_tempfile_name, min_difference_within_clusters):
     """
@@ -281,7 +302,7 @@ def get_cluster_ratio(fasta_tempfile_name, min_difference_within_clusters):
     cluster_ratio=num_of_seq_in_cluster_with_max_seq/num_of_seq_in cluster_with_second_higest_seq
     """
     cluster_percent_id = min_difference_within_clusters
-    temp_dir = get_qiime_temp_dir() 
+    temp_dir = get_qiime_temp_dir()
     fd_uc, uclust_tempfile_name = mkstemp(dir=temp_dir, suffix='.uc')
     close(fd_uc)
 
@@ -290,7 +311,7 @@ def get_cluster_ratio(fasta_tempfile_name, min_difference_within_clusters):
     command = "uclust --usersort --input " + fasta_tempfile_name +\
               " --uc " + uclust_tempfile_name + " --id 0.98"
     qiime_system_call(command)
-    uclust_tempfile = open (uclust_tempfile_name, 'r')
+    uclust_tempfile = open(uclust_tempfile_name, 'r')
     for line in uclust_tempfile:
         if re.search(r'^C', line):
             pieces = line.split('\t')
@@ -302,15 +323,19 @@ def get_cluster_ratio(fasta_tempfile_name, min_difference_within_clusters):
                 pass
             count += 1
     uclust_tempfile.close()
-    files_to_be_removed = list()                
+    files_to_be_removed = list()
     files_to_be_removed.append(uclust_tempfile_name)
     remove_files(files_to_be_removed)
 
-    sorted_counts_in_clusters = sorted(count_lookup.iteritems(), key=lambda x: x[1])
+    sorted_counts_in_clusters = sorted(
+        count_lookup.iteritems(),
+        key=lambda x: x[1])
     try:
-        return float(str(sorted_counts_in_clusters[0][1]))/float(str(sorted_counts_in_clusters[1][1]))
+        return float(str(
+            sorted_counts_in_clusters[0][1])) / float(str(sorted_counts_in_clusters[1][1]))
     except IndexError:
         return 1
+
 
 def get_consensus(fasta_tempfile, min_consensus):
     """
@@ -325,9 +350,9 @@ def get_consensus(fasta_tempfile, min_consensus):
 
     where: number = number of times the particular seq has appeared with this random_barcode
     """
-    seqs = list()  
-    counts = list()  
-    fasta_tempfile_name =fasta_tempfile.name
+    seqs = list()
+    counts = list()
+    fasta_tempfile_name = fasta_tempfile.name
 
     for label, seq in parse_fasta(fasta_tempfile):
         RE_output = re.search(r'\w+\|(\d+)', label)
@@ -345,29 +370,35 @@ def get_consensus(fasta_tempfile, min_consensus):
     count_of_seq_with_max_count = dict()
 
     for x in range(length):
-        freq_this_pos_this_base[x]= dict()  
-        count_of_seq_with_max_count[x] = dict()      
+        freq_this_pos_this_base[x] = dict()
+        count_of_seq_with_max_count[x] = dict()
     for x in range(length):
         for y in DNASequence.iupac_characters():
-            freq_this_pos_this_base[x][y] = 0        
+            freq_this_pos_this_base[x][y] = 0
             count_of_seq_with_max_count[x][y] = 0
 
     for base_index in range(length):
         for this_seq_count, seq in enumerate(seqs):
-            freq_this_pos_this_base[base_index][seq[base_index]] += counts[this_seq_count]
-            if counts[this_seq_count] > count_of_seq_with_max_count[base_index][seq[base_index]]:
-                count_of_seq_with_max_count[base_index][seq[base_index]] = counts[this_seq_count]
-    
+            freq_this_pos_this_base[base_index][
+                seq[base_index]] += counts[this_seq_count]
+            if counts[this_seq_count] > count_of_seq_with_max_count[
+                    base_index][seq[base_index]]:
+                count_of_seq_with_max_count[base_index][
+                    seq[base_index]] = counts[this_seq_count]
+
     consensus = list()
     for index in range(length):
-        sorted_bases = sorted(freq_this_pos_this_base[index].iteritems(), key=lambda x: x[1])
+        sorted_bases = sorted(
+            freq_this_pos_this_base[index].iteritems(),
+            key=lambda x: x[1])
         max_base, max_freq = sorted_bases[-1]
 
-        for (counter ,(b, n)) in enumerate(sorted_bases):
+        for (counter, (b, n)) in enumerate(sorted_bases):
             if max_freq == n:
-                try:     
-                    if count_of_seq_with_max_count[counter][b] > count_of_seq_with_max_count[counter][max_base]:
-                        max_base = b 
+                try:
+                    if count_of_seq_with_max_count[counter][
+                            b] > count_of_seq_with_max_count[counter][max_base]:
+                        max_base = b
                 except KeyError:
                     pass
 
@@ -391,7 +422,8 @@ def select_unique_rand_bcs(rand_bcs, min_difference_in_bcs):
     """
     unique_threshold = min_difference_in_bcs
     temp_dir = get_qiime_temp_dir()
-    fasta_fd, fasta_tempfile_name = mkstemp(dir=temp_dir, prefix='tmp', suffix='.fas')
+    fasta_fd, fasta_tempfile_name = mkstemp(
+        dir=temp_dir, prefix='tmp', suffix='.fas')
     rand_bcs = set(rand_bcs)
     fasta_tempfile = open(fasta_tempfile_name, "w")
     p_line = ""
@@ -409,7 +441,7 @@ def select_unique_rand_bcs(rand_bcs, min_difference_in_bcs):
 
     unique_rand_bcs = set(unique_rand_bcs)
 
-    files_to_be_removed = list()                
+    files_to_be_removed = list()
     files_to_be_removed.append(fasta_tempfile_name)
     remove_files(files_to_be_removed)
 

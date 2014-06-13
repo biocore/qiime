@@ -130,13 +130,13 @@ def main():
     min_difference_in_bcs = opts.min_difference_in_bcs
     fwd_length = opts.fwd_length
     rev_length = opts.rev_length
-    min_reads_per_random_bc = opts.min_reads_per_random_bc    
+    min_reads_per_random_bc = opts.min_reads_per_random_bc
     min_difference_within_clusters = opts.min_difference_within_clusters
     create_dir(output_dir)
     fwd_consensus_outfile = open(os.path.join(output_dir, "fwd.fna"), "w")
     rev_consensus_outfile = open(os.path.join(output_dir, "rev.fna"), "w")
     log_file = open(os.path.join(output_dir, "log.txt"), "w")
-   
+
     if barcode_type == 'golay_12':
         barcode_correction_fn = decode_golay_12
         barcode_len = 12
@@ -167,19 +167,19 @@ def main():
                             "filepaths." % len(sequence_read_fps))
 
     consensus_seq_lookup = get_LEA_seq_consensus_seqs(sequence_read_fps, mapping_fp,
-                                           output_dir, barcode_type, barcode_len, barcode_correction_fn,
-                                           max_barcode_errors, min_consensus,
-                                           max_cluster_ratio, min_difference_in_bcs, log_file, fwd_length,
-                                           rev_length, min_reads_per_random_bc, min_difference_within_clusters)
+                                                      output_dir, barcode_type, barcode_len, barcode_correction_fn,
+                                                      max_barcode_errors, min_consensus,
+                                                      max_cluster_ratio, min_difference_in_bcs, log_file, fwd_length,
+                                                      rev_length, min_reads_per_random_bc, min_difference_within_clusters)
 
     for sample_id in consensus_seq_lookup:
         for random_bc_index, random_bc in enumerate(consensus_seq_lookup[sample_id]):
             consensus_seq = consensus_seq_lookup[sample_id][random_bc]
             fwd_consensus, rev_consensus = consensus_seq.split('^')
             fwd_consensus_outfile.write(">" + sample_id + "_" + str(random_bc_index)
-                                    + "\n" + fwd_consensus + "\n")
+                                        + "\n" + fwd_consensus + "\n")
             rev_consensus_outfile.write(">" + sample_id + "_" + str(random_bc_index)
-                                    + "\n" + rev_consensus + "\n")
+                                        + "\n" + rev_consensus + "\n")
 
     fwd_consensus_outfile.close()
     rev_consensus_outfile.close()
