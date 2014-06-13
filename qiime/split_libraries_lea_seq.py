@@ -103,7 +103,6 @@ def get_LEA_seq_consensus_seqs(fwd_read_f, rev_read_f,
     BARCODE_COLUMN = 'BarcodeSequence'
     REVERSE_PRIMER_COLUMN = 'ReversePrimer'
 
-
     #  Ensures that sample IDs and barcodes are unique, that barcodes are
     #  all the same length, and that primers are present. Ensures barcodes
     #  and primers only contain valid characters.
@@ -315,9 +314,9 @@ def get_cluster_ratio(fasta_seqs, min_difference_in_clusters):
     count = 0
     command = "uclust --usersort --input " + fasta_tempfile_name +\
               " --uc " + uclust_tempfile_name + " --id 0.98"
-    # In the function, I am calling uclust a large number of times. 
+    # In the function, I am calling uclust a large number of times.
     # Initially I was using brokit.get_clusters_from_fasta_filepath
-    # but due to issue (biocore/brokit#31), I have temporarily 
+    # but due to issue (biocore/brokit#31), I have temporarily
     # reverted to qiime_system_call.
 
     qiime_system_call(command)
@@ -345,7 +344,7 @@ def get_cluster_ratio(fasta_seqs, min_difference_in_clusters):
             float(str(sorted_counts_in_clusters[0][1]))
         second_cluster_count = \
             float(str(sorted_counts_in_clusters[1][1]))
-        return max_cluster_count/second_cluster_count
+        return max_cluster_count / second_cluster_count
     except IndexError:
         return 1
 
@@ -383,7 +382,7 @@ def get_consensus(fasta_seqs, min_consensus):
 
     files_to_be_removed = list()
     files_to_be_removed.append(fasta_tempfile_name)
-    remove_files(files_to_be_removed)    
+    remove_files(files_to_be_removed)
 
     length = len(seqs[0])
     number_of_seqs = len(seqs)
@@ -470,8 +469,8 @@ def select_unique_rand_bcs(rand_bcs, min_difference_in_bcs):
     files_to_be_removed = list()
     files_to_be_removed.append(fasta_tempfile_name)
     remove_files(files_to_be_removed)
-
     return unique_rand_bcs
+
 
 def format_split_libraries_fastq_log(count_barcode_not_in_map,
                                      count_too_short,
@@ -517,4 +516,3 @@ def format_split_libraries_fastq_log(count_barcode_not_in_map,
 
     log_out.append('\nTotal number seqs written\t%d' % total_seqs_written)
     return '\n'.join(log_out)
-
