@@ -70,13 +70,13 @@ script_info['script_usage'].append(
      "Sort the heatmap columns by Sample ID's and the heatmap rows by the "
      "order of tips in the tree, you can supply a tree as follows:",
      "%prog -i otu_table.biom -o otu_heatmap -m mapping_file.txt -t "
-     "tree_file.txt"))
+     "rep_set.tre"))
 script_info['script_usage'].append(
     ("",
      "Group the heatmap columns by metadata category (e.g., GENDER), then "
      "cluster within each group:""",
      "%prog -i otu_table.biom -o otu_heatmap -m mapping_file.txt -c "
-     "'GENDER'"))
+     "'Treatment'"))
 
 script_info['output_description'] = (
     "The heatmap image is located in the specified output directory. It is "
