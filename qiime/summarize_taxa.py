@@ -57,7 +57,8 @@ def make_summary(otu_table,
 
     # We need level-1 cause biom starts from 0
     collapse_f = lambda id_, md: md[md_identifier][level-1]
-    collapsed = otu_table.collapse(collapse_f, norm=False, min_group_size=0,axis='observation')
+    collapsed = otu_table.collapse(collapse_f, norm=False, min_group_size=0,
+                                   axis='observation')
 
     return taxonomy_summary, header
 
@@ -95,9 +96,9 @@ def sum_counts_by_consensus(otu_table,
 
     for (otu_val, otu_id, otu_metadata) in otu_table.iter(axis='observation'):
         if md_identifier not in otu_metadata:
-            raise KeyError(
-                "Metadata category '%s' not in OTU %s. Can't continue. Did you pass the correct metadata identifier?" %
-                (md_identifier, otu_id))
+            raise KeyError("Metadata category '%s' not in OTU %s. Can't "
+                           "continue. Did you pass the correct metadata "
+                           "identifier?" % (md_identifier, otu_id))
 
         consensus = process_md(otu_metadata[md_identifier])
         n_ranks = len(consensus)
@@ -111,10 +112,8 @@ def sum_counts_by_consensus(otu_table,
 
         consensus = tuple(consensus)
         if consensus in result:
-            #result[consensus] += counts
             result[consensus] += otu_val
         else:
-            #result[consensus] = counts.copy()
             result[consensus] = otu_val.copy()
 
     return result, sample_map
