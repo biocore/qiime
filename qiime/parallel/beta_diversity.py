@@ -82,7 +82,7 @@ class ParallelBetaDiversitySingle(ParallelBetaDiversity):
         commands = []
         result_filepaths = []
 
-        sids = load_table(biom_file).sample_ids
+        sids = load_table(input_fp).sample_ids
 
         if params['full_tree']:
             full_tree_str = '-f'
