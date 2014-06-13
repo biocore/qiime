@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso", "Jens Reeder"]
+__credits__ = ["Greg Caporaso", "Jens Reeder", "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -179,7 +179,7 @@ def main():
                 opts.valid_states)
     elif opts.biom_fp:
         seqs_to_keep_lookup = \
-            get_seqs_to_keep_lookup_from_biom(open(opts.biom_fp, 'U'))
+            get_seqs_to_keep_lookup_from_biom(opts.biom_fp)
     elif opts.sample_id_fp:
         sample_ids = set([e.strip().split()[0]
                          for e in open(opts.sample_id_fp, 'U')])
