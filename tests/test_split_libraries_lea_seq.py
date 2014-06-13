@@ -40,8 +40,6 @@ class WorkflowTests(TestCase):
             fasta_seqs_for_consensus_unequal_length
         self.min_difference_in_clusters = min_difference_in_clusters
         self.temp_dir = get_qiime_temp_dir()
-
-
         self.mapping_fp = tempfile.NamedTemporaryFile(
             delete=False,
             mode='w',
@@ -49,7 +47,7 @@ class WorkflowTests(TestCase):
         self.mapping_fp.write(self.mapping_data)
         self.mapping_fp_name = self.mapping_fp.name
         self.mapping_fp.close()
-        self.mapping_fp = open (self.mapping_fp_name, 'r')
+        self.mapping_fp = open(self.mapping_fp_name, 'r')
 
     def tearDown(self):
         """remove all the files after completing tests """
@@ -84,11 +82,8 @@ class WorkflowTests(TestCase):
         self.assertEqual(actual, expected)
 
         # Sequences having unequal length:
-        self.assertRaises(
-            SeqLengthMismatchError,
-            get_consensus,
-            fasta_seqs_for_consensus_unequal_length,
-            2)
+        with self.assertRaises(SeqLengthMismatchError):
+            get_consensus(fasta_seqs_for_consensus_unequal_length, 2)
 
     def test_get_cluster_ratio(self):
         min_difference_in_clusters = self.min_difference_in_clusters
@@ -110,7 +105,7 @@ class WorkflowTests(TestCase):
     def test_get_LEA_seq_consensus_seqs(self):
         fwd_read_data = self.fwd_read_data.split()
         rev_read_data = self.rev_read_data.split()
-        mapping_fp = self.mapping_fp 
+        mapping_fp = self.mapping_fp
         temp_dir = self.temp_dir
         barcode_type = int(7)
         barcode_len = 7
@@ -123,7 +118,8 @@ class WorkflowTests(TestCase):
         rev_length = 19
         min_reads_per_random_bc = 1
         min_difference_in_clusters = self.min_difference_in_clusters
-        function_call = get_LEA_seq_consensus_seqs(fwd_read_data, rev_read_data,
+        function_call = get_LEA_seq_consensus_seqs(fwd_read_data,
+                                                   rev_read_data,
                                                    mapping_fp, temp_dir,
                                                    barcode_type, barcode_len,
                                                    barcode_correction_fn,
