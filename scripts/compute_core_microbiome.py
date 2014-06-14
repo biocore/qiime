@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -20,7 +20,8 @@ from skbio.util.misc import create_dir
 from biom.parse import parse_biom_table
 from biom.exception import TableException
 
-from qiime.util import parse_command_line_parameters, make_option
+from qiime.util import (parse_command_line_parameters, make_option,
+                        write_biom_table)
 from qiime.core_microbiome import filter_table_to_core
 from qiime.filter import sample_ids_from_metadata_description
 
@@ -146,7 +147,7 @@ def main():
 
         # write the otu id and corresponding metadata for all core otus
         otu_count = 0
-        for value, id_, md in core_table.iter_observations():
+        for value, id_, md in core_table.iter(axis='observation'):
             output_f.write('%s\t%s\n' % (id_, md[otu_md]))
             otu_count += 1
         output_f.close()
