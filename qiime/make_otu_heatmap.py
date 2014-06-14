@@ -13,8 +13,8 @@ __maintainer__ = "Dan Knights"
 __email__ = "daniel.knights@colorado.edu"
 
 
-from numpy import array, concatenate, asarray, transpose, log, invert, asarray,\
-    float32, float64, unique, fliplr
+from numpy import (array, concatenate, asarray, transpose, log, invert,
+                   asarray, float32, float64, unique, fliplr, inf)
 from optparse import OptionParser
 from qiime.util import MissingFileError
 import os
@@ -38,7 +38,7 @@ def get_overlapping_samples(map_rows, otu_table):
     map_sample_ids = zip(*map_rows)[0]
     shared_ids = set(map_sample_ids) & set(otu_table.sample_ids)
 
-    otu_table = filter_samples_from_otu_table(otu_table, shared_ids, 0, inf)
+    otu_table = filter_samples_from_otu_table(otu_table, shared_ids, -inf, inf)
 
     new_map = []
     for sam_id in map_sample_ids:
@@ -71,11 +71,8 @@ def get_order_from_categories(otu_table, category_labels):
     for label in unique(category_labels):
         label_ix = category_labels == label
         selected = [s for (i, s) in zip(label_ix, otu_table.sample_ids) if i]
-        sub_otu_table = filter_samples_from_otu_table(
-            otu_table,
-            selected,
-            0,
-            inf)
+        sub_otu_table = filter_samples_from_otu_table(otu_table, selected,
+                                                      -inf, inf)
         data = asarray([val for val in sub_otu_table.iter_data(axis='observation')])
         label_ix_ix = get_clusters(data, axis='column')
 
