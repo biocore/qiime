@@ -18,11 +18,10 @@ from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
 from skbio.util.misc import remove_files
 from skbio.core.tree import TreeNode
-from biom.parse import parse_biom_table
+from biom import load_table
 
 from qiime.util import (load_qiime_config, get_qiime_temp_dir, count_seqs)
 from qiime.parse import (parse_qiime_parameters)
-
 from qiime.test import (initiate_timeout,
                         disable_timeout,
                         get_test_data_fps)
@@ -80,7 +79,7 @@ class UpstreamWorkflowTests(TestCase):
         otu_map_fp = join(self.test_out, 'uclust_ref_picked_otus',
                           '%s_otus.txt' % input_file_basename)
         otu_table_fp = join(self.test_out, 'otu_table.biom')
-        otu_table = parse_biom_table(open(otu_table_fp, 'U'))
+        otu_table = load_table(otu_table_fp)
         expected_sample_ids = ['f1', 'f2', 'f3', 'f4', 'p1', 'p2', 't1', 't2']
         self.assertItemsEqual(otu_table.sample_ids, expected_sample_ids)
 
@@ -91,7 +90,7 @@ class UpstreamWorkflowTests(TestCase):
         self.assertEqual(num_otus, 3)
 
         # parse the otu table
-        otu_table = parse_biom_table(open(otu_table_fp, 'U'))
+        otu_table = load_table(otu_table_fp)
         expected_sample_ids = ['f1', 'f2', 'f3', 'f4', 'p1', 'p2', 't1', 't2']
         # sample IDs are as expected
         self.assertItemsEqual(otu_table.sample_ids, expected_sample_ids)
@@ -128,7 +127,7 @@ class UpstreamWorkflowTests(TestCase):
         otu_map_fp = join(self.test_out, 'uclust_ref_picked_otus',
                           '%s_otus.txt' % input_file_basename)
         otu_table_fp = join(self.test_out, 'otu_table.biom')
-        otu_table = parse_biom_table(open(otu_table_fp, 'U'))
+        otu_table = load_table(otu_table_fp)
         expected_sample_ids = ['f1', 'f2', 'f3', 'f4', 'p1', 'p2', 't1', 't2']
         self.assertItemsEqual(otu_table.sample_ids, expected_sample_ids)
 
@@ -139,7 +138,7 @@ class UpstreamWorkflowTests(TestCase):
         self.assertEqual(num_otus, 3)
 
         # parse the otu table
-        otu_table = parse_biom_table(open(otu_table_fp, 'U'))
+        otu_table = load_table(otu_table_fp)
         expected_sample_ids = ['f1', 'f2', 'f3', 'f4', 'p1', 'p2', 't1', 't2']
         # sample IDs are as expected
         self.assertItemsEqual(otu_table.sample_ids, expected_sample_ids)
@@ -219,7 +218,7 @@ class UpstreamWorkflowTests(TestCase):
         self.assertEqual(len(list(tree.tips())), count_seqs(alignment_fp)[0])
 
         # parse the otu table
-        otu_table = parse_biom_table(open(otu_table_fp, 'U'))
+        otu_table = load_table(otu_table_fp)
         expected_sample_ids = [
             'f1',
             'f2',
@@ -305,7 +304,7 @@ class UpstreamWorkflowTests(TestCase):
         self.assertEqual(len(list(tree.tips())), count_seqs(alignment_fp)[0])
 
         # parse the otu table
-        otu_table = parse_biom_table(open(otu_table_fp, 'U'))
+        otu_table = load_table(otu_table_fp)
         expected_sample_ids = [
             'f1',
             'f2',
@@ -389,7 +388,7 @@ class UpstreamWorkflowTests(TestCase):
         self.assertEqual(len(list(tree.tips())), count_seqs(alignment_fp)[0])
 
         # parse the otu table
-        otu_table = parse_biom_table(open(otu_table_fp, 'U'))
+        otu_table = load_table(otu_table_fp)
         expected_sample_ids = [
             'f1',
             'f2',
@@ -474,7 +473,7 @@ class UpstreamWorkflowTests(TestCase):
         self.assertTrue(getsize(log_fp) > 0)
 
         # parse the otu table
-        otu_table = parse_biom_table(open(otu_table_fp, 'U'))
+        otu_table = load_table(otu_table_fp)
         expected_sample_ids = [
             'f1',
             'f2',
