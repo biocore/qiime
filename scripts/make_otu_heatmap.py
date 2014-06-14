@@ -70,13 +70,13 @@ script_info['script_usage'].append(
      "Sort the heatmap columns by Sample ID's and the heatmap rows by the "
      "order of tips in the tree, you can supply a tree as follows:",
      "%prog -i otu_table.biom -o otu_heatmap -m mapping_file.txt -t "
-     "tree_file.txt"))
+     "rep_set.tre"))
 script_info['script_usage'].append(
     ("",
-     "Group the heatmap columns by metadata category (e.g., GENDER), then "
+     "Group the heatmap columns by metadata category (e.g., Treatment), then "
      "cluster within each group:""",
      "%prog -i otu_table.biom -o otu_heatmap -m mapping_file.txt -c "
-     "'GENDER'"))
+     "'Treatment'"))
 
 script_info['output_description'] = (
     "The heatmap image is located in the specified output directory. It is "
@@ -229,7 +229,7 @@ def main():
         except (TypeError, IOError):
             raise MissingFileError("Couldn't read tree file at path: %s" %
                                    opts.otu_tree)
-        otu_order = get_order_from_tree(otu_table.ObservationIds, f)
+        otu_order = get_order_from_tree(otu_table.observation_ids, f)
         f.close()
     # if no tree or mapping file, perform upgma euclidean
     elif not opts.suppress_row_clustering:
@@ -237,7 +237,7 @@ def main():
         otu_order = get_clusters(data, axis='row')
     # else just use OTU table ordering
     else:
-        otu_order = np.arange(len(otu_table.ObservationIds))
+        otu_order = np.arange(len(otu_table.observation_ids))
 
     # otu_order and sample_order should be ids, rather than indices
     #  to use in sortObservationOrder/sortSampleOrder
