@@ -38,7 +38,7 @@ def get_overlapping_samples(map_rows, otu_table):
     map_sample_ids = zip(*map_rows)[0]
     shared_ids = set(map_sample_ids) & set(otu_table.sample_ids)
 
-    otu_table = filter_samples_from_otu_table(otu_table, shared_ids, 0, inf)
+    otu_table = filter_samples_from_otu_table(otu_table, shared_ids, -inf, inf)
 
     new_map = []
     for sam_id in map_sample_ids:
@@ -74,7 +74,7 @@ def get_order_from_categories(otu_table, category_labels):
         sub_otu_table = filter_samples_from_otu_table(
             otu_table,
             selected,
-            0,
+            -inf,
             inf)
         data = asarray([val for val in sub_otu_table.iter_data(axis='observation')])
         label_ix_ix = get_clusters(data, axis='column')
