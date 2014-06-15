@@ -18,11 +18,10 @@ from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
 from skbio.util.misc import remove_files
 from skbio.core.tree import TreeNode
-from biom.parse import parse_biom_table
+from biom import load_table
 
 from qiime.util import (load_qiime_config, get_qiime_temp_dir, count_seqs)
 from qiime.parse import (parse_qiime_parameters)
-
 from qiime.test import (initiate_timeout,
                         disable_timeout,
                         get_test_data_fps)
@@ -80,9 +79,9 @@ class UpstreamWorkflowTests(TestCase):
         otu_map_fp = join(self.test_out, 'uclust_ref_picked_otus',
                           '%s_otus.txt' % input_file_basename)
         otu_table_fp = join(self.test_out, 'otu_table.biom')
-        otu_table = parse_biom_table(open(otu_table_fp, 'U'))
+        otu_table = load_table(otu_table_fp)
         expected_sample_ids = ['f1', 'f2', 'f3', 'f4', 'p1', 'p2', 't1', 't2']
-        self.assertItemsEqual(otu_table.SampleIds, expected_sample_ids)
+        self.assertItemsEqual(otu_table.sample_ids, expected_sample_ids)
 
         # Number of OTUs matches manually confirmed result
         otu_map_lines = list(open(otu_map_fp))
@@ -91,20 +90,20 @@ class UpstreamWorkflowTests(TestCase):
         self.assertEqual(num_otus, 3)
 
         # parse the otu table
-        otu_table = parse_biom_table(open(otu_table_fp, 'U'))
+        otu_table = load_table(otu_table_fp)
         expected_sample_ids = ['f1', 'f2', 'f3', 'f4', 'p1', 'p2', 't1', 't2']
         # sample IDs are as expected
-        self.assertItemsEqual(otu_table.SampleIds, expected_sample_ids)
+        self.assertItemsEqual(otu_table.sample_ids, expected_sample_ids)
         # otu ids are as expected
-        self.assertItemsEqual(otu_table.ObservationIds, otu_map_otu_ids)
+        self.assertItemsEqual(otu_table.observation_ids, otu_map_otu_ids)
 
         # expected number of sequences in OTU table
         number_seqs_in_otu_table = sum([v.sum()
-                                       for v in otu_table.iterSampleData()])
+                                       for v in otu_table.iter_data()])
         self.assertEqual(number_seqs_in_otu_table, 117)
 
         # One tax assignment per otu
-        self.assertEqual(len(otu_table.ObservationMetadata), 3)
+        self.assertEqual(len(otu_table.observation_metadata), 3)
 
         # Check that the log file is created and has size > 0
         log_fp = glob(join(self.test_out, 'log*.txt'))[0]
@@ -128,9 +127,9 @@ class UpstreamWorkflowTests(TestCase):
         otu_map_fp = join(self.test_out, 'uclust_ref_picked_otus',
                           '%s_otus.txt' % input_file_basename)
         otu_table_fp = join(self.test_out, 'otu_table.biom')
-        otu_table = parse_biom_table(open(otu_table_fp, 'U'))
+        otu_table = load_table(otu_table_fp)
         expected_sample_ids = ['f1', 'f2', 'f3', 'f4', 'p1', 'p2', 't1', 't2']
-        self.assertItemsEqual(otu_table.SampleIds, expected_sample_ids)
+        self.assertItemsEqual(otu_table.sample_ids, expected_sample_ids)
 
         # Number of OTUs matches manually confirmed result
         otu_map_lines = list(open(otu_map_fp))
@@ -139,20 +138,20 @@ class UpstreamWorkflowTests(TestCase):
         self.assertEqual(num_otus, 3)
 
         # parse the otu table
-        otu_table = parse_biom_table(open(otu_table_fp, 'U'))
+        otu_table = load_table(otu_table_fp)
         expected_sample_ids = ['f1', 'f2', 'f3', 'f4', 'p1', 'p2', 't1', 't2']
         # sample IDs are as expected
-        self.assertItemsEqual(otu_table.SampleIds, expected_sample_ids)
+        self.assertItemsEqual(otu_table.sample_ids, expected_sample_ids)
         # otu ids are as expected
-        self.assertItemsEqual(otu_table.ObservationIds, otu_map_otu_ids)
+        self.assertItemsEqual(otu_table.observation_ids, otu_map_otu_ids)
 
         # expected number of sequences in OTU table
         number_seqs_in_otu_table = sum([v.sum()
-                                       for v in otu_table.iterSampleData()])
+                                       for v in otu_table.iter_data()])
         self.assertEqual(number_seqs_in_otu_table, 117)
 
         # One tax assignment per otu
-        self.assertEqual(len(otu_table.ObservationMetadata), 3)
+        self.assertEqual(len(otu_table.observation_metadata), 3)
 
         # Check that the log file is created and has size > 0
         log_fp = glob(join(self.test_out, 'log*.txt'))[0]
@@ -219,7 +218,7 @@ class UpstreamWorkflowTests(TestCase):
         self.assertEqual(len(list(tree.tips())), count_seqs(alignment_fp)[0])
 
         # parse the otu table
-        otu_table = parse_biom_table(open(otu_table_fp, 'U'))
+        otu_table = load_table(otu_table_fp)
         expected_sample_ids = [
             'f1',
             'f2',
@@ -231,13 +230,13 @@ class UpstreamWorkflowTests(TestCase):
             't2',
             'not16S.1']
         # sample IDs are as expected
-        self.assertItemsEqual(otu_table.SampleIds, expected_sample_ids)
+        self.assertItemsEqual(otu_table.sample_ids, expected_sample_ids)
         # otu ids are as expected
-        self.assertItemsEqual(otu_table.ObservationIds, otu_map_otu_ids)
+        self.assertItemsEqual(otu_table.observation_ids, otu_map_otu_ids)
         # number of sequences in the full otu table equals the number of
         # input sequences
         number_seqs_in_otu_table = sum([v.sum()
-                                       for v in otu_table.iterSampleData()])
+                                       for v in otu_table.iter_data()])
         self.assertEqual(number_seqs_in_otu_table,
                          count_seqs(self.test_data['seqs'][0])[0])
 
@@ -305,7 +304,7 @@ class UpstreamWorkflowTests(TestCase):
         self.assertEqual(len(list(tree.tips())), count_seqs(alignment_fp)[0])
 
         # parse the otu table
-        otu_table = parse_biom_table(open(otu_table_fp, 'U'))
+        otu_table = load_table(otu_table_fp)
         expected_sample_ids = [
             'f1',
             'f2',
@@ -317,13 +316,13 @@ class UpstreamWorkflowTests(TestCase):
             't2',
             'not16S.1']
         # sample IDs are as expected
-        self.assertItemsEqual(otu_table.SampleIds, expected_sample_ids)
+        self.assertItemsEqual(otu_table.sample_ids, expected_sample_ids)
         # otu ids are as expected
-        self.assertItemsEqual(otu_table.ObservationIds, otu_map_otu_ids)
+        self.assertItemsEqual(otu_table.observation_ids, otu_map_otu_ids)
         # number of sequences in the full otu table equals the number of
         # input sequences
         number_seqs_in_otu_table = sum([v.sum()
-                                       for v in otu_table.iterSampleData()])
+                                       for v in otu_table.iter_data()])
         self.assertEqual(number_seqs_in_otu_table, count_seqs(self.test_data['seqs'][0])[0])
 
         # Check that the log file is created and has size > 0
@@ -389,7 +388,7 @@ class UpstreamWorkflowTests(TestCase):
         self.assertEqual(len(list(tree.tips())), count_seqs(alignment_fp)[0])
 
         # parse the otu table
-        otu_table = parse_biom_table(open(otu_table_fp, 'U'))
+        otu_table = load_table(otu_table_fp)
         expected_sample_ids = [
             'f1',
             'f2',
@@ -401,13 +400,13 @@ class UpstreamWorkflowTests(TestCase):
             't2',
             'not16S.1']
         # sample IDs are as expected
-        self.assertItemsEqual(otu_table.SampleIds, expected_sample_ids)
+        self.assertItemsEqual(otu_table.sample_ids, expected_sample_ids)
         # otu ids are as expected
-        self.assertItemsEqual(otu_table.ObservationIds, otu_map_otu_ids)
+        self.assertItemsEqual(otu_table.observation_ids, otu_map_otu_ids)
         # number of sequences in the full otu table equals the number of
         # input sequences
         number_seqs_in_otu_table = sum([v.sum()
-                                       for v in otu_table.iterSampleData()])
+                                       for v in otu_table.iter_data()])
         self.assertEqual(number_seqs_in_otu_table, count_seqs(self.test_data['seqs'][0])[0])
 
         # Check that the log file is created and has size > 0
@@ -474,7 +473,7 @@ class UpstreamWorkflowTests(TestCase):
         self.assertTrue(getsize(log_fp) > 0)
 
         # parse the otu table
-        otu_table = parse_biom_table(open(otu_table_fp, 'U'))
+        otu_table = load_table(otu_table_fp)
         expected_sample_ids = [
             'f1',
             'f2',
@@ -486,13 +485,13 @@ class UpstreamWorkflowTests(TestCase):
             't2',
             'not16S.1']
         # sample IDs are as expected
-        self.assertItemsEqual(otu_table.SampleIds, expected_sample_ids)
+        self.assertItemsEqual(otu_table.sample_ids, expected_sample_ids)
         # expected OTUs
-        self.assertItemsEqual(otu_table.ObservationIds, otu_map_otu_ids)
+        self.assertItemsEqual(otu_table.observation_ids, otu_map_otu_ids)
         # number of sequences in the full otu table equals the number of
         # input sequences
         number_seqs_in_otu_table = sum([v.sum()
-                                       for v in otu_table.iterSampleData()])
+                                       for v in otu_table.iter_data()])
         self.assertEqual(number_seqs_in_otu_table, count_seqs(self.test_data['seqs'][0])[0])
 
 if __name__ == "__main__":

@@ -26,8 +26,6 @@ from numpy.testing import assert_almost_equal
 from os import remove
 from qiime.parse import parse_mapping_file_to_dict, parse_otu_table
 from biom.parse import parse_biom_table
-from qiime.format import format_biom_table
-
 
 class GroupSignificanceFunctionsTests(TestCase):
 
@@ -108,7 +106,7 @@ class GroupSignificanceFunctionsTests(TestCase):
         # run with ordered example
         sample_indices = {'cat1': [0, 1], 'cat2': [3, 2], 'cat3': [4, 5]}
         bt = parse_biom_table(BT_IN_1)
-        data = array([bt.observationData(i) for i in bt.ObservationIds])
+        data = array([bt.data(i, axis='observation') for i in bt.observation_ids])
         obs = list(group_significance_row_generator(bt, sample_indices))
         exp = zip(data.take([0, 1], 1),
                   data.take([3, 2], 1), data.take([4, 5], 1))

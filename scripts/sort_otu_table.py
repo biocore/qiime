@@ -4,20 +4,21 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso", "Daniel McDonald", "Emily TerAvest"]
+__credits__ = ["Greg Caporaso", "Daniel McDonald", "Emily TerAvest",
+               "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
-
-from qiime.util import make_option
-from qiime.parse import parse_mapping_file
-from qiime.format import format_biom_table
-from qiime.util import parse_command_line_parameters, get_options_lookup
-from qiime.sort import sort_otu_table, sort_otu_table_by_mapping_field,\
-    natsort_case_insensitive
 from biom.parse import parse_biom_table
+from biom import load_table
+
+from qiime.parse import parse_mapping_file
+from qiime.util import (parse_command_line_parameters, get_options_lookup,
+                        make_option, write_biom_table)
+from qiime.sort import (sort_otu_table, sort_otu_table_by_mapping_field,
+                        natsort_case_insensitive)
 
 options_lookup = get_options_lookup()
 
@@ -74,18 +75,16 @@ def sample_ids_from_f(lines):
 
 
 def main():
-    option_parser, opts, args =\
-        parse_command_line_parameters(**script_info)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
 
-    otu_table_data = parse_biom_table(open(opts.input_otu_table, 'U'))
+    otu_table_data = load_table(opts.input_otu_table)
     sort_field = opts.sort_field
     mapping_fp = opts.mapping_fp
     sorted_sample_ids_fp = opts.sorted_sample_ids_fp
 
     if sort_field and mapping_fp:
         mapping_data = parse_mapping_file(open(mapping_fp, 'U'))
-        result = sort_otu_table_by_mapping_field(otu_table_data,
-                                                 mapping_data,
+        result = sort_otu_table_by_mapping_field(otu_table_data, mapping_data,
                                                  sort_field)
     elif sorted_sample_ids_fp:
         sorted_sample_ids = sample_ids_from_f(open(sorted_sample_ids_fp, 'U'))
@@ -93,13 +92,9 @@ def main():
                                 sorted_sample_ids)
     else:
         result = sort_otu_table(otu_table_data,
-                                natsort_case_insensitive(otu_table_data.SampleIds))
+            natsort_case_insensitive(otu_table_data.sample_ids))
 
-    # format and write the otu table
-    result_str = format_biom_table(result)
-    of = open(opts.output_fp, 'w')
-    of.write(result_str)
-    of.close()
+    write_biom_table(result, opts.output_fp)
 
 if __name__ == "__main__":
     main()

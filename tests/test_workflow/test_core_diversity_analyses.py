@@ -59,7 +59,7 @@ class CoreDiversityAnalysesTests(TestCase):
 
         # Define number of seconds a test can run for before timing out
         # and failing
-        initiate_timeout(420)
+        initiate_timeout(480)
 
     def tearDown(self):
 

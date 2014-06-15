@@ -7,7 +7,7 @@ __author__ = "Will Van Treuren, Luke Ursell"
 __copyright__ = "Copyright 2013, The QIIME project"
 __credits__ = ["Will Van Treuren", "Luke Ursell", "Catherine Lozupone",
                "Jesse Stombaugh", "Doug Wendel", "Dan Knights", "Greg Caporaso",
-               "Jai Ram Rideout"]
+               "Jai Ram Rideout", "Daniel McDonald"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Will Van Treuren"
@@ -23,7 +23,7 @@ from qiime.otu_significance import (get_sample_cats, get_sample_indices,
                                     sort_by_pval, run_group_significance_test,
                                     TWO_GROUP_TESTS, GROUP_TEST_CHOICES)
 from qiime.parse import parse_mapping_file_to_dict
-from biom.parse import parse_biom_table
+from biom import load_table
 from numpy import array, where, seterr, allclose
 
 # set invalid comparisons error level to ignore. when nans are compared they
@@ -193,10 +193,10 @@ OTU - OTU id
 Test-Statistic - the value of the test statistic for the given test
 P - the raw P value returned by the given test.
 FDR_P - the P value corrected by the Benjamini-Hochberg FDR procedure for
- multiple comparisons. This is the 'step up' procedure as described in 
- 'Controlling the False Discovery Rate: A Practical and Powerful Approach to 
- Multiple Testing' Yoav Benjamini and Yosef Hochberg. Journal of the Royal 
- Statistical Society. Series B (Methodological), Vol. 57, No. 1 (1995) 289-300. 
+ multiple comparisons. This is the 'step up' procedure as described in
+ 'Controlling the False Discovery Rate: A Practical and Powerful Approach to
+ Multiple Testing' Yoav Benjamini and Yosef Hochberg. Journal of the Royal
+ Statistical Society. Series B (Methodological), Vol. 57, No. 1 (1995) 289-300.
 Bonferroni_P - the P value corrected by the Bonferroni procedure for multiple
  comparisons.
 groupX_mean - there will be as many of these headers as there are unique values
@@ -277,14 +277,14 @@ script_info['version'] = __version__
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
     # sync the mapping file and the biom file
-    tmp_bt = parse_biom_table(open(opts.otu_table_fp, 'U'))
+    tmp_bt = load_table(opts.otu_table_fp)
     tmp_pmf, _ = parse_mapping_file_to_dict(opts.mapping_fp)
     pmf, bt, nonshared_samples = sync_biom_and_mf(tmp_pmf, tmp_bt)
 
     # test error conditions for overlapping mf and bt
     if not opts.biom_samples_are_superset:
         # user indicates biom sample should be subset of mapping file samples
-        if any([i in nonshared_samples for i in tmp_bt.SampleIds]):
+        if any([i in nonshared_samples for i in tmp_bt.sample_ids]):
             raise ValueError('The samples in the biom table are a superset of' +
                              ' the samples in the mapping file. The script will abort in' +
                              ' this case even though the calculations wouldn\'t be' +
@@ -319,7 +319,7 @@ def main():
                              'Mann-Whitney-U normal approximation. Review the script ' +
                              'documentation.')
 
-    # check that the G-test was not selected if the table appears to be 
+    # check that the G-test was not selected if the table appears to be
     # relative abundance
     if opts.test == 'g_test':
         if allclose(bt.sum(axis='sample'), 1.) or (bt.sum(axis='whole') == 1.):

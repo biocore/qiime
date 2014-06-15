@@ -4,22 +4,24 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 from os.path import join
+
 from matplotlib import use
 use('Agg', warn=False)
 from pylab import xlim, ylim, xlabel, ylabel, plot, savefig
-from numpy import linspace
+import numpy as np
 from skbio.util.misc import create_dir
 from biom.parse import parse_biom_table
 from biom.exception import TableException
-from qiime.util import parse_command_line_parameters, make_option
-from qiime.format import format_biom_table
+
+from qiime.util import (parse_command_line_parameters, make_option,
+                        write_biom_table)
 from qiime.core_microbiome import filter_table_to_core
 from qiime.filter import sample_ids_from_metadata_description
 
@@ -78,9 +80,9 @@ def main():
     if opts.num_fraction_for_core_steps < 2:
         option_parser.error(
             "Must perform at least two steps. Increase --num_fraction_for_core_steps.")
-    fractions_for_core = linspace(opts.min_fraction_for_core,
-                                  opts.max_fraction_for_core,
-                                  opts.num_fraction_for_core_steps)
+    fractions_for_core = np.linspace(opts.min_fraction_for_core,
+                                     opts.max_fraction_for_core,
+                                     opts.num_fraction_for_core_steps)
 
     otu_md = opts.otu_md
     valid_states = opts.valid_states
@@ -145,15 +147,13 @@ def main():
 
         # write the otu id and corresponding metadata for all core otus
         otu_count = 0
-        for value, id_, md in core_table.iterObservations():
+        for value, id_, md in core_table.iter(axis='observation'):
             output_f.write('%s\t%s\n' % (id_, md[otu_md]))
             otu_count += 1
         output_f.close()
 
         # write the core biom table
-        output_table_f = open(output_table_fp, 'w')
-        output_table_f.write(format_biom_table(core_table))
-        output_table_f.close()
+        write_biom_table(core_table, output_table_fp)
 
         # append the otu count to the list of counts
         otu_counts.append(otu_count)

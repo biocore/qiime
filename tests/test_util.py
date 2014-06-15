@@ -13,7 +13,8 @@ from collections import defaultdict
 from unittest import TestCase, main
 import gzip
 
-from biom.parse import parse_biom_table_str, parse_biom_table
+from biom.parse import parse_biom_table
+from biom import example_table
 
 from numpy.testing import assert_almost_equal
 
@@ -50,7 +51,8 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
                         RExecutor, duplicates_indices, trim_fasta, get_qiime_temp_dir,
                         qiime_blastx_seqs, add_filename_suffix, is_valid_git_refname,
                         is_valid_git_sha1, sync_biom_and_mf,
-                        biom_taxonomy_formatter, invert_dict)
+                        biom_taxonomy_formatter, invert_dict,
+                        write_biom_table)
 
 import numpy
 from numpy import array, asarray
@@ -101,6 +103,13 @@ class TopLevelTests(TestCase):
         for dir in self.dirs_to_remove:
             if exists(dir):
                 rmdir(dir)
+
+    def test_write_biom_table(self):
+        """HDF5-format BIOM file can be written"""
+        fd, output_fp = mkstemp(prefix="test_biom_")
+        self.files_to_remove.append(output_fp)
+        write_biom_table(example_table, output_fp)
+        self.assertTrue(exists(output_fp))
 
     def test_expand_otu_ids(self):
         """expand otu ids functions as expected """
@@ -882,7 +891,7 @@ class FunctionWithParamsTests(TestCase):
                   [2,1,1,0,0,1],
                   [0,1,1,0,0,0]]
     }'''
-        biom_data = parse_biom_table_str(bt_string)
+        biom_data = parse_biom_table(bt_string)
         F = FunctionWithParams('')
 
         self.assertEqual(biom_data, F.getBiomData(biom_data))
@@ -1825,13 +1834,13 @@ class MetadataMapTests(TestCase):
         """Test sample IDs accessor."""
         exp = ["PC.354", "PC.355", "PC.356", "PC.481", "PC.593", "PC.607",
                "PC.634", "PC.635", "PC.636"]
-        obs = self.overview_map.SampleIds
+        obs = self.overview_map.sample_ids
         self.assertEqual(obs, exp)
 
-        obs = self.no_metadata.SampleIds
+        obs = self.no_metadata.sample_ids
         self.assertEqual(obs, exp)
 
-        obs = self.empty_map.SampleIds
+        obs = self.empty_map.sample_ids
         self.assertEqual(obs, [])
 
     def test_CategoryNames(self):
@@ -1850,11 +1859,11 @@ class MetadataMapTests(TestCase):
         """Test filtering out samples from metadata map."""
         exp = ['PC.356', 'PC.593']
         self.overview_map.filterSamples(['PC.593', 'PC.356'])
-        obs = self.overview_map.SampleIds
+        obs = self.overview_map.sample_ids
         self.assertEqual(obs, exp)
 
         self.overview_map.filterSamples([])
-        self.assertEqual(self.overview_map.SampleIds, [])
+        self.assertEqual(self.overview_map.sample_ids, [])
 
     def test_filterSamples_strict(self):
         """Test strict checking of sample prescence when filtering."""
@@ -1867,10 +1876,10 @@ class MetadataMapTests(TestCase):
     def test_filterSamples_no_strict(self):
         """Test missing samples does not raise error."""
         self.overview_map.filterSamples(['PC.356', 'abc123'], strict=False)
-        self.assertEqual(self.overview_map.SampleIds, ['PC.356'])
+        self.assertEqual(self.overview_map.sample_ids, ['PC.356'])
 
         self.empty_map.filterSamples(['foo'], strict=False)
-        self.assertEqual(self.empty_map.SampleIds, [])
+        self.assertEqual(self.empty_map.sample_ids, [])
 
     def test_str(self):
         """Test conversion to string representation

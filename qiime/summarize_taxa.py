@@ -34,7 +34,7 @@ def make_summary(otu_table,
     [[(taxon1),count,count,...],[(taxon2),count,count,...]...]
     """
     header = ['Taxon']
-    header.extend(otu_table.SampleIds)
+    header.extend(otu_table.sample_ids)
 
     counts_by_consensus, sample_map = sum_counts_by_consensus(otu_table,
                                                               level,
@@ -55,6 +55,11 @@ def make_summary(otu_table,
         new_row.extend(otu_counts)
         taxonomy_summary.append(new_row)
 
+    # We need level-1 cause biom starts from 0
+    collapse_f = lambda id_, md: md[md_identifier][level-1]
+    collapsed = otu_table.collapse(collapse_f, norm=False, min_group_size=0,
+                                   axis='observation')
+
     return taxonomy_summary, header
 
 
@@ -70,14 +75,14 @@ def sum_counts_by_consensus(otu_table,
     if the consensus string doesn't reach to level, missing_name is appended on
     until the taxonomy string is of length level
     """
-    if otu_table.ObservationMetadata is None:
+    if otu_table.observation_metadata is None:
         raise ValueError("BIOM table does not contain any "
                          "observation metadata (e.g., taxonomy)."
                          " You can add metadata to it using the "
                          "'biom add-metadata' command.")
 
     result = {}
-    sample_map = dict([(s, i) for i, s in enumerate(otu_table.SampleIds)])
+    sample_map = dict([(s, i) for i, s in enumerate(otu_table.sample_ids)])
 
     # Define a function to process the metadata prior to summarizing - this
     # is more convenient than having to check md_as_string on every iteration
@@ -89,11 +94,11 @@ def sum_counts_by_consensus(otu_table,
         def process_md(v):
             return v
 
-    for (otu_val, otu_id, otu_metadata) in otu_table.iterObservations():
+    for (otu_val, otu_id, otu_metadata) in otu_table.iter(axis='observation'):
         if md_identifier not in otu_metadata:
-            raise KeyError(
-                "Metadata category '%s' not in OTU %s. Can't continue. Did you pass the correct metadata identifier?" %
-                (md_identifier, otu_id))
+            raise KeyError("Metadata category '%s' not in OTU %s. Can't "
+                           "continue. Did you pass the correct metadata "
+                           "identifier?" % (md_identifier, otu_id))
 
         consensus = process_md(otu_metadata[md_identifier])
         n_ranks = len(consensus)
@@ -107,10 +112,8 @@ def sum_counts_by_consensus(otu_table,
 
         consensus = tuple(consensus)
         if consensus in result:
-            #result[consensus] += counts
             result[consensus] += otu_val
         else:
-            #result[consensus] = counts.copy()
             result[consensus] = otu_val.copy()
 
     return result, sample_map
