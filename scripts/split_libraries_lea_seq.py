@@ -113,7 +113,7 @@ script_info['optional_options'] = [
                 'might be useful in saving memory and time'
                 '[default: %default]',
                 default=1),
-    make_option('--barcode_column', type='string',
+    make_option('--header_barcode_column', type='string',
                 help='header of barcode column'
                 '[default: %default]',
                 default='BarcodeSequence'),
@@ -139,7 +139,7 @@ def main():
     rev_length = opts.rev_length
     min_reads_per_random_bc = opts.min_reads_per_random_bc
     min_diff_in_clusters = opts.min_difference_in_clusters
-    barcode_column = opts.barcode_column
+    barcode_column = opts.header_barcode_column
     reverse_primer_column = opts.reverse_primer_column
 
     create_dir(output_dir)
