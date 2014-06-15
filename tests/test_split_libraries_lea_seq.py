@@ -16,8 +16,13 @@ from qiime.split_libraries_lea_seq import (get_cluster_ratio, get_consensus,
                                            get_LEA_seq_consensus_seqs,
                                            select_unique_rand_bcs,
                                            extract_primer,
-                                           SeqLengthMismatchError,
-                                           format_lea_seq_log)
+                                           format_lea_seq_log,
+                                           process_mapping_file,
+                                           check_barcodes,
+                                           get_consensus_seqs_lookup,
+                                           read_fwd_rev_read,
+                                           InvalidGolayBarcodeError,
+                                           BarcodeLenMismatchError, SeqLengthMismatchError)
 from skbio.util.misc import remove_files
 import os
 
@@ -95,22 +100,6 @@ class WorkflowTests(TestCase):
             min_difference_in_clusters)
         expected = 0.125
         self.assertEqual(actual, expected)
-
-    def test_check_barcodes(self):
-        pass
-
-    def test_format_lea_seq_log(self):
-        actual = format_lea_seq_log(0, 0, 0, 0, 0, 0)
-        expected = """Quality filter results
-Total number of input sequences: 0
-Barcode not in mapping file: 0
-Sequence shorter than threshold: 0
-Barcode errors exceeds limit: 0
-Primer mismatch count: 0
-
-
-Total number seqs written: 0"""
-        self.assertEqual(actual, expected)  
     
     def test_extract_primers(self):
         fasta_seq_for_primer = self.fasta_seq_for_primer
@@ -158,6 +147,51 @@ Total number seqs written: 0"""
         actual = function_call['Sample1']['AGCTACGAGCTATTGC']
         expected = 'AAAAAAAAAAAAAAAAAAA^AAAAAAAAAAAAAAAAAA'
         self.assertEqual(actual, expected)
+
+    def test_format_lea_seq_log(self):
+        actual = format_lea_seq_log(1, 2, 3, 4, 5, 6)
+        expected = """Quality filter results
+Total number of input sequences: 1
+Barcode not in mapping file: 3
+Sequence shorter than threshold: 5
+Barcode errors exceeds limit: 2
+Primer mismatch count: 4
+
+
+Total number seqs written: 6"""
+        self.assertEqual(actual, expected)  
+
+    def test_get_consensus_seqs_lookup(self):
+        pass
+
+    def test_read_fwd_rev_read(self):
+        pass
+
+    def test_process_mapping_file(self):
+        mapping_fp = self.mapping_fp
+        barcode_type = int(7)
+        barcode_len = 7
+        barcode_column = 'BarcodeSequence'
+        reverse_primer_column = 'ReversePrimer'
+
+        actual = process_mapping_file(mapping_fp,
+                                      barcode_len, 
+                                      barcode_type,
+                                      barcode_column,
+                                      reverse_primer_column)
+        expected = {'CCGGCAG': 'Sample1'}, {'CCGGCAG': {'AGAGTTTGATCCTGGCTCAG': 20}}, {'CCGGCAG': ['GGGCCGTGTCTCAGT']}
+        self.assertEqual(actual, expected)  
+
+    def test_check_barcodes(self):
+        barcode_type = 'golay_12'
+        barcode_len = 7
+        bc_to_sid = {'CCGGCAG': 'Sample1'}
+        with self.assertRaises(InvalidGolayBarcodeError):
+            check_barcodes(bc_to_sid, barcode_len, barcode_type)
+        barcode_len = 1
+        with self.assertRaises(BarcodeLenMismatchError):
+            check_barcodes(bc_to_sid, barcode_len, barcode_type)
+
 
 fasta_seqs_for_cluster_ratio = """>1abc|1
 ATTTTATTTTATTTTTATTTATTATATATTATATATATATAGCGCGCGCGCGCGG

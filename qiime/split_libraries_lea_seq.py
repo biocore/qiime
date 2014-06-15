@@ -41,6 +41,11 @@ class LowConsensusScoreError(Exception):
 class SeqLengthMismatchError(Exception):
     pass
 
+class InvalidGolayBarcodeError(Exception):
+    pass
+
+class BarcodeLenMismatchError(Exception):
+    pass
 
 def extract_primer(seq, possible_primers, min_idx=None, max_idx=None):
     """
@@ -349,7 +354,7 @@ def check_barcodes(bc_to_sid, barcode_len, barcode_type):
     """
     barcode_len_in_map = len(bc_to_sid.keys()[0])
     if barcode_len_in_map != barcode_len:
-        raise Exception("Barcodes in mapping file are of length %d, but "
+        raise BarcodeLenMismatchError("Barcodes in mapping file are of length %d, but "
                         "expected barcodes of length %d." %
                         (barcode_len_in_map, barcode_len))
 
@@ -357,7 +362,7 @@ def check_barcodes(bc_to_sid, barcode_len, barcode_type):
         invalid_golay_barcodes = get_invalid_golay_barcodes(bc_to_sid.keys())
 
         if invalid_golay_barcodes:
-            raise Exception(
+            raise InvalidGolayBarcodeError(
                 "Some or all barcodes in the mapping file are "
                 "not valid golay codes. Do they need to be "
                 "reverse complemented? If these are not golay "
