@@ -16,7 +16,8 @@ from qiime.split_libraries_lea_seq import (get_cluster_ratio, get_consensus,
                                            get_LEA_seq_consensus_seqs,
                                            select_unique_rand_bcs,
                                            extract_primer,
-                                           SeqLengthMismatchError)
+                                           SeqLengthMismatchError,
+                                           format_lea_seq_log)
 from skbio.util.misc import remove_files
 import os
 
@@ -95,6 +96,22 @@ class WorkflowTests(TestCase):
         expected = 0.125
         self.assertEqual(actual, expected)
 
+    def test_check_barcodes(self):
+        pass
+
+    def test_format_lea_seq_log(self):
+        actual = format_lea_seq_log(0, 0, 0, 0, 0, 0)
+        expected = """Quality filter results
+Total number of input sequences: 0
+Barcode not in mapping file: 0
+Sequence shorter than threshold: 0
+Barcode errors exceeds limit: 0
+Primer mismatch count: 0
+
+
+Total number seqs written: 0"""
+        self.assertEqual(actual, expected)  
+    
     def test_extract_primers(self):
         fasta_seq_for_primer = self.fasta_seq_for_primer
         possible_primers = self.possible_primers
@@ -117,20 +134,26 @@ class WorkflowTests(TestCase):
         fwd_length = 19
         rev_length = 19
         min_reads_per_random_bc = 1
-        min_difference_in_clusters = self.min_difference_in_clusters
-        function_call = get_LEA_seq_consensus_seqs(fwd_read_data,
-                                                   rev_read_data,
-                                                   mapping_fp, temp_dir,
-                                                   barcode_type, barcode_len,
-                                                   barcode_correction_fn,
-                                                   max_barcode_errors,
-                                                   min_consensus,
-                                                   max_cluster_ratio,
-                                                   min_difference_in_bcs,
-                                                   fwd_length,
-                                                   rev_length,
-                                                   min_reads_per_random_bc,
-                                                   min_difference_in_clusters)
+        min_diff_in_clusters = self.min_difference_in_clusters
+        barcode_column = 'BarcodeSequence'
+        reverse_primer_column = 'ReversePrimer'
+
+        function_call, _ = get_LEA_seq_consensus_seqs(fwd_read_data,
+                                                      rev_read_data,
+                                                      mapping_fp, temp_dir,
+                                                      barcode_type,
+                                                      barcode_len,
+                                                      barcode_correction_fn,
+                                                      max_barcode_errors,
+                                                      min_consensus,
+                                                      max_cluster_ratio,
+                                                      min_difference_in_bcs,
+                                                      fwd_length,
+                                                      rev_length,
+                                                      min_reads_per_random_bc,
+                                                      min_diff_in_clusters,
+                                                      barcode_column,
+                                                      reverse_primer_column)
 
         actual = function_call['Sample1']['AGCTACGAGCTATTGC']
         expected = 'AAAAAAAAAAAAAAAAAAA^AAAAAAAAAAAAAAAAAA'

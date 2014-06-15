@@ -83,217 +83,59 @@ def get_LEA_seq_consensus_seqs(fwd_read_f, rev_read_f,
                                min_difference_in_bcs,
                                fwd_length, rev_length,
                                min_reads_per_random_bc,
-                               min_difference_in_clusters):
+                               min_difference_in_clusters,
+                               barcode_column,
+                               reverse_primer_column):
     """
     Reads mapping file, input file, and other command line arguments
     fills dictionary called consensus_seq_lookup which will contain:
     sample ID -> random barcode -> consensus_seq
     """
 
-    random_bc_lookup = defaultdict(lambda:
-                                   defaultdict(lambda:
-                                               defaultdict(int)))
+    (bc_to_sid,
+     bc_to_fwd_primers,
+     bc_to_rev_primers) = process_mapping_file(map_f, 
+                                               barcode_len,
+                                               barcode_type,
+                                               barcode_column,
+                                               reverse_primer_column)
 
-    consensus_seq_lookup = defaultdict(lambda:
-                                       defaultdict(str))
+    (random_bc_lookup,
+     random_bc_reads,
+     random_bcs,
+     barcode_errors_exceed_max_count,
+     barcode_not_in_map_count,
+     primer_mismatch_count,
+     seq_too_short_count,
+     input_seqs_count,
+     total_seqs_kept) = read_fwd_rev_read(fwd_read_f,
+                                          rev_read_f,
+                                          bc_to_sid,
+                                          barcode_len,
+                                          barcode_correction_fn,
+                                          bc_to_fwd_primers,
+                                          bc_to_rev_primers,
+                                          max_barcode_errors,
+                                          fwd_length,
+                                          rev_length)
 
-    random_bc_reads = defaultdict(lambda:
-                                  defaultdict(int))
+    consensus_seq_lookup = get_consensus_seqs_lookup(random_bc_lookup,
+                                                     random_bc_reads,
+                                                     random_bcs,
+                                                     min_difference_in_bcs,
+                                                     min_reads_per_random_bc,
+                                                     output_dir,
+                                                     min_difference_in_clusters,
+                                                     max_cluster_ratio)
 
-    BARCODE_COLUMN = 'BarcodeSequence'
-    REVERSE_PRIMER_COLUMN = 'ReversePrimer'
+    log_out = format_lea_seq_log(input_seqs_count, 
+                                 barcode_errors_exceed_max_count,
+                                 barcode_not_in_map_count,
+                                 primer_mismatch_count,
+                                 seq_too_short_count,
+                                 total_seqs_kept)
 
-    #  Ensures that sample IDs and barcodes are unique, that barcodes are
-    #  all the same length, and that primers are present. Ensures barcodes
-    #  and primers only contain valid characters.
-    _, _, bc_to_sid, _, _, bc_to_fwd_primers, _ = check_map(map_f, False)
-    map_f.seek(0)
-
-    metadata_map = parse_mapping_file_to_dict(map_f)[0]
-    bc_to_rev_primers = {}
-    for sid, md in metadata_map.items():
-        if REVERSE_PRIMER_COLUMN in md:
-            bc_to_rev_primers[
-                md[BARCODE_COLUMN]] = expand_degeneracies(
-                md[REVERSE_PRIMER_COLUMN].upper().split(','))
-        else:
-            raise Exception(
-                "The %s column does not exist in the "
-                "mapping file. %s is required." %
-                (REVERSE_PRIMER_COLUMN,
-                 REVERSE_PRIMER_COLUMN))
-
-    #  Make sure our barcodes(which are guaranteed to be the same length at
-    #  this point) are the correct length that the user specified.
-    barcode_len_in_map = len(bc_to_sid.keys()[0])
-    if barcode_len_in_map != barcode_len:
-        raise Exception("Barcodes in mapping file are of length %d, but "
-                        "expected barcodes of length %d." %
-                        (barcode_len_in_map, barcode_len))
-
-    if barcode_type == 'golay_12':
-        invalid_golay_barcodes = get_invalid_golay_barcodes(bc_to_sid.keys())
-
-        if invalid_golay_barcodes:
-            raise Exception(
-                "Some or all barcodes in the mapping file are "
-                "not valid golay codes. Do they need to be "
-                "reverse complemented? If these are not golay "
-                "barcodes pass --barcode_type 12 to disable "
-                "barcode error correction, or pass "
-                "--barcode_type  # if the barcodes are not 12 "
-                "base pairs, where   #  is the size of the "
-                "barcodes.\n\nInvalid barcodes: %s" %
-                ' '.join(invalid_golay_barcodes))
-
-    header_idx = 0
-    seq_idx = 1
-    qual_idx = 2
-    barcode_errors_exceed_max_count = 0
-    barcode_not_in_map_count = 0
-    primer_mismatch_count = 0
-
-    random_bcs = {}
-    for fwd_read, rev_read in izip(
-            parse_fastq(fwd_read_f, strict=False),
-            parse_fastq(rev_read_f, strict=False)):
-            # Confirm match between read headers.
-
-        if fwd_read[header_idx] != rev_read[header_idx]:
-            raise PairedEndParseError(
-                "Headers of forward and reverse reads "
-                "do not match. Confirm that the forward "
-                "and reverse read fastq files that you "
-                "provided have headers that match one "
-                "another.")
-        else:
-            header = fwd_read[header_idx]
-
-        fwd_seq = fwd_read[seq_idx]
-        rev_seq = rev_read[seq_idx]
-
-        #  Grab the barcode sequence. It is always at the very end of the
-        #  forward read. Strip the barcode from the sequence.
-        barcode = fwd_seq[-barcode_len:]
-        fwd_seq = fwd_seq[:-barcode_len]
-
-        #  Correct the barcode(if applicable) and map to sample ID.
-        num_barcode_errors, corrected_barcode, _, sample_id =\
-            correct_barcode(barcode, bc_to_sid, barcode_correction_fn)
-
-        #  Skip barcodes with too many errors.
-        if num_barcode_errors > max_barcode_errors:
-            barcode_errors_exceed_max_count += 1
-            continue
-
-        if sample_id is None:
-            barcode_not_in_map_count += 1
-            continue
-
-        # Extract the random barcode and primer from the forward read.
-        possible_primers = bc_to_fwd_primers[corrected_barcode].keys()
-
-        try:
-            random_bc, _, clean_fwd_seq = extract_primer(fwd_seq,
-                                                         possible_primers,
-                                                         min_idx=5,
-                                                         max_idx=20)
-
-            random_bcs[sample_id].append(random_bc)
-        except PrimerMismatchError:
-            primer_mismatch_count += 1
-            continue
-        except KeyError:
-            random_bcs[sample_id] = list()
-            random_bcs[sample_id].append(random_bc)
-
-        possible_primers = bc_to_rev_primers[barcode]
-
-        try:
-            phase_seq, _, clean_rev_seq = extract_primer(rev_seq,
-                                                         possible_primers)
-        except PrimerMismatchError:
-            primer_mismatch_count += 1
-            continue
-
-        if len(clean_fwd_seq) < fwd_length:
-            continue
-
-        clean_fwd_seq = clean_fwd_seq[:fwd_length]
-        clean_rev_seq = clean_rev_seq[:rev_length]
-        random_bc_reads[sample_id][random_bc] += 1
-        random_bc_lookup[sample_id][random_bc][
-            (clean_fwd_seq, clean_rev_seq)] += 1
-
-    random_bc_keep = {}
-
-    for sample_id in random_bc_lookup:
-        random_bc_keep[sample_id] = select_unique_rand_bcs(
-            random_bcs[sample_id],
-            min_difference_in_bcs)
-        for random_bc in random_bc_lookup[sample_id]:
-            if random_bc in random_bc_keep[sample_id] and random_bc_reads[
-                    sample_id][random_bc] >= min_reads_per_random_bc:
-                fwd_fd, fwd_fasta_tempfile_name = mkstemp(
-                    dir=output_dir, prefix='fwd', suffix='.fas')
-                rev_fd, rev_fasta_tempfile_name = mkstemp(
-                    dir=output_dir, prefix='rev', suffix='.fas')
-                close(fwd_fd)
-                close(rev_fd)
-                fwd_fasta_tempfile = open(fwd_fasta_tempfile_name, 'w')
-                rev_fasta_tempfile = open(rev_fasta_tempfile_name, 'w')
-                max_freq = 0
-                for seq_index, fwd_rev_seq in enumerate(random_bc_lookup[sample_id][random_bc]):
-                    fwd_seq, rev_seq = fwd_rev_seq
-                    fwd_line = ">" + str(seq_index) + random_bc + "|" + str(
-                        random_bc_lookup[sample_id][random_bc][fwd_rev_seq]) +\
-                        "\n" + fwd_seq + "\n"
-                    rev_line = ">" + str(seq_index) + random_bc + "|" + str(
-                        random_bc_lookup[sample_id][random_bc][fwd_rev_seq]) +\
-                        "\n" + rev_seq + "\n"
-                    fwd_fasta_tempfile.write(fwd_line)
-                    rev_fasta_tempfile.write(rev_line)
-                    if random_bc_lookup[sample_id][
-                            random_bc][fwd_rev_seq] > max_freq:
-                        max_freq = random_bc_lookup[
-                            sample_id][random_bc][fwd_rev_seq]
-                        majority_seq = fwd_seq + "^" + rev_seq
-                fwd_fasta_tempfile.close()
-                rev_fasta_tempfile.close()
-
-                fwd_cluster_ratio = get_cluster_ratio(
-                    fwd_fasta_tempfile_name,
-                    min_difference_in_clusters)
-                rev_cluster_ratio = get_cluster_ratio(
-                    rev_fasta_tempfile_name,
-                    min_difference_in_clusters)
-                if fwd_cluster_ratio == 0 or rev_cluster_ratio == 0:
-                    consensus_seq = "No consensus"
-                elif fwd_cluster_ratio < max_cluster_ratio and rev_cluster_ratio < max_cluster_ratio:
-                    consensus_seq = majority_seq
-                else:
-                    fwd_fasta_tempfile = open(fwd_fasta_tempfile_name, 'r')
-                    rev_fasta_tempfile = open(rev_fasta_tempfile_name, 'r')
-                    fwd_consensus = get_consensus(
-                        fwd_fasta_tempfile,
-                        min_consensus)
-                    rev_consensus = get_consensus(
-                        rev_fasta_tempfile,
-                        min_consensus)
-                    fwd_fasta_tempfile.close()
-                    rev_fasta_tempfile.close()
-                    consensus_seq = fwd_consensus + "^" + rev_consensus
-
-                consensus_seq_lookup[sample_id][random_bc] = consensus_seq
-                files_to_be_removed = list()
-                files_to_be_removed.append(fwd_fasta_tempfile_name)
-                files_to_be_removed.append(rev_fasta_tempfile_name)
-                remove_files(files_to_be_removed)
-
-    log_str = "barcodes errors that exceed max count: " + str(barcode_errors_exceed_max_count) + "\n" + "barcode_not_in_map_count: " + str(
-        barcode_not_in_map_count) + "\n" + "primer_mismatch_count: " + str(primer_mismatch_count) + "\n"
-
-    return consensus_seq_lookup
+    return consensus_seq_lookup, log_out
 
 
 def get_cluster_ratio(fasta_seqs, min_difference_in_clusters):
@@ -472,47 +314,293 @@ def select_unique_rand_bcs(rand_bcs, min_difference_in_bcs):
     return unique_rand_bcs
 
 
-def format_split_libraries_fastq_log(count_barcode_not_in_map,
-                                     count_too_short,
-                                     count_too_many_N,
-                                     count_bad_illumina_qual_digit,
-                                     count_barcode_errors_exceed_max,
-                                     input_sequence_count,
-                                     sequence_lengths,
-                                     seqs_per_sample_counts):
-    """ Format the split libraries log """
+def format_lea_seq_log(input_seqs_count, 
+                       barcode_errors_exceed_max_count,
+                       barcode_not_in_map_count,
+                       primer_mismatch_count,
+                       seq_too_short_count,
+                       total_seqs_kept):
+    """ Format the split libraries LEA-Seq log """
     log_out = ["Quality filter results"]
     log_out.append(
         "Total number of input sequences: %d" %
-        input_sequence_count)
+        input_seqs_count)
     log_out.append(
         "Barcode not in mapping file: %d" %
-        count_barcode_not_in_map)
+        barcode_not_in_map_count)
     log_out.append(
-        "Read too short after quality truncation: %d" %
-        count_too_short)
+        "Sequence shorter than threshold: %d" %
+        seq_too_short_count)
     log_out.append(
-        "Count of N characters exceeds limit: %d" %
-        count_too_many_N)
+        "Barcode errors exceeds limit: %d" %
+        barcode_errors_exceed_max_count)
     log_out.append(
-        "Illumina quality digit = 0: %d" %
-        count_bad_illumina_qual_digit)
-    log_out.append(
-        "Barcode errors exceed max: %d" %
-        count_barcode_errors_exceed_max)
-
+        "Primer mismatch count: %d" %
+        primer_mismatch_count)
     log_out.append("")
 
-    log_out.append("Result summary (after quality filtering)")
-    log_out.append("Median sequence length: %1.2f" % median(sequence_lengths))
-    counts = sorted([(v, k) for k, v in seqs_per_sample_counts.items()])
-    counts.reverse()
-    for sequence_count, sample_id in counts:
-        log_out.append('%s\t%d' % (sample_id, sequence_count))
-
-    total_seqs_written = 0
-    for curr_count in counts:
-        total_seqs_written += curr_count[0]
-
-    log_out.append('\nTotal number seqs written\t%d' % total_seqs_written)
+    log_out.append('\nTotal number seqs written: %d' % total_seqs_kept)
     return '\n'.join(log_out)
+
+def check_barcodes(bc_to_sid, barcode_len, barcode_type):
+    """
+    Make sure that barcodes (which are guaranteed to be of 
+    the same length at this point) are the correct length that the user specified.
+    """
+    barcode_len_in_map = len(bc_to_sid.keys()[0])
+    if barcode_len_in_map != barcode_len:
+        raise Exception("Barcodes in mapping file are of length %d, but "
+                        "expected barcodes of length %d." %
+                        (barcode_len_in_map, barcode_len))
+
+    if barcode_type == 'golay_12':
+        invalid_golay_barcodes = get_invalid_golay_barcodes(bc_to_sid.keys())
+
+        if invalid_golay_barcodes:
+            raise Exception(
+                "Some or all barcodes in the mapping file are "
+                "not valid golay codes. Do they need to be "
+                "reverse complemented? If these are not golay "
+                "barcodes pass --barcode_type 12 to disable "
+                "barcode error correction, or pass "
+                "--barcode_type  # if the barcodes are not 12 "
+                "base pairs, where   #  is the size of the "
+                "barcodes.\n\nInvalid barcodes: %s" %
+                ' '.join(invalid_golay_barcodes))
+
+
+def get_consensus_seqs_lookup(random_bc_lookup,
+                              random_bc_reads,
+                              random_bcs,
+                              min_difference_in_bcs,
+                              min_reads_per_random_bc,
+                              output_dir,
+                              min_difference_in_clusters,
+                              max_cluster_ratio):
+
+    """
+    Generate LEA-seq consensus sequence
+    returns defaultdict called consensus_seq_lookup
+    which will contain:
+    sample ID -> random barcode -> consensus_seq
+    """
+
+    consensus_seq_lookup = defaultdict(lambda:
+                                       defaultdict(str))
+    random_bc_keep = {}
+
+    for sample_id in random_bc_lookup:
+        random_bc_keep[sample_id] = select_unique_rand_bcs(
+            random_bcs[sample_id],
+            min_difference_in_bcs)
+        for random_bc in random_bc_lookup[sample_id]:
+            if random_bc in random_bc_keep[sample_id] and random_bc_reads[
+                    sample_id][random_bc] >= min_reads_per_random_bc:
+                fwd_fd, fwd_fasta_tempfile_name = mkstemp(
+                    dir=output_dir, prefix='fwd', suffix='.fas')
+                rev_fd, rev_fasta_tempfile_name = mkstemp(
+                    dir=output_dir, prefix='rev', suffix='.fas')
+                close(fwd_fd)
+                close(rev_fd)
+                fwd_fasta_tempfile = open(fwd_fasta_tempfile_name, 'w')
+                rev_fasta_tempfile = open(rev_fasta_tempfile_name, 'w')
+                max_freq = 0
+                for seq_index, fwd_rev in enumerate(random_bc_lookup[sample_id][random_bc]):
+                    fwd_seq, rev_seq = fwd_rev
+                    fwd_line = ">" + str(seq_index) + random_bc + "|" + str(
+                        random_bc_lookup[sample_id][random_bc][fwd_rev]) +\
+                        "\n" + fwd_seq + "\n"
+                    rev_line = ">" + str(seq_index) + random_bc + "|" + str(
+                        random_bc_lookup[sample_id][random_bc][fwd_rev]) +\
+                        "\n" + rev_seq + "\n"
+                    fwd_fasta_tempfile.write(fwd_line)
+                    rev_fasta_tempfile.write(rev_line)
+                    if random_bc_lookup[sample_id][
+                            random_bc][fwd_rev] > max_freq:
+                        max_freq = random_bc_lookup[
+                            sample_id][random_bc][fwd_rev]
+                        majority_seq = fwd_seq + "^" + rev_seq
+                fwd_fasta_tempfile.close()
+                rev_fasta_tempfile.close()
+                fwd_cluster_ratio = get_cluster_ratio(
+                    fwd_fasta_tempfile_name,
+                    min_difference_in_clusters)
+                rev_cluster_ratio = get_cluster_ratio(
+                    rev_fasta_tempfile_name,
+                    min_difference_in_clusters)
+                if fwd_cluster_ratio == 0 or rev_cluster_ratio == 0:
+                    consensus_seq = "No consensus"
+                elif fwd_cluster_ratio < max_cluster_ratio and rev_cluster_ratio < max_cluster_ratio:
+                    consensus_seq = majority_seq
+                else:
+                    fwd_fasta_tempfile = open(fwd_fasta_tempfile_name, 'r')
+                    rev_fasta_tempfile = open(rev_fasta_tempfile_name, 'r')
+                    fwd_consensus = get_consensus(
+                        fwd_fasta_tempfile,
+                        min_consensus)
+                    rev_consensus = get_consensus(
+                        rev_fasta_tempfile,
+                        min_consensus)
+                    fwd_fasta_tempfile.close()
+                    rev_fasta_tempfile.close()
+                    consensus_seq = fwd_consensus + "^" + rev_consensus
+
+                consensus_seq_lookup[sample_id][random_bc] = consensus_seq
+                files_to_be_removed = list()
+                files_to_be_removed.append(fwd_fasta_tempfile_name)
+                files_to_be_removed.append(rev_fasta_tempfile_name)
+                remove_files(files_to_be_removed)
+                return consensus_seq_lookup
+
+
+def read_fwd_rev_read(fwd_read_f,
+                      rev_read_f,
+                      bc_to_sid,
+                      barcode_len,
+                      barcode_correction_fn,
+                      bc_to_fwd_primers,
+                      bc_to_rev_primers,
+                      max_barcode_errors, 
+                      fwd_length,
+                      rev_length):
+
+    random_bc_lookup = defaultdict(lambda:
+                                   defaultdict(lambda:
+                                               defaultdict(int)))
+
+    random_bc_reads = defaultdict(lambda:
+                                  defaultdict(int))
+
+    random_bcs = {}
+
+    # Counts for Quality Control:
+    input_seqs_count = 0
+    total_seqs_kept_count = 0
+    barcode_errors_exceed_max_count = 0
+    barcode_not_in_map_count = 0
+    primer_mismatch_count = 0
+    seq_too_short_count = 0
+    input_seqs_count = 0
+    total_seqs_kept = 0
+
+    header_idx = 0
+    seq_idx = 1
+    qual_idx = 2
+
+    for fwd_read, rev_read in izip(
+            parse_fastq(fwd_read_f, strict=False),
+            parse_fastq(rev_read_f, strict=False)):
+            # Confirm match between read headers.
+
+        input_seqs_count += 1
+
+        if fwd_read[header_idx] != rev_read[header_idx]:
+            raise PairedEndParseError(
+                "Headers of forward and reverse reads "
+                "do not match. Confirm that the forward "
+                "and reverse read fastq files that you "
+                "provided have headers that match one "
+                "another.")
+        else:
+            header = fwd_read[header_idx]
+
+        fwd_seq = fwd_read[seq_idx]
+        rev_seq = rev_read[seq_idx]
+
+        #  Grab the barcode sequence. It is always at the very end of the
+        #  forward read. Strip the barcode from the sequence.
+        barcode = fwd_seq[-barcode_len:]
+        fwd_seq = fwd_seq[:-barcode_len]
+
+        #  Correct the barcode(if applicable) and map to sample ID.
+        num_barcode_errors, corrected_barcode, _, sample_id =\
+            correct_barcode(barcode, bc_to_sid, barcode_correction_fn)
+
+        #  Skip barcodes with too many errors.
+        if num_barcode_errors > max_barcode_errors:
+            barcode_errors_exceed_max_count += 1
+            continue
+
+        if sample_id is None:
+            barcode_not_in_map_count += 1
+            continue
+
+        # Extract the random barcode and primer from the forward read.
+        possible_primers = bc_to_fwd_primers[corrected_barcode].keys()
+
+        try:
+            random_bc, _, clean_fwd_seq = extract_primer(fwd_seq,
+                                                         possible_primers,
+                                                         min_idx=5,
+                                                         max_idx=20)
+
+            random_bcs[sample_id].append(random_bc)
+        except PrimerMismatchError:
+            primer_mismatch_count += 1
+            continue
+        except KeyError:
+            random_bcs[sample_id] = list()
+            random_bcs[sample_id].append(random_bc)
+
+        possible_primers = bc_to_rev_primers[barcode]
+
+        try:
+            phase_seq, _, clean_rev_seq = extract_primer(rev_seq,
+                                                         possible_primers)
+        except PrimerMismatchError:
+            primer_mismatch_count += 1
+            continue
+
+        if len(clean_fwd_seq) < fwd_length:
+            seq_too_short_count += 1
+            continue
+
+        clean_fwd_seq = clean_fwd_seq[:fwd_length]
+        clean_rev_seq = clean_rev_seq[:rev_length]
+
+        total_seqs_kept += 1
+        random_bc_reads[sample_id][random_bc] += 1
+        random_bc_lookup[sample_id][random_bc][
+            (clean_fwd_seq, clean_rev_seq)] += 1
+
+    return (random_bc_lookup,
+            random_bc_reads,
+            random_bcs,
+            barcode_errors_exceed_max_count,
+            barcode_not_in_map_count,
+            primer_mismatch_count,
+            seq_too_short_count,
+            input_seqs_count,
+            total_seqs_kept)
+
+def process_mapping_file(map_f,
+                         barcode_len, 
+                         barcode_type,
+                         BARCODE_COLUMN,
+                         REVERSE_PRIMER_COLUMN):
+    """Ensures that sample IDs and barcodes are unique, that barcodes are
+    all the same length, and that primers are present. Ensures barcodes
+    and primers only contain valid characters."""
+
+    _, _, bc_to_sid, _, _, bc_to_fwd_primers, _ = check_map(map_f, False)
+    map_f.seek(0)
+
+    metadata_map = parse_mapping_file_to_dict(map_f)[0]
+    bc_to_rev_primers = {}
+    for sid, md in metadata_map.items():
+        if REVERSE_PRIMER_COLUMN in md:
+            bc_to_rev_primers[
+                md[BARCODE_COLUMN]] = expand_degeneracies(
+                md[REVERSE_PRIMER_COLUMN].upper().split(','))
+        else:
+            raise Exception(
+                "The %s column does not exist in the "
+                "mapping file. %s is required." %
+                (REVERSE_PRIMER_COLUMN,
+                 REVERSE_PRIMER_COLUMN))
+
+    check_barcodes(bc_to_sid, barcode_len, barcode_type)
+
+    return (bc_to_sid,
+            bc_to_fwd_primers,
+            bc_to_rev_primers)

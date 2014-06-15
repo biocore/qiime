@@ -113,7 +113,14 @@ script_info['optional_options'] = [
                 'might be useful in saving memory and time'
                 '[default: %default]',
                 default=1),
-
+    make_option('--barcode_column', type='string',
+                help='header of barcode column'
+                '[default: %default]',
+                default='BarcodeSequence'),
+    make_option('--reverse_primer_column', type='string',
+                help='header of reverse primer column'
+                '[default: %default]',
+                default='ReversePrimer'),
 ]
 script_info['version'] = __version__
 
@@ -132,6 +139,9 @@ def main():
     rev_length = opts.rev_length
     min_reads_per_random_bc = opts.min_reads_per_random_bc
     min_diff_in_clusters = opts.min_difference_in_clusters
+    barcode_column = opts.barcode_column
+    reverse_primer_column = opts.reverse_primer_column
+
     create_dir(output_dir)
     fwd_consensus_outfile = open(os.path.join(output_dir, "fwd.fna"), "w")
     rev_consensus_outfile = open(os.path.join(output_dir, "rev.fna"), "w")
@@ -170,21 +180,24 @@ def main():
     rev_read_f = open(sequence_read_fps[1], 'U')
     map_f = open(mapping_fp, 'U')
 
-    consensus_seq_lookup = get_LEA_seq_consensus_seqs(fwd_read_f,
-                                                      rev_read_f,
-                                                      map_f,
-                                                      output_dir,
-                                                      barcode_type,
-                                                      barcode_len,
-                                                      barcode_correction_fn,
-                                                      max_barcode_errors,
-                                                      min_consensus,
-                                                      max_cluster_ratio,
-                                                      min_difference_in_bcs,
-                                                      fwd_length,
-                                                      rev_length,
-                                                      min_reads_per_random_bc,
-                                                      min_diff_in_clusters)
+    (consensus_seq_lookup,
+     log_out) = get_LEA_seq_consensus_seqs(fwd_read_f,
+                                           rev_read_f,
+                                           map_f,
+                                           output_dir,
+                                           barcode_type,
+                                           barcode_len,
+                                           barcode_correction_fn,
+                                           max_barcode_errors,
+                                           min_consensus,
+                                           max_cluster_ratio,
+                                           min_difference_in_bcs,
+                                           fwd_length,
+                                           rev_length,
+                                           min_reads_per_random_bc,
+                                           min_diff_in_clusters,
+                                           barcode_column,
+                                           reverse_primer_column)
 
     for sample_id in consensus_seq_lookup:
         for bc_index, rand_bc in enumerate(consensus_seq_lookup[sample_id]):
@@ -196,6 +209,10 @@ def main():
             rev_consensus_outfile.write(">" + sample_id + "_" +
                                         str(bc_index) +
                                         "\n" + rev_consensus + "\n")
+
+    log_file.write(log_out)
+    log_file.close()
+
     fwd_read_f.close()
     rev_read_f.close()
     fwd_consensus_outfile.close()
