@@ -22,7 +22,10 @@ from qiime.split_libraries_lea_seq import (get_cluster_ratio, get_consensus,
                                            get_consensus_seqs_lookup,
                                            read_fwd_rev_read,
                                            InvalidGolayBarcodeError,
-                                           BarcodeLenMismatchError, SeqLengthMismatchError)
+                                           BarcodeLenMismatchError,
+                                           SeqLengthMismatchError,
+                                           LowConsensusScoreError,
+                                           PrimerMismatchError)
 from skbio.util.misc import remove_files
 import os
 
@@ -54,6 +57,9 @@ class WorkflowTests(TestCase):
         self.mapping_fp_name = self.mapping_fp.name
         self.mapping_fp.close()
         self.mapping_fp = open(self.mapping_fp_name, 'r')
+        self.seqs_with_no_consensus = seqs_with_no_consensus
+        self.false_primers = false_primers
+
 
     def tearDown(self):
         """remove all the files after completing tests """
@@ -91,6 +97,10 @@ class WorkflowTests(TestCase):
         with self.assertRaises(SeqLengthMismatchError):
             get_consensus(fasta_seqs_for_consensus_unequal_length, 2)
 
+        seqs_with_no_consensus = self.seqs_with_no_consensus
+        with self.assertRaises(LowConsensusScoreError):
+            get_consensus(seqs_with_no_consensus, 6.6)
+
     def test_get_cluster_ratio(self):
         min_difference_in_clusters = self.min_difference_in_clusters
         fasta_seqs_for_cluster_ratio = \
@@ -104,9 +114,11 @@ class WorkflowTests(TestCase):
     def test_extract_primers(self):
         fasta_seq_for_primer = self.fasta_seq_for_primer
         possible_primers = self.possible_primers
+        false_primers = self.false_primers
         actual = extract_primer(fasta_seq_for_primer, possible_primers)
         expected = ('A', 'ATGC', 'CCCC')
-        self.assertEqual(actual, expected)
+        with self.assertRaises(PrimerMismatchError):
+            extract_primer(fasta_seq_for_primer, false_primers)     
 
     def test_get_LEA_seq_consensus_seqs(self):
         fwd_read_data = self.fwd_read_data.split()
@@ -160,12 +172,6 @@ Primer mismatch count: 4
 
 Total number seqs written: 6"""
         self.assertEqual(actual, expected)  
-
-    def test_get_consensus_seqs_lookup(self):
-        pass
-
-    def test_read_fwd_rev_read(self):
-        pass
 
     def test_process_mapping_file(self):
         mapping_fp = self.mapping_fp
@@ -265,10 +271,21 @@ mapping_data = """"#SampleID	BarcodeSequence	LinkerPrimerSequence	ReversePrimer	
 Sample1	CCGGCAG	AGAGTTTGATCCTGGCTCAG	GGGCCGTGTCTCAGT	Sample1	description"""
 
 
+
+seqs_with_no_consensus = """>id1|1
+ATGC
+>id2|1
+TGCA
+>id3|1
+GCAT
+>id4|1
+CATG"""
+
+
 min_difference_in_clusters = 0.98
 fasta_seq_for_primer = 'AATGCCCCC'
 possible_primers = ['ATGC', 'ATTT']
-
+false_primers = ['AAAA']
 # run tests if called from command line
 if __name__ == '__main__':
     main()

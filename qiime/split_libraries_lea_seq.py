@@ -41,11 +41,14 @@ class LowConsensusScoreError(Exception):
 class SeqLengthMismatchError(Exception):
     pass
 
+
 class InvalidGolayBarcodeError(Exception):
     pass
 
+
 class BarcodeLenMismatchError(Exception):
     pass
+
 
 def extract_primer(seq, possible_primers, min_idx=None, max_idx=None):
     """

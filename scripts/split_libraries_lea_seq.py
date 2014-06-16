@@ -76,7 +76,7 @@ script_info['optional_options'] = [
                 'where the score is calulated as: '
                 'occurence of base in consensus sequence/ total sequences'
                 '[default: %default]',
-                default=0.66),
+                default=6.6),
     make_option('--max_cluster_ratio', type='float',
                 help='threshold for cluster ratio: '
                 'the maximum allowable cluster ratio '
