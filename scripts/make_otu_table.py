@@ -8,7 +8,8 @@ __credits__ = [
     "Rob Knight",
     "Justin Kuczynski",
     "Jesse Stombaugh",
-    "Greg Caporaso"]
+    "Greg Caporaso",
+    "Adam Robbins-Pianka"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -16,10 +17,11 @@ __email__ = "gregcaporaso@gmail.com"
 
 from sys import argv, exit, stderr, stdout
 from os.path import splitext
+
 from qiime.filter import (get_seq_ids_from_seq_id_file,
                           get_seq_ids_from_fasta_file)
-from qiime.util import parse_command_line_parameters, get_options_lookup
-from qiime.util import make_option
+from qiime.util import (parse_command_line_parameters, get_options_lookup,
+                        make_option, write_biom_table)
 from qiime.parse import parse_taxonomy
 from qiime.make_otu_table import make_otu_table
 
@@ -72,8 +74,6 @@ def main():
 
     exclude_otus_fp = opts.exclude_otus_fp
 
-    outfile = open(opts.output_biom_fp, 'w')
-
     if not opts.taxonomy_fname:
         otu_to_taxonomy = None
     else:
@@ -89,9 +89,10 @@ def main():
             ids_to_exclude = \
                 get_seq_ids_from_seq_id_file(open(exclude_otus_fp, 'U'))
     biom_otu_table = make_otu_table(open(opts.otu_map_fp, 'U'),
-                                    otu_to_taxonomy,
-                                    ids_to_exclude)
-    outfile.write(biom_otu_table)
+                                    otu_to_taxonomy=otu_to_taxonomy,
+                                    otu_ids_to_exclude=ids_to_exclude)
+
+    write_biom_table(biom_otu_table, opts.output_biom_fp)
 
 
 if __name__ == "__main__":

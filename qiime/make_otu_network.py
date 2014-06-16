@@ -30,6 +30,7 @@ from qiime.stats import G_2_by_2
 from qiime.colors import iter_color_groups, Color, data_colors
 from qiime.parse import parse_mapping_file
 from biom.parse import parse_biom_table
+from biom.util import biom_open
 
 
 def get_sample_info(lines):
@@ -130,7 +131,8 @@ def get_connection_info(otu_table_fp, num_meta, meta_dict):
     sample_num_seq = defaultdict(int)
     con_list = []
 
-    otu_table = parse_biom_table(open(otu_table_fp, 'U'))
+    with biom_open(otu_table_fp, 'U') as biom_file:
+        otu_table = parse_biom_table(biom_file)
 
     # if lineages == []:
     #    is_con = False
@@ -139,11 +141,11 @@ def get_connection_info(otu_table_fp, num_meta, meta_dict):
 
     is_con = False
     # This could be moved to OTU table sub-class
-    if (otu_table.ObservationMetadata is not None and
-            'taxonomy' in otu_table.ObservationMetadata[0]):
+    if (otu_table.observation_metadata is not None and
+            'taxonomy' in otu_table.observation_metadata[0]):
         is_con = True
 
-    for (otu_values, otu_id, otu_metadata) in otu_table.iterObservations():
+    for otu_values, otu_id, otu_md in otu_table.iter(axis='observation'):
     # for idx,l in enumerate(otu_table):
     #    data = l
 
@@ -151,7 +153,7 @@ def get_connection_info(otu_table_fp, num_meta, meta_dict):
         con = ''
         if is_con:
             #con = ':'.join(lineages[idx][:6])
-            con = ':'.join(otu_metadata['taxonomy'][:6])
+            con = ':'.join(otu_md['taxonomy'][:6])
             con = con.replace(" ", "_")
             con = con.replace("\t", "_")
         # Not required: otu_values (data) is always numpy vector
@@ -175,7 +177,7 @@ def get_connection_info(otu_table_fp, num_meta, meta_dict):
         otu_dc[degree] += 1
         degree_counts[degree] += 1
         #samples = [sample_ids[i] for i in non_zero_counts]
-        samples = [otu_table.SampleIds[i] for i in non_zero_counts]
+        samples = [otu_table.sample_ids[i] for i in non_zero_counts]
         for i, s in enumerate(samples):
             if s not in meta_dict.keys():
                 continue
@@ -201,7 +203,7 @@ def get_connection_info(otu_table_fp, num_meta, meta_dict):
             if len(non_zero_counts) == 1:
                 #red_nodes[(sample_ids[non_zero_counts[0]],meta[0])] += degree
                 red_nodes[(
-                    otu_table.SampleIds[non_zero_counts[0]],
+                    otu_table.sample_ids[non_zero_counts[0]],
                     meta[0])] += degree
             else:
                 # red_edge_file.append('\t'.join([s, to_otu, \

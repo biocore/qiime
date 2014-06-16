@@ -10,7 +10,7 @@ __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 
 from os.path import join
-from biom.parse import parse_biom_table
+from biom import load_table
 from skbio.util.misc import create_dir
 from qiime.util import (parse_command_line_parameters, get_options_lookup,
                         make_option)
@@ -23,7 +23,8 @@ options_lookup = get_options_lookup()
 
 script_info = {}
 script_info[
-    'brief_description'] = "Estimates the observation (e.g., OTU) richness of samples in a BIOM table"
+    'brief_description'] = ("Estimates the observation (e.g., OTU) richness "
+                            "of samples in a BIOM table")
 script_info['script_description'] = """
 This script provides estimates of the observation (e.g., OTU) richness (i.e.
 number of observations) given a sampling depth (i.e. number of
@@ -96,32 +97,36 @@ directory. Other output formats may be added in the future.
 script_info['required_options'] = [
     make_option('-i', '--otu_table_fp', type='existing_filepath',
                 help='path to the input BIOM table (e.g., the output from '
-                'make_otu_table.py). IMPORTANT: This table should contain observation '
-                '*counts* (integers), NOT relative abundances (fractions)'),
+                'make_otu_table.py). IMPORTANT: This table should contain '
+                'observation *counts* (integers), NOT relative abundances '
+                '(fractions)'),
     options_lookup['output_dir']
 ]
 script_info['optional_options'] = [
     make_option('-m', '--min', type='int',
-                help='the number of individuals (e.g. sequences) per sample to start '
-                'performing estimations at [default: %default]', default=1),
+                help='the number of individuals (e.g. sequences) per sample '
+                'to start performing estimations at [default: %default]',
+                default=1),
     make_option('-x', '--max', type='int',
-                help='the number of individuals (e.g. sequences) per sample to stop '
-                'performing estimations at. By default, the base sample size will be '
-                'used, which is defined in Chao et al. (2013) as "double the smallest '
-                'reference sample size or the maximum reference sample size, '
-                'whichever is larger" [default: base sample size]', default=None),
+                help='the number of individuals (e.g. sequences) per sample '
+                'to stop performing estimations at. By default, the base '
+                'sample size will be used, which is defined in Chao et al. '
+                '(2013) as "double the smallest reference sample size or the '
+                'maximum reference sample size, whichever is larger '
+                '[default: base sample size]', default=None),
     make_option('-n', '--num_steps', type='int',
-                help='the number of steps to make between -m/--min and -x/--max. '
-                'Increasing this number will result in smoother curves, but will also '
-                'increase the amount of time needed to run the script. Note that the '
-                'reference sample size for each sample will be included if it does '
-                'not fall within the min/max/num_steps range [default: %default]',
+                help='the number of steps to make between -m/--min and '
+                '-x/--max. Increasing this number will result in smoother '
+                'curves, but will also increase the amount of time needed to '
+                'run the script. Note that the reference sample size for each '
+                'sample will be included if it does not fall within the '
+                'min/max/num_steps range [default: %default]',
                 default=10),
     make_option('-c', '--confidence_level', type='float',
-                help='the confidence level of the unconditional confidence interval '
-                'for each estimate. Must be a value between 0 and 1 (exclusive). For '
-                'example, a 95% unconditional confidence interval would be 0.95 '
-                '[default: %default]', default=0.95)
+                help='the confidence level of the unconditional confidence '
+                'interval for each estimate. Must be a value between 0 and 1 '
+                '(exclusive). For example, a 95% unconditional confidence '
+                'interval would be 0.95 [default: %default]', default=0.95)
 ]
 script_info['version'] = __version__
 
@@ -138,8 +143,7 @@ def main():
                             "specified with the -o/--output_dir option.")
 
     otu_table_fp = opts.otu_table_fp
-    with open(otu_table_fp, 'U') as table_f:
-        table = parse_biom_table(table_f)
+    table = load_table(otu_table_fp)
 
     estimator = ObservationRichnessEstimator(table,
                                              Chao1MultinomialPointEstimator)

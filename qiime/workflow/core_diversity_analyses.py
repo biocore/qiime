@@ -180,7 +180,7 @@ def run_core_diversity_analyses(
     biom_table_stats_output_fp = '%s/biom_table_summary.txt' % output_dir
     if not exists(biom_table_stats_output_fp):
         biom_table_summary_cmd = \
-            "biom summarize-table -i %s -o %s --suppress-md5 %s" % \
+            "biom summarize-table -i %s -o %s %s" % \
             (biom_fp, biom_table_stats_output_fp, params_str)
         commands.append([('Generate BIOM table summary',
                           biom_table_summary_cmd)])

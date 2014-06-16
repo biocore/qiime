@@ -16,6 +16,9 @@ from numpy import inf
 from copy import deepcopy
 from skbio.util.misc import create_dir, remove_files
 from skbio.parse.sequences import parse_fasta
+from biom import Table
+from biom.util import biom_open
+
 from qiime.util import (subsample_fasta)
 from qiime.filter import (filter_otus_from_otu_table,
                           get_seq_ids_from_fasta_file,
@@ -26,8 +29,7 @@ from qiime.workflow.util import (print_to_stdout,
                                  log_input_md5s,
                                  get_params_str,
                                  WorkflowError)
-from qiime.format import format_biom_table
-from biom.parse import parse_biom_table
+from qiime.util import write_biom_table
 from qiime.workflow.core_diversity_analyses import (format_index_link,
                                                     generate_index_page,
                                                     _index_headers)
@@ -533,13 +535,13 @@ def iterative_pick_subsampled_open_reference_otus(
                 status_update_callback=status_update_callback)
 
             # Build OTU table without PyNAST failures
-            filtered_otu_table = filter_otus_from_otu_table(
-                parse_biom_table(open(align_and_tree_input_otu_table, 'U')),
+            with biom_open(align_and_tree_input_otu_table) as biom_file:
+                table = Table.from_hdf5(biom_file)
+            filtered_otu_table = filter_otus_from_otu_table(table,
                 get_seq_ids_from_fasta_file(open(pynast_failures_fp, 'U')),
                 0, inf, 0, inf, negate_ids_to_keep=True)
-            otu_table_f = open(pynast_failure_filtered_otu_table_fp, 'w')
-            otu_table_f.write(format_biom_table(filtered_otu_table))
-            otu_table_f.close()
+            write_biom_table(filtered_otu_table,
+                             pynast_failure_filtered_otu_table_fp)
 
             command_handler(commands,
                             status_update_callback,
@@ -1017,13 +1019,13 @@ def pick_subsampled_open_reference_otus(input_fp,
                 status_update_callback=status_update_callback)
 
             # Build OTU table without PyNAST failures
-            filtered_otu_table = filter_otus_from_otu_table(
-                parse_biom_table(open(align_and_tree_input_otu_table, 'U')),
+            with biom_open(align_and_tree_input_otu_table) as biom_file:
+                table = Table.from_hdf5(biom_file)
+            filtered_otu_table = filter_otus_from_otu_table(table,
                 get_seq_ids_from_fasta_file(open(pynast_failures_fp, 'U')),
                 0, inf, 0, inf, negate_ids_to_keep=True)
-            otu_table_f = open(pynast_failure_filtered_otu_table_fp, 'w')
-            otu_table_f.write(format_biom_table(filtered_otu_table))
-            otu_table_f.close()
+            write_biom_table(filtered_otu_table,
+                             pynast_failure_filtered_otu_table_fp)
 
             command_handler(commands,
                             status_update_callback,
