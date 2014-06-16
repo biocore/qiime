@@ -493,8 +493,8 @@ def main():
             option_parser.error("--max_accepts must either be 'default' "
                                 "or an int value")
     if max_accepts == "default":
-            # default setting for usearch61, uclust, uclust_ref
-            max_accepts = 1
+        # default setting for usearch61, uclust, uclust_ref
+        max_accepts = 1
 
     if max_rejects != "default":
         try:
