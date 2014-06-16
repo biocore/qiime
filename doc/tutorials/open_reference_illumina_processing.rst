@@ -4,9 +4,9 @@
 Discussion of subsampled open reference OTU picking in QIIME
 ============================================================
 
-This document describes QIIME's subsampled open-reference OTU picking protocol. These protocol is presented in Rideout et al. 2014, under review (`PeerJ PrePrint available here <https://peerj.com/preprints/411/>`_). The *subsampled open-reference OTU picking protocol* is optimized for large datasets, and yields nearly identical results to *legacy open-reference OTU picking*, so there there is no reason to ever use the *legacy* method anymore. (Note: In QIIME 1.6.0-dev and earlier, we referred to *legacy* open-reference OTU picking as *standard* open-reference OTU picking).
+This document describes QIIME's subsampled open-reference OTU picking protocol. This protocol is presented in Rideout et al. 2014, under review (`PeerJ PrePrint available here <https://peerj.com/preprints/411/>`_). The *subsampled open-reference OTU picking protocol* is optimized for large datasets, and yields nearly identical results to *legacy open-reference OTU picking*, so there there is no reason to ever use the *legacy* method anymore. (Note: In QIIME 1.6.0-dev and earlier, we referred to *legacy* open-reference OTU picking as *standard* open-reference OTU picking).
 
-This document very briefly covers legacy open-reference OTU picking. Most of the text covers subsampled open-reference OTU picking, including a description of how to use it, what exactly is happening, and test results from applying it to some well-understood data sets.
+This document briefly covers subsampled open-reference OTU picking, including a description of how to use it and what exactly is happening. Test results from comparing this method to *de novo*, *closed-reference*, and *legacy open-reference* OTU picking are presented in Rideout et al. 2014, under review (`PeerJ PrePrint available here <https://peerj.com/preprints/411/>`_).
 
  .. note:: In this document we make use of the Greengenes reference OTUs. You can always find a link to the latest version of the Greengenes reference OTUs on the `QIIME resources page <http://qiime.org/home_static/dataFiles.html>`_.
 
@@ -63,7 +63,7 @@ This command should be run in parallel. Each job will need approximately 4GB of 
 
 .. _ucrss-core-diversity-analyses:
 
-When this job completes, you're almost ready to begin running diversity analyses. The last thing you'll need to do before you begin ischoose an even sampling depth for alpha and beta diversity analyses. To do this, you should review the number of reads per sample::
+When this job completes, you're almost ready to begin running diversity analyses. The last thing you'll need to do before you begin is choose an even sampling depth for alpha and beta diversity analyses. To do this, you should review the number of reads per sample::
 
 	biom summarize-table -i $PWD/ucrss/otu_table_mc2_w_tax_no_pynast_failures.biom -o $PWD/ucrss/otu_table_mc2_w_tax_no_pynast_failures_summary.txt
 
