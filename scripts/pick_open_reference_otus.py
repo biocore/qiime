@@ -142,7 +142,7 @@ An OTU table is built using the final_otu_map_mc2.txt file to produce:
 otu_table_mc2.biom
 
 As long as the --suppress_taxonomy_assignment flag is NOT passed,
-then taxonomy will be assigned to each of the represenatative sequences
+then taxonomy will be assigned to each of the representative sequences
 in the final rep_set produced in Step 5, producing:
 rep_set_tax_assignments.log
 rep_set_tax_assignments.txt
