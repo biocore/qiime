@@ -1634,20 +1634,6 @@ class UclustReferenceOtuPicker(UclustOtuPickerBase):
             output_dir=self.Params['output_dir'],
             HALT_EXEC=HALT_EXEC)
 
-        print "CLUSTER_MAP"
-        for key in cluster_map:
-            print key
-            for value in cluster_map[key]:
-                print value
-
-        print "FAILURES"
-        print "len(failures) = ",len(failures)
-        for value in failures:
-            print value
-
-        print "NEW SEEDS"
-        print "len(new_seeds) = ",len(new_seeds)
-
         # expand identical sequences to create full OTU map
         if prefilter_identical_sequences:
             # expand the clusters (while retaining the names of
