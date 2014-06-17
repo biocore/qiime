@@ -30,8 +30,6 @@ from qiime.workflow.util import (print_to_stdout,
                                  get_params_str,
                                  WorkflowError)
 from qiime.util import write_biom_table
-
-
 from qiime.workflow.core_diversity_analyses import (format_index_link,
                                                     generate_index_page,
                                                     _index_headers)
@@ -365,7 +363,7 @@ def iterative_pick_subsampled_open_reference_otus(
         params,
         qiime_config,
         prefilter_refseqs_fp=None,
-        prefilter_percent_id=0.60,
+        prefilter_percent_id=None,
         min_otu_size=2,
         run_assign_tax=True,
         run_align_and_tree=True,
@@ -565,7 +563,7 @@ def pick_subsampled_open_reference_otus(input_fp,
                                         prefilter_refseqs_fp=None,
                                         run_assign_tax=True,
                                         run_align_and_tree=True,
-                                        prefilter_percent_id=0.60,
+                                        prefilter_percent_id=None,
                                         min_otu_size=2,
                                         step1_otu_map_fp=None,
                                         step1_failures_fasta_fp=None,

@@ -20,6 +20,8 @@ QIIME 1.8.0-dev (changes since 1.8.0 go here)
 * Renamed compare_categories.py's BEST method to BIO-ENV to match the name used in R's vegan package (``vegan::bioenv``) and the name of the program in the original paper. Use ``compare_categories.py --method bioenv`` instead of ``compare_categories.py --method best``. The underlying implementation has also been rewritten and is considerably faster than before, and the output more closely matches the vegan package, as environmental variables are now scaled before computing Euclidean distances.
 * Add required dependency on HDF5 and h5py.
 * Scripts that write an OTU table, will write BIOM files in HDF5 format.
+* Changed default parameters for uclust-based OTU picking: ``max_accepts`` is now 1 (was 8), ``max_rejects`` is now 8 (was 500), ``stepwords`` is now 8 (was 20), and ``word_length`` is now 8 (was 12). These changes greatly reduce runtime, with minimal effect on the results. See Rideout et al., 2014 ([PeerJ pre-print](https://peerj.com/preprints/411/)) for more details.
+* Disabled the prefilter by default in ``pick_open_reference_otus.py``. This change greatly reduces runtime, with minimal effect on the results. See Rideout et al., 2014 ([PeerJ pre-print](https://peerj.com/preprints/411/)) for more details.
 
 QIIME 1.8.0 (11 Dec 2013)
 =========================

@@ -273,17 +273,17 @@ script_info['optional_options'] = [
     make_option('--max_accepts', default='default',
                 help="max_accepts value to uclust, uclust_ref, usearch61, and "
                 "usearch61_ref.  By default, will use value suggested by "
-                "method (uclust: 20, usearch61: 1) [default: %default]"),
+                "method (uclust: 1, usearch61: 1) [default: %default]"),
 
     make_option('--max_rejects', default='default',
                 help="max_rejects value for uclust, uclust_ref, usearch61, and "
                 "usearch61_ref.  With default settings, will use value "
                 "recommended by clustering method used "
-                "(uclust: 500, usearch61: 8 for usearch_fast_cluster option,"
+                "(uclust: 8, usearch61: 8 for usearch_fast_cluster option,"
                 " 32 for reference and smallmem options) "
                 "[default: %default]"),
 
-    make_option('--stepwords', type='int', default=20,
+    make_option('--stepwords', type='int', default=8,
                 help="stepwords value to uclust and "
                 "uclust_ref [default: %default]"),
 
@@ -291,7 +291,7 @@ script_info['optional_options'] = [
                 help="word length value for uclust, uclust_ref, and "
                 "usearch, usearch_ref, usearch61, and usearch61_ref. "
                 "With default setting, will use the setting recommended by "
-                "the method (uclust: 12, usearch: 64, usearch61: 8).  int "
+                "the method (uclust: 8, usearch: 64, usearch61: 8).  int "
                 "value can be supplied to override this setting. "
                 "[default: %default]"),
 
@@ -480,12 +480,10 @@ def main():
             raise ValueError("--word_length must either be 'default' "
                              "or an int value")
     if word_length == "default":
-        if otu_picking_method in ["uclust", "uclust_ref"]:
-            word_length = 12
-        elif otu_picking_method in ["usearch", "usearch_ref"]:
+        if otu_picking_method in ["usearch", "usearch_ref"]:
             word_length = 64
         else:
-            # default setting for usearch61
+            # default setting for usearch61, uclust, uclust_ref
             word_length = 8
 
     if max_accepts != "default":
@@ -495,11 +493,8 @@ def main():
             option_parser.error("--max_accepts must either be 'default' "
                                 "or an int value")
     if max_accepts == "default":
-        if otu_picking_method in ["uclust", "uclust_ref"]:
-            max_accepts = 20
-        else:
-            # default setting for usearch61
-            max_accepts = 1
+        # default setting for usearch61, uclust, uclust_ref
+        max_accepts = 1
 
     if max_rejects != "default":
         try:
@@ -509,7 +504,7 @@ def main():
                                 "or an int value")
     if max_rejects == "default":
         if otu_picking_method in ["uclust", "uclust_ref"]:
-            max_rejects = 500
+            max_rejects = 8
         # usearch61 settings, depends upon fast clustering option
         else:
             if usearch_fast_cluster:
