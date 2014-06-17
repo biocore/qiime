@@ -102,7 +102,7 @@ def get_LEA_seq_consensus_seqs(fwd_read_f, rev_read_f,
 
     (bc_to_sid,
      bc_to_fwd_primers,
-     bc_to_rev_primers) = process_mapping_file(map_f, 
+     bc_to_rev_primers) = process_mapping_file(map_f,
                                                barcode_len,
                                                barcode_type,
                                                barcode_column,
@@ -136,7 +136,7 @@ def get_LEA_seq_consensus_seqs(fwd_read_f, rev_read_f,
                                                      min_difference_in_clusters,
                                                      max_cluster_ratio)
 
-    log_out = format_lea_seq_log(input_seqs_count, 
+    log_out = format_lea_seq_log(input_seqs_count,
                                  barcode_errors_exceed_max_count,
                                  barcode_not_in_map_count,
                                  primer_mismatch_count,
@@ -322,7 +322,7 @@ def select_unique_rand_bcs(rand_bcs, min_difference_in_bcs):
     return unique_rand_bcs
 
 
-def format_lea_seq_log(input_seqs_count, 
+def format_lea_seq_log(input_seqs_count,
                        barcode_errors_exceed_max_count,
                        barcode_not_in_map_count,
                        primer_mismatch_count,
@@ -350,16 +350,18 @@ def format_lea_seq_log(input_seqs_count,
     log_out.append('\nTotal number seqs written: %d' % total_seqs_kept)
     return '\n'.join(log_out)
 
+
 def check_barcodes(bc_to_sid, barcode_len, barcode_type):
     """
-    Make sure that barcodes (which are guaranteed to be of 
-    the same length at this point) are the correct length that the user specified.
+    Make sure that barcodes (which are guaranteed to be of
+    the same length at this point) are the correct length
+    that the user specified.
     """
     barcode_len_in_map = len(bc_to_sid.keys()[0])
     if barcode_len_in_map != barcode_len:
         raise BarcodeLenMismatchError("Barcodes in mapping file are of length %d, but "
-                        "expected barcodes of length %d." %
-                        (barcode_len_in_map, barcode_len))
+                                      "expected barcodes of length %d." %
+                                      (barcode_len_in_map, barcode_len))
 
     if barcode_type == 'golay_12':
         invalid_golay_barcodes = get_invalid_golay_barcodes(bc_to_sid.keys())
@@ -385,7 +387,6 @@ def get_consensus_seqs_lookup(random_bc_lookup,
                               output_dir,
                               min_difference_in_clusters,
                               max_cluster_ratio):
-
     """
     Generate LEA-seq consensus sequence
     returns defaultdict called consensus_seq_lookup
@@ -468,7 +469,7 @@ def read_fwd_rev_read(fwd_read_f,
                       barcode_correction_fn,
                       bc_to_fwd_primers,
                       bc_to_rev_primers,
-                      max_barcode_errors, 
+                      max_barcode_errors,
                       fwd_length,
                       rev_length):
 
@@ -581,8 +582,9 @@ def read_fwd_rev_read(fwd_read_f,
             input_seqs_count,
             total_seqs_kept)
 
+
 def process_mapping_file(map_f,
-                         barcode_len, 
+                         barcode_len,
                          barcode_type,
                          BARCODE_COLUMN,
                          REVERSE_PRIMER_COLUMN):
