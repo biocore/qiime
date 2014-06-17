@@ -18,7 +18,7 @@ grouping those sequences by similarity.
 from copy import copy
 from itertools import ifilter
 from os.path import splitext, split, abspath, join
-from os import makedirs, close
+from os import makedirs, close, rename
 from itertools import imap
 from tempfile import mkstemp
 import re
@@ -190,11 +190,24 @@ class SortmernaV2OtuPicker(OtuPicker):
 
         OtuPicker.__init__(self, params)
 
-    def __call__(self, seq_path, output_dir=None, log_path=None,
-                sortmerna_db=None, refseqs_fp=None,HALT_EXEC=False):
+    def __call__(self, seq_path, result_path=None, log_path=None,
+                sortmerna_db=None, refseqs_fp=None, failure_path=None):
+
+        """ Purpose   : Call to construct the reference database (if not provided) and to
+                        launch sortmerna. 
+            Parameters: seq_path, path to reads file 
+                        result_path, path to OTU mapping file
+                        log_path, path to QIIME log file
+                        sortmerna_db, path to sortmerna indexed database
+                        refseqs_fp, path to reference sequences
+                        failure_path, path to text file of reads failing
+                          to align with similarity & coverage thresholds
+            Return    : None (everything written to output files)
+        """
 
         self.log_lines = []
 
+        # indexed database not provided, build it
         if not sortmerna_db:
 
             self.sortmerna_db, self.db_files_to_remove = \
@@ -204,6 +217,7 @@ class SortmernaV2OtuPicker(OtuPicker):
 
             self.log_lines.append('Reference seqs fp (to build sortmerna database): %s' %
                                     abspath(refseqs_fp))
+        # indexed database provided
         else:
             self.sortmerna_db = sortmerna_db
             self.db_files_to_remove = []
@@ -216,14 +230,32 @@ class SortmernaV2OtuPicker(OtuPicker):
                                             abspath(seq_path),
                                             self.sortmerna_db,
                                             abspath(refseqs_fp),
-                                            abspath(output_dir),
+                                            result_path,
                                             max_e_value=self.Params['max_e_value'],
                                             similarity=self.Params['similarity'],
                                             coverage=self.Params['coverage'],
                                             threads=self.Params['threads'],
                                             tabular=self.Params['blast'],
                                             best=self.Params['best'],
-                                            HALT_EXEC=HALT_EXEC)
+                                            HALT_EXEC=False)
+
+        # change sortmerna cluster filename to result_path
+        rename(output_files['OtuMap'].name, result_path)
+
+        # place failures in a list
+        failures = []
+
+        f_failure = output_files['FastaForDenovo']
+        for label, seq in parse_fasta(f_failure):
+            label = re.split('>| ',label)[0]
+            failures.append(label)
+
+        # write failures to file
+        if failure_path is not None:
+            failure_file = open(failure_path, 'w')
+            failure_file.write('\n'.join(failures))
+            failure_file.write('\n')
+            failure_file.close()
 
         # get number of clusters
         num_clusters = 0
@@ -238,8 +270,8 @@ class SortmernaV2OtuPicker(OtuPicker):
         self.log_lines.append('Num OTUs: %d' % int(num_clusters))
         self.log_lines.append('Num failures: %d' % int(num_failures))
 
+        # log the run
         if log_path:
-            # if the user provided a log file path, log the run
             log_file = open(log_path, 'w')
             self.log_lines = [str(self)] + self.log_lines
             log_file.write('\n'.join(self.log_lines))
@@ -1601,6 +1633,20 @@ class UclustReferenceOtuPicker(UclustOtuPickerBase):
             save_uc_files=self.Params['save_uc_files'],
             output_dir=self.Params['output_dir'],
             HALT_EXEC=HALT_EXEC)
+
+        print "CLUSTER_MAP"
+        for key in cluster_map:
+            print key
+            for value in cluster_map[key]:
+                print value
+
+        print "FAILURES"
+        print "len(failures) = ",len(failures)
+        for value in failures:
+            print value
+
+        print "NEW SEEDS"
+        print "len(new_seeds) = ",len(new_seeds)
 
         # expand identical sequences to create full OTU map
         if prefilter_identical_sequences:

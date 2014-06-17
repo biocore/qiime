@@ -906,8 +906,9 @@ def main():
                   'max_pos': sortmerna_max_pos}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,
-                    output_dir=output_dir, log_path=log_path,
-                    sortmerna_db=sortmerna_db, refseqs_fp=refseqs_fp)
+                    result_path=result_path, log_path=log_path,
+                    sortmerna_db=sortmerna_db, refseqs_fp=refseqs_fp,
+                    failure_path=failure_path)
 
     # other -- shouldn't be able to get here as a KeyError would have
     # been raised earlier
