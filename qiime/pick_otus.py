@@ -218,7 +218,7 @@ class SumaClustDeNovoOtuPicker(OtuPicker):
 
         # create temporary file for storing the de-replicated reads
         fd, unique_seqs_fp = mkstemp(
-            prefix='UclustExactMatchFilter', suffix='.fasta')
+            prefix='SumaClustExactMatchFilter', suffix='.fasta')
         close(fd)
 
         self.files_to_remove.append(unique_seqs_fp)
@@ -230,7 +230,8 @@ class SumaClustDeNovoOtuPicker(OtuPicker):
         unique_seqs_f.close()
         # clean up the seqs_to_cluster list as it can be big and we
         # don't need it again
-        # del(seqs_to_cluster)
+        del(seqs_to_cluster)
+
         return exact_match_id_map, unique_seqs_fp
 
     def __call__(self, seq_path=None, result_path=None, log_path=None):
@@ -249,7 +250,7 @@ class SumaClustDeNovoOtuPicker(OtuPicker):
                 self._apply_identical_sequences_prefilter(seq_path)
 
         # Run SumaClust, return a dict of output files
-        output_files = sumaclust_denovo_cluster(seq_path=seq_path,
+        clusters = sumaclust_denovo_cluster(seq_path=seq_path,
                                 result_path=result_path,
                                 shortest_len=self.Params['l'],
                                 similarity=self.Params['similarity'],
@@ -259,13 +260,6 @@ class SumaClustDeNovoOtuPicker(OtuPicker):
 
         # Clean up any temp files that were created
         remove_files(self.files_to_remove)
-
-        # Put clusters into a list of lists
-        clusters = []
-        f_otumap = output_files['OtuMap']
-        for line in f_otumap:
-            cluster = line.strip().split('\t')
-            clusters.append(cluster[1:])
 
         # Create file for expanded OTU map 
         if prefilter_identical_sequences:
