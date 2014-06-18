@@ -21,7 +21,7 @@ from os.path import splitext, split, abspath, join
 from os import makedirs, close, rename
 from itertools import imap
 from tempfile import mkstemp
-import re
+
 
 from brokit.mothur import parse_otu_list as mothur_parse
 
@@ -190,44 +190,6 @@ class SortmernaV2OtuPicker(OtuPicker):
 
         OtuPicker.__init__(self, params)
 
-    def _apply_identical_sequences_prefilter(self, seq_path):
-        """ 
-            Input : a filepath to input FASTA reads
-            Method: prepares and writes de-replicated reads 
-                    to a temporary FASTA file, calls 
-                    parent method to do the actual 
-                    de-replication
-            Return: exact_match_id_map, a dictionary storing 
-                    de-replicated amplicon ID as key and
-                    all original FASTA IDs with identical
-                    sequences as values;
-                    unique_seqs_fp, filepath to FASTA file 
-                    holding only de-replicated sequences 
-        """
-        # creating mapping for de-replicated reads 
-        seqs_to_cluster, exact_match_id_map =\
-            self._prefilter_exact_matches(parse_fasta(open(seq_path, 'U')))
-
-        # create temporary file for storing the de-replicated reads
-        fd, unique_seqs_fp = mkstemp(
-            prefix='SortMeRNAExactMatchFilter', suffix='.fasta')
-        close(fd)
-
-        self.files_to_remove.append(unique_seqs_fp)
-
-        # write de-replicated reads to file
-        unique_seqs_f = open(unique_seqs_fp, 'w')
-        for seq_id, seq in seqs_to_cluster:
-            unique_seqs_f.write('>%s count=%d;\n%s\n' % (seq_id, len(exact_match_id_map[seq_id]), seq))
-        unique_seqs_f.close()
-
-        # clean up the seqs_to_cluster as we don't need
-        # it again
-        del(seqs_to_cluster)
-
-        return exact_match_id_map, unique_seqs_fp
-
-
     def __call__(self, seq_path, result_path=None, log_path=None,
                 sortmerna_db=None, refseqs_fp=None, failure_path=None):
 
@@ -248,7 +210,7 @@ class SortmernaV2OtuPicker(OtuPicker):
         prefilter_identical_sequences =\
             self.Params['prefilter_identical_sequences']
 
-        # indexed database not provided, build it
+        # Indexed database not provided, build it
         if not sortmerna_db:
 
             self.sortmerna_db, self.files_to_remove = \
@@ -258,7 +220,7 @@ class SortmernaV2OtuPicker(OtuPicker):
 
             self.log_lines.append('Reference seqs fp (to build sortmerna database): %s' %
                                     abspath(refseqs_fp))
-        # indexed database provided
+        # Indexed database provided
         else:
             self.sortmerna_db = sortmerna_db
             self.files_to_remove = []
@@ -272,7 +234,7 @@ class SortmernaV2OtuPicker(OtuPicker):
             exact_match_id_map, seq_path =\
                 self._apply_identical_sequences_prefilter(seq_path)
 
-        # call sortmerna for reference clustering, return a pointer to the OTU map
+        # Call sortmerna for reference clustering, return a pointer to the OTU map
         # and FASTA file for de novo clustering
         clusters, failures, smr_files_to_remove = sortmerna_ref_cluster(
                                             seq_path=seq_path,
@@ -288,9 +250,8 @@ class SortmernaV2OtuPicker(OtuPicker):
                                             HALT_EXEC=False)
 
 
-
-        # remove temporary files
-        files_to_remove.append(smr_files_to_remove)
+        # Remove temporary files
+        self.files_to_remove.extend(smr_files_to_remove)
         remove_files(self.files_to_remove, error_on_missing=False)
      
         if prefilter_identical_sequences:
@@ -306,7 +267,7 @@ class SortmernaV2OtuPicker(OtuPicker):
         self.log_lines.append('Num OTUs: %d' % len(clusters))
         self.log_lines.append('Num failures: %d' % len(failures))
 
-        # write failures to file
+        # Write failures to file
         if failure_path is not None:
             failure_file = open(failure_path, 'w')
             failure_file.write('\n'.join(failures))
@@ -349,6 +310,43 @@ class SortmernaV2OtuPicker(OtuPicker):
             log_file.write('\n')
 
         return clusters
+
+    def _apply_identical_sequences_prefilter(self, seq_path):
+        """ 
+            Input : a filepath to input FASTA reads
+            Method: prepares and writes de-replicated reads 
+                    to a temporary FASTA file, calls 
+                    parent method to do the actual 
+                    de-replication
+            Return: exact_match_id_map, a dictionary storing 
+                    de-replicated amplicon ID as key and
+                    all original FASTA IDs with identical
+                    sequences as values;
+                    unique_seqs_fp, filepath to FASTA file 
+                    holding only de-replicated sequences 
+        """
+        # Creating mapping for de-replicated reads 
+        seqs_to_cluster, exact_match_id_map =\
+            self._prefilter_exact_matches(parse_fasta(open(seq_path, 'U')))
+
+        # Create temporary file for storing the de-replicated reads
+        fd, unique_seqs_fp = mkstemp(
+            prefix='SortMeRNAExactMatchFilter', suffix='.fasta')
+        close(fd)
+
+        self.files_to_remove.append(unique_seqs_fp)
+
+        # Write de-replicated reads to file
+        unique_seqs_f = open(unique_seqs_fp, 'w')
+        for seq_id, seq in seqs_to_cluster:
+            unique_seqs_f.write('>%s count=%d;\n%s\n' % (seq_id, len(exact_match_id_map[seq_id]), seq))
+        unique_seqs_f.close()
+
+        # Clean up the seqs_to_cluster as we don't need
+        # it again
+        del(seqs_to_cluster)
+
+        return exact_match_id_map, unique_seqs_fp
 
         
 
