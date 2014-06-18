@@ -234,8 +234,7 @@ class SortmernaV2OtuPicker(OtuPicker):
             exact_match_id_map, seq_path =\
                 self._apply_identical_sequences_prefilter(seq_path)
 
-        # Call sortmerna for reference clustering, return a pointer to the OTU map
-        # and FASTA file for de novo clustering
+        # Call sortmerna for reference clustering
         clusters, failures, smr_files_to_remove = sortmerna_ref_cluster(
                                             seq_path=seq_path,
                                             sortmerna_db=self.sortmerna_db,
