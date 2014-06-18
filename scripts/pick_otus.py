@@ -226,6 +226,11 @@ script_info['optional_options'] = [
     make_option('--sortmerna_max_pos', type='int', default=10000,
                 help=('The maximum number of positions per seed to store in the '
                       ' indexed database [default: %default]')),
+
+    make_option('--sortmerna_otu_id_prefix', type='string', default="QiimeOTU",
+                help=('Prefix to closed-reference SortMeRNA clusters'
+                      '[default: %default]')),
+
 # end SortMeRNA specific parameters
 
     make_option('--min_aligned_percent',
@@ -334,9 +339,10 @@ script_info['optional_options'] = [
                 action='store_true', help=("Don't pass --stable-sort to "
                                            "uclust [default: %default]")),
 
-    make_option('--suppress_uclust_prefilter_exact_match',
-                default=False, action='store_true', help=("Don't collapse "
-                                                          "exact matches before calling uclust [default: %default]")),
+    make_option('--suppress_prefilter_exact_match',
+                default=False, action='store_true', 
+                help=("Don't collapse exact matches before calling "
+                  "sortmerna or uclust [default: %default]")),
 
     make_option('-d', '--save_uc_files', default=True, action='store_false',
                 help=("Enable preservation of intermediate uclust (.uc) files "
@@ -475,7 +481,7 @@ def main():
     uclust_stable_sort = not opts.suppress_uclust_stable_sort
     save_uc_files = opts.save_uc_files
     prefilter_identical_sequences =\
-        not opts.suppress_uclust_prefilter_exact_match
+        not opts.suppress_prefilter_exact_match
     derep_fullseq = opts.derep_fullseq
     chimeras_retention = opts.non_chimeras_retention
     verbose = opts.verbose
@@ -488,6 +494,7 @@ def main():
     sortmerna_tabular = opts.sortmerna_tabular
     sortmerna_best_N_alignments = opts.sortmerna_best_N_alignments
     sortmerna_max_pos = opts.sortmerna_max_pos
+    sortmerna_otu_id_prefix = opts.sortmerna_otu_id_prefix
 
     # usearch specific parameters
     percent_id_err = opts.percent_id_err
@@ -642,7 +649,7 @@ def main():
 
     if otu_picking_method == 'sortmerna':
 
-    # check sortmerna_e_value is a float and positive
+        # check sortmerna_e_value is a float and positive
         try:
             sortmerna_e_value = float(sortmerna_e_value)
         except ValueError:
@@ -650,7 +657,7 @@ def main():
         if sortmerna_e_value < 0:
             option_parser.error("--sortmerna_e_value must be positive.")
 
-    # check sortmerna_coverage is a float and in [0,1]
+        # check sortmerna_coverage is a float and in [0,1]
         try:
             sortmerna_coverage = float(sortmerna_coverage)
         except ValueError:
@@ -658,19 +665,23 @@ def main():
         if sortmerna_e_value < 0:
             option_parser.error('--sortmerna_coverage must be positive.')
 
-    # check that if sortmerna_best_N_alignments is set then so is sortmerna_tabular
+        # check that if sortmerna_best_N_alignments is set then so is sortmerna_tabular
         if sortmerna_best_N_alignments != None:
             if sortmerna_tabular is False:
                 option_parser.error('must enable --sortmerna_tabular with '
                                     '--sortmerna_best_N_alignments.')
 
-    # check FASTA reference file or the indexed database (with the FASTA reference file) were provided
+        # check FASTA reference file or the indexed database (with the FASTA reference file) were provided
         if refseqs_fp is None:
             option_parser.error('sortmerna always requires refseqs_fp (with or without sortmerna_db)')
         elif sortmerna_db:
             if isfile(sortmerna_db + '.stats') is False:
                 option_parser.error('%s does not exist, make sure you have indexed '
                                     'the database using indexdb_rna' % (sortmerna_db + '.stats'))
+
+        # set default cluster identifier for SortMeRNA
+        if sortmerna_otu_id_prefix is None:
+            sortmerna_otu_id_prefix = "QiimeOTU"
         
 
     # End input validation
@@ -903,7 +914,10 @@ def main():
                   'threads': threads,
                   'blast': sortmerna_tabular,
                   'best': sortmerna_best_N_alignments,
-                  'max_pos': sortmerna_max_pos}
+                  'max_pos': sortmerna_max_pos,
+                  'prefilter_identical_sequences':
+                  prefilter_identical_sequences,
+                  'otu_id_prefix': sortmerna_otu_id_prefix}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,
                     result_path=result_path, log_path=log_path,

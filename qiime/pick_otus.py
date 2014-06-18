@@ -190,27 +190,68 @@ class SortmernaV2OtuPicker(OtuPicker):
 
         OtuPicker.__init__(self, params)
 
+    def _apply_identical_sequences_prefilter(self, seq_path):
+        """ 
+            Input : a filepath to input FASTA reads
+            Method: prepares and writes de-replicated reads 
+                    to a temporary FASTA file, calls 
+                    parent method to do the actual 
+                    de-replication
+            Return: exact_match_id_map, a dictionary storing 
+                    de-replicated amplicon ID as key and
+                    all original FASTA IDs with identical
+                    sequences as values;
+                    unique_seqs_fp, filepath to FASTA file 
+                    holding only de-replicated sequences 
+        """
+        # creating mapping for de-replicated reads 
+        seqs_to_cluster, exact_match_id_map =\
+            self._prefilter_exact_matches(parse_fasta(open(seq_path, 'U')))
+
+        # create temporary file for storing the de-replicated reads
+        fd, unique_seqs_fp = mkstemp(
+            prefix='SortMeRNAExactMatchFilter', suffix='.fasta')
+        close(fd)
+
+        self.files_to_remove.append(unique_seqs_fp)
+
+        # write de-replicated reads to file
+        unique_seqs_f = open(unique_seqs_fp, 'w')
+        for seq_id, seq in seqs_to_cluster:
+            unique_seqs_f.write('>%s count=%d;\n%s\n' % (seq_id, len(exact_match_id_map[seq_id]), seq))
+        unique_seqs_f.close()
+
+        # clean up the seqs_to_cluster as we don't need
+        # it again
+        del(seqs_to_cluster)
+
+        return exact_match_id_map, unique_seqs_fp
+
+
     def __call__(self, seq_path, result_path=None, log_path=None,
                 sortmerna_db=None, refseqs_fp=None, failure_path=None):
 
         """ Purpose   : Call to construct the reference database (if not provided) and to
                         launch sortmerna. 
-            Parameters: seq_path, path to reads file 
-                        result_path, path to OTU mapping file
-                        log_path, path to QIIME log file
-                        sortmerna_db, path to sortmerna indexed database
-                        refseqs_fp, path to reference sequences
+            Parameters: seq_path, path to reads file; 
+                        result_path, path to OTU mapping file;
+                        log_path, path to QIIME log file;
+                        sortmerna_db, path to sortmerna indexed database;
+                        refseqs_fp, path to reference sequences;
                         failure_path, path to text file of reads failing
-                          to align with similarity & coverage thresholds
-            Return    : None (everything written to output files)
+                          to align with similarity & coverage thresholds;
+            Return    : a dictionary of clusters or None if result_path was
+                        provided
         """
 
         self.log_lines = []
+        prefilter_identical_sequences =\
+            self.Params['prefilter_identical_sequences']
 
         # indexed database not provided, build it
         if not sortmerna_db:
 
-            self.sortmerna_db, self.db_files_to_remove = \
+            self.sortmerna_db, self.files_to_remove = \
                 build_database_sortmerna(abspath(refseqs_fp),
                                         max_pos=self.Params['max_pos'],
                                         output_dir=get_qiime_temp_dir())
@@ -220,17 +261,24 @@ class SortmernaV2OtuPicker(OtuPicker):
         # indexed database provided
         else:
             self.sortmerna_db = sortmerna_db
-            self.db_files_to_remove = []
+            self.files_to_remove = []
 
         self.log_lines.append('SortMeRNA database: %s' % self.sortmerna_db)
 
+        original_fasta_path = seq_path
+
+        # Collapse identical sequences to a new file
+        if prefilter_identical_sequences:
+            exact_match_id_map, seq_path =\
+                self._apply_identical_sequences_prefilter(seq_path)
+
         # call sortmerna for reference clustering, return a pointer to the OTU map
         # and FASTA file for de novo clustering
-        output_files = sortmerna_ref_cluster(
-                                            abspath(seq_path),
-                                            self.sortmerna_db,
-                                            abspath(refseqs_fp),
-                                            result_path,
+        clusters, failures, smr_files_to_remove = sortmerna_ref_cluster(
+                                            seq_path=seq_path,
+                                            sortmerna_db=self.sortmerna_db,
+                                            refseqs_fp=refseqs_fp,
+                                            result_path=result_path,
                                             max_e_value=self.Params['max_e_value'],
                                             similarity=self.Params['similarity'],
                                             coverage=self.Params['coverage'],
@@ -239,16 +287,24 @@ class SortmernaV2OtuPicker(OtuPicker):
                                             best=self.Params['best'],
                                             HALT_EXEC=False)
 
-        # change sortmerna cluster filename to result_path
-        rename(output_files['OtuMap'].name, result_path)
 
-        # place failures in a list
-        failures = []
 
-        f_failure = output_files['FastaForDenovo']
-        for label, seq in parse_fasta(f_failure):
-            label = re.split('>| ',label)[0]
-            failures.append(label)
+        # remove temporary files
+        files_to_remove.append(smr_files_to_remove)
+        remove_files(self.files_to_remove, error_on_missing=False)
+     
+        if prefilter_identical_sequences:
+            # Expand identical sequences to create full OTU map
+            clusters = self._map_filtered_clusters_to_full_clusters(clusters, exact_match_id_map)
+
+            # Expand failures
+            temp_failures = []
+            for fa in failures:
+                temp_failures.extend(exact_match_id_map[fa])
+            failures = temp_failures
+
+        self.log_lines.append('Num OTUs: %d' % len(clusters))
+        self.log_lines.append('Num failures: %d' % len(failures))
 
         # write failures to file
         if failure_path is not None:
@@ -257,27 +313,44 @@ class SortmernaV2OtuPicker(OtuPicker):
             failure_file.write('\n')
             failure_file.close()
 
-        # get number of clusters
-        num_clusters = 0
-        num_failures = 0
-        f = output_files['LogFile']
-        for line in f:
-            if "Total OTUs" in line:
-                num_clusters = (re.split('Total OTUs = ', line)[1]).strip()
-            elif "non-aligned reads" in line:
-                num_failures = (re.split('non-aligned reads = | \(', line)[1]).strip()
+        # Add prefix ID to closed-reference OTUs
+        otu_id_prefix = self.Params['otu_id_prefix']
+        if otu_id_prefix is None:
+            clusters = dict(enumerate(clusters))
+        else:
+            clusters = [('%s%d' % (otu_id_prefix, i), c)
+                        for i, c in enumerate(clusters)]
+            clusters = dict(clusters)
 
-        self.log_lines.append('Num OTUs: %d' % int(num_clusters))
-        self.log_lines.append('Num failures: %d' % int(num_failures))
+        # Write OTU map
+        if result_path:
+            # If the user provided a result_path, write the
+            # results to file with one tab-separated line per
+            # cluster (this will over-write the default SortMeRNA
+            # OTU map with the extended OTU map)
+            of = open(result_path, 'w')
+            for cluster_id, cluster in clusters.items():
+                of.write('%s\t%s\n' % (cluster_id, '\t'.join(cluster)))
+            of.close()
+            result = None
+            self.log_lines.append('Result path: %s\n' % result_path)
+        else:
+            # if the user did not provide a result_path, store
+            # the clusters in a dict of {otu_id:[seq_ids]}, where
+            # otu_id is arbitrary
+            result = clusters
+            self.log_lines.append('Result path: None, returned as dict.')
 
-        # log the run
+        # Log the run
         if log_path:
             log_file = open(log_path, 'w')
             self.log_lines = [str(self)] + self.log_lines
             log_file.write('\n'.join(self.log_lines))
             log_file.write('\n')
 
-        remove_files(self.db_files_to_remove, error_on_missing=False)
+        return clusters
+
+        
 
 
 class BlastOtuPicker(OtuPicker):
