@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Adam Robbins-Pianka"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -15,10 +15,12 @@ from shutil import rmtree
 from os import close
 from os.path import exists, join
 from tempfile import mkdtemp, mkstemp
+from unittest import TestCase, main
 
 from skbio.util.misc import remove_files
-from unittest import TestCase, main
-from biom.parse import parse_biom_table
+from numpy.testing import assert_array_equal
+from biom import load_table
+
 from qiime.util import get_qiime_temp_dir
 from qiime.parse import parse_distmat
 from qiime.test import initiate_timeout, disable_timeout
@@ -81,14 +83,14 @@ class ParallelMultipleRarefactionsTests(TestCase):
         biom_tables = glob('%s/*biom' % self.test_out)
         self.assertEqual(len(biom_tables), 20)
         biom_tables.sort()
-        input_table = parse_biom_table(open(self.input1_fp))
+        input_table = load_table(self.input1_fp)
         # sanity checks on first table (sampled at 11 seqs/sample)
-        output_table = parse_biom_table(open(biom_tables[0]))
-        self.assertEqual(output_table.SampleIds, input_table.SampleIds)
+        output_table = load_table(biom_tables[0])
+        assert_array_equal(output_table.sample_ids, input_table.sample_ids)
         self.assertEqual(output_table.sum(), 99)
         # sanity checks on first table (sampled at 91 seqs/sample)
-        output_table = parse_biom_table(open(biom_tables[-1]))
-        self.assertEqual(output_table.SampleIds, input_table.SampleIds)
+        output_table = load_table(biom_tables[-1])
+        assert_array_equal(output_table.sample_ids, input_table.sample_ids)
         self.assertEqual(output_table.sum(), 819)
 
 

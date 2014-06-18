@@ -13,7 +13,7 @@ __email__ = "gregcaporaso@gmail.com"
 from unittest import TestCase, main
 from skbio.util.misc import remove_files
 from qiime.parse import parse_mapping_file
-from biom.parse import parse_biom_table_str
+from biom.parse import parse_biom_table
 from qiime.sort import (sort_sample_ids_by_mapping_value,
                         sort_fasta_by_abundance, natsort,
                         natsort_case_insensitive, sort_otu_table,
@@ -182,56 +182,56 @@ class SortTests(TestCase):
         """ sort_otu_table_by_mapping_field fns when all values differ"""
 
         actual = sort_otu_table_by_mapping_field(
-            parse_biom_table_str(self.otu_table1),
+            parse_biom_table(self.otu_table1),
             parse_mapping_file(
                 self.mapping_f2),
             sort_field="Age")
-        expected = parse_biom_table_str(self.age_sorted_otu_table1)
+        expected = parse_biom_table(self.age_sorted_otu_table1)
         self.assertEqual(actual, expected)
 
     def test_sort_otu_table(self):
         """ sort_otu_table fns as expected """
 
-        actual = sort_otu_table(parse_biom_table_str(self.otu_table1),
+        actual = sort_otu_table(parse_biom_table(self.otu_table1),
                                 ['NA', 'Key', 'Fing'])
-        expected = parse_biom_table_str(self.age_sorted_otu_table1)
+        expected = parse_biom_table(self.age_sorted_otu_table1)
         self.assertEqual(actual, expected)
 
     def test_sort_otu_table_error(self):
         """ sort_otu_table handles errors """
 
         self.assertRaises(ValueError, sort_otu_table,
-                          parse_biom_table_str(self.otu_table1), ['NA', 'Key', 'Fing', 'Key'])
+                          parse_biom_table(self.otu_table1), ['NA', 'Key', 'Fing', 'Key'])
         self.assertRaises(KeyError, sort_otu_table,
-                          parse_biom_table_str(self.otu_table1), ['NA', 'Key'])
+                          parse_biom_table(self.otu_table1), ['NA', 'Key'])
 
     def test_sort_otu_table_by_mapping_field_some_values_differ(self):
         """ sort_otu_table fns when some values differ"""
 
         actual = sort_otu_table_by_mapping_field(
-            parse_biom_table_str(self.otu_table1),
+            parse_biom_table(self.otu_table1),
             parse_mapping_file(
                 self.mapping_f2),
             sort_field="Nothing")
-        expected = parse_biom_table_str(self.nothing_sorted_otu_table1)
+        expected = parse_biom_table(self.nothing_sorted_otu_table1)
         self.assertEqual(actual, expected)
 
     def test_sort_otu_table_by_mapping_field_some_values_same(self):
         """ sort_otu_table_by_mapping_field fns when all values are the same"""
 
         actual = sort_otu_table_by_mapping_field(
-            parse_biom_table_str(self.otu_table1),
+            parse_biom_table(self.otu_table1),
             parse_mapping_file(
                 self.mapping_f2),
             sort_field="Name")
-        expected = parse_biom_table_str(self.name_sorted_otu_table1)
+        expected = parse_biom_table(self.name_sorted_otu_table1)
         self.assertEqual(actual, expected)
 
     def test_sort_otu_table_by_mapping_field_error(self):
         """ sort_otu_table_by_mapping_field fails on samples in otu table but not mapping"""
 
         self.assertRaises(KeyError, sort_otu_table_by_mapping_field,
-                          parse_biom_table_str(
+                          parse_biom_table(
                               self.otu_table1_bad_sampleID),
                           parse_mapping_file(self.mapping_f2),
                           sort_field="Age")

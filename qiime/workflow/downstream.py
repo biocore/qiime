@@ -5,15 +5,19 @@ from __future__ import division
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Greg Caporaso", "Kyle Bittinger", "Justin Kuczynski",
-               "Jesse Stombaugh", "Yoshiki Vazquez Baeza", "Jai Ram Rideout"]
+               "Jesse Stombaugh", "Yoshiki Vazquez Baeza", "Jai Ram Rideout",
+               "Adam Robbins-Pianka"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 from os.path import split, splitext, join
-from biom.parse import parse_biom_table
+from shutil import rmtree
+
+from biom import load_table
 from biom.util import compute_counts_per_sample_stats
+
 from qiime.parse import parse_mapping_file
 from qiime.util import create_dir, get_interesting_mapping_fields
 from qiime.workflow.util import (print_to_stdout,
@@ -21,7 +25,6 @@ from qiime.workflow.util import (print_to_stdout,
                                  WorkflowLogger,
                                  log_input_md5s,
                                  get_params_str)
-from shutil import rmtree
 
 
 def run_beta_diversity_through_plots(otu_table_fp,
@@ -226,7 +229,7 @@ def run_alpha_rarefaction(otu_table_fp,
     if max_rare_depth is None:
         min_count, max_count, median_count, mean_count, counts_per_sample =\
             compute_counts_per_sample_stats(
-                parse_biom_table(open(otu_table_fp, 'U')))
+                load_table(otu_table_fp))
         max_rare_depth = median_count
     step = int((max_rare_depth - min_rare_depth) / num_steps) or 1
     max_rare_depth = int(max_rare_depth)
