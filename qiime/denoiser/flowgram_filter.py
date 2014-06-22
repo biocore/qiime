@@ -19,7 +19,7 @@ from os import close
 
 from qiime.util import FileFormatError
 from skbio.parse.sequences import parse_fasta
-from cogent.parse.flowgram import Flowgram
+from brokit.denoiser import Flowgram
 
 from qiime.denoiser.utils import cat_sff_files, write_sff_header
 

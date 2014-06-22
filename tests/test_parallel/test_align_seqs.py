@@ -16,7 +16,7 @@ from os.path import exists, join
 from os import close
 from tempfile import mkstemp, mkdtemp
 
-from cogent.util.misc import remove_files
+from skbio.util.misc import remove_files
 from unittest import TestCase, main
 from qiime.parallel.align_seqs import ParallelAlignSeqsPyNast
 from qiime.util import get_qiime_temp_dir, count_seqs_in_filepaths

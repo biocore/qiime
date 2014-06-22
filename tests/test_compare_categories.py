@@ -13,7 +13,7 @@ __email__ = "jai.rideout@gmail.com"
 from os.path import exists, join
 from shutil import rmtree
 from tempfile import mkdtemp, NamedTemporaryFile
-from cogent.util.misc import remove_files
+from skbio.util.misc import remove_files
 
 from unittest import TestCase, main
 from skbio.core.exception import DistanceMatrixError
@@ -75,7 +75,7 @@ class CompareCategoriesTests(TestCase):
 
         self.cat_methods = ['adonis', 'anosim', 'mrpp', 'permanova',
                             'permdisp', 'dbrda']
-        self.num_methods = ['best', 'morans_i']
+        self.num_methods = ['bioenv', 'morans_i']
         self.cat_categories = ['Treatment']
         self.num_categories = ['DOB']
         self.num_perms = 42
@@ -130,7 +130,7 @@ class CompareCategoriesTests(TestCase):
 
     def test_compare_categories_invalid_input(self):
         """Test compare_categories() on invalid input that should error out."""
-        # Non-numeric categories with BEST and Moran's I.
+        # Non-numeric categories with BIO-ENV and Moran's I.
         for method in self.num_methods:
             self.assertRaises(TypeError, compare_categories, self.dm1_fp,
                               self.map1_fp, method, self.cat_categories, self.num_perms,
@@ -172,21 +172,9 @@ class CompareCategoriesTests(TestCase):
 
         # Only a single category value.
         for method in self.cat_methods + self.num_methods:
-            if method == 'best':
-                # BEST is okay with this type of category.
-                compare_categories(self.dm1_fp,
-                                   self.map1_fp, method, ['Single'], self.num_perms,
-                                   self.test_dir)
-                results_fp = join(self.test_dir, '%s_results.txt' % method)
-                self.files_to_remove.append(results_fp)
-                results_f = open(results_fp, 'U')
-                results = results_f.readlines()
-                results_f.close()
-                self.assertTrue(len(results) > 0)
-            else:
-                self.assertRaises(ValueError, compare_categories, self.dm1_fp,
-                                  self.map1_fp, method, ['Single'], self.num_perms,
-                                  self.test_dir)
+            self.assertRaises(ValueError, compare_categories, self.dm1_fp,
+                              self.map1_fp, method, ['Single'], self.num_perms,
+                              self.test_dir)
 
         # Bad number of permutations.
         for method in self.cat_methods:

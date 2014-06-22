@@ -13,11 +13,14 @@ __maintainer__ = "Daniel McDonald"
 __email__ = "wasade@gmail.com"
 
 from os import getcwd, makedirs
+
+from biom.parse import parse_biom_table
+from biom.util import biom_open
+
 from qiime.parse import (parse_mapping_file_to_dict, parse_mapping_file,
                          mapping_file_to_dict)
-from qiime.util import parse_command_line_parameters, make_option
-from qiime.format import format_biom_table
-from biom.parse import parse_biom_table
+from qiime.util import (parse_command_line_parameters, make_option,
+                        write_biom_table)
 from qiime.colors import combine_map_label_cols, get_map
 
 script_info = {}
@@ -80,7 +83,8 @@ def main():
     normalize = opts.normalize
 
     # define a function that returns the bin a sample shouldbe placed into
-    bin_function = lambda sample_metadata: sample_metadata[mapping_category]
+    bin_function = lambda id_, sample_metadata:\
+        sample_metadata[mapping_category]
     # parse the sample metadata and add it to the OTU table (we assume that
     # sample metadata is not already present in the table)
     mapping, headers, comments = parse_mapping_file(open(mapping_fp, 'U'))
@@ -97,21 +101,20 @@ def main():
         mapping = combine_map_label_cols(combinecolorby, new_mapping)
 
     sample_metadata = mapping_file_to_dict(mapping, headers)
-    table = parse_biom_table(open(otu_table_fp, 'U'))
-    table.addSampleMetadata(sample_metadata)
+    with biom_open(otu_table_fp, 'U') as biom_file:
+        table = parse_biom_table(biom_file)
+    table.add_metadata(sample_metadata)
     # create a new OTU table where samples are binned based on their return
     # value from bin_function
-    result = table.collapseSamplesByMetadata(bin_function, norm=False,
-                                             min_group_size=1)
+    result = table.collapse(bin_function, norm=False, min_group_size=1,
+                            axis='sample')
 
     # normalize the result if requested by the user
     if normalize:
-        result = result.normObservationBySample()
+        result = result.norm_observation_by_sample()
 
     # write a new BIOM file
-    f = open(output_fp, 'w')
-    f.write(format_biom_table(result))
-    f.close()
+    write_biom_table(result, output_fp)
 
 if __name__ == "__main__":
     main()

@@ -22,11 +22,10 @@ from os import makedirs, close
 from itertools import imap
 from tempfile import mkstemp
 
-from cogent.parse.mothur import parse_otu_list as mothur_parse
-from cogent import DNA as DNA_cogent
+from brokit.mothur import parse_otu_list as mothur_parse
 
 from skbio.util.misc import remove_files, flatten
-from skbio.util.trie import CompressedTrie, fasta_to_pairlist
+from skbio.core.tree import CompressedTrie, fasta_to_pairlist
 from skbio.parse.sequences import parse_fasta
 from skbio.core.alignment import SequenceCollection
 from skbio.core.sequence import DNA
@@ -708,7 +707,7 @@ class CdHitOtuPicker(OtuPicker):
         # Get the clusters by running cd-hit-est against the
         # sequence collection
         clusters = cdhit_clusters_from_seqs(
-            seqs=seqs, moltype=DNA_cogent, params=cd_hit_params)
+            seqs=seqs, params=cd_hit_params)
         if prefix_prefilter_length is not None or trie_prefilter:
             clusters = self._map_filtered_clusters_to_full_clusters(
                 clusters, filter_map)
@@ -833,10 +832,10 @@ class UclustOtuPicker(UclustOtuPickerBase):
         """
         _params = {'Similarity': 0.97,
                    'Application': 'uclust',
-                   'max_accepts': 20,
-                   'max_rejects': 500,
-                   'stepwords': 20,
-                   'word_length': 12,
+                   'max_accepts': 1,
+                   'max_rejects': 8,
+                   'stepwords': 8,
+                   'word_length': 8,
                    'enable_rev_strand_matching': False,
                    'optimal': False,
                    'exact': False,
@@ -1454,10 +1453,10 @@ class UclustReferenceOtuPicker(UclustOtuPickerBase):
         _params = {'Similarity': 0.97,
                    'Application': 'uclust',
                    'enable_rev_strand_matching': False,
-                   'max_accepts': 20,
-                   'max_rejects': 500,
-                   'stepwords': 20,
-                   'word_length': 12,
+                   'max_accepts': 1,
+                   'max_rejects': 8,
+                   'stepwords': 8,
+                   'word_length': 8,
                    'suppress_new_clusters': False,
                    'optimal': False,
                    'exact': False,

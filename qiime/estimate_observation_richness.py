@@ -51,7 +51,7 @@ class ObservationRichnessEstimator(object):
                 be a subclass of AbstractPointEstimator, e.g.
                 Chao1MultinomialPointEstimator
         """
-        if biom_table.isEmpty():
+        if biom_table.is_empty():
             raise EmptyTableError("The input BIOM table cannot be empty.")
 
         self._biom_table = biom_table
@@ -59,7 +59,7 @@ class ObservationRichnessEstimator(object):
 
     def getSampleCount(self):
         """Return the number of samples in the table."""
-        return len(self._biom_table.SampleIds)
+        return len(self._biom_table.sample_ids)
 
     def __call__(self, start=1, stop=None, num_steps=10,
                  confidence_level=0.95):
@@ -85,7 +85,7 @@ class ObservationRichnessEstimator(object):
         """
         results = RichnessEstimatesResults()
 
-        for samp_data, samp_id, _ in self._biom_table.iterSamples():
+        for samp_data, samp_id, _ in self._biom_table.iter(axis='sample'):
             point_estimator = self._point_estimator_cls(samp_data)
             ref_indiv_count = point_estimator.getTotalIndividualCount()
 

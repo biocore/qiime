@@ -17,7 +17,7 @@ from re import search
 from itertools import chain
 
 from skbio.parse.sequences import parse_fasta
-from cogent.parse.flowgram_parser import lazy_parse_sff_handle
+from brokit.denoiser import lazy_parse_sff_handle
 from skbio.app.util import ApplicationNotFoundError, ApplicationError
 
 from qiime.util import load_qiime_config

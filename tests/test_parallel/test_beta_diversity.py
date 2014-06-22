@@ -17,7 +17,7 @@ from os import close
 from os.path import exists, join
 from tempfile import mkstemp, mkdtemp
 
-from cogent.util.misc import remove_files
+from skbio.util.misc import remove_files
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
 from biom.parse import parse_biom_table
@@ -103,7 +103,7 @@ class ParallelBetaDiversitySingleTests(ParallelBetaDiversityTests):
                 poll_directly=True,
                 suppress_submit_jobs=False)
         input_sample_ids = parse_biom_table(
-            open(self.input1_fp, 'U')).SampleIds
+            open(self.input1_fp, 'U')).sample_ids
         dm_fps = glob(join(self.test_out, '*weighted_unifrac*'))
         for dm_fp in dm_fps:
             dm_sample_ids = parse_distmat(open(dm_fp))[0]
@@ -124,7 +124,7 @@ class ParallelBetaDiversitySingleTests(ParallelBetaDiversityTests):
                 poll_directly=True,
                 suppress_submit_jobs=False)
         input_sample_ids = parse_biom_table(
-            open(self.input1_fp, 'U')).SampleIds
+            open(self.input1_fp, 'U')).sample_ids
         dm_fps = glob(join(self.test_out, 'bray_curtis*'))
         for dm_fp in dm_fps:
             dm_sample_ids = parse_distmat(open(dm_fp))[0]
@@ -152,7 +152,7 @@ class ParallelBetaDiversityMultipleTests(ParallelBetaDiversityTests):
         for input_fp, dm_fp in zip(self.input1_fps,
                                    glob(join(self.test_out, '*weighted_unifrac*'))):
             input_sample_ids_l.append(
-                list(parse_biom_table(open(input_fp, 'U')).SampleIds))
+                list(parse_biom_table(open(input_fp, 'U')).sample_ids))
             dm_sample_ids_l.append(parse_distmat(open(dm_fp))[0])
         dm_sample_ids_l.sort()
         input_sample_ids_l.sort()
@@ -181,7 +181,7 @@ class ParallelBetaDiversityMultipleTests(ParallelBetaDiversityTests):
         for input_fp, dm_fp in zip(self.input1_fps,
                                    glob(join(self.test_out, '*bray_curtis*'))):
             input_sample_ids_l.append(
-                list(parse_biom_table(open(input_fp, 'U')).SampleIds))
+                list(parse_biom_table(open(input_fp, 'U')).sample_ids))
             dm_sample_ids_l.append(parse_distmat(open(dm_fp))[0])
         dm_sample_ids_l.sort()
         input_sample_ids_l.sort()

@@ -11,7 +11,7 @@ __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 
 from os.path import exists
-from cogent.util.misc import create_dir
+from skbio.util.misc import create_dir
 from qiime.compare_categories import compare_categories, methods
 from qiime.util import (parse_command_line_parameters, make_option,
                         get_options_lookup)
@@ -24,7 +24,7 @@ script_info[
 script_info['script_description'] = """
 This script allows for the analysis of the strength and statistical
 significance of sample groupings using a distance matrix as the primary input.
-Several statistical methods are available: adonis, ANOSIM, BEST, Moran's I,
+Several statistical methods are available: adonis, ANOSIM, BIO-ENV, Moran's I,
 MRPP, PERMANOVA, PERMDISP, and db-RDA.
 
 Note: R's vegan and ape packages are used to compute many of these methods, and
@@ -58,13 +58,17 @@ significantly different from 'Fast' samples. Since ANOSIM is nonparametric,
 significance is determined through permutations. See vegan::anosim for more
 details.
 
-BEST - This method looks at the numerical environmental variables relating
-samples in a distance matrix. For instance, given a UniFrac distance matrix and
-pH and latitude (or any other number of variables) in soil samples, BEST will
-rank them in order of which best explain patterns in the communities. This
-method will only accept categories that are numerical (continuous or discrete).
-This is currently the only method in this script that accepts more than one
-category (via -c). See vegan::bioenv for more details.
+BIO-ENV - Finds subsets of variables whose Euclidean distances (after scaling
+the variables) are maximally rank-correlated with the distance matrix. For
+example, the distance matrix might contain UniFrac distances between
+communities, and the variables might be numeric environmental variables (e.g.,
+pH and latitude). Correlation between the community distance matrix and
+Euclidean environmental distance matrix is computed using Spearman's rank
+correlation coefficient (rho). This method will only accept categories that are
+numerical (continuous or discrete). This is currently the only method in the
+script that accepts more than one category (via -c). See vegan::bioenv for more
+details. This method is also known as BEST (previously called BIO-ENV) in the
+PRIMER-E software package.
 
 Moran's I - This method uses the numerical (e.g. geographical) data supplied to
 identify what type of spatial configuration occurs in the samples. For example,
@@ -149,7 +153,7 @@ script_info['required_options'] = [
                 help='the metadata mapping file'),
     make_option('-c', '--categories', type='string',
                 help='a comma-delimited list of categories from the mapping file. '
-                'Note: all methods except for BEST take just a single category. If '
+                'Note: all methods except for BIO-ENV accept just a single category. If '
                 'multiple categories are provided, only the first will be used'),
     options_lookup['output_dir']
 ]

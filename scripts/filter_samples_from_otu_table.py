@@ -17,13 +17,15 @@ __email__ = "gregcaporaso@gmail.com"
 
 from itertools import izip
 from numpy import inf, isinf
-from biom.parse import parse_biom_table
-from qiime.util import parse_command_line_parameters, make_option
+from biom import load_table
+
+from qiime.util import (parse_command_line_parameters, make_option,
+                        write_biom_table)
 from qiime.parse import parse_mapping_file
 from qiime.filter import (sample_ids_from_metadata_description,
                           filter_samples_from_otu_table,
                           filter_mapping_file)
-from qiime.format import format_mapping_file, format_biom_table
+from qiime.format import format_mapping_file
 
 script_info = {}
 script_info[
@@ -75,8 +77,7 @@ script_info['version'] = __version__
 
 
 def main():
-    option_parser, opts, args =\
-        parse_command_line_parameters(**script_info)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     input_fp = opts.input_fp
     output_fp = opts.output_fp
@@ -94,21 +95,21 @@ def main():
             sample_id_fp is not None):
         option_parser.error("No filtering requested. Must provide either "
                             "mapping_fp and valid states, min counts, "
-                            "max counts, or sample_id_fp (or some combination of those).")
+                            "max counts, or sample_id_fp (or some combination "
+                            "of those).")
     if output_mapping_fp and not mapping_fp:
         option_parser.error("Must provide input mapping file to generate"
                             " output mapping file.")
 
-    otu_table = parse_biom_table(open(opts.input_fp, 'U'))
-    output_f = open(opts.output_fp, 'w')
+    otu_table =  load_table(opts.input_fp)
 
-    if (mapping_fp and valid_states):
+    if mapping_fp and valid_states:
         sample_ids_to_keep = sample_ids_from_metadata_description(
             open(mapping_fp, 'U'), valid_states)
     else:
-        sample_ids_to_keep = otu_table.SampleIds
+        sample_ids_to_keep = otu_table.sample_ids
 
-    if (sample_id_fp is not None):
+    if sample_id_fp is not None:
         sample_id_f_ids = set([l.strip().split()[0]
                               for l in open(sample_id_fp, 'U') if not l.startswith('#')])
         sample_ids_to_keep = set(sample_ids_to_keep) & sample_id_f_ids
@@ -117,8 +118,7 @@ def main():
                                                        sample_ids_to_keep,
                                                        min_count,
                                                        max_count)
-    output_f.write(format_biom_table(filtered_otu_table))
-    output_f.close()
+    write_biom_table(filtered_otu_table, output_fp)
 
     # filter mapping file if requested
     if output_mapping_fp:
@@ -128,7 +128,7 @@ def main():
             filter_mapping_file(
                 mapping_data,
                 mapping_headers,
-                filtered_otu_table.SampleIds)
+                filtered_otu_table.sample_ids)
         open(
             output_mapping_fp,
             'w').write(

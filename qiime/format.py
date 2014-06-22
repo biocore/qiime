@@ -18,7 +18,7 @@ from os import walk
 from os.path import join, splitext, exists, isfile, abspath
 
 from skbio.core.sequence import BiologicalSequence
-from biom.table import DenseOTUTable, SparseTaxonTable, table_factory
+from biom.table import Table
 
 from qiime.util import get_qiime_library_version, load_qiime_config
 from qiime.colors import data_color_hsv
@@ -87,63 +87,7 @@ def format_qiime_parameters(params, header="#QIIME parameters"):
 
             qiime_params.append(full_line)
     return qiime_params
-
-
-def format_summarize_taxa(summary, header, delimiter=';',
-                          file_format='classic'):
-    """Formats a summarized taxonomy table for output"""
-    if file_format == 'classic':
-        yield "%s\n" % '\t'.join(header)
-        for row in summary:
-            # taxon is tuple, join together for foo;bar;foobar
-            taxon = row[0]
-            line = [delimiter.join(taxon)]
-
-            # add on otu counts
-            line.extend(map(str, row[1:]))
-
-            yield "%s\n" % '\t'.join(line)
-    elif file_format == 'biom':
-        # Skip 'Taxon' or 'SampleId' label in first column.
-        sample_ids = header[1:]
-
-        observation_ids = []
-        data = []
-        for row in summary:
-            # Join taxonomic levels to create an observation ID.
-            observation_ids.append(delimiter.join(row[0]))
-            data.append(row[1:])
-
-        table = table_factory(asarray(data), sample_ids, observation_ids,
-                              constructor=SparseTaxonTable)
-        yield format_biom_table(table)
-    else:
-        raise ValueError("Invalid file format '%s'. Must be either 'classic' "
-                         "or 'biom'." % file_format)
-
-
-def write_summarize_taxa(summary, header, output_fp, delimiter=';',
-                         transposed_output=False, file_format='classic'):
-    """ """
-    # Fixing headers
-    pattern = compile('\W')
-    header = [sub(pattern, '.', label) for label in header]
-
-    if transposed_output:
-        # transposing the summary
-        summary = [[r[col] for r in summary] for col in range(len(summary[0]))]
-        # adding the first column into the new summary matrix
-        for i in range(1, len(summary)):
-            summary[i] = [([header[i]])] + summary[i]
-        # replacing header and trimming summary
-        header = ['SampleID'] + [delimiter.join(taxon) for taxon in summary[0]]
-        summary = summary[1:]
-
-    with open(output_fp, 'w') as of:
-        for line in format_summarize_taxa(summary, header, delimiter,
-                                          file_format=file_format):
-            of.write(line)
-
+    
 
 def format_add_taxa_summary_mapping(summary, tax_order, mapping, header,
                                     delimiter=';'):
@@ -367,41 +311,6 @@ def format_matrix(data, row_names, col_names):
     for sam, vals in zip(row_names, data):
         lines.append('\t'.join([sam] + map(str, vals)))
     return '\n'.join(lines)
-
-
-def format_otu_table(sample_names, otu_names, data, taxonomy=None,
-                     comment=None, skip_empty=False, legacy=True):
-    """Returns string representing OTU table as biom file
-    """
-    print "Deprecation Warning: you should not be using format_otu_table. Instead use qiime.format.format_biom_table"
-    if taxonomy is not None:
-        def strip_f(s):
-            return s.strip()
-        taxonomy = [{'taxonomy': map(strip_f, t.split(';'))} for t in taxonomy]
-    otu_table = DenseOTUTable(Data=data,
-                              SampleIds=sample_names,
-                              ObservationIds=otu_names,
-                              ObservationMetadata=taxonomy)
-    return format_biom_table(otu_table)
-
-
-def format_coords(coord_header, coords, eigvals, pct_var, headers=True):
-    """formats coords given specified coords matrix etc."""
-    result = []
-    if (headers):
-        result.append('pc vector number\t' +
-                      '\t'.join(map(str, range(1, len(coords[0]) + 1))))
-        for name, row in zip(coord_header, coords):
-            result.append('\t'.join([name] + map(str, row)))
-        result.append('')
-        result.append('')
-        result.append('eigvals\t' + '\t'.join(map(str, eigvals)))
-        result.append('% variation explained\t' +
-                      '\t'.join(map(str, pct_var)))
-    else:
-        result = ['\t'.join(map(str, row)) for row in coords]
-        result.append('')
-    return '\n'.join(result)
 
 
 def format_nmds_coords(samples, points, stress):
@@ -692,7 +601,7 @@ def write_Fasta_from_name_seq_pairs(name_seqs, fh):
         raise ValueError("Need open file handle to write to.")
 
     for (name, seq) in name_seqs:
-        fh.write("%s\n" % BiologicalSequence(seq, identifier=name).to_fasta())
+        fh.write("%s\n" % BiologicalSequence(seq, id=name).to_fasta())
 
 
 def illumina_data_to_fastq(record_data, number_of_bases=None):
@@ -738,12 +647,6 @@ def illumina_data_to_fastq(record_data, number_of_bases=None):
         record_data[7])
 
     return '@%s\n%s\n+\n%s' % (header, seq, qual), pass_filter
-
-
-def format_biom_table(biom_table):
-    """ Given a biom-format Table object, returns that Table as a BIOM string"""
-    generated_by_str = "QIIME " + get_qiime_library_version()
-    return biom_table.getBiomFormatJsonString(generated_by_str)
 
 
 def format_mapping_html_data(header,
@@ -918,21 +821,21 @@ def format_tep_file_lines(otu_table_data, mapping_lines, tree_lines,
     lines += '\n'
 
     # get otu table data
-    if(otu_table_data.ObservationMetadata):
+    if(otu_table_data.observation_metadata):
         lines += ['>>otm\n#OTU ID\tOTU Metadata\n']
-        for i in range(len(otu_table_data.ObservationIds)):
-            new_string = otu_table_data.ObservationIds[i] + '\t'
-            for m in otu_table_data.ObservationMetadata[i]['taxonomy']:
+        for i in range(len(otu_table_data.observation_ids)):
+            new_string = otu_table_data.observation_ids[i] + '\t'
+            for m in otu_table_data.observation_metadata[i]['taxonomy']:
                 new_string += m + ';'
             lines += [new_string]
             lines += '\n'
 
     # format and write otu table and taxonomy lines
     lines += ['>>osm\n']
-    if otu_table_data.ObservationMetadata is None:
-        lines += [str(otu_table_data.delimitedSelf())]
-    elif "taxonomy" in otu_table_data.ObservationMetadata[0]:
-        lines += [str(otu_table_data.delimitedSelf(header_key="taxonomy",
+    if otu_table_data.observation_metadata is None:
+        lines += [str(otu_table_data.delimited_self())]
+    elif "taxonomy" in otu_table_data.observation_metadata[0]:
+        lines += [str(otu_table_data.delimited_self(header_key="taxonomy",
                                                    header_value="Consensus Lineage",
                                                    metadata_formatter=lambda x: ';'.join(x)))]
 
@@ -977,60 +880,6 @@ def format_jnlp_file_lines(web_flag, url, tep_fp):
     lines += [jnlp_bottom_block]
 
     return lines
-
-
-def format_anosim_results(anosim_results):
-    """Returns a formatted string with results of the ANOSIM method.
-
-    Arguments:
-        anosim_results - a dictionary containing results, e.g. the output of
-            stats.Anosim.__call__()
-    """
-    num_perms = anosim_results['num_perms']
-    p_value = format_p_value_for_num_iters(anosim_results['p_value'],
-                                           num_perms)
-
-    result = 'Method name\tR statistic\tp-value\tNumber of permutations\n'
-    result += '%s\t%s\t%s\t%d\n' % (anosim_results['method_name'],
-                                    anosim_results['r_value'], p_value,
-                                    num_perms)
-    return result
-
-
-def format_permanova_results(permanova_results):
-    """Returns a formatted string with results of the PERMANOVA method.
-
-    Arguments:
-        permanova_results - a dictionary containing results, e.g. the output of
-            stats.Permanova.__call__()
-    """
-    num_perms = permanova_results['num_perms']
-    p_value = format_p_value_for_num_iters(permanova_results['p_value'],
-                                           num_perms)
-
-    result = 'Method name\tPseudo-F statistic\tp-value\t' + \
-             'Number of permutations\n'
-    result += '%s\t%s\t%s\t%d\n' % (permanova_results['method_name'],
-                                    permanova_results['f_value'], p_value,
-                                    num_perms)
-    return result
-
-
-def format_best_results(best_results):
-    """Returns a formatted string with results of the BEST method.
-
-    Arguments:
-        best_results - a dictionary containing results, e.g. the output of
-            stats.Best.__call__()
-    """
-    rho_vals = [str(rho_val) for rho_val in best_results['rho_vals']]
-
-    result = 'Method name\tNumber of categories\tCategories\trho statistics\n'
-    result += '%s\t%d\t%s\t%s\n' % (best_results['method_name'],
-                                    best_results['num_vars'],
-                                    ', '.join(best_results['vars']),
-                                    ', '.join(rho_vals))
-    return result
 
 
 def format_fastq_record(label,

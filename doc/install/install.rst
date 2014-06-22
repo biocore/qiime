@@ -89,7 +89,8 @@ The next are python packages not included in Canopy Express. Each of these can b
 * PyNAST 1.2.2 (`src_pynast <https://pypi.python.org/packages/source/p/pynast/pynast-1.2.2.tar.gz>`_) (license: BSD)
 * Emperor 0.9.3 (`src_emperor <https://pypi.python.org/packages/source/e/emperor/emperor-0.9.3.tar.gz>`_) (license: BSD)
 * pyqi 0.3.1 (`src_pyqi <https://pypi.python.org/packages/source/p/pyqi/pyqi-0.3.1.tar.gz>`_) (license: BSD)
-* scikit-bio (latest development version) (`src_skbio <https://github.com/biocore/scikit-bio>`_) (license: BSD)
+* scikit-bio 0.1.1-dev (latest development version) (`src_skbio <https://github.com/biocore/scikit-bio>`_) (license: BSD)
+* brokit (latest development version) (`src_brokit <https://github.com/biocore/brokit>`_) (license: GPL)
 
 Next, there are two non-python dependencies required for the QIIME base package. These should be installed by following their respective install instructions.
 
@@ -170,7 +171,6 @@ Alignment, tree-building, taxonomy assignment, OTU picking, and other data gener
 
 * jre1.6.0_05 (`src_jre <http://java.sun.com/javase/downloads/index.jsp>`_) (license: GPL2)
 * rdp_classifier-2.2 (`src_rdp <http://sourceforge.net/projects/rdp-classifier/files/rdp-classifier/rdp_classifier_2.2.zip/download>`_) See :ref:`RDP install notes <rdp-install>`. (license: GPL)
-* tax2tree 1.0.0 (`src_tax2tree <https://downloads.sourceforge.net/project/tax2tree/tax2tree-v1.0.tar.gz>`_)
 * blast-2.2.22 (legacy BLAST from NCBI, *NOT* BLAST+) (`OS X <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/2.2.22/blast-2.2.22-universal-macosx.tar.gz>`_ or `linux 32-bit <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/2.2.22/blast-2.2.22-ia32-linux.tar.gz>`_) (license: GNU)
 * cd-hit 3.1.1 (`src_cdhit <http://www.bioinformatics.org/download/cd-hit/cd-hit-2007-0131.tar.gz>`_) (license: Free access)
 * ChimeraSlayer (via microbiomeutil_2010-04-29) (`src_chimeraslayer <http://sourceforge.net/projects/microbiomeutil/files/>`_) See :ref:`ChimeraSlayer install notes <chimeraslayer-install>`.
@@ -290,7 +290,7 @@ Latest Development Version
 --------------------------
 To get the latest development version of QIIME, you should check it out of our git repository, which is hosted on GitHub. While this code is subject to changes in interface and hasn't been as extensively tested as the release version, it will provide access to the latest and greatest QIIME features. The official web documentation is likely to be out-of-date with respect to the development software. You should instead refer to the documentation in ``Qiime/doc``. Check out the latest version of QIIME using git with the command::
 
-	git clone git://github.com/qiime/qiime.git Qiime
+	git clone git://github.com/biocore/qiime.git Qiime
 
 If you are using the latest development version of QIIME, you should periodically update your checkout by running the following command (from within your checkout)::
 
