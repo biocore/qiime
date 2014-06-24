@@ -440,13 +440,9 @@ script_info['optional_options'] = [
                 "Requires that --usearch61_sort_method be abundance. "
                 "[default: %default]"), action='store_true'),
 
-    make_option('--threads', default='one_per_cpu', help=(
-                "Specify number of threads per core to be used for  "
-                "usearch61 and sortmerna commands that utilize multithreading. "
-                "By default, will calculate the number of cores to utilize so a single "
-                "thread will be used per CPU. Specify a fractional number, e.g."
-                " 1.0 for 1 thread per core, or 0.5 for a single thread on "
-                "a two core CPU. Only applies to usearch61 and sortmerna. "
+    make_option('--threads', default=1, help=(
+                "Specify number of threads (1 thread per core) to be used for usearch61, "
+                "sortmerna and sumaclust commands that utilize multithreading. "
                 "[default: %default]"))
 
 ]
@@ -630,16 +626,13 @@ def main():
         else:
             refseqs_fp = abspath(refseqs_fp)
 
-    # calculate threads as 1 per CPU, or use float of input value
-    if threads == 'one_per_cpu':
-        threads = float(1 / cpu_count())
-    else:
-        # Make sure input is a float
+    # number of threads to use
+    if threads == 1:
+        # Make sure input is an integer
         try:
-            threads = float(threads)
+            threads = int(threads)
         except ValueError:
-            option_parser.error("--threads must be a float value if "
-                                "default 'one_per_cpu' value overridden.")
+            option_parser.error("--threads must be a integer value.")
 
 
     if otu_picking_method == 'sortmerna':
