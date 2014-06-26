@@ -22,7 +22,6 @@ from os import makedirs, close, rename
 from itertools import imap
 from tempfile import mkstemp
 
-
 from brokit.mothur import parse_otu_list as mothur_parse
 
 from skbio.util.misc import remove_files, flatten
@@ -258,8 +257,8 @@ class SortmernaV2OtuPicker(OtuPicker):
         if prefilter_identical_sequences:
             # Expand identical sequences to create full OTU map
             clusters =\
-                self._map_filtered_clusters_to_full_clusters(clusters,
-                                                             exact_match_id_map)
+                self._map_filtered_clusters_to_full_clusters(
+                    clusters, exact_match_id_map)
 
             # Expand failures
             temp_failures = []
@@ -282,9 +281,8 @@ class SortmernaV2OtuPicker(OtuPicker):
         if otu_id_prefix is None:
             clusters = dict(enumerate(clusters))
         else:
-            clusters = [('%s%d' % (otu_id_prefix, i), c)
-                        for i, c in enumerate(clusters)]
-            clusters = dict(clusters)
+            clusters = dict(('%s%d' % (otu_id_prefix, i), c)
+                            for i, c in enumerate(clusters))
 
         # Write OTU map
         if result_path:
@@ -329,8 +327,9 @@ class SortmernaV2OtuPicker(OtuPicker):
                     holding only de-replicated sequences
         """
         # Creating mapping for de-replicated reads
-        seqs_to_cluster, exact_match_id_map =\
-            self._prefilter_exact_matches(parse_fasta(open(seq_path, 'U')))
+        with open(seq_path, 'U') as s_path:
+            seqs_to_cluster, exact_match_id_map =\
+                self._prefilter_exact_matches(parse_fasta(s_path))
 
         # Create temporary file for storing the de-replicated reads
         fd, unique_seqs_fp = mkstemp(
