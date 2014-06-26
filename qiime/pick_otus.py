@@ -429,22 +429,23 @@ def get_blast_hits(seqs,
     return result
 # END MOVE TO BLAST APP CONTROLLER
 
+
 class SumaClustDeNovoOtuPicker(OtuPicker):
 
-    """ SumaClust is a de novo OTU picker, following the same clustering 
+    """ SumaClust is a de novo OTU picker, following the same clustering
         algorithm as Uclust. It is open source and supports multithreading,
-        both SIMD and OpenMP. 
+        both SIMD and OpenMP.
 
         Clusters are created by their similarity threshold (default 0.97).
         If a query does not match any seed with this similarity threshold,
-        it is used to create a new seed. 
+        it is used to create a new seed.
 
         Exact clustering (with parameter -e) assigns queries to the
         best-matching seed, rather than to the first seed with similarity
         threshold.
     """
 
-    def __init__(self,params):
+    def __init__(self, params):
         """ Return a new SumaClustDeNovoOtuPicker object with specified params.
             The defaults are set in the SumaClust API (see brokit)
         """
@@ -452,20 +453,20 @@ class SumaClustDeNovoOtuPicker(OtuPicker):
         OtuPicker.__init__(self, params)
 
     def _apply_identical_sequences_prefilter(self, seq_path):
-        """ 
+        """
             Input : a filepath to input FASTA reads
-            Method: prepares and writes de-replicated reads 
-                    to a temporary FASTA file, calls 
-                    parent method to do the actual 
+            Method: prepares and writes de-replicated reads
+                    to a temporary FASTA file, calls
+                    parent method to do the actual
                     de-replication
-            Return: exact_match_id_map, a dictionary storing 
+            Return: exact_match_id_map, a dictionary storing
                     de-replicated amplicon ID as key and
                     all original FASTA IDs with identical
                     sequences as values;
-                    unique_seqs_fp, filepath to FASTA file 
-                    holding only de-replicated sequences 
+                    unique_seqs_fp, filepath to FASTA file
+                    holding only de-replicated sequences
         """
-        # creating mapping for de-replicated reads 
+        # creating mapping for de-replicated reads
         seqs_to_cluster, exact_match_id_map =\
             self._prefilter_exact_matches(parse_fasta(open(seq_path, 'U')))
 
@@ -479,7 +480,10 @@ class SumaClustDeNovoOtuPicker(OtuPicker):
         # write de-replicated reads to file
         unique_seqs_f = open(unique_seqs_fp, 'w')
         for seq_id, seq in seqs_to_cluster:
-            unique_seqs_f.write('>%s count=%d;\n%s\n' % (seq_id, len(exact_match_id_map[seq_id]), seq))
+            unique_seqs_f.write('>%s count=%d;\n%s\n'
+                                % (seq_id,
+                                   len(exact_match_id_map[seq_id]),
+                                   seq))
         unique_seqs_f.close()
         # clean up the seqs_to_cluster list as it can be big and we
         # don't need it again
@@ -504,19 +508,20 @@ class SumaClustDeNovoOtuPicker(OtuPicker):
 
         # Run SumaClust, return a dict of output files
         clusters = sumaclust_denovo_cluster(seq_path=seq_path,
-                                result_path=result_path,
-                                shortest_len=self.Params['l'],
-                                similarity=self.Params['similarity'],
-                                threads=self.Params['threads'],
-                                exact=self.Params['exact'],
-                                HALT_EXEC=False)
+                                            result_path=result_path,
+                                            shortest_len=self.Params['l'],
+                                            similarity=self.Params['similarity'],
+                                            threads=self.Params['threads'],
+                                            exact=self.Params['exact'],
+                                            HALT_EXEC=False)
 
         # Clean up any temp files that were created
         remove_files(self.files_to_remove)
 
-        # Create file for expanded OTU map 
+        # Create file for expanded OTU map
         if prefilter_identical_sequences:
-            clusters = self._map_filtered_clusters_to_full_clusters(clusters, exact_match_id_map)
+            clusters = self._map_filtered_clusters_to_full_clusters(clusters,
+                                                                    exact_match_id_map)
 
         self.log_lines.append('Num OTUs: %d' % len(clusters))
 
@@ -549,7 +554,7 @@ class SumaClustDeNovoOtuPicker(OtuPicker):
 
         # Log the run
         if log_path:
-            log_file = open(log_path,'w')
+            log_file = open(log_path, 'w')
             self.log_lines = [str(self)] + self.log_lines
             log_file.write('\n'.join(self.log_lines))
             log_file.close()
@@ -1879,7 +1884,7 @@ otu_picking_method_constructors = {
     'usearch_ref': UsearchReferenceOtuPicker,
     'usearch61': Usearch610DeNovoOtuPicker,
     'usearch61_ref': Usearch61ReferenceOtuPicker,
-    'sumaclust': SumaClustDeNovoOtuPicker 
+    'sumaclust': SumaClustDeNovoOtuPicker
 }
 
 otu_picking_method_choices = otu_picking_method_constructors.keys()
