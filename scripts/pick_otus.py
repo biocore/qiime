@@ -210,17 +210,18 @@ script_info['optional_options'] = [
                 help=('Max E-value when clustering with BLAST [default: %default]')),
 
     make_option('--sumaclust_exact', action='store_true', default=False,
-                help=('A sequence is assigned to the best matching seed rather than ' 
-                      'the first matching seed passing the similarity threshold '
-                      '[default: %default]')),
+                help='A sequence is assigned to the best matching seed '
+                     'rather than the first matching seed passing the '
+                     'similarity threshold [default: %default]'),
 
     make_option('--sumaclust_l', action='store_true', default=True,
-                help=('Reference sequence length if the shortest [default: %default]')),
+                help='Reference sequence length if the shortest '
+                     '[default: %default]'),
 
     make_option('--sumaclust_otu_id_prefix', default="denovo", type='string',
-                help=("OTU identifier prefix (string) for the de novo SumaClust "
-                      "OTU picker [default: %default, OTU ids are ascending "
-                      "integers]")),
+                help='OTU identifier prefix (string) for the de novo '
+                     'SumaClust OTU picker [default: %default, OTU ids '
+                     'are ascending integers]'),
 
     make_option('-q', '--trie_reverse_seqs', action='store_true',
                 default=False,
@@ -673,7 +674,7 @@ def main():
         otu_picker(input_seqs_filepath,
                    result_path=result_path, log_path=log_path, HALT_EXEC=False)
 
-    ## usearch (usearch_qf)
+    # usearch (usearch_qf)
     elif otu_picking_method == 'usearch':
         params = {'percent_id': opts.similarity,
                   'maxrejects': max_rejects,
@@ -778,7 +779,7 @@ def main():
                    log_path=log_path, failure_path=failure_path,
                    otu_prefix=otu_prefix, HALT_EXEC=False)
 
-    ## uclust (reference-based)
+    # uclust (reference-based)
     elif otu_picking_method == 'uclust_ref':
         params = {'Similarity': opts.similarity,
                   'enable_rev_strand_matching': opts.enable_rev_strand_match,
@@ -839,15 +840,16 @@ def main():
 
     # sumaclust
     elif otu_picking_method == 'sumaclust':
-        params = {'similarity':similarity,
-                  'exact':sumaclust_exact,
-                  'threads':threads,
-                  'l':sumaclust_l,
-                  'prefilter_identical_sequences':prefilter_identical_sequences,
-                  'sumaclust_otu_id_prefix':sumaclust_otu_id_prefix}
+        params = {'similarity': similarity,
+                  'exact': sumaclust_exact,
+                  'threads': threads,
+                  'l': sumaclust_l,
+                  'prefilter_identical_sequences':
+                  prefilter_identical_sequences,
+                  'sumaclust_otu_id_prefix': sumaclust_otu_id_prefix}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,
-                    result_path=result_path, log_path=log_path)
+                   result_path=result_path, log_path=log_path)
 
     # other -- shouldn't be able to get here as a KeyError would have
     # been raised earlier

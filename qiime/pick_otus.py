@@ -430,7 +430,7 @@ def get_blast_hits(seqs,
 # END MOVE TO BLAST APP CONTROLLER
 
 
-class SumaClustDeNovoOtuPicker(OtuPicker):
+class SumaClustOtuPicker(OtuPicker):
 
     """ SumaClust is a de novo OTU picker, following the same clustering
         algorithm as Uclust. It is open source and supports multithreading,
@@ -446,7 +446,7 @@ class SumaClustDeNovoOtuPicker(OtuPicker):
     """
 
     def __init__(self, params):
-        """ Return a new SumaClustDeNovoOtuPicker object with specified params.
+        """ Return a new SumaClustOtuPicker object with specified params.
             The defaults are set in the SumaClust API (see brokit)
         """
 
@@ -507,21 +507,22 @@ class SumaClustDeNovoOtuPicker(OtuPicker):
                 self._apply_identical_sequences_prefilter(seq_path)
 
         # Run SumaClust, return a dict of output files
-        clusters = sumaclust_denovo_cluster(seq_path=seq_path,
-                                            result_path=result_path,
-                                            shortest_len=self.Params['l'],
-                                            similarity=self.Params['similarity'],
-                                            threads=self.Params['threads'],
-                                            exact=self.Params['exact'],
-                                            HALT_EXEC=False)
+        clusters = sumaclust_denovo_cluster(
+            seq_path=seq_path,
+            result_path=result_path,
+            shortest_len=self.Params['l'],
+            similarity=self.Params['similarity'],
+            threads=self.Params['threads'],
+            exact=self.Params['exact'],
+            HALT_EXEC=False)
 
         # Clean up any temp files that were created
         remove_files(self.files_to_remove)
 
         # Create file for expanded OTU map
         if prefilter_identical_sequences:
-            clusters = self._map_filtered_clusters_to_full_clusters(clusters,
-                                                                    exact_match_id_map)
+            clusters = self._map_filtered_clusters_to_full_clusters(
+                clusters, exact_match_id_map)
 
         self.log_lines.append('Num OTUs: %d' % len(clusters))
 
@@ -530,9 +531,8 @@ class SumaClustDeNovoOtuPicker(OtuPicker):
         if otu_id_prefix is None:
             clusters = dict(enumerate(clusters))
         else:
-            clusters = [('%s%d' % (otu_id_prefix, i), c)
-                        for i, c in enumerate(clusters)]
-            clusters = dict(clusters)
+            clusters = dict(('%s%d' % (otu_id_prefix, i), c)
+                            for i, c in enumerate(clusters))
 
         if result_path:
             # If the user provided a result_path, write the
@@ -547,7 +547,7 @@ class SumaClustDeNovoOtuPicker(OtuPicker):
             self.log_lines.append('Result path: %s\n' % result_path)
         else:
             # if the user did not provide a result_path, store
-                # the clusters in a dict of {otu_id:[seq_ids]}, where
+            # the clusters in a dict of {otu_id:[seq_ids]}, where
             # otu_id is arbitrary
             result = clusters
             self.log_lines.append('Result path: None, returned as dict.')
@@ -555,7 +555,7 @@ class SumaClustDeNovoOtuPicker(OtuPicker):
         # Log the run
         if log_path:
             log_file = open(log_path, 'w')
-            self.log_lines = [str(self)] + self.log_lines
+            self.log_lines.insert(0, str(self))
             log_file.write('\n'.join(self.log_lines))
             log_file.close()
 
@@ -1884,7 +1884,7 @@ otu_picking_method_constructors = {
     'usearch_ref': UsearchReferenceOtuPicker,
     'usearch61': Usearch610DeNovoOtuPicker,
     'usearch61_ref': Usearch61ReferenceOtuPicker,
-    'sumaclust': SumaClustDeNovoOtuPicker
+    'sumaclust': SumaClustOtuPicker
 }
 
 otu_picking_method_choices = otu_picking_method_constructors.keys()
