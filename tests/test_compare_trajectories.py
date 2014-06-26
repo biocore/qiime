@@ -4,12 +4,13 @@ from __future__ import division
 __author__ = "Jose Antonio Navas Molina"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Jose Antonio Navas Molina", "Antonio Gonzalez Pena",
-               "Yoshiki Vazquez Baeza"]
+               "Yoshiki Vazquez Baeza", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Jose Antonio Navas Molina"
 __email__ = "josenavasmolina@gmail.com"
 
+from operator import attrgetter
 from unittest import TestCase, main
 
 import numpy as np
@@ -126,7 +127,8 @@ class CompareTrajectoriesTests(TestCase):
             self.assertTrue(obs.groups is None)
         else:
             npt.assert_almost_equal(obs.probability, exp.probability)
-            for o, e in zip(sorted(obs.groups), sorted(exp.groups)):
+            for o, e in zip(sorted(obs.groups, key=attrgetter('name')),
+                            sorted(exp.groups, key=attrgetter('name'))):
                 self.assert_group_results_almost_equal(o, e)
 
     def assert_gradientANOVA_results_almost_equal(self, obs, exp):
@@ -134,7 +136,8 @@ class CompareTrajectoriesTests(TestCase):
         self.assertEqual(obs.algorithm, exp.algorithm)
         self.assertEqual(obs.weighted, exp.weighted)
 
-        for o, e in zip(sorted(obs.categories), sorted(exp.categories)):
+        for o, e in zip(sorted(obs.categories, key=attrgetter('category')),
+                        sorted(exp.categories, key=attrgetter('category'))):
             self.assert_category_results_almost_equal(o, e)
 
     def test_run_trajectory_analysis_avg(self):
