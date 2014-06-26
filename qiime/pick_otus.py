@@ -240,11 +240,11 @@ class SortmernaV2OtuPicker(OtuPicker):
                                             sortmerna_db=self.sortmerna_db,
                                             refseqs_fp=refseqs_fp,
                                             result_path=result_path,
+                                            tabular=self.Params['blast'],
                                             max_e_value=self.Params['max_e_value'],
                                             similarity=self.Params['similarity'],
                                             coverage=self.Params['coverage'],
                                             threads=self.Params['threads'],
-                                            tabular=self.Params['blast'],
                                             best=self.Params['best'],
                                             HALT_EXEC=False)
 
