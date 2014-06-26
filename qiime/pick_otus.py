@@ -40,7 +40,7 @@ from brokit.formatdb import build_blast_db_from_fasta_path
 from brokit.mothur import Mothur
 from brokit.cd_hit import cdhit_clusters_from_seqs
 from brokit.uclust import get_clusters_from_fasta_filepath
-from brokit.sortmerna_v2 import (build_database_sortmerna, 
+from brokit.sortmerna_v2 import (build_database_sortmerna,
                                  sortmerna_ref_cluster)
 from brokit.usearch import (usearch_qf,
                             usearch61_denovo_cluster,
@@ -172,15 +172,17 @@ class OtuPicker(FunctionWithParams):
             results.append(full_cluster)
         return results
 
+
 class SortmernaV2OtuPicker(OtuPicker):
 
-    """ SortMeRNA-based version 2 OTU picker: clusters queries by their 'best' alignment to a reference seed.
+    """ SortMeRNA-based version 2 OTU picker: clusters queries by their 'best'
+        alignment to a reference seed.
 
         The 'best' alignment for a query is the one with:
-            1. the lowest E-value score (at most 1) 
-            2. percent sequence identity greater than or equal to the OTU 
+            1. the lowest E-value score (at most 1)
+            2. percent sequence identity greater than or equal to the OTU
                 similarity threshold (default in Params['similarity'] = 0.97)
-            3. percent query coverage greater than or equal to the OTU 
+            3. percent query coverage greater than or equal to the OTU
                 coverage threshold (default in Params['coverage'] = 0.97)
     """
 
@@ -191,11 +193,11 @@ class SortmernaV2OtuPicker(OtuPicker):
         OtuPicker.__init__(self, params)
 
     def __call__(self, seq_path, result_path=None, log_path=None,
-                sortmerna_db=None, refseqs_fp=None, failure_path=None):
+                 sortmerna_db=None, refseqs_fp=None, failure_path=None):
 
-        """ Purpose   : Call to construct the reference database (if not provided) and to
-                        launch sortmerna. 
-            Parameters: seq_path, path to reads file; 
+        """ Purpose   : Call to construct the reference database (if not provided)
+                        and to launch sortmerna.
+            Parameters: seq_path, path to reads file;
                         result_path, path to OTU mapping file;
                         log_path, path to QIIME log file;
                         sortmerna_db, path to sortmerna indexed database;
@@ -215,11 +217,12 @@ class SortmernaV2OtuPicker(OtuPicker):
 
             self.sortmerna_db, self.files_to_remove = \
                 build_database_sortmerna(abspath(refseqs_fp),
-                                        max_pos=self.Params['max_pos'],
-                                        output_dir=get_qiime_temp_dir())
+                                         max_pos=self.Params['max_pos'],
+                                         output_dir=get_qiime_temp_dir())
 
-            self.log_lines.append('Reference seqs fp (to build sortmerna database): %s' %
-                                    abspath(refseqs_fp))
+            self.log_lines.append('Reference seqs fp (to build '
+                                  'sortmerna database): %s' %
+                                  abspath(refseqs_fp))
         # Indexed database provided
         else:
             self.sortmerna_db = sortmerna_db
@@ -235,27 +238,28 @@ class SortmernaV2OtuPicker(OtuPicker):
                 self._apply_identical_sequences_prefilter(seq_path)
 
         # Call sortmerna for reference clustering
-        clusters, failures, smr_files_to_remove = sortmerna_ref_cluster(
-                                            seq_path=seq_path,
-                                            sortmerna_db=self.sortmerna_db,
-                                            refseqs_fp=refseqs_fp,
-                                            result_path=result_path,
-                                            tabular=self.Params['blast'],
-                                            max_e_value=self.Params['max_e_value'],
-                                            similarity=self.Params['similarity'],
-                                            coverage=self.Params['coverage'],
-                                            threads=self.Params['threads'],
-                                            best=self.Params['best'],
-                                            HALT_EXEC=False)
-
+        clusters, failures, smr_files_to_remove =\
+            sortmerna_ref_cluster(seq_path=seq_path,
+                                  sortmerna_db=self.sortmerna_db,
+                                  refseqs_fp=refseqs_fp,
+                                  result_path=result_path,
+                                  tabular=self.Params['blast'],
+                                  max_e_value=self.Params['max_e_value'],
+                                  similarity=self.Params['similarity'],
+                                  coverage=self.Params['coverage'],
+                                  threads=self.Params['threads'],
+                                  best=self.Params['best'],
+                                  HALT_EXEC=False)
 
         # Remove temporary files
         self.files_to_remove.extend(smr_files_to_remove)
         remove_files(self.files_to_remove, error_on_missing=False)
-     
+
         if prefilter_identical_sequences:
             # Expand identical sequences to create full OTU map
-            clusters = self._map_filtered_clusters_to_full_clusters(clusters, exact_match_id_map)
+            clusters =\
+                self._map_filtered_clusters_to_full_clusters(clusters,
+                                                             exact_match_id_map)
 
             # Expand failures
             temp_failures = []
@@ -311,20 +315,20 @@ class SortmernaV2OtuPicker(OtuPicker):
         return clusters
 
     def _apply_identical_sequences_prefilter(self, seq_path):
-        """ 
+        """
             Input : a filepath to input FASTA reads
-            Method: prepares and writes de-replicated reads 
-                    to a temporary FASTA file, calls 
-                    parent method to do the actual 
+            Method: prepares and writes de-replicated reads
+                    to a temporary FASTA file, calls
+                    parent method to do the actual
                     de-replication
-            Return: exact_match_id_map, a dictionary storing 
+            Return: exact_match_id_map, a dictionary storing
                     de-replicated amplicon ID as key and
                     all original FASTA IDs with identical
                     sequences as values;
-                    unique_seqs_fp, filepath to FASTA file 
-                    holding only de-replicated sequences 
+                    unique_seqs_fp, filepath to FASTA file
+                    holding only de-replicated sequences
         """
-        # Creating mapping for de-replicated reads 
+        # Creating mapping for de-replicated reads
         seqs_to_cluster, exact_match_id_map =\
             self._prefilter_exact_matches(parse_fasta(open(seq_path, 'U')))
 
@@ -338,7 +342,10 @@ class SortmernaV2OtuPicker(OtuPicker):
         # Write de-replicated reads to file
         unique_seqs_f = open(unique_seqs_fp, 'w')
         for seq_id, seq in seqs_to_cluster:
-            unique_seqs_f.write('>%s count=%d;\n%s\n' % (seq_id, len(exact_match_id_map[seq_id]), seq))
+            unique_seqs_f.write('>%s count=%d;\n%s\n' %
+                                (seq_id,
+                                 len(exact_match_id_map[seq_id]),
+                                 seq))
         unique_seqs_f.close()
 
         # Clean up the seqs_to_cluster as we don't need
@@ -346,8 +353,6 @@ class SortmernaV2OtuPicker(OtuPicker):
         del(seqs_to_cluster)
 
         return exact_match_id_map, unique_seqs_fp
-
-        
 
 
 class BlastOtuPicker(OtuPicker):
