@@ -248,9 +248,6 @@ script_info['optional_options'] = [
                       'uclust_ref, usearch, usearch_ref, usearch61, usearch61_ref, '
                       'sumaclust or sortmerna [default: %default]')),
 
-    make_option('-e', '--max_e_value', type='float', default=1e-10,
-                help=('Max E-value when clustering with BLAST [default: %default]')),
-
     make_option('--sumaclust_exact', action='store_true', default=False,
                 help='A sequence is assigned to the best matching seed '
                      'rather than the first matching seed passing the '
