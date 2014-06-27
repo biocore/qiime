@@ -233,10 +233,11 @@ script_info['required_options'] = [
 
 script_info['optional_options'] = [
     make_option('-m', '--otu_picking_method', type='choice',
-                choices=['uclust', 'usearch61'], help=('The OTU picking method to use '
-                                                       'for reference and de novo steps. Passing usearch61, for example, '
-                                                       'means that usearch61 will be used for the de novo steps and '
-                                                       'usearch61_ref will be used for reference steps. [default: %default]'),
+                choices=['uclust', 'usearch61', 'sortmerna_sumaclust'],
+                help=('The OTU picking method to use '
+                      'for reference and de novo steps. Passing usearch61, for example, '
+                      'means that usearch61 will be used for the de novo steps and '
+                      'usearch61_ref will be used for reference steps. [default: %default]'),
                 default='uclust'),
     make_option('-p', '--parameter_fp', type='existing_filepath', help='path '
                 'to the parameter file, which specifies changes to the default '
@@ -316,6 +317,9 @@ def main():
     elif otu_picking_method == 'usearch61':
         denovo_otu_picking_method = 'usearch61'
         reference_otu_picking_method = 'usearch61_ref'
+    elif otu_picking_method == 'sortmerna_sumaclust':
+        denovo_otu_picking_method = 'sumaclust'
+        reference_otu_picking_method = 'sortmerna'
     else:
         # it shouldn't be possible to get here
         option_parser.error('Unkown OTU picking method: %s' %

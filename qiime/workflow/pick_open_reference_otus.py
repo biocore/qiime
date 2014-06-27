@@ -586,9 +586,9 @@ def pick_subsampled_open_reference_otus(input_fp,
              representative set from step 4 as the reference set.
 
     """
-    # for now only allowing uclust for otu picking
-    allowed_denovo_otu_picking_methods = ['uclust', 'usearch61']
-    allowed_reference_otu_picking_methods = ['uclust_ref', 'usearch61_ref']
+    # for now only allowing uclust/sortmerna+sumaclust for otu picking
+    allowed_denovo_otu_picking_methods = ['uclust', 'usearch61', 'sumaclust']
+    allowed_reference_otu_picking_methods = ['uclust_ref', 'usearch61_ref', 'sortmerna']
     assert denovo_otu_picking_method in allowed_denovo_otu_picking_methods,\
         "Unknown de novo OTU picking method: %s. Known methods are: %s"\
         % (denovo_otu_picking_method,

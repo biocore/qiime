@@ -221,7 +221,7 @@ script_info['optional_options'] = [
                      'string and the percent query coverage '
                      '[default: %default]'),
 
-    make_option('--sortmerna_best_N_alignments', type='int', default=1,
+    make_option('--sortmerna_best_N_alignments', type='int', default=None,
                 help='If --sortmerna_tabular is set, this option '
                      'will output the best N alignments per read '
                      '[default: %default]'),
