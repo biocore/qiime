@@ -348,9 +348,6 @@ class SumaClustOtuPickerTests(TestCase):
     def setUp(self):
         self.output_dir = mkdtemp()
         self.read_seqs = sumaclust_reads_seqs
-        self.expected_otumap = sumaclust_expected_otumap
-        self.expexted_otumap_no_otu_id_prefix =\
-            sumaclust_expected_otumap_no_otu_id_prefix
 
         # create temporary file with read sequences defined in read_seqs
         f, self.file_read_seqs = mkstemp(prefix='temp_reads_',
@@ -366,20 +363,6 @@ class SumaClustOtuPickerTests(TestCase):
                                       suffix='.txt')
         close(f)
 
-        # write OTU map to tmp file
-        with open(self.file_otumap, 'w') as tmp:
-            tmp.write(self.expected_otumap)
-
-        # create temporary file with final OTU map
-        # that doesn't have an OTU id prefix
-        f, self.file_otumap_no_otu_id_prefix = mkstemp(
-            prefix='temp_otumap',
-            suffix='.txt')
-
-        # write OTU map to tmp file
-        with open(self.file_otumap_no_otu_id_prefix, 'w') as tmp:
-            tmp.write(self.expexted_otumap_no_otu_id_prefix)
-
         self.result_path = '%s/%s_otus.txt' % (self.output_dir, 'temp_reads')
         self.log_path = '%s/%s_otus.log' % (self.output_dir, 'temp_reads')
 
@@ -392,6 +375,39 @@ class SumaClustOtuPickerTests(TestCase):
     def tearDown(self):
         remove_files(self.files_to_remove)
         rmtree(self.output_dir)
+
+    def check_clusters(self,
+                       clusters=None):
+
+        # Check the OTU map was output with the correct size
+        self.assertTrue(exists(self.result_path))
+
+        # Place actual clusters in a list of lists
+        actual_clusters = [line.strip().split('\t')[1:]
+                           for line in open(self.result_path, 'U')]
+        actual_clusters.sort()
+
+        # Check the returned clusters list of lists is as expected
+        expected_clusters = [['s1_844', 's1_1886', 's1_5347', 's1_5737',
+                              's1_7014', 's1_7881', 's1_7040', 's1_6200',
+                              's1_1271', 's1_8615'],
+                             ['s1_8977', 's1_10439', 's1_12366', 's1_15985',
+                              's1_21935', 's1_11650', 's1_11001', 's1_8592',
+                              's1_14735', 's1_4677'],
+                             ['s1_630', 's1_4572', 's1_5748', 's1_13961',
+                              's1_2369', 's1_3750', 's1_7634', 's1_8623',
+                              's1_8744', 's1_6846']]
+        expected_clusters.sort()
+
+        # Should be 3 clusters
+        self.assertEqual(len(actual_clusters), 3)
+
+        # List of actual clusters matches list of expected clusters
+        for actual_cluster, expected_cluster in zip(actual_clusters,
+                                                    expected_clusters):
+            actual_cluster.sort()
+            expected_cluster.sort()
+            self.assertEqual(actual_cluster, expected_cluster)
 
     def test_call_default_params(self):
         """ SumaClust should return an OTU map
@@ -414,11 +430,7 @@ class SumaClustOtuPickerTests(TestCase):
                        result_path=self.result_path,
                        log_path=self.log_path)
 
-        # Check OTU map was output
-        self.assertTrue(exists(self.result_path))
-
-        # Check OTU map has the correct content
-        self.assertTrue(cmp(self.result_path, self.file_otumap))
+        self.check_clusters(clusters)
 
     def test_call_no_dereplication(self):
         """ SumaClust should return an OTU map
@@ -441,11 +453,7 @@ class SumaClustOtuPickerTests(TestCase):
                        result_path=self.result_path,
                        log_path=self.log_path)
 
-        # Check OTU map was output
-        self.assertTrue(exists(self.result_path))
-
-        # Check OTU map has the correct content
-        self.assertTrue(cmp(self.result_path, self.file_otumap))
+        self.check_clusters(clusters)
 
     def test_call_no_otu_id_prefix(self):
         """ SumaClust should return an OTU map
@@ -467,12 +475,7 @@ class SumaClustOtuPickerTests(TestCase):
                        result_path=self.result_path,
                        log_path=self.log_path)
 
-        # Check OTU map was output
-        self.assertTrue(exists(self.result_path))
-
-        # Check OTU map has the correct content
-        self.assertTrue(cmp(self.result_path,
-                            self.file_otumap_no_otu_id_prefix))
+        self.check_clusters(clusters)
 
 
 class BlastxOtuPickerTests(TestCase):
@@ -4629,18 +4632,6 @@ GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAGTCGGAATTACTGGGCGTAAAGGGCGTGTAGGCGGCTTTGT
 GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTATTCGGAATTACTGGGCGTAAAGGGCGTGTAGGCGGCTTTGTAAGTCAGATGTGAAAGCCCA
 >s1_8615 reference=129416 amplicon=complement(522..813) errors=81%G
 GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTATTCGGAATTACTGGGCGTAAAGGGCGTGTAGGCGGCTTTGTGAGTCAGATGTGAAAGCCCA
-"""
-
-# The expected OTU map from clustering the read_seqs from 3 species
-# (using exact and non-exact options)
-sumaclust_expected_otumap = """DenovoOTU0\ts1_844\ts1_1886\ts1_5347\ts1_5737\ts1_7014\ts1_7881\ts1_7040\ts1_6200\ts1_1271\ts1_8615
-DenovoOTU1\ts1_8977\ts1_10439\ts1_12366\ts1_15985\ts1_21935\ts1_11650\ts1_11001\ts1_8592\ts1_14735\ts1_4677
-DenovoOTU2\ts1_13961\ts1_4572\ts1_5748\ts1_630\ts1_2369\ts1_3750\ts1_7634\ts1_8623\ts1_8744\ts1_6846
-"""
-
-sumaclust_expected_otumap_no_otu_id_prefix = """0\ts1_844\ts1_1886\ts1_5347\ts1_5737\ts1_7014\ts1_7881\ts1_7040\ts1_6200\ts1_1271\ts1_8615
-1\ts1_8977\ts1_10439\ts1_12366\ts1_15985\ts1_21935\ts1_11650\ts1_11001\ts1_8592\ts1_14735\ts1_4677
-2\ts1_13961\ts1_4572\ts1_5748\ts1_630\ts1_2369\ts1_3750\ts1_7634\ts1_8623\ts1_8744\ts1_6846
 """
 
 # Reference sequence database
