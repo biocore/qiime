@@ -559,7 +559,7 @@ class SumaClustOtuPicker(OtuPicker):
             log_file.write('\n'.join(self.log_lines))
             log_file.close()
 
-        return clusters
+        return result
 
 
 class PrefixSuffixOtuPicker(OtuPicker):

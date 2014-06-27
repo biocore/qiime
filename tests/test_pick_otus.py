@@ -20,7 +20,8 @@ __email__ = "gregcaporaso@gmail.com"
 from os import remove, close
 from os.path import abspath, join, exists, split
 from shutil import rmtree
-from tempfile import mkstemp
+from tempfile import mkstemp, mkdtemp
+from filecmp import cmp
 
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
@@ -34,7 +35,8 @@ from qiime.pick_otus import (CdHitOtuPicker, OtuPicker,
                              expand_otu_map_seq_ids, map_otu_map_files, UclustOtuPicker,
                              UclustReferenceOtuPicker, expand_failures, UsearchOtuPicker,
                              UsearchReferenceOtuPicker, get_blast_hits, BlastxOtuPicker,
-                             Usearch610DeNovoOtuPicker, Usearch61ReferenceOtuPicker)
+                             Usearch610DeNovoOtuPicker, Usearch61ReferenceOtuPicker,
+                             SumaClustOtuPicker)
 
 
 class OtuPickerTests(TestCase):
@@ -116,6 +118,139 @@ class MothurOtuPickerTests(TestCase):
                               [0, 1])
         self.assertItemsEqual(observed_otus.values(),
                               expected_otus)
+
+
+class SumaClustOtuPickerTests(TestCase):
+    """ Tests of the SumaClust de novo OTU picker """
+
+    def setUp(self):
+        self.output_dir = mkdtemp()
+        self.read_seqs = sumaclust_reads_seqs
+        self.expected_otumap = sumaclust_expected_otumap
+        self.expexted_otumap_no_otu_id_prefix =\
+            sumaclust_expected_otumap_no_otu_id_prefix
+
+        # create temporary file with read sequences defined in read_seqs
+        f, self.file_read_seqs = mkstemp(prefix='temp_reads_',
+                                         suffix='.fasta')
+        close(f)
+
+        # write read sequences to tmp file
+        with open(self.file_read_seqs, 'w') as tmp:
+            tmp.write(self.read_seqs)
+
+        # create temporary file with final OTU map
+        f, self.file_otumap = mkstemp(prefix='temp_otumap',
+                                      suffix='.txt')
+        close(f)
+
+        # write OTU map to tmp file
+        with open(self.file_otumap, 'w') as tmp:
+            tmp.write(self.expected_otumap)
+
+        # create temporary file with final OTU map
+        # that doesn't have an OTU id prefix
+        f, self.file_otumap_no_otu_id_prefix = mkstemp(
+            prefix='temp_otumap',
+            suffix='.txt')
+
+        # write OTU map to tmp file
+        with open(self.file_otumap_no_otu_id_prefix, 'w') as tmp:
+            tmp.write(self.expexted_otumap_no_otu_id_prefix)
+
+        self.result_path = '%s/%s_otus.txt' % (self.output_dir, 'temp_reads')
+        self.log_path = '%s/%s_otus.log' % (self.output_dir, 'temp_reads')
+
+        # list of files to remove
+        self.files_to_remove = [self.file_read_seqs,
+                                self.file_otumap,
+                                self.result_path,
+                                self.log_path]
+
+    def tearDown(self):
+        remove_files(self.files_to_remove)
+        rmtree(self.output_dir)
+
+    def test_call_default_params(self):
+        """ SumaClust should return an OTU map
+            with content identical to the expected OTU map,
+            sequences are de-replicated prior to
+            clustering
+        """
+
+        app = SumaClustOtuPicker(
+            params={'similarity': 0.97,
+                    'exact': False,
+                    'threads': 1,
+                    'l': True,
+                    'prefilter_identical_sequences':
+                    True,
+                    'sumaclust_otu_id_prefix':
+                    'DenovoOTU'})
+
+        clusters = app(seq_path=self.file_read_seqs,
+                       result_path=self.result_path,
+                       log_path=self.log_path)
+
+        # Check OTU map was output
+        self.assertTrue(exists(self.result_path))
+
+        # Check OTU map has the correct content
+        self.assertTrue(cmp(self.result_path, self.file_otumap))
+
+    def test_call_no_dereplication(self):
+        """ SumaClust should return an OTU map
+            with content identical to the expected OTU map,
+            sequences are _not_ de-replicated prior to
+            clustering
+        """
+
+        app = SumaClustOtuPicker(
+            params={'similarity': 0.97,
+                    'exact': False,
+                    'threads': 1,
+                    'l': True,
+                    'prefilter_identical_sequences':
+                    False,
+                    'sumaclust_otu_id_prefix':
+                    'DenovoOTU'})
+
+        clusters = app(seq_path=self.file_read_seqs,
+                       result_path=self.result_path,
+                       log_path=self.log_path)
+
+        # Check OTU map was output
+        self.assertTrue(exists(self.result_path))
+
+        # Check OTU map has the correct content
+        self.assertTrue(cmp(self.result_path, self.file_otumap))
+
+    def test_call_no_otu_id_prefix(self):
+        """ SumaClust should return an OTU map
+            with content identical to the expected OTU map,
+            resulting clusters do not have an assigned
+            sumaclust_otu_id_prefix
+        """
+
+        app = SumaClustOtuPicker(
+            params={'similarity': 0.97,
+                    'exact': False,
+                    'threads': 1,
+                    'l': True,
+                    'prefilter_identical_sequences':
+                    True,
+                    'sumaclust_otu_id_prefix': None})
+
+        clusters = app(seq_path=self.file_read_seqs,
+                       result_path=self.result_path,
+                       log_path=self.log_path)
+
+        # Check OTU map was output
+        self.assertTrue(exists(self.result_path))
+
+        # Check OTU map has the correct content
+        self.assertTrue(cmp(self.result_path,
+                            self.file_otumap_no_otu_id_prefix))
 
 
 class BlastxOtuPickerTests(TestCase):
@@ -4208,6 +4343,82 @@ CTTCTTCTGCGGGTAACGTCAATGAGCAAAGGTATTAACTTTACTCCCTCCGCCCCGCTGAAAGTACTTTACAACCCGTA
 
 dna_seqs_rc_single_seq = """>usearch_ecoli_seq_2bp_change_rc
 CTTCTTCTGCGGGTAACGTCAATGAGCAAAGGTATTAACTTTACTCCCTCCGCCCCGCTGAAAGTACTTTACAACCCGTAGGCCTTCTTCATACACGCG
+"""
+
+# Reads to cluster
+# there are 30 reads representing 3 species (gives 3 clusters)
+sumaclust_reads_seqs = """>s1_630 reference=1049393 amplicon=complement(497..788)
+GTGCCAGCAGCCGCGGTAATACAGAGGTCTCAAGCGTTGTTCGGATTCATTGGGCGTAAAGGGTGCGTAGGTGGCGGGGTAAGTCAGGTGTGAAATCTCG
+>s1_2369 reference=1049393 amplicon=complement(497..788) errors=73%A
+GTGCCAGCAGCCGCGGTAATACAGAGGTCTCAAGCGTTGTTCGGATTCATTGGGCGTAAAGGGTGCGTAGGTAGCGGGGTAAGTCAGGTGTGAAATCTCG
+>s1_3750 reference=1049393 amplicon=complement(497..788) errors=100%A
+GTGCCAGCAGCCGCGGTAATACAGAGGTCTCAAGCGTTGTTCGGATTCATTGGGCGTAAAGGGTGCGTAGGTGGCGGGGTAAGTCAGGTGTGAAATCTCA
+>s1_4572 reference=1049393 amplicon=complement(497..788)
+GTGCCAGCAGCCGCGGTAATACAGAGGTCTCAAGCGTTGTTCGGATTCATTGGGCGTAAAGGGTGCGTAGGTGGCGGGGTAAGTCAGGTGTGAAATCTCG
+>s1_5748 reference=1049393 amplicon=complement(497..788)
+GTGCCAGCAGCCGCGGTAATACAGAGGTCTCAAGCGTTGTTCGGATTCATTGGGCGTAAAGGGTGCGTAGGTGGCGGGGTAAGTCAGGTGTGAAATCTCG
+>s1_6846 reference=1049393 amplicon=complement(497..788) errors=67%A
+GTGCCAGCAGCCGCGGTAATACAGAGGTCTCAAGCGTTGTTCGGATTCATTGGGCGTAAAGGGTGCATAGGTGGCGGGGTAAGTCAGGTGTGAAATCTCG
+>s1_7634 reference=1049393 amplicon=complement(497..788) errors=99%T
+GTGCCAGCAGCCGCGGTAATACAGAGGTCTCAAGCGTTGTTCGGATTCATTGGGCGTAAAGGGTGCGTAGGTGGCGGGGTAAGTCAGGTGTGAAATCTTG
+>s1_8623 reference=1049393 amplicon=complement(497..788) errors=17-
+GTGCCAGCAGCCGCGGAATACAGAGGTCTCAAGCGTTGTTCGGATTCATTGGGCGTAAAGGGTGCGTAGGTGGCGGGGTAAGTCAGGTGTGAAATCTCG
+>s1_8744 reference=1049393 amplicon=complement(497..788) errors=62%A
+GTGCCAGCAGCCGCGGTAATACAGAGGTCTCAAGCGTTGTTCGGATTCATTGGGCGTAAAGAGTGCGTAGGTGGCGGGGTAAGTCAGGTGTGAAATCTCG
+>s1_13961 reference=1049393 amplicon=complement(497..788)
+GTGCCAGCAGCCGCGGTAATACAGAGGTCTCAAGCGTTGTTCGGATTCATTGGGCGTAAAGGGTGCGTAGGTGGCGGGGTAAGTCAGGTGTGAAATCTCG
+>s1_4677 reference=4382408 amplicon=complement(487..778) errors=74%T
+GTGCCAGCAGCCGCGGTAATACGGAGGGTCCAAGCGTTGTCCGGAATCACTGGGTGTAAAGGGTGCGTAGGCGTGTCTGTAAGTCAGAGGTGAAAGCCCA
+>s1_8592 reference=4382408 amplicon=complement(487..778) errors=95+A
+GTGCCAGCAGCCGCGGTAATACGGAGGGTCCAAGCGTTGTCCGGAATCACTGGGTGTAAAGGGTGCGTAGGCGGGTCTGTAAGTCAGAGGTGAAAAGCCCA
+>s1_8977 reference=4382408 amplicon=complement(487..778)
+GTGCCAGCAGCCGCGGTAATACGGAGGGTCCAAGCGTTGTCCGGAATCACTGGGTGTAAAGGGTGCGTAGGCGGGTCTGTAAGTCAGAGGTGAAAGCCCA
+>s1_10439 reference=4382408 amplicon=complement(487..778)
+GTGCCAGCAGCCGCGGTAATACGGAGGGTCCAAGCGTTGTCCGGAATCACTGGGTGTAAAGGGTGCGTAGGCGGGTCTGTAAGTCAGAGGTGAAAGCCCA
+>s1_11001 reference=4382408 amplicon=complement(487..778) errors=91%G
+GTGCCAGCAGCCGCGGTAATACGGAGGGTCCAAGCGTTGTCCGGAATCACTGGGTGTAAAGGGTGCGTAGGCGGGTCTGTAAGTCAGAGGGGAAAGCCCA
+>s1_11650 reference=4382408 amplicon=complement(487..778) errors=78-
+GTGCCAGCAGCCGCGGTAATACGGAGGGTCCAAGCGTTGTCCGGAATCACTGGGTGTAAAGGGTGCGTAGGCGGGTCGTAAGTCAGAGGTGAAAGCCCA
+>s1_12366 reference=4382408 amplicon=complement(487..778)
+GTGCCAGCAGCCGCGGTAATACGGAGGGTCCAAGCGTTGTCCGGAATCACTGGGTGTAAAGGGTGCGTAGGCGGGTCTGTAAGTCAGAGGTGAAAGCCCA
+>s1_14735 reference=4382408 amplicon=complement(487..778) errors=94%C
+GTGCCAGCAGCCGCGGTAATACGGAGGGTCCAAGCGTTGTCCGGAATCACTGGGTGTAAAGGGTGCGTAGGCGGGTCTGTAAGTCAGAGGTGACAGCCCA
+>s1_15985 reference=4382408 amplicon=complement(487..778)
+GTGCCAGCAGCCGCGGTAATACGGAGGGTCCAAGCGTTGTCCGGAATCACTGGGTGTAAAGGGTGCGTAGGCGGGTCTGTAAGTCAGAGGTGAAAGCCCA
+>s1_21935 reference=4382408 amplicon=complement(487..778)
+GTGCCAGCAGCCGCGGTAATACGGAGGGTCCAAGCGTTGTCCGGAATCACTGGGTGTAAAGGGTGCGTAGGCGGGTCTGTAAGTCAGAGGTGAAAGCCCA
+>s1_844 reference=129416 amplicon=complement(522..813)
+GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTATTCGGAATTACTGGGCGTAAAGGGCGTGTAGGCGGCTTTGTAAGTCAGATGTGAAAGCCCA
+>s1_1271 reference=129416 amplicon=complement(522..813) errors=94%C
+GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTATTCGGAATTACTGGGCGTAAAGGGCGTGTAGGCGGCTTTGTAAGTCAGATGTGACAGCCCA
+>s1_1886 reference=129416 amplicon=complement(522..813)
+GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTATTCGGAATTACTGGGCGTAAAGGGCGTGTAGGCGGCTTTGTAAGTCAGATGTGAAAGCCCA
+>s1_5347 reference=129416 amplicon=complement(522..813)
+GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTATTCGGAATTACTGGGCGTAAAGGGCGTGTAGGCGGCTTTGTAAGTCAGATGTGAAAGCCCA
+>s1_5737 reference=129416 amplicon=complement(522..813)
+GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTATTCGGAATTACTGGGCGTAAAGGGCGTGTAGGCGGCTTTGTAAGTCAGATGTGAAAGCCCA
+>s1_6200 reference=129416 amplicon=complement(522..813) errors=92%C
+GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTATTCGGAATTACTGGGCGTAAAGGGCGTGTAGGCGGCTTTGTAAGTCAGATGTCAAAGCCCA
+>s1_7014 reference=129416 amplicon=complement(522..813)
+GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTATTCGGAATTACTGGGCGTAAAGGGCGTGTAGGCGGCTTTGTAAGTCAGATGTGAAAGCCCA
+>s1_7040 reference=129416 amplicon=complement(522..813) errors=40%G
+GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAGTCGGAATTACTGGGCGTAAAGGGCGTGTAGGCGGCTTTGTAAGTCAGATGTGAAAGCCCA
+>s1_7881 reference=129416 amplicon=complement(522..813)
+GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTATTCGGAATTACTGGGCGTAAAGGGCGTGTAGGCGGCTTTGTAAGTCAGATGTGAAAGCCCA
+>s1_8615 reference=129416 amplicon=complement(522..813) errors=81%G
+GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTATTCGGAATTACTGGGCGTAAAGGGCGTGTAGGCGGCTTTGTGAGTCAGATGTGAAAGCCCA
+"""
+
+# The expected OTU map from clustering the read_seqs from 3 species
+# (using exact and non-exact options)
+sumaclust_expected_otumap = """DenovoOTU0\ts1_844\ts1_1886\ts1_5347\ts1_5737\ts1_7014\ts1_7881\ts1_7040\ts1_6200\ts1_1271\ts1_8615
+DenovoOTU1\ts1_8977\ts1_10439\ts1_12366\ts1_15985\ts1_21935\ts1_11650\ts1_11001\ts1_8592\ts1_14735\ts1_4677
+DenovoOTU2\ts1_13961\ts1_4572\ts1_5748\ts1_630\ts1_2369\ts1_3750\ts1_7634\ts1_8623\ts1_8744\ts1_6846
+"""
+
+sumaclust_expected_otumap_no_otu_id_prefix = """0\ts1_844\ts1_1886\ts1_5347\ts1_5737\ts1_7014\ts1_7881\ts1_7040\ts1_6200\ts1_1271\ts1_8615
+1\ts1_8977\ts1_10439\ts1_12366\ts1_15985\ts1_21935\ts1_11650\ts1_11001\ts1_8592\ts1_14735\ts1_4677
+2\ts1_13961\ts1_4572\ts1_5748\ts1_630\ts1_2369\ts1_3750\ts1_7634\ts1_8623\ts1_8744\ts1_6846
 """
 
 # run unit tests if run from command-line
