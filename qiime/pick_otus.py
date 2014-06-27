@@ -203,8 +203,7 @@ class SortmernaV2OtuPicker(OtuPicker):
                         refseqs_fp, path to reference sequences;
                         failure_path, path to text file of reads failing
                           to align with similarity & coverage thresholds;
-            Return    : a dictionary of clusters or None if result_path was
-                        provided
+            Return    : None (output is always written to file)
         """
 
         self.log_lines = []
@@ -296,12 +295,6 @@ class SortmernaV2OtuPicker(OtuPicker):
             of.close()
             result = None
             self.log_lines.append('Result path: %s\n' % result_path)
-        else:
-            # if the user did not provide a result_path, store
-            # the clusters in a dict of {otu_id:[seq_ids]}, where
-            # otu_id is arbitrary
-            result = clusters
-            self.log_lines.append('Result path: None, returned as dict.')
 
         # Log the run
         if log_path:
@@ -310,7 +303,7 @@ class SortmernaV2OtuPicker(OtuPicker):
             log_file.write('\n'.join(self.log_lines))
             log_file.write('\n')
 
-        return clusters
+        return result
 
     def _apply_identical_sequences_prefilter(self, seq_path):
         """
