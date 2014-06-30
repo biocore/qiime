@@ -82,7 +82,7 @@ def split_otu_table_on_sample_metadata(otu_table, mapping_f, mapping_field):
             # filtering cannot be inplace otherwise we lose data
             filtered_otu_table = otu_table.filter(
                 lambda values, id_, metadata: id_ in sample_ids_to_keep,
-                axis='observation', inplace=False)
+                axis='sample', inplace=False)
         except TableException:
             # all samples are filtered out, so no otu table to write
             continue
