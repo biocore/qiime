@@ -84,10 +84,10 @@ def split_otu_table_on_sample_metadata(otu_table, mapping_f, mapping_field):
             filtered_otu_table = otu_table.filter(
                 lambda values, id_, metadata: id_ in sample_ids_to_keep,
                 axis='sample', inplace=False)
+            tables += 1
         except TableException:
             # all samples are filtered out, so no otu table to write
             continue
-        tables += 1
         yield v_fp_str, filtered_otu_table
 
     if not tables:
