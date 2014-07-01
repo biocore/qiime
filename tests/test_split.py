@@ -22,7 +22,7 @@ from skbio.parse.sequences import parse_fasta
 
 from qiime.split import (split_mapping_file_on_field,
                          split_otu_table_on_sample_metadata,
-                         split_fasta)
+                         split_fasta, OTUTableSplitError)
 from qiime.util import get_qiime_temp_dir, remove_files
 
 
@@ -67,7 +67,7 @@ class SplitTests(TestCase):
     def test_split_otu_table_on_sample_metadata_exceptions(self):
 
         # mapping file 3 has no sample identifiers matching the OTU table
-        with self.assertRaises(ValueError):
+        with self.assertRaises(OTUTableSplitError):
             a = list(split_otu_table_on_sample_metadata(self.otu_table_f1,
                                                         self.mapping_f3,
                                                         "Treatment"))

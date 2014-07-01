@@ -20,7 +20,8 @@ from qiime.util import (parse_command_line_parameters, make_option, create_dir,
                         write_biom_table)
 from qiime.parse import parse_mapping_file
 from qiime.split import (split_mapping_file_on_field,
-                         split_otu_table_on_sample_metadata)
+                         split_otu_table_on_sample_metadata,
+                         OTUTableSplitError)
 
 script_info = {}
 script_info[
@@ -100,7 +101,7 @@ def main():
                 otu_table_base_name, fp_str))
 
             write_biom_table(sub_otu_table_s, otu_table_output_fp)
-    except ValueError as e:
+    except OTUTableSplitError as e:
         option_parser.error(e)
 
 

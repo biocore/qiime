@@ -18,6 +18,11 @@ from qiime.format import format_mapping_file
 from biom.table import TableException
 
 
+class OTUTableSplitError(ValueError):
+    """Exception raised when an OTU table cannot be split"""
+    pass
+
+
 def get_mapping_values(mapping_f, mapping_field):
     mapping_data, mapping_headers, comments = parse_mapping_file(mapping_f)
 
@@ -91,9 +96,9 @@ def split_otu_table_on_sample_metadata(otu_table, mapping_f, mapping_field):
         yield v_fp_str, filtered_otu_table
 
     if not tables:
-        raise ValueError("Could not split OTU tables! There are no matches "
-                         "between the sample identifiers in the OTU table and "
-                         "in the mapping file.")
+        raise OTUTableSplitError("Could not split OTU tables! There are no "
+                                 "matches between the sample identifiers in "
+                                 "the OTU table and the mapping file.")
 
 
 def split_fasta(infile, seqs_per_file, outfile_prefix, working_dir=''):
