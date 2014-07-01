@@ -91,14 +91,18 @@ def main():
 
     otu_table = load_table(otu_table_fp)
 
-    for fp_str, sub_otu_table_s in split_otu_table_on_sample_metadata(
-            otu_table,
-            mapping_f,
-            mapping_field):
-        otu_table_output_fp = join(output_dir, '%s_%s.biom' % (
-            otu_table_base_name, fp_str))
+    try:
+        for fp_str, sub_otu_table_s in split_otu_table_on_sample_metadata(
+                otu_table,
+                mapping_f,
+                mapping_field):
+            otu_table_output_fp = join(output_dir, '%s_%s.biom' % (
+                otu_table_base_name, fp_str))
 
-        write_biom_table(sub_otu_table_s, otu_table_output_fp)
+            write_biom_table(sub_otu_table_s, otu_table_output_fp)
+    except ValueError as e:
+        option_parser.error(e)
+
 
 
 if __name__ == "__main__":
