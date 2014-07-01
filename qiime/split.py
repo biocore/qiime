@@ -72,6 +72,7 @@ def split_otu_table_on_sample_metadata(otu_table, mapping_f, mapping_field):
     """
     mapping_f = list(mapping_f)
     mapping_values = get_mapping_values(mapping_f, mapping_field)
+    tables = 0
 
     for v in mapping_values:
         v_fp_str = v.replace(' ', '_')
@@ -86,7 +87,13 @@ def split_otu_table_on_sample_metadata(otu_table, mapping_f, mapping_field):
         except TableException:
             # all samples are filtered out, so no otu table to write
             continue
+        tables += 1
         yield v_fp_str, filtered_otu_table
+
+    if not tables:
+        raise ValueError("Could not split OTU tables! There are no matches "
+                         "between the sample identifiers in the OTU table and "
+                         "in the mapping file.")
 
 
 def split_fasta(infile, seqs_per_file, outfile_prefix, working_dir=''):
