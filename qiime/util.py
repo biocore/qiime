@@ -29,6 +29,7 @@ from subprocess import Popen
 from random import random
 from itertools import repeat, izip
 from tempfile import mkstemp
+from functools import partial
 
 from numpy import (array, zeros, shape, vstack, ndarray, asarray,
                    float, where, isnan, std, sqrt, ravel, mean, median,
@@ -58,15 +59,15 @@ from brokit.formatdb import (build_blast_db_from_fasta_path,
 from qcli import make_option, qcli_system_call, parse_command_line_parameters
 
 from qiime import __version__ as qiime_library_version
-from qiime.parse import (parse_mapping_file_to_dict,
-                         parse_qiime_config_files,
+from qiime.parse import (parse_qiime_config_files,
                          parse_coords,
                          parse_newick,
                          fields_to_dict,
                          PhyloNode,
                          parse_mapping_file,
                          parse_denoiser_mapping,
-                         parse_fastq)
+                         parse_fastq,
+                         mapping_file_to_dict)
 
 # for backward compatibility - compute_seqs_per_library_stats has
 # been removed in favor of biom.util.compute_counts_per_sample_stats,
@@ -1534,7 +1535,7 @@ class MetadataMap():
     req_header_suffix = ['Description']
 
     @staticmethod
-    def parseMetadataMap(lines):
+    def parseMetadataMap(lines, case_insensitive=False):
         """Parses a QIIME metadata mapping file into a MetadataMap object.
 
         This static method is basically a factory that reads in the given
@@ -1544,18 +1545,31 @@ class MetadataMap():
         Arguments:
             lines - a list of strings representing the file contents of a QIIME
                 metadata mapping file
+            case_insensitive - a boolean to uppercase non required mapping file
+                headers
         """
-        return MetadataMap(*parse_mapping_file_to_dict(lines))
+        mapping_data, header, comments = parse_mapping_file(lines)
+        if case_insensitive:
+            req_header = set(MetadataMap.req_header_prefix + MetadataMap.req_header_suffix)
+            for i in range(len(header)):
+                if header[i] not in req_header:
+                    header[i] = header[i].upper()
+        mapping = mapping_file_to_dict(mapping_data, header)
+        return MetadataMap(mapping, comments)
+        # return MetadataMap(*parse_mapping_file_to_dict(lines))
 
     @staticmethod
-    def mergeMappingFiles(mapping_files, no_data_value='no_data'):
+    def mergeMappingFiles(mapping_files, no_data_value='no_data',
+                          case_insensitive=False):
         """ Merge list of mapping files into a single mapping file
 
             mapping_files: open file objects containing mapping data
             no_data_value: value to be used in cases where there is no
             mapping field associated with a sample ID (default: 'no_data')
         """
-        metadata_maps = map(MetadataMap.parseMetadataMap, mapping_files)
+        func = partial(MetadataMap.parseMetadataMap,
+                       case_insensitive=case_insensitive)
+        metadata_maps = map(func, mapping_files)
         merged = sum(metadata_maps[1:], metadata_maps[0])
         merged.no_data_value = no_data_value
         return merged
