@@ -1556,7 +1556,6 @@ class MetadataMap():
                     header[i] = header[i].upper()
         mapping = mapping_file_to_dict(mapping_data, header)
         return MetadataMap(mapping, comments)
-        # return MetadataMap(*parse_mapping_file_to_dict(lines))
 
     @staticmethod
     def mergeMappingFiles(mapping_files, no_data_value='no_data',
