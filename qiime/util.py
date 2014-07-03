@@ -2083,7 +2083,7 @@ def biom_taxonomy_formatter(bt, md_key):
         return map(str, data)
     elif isinstance(dtype, list):
         return (
-            map(str, [';'.join(md[md_key])
+            map(str, ['; '.join(md[md_key])
                       for md in bt.metadata(axis='observation')])
         )
     elif isinstance(dtype, (str, unicode)):
