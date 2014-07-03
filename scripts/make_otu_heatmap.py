@@ -146,7 +146,7 @@ def main():
     else:
         # convert to 0-based indexing
         obs_md_level -= 1
-    obs_md = otu_table.observation_metadata
+    obs_md = otu_table.metadata(axis='observation')
     # create reference to the observation metadata for the first
     # observation for convenient lookup
     obs_md_0 = obs_md[0]
