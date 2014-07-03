@@ -159,7 +159,7 @@ def main():
 
     if biom_table_fp:
         biom_table = load_table(biom_table_fp)
-        analysis_categories = observation_ids or biom_table.observation_ids
+        analysis_categories = observation_ids or biom_table.ids(axis='observation')
         personal_ids_to_state_values = \
             extract_per_individual_state_metadata_from_sample_metadata_and_biom(
                 mapping_data,

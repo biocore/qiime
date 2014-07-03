@@ -152,7 +152,7 @@ def main():
     obs_md_0 = obs_md[0]
     obs_md_labels = []
     if (obs_md is None or obs_md_category not in obs_md_0):
-        obs_md_labels = [['']] * len(otu_table.observation_ids)
+        obs_md_labels = [['']] * len(otu_table.ids(axis='observation'))
     else:
         for _, _, md in otu_table.iter(axis='observation'):
             current_md = md[obs_md_category]
@@ -162,7 +162,7 @@ def main():
                 current_md_at_level = ''
             obs_md_labels.append([current_md_at_level])
 
-    otu_labels = make_otu_labels(otu_table.observation_ids,
+    otu_labels = make_otu_labels(otu_table.ids(axis='observation'),
                                  obs_md_labels)
 
     # Convert to relative abundance if requested
@@ -229,7 +229,7 @@ def main():
         except (TypeError, IOError):
             raise MissingFileError("Couldn't read tree file at path: %s" %
                                    opts.otu_tree)
-        otu_order = get_order_from_tree(otu_table.observation_ids, f)
+        otu_order = get_order_from_tree(otu_table.ids(axis='observation'), f)
         f.close()
     # if no tree or mapping file, perform upgma euclidean
     elif not opts.suppress_row_clustering:
@@ -237,17 +237,17 @@ def main():
         otu_order = get_clusters(data, axis='row')
     # else just use OTU table ordering
     else:
-        otu_order = np.arange(len(otu_table.observation_ids))
+        otu_order = np.arange(len(otu_table.ids(axis='observation')))
 
     # otu_order and sample_order should be ids, rather than indices
     #  to use in sortObservationOrder/sortSampleOrder
-    otu_id_order = [otu_table.observation_ids[i] for i in otu_order]
+    otu_id_order = [otu_table.ids(axis='observation')[i] for i in otu_order]
     sample_id_order = [otu_table.sample_ids[i] for i in sample_order]
 
     # Re-order otu table, sampleids, etc. as necessary
     otu_table = otu_table.sort_order(otu_id_order, axis='observation')
     # otu_ids not used after: tagged for deletion
-    otu_ids = np.array(otu_table.observation_ids)[otu_order]
+    otu_ids = np.array(otu_table.ids(axis='observation'))[otu_order]
     otu_labels = np.array(otu_labels)[otu_order]
     otu_table = otu_table.sort_order(sample_id_order)
     sample_ids = np.array(otu_table.sample_ids)[sample_order]
