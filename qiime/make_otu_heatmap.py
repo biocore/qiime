@@ -175,7 +175,7 @@ def plot_heatmap(otu_table, row_labels, col_labels, filename='heatmap.pdf',
         color_scheme: choices can be found at
          http://wiki.scipy.org/Cookbook/Matplotlib/Show_colormaps
     """
-    nrow = len(otu_table.observation_ids)
+    nrow = len(otu_table.ids(axis='observation'))
     ncol = len(otu_table.sample_ids)
 
     # determine appropriate font sizes for tick labels

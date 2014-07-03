@@ -140,7 +140,7 @@ def create_javascript_array(otu_table, use_floats=False):
 
     # OTU ids first
     js_array.append("OTU_table[0][0]='#OTU ID';\n")
-    for (idx, otu_id) in enumerate(otu_table.observation_ids):
+    for (idx, otu_id) in enumerate(otu_table.ids(axis='observation')):
         js_array.append("OTU_table[0][%i]='%s';\n" % (idx + 1, otu_id))
 
     # Sample ids and values in the table
@@ -173,7 +173,7 @@ def filter_by_otu_hits(num_otu_hits, otu_table):
     """Filter the OTU table by the number of otus per sample"""
     # Filter out rows with sum > num_otu_hits
     new_otu_table = filter_otus_from_otu_table(
-        otu_table, otu_table.observation_ids,
+        otu_table, otu_table.ids(axis='observation'),
         num_otu_hits, inf, 0, inf)
 
     return new_otu_table
@@ -280,9 +280,9 @@ def generate_heatmap_plots(
     filtered_otu_table = filter_by_otu_hits(num_otu_hits, otu_table)
 
     if otu_sort:
-        # Since the BIOM object comes back with fewer Observation_ids, we need to
+        # Since the BIOM object comes back with fewer Observation ids, we need to
         # remove those from the original sort_order
-        actual_observations = filtered_otu_table.observation_ids
+        actual_observations = filtered_otu_table.ids(axis='observation')
         new_otu_sort_order = []
         for i in otu_sort:
             if i in actual_observations:

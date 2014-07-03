@@ -823,8 +823,8 @@ def format_tep_file_lines(otu_table_data, mapping_lines, tree_lines,
     # get otu table data
     if(otu_table_data.observation_metadata):
         lines += ['>>otm\n#OTU ID\tOTU Metadata\n']
-        for i in range(len(otu_table_data.observation_ids)):
-            new_string = otu_table_data.observation_ids[i] + '\t'
+        for i in range(len(otu_table_data.ids(axis='observation'))):
+            new_string = otu_table_data.ids(axis='observation')[i] + '\t'
             for m in otu_table_data.observation_metadata[i]['taxonomy']:
                 new_string += m + ';'
             lines += [new_string]

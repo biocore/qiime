@@ -34,7 +34,6 @@ tax1    [or here]
 """
 
 import os.path
-import sys
 import warnings
 warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
 
@@ -194,7 +193,7 @@ class AlphaDiversityCalcs(FunctionWithParams):
         for c in self.Calcs:
             # add either calc's multiple return value names, or fn name
             metric_res = c(data_path=data_path,
-                           taxon_names=otu_table.observation_ids,
+                           taxon_names=otu_table.ids(axis='observation'),
                            tree_path=tree,
                            sample_names=otu_table.sample_ids)
             if len(metric_res.shape) == 1:

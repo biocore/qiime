@@ -43,7 +43,7 @@ def _calc_shared_phylotypes_multiple(otu_table, idxs):
         raise ValueError("calc_shared_phylotypes_multiple needs at least two "
                          "sampleIDs to comapre")
 
-    shared_phylos = ones(len(otu_table.observation_ids))
+    shared_phylos = ones(len(otu_table.ids(axis='observation')))
 
     for id_ in idxs:
         shared_phylos = logical_and(shared_phylos, otu_table.data(id_, 'sample'))

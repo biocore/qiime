@@ -489,7 +489,7 @@ def negate_tips_to_keep(tips_to_keep, tree):
 
 def get_seqs_to_keep_lookup_from_biom(biom_f):
     otu_table = load_table(biom_f)
-    return {}.fromkeys(otu_table.observation_ids)
+    return {}.fromkeys(otu_table.ids(axis='observation'))
 
 
 def get_seqs_to_keep_lookup_from_seq_id_file(id_to_keep_f):
