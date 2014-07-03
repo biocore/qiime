@@ -275,13 +275,13 @@ def single_file_beta(input_path, metrics, tree_path, output_dir,
                     except AttributeError:
                         # do element by element
                         dissims = []
-                        for i in range(len(otu_table.ids())):
+                        sample_ids = otu_table.ids()
+                        observation_ids = otu_table.ids(axis='observation')
+                        for i in range(len(sample_ids)):
                             if is_phylogenetic:
                                 dissim = metric_f(
-                                    otumtx[[rowidx, i], :],
-                                    otu_table.ids(axis='observation'), tree,
-                                    [otu_table.ids()[rowidx],
-                                     otu_table.ids()[i]],
+                                    otumtx[[rowidx, i], :], observation_ids,
+                                    tree, [sample_ids[rowidx], sample_ids[i]],
                                     make_subtree=(not full_tree))[0, 1]
                             else:
                                 dissim = metric_f(otumtx[[rowidx, i], :])[0, 1]
@@ -365,7 +365,7 @@ def single_object_beta(otu_table, metrics, tr, rowids=None,
             rowids_list = rowids.split(',')
             row_dissims = []  # same order as rowids_list
             for rowid in rowids_list:
-                rowidx = otu_table.ids().index(rowid)
+                rowidx = otu_table.index(rowid)
 
                 # first test if we can the dissim is a fn of only the pair
                 # if not, just calc the whole matrix
@@ -382,14 +382,14 @@ def single_object_beta(otu_table, metrics, tr, rowids=None,
                     except AttributeError:
                         # do element by element
                         dissims = []
-                        for i in range(len(otu_table.ids())):
+                        sample_ids = otu_table.ids()
+                        observation_ids = otu_table.ids(axis='observation')
+                        for i in range(len(sample_ids)):
                             if is_phylogenetic:
                                 dissim = metric_f(
-                                    otumtx[[rowidx, i], :],
-                                    otu_table.ids(axis='observation'), tree,
-                                    [otu_table.ids()[rowidx],
-                                     otu_table.ids()[i]],
-                                     make_subtree=(not full_tree))[0, 1]
+                                    otumtx[[rowidx, i], :], observation_ids,
+                                    tree, [sample_ids[rowidx], sample_ids[i]],
+                                    make_subtree=(not full_tree))[0, 1]
                             else:
                                 dissim = metric_f(otumtx[[rowidx, i], :])[0, 1]
                             dissims.append(dissim)
