@@ -208,7 +208,7 @@ def main():
         else:
             ordered_sample_ids = []
             for sample_id in map_sample_ids:
-                if sample_id in otu_table.ids():
+                if otu_table.exists(sample_id):
                     ordered_sample_ids.append(sample_id)
             sample_order = names_to_indices(
                 otu_table.ids(),
