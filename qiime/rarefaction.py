@@ -172,7 +172,7 @@ def get_rare_data(otu_table,
     if not include_small_samples:
         otu_table = filter_samples_from_otu_table(
             otu_table,
-            otu_table.sample_ids,
+            otu_table.ids(),
             seqs_per_sample,
             inf)
 

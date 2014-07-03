@@ -131,7 +131,7 @@ def create_javascript_array(otu_table, use_floats=False):
                 'var i=0;\n'
                 'for (i==0;i<%i;i++) {\n'
                 'OTU_table[i]=new Array();}\n' %
-                (len(otu_table.sample_ids) + 2)]
+                (len(otu_table.ids()) + 2)]
 
     # 0 ['#OTU ID', 'OTU2', 'OTU3']
     #1 ['Sample1', 1, 2]
@@ -158,7 +158,7 @@ def create_javascript_array(otu_table, use_floats=False):
         i += 1
 
     # Consensus lineages for each OTU
-    last_idx = len(otu_table.sample_ids) + 1
+    last_idx = len(otu_table.ids()) + 1
     js_array.append("OTU_table[%i][0]='Consensus Lineage';\n" % last_idx)
     i = 1
     for (otu_val, otu_id, meta) in otu_table.iter(axis='observation'):
@@ -295,7 +295,7 @@ def generate_heatmap_plots(
     if sample_sort:
         # Since the BIOM object may come back with fewer Sampleids, we need to
         # remove those from the original sample_sort
-        actual_samples = filtered_otu_table.sample_ids
+        actual_samples = filtered_otu_table.ids()
         new_sample_sort_order = []
         for i in sample_sort:
             if i in actual_samples:

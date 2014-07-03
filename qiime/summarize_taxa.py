@@ -34,7 +34,7 @@ def make_summary(otu_table,
     [[(taxon1),count,count,...],[(taxon2),count,count,...]...]
     """
     header = ['Taxon']
-    header.extend(otu_table.sample_ids)
+    header.extend(otu_table.ids())
 
     counts_by_consensus, sample_map = sum_counts_by_consensus(otu_table,
                                                               level,
@@ -82,7 +82,7 @@ def sum_counts_by_consensus(otu_table,
                          "'biom add-metadata' command.")
 
     result = {}
-    sample_map = dict([(s, i) for i, s in enumerate(otu_table.sample_ids)])
+    sample_map = dict([(s, i) for i, s in enumerate(otu_table.ids())])
 
     # Define a function to process the metadata prior to summarizing - this
     # is more convenient than having to check md_as_string on every iteration

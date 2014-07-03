@@ -2030,7 +2030,7 @@ def sync_biom_and_mf(pmf, bt):
     will be an empty set.
     """
     mf_samples = set(pmf)
-    bt_samples = set(bt.sample_ids)
+    bt_samples = set(bt.ids())
     if mf_samples == bt_samples:
         # agreement, can continue without fear of breaking code
         return pmf, bt, set()

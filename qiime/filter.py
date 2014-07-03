@@ -557,7 +557,7 @@ def filter_otu_table_to_n_samples(otu_table, n):
          ValueError will be raised.
     """
     try:
-        ids_to_keep = sample(otu_table.sample_ids, n)
+        ids_to_keep = sample(otu_table.ids(), n)
     except ValueError:
         raise ValueError("Number of samples to filter must be between 0 and "
                          "the number of samples.")

@@ -41,7 +41,7 @@ def make_sample_node_table(bt, mf_dict):
     '''
     # make sure to use only the sample ids found in the biom file as the
     # mapping file may have a superset of the ids found in the biom file
-    sids = bt.sample_ids
+    sids = bt.ids()
     header = '#NodeID\tNodeType\tAbundance\t' + \
         '\t'.join(mf_dict[sids[0]].keys())
     lines = [header] + ['%s\tsample\t%s\t' % (sid, bt.data(sid, axis='sample').sum()) +
@@ -215,7 +215,7 @@ def make_edge_table(bt):
     oids = array(bt.ids(axis='observation'))
     header = '#Sample\tOTU\tAbundance'
     lines = [header]
-    for sample in bt.sample_ids:
+    for sample in bt.ids():
         sample_ind = bt.index(sample, 'sample')
         otu_ids = oids[data[:, sample_ind].nonzero()[0]]
         otu_abs = data[:, sample_ind][data[:, sample_ind].nonzero()[0]]

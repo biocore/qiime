@@ -242,11 +242,11 @@ def simsam_range(table,
     for simulated_sample_size in simulated_sample_sizes:
         # create the output mapping file data
         output_mapping_lines = \
-            process_map(mapping_lines, simulated_sample_size, table.sample_ids)
+            process_map(mapping_lines, simulated_sample_size, table.ids())
         for dissimilarity in dissimilarities:
             # create the simulated otu table
             output_sample_ids, output_otu_ids, output_data, output_metadata = \
-                sim_otu_table(table.sample_ids,
+                sim_otu_table(table.ids(),
                               table.ids(axis='observation').tolist(),
                               table.iter(),
                               table.observation_metadata,
