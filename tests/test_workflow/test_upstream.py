@@ -104,7 +104,7 @@ class UpstreamWorkflowTests(TestCase):
         self.assertEqual(number_seqs_in_otu_table, 117)
 
         # One tax assignment per otu
-        self.assertEqual(len(otu_table.observation_metadata), 3)
+        self.assertEqual(len(otu_table.metadata(axis='observation')), 3)
 
         # Check that the log file is created and has size > 0
         log_fp = glob(join(self.test_out, 'log*.txt'))[0]
@@ -153,7 +153,7 @@ class UpstreamWorkflowTests(TestCase):
         self.assertEqual(number_seqs_in_otu_table, 117)
 
         # One tax assignment per otu
-        self.assertEqual(len(otu_table.observation_metadata), 3)
+        self.assertEqual(len(otu_table.metadata(axis='observation')), 3)
 
         # Check that the log file is created and has size > 0
         log_fp = glob(join(self.test_out, 'log*.txt'))[0]
