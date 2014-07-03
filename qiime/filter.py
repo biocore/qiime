@@ -489,7 +489,7 @@ def negate_tips_to_keep(tips_to_keep, tree):
 
 def get_seqs_to_keep_lookup_from_biom(biom_f):
     otu_table = load_table(biom_f)
-    return {}.fromkeys(otu_table.ids(axis='observation'))
+    return set(otu_table.ids(axis='observation'))
 
 
 def get_seqs_to_keep_lookup_from_seq_id_file(id_to_keep_f):
@@ -556,12 +556,10 @@ def filter_otu_table_to_n_samples(otu_table, n):
         If n is greater than the number of samples or less than zero a
          ValueError will be raised.
     """
-    try:
-        ids_to_keep = sample(otu_table.ids(), n)
-    except ValueError:
+    if not (0 < n <= len(otu_table.ids())):
         raise ValueError("Number of samples to filter must be between 0 and "
                          "the number of samples.")
-    return filter_samples_from_otu_table(otu_table, ids_to_keep, 0, inf)
+    return otu_table.subsample(n, axis='sample', by_id=True)
 
 
 def filter_otus_from_otu_map(input_otu_map_fp,
