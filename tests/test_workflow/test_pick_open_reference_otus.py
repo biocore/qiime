@@ -150,9 +150,10 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
                             "Singleton OTU detected in OTU table.")
         # number of OTUs in final OTU table equals the number of seequences in
         # the alignment...
-        self.assertEqual(len(otu_table.observation_ids), count_seqs(aln_fp)[0])
+        self.assertEqual(len(otu_table.ids(axis='observation')),
+                         count_seqs(aln_fp)[0])
         # ... and that number is 6
-        self.assertEqual(len(otu_table.observation_ids), 6)
+        self.assertEqual(len(otu_table.ids(axis='observation')), 6)
 
         # the correct sequences failed the prefilter
         prefilter_failure_ids = [s.strip()
@@ -168,7 +169,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         #
         self.assertEqual(count_seqs(new_refseqs_fp)[0],
                          count_seqs(self.test_data['refseqs'][0])[0] +
-                         len([o for o in otu_table.observation_ids
+                         len([o for o in otu_table.ids(axis='observation')
                               if o.startswith('wf.test.otu')]) +
                          count_seqs(pynast_failures_fp)[0])
 
@@ -195,7 +196,8 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         # otus as there are aligned sequences
         with biom_open(otu_table_fp) as biom_file:
             otu_table = Table.from_hdf5(biom_file)
-        self.assertEqual(len(otu_table.observation_ids), num_align_seqs)
+        self.assertEqual(len(otu_table.ids(axis='observation')),
+                         num_align_seqs)
 
         # Reference OTUs have correct taxonomy assignment (can't confirm the )
         obs_idx = otu_table.index('295053', axis='observation')
@@ -280,9 +282,10 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
                             "Singleton OTU detected in OTU table.")
         # number of OTUs in final OTU table equals the number of seequences in
         # the alignment...
-        self.assertEqual(len(otu_table.observation_ids), count_seqs(aln_fp)[0])
+        self.assertEqual(len(otu_table.ids(axis='observation')),
+                         count_seqs(aln_fp)[0])
         # ... and that number is 6
-        self.assertEqual(len(otu_table.observation_ids), 6)
+        self.assertEqual(len(otu_table.ids(axis='observation')), 6)
 
         # the correct sequences failed the prefilter
         prefilter_failure_ids = [s.strip()
@@ -298,7 +301,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         #
         self.assertEqual(count_seqs(new_refseqs_fp)[0],
                          count_seqs(self.test_data['refseqs'][0])[0] +
-                         len([o for o in otu_table.observation_ids
+                         len([o for o in otu_table.ids(axis='observation')
                               if o.startswith('wf.test.otu')]) +
                          count_seqs(pynast_failures_fp)[0])
 
@@ -325,7 +328,8 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         # otus as there are aligned sequences
         with biom_open(otu_table_fp) as biom_file:
             otu_table = Table.from_hdf5(biom_file)
-        self.assertEqual(len(otu_table.observation_ids), num_align_seqs)
+        self.assertEqual(len(otu_table.ids(axis='observation')),
+                         num_align_seqs)
 
         # Reference OTUs have correct taxonomy assignment (can't confirm the )
         obs_idx = otu_table.index('295053', axis='observation')
@@ -401,9 +405,10 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
                             "Singleton OTU detected in OTU table.")
         # number of OTUs in final OTU table equals the number of seequences in
         # the alignment...
-        self.assertEqual(len(otu_table.observation_ids), count_seqs(aln_fp)[0])
+        self.assertEqual(len(otu_table.ids(axis='observation')),
+                         count_seqs(aln_fp)[0])
         # ... and that number is 6
-        self.assertEqual(len(otu_table.observation_ids), 6)
+        self.assertEqual(len(otu_table.ids(axis='observation')), 6)
 
         # the correct sequences failed the prefilter
         prefilter_failure_ids = [s.strip()
@@ -419,7 +424,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         #
         self.assertEqual(count_seqs(new_refseqs_fp)[0],
                          count_seqs(self.test_data['refseqs'][0])[0] +
-                         len([o for o in otu_table.observation_ids
+                         len([o for o in otu_table.ids(axis='observation')
                               if o.startswith('wf.test.otu')]) +
                          count_seqs(pynast_failures_fp)[0])
 
@@ -445,7 +450,8 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         # otus as there are aligned sequences
         with biom_open(otu_table_fp) as biom_file:
             otu_table = Table.from_hdf5(biom_file)
-        self.assertEqual(len(otu_table.observation_ids), num_align_seqs)
+        self.assertEqual(len(otu_table.ids(axis='observation')),
+                         num_align_seqs)
 
         # Reference OTUs have correct taxonomy assignment (can't confirm the )
         obs_idx = otu_table.index('295053', axis='observation')
@@ -579,11 +585,12 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
                             "Singleton OTU detected in OTU table.")
         # number of OTUs in final OTU table equals the number of seequences in
         # the alignment...
-        self.assertEqual(len(otu_table.observation_ids), count_seqs(aln_fp)[0])
+        self.assertEqual(len(otu_table.ids(axis='observation')),
+                         count_seqs(aln_fp)[0])
         # ... and that number is 6 (note: this is the same as without the prefilter
         # because these reads are getting filtered from the final otu table because
         # they fail to align with PyNAST)
-        self.assertEqual(len(otu_table.observation_ids), 6)
+        self.assertEqual(len(otu_table.ids(axis='observation')), 6)
 
         # sequences that are ordinarily prefiltered are in the OTU map
         otu_map_seq_ids = []
@@ -598,7 +605,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         # input reference sequences plus the number of new non-singleton otus
         self.assertEqual(count_seqs(new_refseqs_fp)[0],
                          count_seqs(self.test_data['refseqs'][0])[0] +
-                         len([o for o in otu_table.observation_ids
+                         len([o for o in otu_table.ids(axis='observation')
                               if o.startswith('wf.test.otu')]) +
                          count_seqs(pynast_failures_fp)[0])
 
@@ -625,7 +632,8 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         # otus as there are aligned sequences
         with biom_open(otu_table_fp) as biom_file:
             otu_table = Table.from_hdf5(biom_file)
-        self.assertEqual(len(otu_table.observation_ids), num_align_seqs)
+        self.assertEqual(len(otu_table.ids(axis='observation')),
+                         num_align_seqs)
 
         # Reference OTUs have correct taxonomy assignment (can't confirm the )
         obs_idx = otu_table.index('295053', axis='observation')
@@ -700,9 +708,10 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
                             "Singleton OTU detected in OTU table.")
         # number of OTUs in final OTU table equals the number of seequences in
         # the alignment...
-        self.assertEqual(len(otu_table.observation_ids), count_seqs(aln_fp)[0])
+        self.assertEqual(len(otu_table.ids(axis='observation')),
+                         count_seqs(aln_fp)[0])
         # ... and that number is 6
-        self.assertEqual(len(otu_table.observation_ids), 6)
+        self.assertEqual(len(otu_table.ids(axis='observation')), 6)
 
         # the correct sequences failed the prefilter
         prefilter_failure_ids = [s.strip()
@@ -718,7 +727,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         #
         self.assertEqual(count_seqs(new_refseqs_fp)[0],
                          count_seqs(self.test_data['refseqs'][0])[0] +
-                         len([o for o in otu_table.observation_ids
+                         len([o for o in otu_table.ids(axis='observation')
                               if o.startswith('wf.test.otu')]) +
                          count_seqs(pynast_failures_fp)[0])
 
@@ -745,7 +754,8 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         # otus as there are aligned sequences
         with biom_open(otu_table_fp) as biom_file:
             otu_table = Table.from_hdf5(biom_file)
-        self.assertEqual(len(otu_table.observation_ids), num_align_seqs)
+        self.assertEqual(len(otu_table.ids(axis='observation')),
+                         num_align_seqs)
 
         # Reference OTUs have correct taxonomy assignment (can't confirm the )
         obs_idx = otu_table.index('295053', axis='observation')
@@ -826,10 +836,11 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
                             "Singleton OTU detected in OTU table.")
         # number of OTUs in final OTU table equals the number of sequences in
         # the alignment...
-        self.assertEqual(len(otu_table.observation_ids), count_seqs(aln_fp)[0])
+        self.assertEqual(len(otu_table.ids(axis='observation')),
+                         count_seqs(aln_fp)[0])
         # ... and that number is either 4, 5 or 6 (it can vary due to the random
         # subsampling)
-        num_obs_ids = len(otu_table.observation_ids)
+        num_obs_ids = len(otu_table.ids(axis='observation'))
         self.assertTrue(4 <= num_obs_ids <= 6,
                         "Obtained %d observations, but expected 4, 5 or 6." % num_obs_ids)
 
@@ -847,7 +858,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         #
         self.assertEqual(count_seqs(new_refseqs_fp)[0],
                          count_seqs(self.test_data['refseqs'][0])[0] +
-                         len([o for o in otu_table.observation_ids
+                         len([o for o in otu_table.ids(axis='observation')
                               if o.startswith('wf.test.otu')]) +
                          count_seqs(pynast_failures_fp)[0])
 
@@ -874,7 +885,8 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         # otus as there are aligned sequences
         with biom_open(otu_table_fp) as biom_file:
             otu_table = Table.from_hdf5(biom_file)
-        self.assertEqual(len(otu_table.observation_ids), num_align_seqs)
+        self.assertEqual(len(otu_table.ids(axis='observation')),
+                         num_align_seqs)
 
         # Reference OTUs have correct taxonomy assignment (can't confirm the )
         obs_idx = otu_table.index('295053', axis='observation')
@@ -973,11 +985,12 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
                             "Singleton OTU detected in OTU table.")
         # number of OTUs in final OTU table equals the number of seequences in
         # the alignment...
-        self.assertEqual(len(otu_table.observation_ids), count_seqs(aln_fp)[0])
+        self.assertEqual(len(otu_table.ids(axis='observation')),
+                         count_seqs(aln_fp)[0])
         # ... and that number is 7 (note: this is the same as without the prefilter
         # because these reads are getting filtered from the final otu table because
         # they fail to align with PyNAST)
-        self.assertEqual(len(otu_table.observation_ids), 7)
+        self.assertEqual(len(otu_table.ids(axis='observation')), 7)
 
         # sequences that are ordinarily prefiltered are in the OTU map
         otu_map_seq_ids = []
@@ -992,7 +1005,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         # input reference sequences plus the number of new non-singleton otus
         self.assertEqual(count_seqs(new_refseqs_fp)[0],
                          count_seqs(self.test_data['refseqs'][0])[0] +
-                         len([o for o in otu_table.observation_ids
+                         len([o for o in otu_table.ids(axis='observation')
                               if o.startswith('wf.test.otu')]) +
                          count_seqs(pynast_failures_fp)[0])
 
@@ -1013,9 +1026,9 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
                         "Failure OTU (wf.test.otu.ReferenceOTU0) is not in the final OTU map.")
 
         # OTUs from each iteration are in the final OTU table
-        self.assertTrue('295053' in otu_table.observation_ids)
+        self.assertTrue('295053' in otu_table.ids(axis='observation'))
         self.assertTrue(
-            'wf.test.otu.1.ReferenceOTU0' in otu_table.observation_ids)
+            'wf.test.otu.1.ReferenceOTU0' in otu_table.ids(axis='observation'))
 
         # confirm that number of tips in the tree is the same as the number of sequences
         # in the alignment
@@ -1027,7 +1040,8 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # OTU table without singletons or pynast failures has same number of
         # otus as there are aligned sequences
-        self.assertEqual(len(otu_table.observation_ids), num_align_seqs)
+        self.assertEqual(len(otu_table.ids(axis='observation')),
+                         num_align_seqs)
 
         # Reference OTUs have correct taxonomy assignment (can't confirm the )
         obs_idx = otu_table.index('295053', axis='observation')
@@ -1105,11 +1119,12 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
                             "Singleton OTU detected in OTU table.")
         # number of OTUs in final OTU table equals the number of seequences in
         # the alignment...
-        self.assertEqual(len(otu_table.observation_ids), count_seqs(aln_fp)[0])
+        self.assertEqual(len(otu_table.ids(axis='observation')),
+                         count_seqs(aln_fp)[0])
         # ... and that number is 7 (note: this is the same as without the prefilter
         # because these reads are getting filtered from the final otu table because
         # they fail to align with PyNAST)
-        self.assertEqual(len(otu_table.observation_ids), 7)
+        self.assertEqual(len(otu_table.ids(axis='observation')), 7)
 
         # non-16S sequences are prefiltered, so not in the OTU map
         otu_map_seq_ids = []
@@ -1124,7 +1139,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         # input reference sequences plus the number of new non-singleton otus
         self.assertEqual(count_seqs(new_refseqs_fp)[0],
                          count_seqs(self.test_data['refseqs'][0])[0] +
-                         len([o for o in otu_table.observation_ids
+                         len([o for o in otu_table.ids(axis='observation')
                               if o.startswith('wf.test.otu')]) +
                          count_seqs(pynast_failures_fp)[0])
 
@@ -1145,9 +1160,9 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
                         "Failure OTU (wf.test.otu.ReferenceOTU0) is not in the final OTU map.")
 
         # OTUs from each iteration are in the final OTU table
-        self.assertTrue('295053' in otu_table.observation_ids)
+        self.assertTrue('295053' in otu_table.ids(axis='observation'))
         self.assertTrue(
-            'wf.test.otu.1.ReferenceOTU0' in otu_table.observation_ids)
+            'wf.test.otu.1.ReferenceOTU0' in otu_table.ids(axis='observation'))
 
         # confirm that number of tips in the tree is the same as the number of sequences
         # in the alignment
@@ -1159,7 +1174,8 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # OTU table without singletons or pynast failures has same number of
         # otus as there are aligned sequences
-        self.assertEqual(len(otu_table.observation_ids), num_align_seqs)
+        self.assertEqual(len(otu_table.ids(axis='observation')),
+                         num_align_seqs)
 
         # Reference OTUs have correct taxonomy assignment (can't confirm the )
         obs_idx = otu_table.index('295053', axis='observation')
@@ -1237,11 +1253,12 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
                             "Singleton OTU detected in OTU table.")
         # number of OTUs in final OTU table equals the number of seequences in
         # the alignment...
-        self.assertEqual(len(otu_table.observation_ids), count_seqs(aln_fp)[0])
+        self.assertEqual(len(otu_table.ids(axis='observation')),
+                         count_seqs(aln_fp)[0])
         # ... and that number is 7 (note: this is the same as without the prefilter
         # because these reads are getting filtered from the final otu table because
         # they fail to align with PyNAST)
-        self.assertEqual(len(otu_table.observation_ids), 7)
+        self.assertEqual(len(otu_table.ids(axis='observation')), 7)
 
         # non-16S sequences are prefiltered, so not in the OTU map
         otu_map_seq_ids = []
@@ -1256,7 +1273,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         # input reference sequences plus the number of new non-singleton otus
         self.assertEqual(count_seqs(new_refseqs_fp)[0],
                          count_seqs(self.test_data['refseqs'][0])[0] +
-                         len([o for o in otu_table.observation_ids
+                         len([o for o in otu_table.ids(axis='observation')
                               if o.startswith('wf.test.otu')]) +
                          count_seqs(pynast_failures_fp)[0])
 
@@ -1277,9 +1294,9 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
                         "Failure OTU (wf.test.otu.ReferenceOTU0) is not in the final OTU map.")
 
         # OTUs from each iteration are in the final OTU table
-        self.assertTrue('295053' in otu_table.observation_ids)
+        self.assertTrue('295053' in otu_table.ids(axis='observation'))
         self.assertTrue(
-            'wf.test.otu.1.ReferenceOTU0' in otu_table.observation_ids)
+            'wf.test.otu.1.ReferenceOTU0' in otu_table.ids(axis='observation'))
 
         # confirm that number of tips in the tree is the same as the number of sequences
         # in the alignment
@@ -1291,7 +1308,8 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # OTU table without singletons or pynast failures has same number of
         # otus as there are aligned sequences
-        self.assertEqual(len(otu_table.observation_ids), num_align_seqs)
+        self.assertEqual(len(otu_table.ids(axis='observation')),
+                         num_align_seqs)
 
         # Reference OTUs have correct taxonomy assignment (can't confirm the )
         obs_idx = otu_table.index('295053',axis='observation')

@@ -1153,7 +1153,7 @@ class PairedDifferenceTests(TestHelper):
         with biom_open(biom_table_fp) as biom_file:
             table = Table.from_hdf5(biom_file)
         self.assertItemsEqual(table.sample_ids, ['subject1', 'subject2'])
-        self.assertItemsEqual(table.observation_ids,
+        self.assertItemsEqual(table.ids(axis='observation'),
                               ['firmicutes-abundance', 'bacteroidetes-abundance'])
         assert_almost_equal(table
                               [(table.index('firmicutes-abundance',

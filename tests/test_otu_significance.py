@@ -106,7 +106,8 @@ class GroupSignificanceFunctionsTests(TestCase):
         # run with ordered example
         sample_indices = {'cat1': [0, 1], 'cat2': [3, 2], 'cat3': [4, 5]}
         bt = parse_biom_table(BT_IN_1)
-        data = array([bt.data(i, axis='observation') for i in bt.observation_ids])
+        data = array([bt.data(i, axis='observation')
+                     for i in bt.ids(axis='observation')])
         obs = list(group_significance_row_generator(bt, sample_indices))
         exp = zip(data.take([0, 1], 1),
                   data.take([3, 2], 1), data.take([4, 5], 1))

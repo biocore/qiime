@@ -95,7 +95,8 @@ class UpstreamWorkflowTests(TestCase):
         # sample IDs are as expected
         self.assertItemsEqual(otu_table.sample_ids, expected_sample_ids)
         # otu ids are as expected
-        self.assertItemsEqual(otu_table.observation_ids, otu_map_otu_ids)
+        self.assertItemsEqual(otu_table.ids(axis='observation'),
+                              otu_map_otu_ids)
 
         # expected number of sequences in OTU table
         number_seqs_in_otu_table = sum([v.sum()
@@ -143,7 +144,8 @@ class UpstreamWorkflowTests(TestCase):
         # sample IDs are as expected
         self.assertItemsEqual(otu_table.sample_ids, expected_sample_ids)
         # otu ids are as expected
-        self.assertItemsEqual(otu_table.observation_ids, otu_map_otu_ids)
+        self.assertItemsEqual(otu_table.ids(axis='observation'),
+                              otu_map_otu_ids)
 
         # expected number of sequences in OTU table
         number_seqs_in_otu_table = sum([v.sum()
@@ -232,7 +234,8 @@ class UpstreamWorkflowTests(TestCase):
         # sample IDs are as expected
         self.assertItemsEqual(otu_table.sample_ids, expected_sample_ids)
         # otu ids are as expected
-        self.assertItemsEqual(otu_table.observation_ids, otu_map_otu_ids)
+        self.assertItemsEqual(otu_table.ids(axis='observation'),
+                              otu_map_otu_ids)
         # number of sequences in the full otu table equals the number of
         # input sequences
         number_seqs_in_otu_table = sum([v.sum()
@@ -318,7 +321,8 @@ class UpstreamWorkflowTests(TestCase):
         # sample IDs are as expected
         self.assertItemsEqual(otu_table.sample_ids, expected_sample_ids)
         # otu ids are as expected
-        self.assertItemsEqual(otu_table.observation_ids, otu_map_otu_ids)
+        self.assertItemsEqual(otu_table.ids(axis='observation'),
+                              otu_map_otu_ids)
         # number of sequences in the full otu table equals the number of
         # input sequences
         number_seqs_in_otu_table = sum([v.sum()
@@ -402,7 +406,8 @@ class UpstreamWorkflowTests(TestCase):
         # sample IDs are as expected
         self.assertItemsEqual(otu_table.sample_ids, expected_sample_ids)
         # otu ids are as expected
-        self.assertItemsEqual(otu_table.observation_ids, otu_map_otu_ids)
+        self.assertItemsEqual(otu_table.ids(axis='observation'),
+                              otu_map_otu_ids)
         # number of sequences in the full otu table equals the number of
         # input sequences
         number_seqs_in_otu_table = sum([v.sum()
@@ -487,7 +492,8 @@ class UpstreamWorkflowTests(TestCase):
         # sample IDs are as expected
         self.assertItemsEqual(otu_table.sample_ids, expected_sample_ids)
         # expected OTUs
-        self.assertItemsEqual(otu_table.observation_ids, otu_map_otu_ids)
+        self.assertItemsEqual(otu_table.ids(axis='observation'),
+                              otu_map_otu_ids)
         # number of sequences in the full otu table equals the number of
         # input sequences
         number_seqs_in_otu_table = sum([v.sum()

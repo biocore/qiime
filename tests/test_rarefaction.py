@@ -86,8 +86,8 @@ class FunctionTests(TestCase):
         res = maker.rarefy_to_list(include_full=True)
         self.assertItemsEqual(res[-1][2].sample_ids, self.otu_table.sample_ids)
         self.assertItemsEqual(
-            res[-1][2].observation_ids,
-            self.otu_table.observation_ids)
+            res[-1][2].ids(axis='observation'),
+            self.otu_table.ids(axis='observation'))
         self.assertEqual(res[-1][2], self.otu_table)
 
         sample_value_sum = []
@@ -146,9 +146,9 @@ class FunctionTests(TestCase):
                                        50, include_small_samples=True)
         self.assertEqual(len(rare_otu_table.sample_ids), 3)
         # 4 observations times 3 samples = size 12 before
-        self.assertEqual(len(rare_otu_table.observation_ids), 4)
+        self.assertEqual(len(rare_otu_table.ids(axis='observation')), 4)
         for sam in self.otu_table.sample_ids:
-            for otu in self.otu_table.observation_ids:
+            for otu in self.otu_table.ids(axis='observation'):
                 rare_val = rare_otu_table.get_value_by_ids(otu, sam)
                 self.assertEqual(rare_otu_table.get_value_by_ids(otu, sam),
                                  self.otu_table.get_value_by_ids(otu, sam))

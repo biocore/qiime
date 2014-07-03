@@ -87,7 +87,7 @@ class TopLevelTests(TestCase):
 
     def test_get_order_from_tree(self):
         obs = get_order_from_tree(
-            self.otu_table.observation_ids,
+            self.otu_table.ids(axis='observation'),
             self.tree_text)
         exp = [2, 0, 1]
         assert_almost_equal(obs, exp)
@@ -96,7 +96,7 @@ class TopLevelTests(TestCase):
         lineages = []
         for val, id, meta in self.otu_table.iter(axis='observation'):
             lineages.append([v for v in meta['taxonomy']])
-        obs = make_otu_labels(self.otu_table.observation_ids,
+        obs = make_otu_labels(self.otu_table.ids(axis='observation'),
                               lineages, n_levels=1)
         exp = ['Bacteria (OTU1)', 'Archaea (OTU2)', 'Streptococcus (OTU3)']
         self.assertEqual(obs, exp)
@@ -104,7 +104,7 @@ class TopLevelTests(TestCase):
         full_lineages = []
         for val, id, meta in self.otu_table_f.iter(axis='observation'):
             full_lineages.append([v for v in meta['taxonomy']])
-        obs = make_otu_labels(self.otu_table_f.observation_ids,
+        obs = make_otu_labels(self.otu_table_f.ids(axis='observation'),
                               full_lineages, n_levels=3)
         exp = ['1B;1C;Bacteria (OTU1)',
                '2B;2C;Archaea (OTU2)',
@@ -139,8 +139,8 @@ class TopLevelTests(TestCase):
 
     def test_plot_heatmap(self):
         plot_heatmap(
-            self.otu_table, self.otu_table.observation_ids, self.otu_table.sample_ids,
-            filename=self.tmp_heatmap_fpath)
+            self.otu_table, self.otu_table.ids(axis='observation'),
+            self.otu_table.sample_ids, filename=self.tmp_heatmap_fpath)
         self.assertEqual(exists(self.tmp_heatmap_fpath), True)
         remove_files(set([self.tmp_heatmap_fpath]))
 
