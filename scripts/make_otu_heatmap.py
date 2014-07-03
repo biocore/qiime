@@ -187,7 +187,7 @@ def main():
 
     # Re-order samples by tree if provided
     if opts.sample_tree is not None:
-        sample_order = get_order_from_tree(otu_table.sample_ids,
+        sample_order = get_order_from_tree(otu_table.ids(),
                                            open(opts.sample_tree, 'U'))
 
     # if there's no sample tree, sort samples by mapping file
@@ -200,7 +200,7 @@ def main():
 
         # if there's a category, do clustering within each category
         if opts.category is not None:
-            category_labels = extract_metadata_column(otu_table.sample_ids,
+            category_labels = extract_metadata_column(otu_table.ids(),
                                                       metadata, opts.category)
             sample_order = get_order_from_categories(otu_table,
                                                      category_labels)
@@ -208,10 +208,10 @@ def main():
         else:
             ordered_sample_ids = []
             for sample_id in map_sample_ids:
-                if sample_id in otu_table.sample_ids:
+                if sample_id in otu_table.ids():
                     ordered_sample_ids.append(sample_id)
             sample_order = names_to_indices(
-                otu_table.sample_ids,
+                otu_table.ids(),
                 ordered_sample_ids)
     # if no tree or mapping file, perform upgma euclidean
     elif not opts.suppress_column_clustering:
@@ -219,7 +219,7 @@ def main():
         sample_order = get_clusters(data, axis='column')
     # else just use OTU table ordering
     else:
-        sample_order = np.arange(len(otu_table.sample_ids))
+        sample_order = np.arange(len(otu_table.ids()))
 
     # re-order OTUs by tree (if provided), or clustering
     if opts.otu_tree is not None:
@@ -242,7 +242,7 @@ def main():
     # otu_order and sample_order should be ids, rather than indices
     #  to use in sortObservationOrder/sortSampleOrder
     otu_id_order = [otu_table.ids(axis='observation')[i] for i in otu_order]
-    sample_id_order = [otu_table.sample_ids[i] for i in sample_order]
+    sample_id_order = [otu_table.ids()[i] for i in sample_order]
 
     # Re-order otu table, sampleids, etc. as necessary
     otu_table = otu_table.sort_order(otu_id_order, axis='observation')
@@ -250,7 +250,7 @@ def main():
     otu_ids = np.array(otu_table.ids(axis='observation'))[otu_order]
     otu_labels = np.array(otu_labels)[otu_order]
     otu_table = otu_table.sort_order(sample_id_order)
-    sample_ids = np.array(otu_table.sample_ids)[sample_order]
+    sample_ids = np.array(otu_table.ids())[sample_order]
 
     plot_heatmap(otu_table, otu_labels, sample_ids,
                  filename=join(dir_path, 'heatmap.pdf'),

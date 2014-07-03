@@ -75,7 +75,7 @@ def main():
 
     otu_table = load_table(otu_table_fp)
 
-    sample_ids = otu_table.sample_ids
+    sample_ids = otu_table.ids()
     otu_ids = otu_table.ids(axis='observation')
 
     # This is not memory safe: need to be able to load the otu table as ints
