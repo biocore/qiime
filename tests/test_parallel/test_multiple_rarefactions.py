@@ -86,11 +86,11 @@ class ParallelMultipleRarefactionsTests(TestCase):
         input_table = load_table(self.input1_fp)
         # sanity checks on first table (sampled at 11 seqs/sample)
         output_table = load_table(biom_tables[0])
-        assert_array_equal(output_table.sample_ids, input_table.sample_ids)
+        assert_array_equal(output_table.ids(), input_table.ids())
         self.assertEqual(output_table.sum(), 99)
         # sanity checks on first table (sampled at 91 seqs/sample)
         output_table = load_table(biom_tables[-1])
-        assert_array_equal(output_table.sample_ids, input_table.sample_ids)
+        assert_array_equal(output_table.ids(), input_table.ids())
         self.assertEqual(output_table.sum(), 819)
 
 
