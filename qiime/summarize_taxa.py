@@ -75,7 +75,7 @@ def sum_counts_by_consensus(otu_table,
     if the consensus string doesn't reach to level, missing_name is appended on
     until the taxonomy string is of length level
     """
-    if otu_table.observation_metadata is None:
+    if otu_table.metadata(axis='observation') is None:
         raise ValueError("BIOM table does not contain any "
                          "observation metadata (e.g., taxonomy)."
                          " You can add metadata to it using the "

@@ -249,7 +249,7 @@ def simsam_range(table,
                 sim_otu_table(table.ids(),
                               table.ids(axis='observation').tolist(),
                               table.iter(),
-                              table.observation_metadata,
+                              table.metadata(axis='observation'),
                               tree,
                               simulated_sample_size,
                               dissimilarity)

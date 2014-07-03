@@ -821,20 +821,20 @@ def format_tep_file_lines(otu_table_data, mapping_lines, tree_lines,
     lines += '\n'
 
     # get otu table data
-    if(otu_table_data.observation_metadata):
+    if(otu_table_data.metadata(axis='observation')):
         lines += ['>>otm\n#OTU ID\tOTU Metadata\n']
         for i in range(len(otu_table_data.ids(axis='observation'))):
             new_string = otu_table_data.ids(axis='observation')[i] + '\t'
-            for m in otu_table_data.observation_metadata[i]['taxonomy']:
+            for m in otu_table_data.metadata(axis='observation')[i]['taxonomy']:
                 new_string += m + ';'
             lines += [new_string]
             lines += '\n'
 
     # format and write otu table and taxonomy lines
     lines += ['>>osm\n']
-    if otu_table_data.observation_metadata is None:
+    if otu_table_data.metadata(axis='observation') is None:
         lines += [str(otu_table_data.delimited_self())]
-    elif "taxonomy" in otu_table_data.observation_metadata[0]:
+    elif "taxonomy" in otu_table_data.metadata(axis='observation')[0]:
         lines += [str(otu_table_data.delimited_self(header_key="taxonomy",
                                                    header_value="Consensus Lineage",
                                                    metadata_formatter=lambda x: ';'.join(x)))]

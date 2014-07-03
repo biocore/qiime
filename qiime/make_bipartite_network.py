@@ -81,19 +81,20 @@ def make_otu_node_table(bt, md_key, md_fields):
     header = '#NodeID\tNodeType\tAbundance\t' + '\t'.join(md_fields)
     lines = [header]
     # assume that all metadata has same format so testing any entry sufficient
-    md_type = type(bt.observation_metadata[0][md_key])
+    md_type = type(bt.metadata(axis='observation')[0][md_key])
     if md_type is str or md_type is unicode:
         # there are a huge number of possible ways in which the string could be
         # formatted. if its not splittable on a semicolon (preferred for qiime)
         # no splitting will occur.
         for i, otu in enumerate(bt.ids(axis='observation')):
             line = '%s\totu\t%s\t' % (otu, bt.data(otu, 'observation').sum())
-            line += bt.observation_metadata[i][md_key].replace(';', '\t')
+            line += bt.metadata(axis='observation')[i][md_key].replace(';',
+                                                                       '\t')
             lines.append(line)
     if md_type is list:
         for i, otu in enumerate(bt.ids(axis='observation')):
             line = '%s\totu\t%s\t' % (otu, bt.data(otu, 'observation').sum())
-            line += '\t'.join(bt.observation_metadata[i][md_key])
+            line += '\t'.join(bt.metadata(axis='observation')[i][md_key])
             lines.append(line)
     if md_type is defaultdict:
         # if md_type is defaultdict keys in md_fields that fail will produce
@@ -101,8 +102,9 @@ def make_otu_node_table(bt, md_key, md_fields):
         try:
             for i, otu in enumerate(bt.ids(axis='observation')):
                 line = '%s\totu\t%s\t' % (otu, bt.data(otu, 'observation').sum())
-                line += '\t'.join([bt.observation_metadata[i][md_key][k] for k in
-                                   md_fields])
+                line += '\t'.join(
+                    [bt.metadata(axis='observation')[i][md_key][k]
+                     for k in md_fields])
                 lines.append(line)
         except TypeError:
             raise ValueError('The md_fields provided were not all found in ' +
@@ -111,9 +113,11 @@ def make_otu_node_table(bt, md_key, md_fields):
         # md_fields not found will cause keyerrors
         try:
             for i, otu in enumerate(bt.ids(axis='observation')):
-                line = '%s\totu\t%s\t' % (otu, bt.data(otu, 'observation').sum())
-                line += '\t'.join([bt.observation_metadata[i][md_key][k] for k in
-                                   md_fields])
+                line = ('%s\totu\t%s\t'
+                        % (otu, bt.data(otu, 'observation').sum()))
+                line += '\t'.join(
+                    [bt.metadata(axis='observation')[i][md_key][k]
+                     for k in md_fields])
                 lines.append(line)
         except KeyError:
             raise ValueError('The md_fields provided were not all found in ' +

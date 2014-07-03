@@ -262,8 +262,8 @@ def get_otu_counts(fpath):
     except (TypeError, IOError):
         raise MissingFileError('OTU table file required for this analysis')
 
-    if (otu_table.observation_metadata is None or
-            otu_table.observation_metadata[0]['taxonomy'] is None):
+    if (otu_table.metadata(axis='observation') is None or
+            otu_table.metadata(axis='observation')[0]['taxonomy'] is None):
         raise ValueError(
             '\n\nThe lineages are missing from the OTU table. Make sure you included the lineages for the OTUs in your OTU table. \n')
 
