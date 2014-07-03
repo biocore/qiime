@@ -8,7 +8,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Will Van Treuren"
 __email__ = "wdwvt1@gmail.com"
 
-from numpy import array
+from numpy import asarray
 from qiime.parse import parse_mapping_file_to_dict
 from collections import defaultdict
 
@@ -214,9 +214,8 @@ def make_edge_table(bt):
     The abundance is occurrence of the OTU and will be used to weight the edges.
     Input is a biom table.
     '''
-    data = array(
-        [bt.data(i, 'observation') for i in bt.ids(axis='observation')])
-    oids = array(bt.ids(axis='observation'))
+    data = asarray([d for d in bt.iter_data(axis='observation', dense=True)])
+    oids = asarray(bt.ids(axis='observation'))
     header = '#Sample\tOTU\tAbundance'
     lines = [header]
     for sample in bt.ids():
