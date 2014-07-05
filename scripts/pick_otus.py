@@ -29,29 +29,31 @@ script_info['script_description'] = """The OTU picking step assigns similar sequ
 
 Currently, the following clustering methods have been implemented in QIIME:
 
-1. cd-hit (Li & Godzik, 2006; Li, Jaroszewski, & Godzik, 2001), which applies a \"longest-sequence-first list removal algorithm\" to cluster sequences.
+1.  cd-hit (Li & Godzik, 2006; Li, Jaroszewski, & Godzik, 2001), which applies a \"longest-sequence-first list removal algorithm\" to cluster sequences.
 
-2. blast (Altschul, Gish, Miller, Myers, & Lipman, 1990), which compares and clusters each sequence against a reference database of sequences.
+2.  blast (Altschul, Gish, Miller, Myers, & Lipman, 1990), which compares and clusters each sequence against a reference database of sequences.
 
-3. Mothur (Schloss et al., 2009), which requires an input file of aligned sequences.  The input file of aligned sequences may be generated from an input file like the one described below by running align_seqs.py.  For the Mothur method, the clustering algorithm may be specified as nearest-neighbor, furthest-neighbor, or average-neighbor.  The default algorithm is furthest-neighbor.
+3.  Mothur (Schloss et al., 2009), which requires an input file of aligned sequences.  The input file of aligned sequences may be generated from an input file like the one described below by running align_seqs.py.  For the Mothur method, the clustering algorithm may be specified as nearest-neighbor, furthest-neighbor, or average-neighbor.  The default algorithm is furthest-neighbor.
 
-4. prefix/suffix [Qiime team, unpublished], which will collapse sequences which are identical in their first and/or last bases (i.e., their prefix and/or suffix). The prefix and suffix lengths are provided by the user and default to 50 each.
+4.  prefix/suffix [Qiime team, unpublished], which will collapse sequences which are identical in their first and/or last bases (i.e., their prefix and/or suffix). The prefix and suffix lengths are provided by the user and default to 50 each.
 
-5. Trie [Qiime team, unpublished], which collapsing identical sequences and sequences which are subsequences of other sequences.
+5.  Trie [Qiime team, unpublished], which collapsing identical sequences and sequences which are subsequences of other sequences.
 
-6. uclust (Edgar, RC 2010), creates \"seeds\" of sequences which generate clusters based on percent identity.
+6.  uclust (Edgar, RC 2010), creates \"seeds\" of sequences which generate clusters based on percent identity.
 
-7. uclust_ref (Edgar, RC 2010), as uclust, but takes a reference database to use as seeds.  New clusters can be toggled on or off.
+7.  uclust_ref (Edgar, RC 2010), as uclust, but takes a reference database to use as seeds.  New clusters can be toggled on or off.
 
-8. usearch (Edgar, RC 2010, version v5.2.236), creates \"seeds\" of sequences which generate clusters based on percent identity, filters low abundance clusters, performs de novo and reference based chimera detection.
+8.  usearch (Edgar, RC 2010, version v5.2.236), creates \"seeds\" of sequences which generate clusters based on percent identity, filters low abundance clusters, performs de novo and reference based chimera detection.
 
-9. usearch_ref (Edgar, RC 2010, version v5.2.236), as usearch, but takes a reference database to use as seeds.  New clusters can be toggled on or off.
+9.  usearch_ref (Edgar, RC 2010, version v5.2.236), as usearch, but takes a reference database to use as seeds.  New clusters can be toggled on or off.
 
 Quality filtering pipeline with usearch 5.X is described as usearch_qf "usearch quality filter", described here: http://qiime.org/tutorials/usearch_quality_filter.html
 
-8. usearch61 (Edgar, RC 2010, version v6.1.544), creates \"seeds\" of sequences which generate clusters based on percent identity.
+8.  usearch61 (Edgar, RC 2010, version v6.1.544), creates \"seeds\" of sequences which generate clusters based on percent identity.
 
-9. usearch61_ref (Edgar, RC 2010, version v6.1.544), as usearch61, but takes a reference database to use as seeds.  New clusters can be toggled on or off.
+9.  usearch61_ref (Edgar, RC 2010, version v6.1.544), as usearch61, but takes a reference database to use as seeds.  New clusters can be toggled on or off.
+
+11. sumaclust (Mercier, C. et al, 2014, version 1.0), creates \"seeds\" of sequences which generate clusters based on similarity threshold.
 
 10. sortmerna_v2 (Kopylova, E. et al., 2012), takes a reference database to use as seeds. 
 
@@ -235,7 +237,6 @@ script_info['optional_options'] = [
                      '[default: %default]'),
 
     # end SortMeRNA specific parameters
-
     make_option('--min_aligned_percent',
                 help='Minimum percent of query sequence that can be aligned '
                      'to consider a hit (BLAST OTU picker only) '
@@ -243,9 +244,23 @@ script_info['optional_options'] = [
                 default=0.50, type='float'),
 
     make_option('-s', '--similarity', type='float', default=0.97,
-                help='Sequence similarity threshold (for blast, cdhit, uclust, '
-                      'uclust_ref, usearch, usearch_ref, usearch61, usearch61_ref '
-                      'or sortmerna [default: %default]'),
+                help=('Sequence similarity threshold (for blast, cdhit, uclust, '
+                      'uclust_ref, usearch, usearch_ref, usearch61, usearch61_ref, '
+                      'sumaclust or sortmerna [default: %default]')),
+
+    make_option('--sumaclust_exact', action='store_true', default=False,
+                help='A sequence is assigned to the best matching seed '
+                     'rather than the first matching seed passing the '
+                     'similarity threshold [default: %default]'),
+
+    make_option('--sumaclust_l', action='store_true', default=True,
+                help='Reference sequence length if the shortest '
+                     '[default: %default]'),
+
+    make_option('--sumaclust_otu_id_prefix', default="denovo", type='string',
+                help='OTU identifier prefix (string) for the de novo '
+                     'SumaClust OTU picker [default: %default, OTU ids '
+                     'are ascending integers]'),
 
     make_option('-q', '--trie_reverse_seqs', action='store_true',
                 default=False,
@@ -346,7 +361,7 @@ script_info['optional_options'] = [
     make_option('--suppress_prefilter_exact_match',
                 default=False, action='store_true', 
                 help="Don't collapse exact matches before calling "
-                  "sortmerna or uclust [default: %default]"),
+                  "sortmerna, sumaclust or uclust [default: %default]"),
 
     make_option('-d', '--save_uc_files', default=True, action='store_false',
                 help="Enable preservation of intermediate uclust (.uc) files "
@@ -447,7 +462,6 @@ script_info['optional_options'] = [
                 "Specify number of threads (1 thread per core) to be used for usearch61, "
                 "sortmerna and sumaclust commands that utilize multithreading. "
                 "[default: %default]")
-
 ]
 
 script_info['version'] = __version__
@@ -514,6 +528,11 @@ def main():
     usearch_fast_cluster = opts.usearch_fast_cluster
     usearch61_sort_method = opts.usearch61_sort_method
     sizeorder = opts.sizeorder
+
+    # sumaclust specific parameters
+    sumaclust_exact = opts.sumaclust_exact
+    sumaclust_l = opts.sumaclust_l
+    sumaclust_otu_id_prefix = opts.sumaclust_otu_id_prefix
 
     # Set default values according to clustering method
     if word_length != "default":
@@ -733,7 +752,7 @@ def main():
         otu_picker(input_seqs_filepath,
                    result_path=result_path, log_path=log_path, HALT_EXEC=False)
 
-    ## usearch (usearch_qf)
+    # usearch (usearch_qf)
     elif otu_picking_method == 'usearch':
         params = {'percent_id': similarity,
                   'maxrejects': max_rejects,
@@ -838,7 +857,7 @@ def main():
                    log_path=log_path, failure_path=failure_path,
                    otu_prefix=otu_prefix, HALT_EXEC=False)
 
-    ## uclust (reference-based)
+    # uclust (reference-based)
     elif otu_picking_method == 'uclust_ref':
         params = {'Similarity': similarity,
                   'enable_rev_strand_matching': opts.enable_rev_strand_match,
@@ -914,6 +933,19 @@ def main():
                    result_path=result_path, log_path=log_path,
                    sortmerna_db=sortmerna_db, refseqs_fp=refseqs_fp,
                    failure_path=failure_path)
+
+    # sumaclust
+    elif otu_picking_method == 'sumaclust':
+        params = {'similarity': similarity,
+                  'exact': sumaclust_exact,
+                  'threads': threads,
+                  'l': sumaclust_l,
+                  'prefilter_identical_sequences':
+                  prefilter_identical_sequences,
+                  'sumaclust_otu_id_prefix': sumaclust_otu_id_prefix}
+        otu_picker = otu_picker_constructor(params)
+        otu_picker(input_seqs_filepath,
+                   result_path=result_path, log_path=log_path)
 
     # other -- shouldn't be able to get here as a KeyError would have
     # been raised earlier

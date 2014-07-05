@@ -42,6 +42,9 @@ script_info['optional_options'] = [
                 help='value to represent missing data (i.e., when all '
                 'fields are not defined in all mapping files) [default: '
                 '%default]', default='no_data'),
+    make_option('--case_insensitive', action='store_true', default=False,
+                help='if present the headers will be merged case insensitivly '
+                'and transformed to upper case [default: %default]')
 ]
 script_info['version'] = __version__
 
@@ -53,9 +56,11 @@ def main():
     output_fp = opts.output_fp
     mapping_files = [open(fp, 'U') for fp in opts.mapping_fps]
     no_data_value = opts.no_data_value
+    ci = opts.case_insensitive
 
     mapping_data = MetadataMap.mergeMappingFiles(mapping_files,
-                                                 no_data_value=no_data_value)
+                                                 no_data_value=no_data_value,
+                                                 case_insensitive=ci)
 
     with open(output_fp, 'w') as f:
         f.write(str(mapping_data))
