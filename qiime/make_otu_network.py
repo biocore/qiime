@@ -141,8 +141,8 @@ def get_connection_info(otu_table_fp, num_meta, meta_dict):
 
     is_con = False
     # This could be moved to OTU table sub-class
-    if (otu_table.observation_metadata is not None and
-            'taxonomy' in otu_table.observation_metadata[0]):
+    if (otu_table.metadata(axis='observation') is not None and
+            'taxonomy' in otu_table.metadata(axis='observation')[0]):
         is_con = True
 
     for otu_values, otu_id, otu_md in otu_table.iter(axis='observation'):
@@ -176,8 +176,8 @@ def get_connection_info(otu_table_fp, num_meta, meta_dict):
 
         otu_dc[degree] += 1
         degree_counts[degree] += 1
-        #samples = [sample_ids[i] for i in non_zero_counts]
-        samples = [otu_table.sample_ids[i] for i in non_zero_counts]
+        sample_ids = otu_table.ids()
+        samples = [sample_ids[i] for i in non_zero_counts]
         for i, s in enumerate(samples):
             if s not in meta_dict.keys():
                 continue
@@ -202,9 +202,7 @@ def get_connection_info(otu_table_fp, num_meta, meta_dict):
                 (s, float(otu_values[non_zero_counts[i]]), meta[0]))
             if len(non_zero_counts) == 1:
                 #red_nodes[(sample_ids[non_zero_counts[0]],meta[0])] += degree
-                red_nodes[(
-                    otu_table.sample_ids[non_zero_counts[0]],
-                    meta[0])] += degree
+                red_nodes[(sample_ids[non_zero_counts[0]], meta[0])] += degree
             else:
                 # red_edge_file.append('\t'.join([s, to_otu, \
                 #                    data_num, con, meta[0]]))

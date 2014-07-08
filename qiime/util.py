@@ -2043,7 +2043,7 @@ def sync_biom_and_mf(pmf, bt):
     will be an empty set.
     """
     mf_samples = set(pmf)
-    bt_samples = set(bt.sample_ids)
+    bt_samples = set(bt.ids())
     if mf_samples == bt_samples:
         # agreement, can continue without fear of breaking code
         return pmf, bt, set()
@@ -2079,14 +2079,14 @@ def biom_taxonomy_formatter(bt, md_key):
     metadata. If no metadata could be found using the given key the function
     will print a warning and return None.
     """
-    if bt.observation_metadata is None:
+    if bt.metadata(axis='observation') is None:
         print 'Warning: No metadata in biom table. Won\'t alter calculations.'
         return None
     else:
-        dtype = bt.observation_metadata[0][md_key]
+        dtype = bt.metadata(axis='observation')[0][md_key]
     if isinstance(dtype, dict):
         data = []
-        for md in bt.observation_metadata:
+        for md in bt.metadata(axis='observation'):
             tmp = []
             for k, v in md[md_key].iteritems():
                 tmp.append('%s_%s' % (k, v))
@@ -2096,10 +2096,11 @@ def biom_taxonomy_formatter(bt, md_key):
         return map(str, data)
     elif isinstance(dtype, list):
         return (
-            map(str, [';'.join(md[md_key]) for md in bt.observation_metadata])
+            map(str, ['; '.join(md[md_key])
+                      for md in bt.metadata(axis='observation')])
         )
     elif isinstance(dtype, (str, unicode)):
-        return map(str, [md[md_key] for md in bt.observation_metadata])
+        return map(str, [md[md_key] for md in bt.metadata(axis='observation')])
     else:
         print ('Metadata format could not be determined or metadata key (%s) ' +
                'was incorrect. Metadata will not be returned.') % md_key

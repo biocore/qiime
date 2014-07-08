@@ -168,7 +168,7 @@ def group_significance_output_formatter(bt, test_stats, pvals, fdr_pvals,
     num_lines = len(pvals)
     lines = ['\t'.join(header)]
     for i in range(num_lines):
-        tmp = [bt.observation_ids[i], test_stats[i], pvals[i], fdr_pvals[i],
+        tmp = [bt.ids(axis='observation')[i], test_stats[i], pvals[i], fdr_pvals[i],
                bon_pvals[i]] + means[i]
         lines.append('\t'.join(map(str, tmp)))
     # attempt to add metadata
@@ -268,8 +268,8 @@ def grouped_correlation_formatter(bt, rhos, pvals, f_rhos, f_pvals, f_hs,
     for i in range(num_lines):
         tmp_rhos = [x[i] for x in rhos]
         tmp_pvals = [x[i] for x in pvals]
-        tmp = [bt.observation_ids[i]] + tmp_rhos + tmp_pvals + [f_rhos[i]] + \
-            [f_pvals[i]] + [f_hs[i]]
+        tmp = [bt.ids(axis='observation')[i]] + tmp_rhos + tmp_pvals + \
+            [f_rhos[i]] + [f_pvals[i]] + [f_hs[i]]
         lines.append('\t'.join(map(str, tmp)))
     nls = _add_metadata(bt, md_key, lines)
     return nls
@@ -289,7 +289,7 @@ def correlation_row_generator(bt, pmf, category):
     # as the order of the samples in data. otherwise will have hard to
     # diagnose correspondence issues
     try:
-        cat_vect = array([pmf[s][category] for s in bt.sample_ids], dtype=float)
+        cat_vect = array([pmf[s][category] for s in bt.ids()], dtype=float)
         return ((row, cat_vect) for row in data)
     except ValueError:
         raise ValueError("Mapping file category contained data that couldn't " +
@@ -340,7 +340,7 @@ def correlation_output_formatter(bt, corr_coefs, pvals, fdr_pvals, bon_pvals,
     num_lines = len(corr_coefs)
     lines = ['\t'.join(header)]
     for i in range(num_lines):
-        tmp = [bt.observation_ids[i], corr_coefs[i], pvals[i], fdr_pvals[i],
+        tmp = [bt.ids(axis='observation')[i], corr_coefs[i], pvals[i], fdr_pvals[i],
                bon_pvals[i]]
         lines.append('\t'.join(map(str, tmp)))
     nls = _add_metadata(bt, md_key, lines)
@@ -351,7 +351,7 @@ def paired_t_generator(bt, s_before, s_after):
     """Produce a generator to run paired t tests on each OTU."""
     b_data = vstack([bt.sampleData(i) for i in s_before]).T
     a_data = vstack([bt.sampleData(i) for i in s_after]).T
-    return ((b_data[i], a_data[i]) for i in range(len(bt.observation_ids)))
+    return ((b_data[i], a_data[i]) for i in range(len(bt.ids(axis='observation'))))
 
 
 def run_paired_t(data_generator):
@@ -371,7 +371,7 @@ def paired_t_output_formatter(bt, test_stats, pvals, fdr_pvals, bon_pvals,
     num_lines = len(pvals)
     lines = ['\t'.join(header)]
     for i in range(num_lines):
-        tmp = [bt.observation_ids[i], test_stats[i], pvals[i], fdr_pvals[i],
+        tmp = [bt.ids(axis='observation')[i], test_stats[i], pvals[i], fdr_pvals[i],
                bon_pvals[i]]
         lines.append('\t'.join(map(str, tmp)))
     nls = _add_metadata(bt, md_key, lines)

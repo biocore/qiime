@@ -2057,7 +2057,7 @@ class SyncBiomTests(TestCase):
         # test with list taxonomy
         bt = parse_biom_table(bt_list_taxonomy)
         obs = biom_taxonomy_formatter(bt, 'taxonomy')
-        exp = ['k__One;p__testCode',
+        exp = ['k__One; p__testCode',
                'k__Two',
                'k__Three',
                'k__Four',
