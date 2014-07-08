@@ -15,9 +15,14 @@ from math import ceil
 from os.path import split, splitext, join
 from os import makedirs, mkdir
 from random import choice
+from subprocess import Popen, PIPE
+
+from IPython.parallel import Client
 from skbio.parse.sequences import parse_fasta
+
 from qiime.split import split_fasta
 from qiime.util import load_qiime_config, qiime_system_call, count_seqs
+
 
 qiime_config = load_qiime_config()
 
@@ -546,3 +551,32 @@ class BufferedWriter():
         fh.close()
 
         self.buffer = []
+
+
+def system_call(cmd):
+    """Call cmd and return (stdout, stderr, return_value).
+
+    cmd: can be either a string containing the command to be run, or a
+     sequence of strings that are the tokens of the command.
+
+    This function is ported from QIIME (http://www.qiime.org), previously
+    named qiime_system_call. QIIME is a GPL project, but we obtained permission
+    from the authors of this function to port it to pyqi (and keep it under
+    pyqi's BSD license).
+    """
+    proc = Popen(cmd,
+                 universal_newlines=True,
+                 shell=True,
+                 stdout=PIPE,
+                 stderr=PIPE)
+
+    # communicate pulls all stdout/stderr from the PIPEs to
+    # avoid blocking -- don't remove this line!
+    stdout, stderr = proc.communicate()
+    return_value = proc.returncode
+
+    if return_value != 0:
+        raise ComputeError("Failed to execute: %s\nstdout: %s\nstderr: %s" %
+                           (cmd, stdout, stderr))
+
+    return stdout, stderr, return_value
