@@ -22,7 +22,7 @@ from qiime.summarize_taxa import make_summary, \
 from qiime.parse import parse_mapping_file
 from qiime.util import convert_otu_table_relative
 from numpy import array
-from biom.table import table_factory
+from biom.table import Table
 from biom.parse import parse_biom_table
 
 
@@ -36,15 +36,9 @@ class TopLevelTests(TestCase):
                                      [0, 1, 1, 0],
                                      [1, 2, 1, 0]])
 
-        {(0, 0): 1.0, (0, 2): 2.0, (0, 3): 4.0,
-         (1, 0): 1.0, (1, 1): 2.0, (1, 3): 1.0,
-         (2, 1): 1.0, (2, 2): 1.0, (3, 0): 1.0,
-         (3, 1): 2.0, (3, 2): 1.0}
-
-        self.otu_table = table_factory(self.otu_table_vals,
-                                       ['s1', 's2', 's3', 's4'],
+        self.otu_table = Table(self.otu_table_vals,
                                        ['0', '1', '2', '3'],
-                                       None,
+                                       ['s1', 's2', 's3', 's4'],
                                        [{"taxonomy": ["Root", "Bacteria", "Actinobacteria", "Actinobacteria", "Coriobacteridae", "Coriobacteriales", "Coriobacterineae", "Coriobacteriaceae"]},
                                         {"taxonomy": ["Root",
                                                       "Bacteria",
@@ -54,14 +48,8 @@ class TopLevelTests(TestCase):
                                                       "Bacteria",
                                                       "Firmicutes",
                                                       "\"Clostridia\""]},
-                                        {"taxonomy": ["Root", "Bacteria"]}])
-
-# self.otu_table="""#Full OTU Counts
-# OTU ID\ts1\ts2\ts3\ts4\tConsensus Lineage
-# 0\t1\t0\t2\t4\tRoot;Bacteria;Actinobacteria;Actinobacteria;Coriobacteridae;Coriobacteriales;Coriobacterineae;Coriobacteriaceae
-# 1\t1\t2\t0\t1\tRoot;Bacteria;Firmicutes;"Clostridia"
-# 2\t0\t1\t1\t0\tRoot;Bacteria;Firmicutes;"Clostridia"
-# 3\t1\t2\t1\t0\tRoot;Bacteria""".split('\n')
+                                        {"taxonomy": ["Root", "Bacteria"]}],
+                                        None,)
 
         self.mapping = """#SampleID\tBarcodeSequence\tTreatment\tDescription
 #Test mapping file
@@ -118,7 +106,7 @@ s4\tTTTT\tExp\tDisease mouse, I.D. 357""".split('\n')
         #otu_table = parse_otu_table(self.otu_table, float)
         #otu_table = parse_biom_table(self.otu_table, float)
         #otu_table = convert_otu_table_relative(otu_table)
-        otu_table = self.otu_table.normObservationBySample()
+        otu_table = self.otu_table.norm(axis='sample', inplace=False)
         summary, header = make_summary(
             otu_table, 3, upper_percentage, lower_percentage)
         self.assertEqual(header, ['Taxon', 's1', 's2', 's3', 's4'])

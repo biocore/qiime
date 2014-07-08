@@ -11,7 +11,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 from os.path import join, splitext, exists
-from cogent.parse.blast import MinimalBlatParser9
+from brokit.blat import MinimalBlatParser9
 
 from brokit.blat import (assign_dna_reads_to_protein_database
                          as blat_assign_dna_reads_to_protein_database,
@@ -26,7 +26,7 @@ from brokit.bwa import (assign_dna_reads_to_dna_database
 from qiime.format import format_observation_map
 from qiime.parse import parse_taxonomy, MinimalSamParser
 from qiime.make_otu_table import make_otu_table
-from qiime.util import get_qiime_temp_dir, create_dir
+from qiime.util import get_qiime_temp_dir, create_dir, write_biom_table
 
 
 class DatabaseMapper(object):
@@ -76,10 +76,9 @@ class DatabaseMapper(object):
         else:
             observation_metadata = None
 
-        biom_table_f = open(output_biom_fp, 'w')
-        biom_table_f.write(make_otu_table(open(observation_map_fp, 'U'),
-                                          observation_metadata))
-        biom_table_f.close()
+        biom_table = make_otu_table(open(observation_map_fp, 'U'),
+                                    observation_metadata)
+        write_biom_table(biom_table, output_biom_fp)
 
     def _assign_dna_reads_to_database(self,
                                       query_fasta_fp,

@@ -14,7 +14,7 @@ __email__ = "jai.rideout@gmail.com"
 
 from collections import defaultdict
 from numpy import array
-from qiime.pycogent_backports.test import is_symmetric_and_hollow
+from qiime.stats import is_symmetric_and_hollow
 from qiime.parse import group_by_field
 
 
@@ -612,14 +612,14 @@ def extract_per_individual_state_metadata_from_sample_metadata_and_biom(
         filter_missing_data=True)
     results = {}
     if observation_ids is None:
-        observation_ids = biom_table.ObservationIds
+        observation_ids = biom_table.ids(axis='observation')
     for observation_id in observation_ids:
-        observation_data = biom_table.observationData(observation_id)
+        observation_data = biom_table.data(observation_id, 'observation')
         results[observation_id] = {}
         for individual_id, sample_ids in per_individual_states.items():
             per_state_metadata_values = []
             for sample_id in sample_ids:
-                sample_index = biom_table.getSampleIndex(sample_id)
+                sample_index = biom_table.index(sample_id, 'sample')
                 per_state_metadata_values.append(
                     observation_data[sample_index])
             results[observation_id][individual_id] = per_state_metadata_values

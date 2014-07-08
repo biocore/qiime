@@ -337,20 +337,8 @@ def make_error_series(rare_mat, groups, std_type):
         # For each sample in group, create a row in a list
         for samID in groups[o]:
             pre_err[o].append(rare_mat[samID])
-            '''
-            try:
-                pre_err[o].append(rare_mat[samID])
-            except(KeyError):
-                notfound.append(samID)
-            '''
 
-        min_len = 1000  # 1e10000
-        # Iterate through the series data and convert it to float
-        for series in pre_err[o]:
-            series = [float(v) for v in series if v != nan]
-            # determine the minimum length of a series
-            if len(series) < min_len:
-                min_len = len(series)
+        min_len = min([len(i) - i.count('nan') for i in pre_err[o]])
         pre_err[o] = [x[:min_len] for x in pre_err[o]]
 
     # iterate through the groups and calculate std deviations and error

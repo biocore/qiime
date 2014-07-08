@@ -13,7 +13,7 @@ from optparse import OptionParser
 from itertools import imap
 from re import compile, search
 
-from cogent import Sequence
+from skbio.core.sequence import BiologicalSequence
 from skbio.parse.sequences import parse_fasta
 
 from qiime.denoiser.utils import read_denoiser_mapping, sort_ids
@@ -98,4 +98,4 @@ def combine_mappings(fasta_fh, mapping_fh, denoised_seqs_fh,
     for label, seq in parse_fasta(denoised_seqs_fh):
         id = label.split()[0]
         newlabel = "%s %s" % (sample_id_mapping[id], id)
-        fasta_out_fh.write(Sequence(name=newlabel, seq=seq).toFasta() + "\n")
+        fasta_out_fh.write(BiologicalSequence(seq, id=newlabel).to_fasta())

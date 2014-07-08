@@ -19,8 +19,8 @@ from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
 from cogent.parse.tree import DndParser
 from cogent.core.tree import PhyloNode
-from cogent.util.misc import remove_files
-from biom.parse import parse_biom_table_str
+from skbio.util.misc import remove_files
+from biom.parse import parse_biom_table
 from qiime.parse import (parse_distmat, parse_mapping_file,
                          parse_metadata_state_descriptions)
 from qiime.filter import (filter_fasta, filter_samples_from_otu_table,
@@ -34,7 +34,8 @@ from qiime.filter import (filter_fasta, filter_samples_from_otu_table,
                           filter_mapping_file_from_mapping_f,
                           filter_mapping_file_by_metadata_states,
                           get_otu_ids_from_taxonomy_f,
-                          sample_ids_from_metadata_description)
+                          sample_ids_from_metadata_description,
+                          get_seq_ids_from_seq_id_file)
 from qiime.test import FakeFile
 from qiime.util import load_qiime_config
 
@@ -60,8 +61,6 @@ class FilterTests(TestCase):
 
         self.filter_fasta_expected1 = filter_fasta_expected1
         self.filter_fasta_expected2 = filter_fasta_expected2
-        self.filter_fastq_expected1 = filter_fastq_expected1
-        self.filter_fastq_expected2 = filter_fastq_expected2
         self.input_dm1 = input_dm1.split('\n')
         self.expected_dm1a = expected_dm1a.split('\n')
         self.expected_dm1b = expected_dm1b.split('\n')
@@ -72,8 +71,9 @@ class FilterTests(TestCase):
         self.tree1 = DndParser(tree1)
         self.tree2 = DndParser(tree2)
         self.tutorial_mapping_f = FakeFile(tutorial_mapping_f)
+        self.seq_ids_lines = seq_ids_lines.split('\n')
 
-        self.otu_table2 = parse_biom_table_str(sparse_otu_table2)
+        self.otu_table2 = parse_biom_table(sparse_otu_table2)
 
         # For sample_ids_from_category_state_coverage() tests.
         self.exp_empty = (set([]), 0, set([]))
@@ -196,7 +196,7 @@ BBBB
 @S3
 AAGGCCGG
 +
-BBCtatcc
+BBCBBCBB
 @S5 some comment
 CGT
 +
@@ -208,7 +208,36 @@ BB
 @S7
 T
 +
-s"""
+B"""
+
+        filter_fastq_expected1 = """@Seq1 some comment
+ACCTTGG
++
+BBBBBBB
+@s2 some other comment
+TTGG
++
+BBBB
+@S3
+AAGGCCGG
++
+BBCBBCBB
+"""
+
+        filter_fastq_expected2 = """@S5 some comment
+CGT
++
+BBB
+@seq6 some other comment
+AA
++
+BB
+@S7
+T
++
+B
+"""
+
         seqs_to_keep = {}.fromkeys(['Seq1',
                                     's2 some other comment',
                                     'S3 no comment'])
@@ -218,14 +247,15 @@ s"""
                      actual,
                      seqs_to_keep,
                      negate=False)
-        self.assertEqual(actual.s, self.filter_fastq_expected1)
+        print actual.s
+        self.assertEqual(actual.s, filter_fastq_expected1)
 
         actual = fake_output_f()
         filter_fastq(StringIO(input_seqs),
                      actual,
                      seqs_to_keep,
                      negate=True)
-        self.assertEqual(actual.s, self.filter_fastq_expected2)
+        self.assertEqual(actual.s, filter_fastq_expected2)
 
     def test_filter_tree(self):
         """filter_tree functions as expected"""
@@ -348,57 +378,59 @@ s"""
 
     def test_filter_otus_from_otu_table_ids(self):
         """filter_otus_from_otu_table functions with list of OTU ids"""
-        otu_table = parse_biom_table_str(dense_otu_table1)
-        filtered_otu_table = filter_otus_from_otu_table(otu_table,
-                                                        set(otu_table.ObservationIds) - set(['34', '155', '152']), 0, inf, 0, inf)
-        expected_otu_ids = set(otu_table.ObservationIds) - \
+        otu_table = parse_biom_table(dense_otu_table1, input_is_dense=True)
+        filtered_otu_table = filter_otus_from_otu_table(
+            otu_table,
+            set(otu_table.ids(axis='observation')) - set(['34', '155', '152']),
+            0, inf, 0, inf)
+        expected_otu_ids = set(otu_table.ids(axis='observation')) - \
             set(['34', '155', '152'])
         self.assertEqual(
-            set(filtered_otu_table.ObservationIds),
+            set(filtered_otu_table.ids(axis='observation')),
             expected_otu_ids)
 
     def test_filter_otus_from_otu_table_ids_negate(self):
         """filter_otus_from_otu_table functions with list of OTU ids and negate option"""
-        otu_table = parse_biom_table_str(dense_otu_table1)
+        otu_table = parse_biom_table(dense_otu_table1, input_is_dense=True)
         filtered_otu_table = filter_otus_from_otu_table(otu_table,
-                                                        set(otu_table.ObservationIds) - set(['34', '155', '152']), 0, inf, 0, inf, negate_ids_to_keep=True)
+                                                        set(otu_table.ids(axis='observation')) - set(['34', '155', '152']), 0, inf, 0, inf, negate_ids_to_keep=True)
         expected_otu_ids = set(['34', '155', '152'])
         self.assertEqual(
-            set(filtered_otu_table.ObservationIds),
+            set(filtered_otu_table.ids(axis='observation')),
             expected_otu_ids)
 
     def test_filter_otus_from_otu_table_counts_dense(self):
         """filter_otus_from_otu_table functions with count-based filtering (dense OTU table)"""
-        otu_table = parse_biom_table_str(dense_otu_table1)
+        otu_table = parse_biom_table(dense_otu_table1, input_is_dense=True)
 
         # min and max
         filtered_otu_table = filter_otus_from_otu_table(
             otu_table,
-            otu_table.ObservationIds,
+            otu_table.ids(axis='observation'),
             20,
             25,
             0,
             inf)
         expected_otu_ids = set(['34', '155', '152'])
         self.assertEqual(
-            set(filtered_otu_table.ObservationIds),
+            set(filtered_otu_table.ids(axis='observation')),
             expected_otu_ids)
         # no max
         filtered_otu_table = filter_otus_from_otu_table(
             otu_table,
-            otu_table.ObservationIds,
+            otu_table.ids(axis='observation'),
             43,
             inf,
             0,
             inf)
         expected_otu_ids = set(['267', '154', '254', '17'])
         self.assertEqual(
-            set(filtered_otu_table.ObservationIds),
+            set(filtered_otu_table.ids(axis='observation')),
             expected_otu_ids)
         # no min
         filtered_otu_table = filter_otus_from_otu_table(
             otu_table,
-            otu_table.ObservationIds,
+            otu_table.ids(axis='observation'),
             0,
             1,
             0,
@@ -426,41 +458,41 @@ s"""
              '57', '59', '6', '60', '62', '64', '66', '67', '68', '69', '70', '71', '72', '74', '76',
              '77', '80', '81', '85', '86', '88', '89', '91', '92', '94', '97', '98', '99'])
         self.assertEqual(
-            set(filtered_otu_table.ObservationIds),
+            set(filtered_otu_table.ids(axis='observation')),
             expected_otu_ids)
 
     def test_filter_otus_from_otu_table_counts_sparse(self):
         """filter_otus_from_otu_table functions with count-based filtering (sparse OTU table)"""
-        otu_table = parse_biom_table_str(sparse_otu_table1)
+        otu_table = parse_biom_table(sparse_otu_table1)
 
         # min and max
         filtered_otu_table = filter_otus_from_otu_table(
             otu_table,
-            otu_table.ObservationIds,
+            otu_table.ids(axis='observation'),
             20,
             25,
             0,
             inf)
         expected_otu_ids = set(['34', '155', '152'])
         self.assertEqual(
-            set(filtered_otu_table.ObservationIds),
+            set(filtered_otu_table.ids(axis='observation')),
             expected_otu_ids)
         # no max
         filtered_otu_table = filter_otus_from_otu_table(
             otu_table,
-            otu_table.ObservationIds,
+            otu_table.ids(axis='observation'),
             43,
             inf,
             0,
             inf)
         expected_otu_ids = set(['267', '154', '254', '17'])
         self.assertEqual(
-            set(filtered_otu_table.ObservationIds),
+            set(filtered_otu_table.ids(axis='observation')),
             expected_otu_ids)
         # no min
         filtered_otu_table = filter_otus_from_otu_table(
             otu_table,
-            otu_table.ObservationIds,
+            otu_table.ids(axis='observation'),
             0,
             1,
             0,
@@ -488,17 +520,17 @@ s"""
              '57', '59', '6', '60', '62', '64', '66', '67', '68', '69', '70', '71', '72', '74', '76',
              '77', '80', '81', '85', '86', '88', '89', '91', '92', '94', '97', '98', '99'])
         self.assertEqual(
-            set(filtered_otu_table.ObservationIds),
+            set(filtered_otu_table.ids(axis='observation')),
             expected_otu_ids)
 
     def test_filter_otus_from_otu_table_samples_sparse(self):
         """filter_otus_from_otu_table functions with sample-based filtering (sparse OTU table)"""
-        otu_table = parse_biom_table_str(sparse_otu_table1)
+        otu_table = parse_biom_table(sparse_otu_table1)
 
         # min and max
         filtered_otu_table = filter_otus_from_otu_table(
             otu_table,
-            otu_table.ObservationIds,
+            otu_table.ids(axis='observation'),
             0,
             inf,
             6,
@@ -513,12 +545,12 @@ s"""
              '227'])
 
         self.assertEqual(
-            set(filtered_otu_table.ObservationIds),
+            set(filtered_otu_table.ids(axis='observation')),
             expected_otu_ids)
         # no max
         filtered_otu_table = filter_otus_from_otu_table(
             otu_table,
-            otu_table.ObservationIds,
+            otu_table.ids(axis='observation'),
             0,
             inf,
             6,
@@ -533,12 +565,12 @@ s"""
              '227',
              '120'])
         self.assertEqual(
-            set(filtered_otu_table.ObservationIds),
+            set(filtered_otu_table.ids(axis='observation')),
             expected_otu_ids)
         # no min
         filtered_otu_table = filter_otus_from_otu_table(
             otu_table,
-            otu_table.ObservationIds,
+            otu_table.ids(axis='observation'),
             0,
             inf,
             0,
@@ -572,17 +604,17 @@ s"""
              '388', '389', '390', '391', '392', '393', '394', '396', '397', '398', '399',
              '400', '401', '402', '403', '404', '405', '406', '410', '411', '412', '413'])
         self.assertEqual(
-            set(filtered_otu_table.ObservationIds),
+            set(filtered_otu_table.ids(axis='observation')),
             expected_otu_ids)
 
     def test_filter_otus_from_otu_table_samples_dense(self):
         """filter_otus_from_otu_table functions with sample-based filtering (dense OTU table)"""
-        otu_table = parse_biom_table_str(dense_otu_table1)
+        otu_table = parse_biom_table(dense_otu_table1, input_is_dense=True)
 
         # min and max
         filtered_otu_table = filter_otus_from_otu_table(
             otu_table,
-            otu_table.ObservationIds,
+            otu_table.ids(axis='observation'),
             0,
             inf,
             6,
@@ -597,12 +629,12 @@ s"""
              '227'])
 
         self.assertEqual(
-            set(filtered_otu_table.ObservationIds),
+            set(filtered_otu_table.ids(axis='observation')),
             expected_otu_ids)
         # no max
         filtered_otu_table = filter_otus_from_otu_table(
             otu_table,
-            otu_table.ObservationIds,
+            otu_table.ids(axis='observation'),
             0,
             inf,
             6,
@@ -617,12 +649,12 @@ s"""
              '227',
              '120'])
         self.assertEqual(
-            set(filtered_otu_table.ObservationIds),
+            set(filtered_otu_table.ids(axis='observation')),
             expected_otu_ids)
         # no min
         filtered_otu_table = filter_otus_from_otu_table(
             otu_table,
-            otu_table.ObservationIds,
+            otu_table.ids(axis='observation'),
             0,
             inf,
             0,
@@ -656,27 +688,27 @@ s"""
              '388', '389', '390', '391', '392', '393', '394', '396', '397', '398', '399',
              '400', '401', '402', '403', '404', '405', '406', '410', '411', '412', '413'])
         self.assertEqual(
-            set(filtered_otu_table.ObservationIds),
+            set(filtered_otu_table.ids(axis='observation')),
             expected_otu_ids)
 
     def test_filter_samples_from_otu_table_counts_dense(self):
         """filter_samples_from_otu_table functions with count-based filtering (dense OTU table)"""
-        otu_table = parse_biom_table_str(dense_otu_table1)
+        otu_table = parse_biom_table(dense_otu_table1, input_is_dense=True)
 
         # min and max
         filtered_otu_table = filter_samples_from_otu_table(
             otu_table,
-            otu_table.SampleIds,
+            otu_table.ids(),
             148,
             149)
         expected_sample_ids = set(['PC.354', 'PC.635', 'PC.593', 'PC.607'])
         self.assertEqual(
-            set(filtered_otu_table.SampleIds),
+            set(filtered_otu_table.ids()),
             expected_sample_ids)
         # min only
         filtered_otu_table = filter_samples_from_otu_table(
             otu_table,
-            otu_table.SampleIds,
+            otu_table.ids(),
             148,
             inf)
         expected_sample_ids = set(
@@ -687,12 +719,12 @@ s"""
              'PC.356',
              'PC.634'])
         self.assertEqual(
-            set(filtered_otu_table.SampleIds),
+            set(filtered_otu_table.ids()),
             expected_sample_ids)
         # max only
         filtered_otu_table = filter_samples_from_otu_table(
             otu_table,
-            otu_table.SampleIds,
+            otu_table.ids(),
             0,
             149)
         expected_sample_ids = set(
@@ -704,12 +736,12 @@ s"""
              'PC.593',
              'PC.607'])
         self.assertEqual(
-            set(filtered_otu_table.SampleIds),
+            set(filtered_otu_table.ids()),
             expected_sample_ids)
 
     def test_filter_samples_from_otu_table_sample_ids_dense(self):
         """filter_samples_from_otu_table functions with count-based filtering (dense OTU table)"""
-        otu_table = parse_biom_table_str(dense_otu_table1)
+        otu_table = parse_biom_table(dense_otu_table1, input_is_dense=True)
 
         # keep two samples
         expected_sample_ids = set(['PC.593', 'PC.607'])
@@ -719,7 +751,7 @@ s"""
             0,
             inf)
         self.assertEqual(
-            set(filtered_otu_table.SampleIds),
+            set(filtered_otu_table.ids()),
             expected_sample_ids)
 
         # keep some other samples
@@ -730,21 +762,21 @@ s"""
             0,
             inf)
         self.assertEqual(
-            set(filtered_otu_table.SampleIds),
+            set(filtered_otu_table.ids()),
             expected_sample_ids)
 
     def test_filter_otu_table_to_n_samples(self):
         """filter_otu_table_to_n_samples returns randomly selected subset of samples
         """
-        otu_table = parse_biom_table_str(dense_otu_table1)
+        otu_table = parse_biom_table(dense_otu_table1, input_is_dense=True)
 
         # keep two samples
         filtered_otu_table = filter_otu_table_to_n_samples(otu_table, 2)
-        self.assertEqual(len(filtered_otu_table.SampleIds), 2)
+        self.assertEqual(len(filtered_otu_table.ids()), 2)
 
         # keep three samples
         filtered_otu_table = filter_otu_table_to_n_samples(otu_table, 3)
-        self.assertEqual(len(filtered_otu_table.SampleIds), 3)
+        self.assertEqual(len(filtered_otu_table.ids()), 3)
 
         # ValueError on invalid n
         self.assertRaises(
@@ -763,27 +795,27 @@ s"""
         results = []
         for i in range(100):
             filtered_otu_table = filter_otu_table_to_n_samples(otu_table, 3)
-            results.append(tuple(filtered_otu_table.SampleIds))
+            results.append(tuple(filtered_otu_table.ids()))
         self.assertTrue(len(set(results)) > 1)
 
     def test_filter_samples_from_otu_table_counts_sparse(self):
         """filter_samples_from_otu_table functions with count-based filtering (sparse OTU table)"""
-        otu_table = parse_biom_table_str(sparse_otu_table1)
+        otu_table = parse_biom_table(sparse_otu_table1)
 
         # min and max
         filtered_otu_table = filter_samples_from_otu_table(
             otu_table,
-            otu_table.SampleIds,
+            otu_table.ids(),
             148,
             149)
         expected_sample_ids = set(['PC.354', 'PC.635', 'PC.593', 'PC.607'])
         self.assertEqual(
-            set(filtered_otu_table.SampleIds),
+            set(filtered_otu_table.ids()),
             expected_sample_ids)
         # min only
         filtered_otu_table = filter_samples_from_otu_table(
             otu_table,
-            otu_table.SampleIds,
+            otu_table.ids(),
             148,
             inf)
         expected_sample_ids = set(
@@ -794,12 +826,12 @@ s"""
              'PC.356',
              'PC.634'])
         self.assertEqual(
-            set(filtered_otu_table.SampleIds),
+            set(filtered_otu_table.ids()),
             expected_sample_ids)
         # max only
         filtered_otu_table = filter_samples_from_otu_table(
             otu_table,
-            otu_table.SampleIds,
+            otu_table.ids(),
             0,
             149)
         expected_sample_ids = set(
@@ -811,12 +843,12 @@ s"""
              'PC.593',
              'PC.607'])
         self.assertEqual(
-            set(filtered_otu_table.SampleIds),
+            set(filtered_otu_table.ids()),
             expected_sample_ids)
 
     def test_filter_samples_from_otu_table_sample_ids_sparse(self):
         """filter_samples_from_otu_table functions with count-based filtering (sparse OTU table)"""
-        otu_table = parse_biom_table_str(sparse_otu_table1)
+        otu_table = parse_biom_table(sparse_otu_table1)
 
         # keep two samples
         expected_sample_ids = set(['PC.593', 'PC.607'])
@@ -826,7 +858,7 @@ s"""
             0,
             inf)
         self.assertEqual(
-            set(filtered_otu_table.SampleIds),
+            set(filtered_otu_table.ids()),
             expected_sample_ids)
 
         # keep some other samples
@@ -837,7 +869,7 @@ s"""
             0,
             inf)
         self.assertEqual(
-            set(filtered_otu_table.SampleIds),
+            set(filtered_otu_table.ids()),
             expected_sample_ids)
 
     def test_sample_ids_from_metadata_description(self):
@@ -1158,6 +1190,12 @@ o2	s1_3	s1_4	s2_5
         self.assertEqual(open(actual_fp).read(), otu_map_no_single_min_sample2)
         self.assertEqual(retained_otus, set(['o2']))
 
+    def test_get_seq_ids_from_seq_id_file(self):
+        """tests qiime.filter.get_seqs_to_keep_lookup_from_seq_id_file"""
+        exp = set(['x', '1', '42'])
+        self.assertEqual(get_seq_ids_from_seq_id_file(self.seq_ids_lines),
+                         exp)
+
 
 tree1 = "(aaa:10,(bbb:2,ccc:4):5);"
 tree2 = "(aaa:10,('bbb':2,ccc:4):5);"
@@ -1193,36 +1231,14 @@ AA
 T
 """
 
-filter_fastq_expected1 = """@Seq1 some comment
-ACCTTGG
-+
-BBBBBBB
-@s2 some other comment
-TTGG
-+
-BBBB
-@S3
-AAGGCCGG
-+
-BBCtatcc
-"""
-filter_fastq_expected2 = """@S5 some comment
-CGT
-+
-BBB
-@seq6 some other comment
-AA
-+
-BB
-@S7
-T
-+
-s
-"""
-
-input_seqs_to_discard1 = """x
+seq_ids_lines = """
+x
 1 some comment
-42 not a real otu id"""
+
+
+42 not a real otu id
+
+"""
 
 input_dm1 = """\tABC\tDEF\tGHI\tXYZ
 ABC\t0.0\t0.75\t0.00\t0.0063

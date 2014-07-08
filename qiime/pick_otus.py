@@ -18,15 +18,14 @@ grouping those sequences by similarity.
 from copy import copy
 from itertools import ifilter
 from os.path import splitext, split, abspath, join
-from os import makedirs, close
+from os import makedirs, close, rename
 from itertools import imap
 from tempfile import mkstemp
 
-from cogent.parse.mothur import parse_otu_list as mothur_parse
-from cogent import DNA as DNA_cogent
+from brokit.mothur import parse_otu_list as mothur_parse
 
 from skbio.util.misc import remove_files, flatten
-from skbio.util.trie import CompressedTrie, fasta_to_pairlist
+from skbio.core.tree import CompressedTrie, fasta_to_pairlist
 from skbio.parse.sequences import parse_fasta
 from skbio.core.alignment import SequenceCollection
 from skbio.core.sequence import DNA
@@ -40,9 +39,12 @@ from brokit.formatdb import build_blast_db_from_fasta_path
 from brokit.mothur import Mothur
 from brokit.cd_hit import cdhit_clusters_from_seqs
 from brokit.uclust import get_clusters_from_fasta_filepath
+from brokit.sortmerna_v2 import (build_database_sortmerna,
+                                 sortmerna_ref_cluster)
 from brokit.usearch import (usearch_qf,
                             usearch61_denovo_cluster,
                             usearch61_ref_cluster)
+from brokit.sumaclust_v1 import sumaclust_denovo_cluster
 
 
 class OtuPicker(FunctionWithParams):
@@ -161,6 +163,12 @@ class OtuPicker(FunctionWithParams):
 
     def _map_filtered_clusters_to_full_clusters(self, clusters, filter_map):
         """
+            Input:  clusters, a list of cluster lists
+                    filter_map, the seq_id in each clusters
+                                is the key to the filter_map
+                                containing all seq_ids with
+                                duplicate FASTA sequences
+            Output: an extended list of cluster lists
         """
         results = []
         for cluster in clusters:
@@ -169,6 +177,187 @@ class OtuPicker(FunctionWithParams):
                 full_cluster += filter_map[seq_id]
             results.append(full_cluster)
         return results
+
+
+class SortmernaV2OtuPicker(OtuPicker):
+
+    """ SortMeRNA-based version 2 OTU picker: clusters queries by their 'best'
+        alignment to a reference seed.
+
+        The 'best' alignment for a query is the one with:
+            1. the lowest E-value score (at most 1)
+            2. percent sequence identity greater than or equal to the OTU
+                similarity threshold (default in Params['similarity'] = 0.97)
+            3. percent query coverage greater than or equal to the OTU
+                coverage threshold (default in Params['coverage'] = 0.97)
+    """
+
+    def __init__(self, params):
+        """ Return a new SortmernaV2OtuPicker object with specified params.
+        """
+
+        OtuPicker.__init__(self, params)
+
+    def __call__(self, seq_path, result_path=None, log_path=None,
+                 sortmerna_db=None, refseqs_fp=None, failure_path=None):
+
+        """ Purpose   : Call to construct the reference database (if not provided)
+                        and to launch sortmerna.
+            Parameters: seq_path, path to reads file;
+                        result_path, path to OTU mapping file;
+                        log_path, path to QIIME log file;
+                        sortmerna_db, path to sortmerna indexed database;
+                        refseqs_fp, path to reference sequences;
+                        failure_path, path to text file of reads failing
+                          to align with similarity & coverage thresholds;
+            Return    : None (output is always written to file)
+        """
+
+        self.log_lines = []
+        prefilter_identical_sequences =\
+            self.Params['prefilter_identical_sequences']
+
+        # Indexed database not provided, build it
+        if not sortmerna_db:
+
+            self.sortmerna_db, self.files_to_remove = \
+                build_database_sortmerna(abspath(refseqs_fp),
+                                         max_pos=self.Params['max_pos'],
+                                         output_dir=get_qiime_temp_dir())
+
+            self.log_lines.append('Reference seqs fp (to build '
+                                  'sortmerna database): %s' %
+                                  abspath(refseqs_fp))
+        # Indexed database provided
+        else:
+            self.sortmerna_db = sortmerna_db
+            self.files_to_remove = []
+
+        self.log_lines.append('SortMeRNA database: %s' % self.sortmerna_db)
+
+        original_fasta_path = seq_path
+
+        # Collapse identical sequences to a new file
+        if prefilter_identical_sequences:
+            exact_match_id_map, seq_path =\
+                self._apply_identical_sequences_prefilter(seq_path)
+
+        # Call sortmerna for reference clustering
+        clusters, failures, smr_files_to_remove =\
+            sortmerna_ref_cluster(seq_path=seq_path,
+                                  sortmerna_db=self.sortmerna_db,
+                                  refseqs_fp=refseqs_fp,
+                                  result_path=result_path,
+                                  tabular=self.Params['blast'],
+                                  max_e_value=self.Params['max_e_value'],
+                                  similarity=self.Params['similarity'],
+                                  coverage=self.Params['coverage'],
+                                  threads=self.Params['threads'],
+                                  best=self.Params['best'],
+                                  HALT_EXEC=False)
+
+        # Remove temporary files
+        self.files_to_remove.extend(smr_files_to_remove)
+        remove_files(self.files_to_remove, error_on_missing=False)
+
+        if prefilter_identical_sequences:
+            # Expand identical sequences to create full OTU map
+            clusters =\
+                self._map_filtered_clusters_to_full_clusters(
+                    clusters, exact_match_id_map)
+
+            # Expand failures
+            temp_failures = []
+            for fa in failures:
+                temp_failures.extend(exact_match_id_map[fa])
+            failures = temp_failures
+
+        self.log_lines.append('Num OTUs: %d' % len(clusters))
+        self.log_lines.append('Num failures: %d' % len(failures))
+
+        # Write failures to file
+        if failure_path is not None:
+            failure_file = open(failure_path, 'w')
+            failure_file.write('\n'.join(failures))
+            failure_file.write('\n')
+            failure_file.close()
+
+        # Add prefix ID to closed-reference OTUs
+        otu_id_prefix = self.Params['otu_id_prefix']
+        if otu_id_prefix is None:
+            clusters = dict(enumerate(clusters))
+        else:
+            clusters = dict(('%s%d' % (otu_id_prefix, i), c)
+                            for i, c in enumerate(clusters))
+
+        # Write OTU map
+        if result_path:
+            # If the user provided a result_path, write the
+            # results to file with one tab-separated line per
+            # cluster (this will over-write the default SortMeRNA
+            # OTU map with the extended OTU map)
+            of = open(result_path, 'w')
+            for cluster_id, cluster in clusters.items():
+                of.write('%s\t%s\n' % (cluster_id, '\t'.join(cluster)))
+            of.close()
+            result = None
+            self.log_lines.append('Result path: %s\n' % result_path)
+        else:
+            # if the user did not provide a result_path, store
+            # the clusters in a dict of {otu_id:[seq_ids]}, where
+            # otu_id is arbitrary
+            result = clusters
+            self.log_lines.append('Result path: None, returned as dict.')            
+
+        # Log the run
+        if log_path:
+            log_file = open(log_path, 'w')
+            self.log_lines = [str(self)] + self.log_lines
+            log_file.write('\n'.join(self.log_lines))
+            log_file.write('\n')
+
+        return result
+
+    def _apply_identical_sequences_prefilter(self, seq_path):
+        """
+            Input : a filepath to input FASTA reads
+            Method: prepares and writes de-replicated reads
+                    to a temporary FASTA file, calls
+                    parent method to do the actual
+                    de-replication
+            Return: exact_match_id_map, a dictionary storing
+                    de-replicated amplicon ID as key and
+                    all original FASTA IDs with identical
+                    sequences as values;
+                    unique_seqs_fp, filepath to FASTA file
+                    holding only de-replicated sequences
+        """
+        # Creating mapping for de-replicated reads
+        with open(seq_path, 'U') as s_path:
+            seqs_to_cluster, exact_match_id_map =\
+                self._prefilter_exact_matches(parse_fasta(s_path))
+
+        # Create temporary file for storing the de-replicated reads
+        fd, unique_seqs_fp = mkstemp(
+            prefix='SortMeRNAExactMatchFilter', suffix='.fasta')
+        close(fd)
+
+        self.files_to_remove.append(unique_seqs_fp)
+
+        # Write de-replicated reads to file
+        unique_seqs_f = open(unique_seqs_fp, 'w')
+        for seq_id, seq in seqs_to_cluster:
+            unique_seqs_f.write('>%s count=%d;\n%s\n' %
+                                (seq_id,
+                                 len(exact_match_id_map[seq_id]),
+                                 seq))
+        unique_seqs_f.close()
+
+        # Clean up the seqs_to_cluster as we don't need
+        # it again
+        del(seqs_to_cluster)
+
+        return exact_match_id_map, unique_seqs_fp
 
 
 class BlastOtuPicker(OtuPicker):
@@ -422,6 +611,138 @@ def get_blast_hits(seqs,
 
     return result
 # END MOVE TO BLAST APP CONTROLLER
+
+
+class SumaClustOtuPicker(OtuPicker):
+
+    """ SumaClust is a de novo OTU picker, following the same clustering
+        algorithm as Uclust. It is open source and supports multithreading,
+        both SIMD and OpenMP.
+
+        Clusters are created by their similarity threshold (default 0.97).
+        If a query does not match any seed with this similarity threshold,
+        it is used to create a new seed.
+
+        Exact clustering (with parameter -e) assigns queries to the
+        best-matching seed, rather than to the first seed with similarity
+        threshold.
+    """
+
+    def __init__(self, params):
+        """ Return a new SumaClustOtuPicker object with specified params.
+            The defaults are set in the SumaClust API (see brokit)
+        """
+
+        OtuPicker.__init__(self, params)
+
+    def _apply_identical_sequences_prefilter(self, seq_path):
+        """
+            Input : a filepath to input FASTA reads
+            Method: prepares and writes de-replicated reads
+                    to a temporary FASTA file, calls
+                    parent method to do the actual
+                    de-replication
+            Return: exact_match_id_map, a dictionary storing
+                    de-replicated amplicon ID as key and
+                    all original FASTA IDs with identical
+                    sequences as values;
+                    unique_seqs_fp, filepath to FASTA file
+                    holding only de-replicated sequences
+        """
+        # creating mapping for de-replicated reads
+        seqs_to_cluster, exact_match_id_map =\
+            self._prefilter_exact_matches(parse_fasta(open(seq_path, 'U')))
+
+        # create temporary file for storing the de-replicated reads
+        fd, unique_seqs_fp = mkstemp(
+            prefix='SumaClustExactMatchFilter', suffix='.fasta')
+        close(fd)
+
+        self.files_to_remove.append(unique_seqs_fp)
+
+        # write de-replicated reads to file
+        unique_seqs_f = open(unique_seqs_fp, 'w')
+        for seq_id, seq in seqs_to_cluster:
+            unique_seqs_f.write('>%s count=%d;\n%s\n'
+                                % (seq_id,
+                                   len(exact_match_id_map[seq_id]),
+                                   seq))
+        unique_seqs_f.close()
+        # clean up the seqs_to_cluster list as it can be big and we
+        # don't need it again
+        del(seqs_to_cluster)
+
+        return exact_match_id_map, unique_seqs_fp
+
+    def __call__(self, seq_path=None, result_path=None, log_path=None):
+
+        self.log_lines = []
+        self.files_to_remove = []
+
+        prefilter_identical_sequences =\
+            self.Params['prefilter_identical_sequences']
+
+        original_fasta_path = seq_path
+
+        # Collapse idetical sequences to a new file
+        if prefilter_identical_sequences:
+            exact_match_id_map, seq_path =\
+                self._apply_identical_sequences_prefilter(seq_path)
+
+        # Run SumaClust, return a dict of output files
+        clusters = sumaclust_denovo_cluster(
+            seq_path=seq_path,
+            result_path=result_path,
+            shortest_len=self.Params['l'],
+            similarity=self.Params['similarity'],
+            threads=self.Params['threads'],
+            exact=self.Params['exact'],
+            HALT_EXEC=False)
+
+        # Clean up any temp files that were created
+        remove_files(self.files_to_remove)
+
+        # Create file for expanded OTU map
+        if prefilter_identical_sequences:
+            clusters = self._map_filtered_clusters_to_full_clusters(
+                clusters, exact_match_id_map)
+
+        self.log_lines.append('Num OTUs: %d' % len(clusters))
+
+        # Add prefix ID to de novo OTUs
+        otu_id_prefix = self.Params['sumaclust_otu_id_prefix']
+        if otu_id_prefix is None:
+            clusters = dict(enumerate(clusters))
+        else:
+            clusters = dict(('%s%d' % (otu_id_prefix, i), c)
+                            for i, c in enumerate(clusters))
+
+        if result_path:
+            # If the user provided a result_path, write the
+            # results to file with one tab-separated line per
+            # cluster (this will over-write the default SumaClust
+            # OTU map with the extended OTU map)
+            of = open(result_path, 'w')
+            for cluster_id, cluster in clusters.items():
+                of.write('%s\t%s\n' % (cluster_id, '\t'.join(cluster)))
+            of.close()
+            result = None
+            self.log_lines.append('Result path: %s\n' % result_path)
+        else:
+            # if the user did not provide a result_path, store
+            # the clusters in a dict of {otu_id:[seq_ids]}, where
+            # otu_id is arbitrary
+            result = clusters
+            self.log_lines.append('Result path: None, returned as dict.')
+
+        # Log the run
+        if log_path:
+            log_file = open(log_path, 'w')
+            self.log_lines.insert(0, str(self))
+            log_file.write('\n'.join(self.log_lines))
+            log_file.close()
+
+        return result
 
 
 class PrefixSuffixOtuPicker(OtuPicker):
@@ -708,7 +1029,7 @@ class CdHitOtuPicker(OtuPicker):
         # Get the clusters by running cd-hit-est against the
         # sequence collection
         clusters = cdhit_clusters_from_seqs(
-            seqs=seqs, moltype=DNA_cogent, params=cd_hit_params)
+            seqs=seqs, params=cd_hit_params)
         if prefix_prefilter_length is not None or trie_prefilter:
             clusters = self._map_filtered_clusters_to_full_clusters(
                 clusters, filter_map)
@@ -833,10 +1154,10 @@ class UclustOtuPicker(UclustOtuPickerBase):
         """
         _params = {'Similarity': 0.97,
                    'Application': 'uclust',
-                   'max_accepts': 20,
-                   'max_rejects': 500,
-                   'stepwords': 20,
-                   'word_length': 12,
+                   'max_accepts': 1,
+                   'max_rejects': 8,
+                   'stepwords': 8,
+                   'word_length': 8,
                    'enable_rev_strand_matching': False,
                    'optimal': False,
                    'exact': False,
@@ -1454,10 +1775,10 @@ class UclustReferenceOtuPicker(UclustOtuPickerBase):
         _params = {'Similarity': 0.97,
                    'Application': 'uclust',
                    'enable_rev_strand_matching': False,
-                   'max_accepts': 20,
-                   'max_rejects': 500,
-                   'stepwords': 20,
-                   'word_length': 12,
+                   'max_accepts': 1,
+                   'max_rejects': 8,
+                   'stepwords': 8,
+                   'word_length': 8,
                    'suppress_new_clusters': False,
                    'optimal': False,
                    'exact': False,
@@ -1745,7 +2066,9 @@ otu_picking_method_constructors = {
     'usearch': UsearchOtuPicker,
     'usearch_ref': UsearchReferenceOtuPicker,
     'usearch61': Usearch610DeNovoOtuPicker,
-    'usearch61_ref': Usearch61ReferenceOtuPicker
+    'usearch61_ref': Usearch61ReferenceOtuPicker,
+    'sumaclust': SumaClustOtuPicker,
+    'sortmerna': SortmernaV2OtuPicker
 }
 
 otu_picking_method_choices = otu_picking_method_constructors.keys()

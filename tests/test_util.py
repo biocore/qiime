@@ -13,7 +13,8 @@ from collections import defaultdict
 from unittest import TestCase, main
 import gzip
 
-from biom.parse import parse_biom_table_str, parse_biom_table
+from biom.parse import parse_biom_table
+from biom import example_table
 
 from numpy.testing import assert_almost_equal
 
@@ -42,15 +43,16 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
                         guess_even_sampling_depth, compute_days_since_epoch,
                         get_interesting_mapping_fields, inflate_denoiser_output,
                         flowgram_id_to_seq_id_map, count_seqs, count_seqs_from_file,
-                        count_seqs_in_filepaths, get_split_libraries_fastq_params_and_file_types,
-                        iseq_to_qseq_fields, get_top_fastq_two_lines,
+                        count_seqs_in_filepaths,
+                        iseq_to_qseq_fields,
                         make_compatible_distance_matrices, stderr, _chk_asarray, expand_otu_ids,
-                        subsample_fasta, summarize_otu_sizes_from_otu_map, trim_fastq,
+                        subsample_fasta, summarize_otu_sizes_from_otu_map,
                         load_qiime_config, MetadataMap,
                         RExecutor, duplicates_indices, trim_fasta, get_qiime_temp_dir,
                         qiime_blastx_seqs, add_filename_suffix, is_valid_git_refname,
                         is_valid_git_sha1, sync_biom_and_mf,
-                        biom_taxonomy_formatter, invert_dict)
+                        biom_taxonomy_formatter, invert_dict,
+                        write_biom_table)
 
 import numpy
 from numpy import array, asarray
@@ -101,6 +103,13 @@ class TopLevelTests(TestCase):
         for dir in self.dirs_to_remove:
             if exists(dir):
                 rmdir(dir)
+
+    def test_write_biom_table(self):
+        """HDF5-format BIOM file can be written"""
+        fd, output_fp = mkstemp(prefix="test_biom_")
+        self.files_to_remove.append(output_fp)
+        write_biom_table(example_table, output_fp)
+        self.assertTrue(exists(output_fp))
 
     def test_expand_otu_ids(self):
         """expand otu ids functions as expected """
@@ -512,166 +521,6 @@ o4	seq6	seq7""".split('\n')
         self.assertEqual(count_seqs_in_filepaths(
             in_fps, seq_counter), expected)
 
-    def test_get_split_libraries_fastq_params_and_file_types_reverse(self):
-        """get_split_libraries_fastq_params_and_file_types using reverse
-           barcodes computes correct values"""
-
-        temp_output_dir = mkdtemp()
-        self.dirs_to_remove.append(temp_output_dir)
-
-        # generate the fastq mapping file
-        map_fpath = join(temp_output_dir, 'map.txt')
-        map_fopen = open(map_fpath, 'w')
-        map_fopen.write('\n'.join(fastq_mapping_rev))
-        map_fopen.close()
-        self.files_to_remove.append(map_fpath)
-
-        fastq_files = []
-        # generate fastq seqs file
-        seq_fpath = join(temp_output_dir, 'seqs.fastq')
-        seqs_fopen = open(seq_fpath, 'w')
-        seqs_fopen.write('\n'.join(fastq_seqs))
-        seqs_fopen.close()
-
-        fastq_files.append(seq_fpath)
-        self.files_to_remove.append(seq_fpath)
-
-        # generate fastq seqs file
-        barcode_fpath = join(temp_output_dir, 'barcodes.fastq')
-        barcode_fopen = open(barcode_fpath, 'w')
-        barcode_fopen.write('\n'.join(fastq_barcodes))
-        barcode_fopen.close()
-
-        fastq_files.append(barcode_fpath)
-        self.files_to_remove.append(barcode_fpath)
-
-        exp = '-i %s -b %s --rev_comp_mapping_barcodes' % (seq_fpath,
-                                                           barcode_fpath)
-
-        obs = get_split_libraries_fastq_params_and_file_types(fastq_files,
-                                                              map_fpath)
-
-        self.assertEqual(obs, exp)
-
-    def test_get_split_libraries_fastq_params_and_file_types_forward(self):
-        """get_split_libraries_fastq_params_and_file_types using forward
-           barcodes computes correct values"""
-
-        temp_output_dir = mkdtemp()
-        self.dirs_to_remove.append(temp_output_dir)
-
-        # generate the fastq mapping file
-        map_fpath = join(temp_output_dir, 'map.txt')
-        map_fopen = open(map_fpath, 'w')
-        map_fopen.write('\n'.join(fastq_mapping_fwd))
-        map_fopen.close()
-        self.files_to_remove.append(map_fpath)
-
-        fastq_files = []
-        # generate fastq seqs file
-        seq_fpath = join(temp_output_dir, 'seqs.fastq')
-        seqs_fopen = open(seq_fpath, 'w')
-        seqs_fopen.write('\n'.join(fastq_seqs))
-        seqs_fopen.close()
-
-        fastq_files.append(seq_fpath)
-        self.files_to_remove.append(seq_fpath)
-
-        # generate fastq seqs file
-        barcode_fpath = join(temp_output_dir, 'barcodes.fastq')
-        barcode_fopen = open(barcode_fpath, 'w')
-        barcode_fopen.write('\n'.join(fastq_barcodes))
-        barcode_fopen.close()
-
-        fastq_files.append(barcode_fpath)
-        self.files_to_remove.append(barcode_fpath)
-
-        exp = '-i %s -b %s ' % (seq_fpath, barcode_fpath)
-
-        obs = get_split_libraries_fastq_params_and_file_types(fastq_files,
-                                                              map_fpath)
-
-        self.assertEqual(obs, exp)
-
-    def test_get_split_libraries_fastq_params_and_file_types_gzipped(self):
-        """get_split_libraries_fastq_params_and_file_types using gzipped files
-           and forward barcodes computes correct values"""
-
-        temp_output_dir = mkdtemp()
-        self.dirs_to_remove.append(temp_output_dir)
-
-        # generate the fastq mapping file
-        map_fpath = join(temp_output_dir, 'map.txt')
-        map_fopen = open(map_fpath, 'w')
-        map_fopen.write('\n'.join(fastq_mapping_fwd))
-        map_fopen.close()
-        self.files_to_remove.append(map_fpath)
-
-        fastq_files = []
-        # generate fastq seqs file
-        seq_fpath = join(temp_output_dir, 'seqs.fastq.gz')
-        seqs_fopen = gzip.open(seq_fpath, 'w')
-        seqs_fopen.write('\n'.join(fastq_seqs))
-        seqs_fopen.close()
-
-        fastq_files.append(seq_fpath)
-        self.files_to_remove.append(seq_fpath)
-
-        # generate fastq seqs file
-        barcode_fpath = join(temp_output_dir, 'barcodes.fastq.gz')
-        barcode_fopen = gzip.open(barcode_fpath, 'w')
-        barcode_fopen.write('\n'.join(fastq_barcodes))
-        barcode_fopen.close()
-
-        fastq_files.append(barcode_fpath)
-        self.files_to_remove.append(barcode_fpath)
-
-        exp = '-i %s -b %s ' % (seq_fpath, barcode_fpath)
-
-        obs = get_split_libraries_fastq_params_and_file_types(fastq_files,
-                                                              map_fpath)
-
-        self.assertEqual(obs, exp)
-
-    def test_get_top_fastq_two_lines(self):
-        """ get_top_fastq_two_lines: this function gets the first 4 lines of
-            the open fastq file
-        """
-
-        temp_output_dir = mkdtemp()
-        self.dirs_to_remove.append(temp_output_dir)
-
-        fastq_files = []
-        # generate fastq seqs file
-        seq_fpath = join(temp_output_dir, 'seqs.fastq')
-        seqs_fopen = open(seq_fpath, 'w')
-        seqs_fopen.write('\n'.join(fastq_seqs))
-        seqs_fopen.close()
-
-        fastq_files.append(seq_fpath)
-        self.files_to_remove.append(seq_fpath)
-
-        # generate fastq seqs file
-        barcode_fpath = join(temp_output_dir, 'barcodes.fastq')
-        barcode_fopen = open(barcode_fpath, 'w')
-        barcode_fopen.write('\n'.join(fastq_barcodes))
-        barcode_fopen.close()
-
-        fastq_files.append(barcode_fpath)
-        self.files_to_remove.append(barcode_fpath)
-        exp = [('@HWUSI-EAS552R_0357:8:1:10040:6364#0/1\n', 'GACGAGTCAGTCA\n',
-                '+HWUSI-EAS552R_0357:8:1:10040:6364#0/1\n', 'hhhhhhhhhhhhh\n'),
-               ('@HWUSI-EAS552R_0357:8:1:10040:6364#0/2\n',
-                'TACAGGGGATGCAAGTGTTATCCGGAATTATTGGGCGTAAAGCGTCTGCAGGTTGCTCACTAAGTCTTTTGTTAAATCTTCGGGCTTAACCCGAAACCTGCAAAAGAAACTAGTGCTCTCGAGTATGGTAGAGGTAAAGGGAATTTCCAG\n',
-
-                '+HWUSI-EAS552R_0357:8:1:10040:6364#0/2\n',
-                'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhfhhhhhhgghhhhhWhfcffehf]hhdhhhhhgcghhhchhhhfhcfhhgggdfhgdcffadccfdcccca]^b``ccfdd_caccWbb[b_dfdcdeaec`^`^_daba_b_WdY^`\n')]
-
-        # iterate of dict and make sure the top 4 lines of each file are in the
-        # expected list
-        for i in fastq_files:
-            obs = get_top_fastq_two_lines(open(i))
-            self.assertTrue(obs in exp)
 
     def test_make_compatible_distance_matrices(self):
         """make_compatible_distance_matrices: functions as expected"""
@@ -735,21 +584,6 @@ o4	seq6	seq7""".split('\n')
         lookup = {'C': 'C', 'B': 'B', 'T': 'B', 'D': 'D'}
         self.assertRaises(KeyError,
                           make_compatible_distance_matrices, dm1, dm2, lookup)
-
-    def test_trim_fastq(self):
-        """ trim_fastq functions as expected """
-        expected = ["""@HWUSI-EAS552R_0357:8:1:10040:6364#0/1
-GACGAG
-+
-hhhhhh
-""",
-                    """@HWUSI-EAS552R_0357:8:1:10184:6365#0/1
-GTCTGA
-+
-hhhhhh
-"""]
-
-        self.assertEqual(list(trim_fastq(self.fastq_barcodes, 6)), expected)
 
     def test_trim_fasta(self):
         """ trim_fasta functions as expected """
@@ -1057,7 +891,7 @@ class FunctionWithParamsTests(TestCase):
                   [2,1,1,0,0,1],
                   [0,1,1,0,0,0]]
     }'''
-        biom_data = parse_biom_table_str(bt_string)
+        biom_data = parse_biom_table(bt_string)
         F = FunctionWithParams('')
 
         self.assertEqual(biom_data, F.getBiomData(biom_data))
@@ -1271,7 +1105,7 @@ class FunctionWithParamsTests(TestCase):
                     ('e', "")]
 
         expected_result = map(lambda a_b: DNASequence(a_b[1],
-                                                      identifier=a_b[0]),
+                                                      id=a_b[0]),
                               [("a", "AAAAAAAAAGGGG"),
                                ("b", "AAGGAGC"),
                                ('c', ""),
@@ -1773,6 +1607,19 @@ class MetadataMapTests(TestCase):
             "PC.636\tACGGTGAGTGTC\tFast\t20080116\t636"]
         self.overview_map = MetadataMap(
             *parse_mapping_file_to_dict(self.overview_map_str))
+        self.overview_map_upper_str = [
+            "#SampleID\tBarcodeSequence\tTREATMENT\tDOB\tDescription",
+            "PC.354\tAGCACGAGCCTA\tControl\t20061218\t354",
+            "PC.355\tAACTCGTCGATG\tControl\t20061218\t355",
+            "PC.356\tACAGACCACTCA\tControl\t20061126\t356",
+            "PC.481\tACCAGCGACTAG\tControl\t20070314\t481",
+            "PC.593\tAGCAGCACTTGT\tControl\t20071210\t593",
+            "PC.607\tAACTGTGCGTAC\tFast\t20071112\t607",
+            "PC.634\tACAGAGTCGGCT\tFast\t20080116\t634",
+            "PC.635\tACCGCAGAGTCA\tFast\t20080116\t635",
+            "PC.636\tACGGTGAGTGTC\tFast\t20080116\t636"]
+        self.overview_map_upper = MetadataMap(
+            *parse_mapping_file_to_dict(self.overview_map_upper_str))
 
         # Create the same overview tutorial map, but this time with some
         # comments.
@@ -1828,6 +1675,12 @@ class MetadataMapTests(TestCase):
         """Test parsing a mapping file into a MetadataMap instance."""
         obs = MetadataMap.parseMetadataMap(self.overview_map_str)
         self.assertEqual(obs, self.overview_map)
+
+    def test_parseMetadataMap_insensitive(self):
+        """Test parsing a mapping file into a MetadataMap (case insensitive)"""
+        obs = MetadataMap.parseMetadataMap(self.overview_map_str,
+                                           case_insensitive=True)
+        self.assertEqual(obs, self.overview_map_upper)
 
     def test_parseMetadataMap_empty(self):
         """Test parsing empty mapping file contents."""
@@ -2000,13 +1853,13 @@ class MetadataMapTests(TestCase):
         """Test sample IDs accessor."""
         exp = ["PC.354", "PC.355", "PC.356", "PC.481", "PC.593", "PC.607",
                "PC.634", "PC.635", "PC.636"]
-        obs = self.overview_map.SampleIds
+        obs = self.overview_map.sample_ids
         self.assertEqual(obs, exp)
 
-        obs = self.no_metadata.SampleIds
+        obs = self.no_metadata.sample_ids
         self.assertEqual(obs, exp)
 
-        obs = self.empty_map.SampleIds
+        obs = self.empty_map.sample_ids
         self.assertEqual(obs, [])
 
     def test_CategoryNames(self):
@@ -2025,11 +1878,11 @@ class MetadataMapTests(TestCase):
         """Test filtering out samples from metadata map."""
         exp = ['PC.356', 'PC.593']
         self.overview_map.filterSamples(['PC.593', 'PC.356'])
-        obs = self.overview_map.SampleIds
+        obs = self.overview_map.sample_ids
         self.assertEqual(obs, exp)
 
         self.overview_map.filterSamples([])
-        self.assertEqual(self.overview_map.SampleIds, [])
+        self.assertEqual(self.overview_map.sample_ids, [])
 
     def test_filterSamples_strict(self):
         """Test strict checking of sample prescence when filtering."""
@@ -2042,10 +1895,10 @@ class MetadataMapTests(TestCase):
     def test_filterSamples_no_strict(self):
         """Test missing samples does not raise error."""
         self.overview_map.filterSamples(['PC.356', 'abc123'], strict=False)
-        self.assertEqual(self.overview_map.SampleIds, ['PC.356'])
+        self.assertEqual(self.overview_map.sample_ids, ['PC.356'])
 
         self.empty_map.filterSamples(['foo'], strict=False)
-        self.assertEqual(self.empty_map.SampleIds, [])
+        self.assertEqual(self.empty_map.sample_ids, [])
 
     def test_str(self):
         """Test conversion to string representation
@@ -2204,7 +2057,7 @@ class SyncBiomTests(TestCase):
         # test with list taxonomy
         bt = parse_biom_table(bt_list_taxonomy)
         obs = biom_taxonomy_formatter(bt, 'taxonomy')
-        exp = ['k__One;p__testCode',
+        exp = ['k__One; p__testCode',
                'k__Two',
                'k__Three',
                'k__Four',

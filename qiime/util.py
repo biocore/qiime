@@ -6,7 +6,7 @@ __credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso",
                "Justin Kuczynski", "Jens Reeder", "Catherine Lozupone",
                "Jai Ram Rideout", "Logan Knecht", "Michael Dwan",
                "Levi McCracken", "Damien Coy", "Yoshiki Vazquez Baeza",
-               "Will Van Treuren"]  # remember to add yourself if you make changes
+               "Will Van Treuren", "Adam Robbins-Pianka"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -29,6 +29,7 @@ from subprocess import Popen
 from random import random
 from itertools import repeat, izip
 from tempfile import mkstemp
+from functools import partial
 
 from numpy import (array, zeros, shape, vstack, ndarray, asarray,
                    float, where, isnan, std, sqrt, ravel, mean, median,
@@ -36,17 +37,10 @@ from numpy import (array, zeros, shape, vstack, ndarray, asarray,
 from numpy.ma import MaskedArray
 from numpy.ma.extras import apply_along_axis
 
-from biom.util import compute_counts_per_sample_stats
+from biom.util import compute_counts_per_sample_stats, biom_open
+from biom import load_table
 from biom.parse import parse_biom_table
-from biom.table import (DenseFunctionTable, DenseGeneTable,
-                        DenseMetaboliteTable, DenseOTUTable,
-                        DenseOrthologTable, DensePathwayTable, DenseTable,
-                        DenseTaxonTable, FunctionTable, GeneTable,
-                        MetaboliteTable, OTUTable, OrthologTable,
-                        PathwayTable, SparseFunctionTable, SparseGeneTable,
-                        SparseMetaboliteTable, SparseOTUTable,
-                        SparseOrthologTable, SparsePathwayTable,
-                        SparseTable, SparseTaxonTable)
+from biom.table import Table
 
 from cogent.parse.tree import DndParser
 from cogent.cluster.procrustes import procrustes
@@ -65,15 +59,15 @@ from brokit.formatdb import (build_blast_db_from_fasta_path,
 from qcli import make_option, qcli_system_call, parse_command_line_parameters
 
 from qiime import __version__ as qiime_library_version
-from qiime.parse import (parse_mapping_file_to_dict,
-                         parse_qiime_config_files,
+from qiime.parse import (parse_qiime_config_files,
                          parse_coords,
                          parse_newick,
                          fields_to_dict,
                          PhyloNode,
                          parse_mapping_file,
                          parse_denoiser_mapping,
-                         parse_fastq)
+                         parse_fastq,
+                         mapping_file_to_dict)
 
 # for backward compatibility - compute_seqs_per_library_stats has
 # been removed in favor of biom.util.compute_counts_per_sample_stats,
@@ -185,6 +179,7 @@ class FunctionWithParams(object):
         """Writes result to result_path. May need to format in subclasses."""
         f = open(result_path, 'w')
         f.write(self.formatResult(result))
+        f.write('\n')
         f.close()
 
     def getTree(self, tree_source):
@@ -230,32 +225,9 @@ class FunctionWithParams(object):
         """returns a biom object regardless of whether path or object given"""
         try:
             if isfile(data):
-                otu_table = parse_biom_table(qiime_open(data, 'U'))
-                return otu_table
+                return load_table(data)
         except TypeError:
-            if any([type(data) in
-                    [DenseFunctionTable,
-                     DenseGeneTable,
-                     DenseMetaboliteTable,
-                     DenseOTUTable,
-                     DenseOrthologTable,
-                     DensePathwayTable,
-                     DenseTable,
-                     DenseTaxonTable,
-                     FunctionTable,
-                     GeneTable,
-                     MetaboliteTable,
-                     OTUTable,
-                     OrthologTable,
-                     PathwayTable,
-                     SparseFunctionTable,
-                     SparseGeneTable,
-                     SparseMetaboliteTable,
-                     SparseOTUTable,
-                     SparseOrthologTable,
-                     SparsePathwayTable,
-                     SparseTable,
-                     SparseTaxonTable]]):
+            if type(data) == Table:
                 otu_table = data
                 return otu_table
             else:
@@ -276,13 +248,6 @@ class FunctionWithParams(object):
             self.writeResult(result_path, result)
         else:
             return result
-
-
-def trim_fastq(fastq_lines, output_length):
-    """trim fastq seqs/quals to output_length bases """
-    for seq_id, seq, qual in parse_fastq(fastq_lines, strict=False):
-        yield '@%s\n%s\n+\n%s\n' % (seq_id, seq[:output_length],
-                                    qual[:output_length])
 
 
 def trim_fasta(fasta_lines, output_length):
@@ -520,6 +485,34 @@ def write_seqs_to_fasta(fp, seqs, write_mode='w'):
     f.close()
 
 
+def get_generated_by_for_biom_tables():
+    """Returns a "generated by" string for use when creating BIOM tables
+
+    Returns
+    -------
+    str
+    """
+    return "QIIME " + get_qiime_library_version()
+
+
+def write_biom_table(biom_table, biom_table_fp, compress=True):
+    """Writes a BIOM table to the specified filepath
+
+    Parameters
+    ----------
+    biom_table : biom.Table
+        The table object to write out
+    biom_tabl_fp : str
+        The path to the output file
+    compress : bool, optional
+        Defaults to ``True``. If True, built-in compression on the output HDF5
+        file will be enabled
+    """
+    with biom_open(biom_table_fp, 'w') as biom_file:
+        biom_table.to_hdf5(biom_file, get_generated_by_for_biom_tables(),
+                           compress)
+
+
 def split_fasta_on_sample_ids_to_files(seqs,
                                        output_dir,
                                        per_sample_buffer_size=500):
@@ -715,7 +708,7 @@ def convert_otu_table_relative(otu_table):
     """
     sample_ids, otu_ids, otu_counts, consensus = otu_table
     otu_counts = asarray(otu_counts, float)
-    otu_counts = otu_counts / otu_counts.sum(axis=0)
+    otu_counts = otu_counts / otu_counts.sum()
     otu_counts = where(isnan(otu_counts), 0.0, otu_counts)
     return (sample_ids, otu_ids, otu_counts, consensus)
 
@@ -953,7 +946,7 @@ def degap_fasta_aln(seqs):
     """
 
     for (label, seq) in seqs:
-        yield DNASequence(seq, identifier=label).degap()
+        yield DNASequence(seq, id=label).degap()
 
 
 def write_degapped_fasta_to_file(seqs, tmp_dir="/tmp/"):
@@ -1297,105 +1290,6 @@ def count_seqs_in_filepaths(fasta_filepaths, seq_counter=count_seqs):
 # End functions for counting sequences in fasta files
 
 
-def get_top_fastq_two_lines(open_file):
-    """ This function returns the first 4 lines of the open fastq file
-    """
-    line1 = open_file.readline()
-    line2 = open_file.readline()
-    line3 = open_file.readline()
-    line4 = open_file.readline()
-    open_file.seek(0)
-    return line1, line2, line3, line4
-
-
-def get_split_libraries_fastq_params_and_file_types(fastq_fps, mapping_fp):
-    """ The function takes a list of open fastq files and a mapping file, then
-        returns a recommended parameters string for split_libraries_fastq
-    """
-    # parse the mapping
-    data, headers, run_description = parse_mapping_file(open(mapping_fp, 'U'))
-
-    # determine the which column of mapping file is the BarcodeSequence
-    for i, col_head in enumerate(headers):
-        if col_head == 'BarcodeSequence':
-            barcode_column = i
-
-    # create a set of barcodes for easier lookup
-    barcode_mapping_column = set(zip(*data)[barcode_column])
-
-    # create set of reverse complement barcodes from mapping file
-    revcomp_barcode_mapping_column = []
-    for i in barcode_mapping_column:
-        revcomp_barcode_mapping_column.append(str(DNASequence(i).rc()))
-        barcode_len = len(i)
-    revcomp_barcode_mapping_column = set(revcomp_barcode_mapping_column)
-
-    # get the filenames and sort them, so the file1 corresponds to file2
-    fastq_fps.sort()
-
-    # get the len of the sequence in each of the files, so we can determine
-    # which file is the sequence file and which is the barcode sequence
-    get_file_type_info = {}
-    for fastq_file in fastq_fps:
-        # allow for gzipped files to be used
-        if fastq_file.endswith('.gz'):
-            fastq_fp = gzip_open(fastq_file)
-        else:
-            fastq_fp = open(fastq_file, 'U')
-
-        file_lines = get_top_fastq_two_lines(fastq_fp)
-        parsed_fastq = parse_fastq(file_lines, strict=False)
-        for i, seq_data in enumerate(parsed_fastq):
-            if i == 0:
-                get_file_type_info[fastq_file] = len(seq_data[1])
-            else:
-                break
-        fastq_fp.close()
-
-    # iterate over the sequence lengths and assign each file to either
-    # a sequence list or barcode list
-    barcode_files = []
-    sequence_files = []
-    for i in range(0, len(fastq_fps), 2):
-        if get_file_type_info[fastq_fps[i]] < get_file_type_info[fastq_fps[i + 1]]:
-            barcode_files.append(fastq_fps[i])
-            sequence_files.append(fastq_fps[i + 1])
-        else:
-            barcode_files.append(fastq_fps[i + 1])
-            sequence_files.append(fastq_fps[i])
-
-    # count the number of barcode matches in the forward and reverse direction
-    # to determine if the rev_comp_barcode option needs passed
-    fwd_count = 0
-    rev_count = 0
-    for bfile in barcode_files:
-        # allow for gzipped files to be used
-        if fastq_file.endswith('.gz'):
-            fastq_fp = gzip_open(bfile)
-        else:
-            fastq_fp = open(bfile, 'U')
-
-        parsed_fastq = parse_fastq(fastq_fp, strict=False)
-        for bdata in parsed_fastq:
-            if bdata[1][:barcode_len] in barcode_mapping_column:
-                fwd_count += 1
-            elif bdata[1][:barcode_len] in revcomp_barcode_mapping_column:
-                rev_count += 1
-        fastq_fp.close()
-
-    # determine which barcode direction is correct
-    if rev_count > fwd_count:
-        barcode_orientation = '--rev_comp_mapping_barcodes'
-    else:
-        barcode_orientation = ''
-
-    # generate the string to use in command call to split_libraries_fastq
-    split_lib_str = '-i %s -b %s %s' % (','.join(sequence_files),
-                                        ','.join(barcode_files),
-                                        barcode_orientation)
-    return split_lib_str
-
-
 def iseq_to_qseq_fields(line, barcode_in_header,
                         barcode_length, barcode_qual_c='b'):
     """ Split an Illumina sequence line into qseq fields"""
@@ -1641,7 +1535,7 @@ class MetadataMap():
     req_header_suffix = ['Description']
 
     @staticmethod
-    def parseMetadataMap(lines):
+    def parseMetadataMap(lines, case_insensitive=False):
         """Parses a QIIME metadata mapping file into a MetadataMap object.
 
         This static method is basically a factory that reads in the given
@@ -1651,18 +1545,30 @@ class MetadataMap():
         Arguments:
             lines - a list of strings representing the file contents of a QIIME
                 metadata mapping file
+            case_insensitive - a boolean to uppercase non required mapping file
+                headers
         """
-        return MetadataMap(*parse_mapping_file_to_dict(lines))
+        mapping_data, header, comments = parse_mapping_file(lines)
+        if case_insensitive:
+            req_header = set(MetadataMap.req_header_prefix + MetadataMap.req_header_suffix)
+            for i in range(len(header)):
+                if header[i] not in req_header:
+                    header[i] = header[i].upper()
+        mapping = mapping_file_to_dict(mapping_data, header)
+        return MetadataMap(mapping, comments)
 
     @staticmethod
-    def mergeMappingFiles(mapping_files, no_data_value='no_data'):
+    def mergeMappingFiles(mapping_files, no_data_value='no_data',
+                          case_insensitive=False):
         """ Merge list of mapping files into a single mapping file
 
             mapping_files: open file objects containing mapping data
             no_data_value: value to be used in cases where there is no
             mapping field associated with a sample ID (default: 'no_data')
         """
-        metadata_maps = map(MetadataMap.parseMetadataMap, mapping_files)
+        func = partial(MetadataMap.parseMetadataMap,
+                       case_insensitive=case_insensitive)
+        metadata_maps = map(func, mapping_files)
         merged = sum(metadata_maps[1:], metadata_maps[0])
         merged.no_data_value = no_data_value
         return merged
@@ -1851,7 +1757,7 @@ class MetadataMap():
         Arguments:
             category - the category that will be checked
         """
-        category_values = self.getCategoryValues(self.SampleIds, category)
+        category_values = self.getCategoryValues(self.sample_ids, category)
 
         is_numeric = True
         for category_value in category_values:
@@ -1867,10 +1773,10 @@ class MetadataMap():
         Arguments:
             category - the category that will be checked for uniqueness
         """
-        category_values = self.getCategoryValues(self.SampleIds, category)
+        category_values = self.getCategoryValues(self.sample_ids, category)
 
         is_unique = False
-        if len(set(category_values)) == len(self.SampleIds):
+        if len(set(category_values)) == len(self.sample_ids):
             is_unique = True
         return is_unique
 
@@ -1883,7 +1789,7 @@ class MetadataMap():
         Arguments:
             category - the category that will be checked
         """
-        category_values = self.getCategoryValues(self.SampleIds, category)
+        category_values = self.getCategoryValues(self.sample_ids, category)
 
         single_value = False
         if len(set(category_values)) == 1:
@@ -1891,7 +1797,7 @@ class MetadataMap():
         return single_value
 
     @property
-    def SampleIds(self):
+    def sample_ids(self):
         """Returns the IDs of all samples in the metadata map.
 
         The sample IDs are returned as a list of strings in alphabetical order.
@@ -1905,8 +1811,8 @@ class MetadataMap():
         The category names are returned as a list of strings in alphabetical
         order.
         """
-        return sorted(self.getSampleMetadata(self.SampleIds[0]).keys()) \
-            if len(self.SampleIds) > 0 else []
+        return sorted(self.getSampleMetadata(self.sample_ids[0]).keys()) \
+            if len(self.sample_ids) > 0 else []
 
     def filterSamples(self, sample_ids_to_keep, strict=True):
         """Remove samples that are not in ``sample_ids_to_keep``.
@@ -1915,12 +1821,12 @@ class MetadataMap():
         sample IDs in ``sample_ids_to_keep`` cannot be found in the metadata
         map.
         """
-        for sid in self.SampleIds:
+        for sid in self.sample_ids:
             if sid not in sample_ids_to_keep:
                 del self._metadata[sid]
 
         if strict:
-            extra_samples = set(sample_ids_to_keep) - set(self.SampleIds)
+            extra_samples = set(sample_ids_to_keep) - set(self.sample_ids)
 
             if extra_samples:
                 raise ValueError("Could not find the following sample IDs in "
@@ -2137,7 +2043,7 @@ def sync_biom_and_mf(pmf, bt):
     will be an empty set.
     """
     mf_samples = set(pmf)
-    bt_samples = set(bt.SampleIds)
+    bt_samples = set(bt.ids())
     if mf_samples == bt_samples:
         # agreement, can continue without fear of breaking code
         return pmf, bt, set()
@@ -2153,12 +2059,12 @@ def sync_biom_and_mf(pmf, bt):
 
         def _f(sv, sid, smd):
             return sid in shared_samples
-        nbt = bt.filterSamples(_f)
+        nbt = bt.filter(_f, axis='sample')
     return npmf, nbt, nonshared_samples
 
 
 def biom_taxonomy_formatter(bt, md_key):
-    """Return md strings from bt using md_key in order of bt.ObservationMetadata
+    """Return md strings from bt using md_key in order of bt.observation_metadata
 
     There are multiple legacy formats for metadata encoding in biom formats
     including as lists, dicts, and strings. This function attempts to figure out
@@ -2169,31 +2075,32 @@ def biom_taxonomy_formatter(bt, md_key):
     Inputs:
      bt - biom table object
      md_key - string, the key to return the metadata from the biom table.
-    Outputs a list of strings (in order of bt.ObservationMetadata entries) of
+    Outputs a list of strings (in order of bt.observation_metadata entries) of
     metadata. If no metadata could be found using the given key the function
     will print a warning and return None.
     """
-    if bt.ObservationMetadata is None:
-        print 'No metadata in biom table.'
+    if bt.metadata(axis='observation') is None:
+        print 'Warning: No metadata in biom table. Won\'t alter calculations.'
         return None
     else:
-        dtype = bt.ObservationMetadata[0][md_key]
+        dtype = bt.metadata(axis='observation')[0][md_key]
     if isinstance(dtype, dict):
         data = []
-        for md in bt.ObservationMetadata:
+        for md in bt.metadata(axis='observation'):
             tmp = []
             for k, v in md[md_key].iteritems():
                 tmp.append('%s_%s' % (k, v))
             data.append(' '.join(tmp))
         # data = [' '.join(['%s_%s' % (k,v) for k,v in md[md_key].items()]) for \
-        #     md in bt.ObservationMetadata]
+        #     md in bt.observation_metadata]
         return map(str, data)
     elif isinstance(dtype, list):
         return (
-            map(str, [';'.join(md[md_key]) for md in bt.ObservationMetadata])
+            map(str, ['; '.join(md[md_key])
+                      for md in bt.metadata(axis='observation')])
         )
     elif isinstance(dtype, (str, unicode)):
-        return map(str, [md[md_key] for md in bt.ObservationMetadata])
+        return map(str, [md[md_key] for md in bt.metadata(axis='observation')])
     else:
         print ('Metadata format could not be determined or metadata key (%s) ' +
                'was incorrect. Metadata will not be returned.') % md_key

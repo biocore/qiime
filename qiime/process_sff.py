@@ -11,7 +11,7 @@ from cStringIO import StringIO
 from itertools import imap
 from subprocess import check_call
 
-from cogent.app.util import ApplicationNotFoundError
+from skbio.app.util import ApplicationNotFoundError
 from cogent.parse.binary_sff import (
     parse_binary_sff, format_binary_sff, write_binary_sff, decode_accession,
 )

@@ -385,11 +385,11 @@ You should see, among other information:
   |      Alpha-diversity metric(s) to use. A comma-separated
   |      list should be provided when multiple metrics are
   |      specified. [default:
-  |      PD_whole_tree,chao1,observed_species]
+  |      PD_whole_tree,chao1,observed_otus]
 
 to also use the shannon index, create a custom parameters file by typing: ::
 
-    echo "alpha_diversity:metrics shannon,PD_whole_tree,chao1,observed_species" > alpha_params.txt
+    echo "alpha_diversity:metrics shannon,PD_whole_tree,chao1,observed_otus" > alpha_params.txt
 
 Then run the workflow, which requires the OTU table (-i) and phylogenetic tree (-t) from `above`__, and the custom parameters file we just created: 
 
@@ -412,10 +412,10 @@ The directory :file:`wf_arare/rarefaction/` will contain many text files named :
 
 Step 2. Compute Alpha Diversity
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The rarefaction tables are the basis for calculating diversity metrics, which reflect the diversity within the sample based on the abundance of various taxa within a community. The QIIME pipeline allows users to conveniently calculate more than two dozen different diversity metrics. The full list of available metrics is available here: `alpha-diversity metrics <../scripts/alpha_diversity_metrics.html>`_. Every metric has different strengths and limitations - technical discussion of each metric is readily available online and in ecology textbooks, but it is beyond the scope of this document. By default, QIIME calculates three metrics:
+The rarefaction tables are the basis for calculating diversity metrics, which reflect the diversity within the sample based on the abundance of various taxa within a community. The QIIME pipeline allows users to conveniently calculate more than two dozen different diversity metrics. The full list of available metrics is available here: `alpha-diversity metrics <http://scikit-bio.org/math.diversity.alpha.html>`_. Every metric has different strengths and limitations - technical discussion of each metric is readily available online and in ecology textbooks, but it is beyond the scope of this document. By default, QIIME calculates three metrics:
 
 #. Chao1 metric estimates the species richness.
-#. The Observed Species metric is simply the count of unique OTUs found in the sample.
+#. The Observed OTUs (previously known as Observed Species) metric is simply the count of unique OTUs found in the sample.
 #. Phylogenetic Distance (PD_whole_tree) is the only phylogenetic metric used, and requires a phylogenetic tree.
 
 In addition, :file:`alpha_params.txt` specified above adds the shannon index to the list of alpha diversity measures calculated by QIIME.
@@ -428,7 +428,7 @@ Step 3. Collate Rarified OTU Tables
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The output directory :file:`wf_arare/alpha_div/` will contain one text file :file:`alpha_rarefaction_##_#` for every file input from :file:`wf_arare/rarefaction/`, where the numbers represent the number of samples and iterations as before. The content of this tab delimited file is the calculated metrics for each sample. To collapse the individual files into a single combined table, the workflow uses the script `collate_alpha.py <../scripts/collate_alpha.html>`_.
 
-In the newly created directory :file:`wf_arare/alpha_div_collated/`, there will be one matrix for every alpha diversity metric used. This matrix will contain the metric for every sample, arranged in ascending order from lowest number of sequences per sample to highest. A portion of the :file:`observed_species.txt` file are shown below:
+In the newly created directory :file:`wf_arare/alpha_div_collated/`, there will be one matrix for every alpha diversity metric used. This matrix will contain the metric for every sample, arranged in ascending order from lowest number of sequences per sample to highest. A portion of the :file:`observed_otus.txt` file are shown below:
 
 .. note::
 

@@ -50,7 +50,7 @@ def filter_aln_by_otus(aln, prefs):
     removed_seqs = []
     for j in range(aln.sequence_count()):
         remove = False
-        aln_name = aln[j].identifier
+        aln_name = aln[j].id
         stripped_aln_name = aln_name.split(' ')[0].split('_')
         if len(stripped_aln_name) > 1:
             new_aln_name = ''.join(stripped_aln_name[:-1])

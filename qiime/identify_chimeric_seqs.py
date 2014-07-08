@@ -6,7 +6,7 @@ from __future__ import division
 from os.path import split, basename, abspath, exists, join
 from subprocess import PIPE, Popen
 
-from cogent.util.misc import remove_files
+from skbio.util.misc import remove_files
 
 from skbio.app.parameters import ValuedParameter
 from skbio.app.util import (which, CommandLineApplication, ResultPath,

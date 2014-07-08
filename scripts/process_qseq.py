@@ -14,7 +14,7 @@ __email__ = "gregcaporaso@gmail.com"
 from qiime.util import make_option
 from glob import glob
 from os.path import split
-from cogent.util.misc import create_dir
+from skbio.util.misc import create_dir
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.format import illumina_data_to_fastq
 

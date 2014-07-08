@@ -9,6 +9,7 @@ __maintainer__ = "Mike Robeson"
 __email__ = "robesonms@ornl.gov"
 
 from skbio.parse.sequences import parse_fastq
+from skbio.format.sequences import format_fastq_record
 from brokit.fastq_join import FastqJoin, join_paired_end_reads_fastqjoin
 from brokit.seqprep import SeqPrep, join_paired_end_reads_seqprep
 from qiime.util import qiime_open
@@ -66,8 +67,7 @@ def write_synced_barcodes_fastq(joined_fp, index_fp):
                                     " paired-end reads have identical headers. The last joined" +
                                     " paired-end ID processed was:\n\'%s\'\n" % (joined_label))
         else:
-            fastq_string = '@%s\n%s\n+\n%s\n'\
-                % (index_label, index_seq, index_qual)
+            fastq_string = format_fastq_record(index_label, index_seq, index_qual)
             fbc_fh.write(fastq_string)
 
     ih.close()

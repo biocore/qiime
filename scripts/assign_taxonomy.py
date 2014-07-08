@@ -22,15 +22,13 @@ from os.path import split, splitext
 from tempfile import mkstemp
 from qiime.assign_taxonomy import (
     BlastTaxonAssigner, MothurTaxonAssigner, RdpTaxonAssigner,
-    RtaxTaxonAssigner, Tax2TreeTaxonAssigner, validate_rdp_version,
-    UclustConsensusTaxonAssigner)
+    RtaxTaxonAssigner, validate_rdp_version, UclustConsensusTaxonAssigner)
 
 assignment_method_constructors = {
     'blast': BlastTaxonAssigner,
     'mothur': MothurTaxonAssigner,
     'rdp': RdpTaxonAssigner,
     'rtax': RtaxTaxonAssigner,
-    'tax2tree': Tax2TreeTaxonAssigner,
     'uclust': UclustConsensusTaxonAssigner
 }
 
@@ -39,7 +37,6 @@ assignment_method_choices = [
     'blast',
     'rtax',
     'mothur',
-    'tax2tree',
     'uclust']
 
 options_lookup = get_options_lookup()
@@ -50,7 +47,7 @@ script_info = {}
 script_info['brief_description'] = """Assign taxonomy to each sequence"""
 script_info['script_description'] = """Contains code for assigning taxonomy, using several techniques.
 
-Given a set of sequences, %prog attempts to assign the taxonomy of each sequence. Currently the methods implemented are assignment with BLAST, the RDP classifier, RTAX, tax2tree, mothur, and uclust. The output of this step is an observation metadata mapping file of input sequence identifiers (1st column of output file) to taxonomy (2nd column) and quality score (3rd column). There may be method-specific information in subsequent columns.
+Given a set of sequences, %prog attempts to assign the taxonomy of each sequence. Currently the methods implemented are assignment with BLAST, the RDP classifier, RTAX, mothur, and uclust. The output of this step is an observation metadata mapping file of input sequence identifiers (1st column of output file) to taxonomy (2nd column) and quality score (3rd column). There may be method-specific information in subsequent columns.
 
 Reference data sets and id-to-taxonomy maps for 16S rRNA sequences can be found in the Greengenes reference OTU builds. To get the latest build of the Greengenes OTUs (and other marker gene OTU collections), follow the "Resources" link from http://qiime.org. After downloading and unzipping you can use the following files as -r and -t, where <otus_dir> is the name of the new directory after unzipping the reference OTUs tgz file.
 
@@ -187,9 +184,6 @@ script_info['optional_options'] = [
     make_option('-e', '--e_value', type='float',
                 help='Maximum e-value to record an assignment, only used for blast '
                 'method [default: %default]', default=0.001),
-    make_option('--tree_fp', type='existing_filepath',
-                help='The filepath to a prebuilt tree containing both the representative '
-                'and reference sequences. Required for Tax2Tree assignment.'),
     make_option('-o', '--output_dir', type='new_dirpath',
                 help='Path to store result file ' +
                 '[default: <ASSIGNMENT_METHOD>_assigned_taxonomy]')
@@ -256,16 +250,6 @@ def main():
                 'reference sequences (via -r) and an id_to_taxonomy '
                 'file (via -t).')
 
-    if assignment_method == 'tax2tree':
-        if opts.tree_fp is None:
-            option_parser.error('Tax2Tree classification requires a '
-                                'filepath to a prebuilt tree (via --tree_fp) containing '
-                                'both the representative and reference sequences. Check '
-                                'Tax2Tree documentation for help building a tree.')
-        if opts.id_to_taxonomy_fp is None:
-            option_parser.error('Tax2Tree classification requires a '
-                                'filepath for an id_to_taxonomy file (via -t).')
-
     taxon_assigner_constructor =\
         assignment_method_constructors[assignment_method]
     input_sequences_filepath = opts.input_fasta_fp
@@ -328,10 +312,6 @@ def main():
         params['header_id_regex'] = opts.header_id_regex
         params['read_id_regex'] = opts.read_id_regex
         params['amplicon_id_regex'] = opts.amplicon_id_regex
-
-    elif assignment_method == 'tax2tree':
-        params['id_to_taxonomy_fp'] = opts.id_to_taxonomy_fp
-        params['tree_fp'] = opts.tree_fp
 
     else:
         # should not be able to get here as an unknown classifier would

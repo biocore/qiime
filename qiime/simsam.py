@@ -12,14 +12,17 @@ __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
 from os.path import join
+from operator import add
+from datetime import datetime
+from random import choice
 
 from numpy import zeros
-from random import choice
-from biom.table import table_factory
+from biom.table import Table
 
-from qiime.format import format_mapping_file, format_biom_table
+from qiime.format import format_mapping_file
 from qiime.parse import parse_mapping_file
-from qiime.util import make_option, create_dir, parse_command_line_parameters
+from qiime.util import (make_option, create_dir, parse_command_line_parameters,
+                        write_biom_table, get_generated_by_for_biom_tables)
 from qiime.sort import natsort
 
 
@@ -43,9 +46,6 @@ def sim_otu_table(sample_ids, otu_ids, samples, otu_metadata, tree,
     some otu metadata:
     (res_sam_names, res_otus, res_otu_mtx, res_otu_metadata)
     """
-
-    tree_tips = [tip.Name for tip in tree.tips()]
-
     # hold sample abundance vector in a dict (sample_dict) temporarily
     # format of sample_dict: otu_id: num_seqs
     sample_dicts = []
@@ -86,6 +86,25 @@ def sim_otu_table(sample_ids, otu_ids, samples, otu_metadata, tree,
     return res_sam_names, res_otus, res_otu_mtx, res_otu_metadata
 
 
+def create_tip_index(tree):
+    """Create a tip lookup index on the tree"""
+    if hasattr(tree, '_tip_index'):
+        return
+    else:
+        tree._tip_index = {n.Name: n for n in tree.tips()}
+
+def cache_tip_names(tree):
+    """Cache tip names"""
+    if hasattr(tree, '_tip_names'):
+        return
+    else:
+        for n in tree.postorder():
+            if n.isTip():
+                n._tip_names = [n.Name]
+            else:
+                n._tip_names = reduce(add, [c._tip_names for c in n.Children])
+
+
 def get_new_otu_id(old_otu_id, tree, dissim):
     """ simulates an otu switching to related one
 
@@ -93,7 +112,10 @@ def get_new_otu_id(old_otu_id, tree, dissim):
     ouputs the name of the new, randomly chosen, tree tip
     output tip name may be the same as
     """
-    node = tree.getNodeMatchingName(old_otu_id)  # starts at tip
+    create_tip_index(tree)
+    cache_tip_names(tree)
+
+    node = tree._tip_index[old_otu_id]
     distance_up_tree = 0
     while (not node.isRoot()) and (distance_up_tree + node.Length < dissim):
         distance_up_tree += node.Length
@@ -104,7 +126,7 @@ def get_new_otu_id(old_otu_id, tree, dissim):
     if node.isTip():
         return node.Name
     else:
-        return choice([tip.Name for tip in node.tips()])
+        return choice(node._tip_names)
 
 
 def combine_sample_dicts(sample_dicts):
@@ -220,21 +242,22 @@ def simsam_range(table,
     for simulated_sample_size in simulated_sample_sizes:
         # create the output mapping file data
         output_mapping_lines = \
-            process_map(mapping_lines, simulated_sample_size, table.SampleIds)
+            process_map(mapping_lines, simulated_sample_size, table.ids())
         for dissimilarity in dissimilarities:
             # create the simulated otu table
             output_sample_ids, output_otu_ids, output_data, output_metadata = \
-                sim_otu_table(table.SampleIds,
-                              table.ObservationIds,
-                              table.iterSamples(),
-                              table.ObservationMetadata,
+                sim_otu_table(table.ids(),
+                              table.ids(axis='observation').tolist(),
+                              table.iter(),
+                              table.metadata(axis='observation'),
                               tree,
                               simulated_sample_size,
                               dissimilarity)
-            output_table = table_factory(output_data,
-                                         output_sample_ids,
-                                         output_otu_ids,
-                                         observation_metadata=output_metadata)
+            output_table = Table(
+                output_data, output_otu_ids, output_sample_ids,
+                observation_metadata=output_metadata,
+                generated_by=get_generated_by_for_biom_tables(),
+                create_date=datetime.now().isoformat())
             yield (output_table,
                    output_mapping_lines,
                    simulated_sample_size,
@@ -276,9 +299,7 @@ def simsam_range_to_files(table,
 
         output_table_fp = join(output_dir, '%s_n%d_d%r.biom' %
                                (output_table_basename, simulated_sample_size, dissimilarity))
-        output_table_f = open(output_table_fp, 'w')
-        output_table_f.write(format_biom_table(output_table))
-        output_table_f.close()
+        write_biom_table(output_table, output_table_fp)
 
         if output_mapping_lines is not None:
             output_map_fp = join(output_dir, '%s_n%d_d%r.txt' %

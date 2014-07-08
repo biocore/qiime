@@ -20,13 +20,15 @@ __email__ = "gregcaporaso@gmail.com"
 from os import remove, close
 from os.path import abspath, join, exists, split
 from shutil import rmtree
-from tempfile import mkstemp
+from tempfile import mkstemp, mkdtemp
+from filecmp import cmp
 
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
 from skbio.core.sequence import DNA
 from skbio.util.misc import create_dir, remove_files
 from brokit.formatdb import build_blast_db_from_fasta_path
+from brokit.sortmerna_v2 import build_database_sortmerna
 
 from qiime.util import load_qiime_config
 from qiime.pick_otus import (CdHitOtuPicker, OtuPicker,
@@ -34,7 +36,8 @@ from qiime.pick_otus import (CdHitOtuPicker, OtuPicker,
                              expand_otu_map_seq_ids, map_otu_map_files, UclustOtuPicker,
                              UclustReferenceOtuPicker, expand_failures, UsearchOtuPicker,
                              UsearchReferenceOtuPicker, get_blast_hits, BlastxOtuPicker,
-                             Usearch610DeNovoOtuPicker, Usearch61ReferenceOtuPicker)
+                             Usearch610DeNovoOtuPicker, Usearch61ReferenceOtuPicker,
+                             SumaClustOtuPicker, SortmernaV2OtuPicker)
 
 
 class OtuPickerTests(TestCase):
@@ -71,6 +74,227 @@ class OtuPickerTests(TestCase):
         p = OtuPicker({})
         actual = p._prefilter_exact_matches(seqs)
         self.assertEqual(actual, expected)
+
+
+class SortmernaV2OtuPickerTests(TestCase):
+    """ Tests for SortMeRNA (closed-reference) OTU picker """
+
+    def setUp(self):
+        self.output_dir = mkdtemp()
+        self.reference_seq_fp = sortmerna_reference_seqs_fp
+        self.read_seqs_fp = sortmerna_read_seqs_fp
+        self.otumap_fp = sortmerna_otumap_fp
+        self.failures_fp = sortmerna_failures_fp
+        self.otumap_no_otu_id_prefix_fp = sortmerna_otumap_no_otu_id_prefix_fp
+
+        # create temporary file with reference sequences defined
+        # in reference_seqs_fp
+        f, self.file_reference_seq_fp = mkstemp(prefix='temp_references_',
+                                                suffix='.fasta')
+        close(f)
+
+        # write _reference_ sequences to tmp file
+        with open(self.file_reference_seq_fp, 'w') as tmp:
+            tmp.write(self.reference_seq_fp)
+
+        # create temporary file with read sequences defined in read_seqs_fp
+        f, self.file_read_seqs_fp = mkstemp(prefix='temp_reads_',
+                                            suffix='.fasta')
+        close(f)
+
+        # write _read_ sequences to tmp file
+        with open(self.file_read_seqs_fp, 'w') as tmp:
+            tmp.write(self.read_seqs_fp)
+
+        # create temporary file with the OTU map (97% id)
+        f, self.file_otumap_fp = mkstemp(prefix='temp_otumap_',
+                                         suffix='.txt')
+        close(f)
+
+        # write expected OTU map to tmp file
+        with open(self.file_otumap_fp, 'w') as tmp:
+            tmp.write(self.otumap_fp)
+
+        # create temporary file with the OTU map (97% id)
+        # and no OTU id prefix
+        f, self.file_otumap_no_otu_id_prefix_fp = mkstemp(
+            prefix='temp_otumap_2', suffix='.txt')
+        close(f)
+
+        with open(self.file_otumap_no_otu_id_prefix_fp, 'w') as tmp:
+            tmp.write(self.otumap_no_otu_id_prefix_fp)
+
+        # create a temporary file with failures
+        f, self.file_failures_fp = mkstemp(prefix='temp_failures_',
+                                           suffix='.txt')
+
+        with open(self.file_failures_fp, 'w') as tmp:
+            tmp.write(self.failures_fp)
+
+        self.result_path = '%s/%s_otus.txt' % (self.output_dir, 'temp_reads')
+        self.log_path = '%s/%s_otus.log' % (self.output_dir, 'temp_reads')
+        self.failure_path = '%s/%s_failures.txt' % (
+            self.output_dir, 'temp_reads')
+
+        # list of files to remove
+        self.files_to_remove = [self.file_reference_seq_fp,
+                                self.file_read_seqs_fp,
+                                self.file_otumap_fp,
+                                self.file_failures_fp,
+                                self.file_otumap_no_otu_id_prefix_fp,
+                                self.result_path,
+                                self.log_path,
+                                self.failure_path]
+
+    def tearDown(self):
+        remove_files(self.files_to_remove)
+        rmtree(self.output_dir)
+
+    def check_output(self,
+                     clusters=None):
+        """ common function used to validate SortMeRNA's
+            output files for each test
+        """
+
+        # clusters should be empty (written to file)
+        self.assertTrue(clusters is None)
+
+        # clusters OTU map exists
+        self.assertTrue(exists(self.result_path))
+
+        # failures output file exists
+        self.assertTrue(exists(self.failure_path))
+
+        # expected failures file matches expected
+        self.assertTrue(cmp(self.file_failures_fp, self.failure_path))
+
+        # log exists
+        self.assertTrue(exists(self.log_path))
+
+    def test_call_default_params_db_not_indexed(self):
+        """ clusters seqs within 97% identity with default parameters,
+            non-indexed database passed
+        """
+
+        app = SortmernaV2OtuPicker(
+            params={'max_e_value': 1,
+                    'similarity': 0.97,
+                    'coverage': 0.97,
+                    'threads': 1,
+                    'blast': False,
+                    'best': 1,
+                    'max_pos': 250,
+                    'prefilter_identical_sequences': True,
+                    'otu_id_prefix': 'RefOTU'})
+
+        clusters = app(
+            seq_path=self.file_read_seqs_fp,
+            result_path=self.result_path,
+            log_path=self.log_path,
+            sortmerna_db=None,
+            refseqs_fp=self.file_reference_seq_fp,
+            failure_path=self.failure_path)
+
+        self.check_output(clusters)
+
+        # clusters OTU map is correct
+        self.assertTrue(cmp(self.file_otumap_fp, self.result_path))
+
+    def test_call_default_params_db_indexed(self):
+        """ clusters seqs within 97% identity with default parameters,
+            indexed database passed
+        """
+        # rebuild the index
+        sortmerna_db, db_files_to_remove = build_database_sortmerna(
+            abspath(self.file_reference_seq_fp),
+            max_pos=250,
+            output_dir=self.output_dir)
+
+        # Files created by indexdb_rna to be deleted
+        self.files_to_remove.extend(db_files_to_remove)
+
+        app = SortmernaV2OtuPicker(
+            params={'max_e_value': 1,
+                    'similarity': 0.97,
+                    'coverage': 0.97,
+                    'threads': 1,
+                    'blast': False,
+                    'best': 1,
+                    'max_pos': 250,
+                    'prefilter_identical_sequences': True,
+                    'otu_id_prefix': 'RefOTU'})
+
+        clusters = app(
+            seq_path=self.file_read_seqs_fp,
+            result_path=self.result_path,
+            log_path=self.log_path,
+            sortmerna_db=None,
+            refseqs_fp=self.file_reference_seq_fp,
+            failure_path=self.failure_path)
+
+        self.check_output(clusters)
+
+        # clusters OTU map is correct
+        self.assertTrue(cmp(self.file_otumap_fp, self.result_path))
+
+    def test_call_no_dereplication(self):
+        """ clusters seqs within 97% identity with default parameters,
+            do not dereplicate the reads prior to alignment
+        """
+
+        app = SortmernaV2OtuPicker(
+            params={'max_e_value': 1,
+                    'similarity': 0.97,
+                    'coverage': 0.97,
+                    'threads': 1,
+                    'blast': False,
+                    'best': 1,
+                    'max_pos': 250,
+                    'prefilter_identical_sequences': False,
+                    'otu_id_prefix': 'RefOTU'})
+
+        clusters = app(
+            seq_path=self.file_read_seqs_fp,
+            result_path=self.result_path,
+            log_path=self.log_path,
+            sortmerna_db=None,
+            refseqs_fp=self.file_reference_seq_fp,
+            failure_path=self.failure_path)
+
+        self.check_output(clusters)
+
+        # clusters OTU map is correct
+        self.assertTrue(cmp(self.file_otumap_fp, self.result_path))
+
+    def test_call_no_otu_id_prefix(self):
+        """ clusters seqs within 97% identity with default parameters,
+            no OTU id prefix
+        """
+
+        app = SortmernaV2OtuPicker(
+            params={'max_e_value': 1,
+                    'similarity': 0.97,
+                    'coverage': 0.97,
+                    'threads': 1,
+                    'blast': False,
+                    'best': 1,
+                    'max_pos': 250,
+                    'prefilter_identical_sequences': True,
+                    'otu_id_prefix': None})
+
+        clusters = app(
+            seq_path=self.file_read_seqs_fp,
+            result_path=self.result_path,
+            log_path=self.log_path,
+            sortmerna_db=None,
+            refseqs_fp=self.file_reference_seq_fp,
+            failure_path=self.failure_path)
+
+        self.check_output(clusters)
+
+        # clusters OTU map is correct
+        self.assertTrue(cmp(self.file_otumap_no_otu_id_prefix_fp,
+                            self.result_path))
 
 
 class MothurOtuPickerTests(TestCase):
@@ -118,6 +342,142 @@ class MothurOtuPickerTests(TestCase):
                               expected_otus)
 
 
+class SumaClustOtuPickerTests(TestCase):
+    """ Tests of the SumaClust de novo OTU picker """
+
+    def setUp(self):
+        self.output_dir = mkdtemp()
+        self.read_seqs = sumaclust_reads_seqs
+
+        # create temporary file with read sequences defined in read_seqs
+        f, self.file_read_seqs = mkstemp(prefix='temp_reads_',
+                                         suffix='.fasta')
+        close(f)
+
+        # write read sequences to tmp file
+        with open(self.file_read_seqs, 'w') as tmp:
+            tmp.write(self.read_seqs)
+
+        # create temporary file with final OTU map
+        f, self.file_otumap = mkstemp(prefix='temp_otumap',
+                                      suffix='.txt')
+        close(f)
+
+        self.result_path = '%s/%s_otus.txt' % (self.output_dir, 'temp_reads')
+        self.log_path = '%s/%s_otus.log' % (self.output_dir, 'temp_reads')
+
+        # list of files to remove
+        self.files_to_remove = [self.file_read_seqs,
+                                self.file_otumap,
+                                self.result_path,
+                                self.log_path]
+
+    def tearDown(self):
+        remove_files(self.files_to_remove)
+        rmtree(self.output_dir)
+
+    def check_clusters(self,
+                       clusters=None):
+
+        # Check the OTU map was output with the correct size
+        self.assertTrue(exists(self.result_path))
+
+        # Place actual clusters in a list of lists
+        actual_clusters = [line.strip().split('\t')[1:]
+                           for line in open(self.result_path, 'U')]
+        actual_clusters.sort()
+
+        # Check the returned clusters list of lists is as expected
+        expected_clusters = [['s1_844', 's1_1886', 's1_5347', 's1_5737',
+                              's1_7014', 's1_7881', 's1_7040', 's1_6200',
+                              's1_1271', 's1_8615'],
+                             ['s1_8977', 's1_10439', 's1_12366', 's1_15985',
+                              's1_21935', 's1_11650', 's1_11001', 's1_8592',
+                              's1_14735', 's1_4677'],
+                             ['s1_630', 's1_4572', 's1_5748', 's1_13961',
+                              's1_2369', 's1_3750', 's1_7634', 's1_8623',
+                              's1_8744', 's1_6846']]
+        expected_clusters.sort()
+
+        # Should be 3 clusters
+        self.assertEqual(len(actual_clusters), 3)
+
+        # List of actual clusters matches list of expected clusters
+        for actual_cluster, expected_cluster in zip(actual_clusters,
+                                                    expected_clusters):
+            actual_cluster.sort()
+            expected_cluster.sort()
+            self.assertEqual(actual_cluster, expected_cluster)
+
+    def test_call_default_params(self):
+        """ SumaClust should return an OTU map
+            with content identical to the expected OTU map,
+            sequences are de-replicated prior to
+            clustering
+        """
+
+        app = SumaClustOtuPicker(
+            params={'similarity': 0.97,
+                    'exact': False,
+                    'threads': 1,
+                    'l': True,
+                    'prefilter_identical_sequences':
+                    True,
+                    'sumaclust_otu_id_prefix':
+                    'DenovoOTU'})
+
+        clusters = app(seq_path=self.file_read_seqs,
+                       result_path=self.result_path,
+                       log_path=self.log_path)
+
+        self.check_clusters(clusters)
+
+    def test_call_no_dereplication(self):
+        """ SumaClust should return an OTU map
+            with content identical to the expected OTU map,
+            sequences are _not_ de-replicated prior to
+            clustering
+        """
+
+        app = SumaClustOtuPicker(
+            params={'similarity': 0.97,
+                    'exact': False,
+                    'threads': 1,
+                    'l': True,
+                    'prefilter_identical_sequences':
+                    False,
+                    'sumaclust_otu_id_prefix':
+                    'DenovoOTU'})
+
+        clusters = app(seq_path=self.file_read_seqs,
+                       result_path=self.result_path,
+                       log_path=self.log_path)
+
+        self.check_clusters(clusters)
+
+    def test_call_no_otu_id_prefix(self):
+        """ SumaClust should return an OTU map
+            with content identical to the expected OTU map,
+            resulting clusters do not have an assigned
+            sumaclust_otu_id_prefix
+        """
+
+        app = SumaClustOtuPicker(
+            params={'similarity': 0.97,
+                    'exact': False,
+                    'threads': 1,
+                    'l': True,
+                    'prefilter_identical_sequences':
+                    True,
+                    'sumaclust_otu_id_prefix': None})
+
+        clusters = app(seq_path=self.file_read_seqs,
+                       result_path=self.result_path,
+                       log_path=self.log_path)
+
+        self.check_clusters(clusters)
+
+
 class BlastxOtuPickerTests(TestCase):
 
     """ Tests of the blastx-based otu picker """
@@ -146,10 +506,10 @@ class BlastxOtuPickerTests(TestCase):
         ]
 
         fd, self.seqs_fp = mkstemp(prefix='BlastOtuPickerTest_',
-                                  suffix='.fasta')
+                                   suffix='.fasta')
         close(fd)
         fd, self.reference_seqs_pr_fp = mkstemp(prefix='BlastOtuPickerTest_',
-                                               suffix='.fasta')
+                                                suffix='.fasta')
         close(fd)
 
         f = open(self.seqs_fp, 'w')
@@ -2884,10 +3244,10 @@ class UclustOtuPickerTests(TestCase):
                            "enable_rev_strand_matching:False",
                            "suppress_sort:True",
                            "optimal:False",
-                           'max_accepts:20',
-                           'max_rejects:500',
-                           'stepwords:20',
-                           'word_length:12',
+                           'max_accepts:1',
+                           'max_rejects:8',
+                           'stepwords:8',
+                           'word_length:8',
                            "exact:False",
                            "Num OTUs:10",
                            "new_cluster_identifier:None",
@@ -3312,10 +3672,10 @@ class UclustReferenceOtuPickerTests(TestCase):
                            "Num OTUs:1",
                            "Num new OTUs:0",
                            "Num failures:2",
-                           'max_accepts:20',
-                           'max_rejects:500',
-                           'stepwords:20',
-                           'word_length:12',
+                           'max_accepts:1',
+                           'max_rejects:8',
+                           'stepwords:8',
+                           'word_length:8',
                            "stable_sort:True",
                            "new_cluster_identifier:QiimeOTU",
                            "next_new_cluster_number:1",
@@ -4208,6 +4568,319 @@ CTTCTTCTGCGGGTAACGTCAATGAGCAAAGGTATTAACTTTACTCCCTCCGCCCCGCTGAAAGTACTTTACAACCCGTA
 
 dna_seqs_rc_single_seq = """>usearch_ecoli_seq_2bp_change_rc
 CTTCTTCTGCGGGTAACGTCAATGAGCAAAGGTATTAACTTTACTCCCTCCGCCCCGCTGAAAGTACTTTACAACCCGTAGGCCTTCTTCATACACGCG
+"""
+
+# Reads to cluster
+# there are 30 reads representing 3 species (gives 3 clusters)
+sumaclust_reads_seqs = """>s1_630 reference=1049393 amplicon=complement(497..788)
+GTGCCAGCAGCCGCGGTAATACAGAGGTCTCAAGCGTTGTTCGGATTCATTGGGCGTAAAGGGTGCGTAGGTGGCGGGGTAAGTCAGGTGTGAAATCTCG
+>s1_2369 reference=1049393 amplicon=complement(497..788) errors=73%A
+GTGCCAGCAGCCGCGGTAATACAGAGGTCTCAAGCGTTGTTCGGATTCATTGGGCGTAAAGGGTGCGTAGGTAGCGGGGTAAGTCAGGTGTGAAATCTCG
+>s1_3750 reference=1049393 amplicon=complement(497..788) errors=100%A
+GTGCCAGCAGCCGCGGTAATACAGAGGTCTCAAGCGTTGTTCGGATTCATTGGGCGTAAAGGGTGCGTAGGTGGCGGGGTAAGTCAGGTGTGAAATCTCA
+>s1_4572 reference=1049393 amplicon=complement(497..788)
+GTGCCAGCAGCCGCGGTAATACAGAGGTCTCAAGCGTTGTTCGGATTCATTGGGCGTAAAGGGTGCGTAGGTGGCGGGGTAAGTCAGGTGTGAAATCTCG
+>s1_5748 reference=1049393 amplicon=complement(497..788)
+GTGCCAGCAGCCGCGGTAATACAGAGGTCTCAAGCGTTGTTCGGATTCATTGGGCGTAAAGGGTGCGTAGGTGGCGGGGTAAGTCAGGTGTGAAATCTCG
+>s1_6846 reference=1049393 amplicon=complement(497..788) errors=67%A
+GTGCCAGCAGCCGCGGTAATACAGAGGTCTCAAGCGTTGTTCGGATTCATTGGGCGTAAAGGGTGCATAGGTGGCGGGGTAAGTCAGGTGTGAAATCTCG
+>s1_7634 reference=1049393 amplicon=complement(497..788) errors=99%T
+GTGCCAGCAGCCGCGGTAATACAGAGGTCTCAAGCGTTGTTCGGATTCATTGGGCGTAAAGGGTGCGTAGGTGGCGGGGTAAGTCAGGTGTGAAATCTTG
+>s1_8623 reference=1049393 amplicon=complement(497..788) errors=17-
+GTGCCAGCAGCCGCGGAATACAGAGGTCTCAAGCGTTGTTCGGATTCATTGGGCGTAAAGGGTGCGTAGGTGGCGGGGTAAGTCAGGTGTGAAATCTCG
+>s1_8744 reference=1049393 amplicon=complement(497..788) errors=62%A
+GTGCCAGCAGCCGCGGTAATACAGAGGTCTCAAGCGTTGTTCGGATTCATTGGGCGTAAAGAGTGCGTAGGTGGCGGGGTAAGTCAGGTGTGAAATCTCG
+>s1_13961 reference=1049393 amplicon=complement(497..788)
+GTGCCAGCAGCCGCGGTAATACAGAGGTCTCAAGCGTTGTTCGGATTCATTGGGCGTAAAGGGTGCGTAGGTGGCGGGGTAAGTCAGGTGTGAAATCTCG
+>s1_4677 reference=4382408 amplicon=complement(487..778) errors=74%T
+GTGCCAGCAGCCGCGGTAATACGGAGGGTCCAAGCGTTGTCCGGAATCACTGGGTGTAAAGGGTGCGTAGGCGTGTCTGTAAGTCAGAGGTGAAAGCCCA
+>s1_8592 reference=4382408 amplicon=complement(487..778) errors=95+A
+GTGCCAGCAGCCGCGGTAATACGGAGGGTCCAAGCGTTGTCCGGAATCACTGGGTGTAAAGGGTGCGTAGGCGGGTCTGTAAGTCAGAGGTGAAAAGCCCA
+>s1_8977 reference=4382408 amplicon=complement(487..778)
+GTGCCAGCAGCCGCGGTAATACGGAGGGTCCAAGCGTTGTCCGGAATCACTGGGTGTAAAGGGTGCGTAGGCGGGTCTGTAAGTCAGAGGTGAAAGCCCA
+>s1_10439 reference=4382408 amplicon=complement(487..778)
+GTGCCAGCAGCCGCGGTAATACGGAGGGTCCAAGCGTTGTCCGGAATCACTGGGTGTAAAGGGTGCGTAGGCGGGTCTGTAAGTCAGAGGTGAAAGCCCA
+>s1_11001 reference=4382408 amplicon=complement(487..778) errors=91%G
+GTGCCAGCAGCCGCGGTAATACGGAGGGTCCAAGCGTTGTCCGGAATCACTGGGTGTAAAGGGTGCGTAGGCGGGTCTGTAAGTCAGAGGGGAAAGCCCA
+>s1_11650 reference=4382408 amplicon=complement(487..778) errors=78-
+GTGCCAGCAGCCGCGGTAATACGGAGGGTCCAAGCGTTGTCCGGAATCACTGGGTGTAAAGGGTGCGTAGGCGGGTCGTAAGTCAGAGGTGAAAGCCCA
+>s1_12366 reference=4382408 amplicon=complement(487..778)
+GTGCCAGCAGCCGCGGTAATACGGAGGGTCCAAGCGTTGTCCGGAATCACTGGGTGTAAAGGGTGCGTAGGCGGGTCTGTAAGTCAGAGGTGAAAGCCCA
+>s1_14735 reference=4382408 amplicon=complement(487..778) errors=94%C
+GTGCCAGCAGCCGCGGTAATACGGAGGGTCCAAGCGTTGTCCGGAATCACTGGGTGTAAAGGGTGCGTAGGCGGGTCTGTAAGTCAGAGGTGACAGCCCA
+>s1_15985 reference=4382408 amplicon=complement(487..778)
+GTGCCAGCAGCCGCGGTAATACGGAGGGTCCAAGCGTTGTCCGGAATCACTGGGTGTAAAGGGTGCGTAGGCGGGTCTGTAAGTCAGAGGTGAAAGCCCA
+>s1_21935 reference=4382408 amplicon=complement(487..778)
+GTGCCAGCAGCCGCGGTAATACGGAGGGTCCAAGCGTTGTCCGGAATCACTGGGTGTAAAGGGTGCGTAGGCGGGTCTGTAAGTCAGAGGTGAAAGCCCA
+>s1_844 reference=129416 amplicon=complement(522..813)
+GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTATTCGGAATTACTGGGCGTAAAGGGCGTGTAGGCGGCTTTGTAAGTCAGATGTGAAAGCCCA
+>s1_1271 reference=129416 amplicon=complement(522..813) errors=94%C
+GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTATTCGGAATTACTGGGCGTAAAGGGCGTGTAGGCGGCTTTGTAAGTCAGATGTGACAGCCCA
+>s1_1886 reference=129416 amplicon=complement(522..813)
+GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTATTCGGAATTACTGGGCGTAAAGGGCGTGTAGGCGGCTTTGTAAGTCAGATGTGAAAGCCCA
+>s1_5347 reference=129416 amplicon=complement(522..813)
+GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTATTCGGAATTACTGGGCGTAAAGGGCGTGTAGGCGGCTTTGTAAGTCAGATGTGAAAGCCCA
+>s1_5737 reference=129416 amplicon=complement(522..813)
+GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTATTCGGAATTACTGGGCGTAAAGGGCGTGTAGGCGGCTTTGTAAGTCAGATGTGAAAGCCCA
+>s1_6200 reference=129416 amplicon=complement(522..813) errors=92%C
+GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTATTCGGAATTACTGGGCGTAAAGGGCGTGTAGGCGGCTTTGTAAGTCAGATGTCAAAGCCCA
+>s1_7014 reference=129416 amplicon=complement(522..813)
+GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTATTCGGAATTACTGGGCGTAAAGGGCGTGTAGGCGGCTTTGTAAGTCAGATGTGAAAGCCCA
+>s1_7040 reference=129416 amplicon=complement(522..813) errors=40%G
+GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAGTCGGAATTACTGGGCGTAAAGGGCGTGTAGGCGGCTTTGTAAGTCAGATGTGAAAGCCCA
+>s1_7881 reference=129416 amplicon=complement(522..813)
+GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTATTCGGAATTACTGGGCGTAAAGGGCGTGTAGGCGGCTTTGTAAGTCAGATGTGAAAGCCCA
+>s1_8615 reference=129416 amplicon=complement(522..813) errors=81%G
+GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTATTCGGAATTACTGGGCGTAAAGGGCGTGTAGGCGGCTTTGTGAGTCAGATGTGAAAGCCCA
+"""
+
+# Reference sequence database
+sortmerna_reference_seqs_fp = """>426848
+AGAGTTTGATCCTGGCTCAGGATGAACGCTAGCGGCAGGCTTAATACATGCAAGTCGAGGGGCAGCACTGGTAGCAATAC
+CTGGTGGCGACCGGCGGACGGGTGCGTAACACGTATGCAACCTACCCTGTACAGGGGGATAGCCCGAGGAAATTCGGATT
+AATACCCCATACGATAAGAATCGGCATCGATTTTTATTGAAAGCTCCGGCGGTACAGGATGGGCATGCGCCCCATTAGCT
+AGTTGGTGAGGTAACGGCTCACCAAGGCTACGATGGGTAGGGGGCCTGAGAGGGTGATCCCCCACACTGGAACTGAGACA
+CGGTCCAGACTCCTACGGGAGGCAGCAGTAAGGAATATTGGTCAATGGGCGCAAGCCTGAACCAGCCATGCCGCGTGCAG
+GAAGACTGCCATTATGGTTGTAAACTGCTTTTATATGGGAAGAAACCTCCGGACGTGTCCGGAGCTGACGGTACCATGTG
+AATAAGGATCGGCTAACTCCGTGCCAGCAGCCGCGGTAATACGGAGGATCCAAGCGTTATCCGGATTTATTGGGTTTAAA
+GGGTGCGTAGGCGGCGTGTTAAGTCAGAGGTGAAATTCGGCAGCTCAACTGTCAAATTGCCTTTGATACTGGCACACTTG
+AATGCGATTGAGGTAGGCGGAATGTGACATGTAGCGGTGAAATGCTTAGACATGTGACAGAACACCGATTGCGAAGGCAG
+CTTACCAAGTCGTTATTGACGCTGAGGCACGAAAGCGTGGGGAGCAAACAGGATTAGATACCCTGGTAGTCCACGCCGTA
+AACGATGATAACTCGACGTTAGCGATACACTGTTAGCGTCCAAGCGAAAGCGTTAAGTTATCCACCTGGGAAGTACGATC
+GCAAGGTTGAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGATGATACGCGAGGA
+ACCTTACCAGGGCTTAAATGGGGAACGACCTTCTGGGAAACCAGAATTTCTTTTAGACGGTCCTCAAGGTGCTGCATGGT
+TGTCGTCAGCTCGTGCCGTGAGGTGTTGGGTTAAGTCCCGCAACGAGCGCAACCCCTACTGTTAGTTGCCAGCGGATAAT
+GCCGGGGACTCTAGCGGAACTGCCTGTGCAAACAGAGAGGAAGGTGGGGATGACGTCAAATCATCACGGCCCTTACGTCC
+TGGGCTACACACGTGCTACAATGGCCGGTACAGAGGGCAGCCACTTCGTGAGAAGGAGCGAATCCTTAAAGCCGGTCTCA
+GTTCGGATTGTAGTCTGCAACTCGACTACATGAAGCTGGAATCGCTAGTAATCGCGTATCAGCCATGACGCGGTGAATAC
+GTTCCCGGGCCTTGTACACACCGCCCGTCAAGCCATGGGAATTGGGAGTACCTAAAGTCGGTAACCGCAAGGAGCCGCCT
+AAGGTAATACCAGTGACTGGGGCTAAGTCGTAACAAGGTAGCCGTA
+>42684
+AGAGTTTGATCCTGGCTCAGATTGAACGCTGGCGGCATGCTTTACACATGCAAGTCGGACGGCAGCACAGAGGAGCTTGC
+TTCTTGGGTGGCGAGTGGCGAACGGGTGAGTGACGCATCGGAACGTACCGAGTAATGGGGGATAACTGTCCGAAAGGACA
+GCTAATACCGCATACGCCCTGAGGGGGAAAGCGGGGGATCTTAGGACCTCGCGTTATTCGAGCGGCCGATGTCTGATTAG
+CTGGTTGGCGGGGTAAAGGCCCACCAAGGCGACGATCAGTAGCGGGTCTGAGAGGATGATCCGCCACACTGGGACTGAGA
+CACGGCCCAGACTCCTACGGGAGGCAGCAGTGGGGAATTTTGGACAATGGGCGCAAGCCTGATCCAGCCATGCCGCGTGT
+CTGAAGAAGGCCTTCGGGTTGTAAAGGACTTTTGTCAGGGAAGAAAAGGAACGTGTTAATACCATGTTCTGATGACGGTA
+CCTGAAGAATAAGCACCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGTGCGAGCGTTAATCGGAATTACTGG
+GCGTAAAGCGGGCGCAGACGGTTACTTAAGCGGGATGTGAAATCCCCGGGCTCAACCCGGGAACTGCGTTCCGAACTGGG
+TGGCTAGAGTGTGTCAGAGGGGGGTAGAATTCCACGTGTAGCAGTGAAATGCGTAGAGATGTGGAGGAATACCGATGGCG
+AAGGCAGCCCCCTGGGATAACACTGACGTTCATGCCCGAAAGCGTGGGTAGCAAACAGGGTTAGATACCCTGGTAGTCCA
+CGCCCTAAACGATGTCGATTAGCTGTTGGGGCACTTGATGCCTTAGTAGCGTAGCTAACGCGTGAAATCGACCGCCTGGG
+GAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGACCCGCACAAGCGGTGGATGATGTGGATTAATTCGATGC
+AACGCGAAGAACCTTACCTGGTCTTGACATGTACGGAATCTTCCAGAGACGGAAGGGTGCCTTCGGGAGCCGTAACACAG
+GTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCGCAACGAGCGCAACCCTTGTCATTAGTTG
+CCATCACTTGGTTGGGCACTCTAATGAGACTGCCGGTGACAAACCGGAGGAAGGTGGGGATGACGTCAAGTCCTCATGGC
+CCTTATGACCAGGGCTTCACACGTCATACAATGGTCGGTACAGAGGGTAGCCAAGCCGCGAGGCGGAGCCAATCCCAGAA
+AACCGATCGTAGTCCGGATTGCACTCTGCAACTCGAGTGCATGAAGTCGGAATCGCTAGTAATCGCAGGTCAGCATACTG
+CGGTGAATACGTTCCCGGGTCTTGTACACACCGCCCGTCACACCATGGGAGTGGGGGATACCAGAAGCAGGTAGGCTAAC
+CGCAAGGAGGCCGCTTGCCACGGTATGCTTCATGACTGGGGTGAAGTCGTAACAAGGTAAC
+>342684
+AGAGTTTGATCCTGGCTCAGGATGAACGCTAGCGGCAGGCTTAACACATGCAAGTCGAGGGGCATCGCGGGTAGCAATAC
+CTGGCGGCGACCGGCGGAAGGGTGCGTAACGCGTGAGCGACATACCCGTGACAGGGGGATAACAGATGGAAACGTCTCCT
+AATACCCCATAAGATCATATATCGCATGGTATGTGATTGAAAGGTGAGAACCGGTCACGGATTGGCTCGCGTCCCATCAG
+GTAGACGGCGGGGCAGCGGCCCGCCGTGCCGACGACGGGTAGGGGCTCTGAGAGGAGTGACCCCCACAATGGAACTGAGA
+CACGGTCCATACTCCTACGGGAGGCAGCAGTGAGGAATATTGGTCAATGGGCGGAAGCCTGAACCAGCCATGCCGCGTGC
+GGGAGGACGGCCCTATGGGTTGTAAACCGCTTTTGAGTGAGAGCAATAAGGTTCACGTGTGGACCGATGAGAGTATCATT
+CGAATAAGCATCGGCTAACTCCGTGCCAGCAGCCGCGGTAATACGGAGGATGCGAGCGTTATCCGGATTCATTGGGTTTA
+AAGGGTGCGTAGGCGGACATGTAAGTCCGAGGTGAAAGACCGGGGCCCAACCCCGGGGTTGCCTCGGATACTGTGTGTCT
+GGAGTGGACGTGCCGCCGGGGGAATGAGTGGTGTAGCGGTGAAATGCATAGATGTCACTCAGAACACCGATTGCGAAGGC
+ACCTGGCGAATGTCTTACTGACGCTGAGGCACGAAAGCGTGGGGATCGAACAGGATTAGATACCCTGGTAGTCCACGCAG
+TAAACGATGATGGCTGTCCGTTCGCTCCGATAGGAGTGAGTAGACAAGCGAAAGCGCTAAGCCATCCACCTGGGGAGTAC
+GGCCGCAAGGCTGAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGAGGAACATGTGGTTTAATTCGATGATACGCG
+AGGAACCTTACCCGGGCTCGAACGGCAGGTGAACGATGCAGAGATGCAAAGGCCCTTCGGGGCGTCTGTCGAGGTGCTGC
+ATGGTTGTCGTCAGCTCGTGCCGTGAGGTGTCGGCTCAAGTGCCATAACGAGCGCAACCCTTGCCTGCAGTTGCCATCGG
+GTAAAGCCGGGGACTCTGCAGGGACTGCCACCGCAAGGTGAGAGGAGGGGGGGGATGACGTCAAATCAGCACGGCCCTTA
+CGTCCGGGGCGACACACGTGTTACAATGGCGGCCACAGCGGGAAGCCACCCAGTGATGGGGCGCGGATCCCAAAAAAGCC
+GCCTCAGTTCGGATCGGAGTCTGCAACCCGACTCCGTGAAGCTGGATTCGCTAGTAATCGCGCATCAGCCATGGCGCGGT
+GAATACGTTCCCGGGCCTTGTACACACCGCCCGTCAAGCCATGGGAGTCGTGGGCGCCTGAAGGCCGTGACCGCGAGGAG
+CGGCCTAGGGCGAACGCGGTGACTGGGGCTAAGTCGTAACAAGGTA
+>295053
+AGAGTTTGATCCTGGCTCAGGACGAACGCTGGCGGCGTGCCTAACACATGCAAGTCGAACGGAGATGCTCCTTCGGGAGT
+ATCTTAGTGGCGAACGGGTGAGTAACGCGTGAGCAACCTGACCTTCACAGGGGGATAACCGCTGGAAACAGCAGCTAATA
+CCGCATAACGTCGCAAGACCAAAGAGGGGGACCTTCGGGCCTCTTGCCATCGGATGTGCCCAGATGGGATTAGCTTGTTG
+GTGGGGTAACGGCTCACCAAGGCGACGATCCCTAGCTGGTCTGAGAGGATGACCAGCCACACTGGAACTGAGACACGGTC
+CAGACTCCTACGGGAGGCAGCAGTGGGGAATATTGCACAATGGGCGCAAGCCTGATGCAGCCATGCCGCGTGTATGAAGA
+AGGCCTTCGGGTTGTAAAGTACTTTCAGCGGGGAGGAAGGGAGTAAAGTTAATACCTTTGCTCATTGACGTTACCCGCAG
+AAGAAGCACCGGCTAACTCCGTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTACTGGGCGTAAA
+GCGCACGCAGGCGGTTTGTTAAGTCAGATGTGAAATCCCCGGGCTCAACCTGGGAACTGCATCTGATACTGGCAAGCTTG
+AGTCTCGTAGAGGGGGGTAGAATTCCAGGTGTAGCGGTGAAATGCGTAGAGATCTGGAGGAATACCGGTGGCGAAGGCGG
+CCCCCTGGACGAAGACTGACGCTCAGGTGCGAAAGCGTGGGGAGCAAACAGGATTAGATACCCTGGTAGTCCACGCCGTA
+AACGATGTCGACTTGGAGGTTGTGCCCTTGAGGCGTGGCTTCCGGAGCTAACGCGTTAAGTCGACCGCCTGGGGAGTACG
+GCCGCAAGGTTAAAACTCAAATGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGATGCAACGCGA
+AGAACCTTACCTGGTCTTGACATCCACAGAACTTTCCAGAGATGGATTGGTGCCTTCGGGAACTGTGAGACAGGTGCTGC
+ATGGCTGTCGTCAGCTCGTGTTGTGAAATGTTGGGTTAAGTCCCGCAACGAGCGCAACCCTTGTCCTTTGTTGCCAGCGG
+TCCGGCCGGGAACTCAAAGGAGACTGCCAGTGATAAACTGGAGGAAGGTGGGGATGACGTCAAGTCATCATGGCCCTTAC
+GACCAGGGCTACACACGTGCTACAATGGCGCATACAAAGAGAAGCGACCTCGCGAGAGCAAGCGGACCTCATAAAGTGCG
+TCGTAGTCCGGATTGGAGTCTGCAACTCGACTCCATGAAGTCGGAATCGCTAGTAATCGTGGATCAGAATGCCACGGTGA
+ATACGTTCCCGGGCCTTGCACACACCGCC
+>879972
+GACGAACGCTGGCGGCGTGCCTAATACATGCAAGTCGAACGAGATTGACCGGTGCTTGCACTGGTCAATCTAGTGGCGAA
+CGGGTGAGTAACACGTGGGTAACCTGCCCATCAGAGGGGGATAACATTCGGAAACGGATGCTAAAACCGCATAGGTCTTC
+GAACCGCATGGTTTGAAGAGGAAAAGAGGCGCAAGCTTCTGCTGATGGATGGACCCGCGGTGTATTAGCTAGTTGGTGGG
+GTAACGGCTCACCAAGGCGACGATACATAGCCGACCTGAGAGGGTGATCGGCCACACTGGGACTGAGACACGGCCCAGAC
+TCCTACGGGAGGCAGCAGTAGGGAATCTTCGGCAATGGACGGAAGTCTGACCGAGCAACGCCGCGTGAGTGAAGAAGGTT
+TTCGGATCGTAAAGCTCTGTTGTAAGAGAAGAACGAGTGTGAGAGTGGAAAGTTCACACTGTGACGGTATCTTACCAGAA
+AGGGACGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGTCCCGAGCGTTGTCCGGATTTATTGGGCGTAAAGCGA
+GCGCAGGCGGTTAGATAAGTCTGAAGTTAAAGGCTGTGGCTTAACCATAGTACGCTTTGGAAACTGTTTAACTTGAGTGC
+AAGAGGGGAGAGTGGAATTCCATGTGTAGCGGTGAAATGCGTAGATATATGGAGGAACACCGGTGGCGAAAGCGGCTCTC
+TGGCTTGTAACTGACGCTGAGGCTCGAAAGCGTGGGGAGCAAACAGGATTAGATACCCTGGTAGTCCACGCCGTAAACGA
+TGAGTGCTAGGTGTTAGACCCTTTCCGGGGTTTAGTGCCGCAGCTAACGCATTAAGCACTCCGCCTGGGGAGTACGACCG
+CAGGGTTGAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGAAGAA
+CCTTACCAGGTCTTGACATCCCTCTGACCGCTCTAGAGATAGAGCTTTCCTTCGGGACAGAGGTGACAGGTGGTGCATGG
+TTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCGCAACGAGCGCAACCCCTATTGTTAGTTGCCATCATTCAG
+TTGGGCACTCTAGCGAGACTGCCGGTAATAAACCGGAGGAAGGTGGGGATGACGTCAAATCATCATGCCCCTTATGACCT
+GGGCTACACACGTGCTACAATGGCTGGTACAACGAGTCGCAAGCCGGTGACGGCAAGCTAATCTCTTAAAGCCAGTCTCA
+GTTCGGATTGTAGGCTGCAACTCGCCTACATGAAGTCGGAATCGCTAGTAATCGCGGATCAGCACGCCGCGGTGAATACG
+TTCCCGGGCCT
+"""
+
+# Reads to search against the database
+# - 10 rRNA reads:   amplicon reads were taken from Qiime study 1685
+# - 10 random reads: simulated using mason with the following command:
+#     mason illumina -N 10 -snN -o simulated_random_reads.fa -n
+#     150 random.fasta
+# - 10 rRNA reads with id < 97: amplicon reads were taken from
+#   Qiime study 1685
+sortmerna_read_seqs_fp = """>HMPMockV1.2.Staggered2.673827_47 M141:79:749142:1:1101:16169:1589
+TACGGAGGGTGCAAGCGTTAATCGGAATTACTGGGCGTAAAGCGCAAGCAGGCGGTTTGTTAAGTCAGATGTGAAATCCC
+CGGGCTCAACCTGGGAACTGCATTTGATACTGGCAAGCTTGAGTCTCGTAGAGGAGGGTAGAATTCCAGGTGTAGCGGGG
+AAATGCGTAGAGATCTGGAGGAATACCGGTGGCGAAGGCGGCTCCATGGACGAAGACTGACGCT
+>HMPMockV1.2.Staggered2.673827_115 M141:79:749142:1:1101:14141:1729
+TACGGAGGGTGCAAGCGTTAATCGGAATTACTGGGCGTAAAGCGCACGCAGGCGGTTTGTTAAGTCAGATGTGAAATCCC
+CCGGCTCAACCTTGGAACTGCATCTGATACGGGCAAGCTTGAGTCTCGTAGAGGGGGGTAGAATTCCAGGTGTAGCGGTG
+AAATGCGTAGAGATCTGGAGGAATACCGGTGGCGAAGGCGGCCCTCTGGACGAAGACTGACGCTCAGGTGCGAAAGCGTG
+GGGAGCAAACA
+>HMPMockV1.2.Staggered2.673827_122 M141:79:749142:1:1101:16032:1739
+TACGGAGGGTGCAAGCGTTAATCGGAATTACTGGGCGTAAAGCGCACGCAGGCGGTTTGTTAAGTCAGATGTGAAATCCC
+CGGGCTCAACCTGGGAACTGCATCTGATACTGGCAAGCTTGAGTCTCGTAGAGGGGGGTAGAATTCCAGGTGTAGCGGTG
+AAATGCGTAGAGATCTGGAGGAATACCGGTGGCGAAGGCGGCCCCCTGGACGAAGACTGACGCTCAGGTGCGAAAGCGTG
+GTGATCAAACA
+>HMPMockV1.2.Staggered2.673827_161 M141:79:749142:1:1101:17917:1787
+TACGGAGGGTGCAAGCGTTAATCGGAATTACTGGGCGTAAAGCGCACGCAGGCGGTTTGTTAAGTCAGATGTGAAATCCC
+CGGGCTCAACCTGGGAACTGCATCTGATACTGGCAAGCTTGAGTCTCGTAGAGGGGGGTAGAATTCCAGGTGTAGCGGTG
+AAATGCGTAGAGATCTGGAGGAATACCGGTGGCGAAGGCGGCTCCCTGGACGAAGACTGACGCTCAGGTGCGAAAGCGTG
+GGGAGCAAACA
+>HMPMockV1.2.Staggered2.673827_180 M141:79:749142:1:1101:16014:1819
+TACGGAGGGTGCAAGCGTTAATCGGAATTACTGGGCGTAAAGCGCACGCAGGTGGTTTGTTAAGTCAGATGTGAAATCCC
+CGGGCTCAACCTGGGAACTGCATCTGATACTGGCAAGCTTGAGTCTCGTAGAGGGGGGTAGAATTCCAGGTGTAGCGGTG
+AAATGCGTAGAGATCTGGAGGAATACCGGTGGCGAAGGCGGCCCCCTGGACGAAGACTGACGCTCAGGTGCGAAAGCGTG
+>HMPMockV1.2.Staggered2.673827_203 M141:79:749142:1:1101:17274:1859
+TACGGAGGTTGCAAGCGTTAATCGGAATTACTGGGCGTAAAGCGCACGCAGGCGGTTTGTTAAGTCAGATGTGAAATCCC
+CCGGCTCAACCTGGGAACTGCATCTGATACTGGCAAGCTTGAGTCTCGTAGAGGGGGGTAGAATTCCAGGTGTAGCGGTG
+AAATGCGTAGAGATCTGGAGGAATACCGGTGGCGAAGGCGGCCTCCTGGACGAAGACTGACGCTCAGGTGCGAAAGCGTG
+GGGATCAAACA
+>HMPMockV1.2.Staggered2.673827_207 M141:79:749142:1:1101:17460:1866
+TACGGAGGGTGCAAGCGTTAATCGGAATTACTGGGCGTAAAGCGCACGCAGGCGGTTTGTTAAGTCAGATGTGAAATCCC
+CGGGCTCAACCTGGGAACTGCATCTGATACTGGCAAGCTTGAGTCTCGTAGAGGGGGGTAGAATTCCAGGTGTAGCGGTG
+AAATGCGTAGAGATCTGGAGGAATACCGGTGGCGAAGGCGGCCCCCTGGACGAAGACTGACGCTCAGGTGCGAAAGCGTG
+GGGAGCAAACA
+>HMPMockV1.2.Staggered2.673827_215 M141:79:749142:1:1101:18390:1876
+TACGGAGGGTGCAAGCGTTAATCGGAATTACTGGGCGTAAAGCGCACGCAGGCGGTTTGTTAAGTCAGATGTGAAATCCC
+CGGGCTCAACCTGGGAACTGCATCTGATACTGGCAAGCTTGAGTCTCGTAGAGGGGGGTAGAATTCCAGGTGTAGCGGTG
+AAATGCGTAGAGATCTGGAGGAATACCGGTGGCGAAGGCGGCCCCCTGGACGAAGACTGACG
+>HMPMockV1.2.Staggered2.673827_218 M141:79:749142:1:1101:18249:1879
+TACGGAGGGTGCAAGCGTTAATCGGAATTACTGGGCGTAAAGCGCACGCAGGCGGTTTGTTAAGTCAGATGTGAAATCCC
+CGGGCTCAACCTGGGAACTTCATCTGATACTGGCAAGCTTGAGTCTCGTAGAGGGGGGTAGAATTCCAGGTGTAGCGGTG
+AAATGCGTAGAGATCTGGAGGAATACCGGTGGCGAAGGCGGCCCCCTGGACGAAGACTGACGCTCAGGTGCGAAAGCGTG
+GGGAGCACACA
+>HMPMockV1.2.Staggered2.673827_220 M141:79:749142:1:1101:15057:1880
+TACGGAGGGTGCAAGCGTTAATCGGAATTACTGGGCGTAAAGCGCACGCAGGCGGTTTGTTAAGTCAGATGTGAAATCCC
+CGGGCTCAACCTGGGAACTGCATCTGATACTGGCAAGCTTGAGTCTCGTAGAGGGGGGTAGAATTCCAGGTGTAGCGGTG
+AAATGCGTAGAGATCTGGAGGAATACCGGTGGCGAAGGCGGCCTCCTGGACGAAGACTGACGCTC
+>simulated_random_reads.fa.000000000
+AGCCGGGTGTCTACGGTCAGGTGTGTTCTGACTACGTAGTTTGACAGCACGTGTCCTTTCCCCTTCCCAAGGTAACGAAT
+TGTCGTTATCAACGTTTCGATCCGTAATTTCACGGAACGACATAAAGGCATCAATACTATCGCCAACAGA
+>simulated_random_reads.fa.000000001
+GTGGACGTCGTGGCGGCGTACTAACTTCCTACAGGCATATCCGGAATAACATTCTGCCGCTTGTCGACATAAGCTGTTCC
+CTACATAGACGACGACGGTTGAAGGGTGTATGTATTCTTTGGGTACGGCTCCTCTGGGCGCATGGTAGCA
+>simulated_random_reads.fa.000000002
+CATTCTTTATAGGCCTACAACACTAATCATCGTTAAGCATAAGGGGAGGAGTGTGCGTGGCATCAAGTCCTGGTTCTTCG
+CCTAGTACCACACCGTCTCACACGCAGCCGCCGACGACCAGTGAGGGCGCGTGGGACACCCATTCGGTCC
+>simulated_random_reads.fa.000000003
+TCGCCTTGGTACAAACAGTCGCGGCACGCTGTATGGAGGACCATAGAGGCACAGGCTGAGGACAGGGGCATGGAAGGTTC
+AATCGCCCCCCACAGCTTTAGGTAGGAAGTACTGTTCTAGTGCCAATTTGATTTTAACGGCAGTTACTCG
+>simulated_random_reads.fa.000000004
+CATATTCTAATATCCTACTTCTGATACCCGATTATACACGACACCACCCCAGGACTGTCGTCACATCCTTATCTGGATAA
+ACATCCGGTTCCGTTTGGCCGTGCTCCGCAAGTGATGCGTCTGTGGAATGTACGTGGAGCGTTGACAGTT
+>simulated_random_reads.fa.000000005
+CCGGATTAGGCATGTTTATAGTACAACGGATTCGCAAAAAGGTCAGGGTAACAATTTTGAAATGCTTTCATACTGCGGTC
+TAAATGGACCACCCTTTAGGTGCAGCCAACTATAGTTGGTCGATTCTCTGAACACGTACCGAAGGCAATT
+>simulated_random_reads.fa.000000006
+AACCCATCGGAATAATCTACTGCTTCGTATGGAACGGTCCTACATTTAAATAAACGTGTCCAGTGCCACCCGATACCTCT
+CGTCAATCAGGGGCTCTCCCTGAATCAGCAGTAAACAAACCCAGTACACTGTCGAACACTACTGAGACCG
+>simulated_random_reads.fa.000000007
+CCGAAGGCAAGTCTGTCGTAGAATGGTTTTTGTCGTTGTAACAACCCCGCTCTAGACCCTGAAAACCATAAAGTCAAGCC
+CAACTAATATTAGAGGCATTCTGGCTACTCCCGCTCACCGCAATCTTCACATACTGTGATACCCTCAGCC
+>simulated_random_reads.fa.000000008
+ATATCCGTTAAACCCCGGATTTGACAATTCATCATCAACGCTACTAACGGCTTTCTCAATTTGGGGCTGTGGCCTATCCG
+CATACGGCTACCTGCGCAAGAAGAGAGTACTGTTAGATGTCACGCTGCACTTGCGAAGACCGGTGGGCGT
+>simulated_random_reads.fa.000000009
+AGCGATGAGTACACAAGATGAGTGAAGGGATTAAACTTCAAACCTTGAAGTGTTACCCGATTTCCTACCATTGGGGATTC
+GTTAATGCTTCGAATGGATCTATATCCGGTGTTTAGCTGACTGTTAAAATACTCTCGTTGTACGAAAGTA
+>HMPMockV1.2.Staggered2.673827_0 M141:79:749142:1:1101:17530:1438
+TACGTAGGTGGCAAGCGTTATCCGGAATTATTGGGCGCAAAGCGCGCGTAGGCGGTTTTTTAAGTCTGATGTGAAAGCCC
+ACGGCTCAACCGTGGAGGGTCATTGGAAACTGGAAAACTTGAGTGCAGAAGAGGAAAGTGGAATTCCATGTGTAGCGGTG
+AAATGCGCAGAGATATGGAGGAACACCAGTGGCGAAGGCGACCTTCTGGTCTGTAACTGACGCTGATGTGCGAAAGCGTG
+>HMPMockV1.2.Staggered2.673827_1 M141:79:749142:1:1101:17007:1451
+TACGTAGGTGGCAAGCGTTATCCGGAATTATTGGGCGTAAAGCGCGCGTAGGCGGTTTTTTAAGTCTGATGTGAAAGCCC
+ACGGCTCAACCGTGGAGGGTCATTGGAAACTGGAAAACTTGAGTGCAGAAGAGGAAAGTGGAATTCCATGTGTAGCGGTG
+AAATGCGCAGAGATATGGAGGAACACCAGTGGCGAAGGCGACTTTCTGGTCTGTAACTTACGCTG
+>HMPMockV1.2.Staggered2.673827_2 M141:79:749142:1:1101:16695:1471
+TACGTAGGTGGCAAGCGTTATCCGGAATTATTGGGCGTAAAGCGCGCGTAGGCGGTTTTTTAAGTCTGATGTGAAAGCCC
+ACGGCTCAACCGTGGAGGGTCATTGGAAACTGGAAAACTTGAGTGCAGAAGAGGAAAGTGGAATTCCATGTGTAGCGGTG
+AAATGCGCAGAGATATGGAGGAACACCAGTGGCGAAGGCGACTTTCTGGTCTGTAACTGACGCTGATGTGCGAAAGCGTG
+GGGA
+>HMPMockV1.2.Staggered2.673827_3 M141:79:749142:1:1101:17203:1479
+TACGTAGGTGGCAAGCGTTATCCGGAATTATTGGGCGTAAAGCGCGCGTAGGCGGTTTTTTAAGTCTGATGTGAAAGCCC
+ACGGCTCAACCGTGGAGGGTCATTGGAAACTGGAAAACTTGAGTGCAGAAGAGGAAAGTGGAATTCCATGTGTAGCGGTG
+AAATGCGTAGAGATATGGAGGAACACCAGTGGCGAAGGCGACGTTCTGGTCTGTAACTGACGCTGATGTGCGAAAGCGTG
+G
+>HMPMockV1.2.Staggered2.673827_4 M141:79:749142:1:1101:14557:1490
+TACGTAGGTGGCAAGCGTTATCCGGAATTATTGGGCGTAAAGCGCGCGTAGGCGGTTTTTTAAGTCTGATGTGAAAGCCC
+ACGGCTCAACCGTGGAGGGTCATTGGAAACTGGAAAACTTGAGTGCAGAAGAGGAAAGTGGAATTCCATGTGTAGCGGTG
+AAATGCGCAGAGATATGGAGGAACACCAGTGGCGAAGGCGACTTTCTGGGCTGTAACTGACGCTGATGTGCGCAAGCGTG
+GTGATCAAACA
+>HMPMockV1.2.Staggered2.673827_5 M141:79:749142:1:1101:16104:1491
+TACGTAGGTGGCAAGCGTTATCCGGAATTATTGGGCGTAAAGCGCGCGTAGGCGGTTTTTTAAGTCTGATGTGAAAGCCC
+ACGGCTCAACCGTGGAGGGTCATTGGAAACTGGAAAACTTGAGTGCAGAAGAGGAAAGTGGAATTCCATGTGTAGCGGTG
+AAATGCGCAGAGATATGGAGGAACACCAGTGGCGAAGGCGACTTTCTGGTCTGTAACTGACGC
+>HMPMockV1.2.Staggered2.673827_6 M141:79:749142:1:1101:16372:1491
+TACGTAGGTGGCAAGCGTTATCCGGAATTATTGGGCGTAAAGCGCGCGTAGGCGGTTTTTTAAGTCTGATGTGAAAGCCC
+ACGGCTCAACCGTGGAGGGTCATTGGAAACTGGAAAACTTGAGTGCAGAAGAGGAAAGTGGAATTCCATGTGTAGCGGTG
+AAATGCGCAGAGATATGGAGGAACAACAGTGGCGAAGGCGACTTTCTGGTCTGTAACTGACGCTGATGTGCGTAAG
+>HMPMockV1.2.Staggered2.673827_7 M141:79:749142:1:1101:17334:1499
+TACGTAGGTGGCAAGCGTTATCCGGAATTATTGGGCGTAAAGCGCGCGTAGGCGGTTTTTTAAGTCTGATGTGAAAGCCC
+ACGGCTCAACCGTGGAGGGTCATTGGAAACTGGAAAACTTGAGTGCAGAAGAGGAAAGTGGAATTCCATGTGTAGCGGTG
+AAATGCGCAGAGATATGGAGGAACACCAGTGGCGAAGGCGACTTTCTGGTCTGTAACTGACGCTGATGT
+>HMPMockV1.2.Staggered2.673827_8 M141:79:749142:1:1101:17273:1504
+TACGTAGGTGGCAAGCGTTATCCGGAATTATTGGGCGTAAAGCGCGCGTAGGCGGTTTTTTAAGTCTGATGTGAAAGCCC
+ACGGCTCAACCGTGGAGGGTCATTGGAAACTGGAAAACTTGAGTGCAGAAGAGGAAAGTGGAATTCCATGTGTAGCGGTG
+AAATGCACAGAGATATGGAGGAACACCAGTGGCGAAGGCGACTTTCTGGTCTGTAACTGACGCTGA
+>HMPMockV1.2.Staggered2.673827_9 M141:79:749142:1:1101:16835:1505
+TACGTAGGTGGCAAGCGTTATCCGGAATTATTGGGCGTAAAGCGCGCGTAGGCGGTTTTTTAAGTCTGATGTGAAAGCCC
+ACGGCTCAACCGTGGAGGGTCATTGGAAACTGGAAAACTTGAGTGCAGAAGAGGAAAGTGGAATTCCATGTGTAGCGGTG
+ACATGCGCAGAGATATGGAGGAACACCAGTGGCGAAGGCGACTTTCTGGTCTGTAACTGACGCTGATGTGCGAAAGCGTG
+GGGAT
+"""
+
+# resulting OTU map for sortmerna_read_seqs_fp vs. sortmerna_reference_seqs_fp
+sortmerna_otumap_fp = """RefOTU0\tHMPMockV1.2.Staggered2.673827_47\tHMPMockV1.2.Staggered2.673827_115\tHMPMockV1.2.Staggered2.673827_122\tHMPMockV1.2.Staggered2.673827_161\tHMPMockV1.2.Staggered2.673827_180\tHMPMockV1.2.Staggered2.673827_203\tHMPMockV1.2.Staggered2.673827_207\tHMPMockV1.2.Staggered2.673827_215\tHMPMockV1.2.Staggered2.673827_218\tHMPMockV1.2.Staggered2.673827_220\n"""
+
+# resulting OTU map for sortmerna with no OTU id prefix
+sortmerna_otumap_no_otu_id_prefix_fp = """0\tHMPMockV1.2.Staggered2.673827_47\tHMPMockV1.2.Staggered2.673827_115\tHMPMockV1.2.Staggered2.673827_122\tHMPMockV1.2.Staggered2.673827_161\tHMPMockV1.2.Staggered2.673827_180\tHMPMockV1.2.Staggered2.673827_203\tHMPMockV1.2.Staggered2.673827_207\tHMPMockV1.2.Staggered2.673827_215\tHMPMockV1.2.Staggered2.673827_218\tHMPMockV1.2.Staggered2.673827_220\n"""
+
+# failures file (all random reads in sortmerna_read_seqs_fp)
+sortmerna_failures_fp = """HMPMockV1.2.Staggered2.673827_0
+HMPMockV1.2.Staggered2.673827_1
+HMPMockV1.2.Staggered2.673827_2
+HMPMockV1.2.Staggered2.673827_3
+HMPMockV1.2.Staggered2.673827_4
+HMPMockV1.2.Staggered2.673827_5
+HMPMockV1.2.Staggered2.673827_6
+HMPMockV1.2.Staggered2.673827_7
+HMPMockV1.2.Staggered2.673827_8
+HMPMockV1.2.Staggered2.673827_9
 """
 
 # run unit tests if run from command-line

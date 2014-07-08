@@ -17,27 +17,25 @@ import json
 from os import remove, close
 from string import digits
 from tempfile import mkstemp
-from numpy import array, nan
-from cogent.util.misc import remove_files
+from numpy import array, nan, array_equal
+from skbio.util.misc import remove_files
 from unittest import TestCase, main
 from skbio.parse.sequences import parse_fasta
 from qiime.util import  get_qiime_library_version
 from qiime.parse import fields_to_dict, parse_mapping_file
-from qiime.format import (format_distance_matrix, format_otu_table,
-                          format_coords, build_prefs_string, format_matrix, format_map_file,
-                          format_histograms, write_Fasta_from_name_seq_pairs,
+from qiime.format import (format_distance_matrix, build_prefs_string,
+                          format_matrix, format_map_file, format_histograms,
+                          write_Fasta_from_name_seq_pairs,
                           format_unifrac_sample_mapping, format_otu_map, write_otu_map,
-                          format_summarize_taxa, write_summarize_taxa,
                           format_add_taxa_summary_mapping, write_add_taxa_summary_mapping,
                           format_taxa_summary, format_correlation_vector,
                           format_correlation_info, format_qiime_parameters,
                           format_p_value_for_num_iters, format_mapping_file, illumina_data_to_fastq,
-                          format_biom_table, format_mapping_html_data, format_te_prefs,
-                          format_tep_file_lines, format_jnlp_file_lines, format_anosim_results,
-                          format_best_results, format_permanova_results, format_fastq_record,
-                          format_histograms_two_bins)
-from biom.parse import parse_biom_table, parse_classic_table_to_rich_table
-from biom.table import SparseTaxonTable
+                          format_mapping_html_data, format_te_prefs,
+                          format_tep_file_lines, format_jnlp_file_lines,
+                          format_fastq_record, format_histograms_two_bins)
+from biom.parse import parse_biom_table
+from biom.table import Table
 from StringIO import StringIO
 
 
@@ -87,12 +85,6 @@ class TopLevelTests(TestCase):
     def tearDown(self):
         remove_files(self.files_to_remove)
 
-    def test_format_biom_table(self):
-        """ Formatting of BIOM table correctly includes "generated-by" information
-        """
-        generated_by = "QIIME " + get_qiime_library_version()
-        self.assertTrue(generated_by in format_biom_table(self.biom1))
-
     def test_format_mapping_file(self):
         """ format_mapping file should match expected result"""
         headers = ['SampleID', 'col1', 'col0', 'Description']
@@ -125,77 +117,6 @@ class TopLevelTests(TestCase):
         self.assertEqual(
             format_p_value_for_num_iters(0.119123123123, 0),
             "Too few iters to compute p-value (num_iters=0)")
-
-    def test_format_summarize_taxa(self):
-        """format_summarize_taxa functions as expected"""
-        # Classic format.
-        exp = '\n'.join(['Taxon\tfoo\tbar\tfoobar',
-                         'a;b;c\t0\t1\t2',
-                         'd;e;f\t3\t4\t5\n'])
-        obs = ''.join(list(format_summarize_taxa(self.taxa_summary,
-                                                 self.taxa_header)))
-        self.assertEqual(obs, exp)
-
-        # BIOM format. Test by converting our expected output to a biom table
-        # and comparing that to our observed table.
-        exp = parse_classic_table_to_rich_table(exp.split('\n'), None, None,
-                                                None, SparseTaxonTable)
-        obs = ''.join(list(format_summarize_taxa(self.taxa_summary,
-                                                 self.taxa_header,
-                                                 file_format='biom')))
-        obs = parse_biom_table(obs)
-        self.assertEqual(obs, exp)
-
-        # Bad file_format argument.
-        with self.assertRaises(ValueError):
-            list(format_summarize_taxa(self.taxa_summary, self.taxa_header,
-                 file_format='foo'))
-
-    def test_write_summarize_taxa(self):
-        """write_summarize_taxa functions as expected"""
-        # Classic format.
-        write_summarize_taxa(self.taxa_summary, self.taxa_header, self.tmp_fp1)
-        obs = open(self.tmp_fp1).read()
-        exp = '\n'.join(['Taxon\tfoo\tbar\tfoobar',
-                         'a;b;c\t0\t1\t2',
-                         'd;e;f\t3\t4\t5\n'])
-        self.assertEqual(obs, exp)
-        self.files_to_remove.append(self.tmp_fp1)
-
-        # BIOM format.
-        write_summarize_taxa(self.taxa_summary, self.taxa_header, self.tmp_fp2,
-                             file_format='biom')
-        exp = parse_classic_table_to_rich_table(exp.split('\n'), None, None,
-                                                None, SparseTaxonTable)
-        obs = open(self.tmp_fp2).read()
-        obs = parse_biom_table(obs)
-        self.assertEqual(obs, exp)
-        self.files_to_remove.append(self.tmp_fp2)
-
-    def test_write_summarize_taxa_transposed_output(self):
-        """write_summarize_taxa_transposed_output functions as expected"""
-        # Classic format.
-        write_summarize_taxa(
-            self.taxa_summary,
-            self.taxa_header,
-            self.tmp_fp1,
-            transposed_output=True)
-        obs = open(self.tmp_fp1).read()
-        exp = '\n'.join(['SampleID\ta;b;c\td;e;f',
-                         'foo\t0\t3\nbar\t1\t4',
-                         'foobar\t2\t5\n'])
-        self.assertEqual(obs, exp)
-        self.files_to_remove.append(self.tmp_fp1)
-
-        # BIOM format.
-        write_summarize_taxa(self.taxa_summary, self.taxa_header, self.tmp_fp2,
-                             transposed_output=True, file_format='biom')
-        exp = parse_classic_table_to_rich_table(exp.split('\n'), None, None,
-                                                None, SparseTaxonTable)
-        obs = open(self.tmp_fp2).read()
-        obs = parse_biom_table(obs)
-        self.assertEqual(obs, exp)
-        self.files_to_remove.append(self.tmp_fp2)
 
     def test_format_add_taxa_summary_mapping(self):
         """format_add_taxa_summary_mapping functions as expected"""
@@ -446,31 +367,6 @@ class TopLevelTests(TestCase):
             del obs[e]
             del exp[e]
         self.assertEqual(obs, exp)
-
-    def test_format_otu_table(self):
-        """format_otu_table should return biom-formatted string"""
-        a = array([[1, 2, 3],
-                   [4, 5, 2718281828459045]])
-        samples = ['a', 'b', 'c']
-        otus = [1, 2]
-        taxa = ['Bacteria', 'Archaea']
-        res = format_otu_table(samples, otus, a)
-        # confirm that parsing the res gives us a valid biom file with
-        # expected observation and sample ids
-        t = parse_biom_table(res.split('\n'))
-        self.assertEqual(t.ObservationIds, ('1', '2'))
-        self.assertEqual(t.SampleIds, ('a', 'b', 'c'))
-
-    def test_format_coords(self):
-        """format_coords should return tab-delimited table of coords"""
-        a = array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-        header = list('abc')
-        eigvals = [2, 4, 6]
-        pct_var = [3, 2, 1]
-        res = format_coords(header, a, eigvals, pct_var)
-        self.assertEqual(
-            res,
-            "pc vector number\t1\t2\t3\na\t1\t2\t3\nb\t4\t5\t6\nc\t7\t8\t9\n\n\neigvals\t2\t4\t6\n% variation explained\t3\t2\t1")
 
     def test_build_prefs_string(self):
         """build_prefs_string should return a properly formatted prefs string.
@@ -788,60 +684,6 @@ y\t5\t6\tsample y""")
         obs1 = format_jnlp_file_lines(True, 'test', 'test.tep')
 
         self.assertEqual(''.join(obs1), exp_jnlp_web_url)
-
-    def test_format_anosim_results(self):
-        """Test formatting results of ANOSIM."""
-        exp = ('Method name\tR statistic\tp-value\tNumber of permutations\n'
-               'ANOSIM\t0.876553\t0.006\t999\n')
-        obs = format_anosim_results({'method_name': 'ANOSIM',
-                                     'r_value': 0.876553, 'p_value': 0.0056341,
-                                     'num_perms': 999})
-        self.assertEqual(obs, exp)
-
-        exp = ('Method name\tR statistic\tp-value\tNumber of permutations\n'
-               'ANOSIM\t0.876553\tToo few iters to compute p-value '
-               '(num_iters=0)\t0\n')
-        obs = format_anosim_results({'method_name': 'ANOSIM',
-                                     'r_value': 0.876553, 'p_value': 1.0,
-                                     'num_perms': 0})
-        self.assertEqual(obs, exp)
-
-    def test_format_permanova_results(self):
-        """Test formatting results of PERMANOVA."""
-        exp = ('Method name\tPseudo-F statistic\tp-value\tNumber of '
-               'permutations\nPERMANOVA\t0.123456789\t0.111\t999\n')
-        obs = format_permanova_results({'method_name': 'PERMANOVA',
-                                        'f_value': 0.1234567890,
-                                        'p_value': 0.11111, 'num_perms': 999})
-        self.assertEqual(obs, exp)
-
-        exp = ('Method name\tPseudo-F statistic\tp-value\tNumber of '
-               'permutations\nPERMANOVA\t0.123456789\tToo few iters to '
-               'compute p-value (num_iters=0)\t0\n')
-        obs = format_permanova_results({'method_name': 'PERMANOVA',
-                                        'f_value': 0.1234567890,
-                                        'p_value': 1.0, 'num_perms': 0})
-        self.assertEqual(obs, exp)
-
-    def test_format_best_results(self):
-        """Test formatting results of BEST."""
-        # Single category.
-        exp = ('Method name\tNumber of categories\tCategories\t'
-               'rho statistics\nBEST\t1\tDOB = 1\t(-0.001, \'1\')\n')
-        obs = format_best_results({'method_name': 'BEST', 'num_vars': 1,
-                                   'vars': ['DOB = 1'],
-                                   'rho_vals': [(-0.0010, '1')]})
-        self.assertEqual(obs, exp)
-
-        # Multiple categories.
-        exp = ('Method name\tNumber of categories\tCategories\t'
-               'rho statistics\nBEST\t2\tDOB = 1, pH = 2\t(-0.001, \'1\'), '
-               '(0.99909, \'1,2\')\n')
-        obs = format_best_results({'method_name': 'BEST', 'num_vars': 2,
-                                   'vars': ['DOB = 1', 'pH = 2'],
-                                   'rho_vals': [(-0.0010, '1'),
-                                                (0.99909, '1,2')]})
-        self.assertEqual(obs, exp)
 
     def test_format_fastq_record(self):
         """ Returns fastq record in the correct format """
