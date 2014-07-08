@@ -61,9 +61,9 @@ class SingleRarefactionMaker(FunctionWithParams):
                                       subsample_f=subsample_f)
 
         if empty_otus_removed:
-            sub_otu_table = filter_otus_from_otu_table(sub_otu_table,
-                                                       sub_otu_table.observation_ids,
-                                                       1, inf, 0, inf)
+            sub_otu_table = filter_otus_from_otu_table(
+                sub_otu_table, sub_otu_table.ids(axis='observation'),
+                1, inf, 0, inf)
 
         self._write_rarefaction(output_fname, sub_otu_table)
 
@@ -116,8 +116,8 @@ class RarefactionMaker(FunctionWithParams):
                                               subsample_f=subsample_f)
                 if empty_otus_removed:
                     sub_otu_table = filter_otus_from_otu_table(
-                        sub_otu_table, sub_otu_table.observation_ids, 1, inf,
-                        0, inf)
+                        sub_otu_table, sub_otu_table.ids(axis='observation'),
+                        1, inf, 0, inf)
 
                 self._write_rarefaction(depth, rep, sub_otu_table)
 
@@ -172,7 +172,7 @@ def get_rare_data(otu_table,
     if not include_small_samples:
         otu_table = filter_samples_from_otu_table(
             otu_table,
-            otu_table.sample_ids,
+            otu_table.ids(),
             seqs_per_sample,
             inf)
 

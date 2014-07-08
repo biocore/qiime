@@ -612,7 +612,7 @@ def extract_per_individual_state_metadata_from_sample_metadata_and_biom(
         filter_missing_data=True)
     results = {}
     if observation_ids is None:
-        observation_ids = biom_table.observation_ids
+        observation_ids = biom_table.ids(axis='observation')
     for observation_id in observation_ids:
         observation_data = biom_table.data(observation_id, 'observation')
         results[observation_id] = {}
