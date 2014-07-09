@@ -76,11 +76,9 @@ class ParallelMultipleRarefactionsTests(TestCase):
                   'subsample_multinomial': False}
         r(self.input1_fp,
           self.test_out,
-          params,
-          job_prefix='RARIFTEST',
-          poll_directly=True,
-          suppress_submit_jobs=False)
+          params)
         biom_tables = glob('%s/*biom' % self.test_out)
+
         self.assertEqual(len(biom_tables), 20)
         biom_tables.sort()
         input_table = load_table(self.input1_fp)

@@ -22,7 +22,7 @@ qiime_config = load_qiime_config()
 
 class ParallelWrapper(object):
     """"""
-    def __init__(self, retain_temp_files=False, block=False):
+    def __init__(self, retain_temp_files=False, block=True):
         self._retain_temp_files = retain_temp_files
         self._block = block
         # These attributes should be defined when calling the subclass'
