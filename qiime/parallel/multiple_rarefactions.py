@@ -16,6 +16,7 @@ from os import makedirs
 import networkx as nx
 
 from qiime.parallel.util import ParallelWrapper
+from qiime.workflow.util import generate_log_fp
 
 
 class ParallelMultipleRarefactions(ParallelWrapper):
@@ -37,6 +38,9 @@ class ParallelMultipleRarefactions(ParallelWrapper):
         subsample_multinomial_str = ('--subsample_multinomial'
                                      if params['subsample_multinomial']
                                      else '')
+
+        # Create the log file
+        self._log_file = generate_log_fp(output_dir)
 
         # Create the output directory if it does not exists
         if not exists(output_dir):

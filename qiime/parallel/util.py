@@ -30,6 +30,7 @@ class ParallelWrapper(object):
         # A networkx DAG holding the job workflow. Each node should have the
         # property "job", which contains the job that should be executed
         self._job_graph = None
+        self._log_file = None
 
     def _construct_job_graph(self, **kwargs):
         """Constructs the workflow graph and the jobs to execute"""
@@ -43,6 +44,7 @@ class ParallelWrapper(object):
         Parameters
         ----------
         results : dict of {Node: AsyncResult}
+            The AsyncResult objects of the executed jobs
         """
         # Adapted from
         # http://ipython.org/ipython-doc/dev/parallel/dag_dependencies.html
@@ -54,8 +56,42 @@ class ParallelWrapper(object):
                     ("Job order not respected: %s should have happened "
                      "after %s" % (node, parent))
 
+    def _validate_job_status(self, results, log_f):
+        """Validates that all jobs executed finished correctly
+
+        Parameters
+        ----------
+        results : dict of {Node: AsyncResult}
+            The AsyncResult objects of the executed jobs
+        log_f : file object
+            The open log file handler
+        """
+        log_f.write("\nValidating job status:\n")
+        for node, ar in results.items():
+            log_f.write("\nJob %s: " % node)
+            if ar.successful():
+                log_f.write("Success\n")
+            else:
+                log_f.write("Error\n")
+                try:
+                    job_result = ar.get()
+                except Exception, e:
+                    job_result = e
+                log_f.write("\tJob results: %s\n"
+                            "\tPython output: %s\n"
+                            "\tStandard output: %s\n"
+                            "\tStandard error: %s\n"
+                            % (job_result, ar.pyout, ar.stdout, ar.stderr))
+
     def __call__(self, *args, **kwargs):
         self._construct_job_graph(*args, **kwargs)
+
+        if self._job_graph is None or self._log_file is None:
+            raise RuntimeError(
+                "Job graph and log file not instantiated in the subclass")
+
+        log_f = open(self._log_file, 'w')
+
         results = {}
         # We need to submit the jobs to ipython in topological order, so we can
         # actually define the dependencies between jobs. Adapted from
@@ -64,13 +100,21 @@ class ParallelWrapper(object):
             # Get the list of predecessor jobs
             deps = [results[n] for n in self._job_graph.predecessors(node)]
             # We can now submit the job taking into account the dependencies
-            results[node] = context.submit_async_deps(
-                deps, self._job_graph.node[node]['job'])
+            job = self._job_graph.node[node]['job']
+            log_f.write("Submitting job %s: %s... " % (node, job))
+            results[node] = context.submit_async_deps(deps, job)
+            log_f.write("Done\n")
 
         if self._block:
             # Block until all jobs are done
+            log_f.write("\nWaiting for all jobs to finish... ")
             context.wait(results.values())
+            log_f.write("Done\nValidating execution order... ")
             self._validate_execution_order(results)
+            log_f.write("Done\n")
+            self._validate_job_status(results, log_f)
+
+        log_f.close()
 
 
 class BufferedWriter():
