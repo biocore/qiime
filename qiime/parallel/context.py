@@ -1,7 +1,7 @@
 from IPython.parallel import Client
+from subprocess import Popen, PIPE
 
 from qiime.util import load_qiime_config
-from qiime.parallel.util import system_call
 
 
 qiime_config = load_qiime_config()
@@ -9,6 +9,35 @@ qiime_config = load_qiime_config()
 
 class ComputeError(Exception):
     pass
+
+
+def system_call(cmd):
+    """Call cmd and return (stdout, stderr, return_value).
+
+    cmd: can be either a string containing the command to be run, or a
+     sequence of strings that are the tokens of the command.
+
+    This function is ported from QIIME (http://www.qiime.org), previously
+    named qiime_system_call. QIIME is a GPL project, but we obtained permission
+    from the authors of this function to port it to pyqi (and keep it under
+    pyqi's BSD license).
+    """
+    proc = Popen(cmd,
+                 universal_newlines=True,
+                 shell=True,
+                 stdout=PIPE,
+                 stderr=PIPE)
+
+    # communicate pulls all stdout/stderr from the PIPEs to
+    # avoid blocking -- don't remove this line!
+    stdout, stderr = proc.communicate()
+    return_value = proc.returncode
+
+    if return_value != 0:
+        raise ComputeError("Failed to execute: %s\nstdout: %s\nstderr: %s" %
+                           (cmd, stdout, stderr))
+
+    return stdout, stderr, return_value
 
 
 class Context(object):
@@ -34,7 +63,7 @@ class Context(object):
 
     def _stage_imports(self, cluster):
         with cluster[:].sync_imports(quiet=True):
-            from qiime.parallel.util import system_call
+            from qiime.parallel.context import system_call
 
     def sync(self, data):
         """Sync data to engines
@@ -46,6 +75,33 @@ class Context(object):
 
         """
         self._client[:].update(data)
+
+    def submit_async_deps(self, deps, cmd, *args, **kwargs):
+        """Submit as async command to execute making sure that cmd is executed
+        after all its dependencies are executed
+
+        Parameters
+        ----------
+        deps : list of AsyncResult
+            The list of job dependencies for cmd
+        cmd : {function, str}
+            A function to execute or a system call to execute
+        args : list
+            Arguments to pass to a function (if cmd is function)
+        kwargs : dict
+            Keyword arguments to pass to a function (if cmd is function)
+
+        Returns
+        -------
+        IPython.parallel.client.asyncresult.AsyncResult
+        """
+        with self._lview.temp_flags(after=deps, block=False):
+            if isinstance(cmd, str):
+                task = self._lview.apply(system_call, cmd)
+            else:
+                task = self._lview.apply(cmd, *args, **kwargs)
+
+        return task
 
     def submit_async(self, cmd, *args, **kwargs):
         """Submit an async command to execute
@@ -94,6 +150,16 @@ class Context(object):
             result = self._lview.apply_sync(cmd, *args, **kwargs)
 
         return result
+
+    def wait(self, handlers):
+        """Waits until all async jobs in handlers have finished
+
+        Parameters
+        ----------
+        handlers : list of AsyncResult
+            The AsyncResult objects to wait for
+        """
+        return self._lview.wait(handlers)
 
 
 # likely want this in qiime.parallel.__init__
