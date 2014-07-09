@@ -83,6 +83,16 @@ class ParallelWrapper(object):
                             "\tStandard error: %s\n"
                             % (job_result, ar.pyout, ar.stdout, ar.stderr))
 
+    def _job_blocker(self, results, log_f):
+        # Block until all jobs are done
+        log_f.write("\nWaiting for all jobs to finish... ")
+        context.wait(results.values())
+        log_f.write("Done\nValidating execution order... ")
+        self._validate_execution_order(results)
+        log_f.write("Done\n")
+        self._validate_job_status(results, log_f)
+        log_f.close()
+
     def __call__(self, *args, **kwargs):
         self._construct_job_graph(*args, **kwargs)
 
@@ -106,15 +116,9 @@ class ParallelWrapper(object):
             log_f.write("Done\n")
 
         if self._block:
-            # Block until all jobs are done
-            log_f.write("\nWaiting for all jobs to finish... ")
-            context.wait(results.values())
-            log_f.write("Done\nValidating execution order... ")
-            self._validate_execution_order(results)
-            log_f.write("Done\n")
-            self._validate_job_status(results, log_f)
-
-        log_f.close()
+            self._job_blocker(results, log_f)
+        else:
+            context.submit_async(self._job_blocker, results, log_f)
 
 
 class BufferedWriter():
