@@ -9,17 +9,81 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 
-from os.path import split
+from os.path import split, abspath, basename, splitext
 from shutil import copy
 
+import networkx as nx
 from brokit.formatdb import build_blast_db_from_fasta_path
-
 from skbio.parse.sequences import parse_fasta
 
 from qiime.identify_chimeric_seqs import make_cidx_file
 from qiime.parse import parse_tmp_to_final_filepath_map_file
-from qiime.util import write_degapped_fasta_to_file
+from qiime.util import write_degapped_fasta_to_file, count_seqs
 from qiime.parallel.util import ParallelWrapper
+from qiime.parallel.context import context
+from qiime.split import split_fasta
+
+
+class ParallelChimericSequenceIdentifier(ParallelWrapper):
+
+    def _fasta_splitter(self, input_fp, output_dir, num):
+        # First compute the number of sequences per file
+        # Count the number of sequences in the fasta file
+        num_input_seqs = count_seqs(input_fp)[0]
+
+        # divide the number of sequences by the number of jobs to start
+        num_seqs_per_file = num_input_seqs / num
+
+        # if we don't have a perfect split, round up
+        if num_seqs_per_file % 1 != 0:
+            num_seqs_per_file += 1
+
+        # Get the number of sequences as an integer
+        num_seqs_per_file = int(num_seqs_per_file)
+
+        # Generate a prefix for the files
+        prefix = splitext(basename(input_fp))[0]
+        fasta_fps = split_fasta(open(input_fp), num_seqs_per_file, prefix,
+                                working_dir=output_dir)
+        self._paths_to_remove.extend(fasta_fps)
+        return fasta_fps
+
+    def _construct_job_graph(self, input_fp, output_dir, params,
+                             jobs_to_start=None):
+        self._job_graph = nx.DiGraph()
+
+        # Do the parameter parsing
+        input_fp = abspath(input_fp)
+        output_dir = abspath(output_dir)
+        if jobs_to_start is None:
+            # default to the number of workers
+            jobs_to_start = context.get_number_of_workers()
+        method = params['chimera_detection_method']
+
+        if method == 'blast_fragments':
+            # We first need to create the blast database
+            blast_db, db_files_to_remove = build_blast_db_from_fasta_path(params['reference_seqs_fp'], output_dir=working_dir)
+            self._paths_to_remove.extend(db_files_to_remove)
+            params['blast_db'] = blast_db
+            # The next step is to split the input_fp in multiple files
+            fasta_fps = self._fasta_splitter(input_fp, output_dir,
+                                             jobs_to_start)
+            # Now we create all the commands
+            for i, fasta_fp in enumerate(fasta_fps):
+                cmd = (
+                    "identify_chimeric_seqs.py -i %s -t %s -m blast_fragments "
+                    "-o %s -n %s -d %s -e %s -b %s"
+                    % (fasta_fp, params['id_to_taxonomy_fp'], output_fp,
+                       params['num_fragments'], params['taxonomy_depth'],
+                       params['max_e_value'], params['blast_db']))
+                self._job_graph.add_node("ICS_%d" % i, job=cmd)
+            # Merge the results
+
+        elif method == 'ChimeraSlayer':
+            pass
+        else:
+            raise ValueError(
+                "Unrecognized chimera detection method '%s'." % method)
 
 
 class ParallelChimericSequenceIdentifier(ParallelWrapper):
@@ -171,7 +235,7 @@ class ParallelChimericSequenceIdentifier(ParallelWrapper):
             if fp.endswith('_chimeric.txt'):
                 chims_fps.append(fp)
             else:
-                log_fps.append(fp)
+                logs_fps.append(fp)
 
         for in_files, out_file in zip([chims_fps], out_filepaths):
             f.write('\t'.join(in_files + [out_file]))
