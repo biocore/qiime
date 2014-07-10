@@ -161,6 +161,16 @@ class Context(object):
         """
         return self._lview.wait(handlers)
 
+    def get_number_of_workers(self):
+        """Returns the number of workers present in the cluster
+
+        Returns
+        -------
+        int
+            The number of workers
+        """
+        return len(self._client.ids)
+
 
 # likely want this in qiime.parallel.__init__
 context = Context(qiime_config['profile'])
