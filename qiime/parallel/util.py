@@ -11,6 +11,8 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
+from os import remove
+
 import networkx as nx
 
 from qiime.util import load_qiime_config
@@ -31,6 +33,7 @@ class ParallelWrapper(object):
         # property "job", which contains the job that should be executed
         self._job_graph = None
         self._log_file = None
+        self._paths_to_remove = []
 
     def _construct_job_graph(self, **kwargs):
         """Constructs the workflow graph and the jobs to execute"""
@@ -82,6 +85,12 @@ class ParallelWrapper(object):
                             "\tStandard output: %s\n"
                             "\tStandard error: %s\n"
                             % (job_result, ar.pyout, ar.stdout, ar.stderr))
+
+    def _clean_up_paths(self):
+        """Removes the temporary paths"""
+        if not self._retain_temp_files:
+            for fp in self._paths_to_remove:
+                remove(fp)
 
     def _job_blocker(self, results, log_f):
         # Block until all jobs are done
