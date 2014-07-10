@@ -34,7 +34,7 @@ def make_summary(otu_table,
     [[(taxon1),count,count,...],[(taxon2),count,count,...]...]
     """
     header = ['Taxon']
-    header.extend(otu_table.sample_ids)
+    header.extend(otu_table.ids())
 
     counts_by_consensus, sample_map = sum_counts_by_consensus(otu_table,
                                                               level,
@@ -75,14 +75,14 @@ def sum_counts_by_consensus(otu_table,
     if the consensus string doesn't reach to level, missing_name is appended on
     until the taxonomy string is of length level
     """
-    if otu_table.observation_metadata is None:
+    if otu_table.metadata(axis='observation') is None:
         raise ValueError("BIOM table does not contain any "
                          "observation metadata (e.g., taxonomy)."
                          " You can add metadata to it using the "
                          "'biom add-metadata' command.")
 
     result = {}
-    sample_map = dict([(s, i) for i, s in enumerate(otu_table.sample_ids)])
+    sample_map = otu_table._index()
 
     # Define a function to process the metadata prior to summarizing - this
     # is more convenient than having to check md_as_string on every iteration

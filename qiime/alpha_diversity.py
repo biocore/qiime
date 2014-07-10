@@ -34,7 +34,6 @@ tax1    [or here]
 """
 
 import os.path
-import sys
 import warnings
 warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
 
@@ -119,9 +118,10 @@ class AlphaDiversityCalc(FunctionWithParams):
             tree = self.getTree(tree_path)
             # build envs dict: envs = {otu_id:{sample_id:count}}
             envs = {}
+            sample_ids = otu_table.ids()
             for obs_v, obs_id, obs_md in otu_table.iter(axis='observation'):
                 obs = {}
-                for sample_id, v in zip(otu_table.sample_ids, obs_v):
+                for sample_id, v in zip(sample_ids, obs_v):
                     obs[sample_id] = v
                 envs[obs_id] = obs
 
@@ -194,9 +194,9 @@ class AlphaDiversityCalcs(FunctionWithParams):
         for c in self.Calcs:
             # add either calc's multiple return value names, or fn name
             metric_res = c(data_path=data_path,
-                           taxon_names=otu_table.observation_ids,
+                           taxon_names=otu_table.ids(axis='observation'),
                            tree_path=tree,
-                           sample_names=otu_table.sample_ids)
+                           sample_names=otu_table.ids())
             if len(metric_res.shape) == 1:
                 res.append(metric_res)
             elif len(metric_res.shape) == 2:
@@ -206,7 +206,7 @@ class AlphaDiversityCalcs(FunctionWithParams):
                 raise RuntimeError("alpha div shape not as expected")
         res_data = array(res).T
 
-        return res_data, otu_table.sample_ids, calc_names
+        return res_data, otu_table.ids(), calc_names
 
     def formatResult(self, result):
         """Generate formatted distance - result is (data, sample_names)"""

@@ -43,7 +43,7 @@ def _calc_shared_phylotypes_multiple(otu_table, idxs):
         raise ValueError("calc_shared_phylotypes_multiple needs at least two "
                          "sampleIDs to comapre")
 
-    shared_phylos = ones(len(otu_table.observation_ids))
+    shared_phylos = ones(len(otu_table.ids(axis='observation')))
 
     for id_ in idxs:
         shared_phylos = logical_and(shared_phylos, otu_table.data(id_, 'sample'))
@@ -63,10 +63,11 @@ def calc_shared_phylotypes(otu_table, reference_sample=None):
     if reference_sample:
         ref_idx = reference_sample
 
-    num_samples = len(otu_table.sample_ids)
+    sample_ids = otu_table.ids()
+    num_samples = len(sample_ids)
     result_array = zeros((num_samples, num_samples), dtype=int)
-    for i, samp1_id in enumerate(otu_table.sample_ids):
-        for j, samp2_id in enumerate(otu_table.sample_ids[:i + 1]):
+    for i, samp1_id in enumerate(sample_ids):
+        for j, samp2_id in enumerate(sample_ids[:i + 1]):
             if reference_sample:
                 result_array[i, j] = result_array[j, i] = \
                     _calc_shared_phylotypes_multiple(otu_table,
@@ -77,4 +78,4 @@ def calc_shared_phylotypes(otu_table, reference_sample=None):
                     _calc_shared_phylotypes_pairwise(otu_table, samp1_id,
                                                      samp2_id)
 
-    return format_distance_matrix(otu_table.sample_ids, result_array) + "\n"
+    return format_distance_matrix(sample_ids, result_array) + "\n"

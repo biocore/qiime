@@ -92,7 +92,7 @@ def main():
                                 sorted_sample_ids)
     else:
         result = sort_otu_table(otu_table_data,
-            natsort_case_insensitive(otu_table_data.sample_ids))
+            natsort_case_insensitive(otu_table_data.ids()))
 
     write_biom_table(result, opts.output_fp)
 
