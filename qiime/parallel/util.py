@@ -12,6 +12,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 from os import remove
+from shutil import rmtree
 
 import networkx as nx
 
@@ -33,7 +34,8 @@ class ParallelWrapper(object):
         # property "job", which contains the job that should be executed
         self._job_graph = None
         self._log_file = None
-        self._paths_to_remove = []
+        self._filepaths_to_remove = []
+        self._dirpaths_to_remove = []
 
     def _construct_job_graph(self, **kwargs):
         """Constructs the workflow graph and the jobs to execute"""
@@ -89,8 +91,10 @@ class ParallelWrapper(object):
     def _clean_up_paths(self):
         """Removes the temporary paths"""
         if not self._retain_temp_files:
-            for fp in self._paths_to_remove:
+            for fp in self._filepaths_to_remove:
                 remove(fp)
+            for dp in self._dirpaths_to_remove:
+                rmtree(fp)
 
     def _job_blocker(self, results, log_f):
         # Block until all jobs are done
