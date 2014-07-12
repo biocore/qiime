@@ -11,14 +11,12 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "justinak@gmail.com"
 
 import os
-from qiime.util import make_option
 
-import qiime.parse
-from qiime.parse import parse_newick
-from qiime.util import parse_command_line_parameters, get_options_lookup
+from skbio.core.tree import TreeNode, majority_rule
 
-from cogent.core.tree import PhyloNode
-from cogent.phylo.consensus import majorityRule
+from qiime.parse import parse_newick, parse_rarefaction_fname
+from qiime.util import (parse_command_line_parameters, get_options_lookup,
+                         make_option)
 
 
 options_lookup = get_options_lookup()
@@ -70,7 +68,7 @@ def load_tree_files(tree_dir):
     try:
         base_names = []
         for fname in tree_file_names:
-            base_names.append(qiime.parse.parse_rarefaction_fname(fname)[0])
+            base_names.append(parse_rarefaction_fname(fname)[0])
     except ValueError:
         pass
     else:
@@ -86,7 +84,7 @@ continuing anyway..."""
     for fname in tree_file_names:
         try:
             f = open(os.path.join(tree_dir, fname), 'U')
-            tree = parse_newick(f, PhyloNode)
+            tree = TreeNode.from_newick(f)
             tree.filepath = fname
             trees.append(tree)
             f.close()
@@ -100,16 +98,19 @@ continuing anyway..."""
 
 
 def main():
-    option_parser, opts, args =\
-        parse_command_line_parameters(**script_info)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     trees = load_tree_files(opts.input_dir)
 
-    consensus = majorityRule(trees=trees, strict=opts.strict)[0]
-    # don't know why returns a list
+    # this retains the default behavior from PyCogent's majority_rule function
+    if opts.strict:
+        cutoff = 0.5
+    else:
+        cutoff = 0.0
+    consensus = majority_rule(trees=trees, cutoff=cutoff)[0]
 
     f = open(opts.output_fname, 'w')
-    f.write(consensus.getNewick(with_distances=True))
+    f.write(consensus.to_newick(with_distances=True))
     f.close()
 
 if __name__ == "__main__":
