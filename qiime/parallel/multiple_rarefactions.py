@@ -54,4 +54,4 @@ class ParallelMultipleRarefactions(ParallelWrapper):
                        % (input_fp, output_fp, lineages_included_str,
                           subsample_multinomial_str, depth))
                 self._job_graph.add_node("%d_%d" % (depth, rep_num),
-                                         job=cmd)
+                                         job=(cmd,))
