@@ -34,6 +34,7 @@ class ParallelWrapper(object):
         # property "job", which contains the job that should be executed
         self._job_graph = None
         self._log_file = None
+        # Clean up variables
         self._filepaths_to_remove = []
         self._dirpaths_to_remove = []
 
@@ -125,7 +126,7 @@ class ParallelWrapper(object):
             # We can now submit the job taking into account the dependencies
             job = self._job_graph.node[node]['job']
             log_f.write("Submitting job %s: %s... " % (node, job))
-            results[node] = context.submit_async_deps(deps, job)
+            results[node] = context.submit_async_deps(deps, *job)
             log_f.write("Done\n")
 
         if self._block:
