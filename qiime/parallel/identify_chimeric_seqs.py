@@ -158,7 +158,7 @@ class ParallelChimericSequenceIdentifier(ParallelWrapper):
             # after the "MAKE_CIDX" node. Add the edges to represent the
             # dependencies
             for node in ics_nodes:
-                self._job_graph.add_edge("MAKE_CIDX", node_name)
+                self._job_graph.add_edge("MAKE_CIDX", node)
 
         # Adding temp_out_fps to the clean_up variable
         self._filepaths_to_remove.extend(temp_out_fps)
