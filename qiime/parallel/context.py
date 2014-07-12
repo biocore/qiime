@@ -97,9 +97,9 @@ class Context(object):
         """
         with self._lview.temp_flags(after=deps, block=False):
             if isinstance(cmd, str):
-                task = self._lview.apply(system_call, cmd)
+                task = self._lview.apply_async(system_call, cmd)
             else:
-                task = self._lview.apply(cmd, *args, **kwargs)
+                task = self._lview.apply_async(cmd, *args, **kwargs)
 
         return task
 
