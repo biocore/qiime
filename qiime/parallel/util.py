@@ -16,8 +16,9 @@ from shutil import rmtree
 
 import networkx as nx
 
-from qiime.util import load_qiime_config
+from qiime.util import load_qiime_config, count_seqs
 from qiime.parallel.context import context
+from qiime.split import split_fasta
 
 
 qiime_config = load_qiime_config()
@@ -133,6 +134,36 @@ class ParallelWrapper(object):
             self._job_blocker(results, log_f)
         else:
             context.submit_async(self._job_blocker, results, log_f)
+
+
+def concatenate_files(output_fp, temp_out_fps):
+    with open(output_fp, 'w') as out_f:
+            for tmp_fp in temp_out_fps:
+                with open(tmp_fp, 'U') as in_f:
+                    for line in in_f:
+                        out_f.write(line)
+
+
+def input_fasta_splitter(input_fp, output_dir, num):
+    # First compute the number of sequences per file
+    # Count the number of sequences in the fasta file
+    num_input_seqs = count_seqs(input_fp)[0]
+
+    # divide the number of sequences by the number of jobs to start
+    num_seqs_per_file = num_input_seqs / num
+
+    # if we don't have a perfect split, round up
+    if num_seqs_per_file % 1 != 0:
+        num_seqs_per_file += 1
+
+    # Get the number of sequences as an integer
+    num_seqs_per_file = int(num_seqs_per_file)
+
+    # Generate a prefix for the files
+    prefix = splitext(basename(input_fp))[0]
+    fasta_fps = split_fasta(open(input_fp), num_seqs_per_file, prefix,
+                            working_dir=output_dir)
+    return fasta_fps
 
 
 class BufferedWriter():
