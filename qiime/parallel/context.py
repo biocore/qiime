@@ -46,6 +46,7 @@ class Context(object):
     Methods
     -------
     submit_async
+    submit_async_deps
     submit_sync
     sync
 

@@ -16,9 +16,8 @@ from shutil import rmtree
 
 import networkx as nx
 
-from qiime.util import load_qiime_config, count_seqs
+from qiime.util import load_qiime_config
 from qiime.parallel.context import context
-from qiime.split import split_fasta
 
 
 qiime_config = load_qiime_config()
@@ -145,6 +144,10 @@ def concatenate_files(output_fp, temp_out_fps):
 
 
 def input_fasta_splitter(input_fp, output_dir, num):
+    # Importing here so it becomes available on the workers
+    from qiime.util import count_seqs
+    from os.path import basename, splitext
+    from qiime.split import split_fasta
     # First compute the number of sequences per file
     # Count the number of sequences in the fasta file
     num_input_seqs = count_seqs(input_fp)[0]
