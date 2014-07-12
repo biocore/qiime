@@ -61,7 +61,7 @@ maximum E-value ("-e 1e-30")). ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute \
 path represented here as $PWD, but will generally look something like \
 /home/ubuntu/my_analysis/).""",
      """%prog -i $PWD/inseqs.fasta -t $PWD/id_to_tax.txt -r \
-$PWD/refseqs.fasta -o $PWD/blast_fragments_chimeric_seqs.txt -m \
+$PWD/refseqs.fasta -o $PWD/blast_fragments_chimeric_output -m \
 blast_fragments"""))
 
 script_info['script_usage'].append(
@@ -75,7 +75,7 @@ script_info['script_usage'].append(
      " here as $PWD, but will generally look something like "
      "/home/ubuntu/my_analysis/).",
      "%prog -i $PWD/inseqs_aligned.fasta -o "
-     "$PWD/chimera_slayer_chimeric_seqs.txt"))
+     "$PWD/chimera_slayer_chimeric_output"))
 
 script_info['output_description'] = (
     "The result of parallel_identify_chimeric_seqs.py is a text file that "
@@ -137,8 +137,8 @@ script_info['optional_options'] = [
                      'to None uses ChimeraSlayer default value.  [default: '
                      '%default]'),
 
-    make_option('-o', '--output_fp', type='new_filepath',
-                help='Path to store output [default: derived from '
+    make_option('-o', '--output_dir', type='new_dirpath',
+                help='Directory to store output files [default: derived from '
                      'input_seqs_fp]'),
 
     # Define parallel-script-specific parameters
@@ -178,17 +178,11 @@ def main():
                 "Must provide --aligned_reference_seqs_fp when using "
                 "method ChimeraSlayer")
 
-    # Set the output_fp if not set.
-    output_fp = opts.output_fp
-    if not output_fp:
+    # Set the output_dir if not set.
+    output_dir = opts.output_dir
+    if not output_dir:
         input_basename = splitext(split(opts.input_fasta_fp)[1])[0]
-        output_fp = '%s_chimeric.txt' % input_basename
-        params['output_fp'] = output_fp
-
-    # Find the output dir path based on the output file path.
-    output_dir, _ = split(output_fp)
-    if output_dir == "":
-        output_dir = "./"
+        output_dir = '%s_chimeric_output' % input_basename
 
     parallel_runner = ParallelChimericSequenceIdentifier(
         retain_temp_files=opts.retain_temp_files,
