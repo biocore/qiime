@@ -131,7 +131,7 @@ def create_javascript_array(otu_table, use_floats=False):
                 'var i=0;\n'
                 'for (i==0;i<%i;i++) {\n'
                 'OTU_table[i]=new Array();}\n' %
-                (len(otu_table.sample_ids) + 2)]
+                (len(otu_table.ids()) + 2)]
 
     # 0 ['#OTU ID', 'OTU2', 'OTU3']
     #1 ['Sample1', 1, 2]
@@ -140,7 +140,7 @@ def create_javascript_array(otu_table, use_floats=False):
 
     # OTU ids first
     js_array.append("OTU_table[0][0]='#OTU ID';\n")
-    for (idx, otu_id) in enumerate(otu_table.observation_ids):
+    for (idx, otu_id) in enumerate(otu_table.ids(axis='observation')):
         js_array.append("OTU_table[0][%i]='%s';\n" % (idx + 1, otu_id))
 
     # Sample ids and values in the table
@@ -158,7 +158,7 @@ def create_javascript_array(otu_table, use_floats=False):
         i += 1
 
     # Consensus lineages for each OTU
-    last_idx = len(otu_table.sample_ids) + 1
+    last_idx = len(otu_table.ids()) + 1
     js_array.append("OTU_table[%i][0]='Consensus Lineage';\n" % last_idx)
     i = 1
     for (otu_val, otu_id, meta) in otu_table.iter(axis='observation'):
@@ -173,7 +173,7 @@ def filter_by_otu_hits(num_otu_hits, otu_table):
     """Filter the OTU table by the number of otus per sample"""
     # Filter out rows with sum > num_otu_hits
     new_otu_table = filter_otus_from_otu_table(
-        otu_table, otu_table.observation_ids,
+        otu_table, otu_table.ids(axis='observation'),
         num_otu_hits, inf, 0, inf)
 
     return new_otu_table
@@ -262,8 +262,8 @@ def get_otu_counts(fpath):
     except (TypeError, IOError):
         raise MissingFileError('OTU table file required for this analysis')
 
-    if (otu_table.observation_metadata is None or
-            otu_table.observation_metadata[0]['taxonomy'] is None):
+    if (otu_table.metadata(axis='observation') is None or
+            otu_table.metadata(axis='observation')[0]['taxonomy'] is None):
         raise ValueError(
             '\n\nThe lineages are missing from the OTU table. Make sure you included the lineages for the OTUs in your OTU table. \n')
 
@@ -280,9 +280,9 @@ def generate_heatmap_plots(
     filtered_otu_table = filter_by_otu_hits(num_otu_hits, otu_table)
 
     if otu_sort:
-        # Since the BIOM object comes back with fewer Observation_ids, we need to
+        # Since the BIOM object comes back with fewer Observation ids, we need to
         # remove those from the original sort_order
-        actual_observations = filtered_otu_table.observation_ids
+        actual_observations = filtered_otu_table.ids(axis='observation')
         new_otu_sort_order = []
         for i in otu_sort:
             if i in actual_observations:
@@ -295,7 +295,7 @@ def generate_heatmap_plots(
     if sample_sort:
         # Since the BIOM object may come back with fewer Sampleids, we need to
         # remove those from the original sample_sort
-        actual_samples = filtered_otu_table.sample_ids
+        actual_samples = filtered_otu_table.ids()
         new_sample_sort_order = []
         for i in sample_sort:
             if i in actual_samples:

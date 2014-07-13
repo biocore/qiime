@@ -36,7 +36,7 @@ def get_overlapping_samples(map_rows, otu_table):
        Returns: new_map_rows, new_otu_table
     """
     map_sample_ids = zip(*map_rows)[0]
-    shared_ids = set(map_sample_ids) & set(otu_table.sample_ids)
+    shared_ids = set(map_sample_ids) & set(otu_table.ids())
 
     otu_table = filter_samples_from_otu_table(otu_table, shared_ids, -inf, inf)
 
@@ -70,7 +70,7 @@ def get_order_from_categories(otu_table, category_labels):
 
     for label in unique(category_labels):
         label_ix = category_labels == label
-        selected = [s for (i, s) in zip(label_ix, otu_table.sample_ids) if i]
+        selected = [s for (i, s) in zip(label_ix, otu_table.ids()) if i]
         sub_otu_table = filter_samples_from_otu_table(otu_table, selected,
                                                       -inf, inf)
         data = asarray([val for val in sub_otu_table.iter_data(axis='observation')])
@@ -175,8 +175,8 @@ def plot_heatmap(otu_table, row_labels, col_labels, filename='heatmap.pdf',
         color_scheme: choices can be found at
          http://wiki.scipy.org/Cookbook/Matplotlib/Show_colormaps
     """
-    nrow = len(otu_table.observation_ids)
-    ncol = len(otu_table.sample_ids)
+    nrow = len(otu_table.ids(axis='observation'))
+    ncol = len(otu_table.ids())
 
     # determine appropriate font sizes for tick labels
     row_fontsize = get_fontsize(nrow)
