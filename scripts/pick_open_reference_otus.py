@@ -320,6 +320,10 @@ def main():
     elif otu_picking_method == 'sortmerna_sumaclust':
         denovo_otu_picking_method = 'sumaclust'
         reference_otu_picking_method = 'sortmerna'
+        if prefilter_percent_id > 0:
+            raise ValueError("SortMeRNA uses the E-value to filter out "
+                             "erroneous sequences, this option does not "
+                             "apply for this tool.")
     else:
         # it shouldn't be possible to get here
         option_parser.error('Unkown OTU picking method: %s' %

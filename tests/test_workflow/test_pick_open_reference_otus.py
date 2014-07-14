@@ -179,6 +179,8 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
                         "Failure OTU (wf.test.otu.ReferenceOTU0) is not in "
                         "the final OTU map.")
 
+        print "size of otu_map = ",len(otu_map)
+
         # confirm that number of tips in the tree is the same as the number of
         # sequences in the alignment
         with open(tree_fp) as f:
@@ -469,7 +471,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             self.assertTrue(
                 o[2]['taxonomy'][0] in ['k__Bacteria', 'Unassigned'])
 
-    def test_pick_subsample_open_reference_otus_sortmerna_sumaclust(self):
+    def test_pick_subsampled_open_reference_otus_sortmerna_sumaclust(self):
         """pick_subsampled_open_reference_otus functions as expected with
         sortmerna and sumaclust"""
         pick_subsampled_open_reference_otus(
@@ -481,7 +483,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             command_handler=call_commands_serially,
             params=self.params,
             prefilter_refseqs_fp=None,
-            prefilter_percent_id=0.60,
+            prefilter_percent_id=None,
             qiime_config=self.qiime_config,
             step1_otu_map_fp=None,
             step1_failures_fasta_fp=None,
@@ -495,8 +497,11 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         final_failure_fp = '%s/final_failures.txt' % self.wf_out
         final_repset_fp = '%s/rep_set.fna' % self.wf_out
         new_refseqs_fp = '%s/new_refseqs.fna' % self.wf_out
-        prefilter_failures_fp = glob(
-            '%s/prefilter_otus/*_failures.txt' %
+        reads_for_denovo_fp = glob(
+            '%s/step1_otus/*_failures.txt' %
+            self.wf_out)[0]
+        reads_for_otumap_fp = glob(
+            '%s/step1_otus/*_otus.txt' %
             self.wf_out)[0]
         tree_fp = '%s/rep_set.tre' % self.wf_out
         aln_fp = '%s/pynast_aligned_seqs/rep_set_aligned.fasta' % self.wf_out
@@ -517,8 +522,8 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             exists(new_refseqs_fp),
             "New refseqs file doesn't exist")
         self.assertTrue(
-            exists(prefilter_failures_fp),
-            "Prefilter failures file doesn't exist")
+            exists(reads_for_denovo_fp),
+            "Denovo reads file doesn't exist")
         self.assertTrue(exists(tree_fp), "Final tree doesn't exist")
         self.assertTrue(exists(aln_fp), "Final alignment doesn't exist")
         self.assertTrue(exists(otu_table_fp), "Final BIOM table doesn't exist")
@@ -532,27 +537,42 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         for row in otu_table.iter_data(axis='observation'):
             self.assertTrue(sum(row) >= 2,
                             "Singleton OTU detected in OTU table.")
-        # number of OTUs in final OTU table equals the number of seequences in
-        # the alignment...
-        self.assertEqual(len(otu_table.observation_ids), count_seqs(aln_fp)[0])
-        # ... and that number is 6
-        self.assertEqual(len(otu_table.observation_ids), 6)
 
-        # the correct sequences failed the prefilter
-        prefilter_failure_ids = [s.strip()
-                                 for s in open(prefilter_failures_fp, 'U')]
-        self.assertEqual(len(prefilter_failure_ids), 24)
-        self.assertTrue('t1_1' in prefilter_failure_ids)
-        self.assertTrue('p1_2' in prefilter_failure_ids)
-        self.assertTrue('not16S.1_130' in prefilter_failure_ids)
-        self.assertTrue('not16S.1_151' in prefilter_failure_ids)
+        # number of OTUs in final OTU table equals the number of sequences in
+        # the alignment...
+        self.assertEqual(len(otu_table.ids(axis='observation')),
+                         count_seqs(aln_fp)[0])
+
+        # the correct sequences failed the prefilter (E-value)
+        # reads_for_denovo_ids all passed E-value and are considered
+        # as true rRNA (having <97% id and/or <97% query coverage)
+        reads_for_denovo_ids = [s.strip()
+                                 for s in open(reads_for_denovo_fp, 'U')]
+        self.assertEqual(len(reads_for_denovo_ids), 59)
+
+        self.assertTrue('t1_1' not in reads_for_denovo_ids)
+        self.assertTrue('p1_2' not in reads_for_denovo_ids)
+        self.assertTrue('not16S.1_130' not in reads_for_denovo_ids)
+        self.assertTrue('not16S.1_151' not in reads_for_denovo_ids)
+
+        # reads_for_otumap_ids all passed E-value and are considered
+        # as true rRNA (having >=97% id and >=97% query coverage)
+        reads_for_otumap_ids = [seq_id for line in open(reads_for_otumap_fp, 'U')
+                                    for seq_id in line.strip().split('\t')]
+
+        self.assertEqual(len(reads_for_otumap_ids), 120)
+
+        self.assertTrue('t1_1' not in reads_for_otumap_ids)
+        self.assertTrue('p1_2' not in reads_for_otumap_ids)
+        self.assertTrue('not16S.1_130' not in reads_for_otumap_ids)
+        self.assertTrue('not16S.1_151' not in reads_for_otumap_ids)
 
         # confirm that the new reference sequences is the same length as the
         # input reference sequences plus the number of new non-singleton otus
         #
         self.assertEqual(count_seqs(new_refseqs_fp)[0],
                          count_seqs(self.test_data['refseqs'][0])[0] +
-                         len([o for o in otu_table.observation_ids
+                         len([o for o in otu_table.ids(axis='observation')
                               if o.startswith('wf.test.otu')]) +
                          count_seqs(pynast_failures_fp)[0])
 
@@ -573,13 +593,13 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         num_tree_tips = len(list(TreeNode.from_newick(open(tree_fp)).tips()))
         num_align_seqs = count_seqs(aln_fp)[0]
         self.assertEqual(num_tree_tips, num_align_seqs)
-        self.assertEqual(num_tree_tips, 6)
 
         # OTU table without singletons or pynast failures has same number of
         # otus as there are aligned sequences
         with biom_open(otu_table_fp) as biom_file:
             otu_table = Table.from_hdf5(biom_file)
-        self.assertEqual(len(otu_table.observation_ids), num_align_seqs)
+        self.assertEqual(len(otu_table.ids(axis='observation')),
+                         num_align_seqs)
 
         # Reference OTUs have correct taxonomy assignment (can't confirm the )
         obs_idx = otu_table.index('295053', axis='observation')

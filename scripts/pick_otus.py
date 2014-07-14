@@ -232,10 +232,6 @@ script_info['optional_options'] = [
                 help='The maximum number of positions per seed to store '
                      ' in the indexed database [default: %default]'),
 
-    make_option('--sortmerna_otu_id_prefix', type='string', default="QiimeOTU",
-                help='Prefix to closed-reference SortMeRNA clusters'
-                     '[default: %default]'),
-
     # end SortMeRNA specific parameters
     make_option('--min_aligned_percent',
                 help='Minimum percent of query sequence that can be aligned '
@@ -507,7 +503,6 @@ def main():
     sortmerna_tabular = opts.sortmerna_tabular
     sortmerna_best_N_alignments = opts.sortmerna_best_N_alignments
     sortmerna_max_pos = opts.sortmerna_max_pos
-    sortmerna_otu_id_prefix = opts.sortmerna_otu_id_prefix
 
     # usearch specific parameters
     percent_id_err = opts.percent_id_err
@@ -687,12 +682,7 @@ def main():
         elif sortmerna_db:
             if isfile(sortmerna_db + '.stats') is False:
                 option_parser.error('%s does not exist, make sure you have indexed '
-                                    'the database using indexdb_rna' % (sortmerna_db + '.stats'))
-
-        # set default cluster identifier for SortMeRNA
-        if sortmerna_otu_id_prefix is None:
-            sortmerna_otu_id_prefix = "QiimeOTU"
-        
+                                    'the database using indexdb_rna' % (sortmerna_db + '.stats'))        
 
     # End input validation
 
@@ -926,8 +916,7 @@ def main():
                   'best': sortmerna_best_N_alignments,
                   'max_pos': sortmerna_max_pos,
                   'prefilter_identical_sequences':
-                  prefilter_identical_sequences,
-                  'otu_id_prefix': sortmerna_otu_id_prefix}
+                  prefilter_identical_sequences}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,
                    result_path=result_path, log_path=log_path,
