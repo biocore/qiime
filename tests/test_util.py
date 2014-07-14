@@ -1607,6 +1607,19 @@ class MetadataMapTests(TestCase):
             "PC.636\tACGGTGAGTGTC\tFast\t20080116\t636"]
         self.overview_map = MetadataMap(
             *parse_mapping_file_to_dict(self.overview_map_str))
+        self.overview_map_upper_str = [
+            "#SampleID\tBarcodeSequence\tTREATMENT\tDOB\tDescription",
+            "PC.354\tAGCACGAGCCTA\tControl\t20061218\t354",
+            "PC.355\tAACTCGTCGATG\tControl\t20061218\t355",
+            "PC.356\tACAGACCACTCA\tControl\t20061126\t356",
+            "PC.481\tACCAGCGACTAG\tControl\t20070314\t481",
+            "PC.593\tAGCAGCACTTGT\tControl\t20071210\t593",
+            "PC.607\tAACTGTGCGTAC\tFast\t20071112\t607",
+            "PC.634\tACAGAGTCGGCT\tFast\t20080116\t634",
+            "PC.635\tACCGCAGAGTCA\tFast\t20080116\t635",
+            "PC.636\tACGGTGAGTGTC\tFast\t20080116\t636"]
+        self.overview_map_upper = MetadataMap(
+            *parse_mapping_file_to_dict(self.overview_map_upper_str))
 
         # Create the same overview tutorial map, but this time with some
         # comments.
@@ -1662,6 +1675,12 @@ class MetadataMapTests(TestCase):
         """Test parsing a mapping file into a MetadataMap instance."""
         obs = MetadataMap.parseMetadataMap(self.overview_map_str)
         self.assertEqual(obs, self.overview_map)
+
+    def test_parseMetadataMap_insensitive(self):
+        """Test parsing a mapping file into a MetadataMap (case insensitive)"""
+        obs = MetadataMap.parseMetadataMap(self.overview_map_str,
+                                           case_insensitive=True)
+        self.assertEqual(obs, self.overview_map_upper)
 
     def test_parseMetadataMap_empty(self):
         """Test parsing empty mapping file contents."""
@@ -2038,7 +2057,7 @@ class SyncBiomTests(TestCase):
         # test with list taxonomy
         bt = parse_biom_table(bt_list_taxonomy)
         obs = biom_taxonomy_formatter(bt, 'taxonomy')
-        exp = ['k__One;p__testCode',
+        exp = ['k__One; p__testCode',
                'k__Two',
                'k__Three',
                'k__Four',

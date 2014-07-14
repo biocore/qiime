@@ -129,10 +129,10 @@ class AlphaDiversityCalcTests(AlphaDiversitySharedSetUpTests):
         and return correct values"""
         c = AlphaDiversityCalc(metric=PD_whole_tree,
                                is_phylogenetic=True)
-        assert_almost_equal(c(data_path=self.otu_table1_fp, tree_path=self.tree1,
-                            taxon_names=self.otu_table1.observation_ids,
-                            sample_names=self.otu_table1.sample_ids),
-                            [13, 17, 0])
+        assert_almost_equal(
+            c(data_path=self.otu_table1_fp, tree_path=self.tree1,
+              taxon_names=self.otu_table1.ids(axis='observation'),
+              sample_names=self.otu_table1.ids()), [13, 17, 0])
 
     def test_call_phylogenetic_escaped_names(self):
         """AlphaDiversityCalc __call__ should call metric on phylo data
@@ -141,15 +141,15 @@ class AlphaDiversityCalcTests(AlphaDiversitySharedSetUpTests):
         c = AlphaDiversityCalc(metric=PD_whole_tree, is_phylogenetic=True)
         expected = [13., 17., 0.]
 
-        non_escaped_result = c(data_path=self.otu_table1_fp,
-                               tree_path=self.tree1,
-                               taxon_names=self.otu_table1.observation_ids,
-                               sample_names=self.otu_table1.sample_ids)
+        non_escaped_result = c(
+            data_path=self.otu_table1_fp, tree_path=self.tree1,
+            taxon_names=self.otu_table1.ids(axis='observation'),
+            sample_names=self.otu_table1.ids())
 
         escaped_result = c(data_path=self.otu_table2_fp,
                            tree_path=self.tree2,
-                           taxon_names=self.otu_table2.observation_ids,
-                           sample_names=self.otu_table2.sample_ids)
+                           taxon_names=self.otu_table2.ids(axis='observation'),
+                           sample_names=self.otu_table2.ids())
 
         assert_almost_equal(non_escaped_result, expected)
         assert_almost_equal(escaped_result, expected)

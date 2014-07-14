@@ -81,7 +81,7 @@ class UpstreamWorkflowTests(TestCase):
         otu_table_fp = join(self.test_out, 'otu_table.biom')
         otu_table = load_table(otu_table_fp)
         expected_sample_ids = ['f1', 'f2', 'f3', 'f4', 'p1', 'p2', 't1', 't2']
-        self.assertItemsEqual(otu_table.sample_ids, expected_sample_ids)
+        self.assertItemsEqual(otu_table.ids(), expected_sample_ids)
 
         # Number of OTUs matches manually confirmed result
         otu_map_lines = list(open(otu_map_fp))
@@ -93,9 +93,10 @@ class UpstreamWorkflowTests(TestCase):
         otu_table = load_table(otu_table_fp)
         expected_sample_ids = ['f1', 'f2', 'f3', 'f4', 'p1', 'p2', 't1', 't2']
         # sample IDs are as expected
-        self.assertItemsEqual(otu_table.sample_ids, expected_sample_ids)
+        self.assertItemsEqual(otu_table.ids(), expected_sample_ids)
         # otu ids are as expected
-        self.assertItemsEqual(otu_table.observation_ids, otu_map_otu_ids)
+        self.assertItemsEqual(otu_table.ids(axis='observation'),
+                              otu_map_otu_ids)
 
         # expected number of sequences in OTU table
         number_seqs_in_otu_table = sum([v.sum()
@@ -103,7 +104,7 @@ class UpstreamWorkflowTests(TestCase):
         self.assertEqual(number_seqs_in_otu_table, 117)
 
         # One tax assignment per otu
-        self.assertEqual(len(otu_table.observation_metadata), 3)
+        self.assertEqual(len(otu_table.metadata(axis='observation')), 3)
 
         # Check that the log file is created and has size > 0
         log_fp = glob(join(self.test_out, 'log*.txt'))[0]
@@ -129,7 +130,7 @@ class UpstreamWorkflowTests(TestCase):
         otu_table_fp = join(self.test_out, 'otu_table.biom')
         otu_table = load_table(otu_table_fp)
         expected_sample_ids = ['f1', 'f2', 'f3', 'f4', 'p1', 'p2', 't1', 't2']
-        self.assertItemsEqual(otu_table.sample_ids, expected_sample_ids)
+        self.assertItemsEqual(otu_table.ids(), expected_sample_ids)
 
         # Number of OTUs matches manually confirmed result
         otu_map_lines = list(open(otu_map_fp))
@@ -141,9 +142,10 @@ class UpstreamWorkflowTests(TestCase):
         otu_table = load_table(otu_table_fp)
         expected_sample_ids = ['f1', 'f2', 'f3', 'f4', 'p1', 'p2', 't1', 't2']
         # sample IDs are as expected
-        self.assertItemsEqual(otu_table.sample_ids, expected_sample_ids)
+        self.assertItemsEqual(otu_table.ids(), expected_sample_ids)
         # otu ids are as expected
-        self.assertItemsEqual(otu_table.observation_ids, otu_map_otu_ids)
+        self.assertItemsEqual(otu_table.ids(axis='observation'),
+                              otu_map_otu_ids)
 
         # expected number of sequences in OTU table
         number_seqs_in_otu_table = sum([v.sum()
@@ -151,7 +153,7 @@ class UpstreamWorkflowTests(TestCase):
         self.assertEqual(number_seqs_in_otu_table, 117)
 
         # One tax assignment per otu
-        self.assertEqual(len(otu_table.observation_metadata), 3)
+        self.assertEqual(len(otu_table.metadata(axis='observation')), 3)
 
         # Check that the log file is created and has size > 0
         log_fp = glob(join(self.test_out, 'log*.txt'))[0]
@@ -230,9 +232,10 @@ class UpstreamWorkflowTests(TestCase):
             't2',
             'not16S.1']
         # sample IDs are as expected
-        self.assertItemsEqual(otu_table.sample_ids, expected_sample_ids)
+        self.assertItemsEqual(otu_table.ids(), expected_sample_ids)
         # otu ids are as expected
-        self.assertItemsEqual(otu_table.observation_ids, otu_map_otu_ids)
+        self.assertItemsEqual(otu_table.ids(axis='observation'),
+                              otu_map_otu_ids)
         # number of sequences in the full otu table equals the number of
         # input sequences
         number_seqs_in_otu_table = sum([v.sum()
@@ -316,9 +319,10 @@ class UpstreamWorkflowTests(TestCase):
             't2',
             'not16S.1']
         # sample IDs are as expected
-        self.assertItemsEqual(otu_table.sample_ids, expected_sample_ids)
+        self.assertItemsEqual(otu_table.ids(), expected_sample_ids)
         # otu ids are as expected
-        self.assertItemsEqual(otu_table.observation_ids, otu_map_otu_ids)
+        self.assertItemsEqual(otu_table.ids(axis='observation'),
+                              otu_map_otu_ids)
         # number of sequences in the full otu table equals the number of
         # input sequences
         number_seqs_in_otu_table = sum([v.sum()
@@ -400,9 +404,10 @@ class UpstreamWorkflowTests(TestCase):
             't2',
             'not16S.1']
         # sample IDs are as expected
-        self.assertItemsEqual(otu_table.sample_ids, expected_sample_ids)
+        self.assertItemsEqual(otu_table.ids(), expected_sample_ids)
         # otu ids are as expected
-        self.assertItemsEqual(otu_table.observation_ids, otu_map_otu_ids)
+        self.assertItemsEqual(otu_table.ids(axis='observation'),
+                              otu_map_otu_ids)
         # number of sequences in the full otu table equals the number of
         # input sequences
         number_seqs_in_otu_table = sum([v.sum()
@@ -485,9 +490,10 @@ class UpstreamWorkflowTests(TestCase):
             't2',
             'not16S.1']
         # sample IDs are as expected
-        self.assertItemsEqual(otu_table.sample_ids, expected_sample_ids)
+        self.assertItemsEqual(otu_table.ids(), expected_sample_ids)
         # expected OTUs
-        self.assertItemsEqual(otu_table.observation_ids, otu_map_otu_ids)
+        self.assertItemsEqual(otu_table.ids(axis='observation'),
+                              otu_map_otu_ids)
         # number of sequences in the full otu table equals the number of
         # input sequences
         number_seqs_in_otu_table = sum([v.sum()
