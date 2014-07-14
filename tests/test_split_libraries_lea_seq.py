@@ -79,18 +79,12 @@ class WorkflowTests(TestCase):
         remove_files(files_to_be_removed)
 
     def test_select_unique_rand_bcs(self):
-        fasta_seqs_of_rand_bcs = self.fasta_seqs_of_rand_bcs
-        actual = select_unique_rand_bcs(fasta_seqs_of_rand_bcs, 0.86)
+        actual = select_unique_rand_bcs(self.fasta_seqs_of_rand_bcs, 0.86)
         expected = set(['ATTGCATTGCATTGCATTGC', 'ATTGCTTATTGCATTGCTTT'])
         self.assertEqual(actual, expected)
 
     def test_get_consensus(self):
-        fasta_seqs_for_consensus_unequal_length = \
-            self.fasta_seqs_for_consensus_unequal_length
-        fasta_seqs_for_consensus_tie_G_C = \
-            self.fasta_seqs_for_consensus_tie_G_C
-
-        actual = get_consensus(fasta_seqs_for_consensus_tie_G_C, 2)
+        actual = get_consensus(self.fasta_seqs_for_consensus_tie_G_C, 2)
         # at the last position, G and C have the same frequency
         # therefore the function is expected to return
         # consensus sequence with G, which is present in seq
@@ -105,36 +99,27 @@ class WorkflowTests(TestCase):
 
         # Sequences having unequal length:
         with self.assertRaises(SeqLengthMismatchError):
-            get_consensus(fasta_seqs_for_consensus_unequal_length, 2)
+            get_consensus(self.fasta_seqs_for_consensus_unequal_length, 2)
 
         seqs_with_no_consensus = self.seqs_with_no_consensus
         with self.assertRaises(LowConsensusScoreError):
             get_consensus(seqs_with_no_consensus, 6.6)
 
     def test_get_cluster_ratio(self):
-        min_difference_in_clusters = self.min_difference_in_clusters
-        fasta_seqs_for_cluster_ratio = \
-            self.fasta_seqs_for_cluster_ratio
         actual = get_cluster_ratio(
-            fasta_seqs_for_cluster_ratio,
-            min_difference_in_clusters)
+            self.fasta_seqs_for_cluster_ratio,
+            self.min_difference_in_clusters)
         expected = 0.125
         self.assertEqual(actual, expected)
 
     def test_extract_primers(self):
-        fasta_seq_for_primer = self.fasta_seq_for_primer
-        possible_primers = self.possible_primers
-        false_primers = self.false_primers
-        actual = extract_primer(fasta_seq_for_primer, possible_primers)
+        actual = extract_primer(self.fasta_seq_for_primer, self.possible_primers)
         expected = ('A', 'ATGC', 'CCCC')
+        self.assertEqual(actual, expected)
         with self.assertRaises(PrimerMismatchError):
-            extract_primer(fasta_seq_for_primer, false_primers)
+            extract_primer(self.fasta_seq_for_primer, self.false_primers)
 
     def test_get_LEA_seq_consensus_seqs(self):
-        fwd_read_data = self.fwd_read_data
-        rev_read_data = self.rev_read_data
-        mapping_fp = self.mapping_fp
-        temp_dir = self.temp_dir
         barcode_type = int(7)
         barcode_len = 7
         barcode_correction_fn = None
@@ -149,9 +134,9 @@ class WorkflowTests(TestCase):
         barcode_column = 'BarcodeSequence'
         reverse_primer_column = 'ReversePrimer'
 
-        function_call, _ = get_LEA_seq_consensus_seqs(fwd_read_data,
-                                                      rev_read_data,
-                                                      mapping_fp, temp_dir,
+        function_call, _ = get_LEA_seq_consensus_seqs(self.fwd_read_data,
+                                                      self.rev_read_data,
+                                                      self.mapping_fp, self.temp_dir,
                                                       barcode_type,
                                                       barcode_len,
                                                       barcode_correction_fn,
@@ -184,19 +169,18 @@ Total number seqs written: 6"""
         self.assertEqual(actual, expected)
 
     def test_process_mapping_file(self):
-        mapping_fp = self.mapping_fp
         barcode_type = int(7)
         barcode_len = 7
         barcode_column = 'BarcodeSequence'
         reverse_primer_column = 'ReversePrimer'
 
-        actual = process_mapping_file(mapping_fp,
+        actual = process_mapping_file(self.mapping_fp,
                                       barcode_len,
                                       barcode_type,
                                       barcode_column,
                                       reverse_primer_column)
-        expected = {'CCGGCAG': 'Sample1'}, {
-            'CCGGCAG': {'AGAGTTTGATCCTGGCTCAG': 20}}, {'CCGGCAG': ['GGGCCGTGTCTCAGT']}
+        expected = ({'CCGGCAG': 'Sample1'}, {
+            'CCGGCAG': {'AGAGTTTGATCCTGGCTCAG': 20}}, {'CCGGCAG': ['GGGCCGTGTCTCAGT']})
         self.assertEqual(actual, expected)
 
     def test_check_barcodes(self):
@@ -210,70 +194,44 @@ Total number seqs written: 6"""
             check_barcodes(bc_to_sid, barcode_len, barcode_type)
 
     def test_read_fwd_rev_read(self):
-
-        fwd_read_data = self.fwd_read_data
-        rev_read_data = self.rev_read_data
-        barcode_len = self.barcode_len
-        barcode_correction_fn = self.barcode_correction_fn
-        max_barcode_errors = self.max_barcode_errors
-        fwd_length = self.fwd_length
-        rev_length = self.fwd_length
-        bc_to_sid = self.bc_to_sid
-        bc_to_fwd_primers = self.bc_to_fwd_primers
-        bc_to_rev_primers = self.bc_to_rev_primers
         expected_seqs_kept = 1
-
-        function_call = read_fwd_rev_read(fwd_read_data,
-                                          rev_read_data,
-                                          bc_to_sid,
-                                          barcode_len,
-                                          barcode_correction_fn,
-                                          bc_to_fwd_primers,
-                                          bc_to_rev_primers,
-                                          max_barcode_errors,
-                                          fwd_length,
-                                          rev_length)
+        function_call = read_fwd_rev_read(self.fwd_read_data,
+                                          self.rev_read_data,
+                                          self.bc_to_sid,
+                                          self.barcode_len,
+                                          self.barcode_correction_fn,
+                                          self.bc_to_fwd_primers,
+                                          self.bc_to_rev_primers,
+                                          self.max_barcode_errors,
+                                          self.fwd_length,
+                                          self.rev_length)
         actual_seqs_kept = function_call[-1]
         self.assertEqual(actual_seqs_kept, expected_seqs_kept)
 
     def test_get_consensus_seqs_lookup(self):
 
-        fwd_read_data = self.fwd_read_data
-        rev_read_data = self.rev_read_data
-        barcode_len = self.barcode_len
-        barcode_correction_fn = self.barcode_correction_fn
-        max_barcode_errors = self.max_barcode_errors
-        fwd_length = self.fwd_length
-        rev_length = self.rev_length
-
-        function_call_fwd_rev_read = read_fwd_rev_read(fwd_read_data,
-                                                       rev_read_data,
-                                                       bc_to_sid,
-                                                       barcode_len,
-                                                       barcode_correction_fn,
-                                                       bc_to_fwd_primers,
-                                                       bc_to_rev_primers,
-                                                       max_barcode_errors,
-                                                       fwd_length,
-                                                       rev_length)
+        function_call_fwd_rev_read = read_fwd_rev_read(self.fwd_read_data,
+                                                       self.rev_read_data,
+                                                       self.bc_to_sid,
+                                                       self.barcode_len,
+                                                       self.barcode_correction_fn,
+                                                       self.bc_to_fwd_primers,
+                                                       self.bc_to_rev_primers,
+                                                       self.max_barcode_errors,
+                                                       self.fwd_length,
+                                                       self.rev_length)
 
         random_bc_lookup = function_call_fwd_rev_read[0]
         random_bc_reads = function_call_fwd_rev_read[1]
         random_bcs = function_call_fwd_rev_read[2]
-        min_difference_in_bcs = self.min_difference_in_bcs
-        min_difference_in_clusters = self.min_difference_in_clusters
-        min_reads_per_random_bc = self.min_reads_per_random_bc
-        max_cluster_ratio = self.max_cluster_ratio
-        output_dir = self.temp_dir
-
         function_call_get_consensus = get_consensus_seqs_lookup(random_bc_lookup,
                                                                 random_bc_reads,
                                                                 random_bcs,
-                                                                min_difference_in_bcs,
-                                                                min_reads_per_random_bc,
-                                                                output_dir,
-                                                                min_difference_in_clusters,
-                                                                max_cluster_ratio)
+                                                                self.min_difference_in_bcs,
+                                                                self.min_reads_per_random_bc,
+                                                                self.temp_dir,
+                                                                self.min_difference_in_clusters,
+                                                                self.max_cluster_ratio)
         actual = function_call_get_consensus['Sample1']['AGCTACGAGCTATTGC']
         expected = 'AAAAAAAAAAAAAAAAAAA^AAAAAAAAAAAAAAAAAA'
         self.assertEqual(actual, expected)
