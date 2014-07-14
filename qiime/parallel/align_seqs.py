@@ -9,7 +9,8 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
-from os.path import basename, splitext, abspath, join
+from os.path import basename, splitext, abspath, join, exists
+from os import makedirs
 from tempfile import mkdtemp
 
 import networkx as nx
@@ -83,6 +84,12 @@ class ParallelAlignSeqsPyNast(ParallelWrapper):
         template_fp = abspath(params['template_fp'])
         blast_db = params['blast_db']
         min_length = params['min_length']
+
+        output_dir = abspath(output_dir)
+
+        # Create the output directory
+        if not exists(output_dir):
+            makedirs(output_dir)
 
         # If the number of jobs to start is not provided, we default to the
         # number of workers

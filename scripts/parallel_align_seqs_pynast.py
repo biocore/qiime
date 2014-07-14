@@ -23,17 +23,20 @@ qiime_config = load_qiime_config()
 options_lookup = get_options_lookup()
 
 script_info = {}
-script_info[
-    'brief_description'] = """Parallel sequence alignment using PyNAST"""
-script_info[
-    'script_description'] = """A wrapper for the align_seqs.py PyNAST option, intended to make use of multicore/multiprocessor environments to perform analyses in parallel."""
+script_info['brief_description'] = "Parallel sequence alignment using PyNAST"
+script_info['script_description'] = (
+    "A wrapper for the align_seqs.py PyNAST option, intended to make use of "
+    "multicore/multiprocessor environments to perform analyses in parallel.")
 script_info['script_usage'] = []
 script_info['script_usage'].append(
-    ("""Example""",
-     """Align the input file (-i) against using PyNAST and write the output (-o) to $PWD/pynast_aligned_seqs/. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).""",
-     """%prog -i $PWD/inseqs.fasta -o $PWD/pynast_aligned_seqs/"""))
-script_info[
-    'output_description'] = """This results in a multiple sequence alignment (FASTA-formatted)."""
+    ("Example",
+     "Align the input file (-i) against using PyNAST and write the output (-o)"
+     " to $PWD/pynast_aligned_seqs/. ALWAYS SPECIFY ABSOLUTE FILE PATHS "
+     "(absolute path represented here as $PWD, but will generally look "
+     "something like /home/ubuntu/my_analysis/).",
+     "%prog -i $PWD/inseqs.fasta -o $PWD/pynast_aligned_seqs/"))
+script_info['output_description'] = (
+    "This results in a multiple sequence alignment (FASTA-formatted).")
 
 script_info['required_options'] = [
     options_lookup['fasta_as_primary_input'],
@@ -46,23 +49,21 @@ blast_db_default_help =\
     'created on-the-fly from template_alignment'
 
 script_info['optional_options'] = [
-    make_option('-a', '--pairwise_alignment_method',
-                type='choice', help='Method to use for pairwise alignments' +
-                ' [default: %default]',
+    make_option('-a', '--pairwise_alignment_method', type='choice',
+                help='Method to use for pairwise alignments [default: '
+                      '%default]',
                 default='uclust', choices=pairwise_alignment_method_choices),
-    make_option('-d', '--blast_db', type='blast_db',
-                dest='blast_db', help='Database to blast against' +
-                ' [default: %s]' % blast_db_default_help,
+    make_option('-d', '--blast_db', type='blast_db', dest='blast_db',
+                help='Database to blast against [default: %s]'
+                     % blast_db_default_help,
                 default=qiime_config['pynast_template_alignment_blastdb']),
-    make_option('-e', '--min_length',
-                type='int', help='Minimum sequence ' +
-                'length to include in alignment [default: 75% of the' +
-                ' median input sequence length]',
-                default=-1),
-    make_option('-p', '--min_percent_id', action='store',
-                type='float', help='Minimum percent ' +
-                'sequence identity to closest blast hit to include sequence in' +
-                ' alignment [default: %default]', default=75.0),
+    make_option('-e', '--min_length', type='int', default=-1,
+                help='Minimum sequence length to include in alignment '
+                     '[default: 75% of the median input sequence length]'),
+    make_option('-p', '--min_percent_id', action='store', type='float',
+                help='Minimum percent sequence identity to closest blast hit '
+                     'to include sequence in alignment [default: %default]',
+                default=75.0),
     options_lookup['jobs_to_start'],
     options_lookup['retain_temp_files'],
     options_lookup['suppress_submit_jobs'],
@@ -78,15 +79,15 @@ script_info['version'] = __version__
 # pynast_template_alignment_fp is required only if it is not
 # provided in qiime_config
 if qiime_config['pynast_template_alignment_fp']:
-    script_info['optional_options'].append(make_option('-t', '--template_fp',
-                                                       type='string', dest='template_fp', help='Filepath for ' +
-                                                       'template against [default: %default]',
-                                                       default=qiime_config['pynast_template_alignment_fp']))
+    script_info['optional_options'].append(
+        make_option('-t', '--template_fp', type='string', dest='template_fp',
+                    help='Filepath for template against [default: %default]',
+                    default=qiime_config['pynast_template_alignment_fp']))
 else:
-    script_info['required_options'].append(make_option('-t', '--template_fp',
-                                                       type='string', dest='template_fp',
-                                                       help='Filepath for template against',
-                                                       default=qiime_config['pynast_template_alignment_fp']))
+    script_info['required_options'].append(
+        make_option('-t', '--template_fp', type='string', dest='template_fp',
+                    help='Filepath for template against',
+                    default=qiime_config['pynast_template_alignment_fp']))
 
 
 def main():
@@ -96,17 +97,11 @@ def main():
     params = eval(str(opts))
 
     parallel_runner = ParallelAlignSeqsPyNast(
-        cluster_jobs_fp=opts.cluster_jobs_fp,
-        jobs_to_start=opts.jobs_to_start,
-        retain_temp_files=opts.retain_temp_files,
-        suppress_polling=opts.suppress_polling,
-        seconds_to_sleep=opts.seconds_to_sleep)
+        retain_temp_files=opts.retain_temp_files)
     parallel_runner(opts.input_fasta_fp,
                     opts.output_dir,
                     params,
-                    job_prefix=opts.job_prefix,
-                    poll_directly=opts.poll_directly,
-                    suppress_submit_jobs=False)
+                    jobs_to_start=opts.jobs_to_start,)
 
 
 if __name__ == "__main__":
