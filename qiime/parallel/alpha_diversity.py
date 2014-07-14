@@ -43,4 +43,5 @@ class ParallelAlphaDiversity(ParallelWrapper):
             output_fp = join(output_dir, output_fn)
             cmd = ("alpha_diversity.py -i %s -o %s %s -m %s"
                    % (input_fp, output_fp, tree_str, metrics))
-            self._job_graph.add_node("%d" % i, job=(cmd, ))
+            self._job_graph.add_node("%d" % i, job=(cmd, ),
+                                     requires_deps=False)
