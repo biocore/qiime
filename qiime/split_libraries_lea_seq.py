@@ -69,7 +69,6 @@ def extract_primer(seq, possible_primers, min_idx=None, max_idx=None):
               (max_idx is not None and primer_idx > max_idx):
                 primer_idx = None
                 primer = None
-                continue
             else:
                 break
 
@@ -230,9 +229,7 @@ def get_consensus(fasta_seqs, min_consensus):
         seqs.append(seq)
     fasta_tempfile.close()
 
-    files_to_be_removed = list()
-    files_to_be_removed.append(fasta_tempfile_name)
-    remove_files(files_to_be_removed)
+    remove_files([fasta_tempfile_name])
 
     length = len(seqs[0])
     number_of_seqs = len(seqs)
