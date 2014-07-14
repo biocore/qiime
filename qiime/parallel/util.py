@@ -116,17 +116,26 @@ class ParallelWrapper(object):
 
         log_f = open(self._log_file, 'w')
 
-        results = {}
         # We need to submit the jobs to ipython in topological order, so we can
         # actually define the dependencies between jobs. Adapted from
         # http://ipython.org/ipython-doc/dev/parallel/dag_dependencies.html
+        results = {}
         for node in nx.topological_sort(self._job_graph):
             # Get the list of predecessor jobs
             deps = [results[n] for n in self._job_graph.predecessors(node)]
-            # We can now submit the job taking into account the dependencies
+            # Get the tuple with the job to run
             job = self._job_graph.node[node]['job']
+            # We can now submit the job taking into account the dependencies
             log_f.write("Submitting job %s: %s... " % (node, job))
-            results[node] = context.submit_async_deps(deps, *job)
+            if self._job_graph.node[node]['requires_deps']:
+                # The job requires the results of the previous jobs, get them
+                # and add them to a dict keyed by dependency node name
+                deps_dict = {n: results[n].get()
+                             for n in self._job_graph.predecessors(node)}
+                results[node] = context.submit_async_deps(
+                    deps, *job, dep_async_results=deps_dict)
+            else:
+                results[node] = context.submit_async_deps(deps, *job)
             log_f.write("Done\n")
 
         if self._block:
@@ -145,8 +154,8 @@ def concatenate_files(output_fp, temp_out_fps):
 
 def input_fasta_splitter(input_fp, output_dir, num):
     # Importing here so it becomes available on the workers
-    from qiime.util import count_seqs
     from os.path import basename, splitext
+    from qiime.util import count_seqs
     from qiime.split import split_fasta
     # First compute the number of sequences per file
     # Count the number of sequences in the fasta file

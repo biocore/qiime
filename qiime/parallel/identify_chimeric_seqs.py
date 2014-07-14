@@ -3,7 +3,7 @@ from __future__ import division
 
 __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2012, The QIIME project"
-__credits__ = ["Jai Ram Rideout"]
+__credits__ = ["Jai Ram Rideout", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Jai Ram Rideout"
@@ -21,44 +21,72 @@ from qiime.identify_chimeric_seqs import make_cidx_file
 from qiime.util import write_degapped_fasta_to_file
 from qiime.parallel.util import (ParallelWrapper, input_fasta_splitter,
                                  concatenate_files)
-from qiime.parallel.context import context
+from qiime.parallel.context import context, system_call
 from qiime.workflow.util import generate_log_fp
+
+
+def command_wrapper(cmd, method, idx, dep_async_results=None):
+    """Wraps the command to be executed so it can use the results produced by
+    the jobs in which the command depends on
+
+    Parameters
+    ----------
+    cmd : str
+        Command to execute
+    method : str
+        Identify chimeric seqs method used
+    idx : int
+        The fasta fp index that this job has to exeucte
+    dep_async_results : dict of {node_name: tuple}
+        The AsyncResults objects in which cmd depends on
+    """
+    if "FASTA_SPLITTER" not in dep_async_results:
+        raise ValueError("Wrong job graph workflow. Node 'FASTA_SPLITTER' "
+                         "not listed as a dependency of current node.")
+    fasta_fps = dep_async_results["FASTA_SPLITTER"]
+
+    # First check that the dep_async_results include the keys that we need
+    # in order to generate the final command
+    if method == 'blast_fragments':
+        if "BUILD_BLAST_DB" not in dep_async_results:
+            raise ValueError("Wrong job graph workflow. Node 'BUILD_BLAST_DB' "
+                             "not listed as a dependency of current node.")
+        blast_db, db_files_to_remove = dep_async_results["BUILD_BLAST_DB"]
+        cmd = cmd % (fasta_fps[idx], blast_db)
+    else:
+        cmd = cmd % fasta_fps[idx]
+    return system_call(cmd)
 
 
 class ParallelChimericSequenceIdentifier(ParallelWrapper):
 
-    def _blast_fragments_cmd_gen(self, fasta_fps, params, working_dir):
-        for i, fasta_fp in enumerate(fasta_fps):
+    def _blast_fragments_cmd_gen(self, num_files, params, working_dir):
+        for i in range(num_files):
             # Create the output path
-            temp_out_fp = join(
-                working_dir,
-                "%s_%d.txt" % (splitext(basename(fasta_fp))[0], i))
+            temp_out_fp = join(working_dir, "chimeric_seqs_%d.txt" % i)
             cmd = (
-                "identify_chimeric_seqs.py -i %s -t %s -m blast_fragments "
-                "-o %s -n %s -d %s -e %s -b %s"
-                % (fasta_fp, params['id_to_taxonomy_fp'], temp_out_fp,
-                   params['num_fragments'], params['taxonomy_depth'],
-                   params['max_e_value'], params['blast_db']))
+                "identify_chimeric_seqs.py -i %s -t {0} -m blast_fragments "
+                "-o {1} -n {2} -d {3} -e {4} -b %s".format(
+                    params['id_to_taxonomy_fp'], temp_out_fp,
+                    params['num_fragments'], params['taxonomy_depth'],
+                    params['max_e_value']))
             node_name = "ICS_%d" % i
-            yield temp_out_fp, node_name, cmd
+            yield temp_out_fp, node_name, cmd, i
 
-    def _chimera_slayer_cmd_gen(self, fasta_fps, params, working_dir):
+    def _chimera_slayer_cmd_gen(self, num_files, params, working_dir):
         min_div_ratio_str = ("--min_div_ratio %s" % params['min_div_ratio']
                              if params['min_div_ratio'] else "")
         aln_ref_seqs_fp = params['aligned_reference_seqs_fp']
         ref_seqs_fp = params['reference_seqs_fp']
-        for i, fasta_fp in enumerate(fasta_fps):
+        for i in range(num_files):
             # Create the output path
-            temp_out_fp = join(
-                working_dir,
-                "%s_%d.txt" % (splitext(basename(fasta_fp))[0], i))
+            temp_out_fp = join(working_dir, "chimeric_seqs_%d.txt" % i)
             cmd = (
-                "identify_chimeric_seqs.py -i %s -a %s -m ChimeraSlayer "
-                "-o %s -r %s %s"
-                % (fasta_fp, aln_ref_seqs_fp, temp_out_fp,
-                   ref_seqs_fp, min_div_ratio_str))
+                "identify_chimeric_seqs.py -i %s -a {0} -m ChimeraSlayer "
+                "-o {1} -r {2} {3}".format(aln_ref_seqs_fp, temp_out_fp,
+                                           ref_seqs_fp, min_div_ratio_str))
             node_name = "ICS_%d" % i
-            yield temp_out_fp, node_name, cmd
+            yield temp_out_fp, node_name, cmd, i
 
     def _construct_job_graph(self, input_fp, output_dir, params,
                              jobs_to_start=None):
@@ -86,8 +114,10 @@ class ParallelChimericSequenceIdentifier(ParallelWrapper):
                              % method)
 
         # Get a folder to store the temporary files
-        working_dir = mkdtemp(prefix='CSI_', dir=output_dir)
+        working_dir = mkdtemp(prefix='ICS_', dir=output_dir)
         self._dirpaths_to_remove.append(working_dir)
+
+        dep_job_names = []
 
         if method == 'ChimeraSlayer':
             # We first need to copy the reference files to the working
@@ -120,25 +150,28 @@ class ParallelChimericSequenceIdentifier(ParallelWrapper):
             # to race conditions if several parallel jobs try to create it at
             # the same time
             self._job_graph.add_node("MAKE_CIDX", job=(make_cidx_file,
-                                                       aln_ref_seqs_fp))
+                                                       aln_ref_seqs_fp),
+                                     requires_deps=False)
             self._filepaths_to_remove.append("%s.cidx" % aln_ref_seqs_fp)
             params['aligned_reference_seqs_fp'] = aln_ref_seqs_fp
+            dep_job_names.append("MAKE_CIDX")
 
         # Re-assign the parameters, so we can pass it to the generators
         params['reference_seqs_fp'] = ref_seqs_fp
 
         # Build the blast database
-        handler = context.submit_async(build_blast_db_from_fasta_path,
-                                       ref_seqs_fp, output_dir=working_dir)
-        blast_db, db_files_to_remove = handler.get()
-        self._filepaths_to_remove.extend(db_files_to_remove)
-        params['blast_db'] = blast_db
+        self._job_graph.add_node("BUILD_BLAST_DB",
+                                 job=(build_blast_db_from_fasta_path,
+                                      ref_seqs_fp, False, working_dir, False),
+                                 requires_deps=False)
+        dep_job_names.append("BUILD_BLAST_DB")
 
         # Split the input_fp in multiple files
-        handler = context.submit_async(input_fasta_splitter, input_fp,
-                                       working_dir, jobs_to_start)
-        fasta_fps = handler.get()
-        self._filepaths_to_remove.extend(fasta_fps)
+        self._job_graph.add_node("FASTA_SPLITTER",
+                                 job=(input_fasta_splitter, input_fp,
+                                      working_dir, jobs_to_start),
+                                 requires_deps=False)
+        dep_job_names.append("FASTA_SPLITTER")
 
         # Create the commands
         temp_out_fps = []
@@ -147,25 +180,25 @@ class ParallelChimericSequenceIdentifier(ParallelWrapper):
                          if method == 'blast_fragments'
                          else self._chimera_slayer_cmd_gen)
 
-        for temp_out_fp, node_name, cmd in cmd_generator(fasta_fps, params,
-                                                         working_dir):
+        for temp_out_fp, node_name, cmd, idx in cmd_generator(jobs_to_start,
+                                                              params,
+                                                              working_dir):
             temp_out_fps.append(temp_out_fp)
             ics_nodes.append(node_name)
-            self._job_graph.add_node(node_name, job=(cmd,))
-
-        if method == 'ChimeraSlayer':
-            # In the ChimeraSlayer method, the parallel jobs should be executed
-            # after the "MAKE_CIDX" node. Add the edges to represent the
-            # dependencies
-            for node in ics_nodes:
-                self._job_graph.add_edge("MAKE_CIDX", node)
+            self._job_graph.add_node(node_name,
+                                     job=(command_wrapper, cmd, method, idx),
+                                     requires_deps=True)
+            # Adding the dependency edges to the graph
+            for dep_node_name in dep_job_names:
+                self._job_graph.add_edge(dep_node_name, node_name)
 
         # Adding temp_out_fps to the clean_up variable
         self._filepaths_to_remove.extend(temp_out_fps)
         # Merge the results by concatenating the output files
         output_fp = join(output_dir, "chimeric_seqs.txt")
         self._job_graph.add_node("CONCAT", job=(concatenate_files,
-                                                output_fp, temp_out_fps))
+                                                output_fp, temp_out_fps),
+                                 requires_deps=False)
         # Make sure that the "CONCAT" node is the latest executed node
         for node in ics_nodes:
             self._job_graph.add_edge(node, "CONCAT")

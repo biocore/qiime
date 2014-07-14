@@ -3,7 +3,7 @@ from __future__ import division
 
 __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2012, The QIIME project"
-__credits__ = ["Jai Ram Rideout"]
+__credits__ = ["Jai Ram Rideout", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Jai Ram Rideout"
@@ -21,7 +21,8 @@ from skbio.util.misc import remove_files
 from qiime.util import get_qiime_temp_dir, load_qiime_config
 from qiime.test import initiate_timeout, disable_timeout
 from qiime.parse import fields_to_dict
-from qiime.parallel.identify_chimeric_seqs import ParallelChimericSequenceIdentifier
+from qiime.parallel.identify_chimeric_seqs import \
+    ParallelChimericSequenceIdentifier
 
 
 class ParallelChimericSequenceIdentifierTests(TestCase):
