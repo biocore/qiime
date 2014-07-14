@@ -66,12 +66,7 @@ script_info['optional_options'] = [
                 default=75.0),
     options_lookup['jobs_to_start'],
     options_lookup['retain_temp_files'],
-    options_lookup['suppress_submit_jobs'],
-    options_lookup['poll_directly'],
-    options_lookup['cluster_jobs_fp'],
-    options_lookup['suppress_polling'],
-    options_lookup['job_prefix'],
-    options_lookup['seconds_to_sleep']
+    options_lookup['suppress_blocking']
 ]
 
 script_info['version'] = __version__
@@ -97,11 +92,12 @@ def main():
     params = eval(str(opts))
 
     parallel_runner = ParallelAlignSeqsPyNast(
-        retain_temp_files=opts.retain_temp_files)
+        retain_temp_files=opts.retain_temp_files,
+        block=not opts.suppress_blocking)
     parallel_runner(opts.input_fasta_fp,
                     opts.output_dir,
                     params,
-                    jobs_to_start=opts.jobs_to_start,)
+                    jobs_to_start=opts.jobs_to_start)
 
 
 if __name__ == "__main__":
