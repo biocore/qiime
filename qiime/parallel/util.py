@@ -47,7 +47,7 @@ class ParallelWrapper(object):
         raise NotImplementedError(
             "This method should be overwritten by the subclass")
 
-    def _validate_execution_order(self, results):
+    def _validate_execution_order(self, results, log_f):
         """Makes sure that the execution order represented in _job_graph has
         been respected
 
@@ -58,13 +58,22 @@ class ParallelWrapper(object):
         """
         # Adapted from
         # http://ipython.org/ipython-doc/dev/parallel/dag_dependencies.html
+        log_f.write("Validating execution order... ")
         for node in self._job_graph:
             started = results[node].metadata.started
+            if started is None:
+                log_f.write("Job %s: metadata not available" % node)
+                continue
             for parent in self._job_graph.predecessors(node):
                 finished = results[parent].metadata.completed
-                assert started > finished,\
-                    ("Job order not respected: %s should have happened "
-                     "after %s" % (node, parent))
+                if finished is None:
+                    log_f.write("Job %s: metadata not available" % parent)
+                    continue
+                if started < finished:
+                    log_f.write(
+                        "Job order not respected: %s should have happened "
+                        "after %s\n" % (node, parent))
+        log_f.write("Done\n")
 
     def _validate_job_status(self, results, log_f):
         """Validates that all jobs executed finished correctly
@@ -105,10 +114,9 @@ class ParallelWrapper(object):
         # Block until all jobs are done
         log_f.write("\nWaiting for all jobs to finish... ")
         context.wait(results.values())
-        log_f.write("Done\nValidating execution order... ")
-        self._validate_execution_order(results)
         log_f.write("Done\n")
         self._validate_job_status(results, log_f)
+        self._validate_execution_order(results, log_f)
         log_f.close()
 
     def __call__(self, *args, **kwargs):
@@ -150,10 +158,10 @@ class ParallelWrapper(object):
 
 def concatenate_files(output_fp, temp_out_fps):
     with open(output_fp, 'w') as out_f:
-            for tmp_fp in temp_out_fps:
-                with open(tmp_fp, 'U') as in_f:
-                    for line in in_f:
-                        out_f.write(line)
+        for tmp_fp in temp_out_fps:
+            with open(tmp_fp, 'U') as in_f:
+                for line in in_f:
+                    out_f.write(line)
 
 
 def input_fasta_splitter(input_fp, output_dir, num):
