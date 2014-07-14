@@ -18,7 +18,7 @@ from qiime.parse import parse_distmat
 from scipy.cluster.hierarchy import linkage
 from skbio.core.tree import TreeNode
 from skbio.core.distance import DistanceMatrix
-from cogent.phylo.nj import nj
+from skbio.core.tree import nj
 import os.path
 
 
@@ -58,22 +58,13 @@ def single_file_upgma(input_file, output_file):
 
 
 def single_file_nj(input_file, output_file):
-    # read in dist matrix
-    f = open(input_file, 'U')
-    headers, data = parse_distmat(f)
-    f.close()
+    dm = DistanceMatrix.from_file(input_file)
 
-    # do nj
-    distdict = {}
-    for i in range(len(headers)):
-        for j in range(len(headers)):
-            distdict[(headers[i], headers[j])] = data[i, j]  # need j,i too?
-
-    tree = nj(distdict)
+    tree = nj(dm)
 
     # write output
     f = open(output_file, 'w')
-    f.write(tree.getNewick(with_distances=True))
+    f.write(tree.to_newick(with_distances=True))
     f.close()
 
 
