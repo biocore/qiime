@@ -247,19 +247,16 @@ def get_consensus(fasta_seqs, min_consensus):
     for x in range(length):
         freq_this_pos_this_base[x] = dict()
         count_of_seq_with_max_count[x] = dict()
-    for x in range(length):
+
         for y in DNASequence.iupac_characters():
             freq_this_pos_this_base[x][y] = 0
             count_of_seq_with_max_count[x][y] = 0
 
-    for base_index in range(length):
         for this_seq_count, seq in enumerate(seqs):
-            freq_this_pos_this_base[base_index][
-                seq[base_index]] += counts[this_seq_count]
-            if counts[this_seq_count] > count_of_seq_with_max_count[
-                    base_index][seq[base_index]]:
-                count_of_seq_with_max_count[base_index][
-                    seq[base_index]] = counts[this_seq_count]
+            freq_this_pos_this_base[x][
+                seq[x]] += counts[this_seq_count]
+            if counts[this_seq_count] > count_of_seq_with_max_count[x][seq[base_index]]:
+                count_of_seq_with_max_count[base_index][seq[x]] = counts[this_seq_count]
 
     consensus = list()
     for index in range(length):
@@ -286,7 +283,7 @@ def get_consensus(fasta_seqs, min_consensus):
     return consensus_seq
 
 
-def select_unique_rand_bcs(rand_bcs, min_difference_in_bcs):
+def select_unique_rand_bcs(rand_bcs, unique_threshold):
     """
     Attempts to select true barcodes from set of barcodes
     i.e. removes barcodes that might be artifacts
@@ -295,7 +292,6 @@ def select_unique_rand_bcs(rand_bcs, min_difference_in_bcs):
     threshold.
     returns: a set containing random unique random barcodes.
     """
-    unique_threshold = min_difference_in_bcs
     temp_dir = get_qiime_temp_dir()
     fasta_fd, fasta_tempfile_name = mkstemp(
         dir=temp_dir, prefix='tmp', suffix='.fas')
@@ -315,10 +311,7 @@ def select_unique_rand_bcs(rand_bcs, min_difference_in_bcs):
         output_dir=temp_dir)
 
     unique_rand_bcs = set(unique_rand_bcs)
-
-    files_to_be_removed = list()
-    files_to_be_removed.append(fasta_tempfile_name)
-    remove_files(files_to_be_removed)
+    remove_files([fasta_tempfile_name])
     return unique_rand_bcs
 
 
