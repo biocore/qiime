@@ -179,8 +179,6 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
                         "Failure OTU (wf.test.otu.ReferenceOTU0) is not in "
                         "the final OTU map.")
 
-        print "size of otu_map = ",len(otu_map)
-
         # confirm that number of tips in the tree is the same as the number of
         # sequences in the alignment
         with open(tree_fp) as f:
@@ -547,7 +545,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         # reads_for_denovo_ids all passed E-value and are considered
         # as true rRNA (having <97% id and/or <97% query coverage)
         reads_for_denovo_ids = [s.strip()
-                                 for s in open(reads_for_denovo_fp, 'U')]
+                                for s in open(reads_for_denovo_fp, 'U')]
         self.assertEqual(len(reads_for_denovo_ids), 59)
 
         self.assertTrue('t1_1' not in reads_for_denovo_ids)
@@ -557,8 +555,9 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # reads_for_otumap_ids all passed E-value and are considered
         # as true rRNA (having >=97% id and >=97% query coverage)
-        reads_for_otumap_ids = [seq_id for line in open(reads_for_otumap_fp, 'U')
-                                    for seq_id in line.strip().split('\t')]
+        reads_for_otumap_ids = [seq_id for line in
+                                open(reads_for_otumap_fp, 'U')
+                                for seq_id in line.strip().split('\t')]
 
         self.assertEqual(len(reads_for_otumap_ids), 120)
 
