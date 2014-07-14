@@ -45,7 +45,6 @@ allowed_seconds_per_test = 120
 class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
     """ """
-
     def setUp(self):
         """
         """
