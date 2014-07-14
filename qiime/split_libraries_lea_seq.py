@@ -239,7 +239,7 @@ def get_consensus(fasta_seqs, min_consensus):
 
     for seq_index in range(number_of_seqs):
         if len(seqs[seq_index]) != length:
-            raise SeqLengthMismatchError
+            raise SeqLengthMismatchError()
 
     freq_this_pos_this_base = dict()
     count_of_seq_with_max_count = dict()
@@ -277,9 +277,9 @@ def get_consensus(fasta_seqs, min_consensus):
                 except KeyError:
                     pass
 
-        score = float(10 * float(max_freq) / number_of_seqs)
+        score = 10.0 * max_freq / number_of_seqs
         if score < min_consensus:
-            raise LowConsensusScoreError
+            raise LowConsensusScoreError()
         consensus.append(max_base)
 
     consensus_seq = ''.join(map(str, consensus))
