@@ -74,9 +74,7 @@ class WorkflowTests(TestCase):
     def tearDown(self):
         """remove all the files after completing tests """
         self.mapping_fp.close()
-        files_to_be_removed = list()
-        files_to_be_removed.append(self.mapping_fp_name)
-        remove_files(files_to_be_removed)
+        remove_files([self.mapping_fp_name])
 
     def test_select_unique_rand_bcs(self):
         actual = select_unique_rand_bcs(self.fasta_seqs_of_rand_bcs, 0.86)
