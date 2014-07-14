@@ -30,8 +30,12 @@ class ParallelWrapper(object):
         self._block = block
         # These attributes should be defined when calling the subclass'
         # _construct_job_graph method
-        # A networkx DAG holding the job workflow. Each node should have the
-        # property "job", which contains the job that should be executed
+        # A networkx DAG holding the job workflow. Each node should have two
+        # properties "job" and "requires_deps". Job holds a tuple with the
+        # actual job to execute in the node. Requires_deps is a boolean. If
+        # true, a dictionary with the results of the previous jobs (keyed by
+        # node name) is passed to the job using the kwargs argument with
+        # name dep_results
         self._job_graph = None
         self._log_file = None
         # Clean up variables
@@ -133,7 +137,7 @@ class ParallelWrapper(object):
                 deps_dict = {n: results[n].get()
                              for n in self._job_graph.predecessors(node)}
                 results[node] = context.submit_async_deps(
-                    deps, *job, dep_async_results=deps_dict)
+                    deps, *job, dep_results=deps_dict)
             else:
                 results[node] = context.submit_async_deps(deps, *job)
             log_f.write("Done\n")

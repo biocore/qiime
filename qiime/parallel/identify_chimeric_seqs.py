@@ -25,7 +25,7 @@ from qiime.parallel.context import context, system_call
 from qiime.workflow.util import generate_log_fp
 
 
-def command_wrapper(cmd, method, idx, dep_async_results=None):
+def command_wrapper(cmd, method, idx, dep_results=None):
     """Wraps the command to be executed so it can use the results produced by
     the jobs in which the command depends on
 
@@ -37,21 +37,21 @@ def command_wrapper(cmd, method, idx, dep_async_results=None):
         Identify chimeric seqs method used
     idx : int
         The fasta fp index that this job has to exeucte
-    dep_async_results : dict of {node_name: tuple}
+    dep_results : dict of {node_name: tuple}
         The AsyncResults objects in which cmd depends on
     """
-    if "FASTA_SPLITTER" not in dep_async_results:
+    if "FASTA_SPLITTER" not in dep_results:
         raise ValueError("Wrong job graph workflow. Node 'FASTA_SPLITTER' "
                          "not listed as a dependency of current node.")
-    fasta_fps = dep_async_results["FASTA_SPLITTER"]
+    fasta_fps = dep_results["FASTA_SPLITTER"]
 
-    # First check that the dep_async_results include the keys that we need
+    # First check that the dep_results include the keys that we need
     # in order to generate the final command
     if method == 'blast_fragments':
-        if "BUILD_BLAST_DB" not in dep_async_results:
+        if "BUILD_BLAST_DB" not in dep_results:
             raise ValueError("Wrong job graph workflow. Node 'BUILD_BLAST_DB' "
                              "not listed as a dependency of current node.")
-        blast_db, db_files_to_remove = dep_async_results["BUILD_BLAST_DB"]
+        blast_db, db_files_to_remove = dep_results["BUILD_BLAST_DB"]
         cmd = cmd % (fasta_fps[idx], blast_db)
     else:
         cmd = cmd % fasta_fps[idx]
