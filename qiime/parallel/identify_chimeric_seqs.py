@@ -38,7 +38,7 @@ def command_wrapper(cmd, method, idx, dep_results=None):
     idx : int
         The fasta fp index that this job has to exeucte
     dep_results : dict of {node_name: tuple}
-        The AsyncResults objects in which cmd depends on
+        The results in which cmd depends on
     """
     if "SPLIT_FASTA" not in dep_results:
         raise ValueError("Wrong job graph workflow. Node 'SPLIT_FASTA' "

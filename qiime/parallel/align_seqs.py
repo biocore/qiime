@@ -23,6 +23,55 @@ from qiime.workflow.util import generate_log_fp
 from qiime.util import get_qiime_temp_dir
 
 
+def command_wrapper(cmd, idx, dep_results=None):
+    """Wraps the command to be executed so it can use the results produced by
+    the jobs in which the command depends on
+
+    Parameters
+    ----------
+    cmd : str
+        Command to execute
+    idx : int
+        The fasta fp index that this job has to execute
+    dep_results : dict of {node_name: tuple}
+        The results in which cmd depends on
+    """
+    from qiime.parallel.context import system_call
+    if "SPLIT_FASTA" not in dep_results:
+        raise ValueError("Wrong job graph workflow. Node 'SPLIT_FASTA' "
+                         "not listed as dependency of current node")
+    fasta_fps = dep_results["SPLIT_FASTA"]
+
+    if "BUILD_BLAST_DB" not in dep_results:
+        raise ValueError("Wrong job graph workflow. Node 'BUILD_BLAST_DB' "
+                         "not listed as dependency of current node")
+    blast_db, db_files_to_remove = dep_results["BUILD_BLAST_DB"]
+    cmd = cmd % (fasta_fps[idx], blast_db)
+    return system_call(cmd)
+
+
+def concatenate_wrapper(output_fp, output_dirs, suffix):
+    """Wraps the concatenate_files function so it can generate the actual list
+    of files to concatenate
+
+    Parameters
+    ----------
+    output_fp : str
+        The path to the output file
+    output_dirs : list of str
+        The list of directories in which we should search for the files
+    suffix : str
+        The suffix of the files that we have to search for. It should already
+        include the '*' if needed
+    """
+    # Importing glob here so it is available to the workers
+    from glob import glob
+    files = []
+    for out_dir in output_dirs:
+        files.extend(glob(join(out_dir, suffix)))
+    concatenate_files(output_fp, files)
+
+
 class ParallelAlignSeqsPyNast(ParallelWrapper):
     def _construct_job_graph(self, input_fp, output_dir, params,
                              jobs_to_start=None):
@@ -46,58 +95,72 @@ class ParallelAlignSeqsPyNast(ParallelWrapper):
         # Get a folder to store the temporary files
         working_dir = mkdtemp(prefix='align_seqs_', dir=output_dir)
         self._dirpaths_to_remove.append(working_dir)
+        dep_job_names = []
 
         # Pre-command initiation
         if not blast_db:
             # Build the blast database from reference_seqs_fp -- all procs
             # will then access one db rather than create on per proc
-            blast_db, db_files_to_remove = build_blast_db_from_fasta_path(
-                template_fp, output_dir=working_dir)
-            self._filepaths_to_remove.extend(db_files_to_remove)
+            self._job_graph.add_node("BUILD_BLAST_DB",
+                                     job=(build_blast_db_from_fasta_path,
+                                          template_fp, False, working_dir,
+                                          False),
+                                     requires_deps=False)
+        else:
+            func = lambda: (blast_db, None)
+            self._job_graph.add_node("BUILD_BLAST_DB",
+                                     job=(func, ),
+                                     requires_deps=False)
+        dep_job_names.append("BUILD_BLAST_DB")
 
         if min_length < 0:
             min_length = compute_min_alignment_length(open(input_fp, 'U'))
 
         # Split the input fasta file
-        fasta_fps = input_fasta_splitter(input_fp, working_dir, jobs_to_start)
+        self._job_graph.add_node("SPLIT_FASTA",
+                                 job=(input_fasta_splitter, input_fp,
+                                      working_dir, jobs_to_start),
+                                 requires_deps=False)
+        dep_job_names.append("SPLIT_FASTA")
 
         # Get job commands
-        aligned_fps = []
-        failures_fps = []
-        log_fps = []
+        output_dirs = []
         node_names = []
-        for i, fasta_fp in enumerate(fasta_fps):
-            cmd = (
-                "align_seqs.py -d %s -p %1.2f -e %d -m pynast -t %s -a %s "
-                "-o %s -i %s"
-                % (blast_db, params['min_percent_id'], min_length,
-                   template_fp, params['pairwise_alignment_method'],
-                   working_dir, fasta_fp))
-            prefix = splitext(basename(fasta_fp))[0]
-            aligned_fps.append(join(working_dir, "%s_aligned.fasta" % prefix))
-            failures_fps.append(join(working_dir,
-                                     "%s_failures.fasta" % prefix))
-            log_fps.append(join(working_dir, "%s_log.txt" % prefix))
+        for i in range(jobs_to_start):
+            # out_dir = mkdtemp(prefix="align_seqs_%d" % i, dir=wor)
+            out_dir = join(working_dir, "align_seqs_%d" % i)
+            cmd = ("align_seqs.py -p %1.2f -e %d -m pynast -t %s -a %s "
+                   "-o %s %s"
+                   % (params['min_percent_id'], min_length, template_fp,
+                      params['pairwise_alignment_method'], out_dir,
+                      "-i %s -d %s"))
+            output_dirs.append(out_dir)
             node_name = "AS_%d" % i
             node_names.append(node_name)
-            self._job_graph.add_node(node_name, job=(cmd,),
-                                     requires_deps=False)
+            self._job_graph.add_node(node_name,
+                                     job=(command_wrapper, cmd, i),
+                                     requires_deps=True)
+            # Adding the dependency edges to the graph
+            for dep_node_name in dep_job_names:
+                self._job_graph.add_edge(dep_node_name, node_name)
 
+        # Generate the paths to the output files
         prefix = splitext(basename(input_fp))[0]
         aligned_fp = join(output_dir, "%s_aligned.fasta" % prefix)
         failures_fp = join(output_dir, "%s_failures.fasta" % prefix)
         log_fp = join(output_dir, "%s_log.txt" % prefix)
-        # Merge the results
+        # Merge the results by concatenating the output files
         self._job_graph.add_node("CONCAT_ALIGNED",
-                                 job=(concatenate_files, aligned_fp,
-                                      aligned_fps),
+                                 job=(concatenate_wrapper, aligned_fp,
+                                      output_dirs, "*_aligned.fasta"),
                                  requires_deps=False)
         self._job_graph.add_node("CONCAT_FAILURES",
-                                 job=(concatenate_files, failures_fp,
-                                      failures_fps),
+                                 job=(concatenate_wrapper, failures_fp,
+                                      output_dirs, "*_failures.fasta"),
                                  requires_deps=False)
         self._job_graph.add_node("CONCAT_LOGS",
-                                 job=(concatenate_files, log_fp, log_fps),
+                                 job=(concatenate_wrapper, log_fp, output_dirs,
+                                      "*_log.txt"),
                                  requires_deps=False)
         # Make sure that the concatenate jobs are executed after the worker
         # nodes are finished
@@ -105,101 +168,3 @@ class ParallelAlignSeqsPyNast(ParallelWrapper):
             self._job_graph.add_edge(node, "CONCAT_ALIGNED")
             self._job_graph.add_edge(node, "CONCAT_FAILURES")
             self._job_graph.add_edge(node, "CONCAT_LOGS")
-
-
-# class ParallelAlignSeqsPyNastOld(ParallelWrapper):
-#     _script_name = "align_seqs.py"
-#     _job_prefix = 'ALIGN'
-#     _input_splitter = ParallelWrapper._split_fasta
-
-#     def _get_job_commands(self,
-#                           fasta_fps,
-#                           output_dir,
-#                           params,
-#                           job_prefix,
-#                           working_dir,
-#                           command_prefix='/bin/bash; ',
-#                           command_suffix='; exit'):
-#         """Generate PyNAST commands which should be submitted to cluster
-#         """
-#         # Create basenames for each of the output files. These will be filled
-#         # in to create the full list of files created by all of the runs.
-#         out_filenames = [job_prefix + '.%d_aligned.fasta',
-#                          job_prefix + '.%d_failures.fasta',
-#                          job_prefix + '.%d_log.txt']
-
-#         # Initialize the command_prefix and command_suffix
-#         command_prefix = command_prefix or '/bin/bash; '
-#         command_suffix = command_suffix or '; exit'
-
-#         # Create lists to store the results
-#         commands = []
-#         result_filepaths = []
-
-#         # If there is a value for blast_db, pass it. If not, it
-#         # will be created on-the-fly. Note that on-the-fly blast dbs
-#         # are created with a string of random chars in the name, so this is safe.
-#         # They shouldn't overwrite one another, and will be cleaned up.
-#         if params['blast_db']:
-#             blast_str = '-d %s' % params['blast_db']
-#         else:
-#             blast_str = ''
-
-#         # Iterate over the input files
-#         for i, fasta_fp in enumerate(fasta_fps):
-#             # Each run ends with moving the output file from the tmp dir to
-#             # the output_dir. Build the command to perform the move here.
-#             rename_command, current_result_filepaths = self._get_rename_command(
-#                 [fn % i for fn in out_filenames], working_dir, output_dir)
-#             result_filepaths += current_result_filepaths
-
-#             command = \
-#                 '%s %s %s -p %1.2f -e %d -m pynast -t %s -a %s -o %s -i %s %s %s' %\
-#                 (command_prefix,
-#                  self._script_name,
-#                  blast_str,
-#                  params['min_percent_id'],
-#                  params['min_length'],
-#                  params['template_fp'],
-#                  params['pairwise_alignment_method'],
-#                  working_dir,
-#                  fasta_fp,
-#                  rename_command,
-#                  command_suffix)
-
-#             commands.append(command)
-
-#         return commands, result_filepaths
-
-#     def _write_merge_map_file(self,
-#                               input_file_basename,
-#                               job_result_filepaths,
-#                               params,
-#                               output_dir,
-#                               merge_map_filepath):
-
-#         f = open(merge_map_filepath, 'w')
-
-#         out_filepaths = [
-#             '%s/%s_aligned.fasta' % (output_dir, input_file_basename),
-#             '%s/%s_failures.fasta' % (output_dir,
-#                                       input_file_basename),
-#             '%s/%s_log.txt' % (output_dir, input_file_basename)]
-
-#         aligned_fps = []
-#         failures_fps = []
-#         log_fps = []
-
-#         for fp in job_result_filepaths:
-#             if fp.endswith('_aligned.fasta'):
-#                 aligned_fps.append(fp)
-#             elif fp.endswith('_failures.fasta'):
-#                 failures_fps.append(fp)
-#             else:
-#                 log_fps.append(fp)
-
-#         for in_files, out_file in\
-#                 zip([aligned_fps, failures_fps, log_fps], out_filepaths):
-#             f.write('\t'.join(in_files + [out_file]))
-#             f.write('\n')
-#         f.close()
