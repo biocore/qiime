@@ -40,10 +40,10 @@ def command_wrapper(cmd, method, idx, dep_results=None):
     dep_results : dict of {node_name: tuple}
         The AsyncResults objects in which cmd depends on
     """
-    if "FASTA_SPLITTER" not in dep_results:
-        raise ValueError("Wrong job graph workflow. Node 'FASTA_SPLITTER' "
+    if "SPLIT_FASTA" not in dep_results:
+        raise ValueError("Wrong job graph workflow. Node 'SPLIT_FASTA' "
                          "not listed as a dependency of current node.")
-    fasta_fps = dep_results["FASTA_SPLITTER"]
+    fasta_fps = dep_results["SPLIT_FASTA"]
 
     # First check that the dep_results include the keys that we need
     # in order to generate the final command
@@ -61,6 +61,8 @@ def command_wrapper(cmd, method, idx, dep_results=None):
 class ParallelChimericSequenceIdentifier(ParallelWrapper):
 
     def _blast_fragments_cmd_gen(self, num_files, params, working_dir):
+        """Generates the commands for identify_chimeric_seqs.py using the
+        blast_fragments method"""
         for i in range(num_files):
             # Create the output path
             temp_out_fp = join(working_dir, "chimeric_seqs_%d.txt" % i)
@@ -74,6 +76,8 @@ class ParallelChimericSequenceIdentifier(ParallelWrapper):
             yield temp_out_fp, node_name, cmd, i
 
     def _chimera_slayer_cmd_gen(self, num_files, params, working_dir):
+        """Generates the commands for identify_chimeric_seqs.py using the
+        ChimeraSlayer method"""
         min_div_ratio_str = ("--min_div_ratio %s" % params['min_div_ratio']
                              if params['min_div_ratio'] else "")
         aln_ref_seqs_fp = params['aligned_reference_seqs_fp']
@@ -90,6 +94,7 @@ class ParallelChimericSequenceIdentifier(ParallelWrapper):
 
     def _construct_job_graph(self, input_fp, output_dir, params,
                              jobs_to_start=None):
+        """Builds the job workflow graph"""
         # Create the workflow graph
         self._job_graph = nx.DiGraph()
 
@@ -120,6 +125,8 @@ class ParallelChimericSequenceIdentifier(ParallelWrapper):
         dep_job_names = []
 
         if method == 'ChimeraSlayer':
+            # In the ChimeraSlayer method, we have to perform numerous
+            # steps prior to the actual execution of the jobs.
             # We first need to copy the reference files to the working
             # directory because ChimeraSlayer creates an index file of the
             # reference and it will crash without write permission in the
@@ -167,11 +174,11 @@ class ParallelChimericSequenceIdentifier(ParallelWrapper):
         dep_job_names.append("BUILD_BLAST_DB")
 
         # Split the input_fp in multiple files
-        self._job_graph.add_node("FASTA_SPLITTER",
+        self._job_graph.add_node("SPLIT_FASTA",
                                  job=(input_fasta_splitter, input_fp,
                                       working_dir, jobs_to_start),
                                  requires_deps=False)
-        dep_job_names.append("FASTA_SPLITTER")
+        dep_job_names.append("SPLIT_FASTA")
 
         # Create the commands
         temp_out_fps = []
@@ -179,7 +186,6 @@ class ParallelChimericSequenceIdentifier(ParallelWrapper):
         cmd_generator = (self._blast_fragments_cmd_gen
                          if method == 'blast_fragments'
                          else self._chimera_slayer_cmd_gen)
-
         for temp_out_fp, node_name, cmd, idx in cmd_generator(jobs_to_start,
                                                               params,
                                                               working_dir):
