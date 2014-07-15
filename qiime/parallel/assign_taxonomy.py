@@ -9,13 +9,15 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 
-from os.path import abspath, exists, basename, splitext
+from os.path import abspath, exists, basename, splitext, join
 from os import makedirs
 from tempfile import mkdtemp
 
 from brokit.formatdb import build_blast_db_from_fasta_path
+import networkx as nx
 
-from qiime.parallel.util import ParallelWrapper, input_fasta_splitter
+from qiime.parallel.util import (ParallelWrapper, input_fasta_splitter,
+                                 concatenate_files_from_dirs)
 from qiime.parallel.context import context
 from qiime.workflow.util import generate_log_fp
 
@@ -37,7 +39,7 @@ class ParallelTaxonomyAssigner(ParallelWrapper):
             jobs_to_start = context.get_number_of_workers()
 
         # Generate the log file
-        self._log_file = genreate_log_fp(output_dir)
+        self._log_file = generate_log_fp(output_dir)
 
         # Get a folder to store the temporary files
         working_dir = mkdtemp(prefix='tax_assigner_', dir=output_dir)
@@ -45,6 +47,7 @@ class ParallelTaxonomyAssigner(ParallelWrapper):
 
         # PRECOMMAND - ONLY BLAST PARALLEL ASSIGNER NEEDS IT
         # TODO
+        self._prep(params, working_dir)
 
         # Split the input fasta file
         # self._job_graph.add_node("SPLIT_FASTA",
@@ -64,13 +67,31 @@ class ParallelTaxonomyAssigner(ParallelWrapper):
             self._job_graph.add_node(node_name, job=(cmd, ),
                                      requires_deps=False)
 
-        # Merge the results
+        # Generate the paths to the output files
         prefix = splitext(basename(input_fp))[0]
         out_tax_fp = join(output_dir, "%s_tax_assignments.txt" % prefix)
         log_fp = join(output_dir, "%s_tax_assignments.log" % prefix)
+        # Merge the results by concatenating the output files
+        self._job_graph.add_node("CONCAT_TAX_ASSIGN",
+                                 job=(concatenate_files_from_dirs, out_tax_fp,
+                                      output_dirs, "*_tax_assignments.txt"),
+                                 requires_deps=False)
+        self._job_graph.add_node("CONCAT_LOG",
+                                 job=(concatenate_files_from_dirs, log_fp,
+                                      output_dirs, "*_tax_assignments.log"),
+                                 requires_deps=False)
+        # Make sure that the concatenate jobs are executed after the worker
+        # are done
+        for node in node_names:
+            self._job_graph.add_edge(node, "CONCAT_TAX_ASSIGN")
+            self._job_graph.add_edge(node, "CONCAT_LOG")
 
 
 class ParallelBlastTaxonomyAssigner(ParallelTaxonomyAssigner):
+    def _prep(self, params, working_dir):
+        params['blast_db'], _ = build_blast_db_from_fasta_path(
+            params['reference_seqs_fp'], output_dir=working_dir)
+
     def _cmd_generator(self, fasta_fps, working_dir, params):
         for i, fasta_fp in enumerate(fasta_fps):
             node_name = "PTA_%d" % i
@@ -79,6 +100,43 @@ class ParallelBlastTaxonomyAssigner(ParallelTaxonomyAssigner):
                 "assign_taxonomy.py -o %s -i %s -m blast -e %s -b %s -t %s"
                 % (output_dir, fasta_fp, params['e_value'],
                    params['blast_db'], params['id_to_taxonomy_fp']))
+            yield cmd, node_name, output_dir
+
+
+class ParallelRdpTaxonomyAssigner(ParallelTaxonomyAssigner):
+    def _prep(self, params, working_dir):
+        pass
+
+    def _cmd_generator(self, fasta_fps, working_dir, params):
+        for i, fasta_fp in enumerate(fasta_fps):
+            node_name = "RDP_%d" % i
+            output_dir = join(working_dir, node_name)
+            cmd = (
+                "assign_taxonomy.py -o %s -i %s -m rdp -c %1.2f "
+                "--rdp_max_memory %d"
+                % (output_dir, fasta_fp, params['confidence'],
+                   params['rdp_max_memory']))
+            yield cmd, node_name, output_dir
+
+
+class ParallelUclustConsensusTaxonomyAssigner(ParallelTaxonomyAssigner):
+    def _prep(self, params, working_dir):
+        pass
+
+    def _cmd_generator(self, fasta_fps, working_dir, params):
+        for i, fasta_fp in enumerate(fasta_fps):
+            node_name = "UCTA_%d" % i
+            output_dir = join(working_dir, node_name)
+            cmd = (
+                "assign_taxonomy.py -o %s -i %s -m uclust "
+                "--uclust_min_consensus_fraction %f --uclust_similarity %f "
+                "--uclust_max_accepts %d -t %s -r %s"
+                % (output_dir, fasta_fp,
+                   params['uclust_min_consensus_fraction'],
+                   params['uclust_similarity'],
+                   params['uclust_max_accepts'],
+                   params['id_to_taxonomy_fp'],
+                   params['reference_seqs_fp']))
             yield cmd, node_name, output_dir
 
 

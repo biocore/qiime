@@ -5,7 +5,7 @@ from __future__ import division
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso", "Antonio Gonzalez Pena", "William Walters",
-               "Jai Ram Rideout"]
+               "Jai Ram Rideout", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"

@@ -18,7 +18,7 @@ from brokit.formatdb import build_blast_db_from_fasta_path
 
 from qiime.align_seqs import compute_min_alignment_length
 from qiime.parallel.util import (ParallelWrapper, input_fasta_splitter,
-                                 concatenate_files)
+                                 concatenate_files_from_dirs)
 from qiime.parallel.context import context
 from qiime.workflow.util import generate_log_fp
 from qiime.util import get_qiime_temp_dir
@@ -49,28 +49,6 @@ def command_wrapper(cmd, idx, dep_results=None):
     blast_db, db_files_to_remove = dep_results["BUILD_BLAST_DB"]
     cmd = cmd % (fasta_fps[idx], blast_db)
     return system_call(cmd)
-
-
-def concatenate_wrapper(output_fp, output_dirs, suffix):
-    """Wraps the concatenate_files function so it can generate the actual list
-    of files to concatenate
-
-    Parameters
-    ----------
-    output_fp : str
-        The path to the output file
-    output_dirs : list of str
-        The list of directories in which we should search for the files
-    suffix : str
-        The suffix of the files that we have to search for. It should already
-        include the '*' if needed
-    """
-    # Importing glob here so it is available to the workers
-    from glob import glob
-    files = []
-    for out_dir in output_dirs:
-        files.extend(glob(join(out_dir, suffix)))
-    concatenate_files(output_fp, files)
 
 
 class ParallelAlignSeqsPyNast(ParallelWrapper):
@@ -158,16 +136,16 @@ class ParallelAlignSeqsPyNast(ParallelWrapper):
         log_fp = join(output_dir, "%s_log.txt" % prefix)
         # Merge the results by concatenating the output files
         self._job_graph.add_node("CONCAT_ALIGNED",
-                                 job=(concatenate_wrapper, aligned_fp,
+                                 job=(concatenate_files_from_dirs, aligned_fp,
                                       output_dirs, "*_aligned.fasta"),
                                  requires_deps=False)
         self._job_graph.add_node("CONCAT_FAILURES",
-                                 job=(concatenate_wrapper, failures_fp,
+                                 job=(concatenate_files_from_dirs, failures_fp,
                                       output_dirs, "*_failures.fasta"),
                                  requires_deps=False)
         self._job_graph.add_node("CONCAT_LOGS",
-                                 job=(concatenate_wrapper, log_fp, output_dirs,
-                                      "*_log.txt"),
+                                 job=(concatenate_files_from_dirs, log_fp,
+                                      output_dirs, "*_log.txt"),
                                  requires_deps=False)
         # Make sure that the concatenate jobs are executed after the worker
         # nodes are finished

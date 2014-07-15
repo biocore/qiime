@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2012, The QIIME project"
-__credits__ = ["Jai Ram Rideout"]
+__credits__ = ["Jai Ram Rideout", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Jai Ram Rideout"
@@ -22,9 +22,9 @@ from skbio.util.misc import remove_files, create_dir
 from skbio.core.alignment import SequenceCollection
 from skbio.core.sequence import DNA
 
-from qiime.parallel.assign_taxonomy import (ParallelBlastTaxonomyAssigner,
-                                            ParallelRdpTaxonomyAssigner,
-                                            ParallelUclustConsensusTaxonomyAssigner)
+from qiime.parallel.assign_taxonomy import (
+    ParallelBlastTaxonomyAssigner, ParallelRdpTaxonomyAssigner,
+    ParallelUclustConsensusTaxonomyAssigner)
 from qiime.util import get_qiime_temp_dir
 from qiime.test import initiate_timeout, disable_timeout
 from qiime.parse import fields_to_dict
@@ -38,15 +38,17 @@ class ParallelRdpTaxonomyAssignerTests(TestCase):
         self.dirs_to_remove = []
 
         tmp_dir = get_qiime_temp_dir()
-        self.test_out = mkdtemp(dir=tmp_dir,
-                                prefix='qiime_parallel_taxonomy_assigner_tests_',
-                                suffix='')
+        self.test_out = mkdtemp(
+            dir=tmp_dir,
+            prefix='qiime_parallel_taxonomy_assigner_tests_',
+            suffix='')
         self.dirs_to_remove.append(self.test_out)
 
         # Temporary input file
-        fd, self.tmp_seq_filepath = mkstemp(dir=self.test_out,
-                                            prefix='qiime_parallel_taxonomy_assigner_tests_input',
-                                            suffix='.fasta')
+        fd, self.tmp_seq_filepath = mkstemp(
+            dir=self.test_out,
+            prefix='qiime_parallel_taxonomy_assigner_tests_input',
+            suffix='.fasta')
         close(fd)
         seq_file = open(self.tmp_seq_filepath, 'w')
         seq_file.write(rdp_test_seqs)
@@ -72,7 +74,7 @@ class ParallelRdpTaxonomyAssignerTests(TestCase):
                 "RDP_JAR_PATH does not point to version 2.2 of the "
                 "RDP Classifier.")
 
-        initiate_timeout(60)
+        initiate_timeout(90)
 
     def tearDown(self):
         """ """
@@ -95,12 +97,9 @@ class ParallelRdpTaxonomyAssignerTests(TestCase):
                   }
 
         app = ParallelRdpTaxonomyAssigner()
-        r = app(self.tmp_seq_filepath,
-                self.test_out,
-                params,
-                job_prefix='RDPTEST',
-                poll_directly=True,
-                suppress_submit_jobs=False)
+        app(self.tmp_seq_filepath,
+            self.test_out,
+            params)
         results = fields_to_dict(open(glob(join(
             self.test_out, '*_tax_assignments.txt'))[0], 'U'))
         # some basic sanity checks: we should get the same number of sequences
@@ -119,14 +118,16 @@ class ParallelBlastTaxonomyAssignerTests(TestCase):
         self.dirs_to_remove = []
 
         tmp_dir = get_qiime_temp_dir()
-        self.test_out = mkdtemp(dir=tmp_dir,
-                                prefix='qiime_parallel_taxonomy_assigner_tests_',
-                                suffix='')
+        self.test_out = mkdtemp(
+            dir=tmp_dir,
+            prefix='qiime_parallel_taxonomy_assigner_tests_',
+            suffix='')
         self.dirs_to_remove.append(self.test_out)
 
-        fd, self.tmp_seq_filepath = mkstemp(dir=self.test_out,
-                                            prefix='qiime_parallel_taxonomy_assigner_tests_input',
-                                            suffix='.fasta')
+        fd, self.tmp_seq_filepath = mkstemp(
+            dir=self.test_out,
+            prefix='qiime_parallel_taxonomy_assigner_tests_input',
+            suffix='.fasta')
         close(fd)
         seq_file = open(self.tmp_seq_filepath, 'w')
         seq_file.write(blast_test_seqs.to_fasta())
@@ -167,12 +168,9 @@ class ParallelBlastTaxonomyAssignerTests(TestCase):
                   }
 
         app = ParallelBlastTaxonomyAssigner()
-        r = app(self.tmp_seq_filepath,
-                self.test_out,
-                params,
-                job_prefix='BTATEST',
-                poll_directly=True,
-                suppress_submit_jobs=False)
+        app(self.tmp_seq_filepath,
+            self.test_out,
+            params)
         results = fields_to_dict(open(glob(join(
             self.test_out, '*_tax_assignments.txt'))[0], 'U'))
         # some basic sanity checks: we should get the same number of sequences
@@ -192,14 +190,16 @@ class ParallelUclustConsensusTaxonomyAssignerTests(TestCase):
         self.dirs_to_remove = []
 
         tmp_dir = get_qiime_temp_dir()
-        self.test_out = mkdtemp(dir=tmp_dir,
-                                prefix='qiime_parallel_taxonomy_assigner_tests_',
-                                suffix='')
+        self.test_out = mkdtemp(
+            dir=tmp_dir,
+            prefix='qiime_parallel_taxonomy_assigner_tests_',
+            suffix='')
         self.dirs_to_remove.append(self.test_out)
 
-        fd, self.tmp_seq_filepath = mkstemp(dir=self.test_out,
-                                            prefix='qiime_parallel_taxonomy_assigner_tests_input',
-                                            suffix='.fasta')
+        fd, self.tmp_seq_filepath = mkstemp(
+            dir=self.test_out,
+            prefix='qiime_parallel_taxonomy_assigner_tests_input',
+            suffix='.fasta')
         close(fd)
         seq_file = open(self.tmp_seq_filepath, 'w')
         seq_file.write(uclust_test_seqs.to_fasta())
@@ -240,12 +240,9 @@ class ParallelUclustConsensusTaxonomyAssignerTests(TestCase):
                   }
 
         app = ParallelUclustConsensusTaxonomyAssigner()
-        r = app(self.tmp_seq_filepath,
-                self.test_out,
-                params,
-                job_prefix='UTATEST',
-                poll_directly=True,
-                suppress_submit_jobs=False)
+        app(self.tmp_seq_filepath,
+            self.test_out,
+            params)
         results = fields_to_dict(open(glob(join(
             self.test_out, '*_tax_assignments.txt'))[0], 'U'))
         # some basic sanity checks: we should get the same number of sequences
