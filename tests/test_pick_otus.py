@@ -85,7 +85,6 @@ class SortmernaV2OtuPickerTests(TestCase):
         self.read_seqs_fp = sortmerna_read_seqs_fp
         self.otumap_fp = sortmerna_otumap_fp
         self.failures_fp = sortmerna_failures_fp
-        self.otumap_no_otu_id_prefix_fp = sortmerna_otumap_no_otu_id_prefix_fp
 
         # create temporary file with reference sequences defined
         # in reference_seqs_fp
@@ -115,15 +114,6 @@ class SortmernaV2OtuPickerTests(TestCase):
         with open(self.file_otumap_fp, 'w') as tmp:
             tmp.write(self.otumap_fp)
 
-        # create temporary file with the OTU map (97% id)
-        # and no OTU id prefix
-        f, self.file_otumap_no_otu_id_prefix_fp = mkstemp(
-            prefix='temp_otumap_2', suffix='.txt')
-        close(f)
-
-        with open(self.file_otumap_no_otu_id_prefix_fp, 'w') as tmp:
-            tmp.write(self.otumap_no_otu_id_prefix_fp)
-
         # create a temporary file with failures
         f, self.file_failures_fp = mkstemp(prefix='temp_failures_',
                                            suffix='.txt')
@@ -141,7 +131,6 @@ class SortmernaV2OtuPickerTests(TestCase):
                                 self.file_read_seqs_fp,
                                 self.file_otumap_fp,
                                 self.file_failures_fp,
-                                self.file_otumap_no_otu_id_prefix_fp,
                                 self.result_path,
                                 self.log_path,
                                 self.failure_path]
@@ -265,36 +254,6 @@ class SortmernaV2OtuPickerTests(TestCase):
 
         # clusters OTU map is correct
         self.assertTrue(cmp(self.file_otumap_fp, self.result_path))
-
-    def test_call_no_otu_id_prefix(self):
-        """ clusters seqs within 97% identity with default parameters,
-            no OTU id prefix
-        """
-
-        app = SortmernaV2OtuPicker(
-            params={'max_e_value': 1,
-                    'similarity': 0.97,
-                    'coverage': 0.97,
-                    'threads': 1,
-                    'blast': False,
-                    'best': 1,
-                    'max_pos': 250,
-                    'prefilter_identical_sequences': True,
-                    'otu_id_prefix': None})
-
-        clusters = app(
-            seq_path=self.file_read_seqs_fp,
-            result_path=self.result_path,
-            log_path=self.log_path,
-            sortmerna_db=None,
-            refseqs_fp=self.file_reference_seq_fp,
-            failure_path=self.failure_path)
-
-        self.check_output(clusters)
-
-        # clusters OTU map is correct
-        self.assertTrue(cmp(self.file_otumap_no_otu_id_prefix_fp,
-                            self.result_path))
 
 
 class MothurOtuPickerTests(TestCase):
@@ -4865,10 +4824,7 @@ GGGAT
 """
 
 # resulting OTU map for sortmerna_read_seqs_fp vs. sortmerna_reference_seqs_fp
-sortmerna_otumap_fp = """RefOTU0\tHMPMockV1.2.Staggered2.673827_47\tHMPMockV1.2.Staggered2.673827_115\tHMPMockV1.2.Staggered2.673827_122\tHMPMockV1.2.Staggered2.673827_161\tHMPMockV1.2.Staggered2.673827_180\tHMPMockV1.2.Staggered2.673827_203\tHMPMockV1.2.Staggered2.673827_207\tHMPMockV1.2.Staggered2.673827_215\tHMPMockV1.2.Staggered2.673827_218\tHMPMockV1.2.Staggered2.673827_220\n"""
-
-# resulting OTU map for sortmerna with no OTU id prefix
-sortmerna_otumap_no_otu_id_prefix_fp = """0\tHMPMockV1.2.Staggered2.673827_47\tHMPMockV1.2.Staggered2.673827_115\tHMPMockV1.2.Staggered2.673827_122\tHMPMockV1.2.Staggered2.673827_161\tHMPMockV1.2.Staggered2.673827_180\tHMPMockV1.2.Staggered2.673827_203\tHMPMockV1.2.Staggered2.673827_207\tHMPMockV1.2.Staggered2.673827_215\tHMPMockV1.2.Staggered2.673827_218\tHMPMockV1.2.Staggered2.673827_220\n"""
+sortmerna_otumap_fp = """295053\tHMPMockV1.2.Staggered2.673827_47\tHMPMockV1.2.Staggered2.673827_115\tHMPMockV1.2.Staggered2.673827_122\tHMPMockV1.2.Staggered2.673827_161\tHMPMockV1.2.Staggered2.673827_180\tHMPMockV1.2.Staggered2.673827_203\tHMPMockV1.2.Staggered2.673827_207\tHMPMockV1.2.Staggered2.673827_215\tHMPMockV1.2.Staggered2.673827_218\tHMPMockV1.2.Staggered2.673827_220\n"""
 
 # failures file (all random reads in sortmerna_read_seqs_fp)
 sortmerna_failures_fp = """HMPMockV1.2.Staggered2.673827_0
