@@ -252,8 +252,8 @@ def get_consensus(fasta_seqs, min_consensus):
         for this_seq_count, seq in enumerate(seqs):
             freq_this_pos_this_base[x][
                 seq[x]] += counts[this_seq_count]
-            if counts[this_seq_count] > count_of_seq_with_max_count[x][seq[base_index]]:
-                count_of_seq_with_max_count[base_index][seq[x]] = counts[this_seq_count]
+            if counts[this_seq_count] > count_of_seq_with_max_count[x][seq[x]]:
+                count_of_seq_with_max_count[x][seq[x]] = counts[this_seq_count]
 
     consensus = list()
     for index in range(length):
