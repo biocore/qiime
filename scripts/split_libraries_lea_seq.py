@@ -178,6 +178,7 @@ def main():
 
     fwd_read_f = open(sequence_read_fps[0], 'U')
     rev_read_f = open(sequence_read_fps[1], 'U')
+
     map_f = open(mapping_fp, 'U')
 
     (consensus_seq_lookup,
@@ -217,6 +218,7 @@ def main():
     rev_read_f.close()
     fwd_consensus_outfile.close()
     rev_consensus_outfile.close()
-
+    map_f.close()
+    
 if __name__ == "__main__":
     main()
