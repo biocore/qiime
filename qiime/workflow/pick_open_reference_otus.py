@@ -153,9 +153,6 @@ def pick_denovo_otus(input_fp,
         d['uclust_otu_id_prefix'] = '%s.ReferenceOTU' % new_ref_set_id
     elif otu_picking_method == "sumaclust":
         d['sumaclust_otu_id_prefix'] = '%s.ReferenceOTU' % new_ref_set_id
-    else:
-        raise ValueError("Only uclust and sumaclust are currently supported "
-                         "for de novo OTU picking")
     
     params_str = ' %s' % get_params_str(d)
     # Build the OTU picking command
