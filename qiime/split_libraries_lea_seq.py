@@ -18,13 +18,12 @@ from skbio.parse.sequences import parse_fasta, parse_fastq
 from qiime.util import get_qiime_temp_dir, qiime_system_call
 from brokit.uclust import get_clusters_from_fasta_filepath
 from skbio.app.util import ApplicationError
-from tempfile import mkstemp
-from itertools import izip
 from os import close, path, mkdir, rmdir
 from skbio.util.misc import remove_files
 from skbio.core.sequence import DNASequence
 import re
-
+from tempfile import mkstemp
+from itertools import izip
 
 class PairedEndParseError(Exception):
     pass
