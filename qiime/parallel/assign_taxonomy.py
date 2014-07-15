@@ -22,6 +22,36 @@ from qiime.parallel.context import context
 from qiime.workflow.util import generate_log_fp
 
 
+def command_wrapper(cmd, idx, needs_blast, dep_results=None):
+    """Wraps the command to be executed so it can use the results produced by
+    the jobs in which the command depends on
+
+    Parameters
+    ----------
+    cmd : str
+        Command to execute
+    idx : int
+        The fasta fp index that this job has to execute
+    dep_results : dict of {node_name: tuple}
+        The results in which cmd depends on
+    """
+    from qiime.parallel.context import system_call
+    if "SPLIT_FASTA" not in dep_results:
+        raise ValueError("Wrong job graph workflow. Node 'SPLIT_FASTA' "
+                         "not listed as dependency of current node")
+    fasta_fps = dep_results["SPLIT_FASTA"]
+
+    if needs_blast:
+        if "BUILD_BLAST_DB" not in dep_results:
+            raise ValueError("Wrong job graph workflow. Node 'BUILD_BLAST_DB' "
+                             "not listed as dependency of current node")
+        blast_db, db_files_to_remove = dep_results["BUILD_BLAST_DB"]
+        cmd = cmd % (fasta_fps[idx], blast_db)
+    else:
+        cmd = cmd % fasta_fps[idx]
+    return system_call(cmd)
+
+
 class ParallelTaxonomyAssigner(ParallelWrapper):
     def _construct_job_graph(self, input_fp, output_dir, params,
                              jobs_to_start=None):
@@ -45,27 +75,36 @@ class ParallelTaxonomyAssigner(ParallelWrapper):
         working_dir = mkdtemp(prefix='tax_assigner_', dir=output_dir)
         self._dirpaths_to_remove.append(working_dir)
 
-        # PRECOMMAND - ONLY BLAST PARALLEL ASSIGNER NEEDS IT
-        # TODO
-        self._prep(params, working_dir)
+        # Perform any work that the specific tax_assigner needs to do
+        # and get back the list of node names that the PTA_X jobs should wait
+        # for, and if the command wrapper should look for the blast db or not
+        dep_job_names, needs_blast = self._tax_specific_nodes(params,
+                                                              working_dir)
 
         # Split the input fasta file
-        # self._job_graph.add_node("SPLIT_FASTA",
-        #                          job=(input_fasta_splitter, input_fp,
-        #                               working_dir, jobs_to_start),
-        #                          requires_deps=False)
-        fasta_fps = input_fasta_splitter(input_fp, working_dir, jobs_to_start)
+        self._job_graph.add_node("SPLIT_FASTA",
+                                 job=(input_fasta_splitter, input_fp,
+                                      working_dir, jobs_to_start),
+                                 requires_deps=False)
+        dep_job_names.append("SPLIT_FASTA")
 
         # Build the commands
         output_dirs = []
         node_names = []
-        for cmd, node_name, out_dir in self._cmd_generator(fasta_fps,
-                                                           working_dir,
-                                                           params):
+        tax_specific_param_str = self._get_specific_params_str(params)
+        for i in range(jobs_to_start):
+            node_name = "PTA_%d" % i
+            out_dir = join(working_dir, node_name)
+            cmd = ("assign_taxonomy.py -o {0} -i %s {1}".format(
+                out_dir, tax_specific_param_str))
             output_dirs.append(out_dir)
             node_names.append(node_name)
-            self._job_graph.add_node(node_name, job=(cmd, ),
-                                     requires_deps=False)
+            self._job_graph.add_node(node_name, job=(command_wrapper, cmd, i,
+                                                     needs_blast),
+                                     requires_deps=True)
+            # Add dependencies
+            for dep_node_name in dep_job_names:
+                self._job_graph.add_edge(dep_node_name, node_name)
 
         # Generate the paths to the output files
         prefix = splitext(basename(input_fp))[0]
@@ -88,197 +127,37 @@ class ParallelTaxonomyAssigner(ParallelWrapper):
 
 
 class ParallelBlastTaxonomyAssigner(ParallelTaxonomyAssigner):
-    def _prep(self, params, working_dir):
-        params['blast_db'], _ = build_blast_db_from_fasta_path(
-            params['reference_seqs_fp'], output_dir=working_dir)
+    def _tax_specific_nodes(self, params, working_dir):
+        self._job_graph.add_node("BUILD_BLAST_DB",
+                                 job=(build_blast_db_from_fasta_path,
+                                      params['reference_seqs_fp'], False,
+                                      working_dir, False),
+                                 requires_deps=False)
+        return ["BUILD_BLAST_DB"], True
 
-    def _cmd_generator(self, fasta_fps, working_dir, params):
-        for i, fasta_fp in enumerate(fasta_fps):
-            node_name = "PTA_%d" % i
-            output_dir = join(working_dir, node_name)
-            cmd = (
-                "assign_taxonomy.py -o %s -i %s -m blast -e %s -b %s -t %s"
-                % (output_dir, fasta_fp, params['e_value'],
-                   params['blast_db'], params['id_to_taxonomy_fp']))
-            yield cmd, node_name, output_dir
+    def _get_specific_params_str(self, params):
+        return "-m blast -e {0} -b %s -t {1}".format(
+            params['e_value'], params['id_to_taxonomy_fp'])
 
 
 class ParallelRdpTaxonomyAssigner(ParallelTaxonomyAssigner):
-    def _prep(self, params, working_dir):
-        pass
+    def _tax_specific_nodes(self, params, working_dir):
+        return [], False
 
-    def _cmd_generator(self, fasta_fps, working_dir, params):
-        for i, fasta_fp in enumerate(fasta_fps):
-            node_name = "RDP_%d" % i
-            output_dir = join(working_dir, node_name)
-            cmd = (
-                "assign_taxonomy.py -o %s -i %s -m rdp -c %1.2f "
-                "--rdp_max_memory %d"
-                % (output_dir, fasta_fp, params['confidence'],
-                   params['rdp_max_memory']))
-            yield cmd, node_name, output_dir
+    def _get_specific_params_str(self, params):
+        return ("-m rdp -c %1.2f --rdp_max_memory %d"
+                % (params['confidence'], params['rdp_max_memory']))
 
 
 class ParallelUclustConsensusTaxonomyAssigner(ParallelTaxonomyAssigner):
-    def _prep(self, params, working_dir):
-        pass
+    def _tax_specific_nodes(self, params, working_dir):
+        return [], False
 
-    def _cmd_generator(self, fasta_fps, working_dir, params):
-        for i, fasta_fp in enumerate(fasta_fps):
-            node_name = "UCTA_%d" % i
-            output_dir = join(working_dir, node_name)
-            cmd = (
-                "assign_taxonomy.py -o %s -i %s -m uclust "
-                "--uclust_min_consensus_fraction %f --uclust_similarity %f "
-                "--uclust_max_accepts %d -t %s -r %s"
-                % (output_dir, fasta_fp,
-                   params['uclust_min_consensus_fraction'],
+    def _get_specific_params_str(self, params):
+        return ("-m uclust --uclust_min_consensus_fraction %f "
+                "--uclust_similarity %f --uclust_max_accepts %d -t %s -r %s"
+                % (params['uclust_min_consensus_fraction'],
                    params['uclust_similarity'],
                    params['uclust_max_accepts'],
                    params['id_to_taxonomy_fp'],
                    params['reference_seqs_fp']))
-            yield cmd, node_name, output_dir
-
-
-# class ParallelTaxonomyAssigner(ParallelWrapper):
-#     _script_name = 'assign_taxonomy.py'
-#     _input_splitter = ParallelWrapper._split_fasta
-
-#     def _build_job_commands(self, tax_specific_param_str, fasta_fps,
-#                             output_dir, params, job_prefix, working_dir,
-#                             command_prefix='/bin/bash; ',
-#                             command_suffix='; exit'):
-#         """Generate assign_taxonomy.py commands which should be run."""
-#         # Create basenames for each of the output files. These will be filled
-#         # in to create the full list of files created by all of the runs.
-#         out_filenames = [job_prefix + '.%d_tax_assignments.log',
-#                          job_prefix + '.%d_tax_assignments.txt']
-
-#         # Create lists to store the results.
-#         commands = []
-#         result_filepaths = []
-
-#         # Iterate over the input files.
-#         for i, fasta_fp in enumerate(fasta_fps):
-#             # Each run ends with moving the output file from the tmp dir to
-#             # the output_dir. Build the command to perform the move here.
-#             rename_command, current_result_filepaths = \
-#                 self._get_rename_command([fn % i for fn in out_filenames],
-#                                          working_dir, output_dir)
-#             result_filepaths += current_result_filepaths
-
-#             command = '%s %s %s -o %s -i %s %s %s' %\
-#                 (command_prefix,
-#                  self._script_name,
-#                  tax_specific_param_str,
-#                  working_dir,
-#                  fasta_fp,
-#                  rename_command,
-#                  command_suffix)
-#             commands.append(command)
-#         return commands, result_filepaths
-
-#     def _write_merge_map_file(self,
-#                               input_file_basename,
-#                               job_result_filepaths,
-#                               params,
-#                               output_dir,
-#                               merge_map_filepath,
-#                               failures=False):
-#         """
-#         """
-#         f = open(merge_map_filepath, 'w')
-
-#         out_filepaths = [
-#             '%s/%s_tax_assignments.txt' % (output_dir, input_file_basename),
-#             '%s/%s_tax_assignments.log' % (output_dir, input_file_basename)]
-
-#         assignment_fps = []
-#         log_fps = []
-
-#         for fp in job_result_filepaths:
-#             if fp.endswith('_tax_assignments.txt'):
-#                 assignment_fps.append(fp)
-#             else:
-#                 log_fps.append(fp)
-
-#         for in_files, out_file in\
-#                 zip([assignment_fps, log_fps], out_filepaths):
-#             f.write('\t'.join(in_files + [out_file]))
-#             f.write('\n')
-#         f.close()
-
-
-# class ParallelRdpTaxonomyAssigner(ParallelTaxonomyAssigner):
-#     _job_prefix = 'RDP'
-
-#     def _get_job_commands(self, fasta_fps, output_dir, params, job_prefix,
-#                           working_dir, command_prefix=None,
-#                           command_suffix='; exit'):
-#         command_prefix = command_prefix or \
-#             '/bin/bash; export RDP_JAR_PATH=%s; ' % params['rdp_classifier_fp']
-
-#         rdp_params = '-m rdp -c %1.2f --rdp_max_memory %d ' % (
-#             params['confidence'], params['rdp_max_memory'])
-#         if params['id_to_taxonomy_fp'] and params['reference_seqs_fp']:
-#             rdp_params += '-t %s -r %s' % (params['id_to_taxonomy_fp'],
-#                                            params['reference_seqs_fp'])
-
-#         return self._build_job_commands(rdp_params, fasta_fps, output_dir,
-#                                         params, job_prefix, working_dir, command_prefix,
-#                                         command_suffix)
-
-
-# class ParallelUclustConsensusTaxonomyAssigner(ParallelTaxonomyAssigner):
-#     _job_prefix = 'UCTA'
-
-#     def _get_job_commands(self, fasta_fps, output_dir, params, job_prefix,
-#                           working_dir, command_prefix=None,
-#                           command_suffix='; exit'):
-#         command_prefix = command_prefix or ''
-
-#         uclust_params = ' '.join(
-#             ['-m uclust',
-#              '--uclust_min_consensus_fraction %f' % params['uclust_min_consensus_fraction'],
-#              '--uclust_similarity %f' % params['uclust_similarity'],
-#              '--uclust_max_accepts %d' % params['uclust_max_accepts'],
-#              '-t %s' % params['id_to_taxonomy_fp'],
-#              '-r %s' % params['reference_seqs_fp']])
-
-#         return self._build_job_commands(uclust_params,
-#                                         fasta_fps,
-#                                         output_dir,
-#                                         params,
-#                                         job_prefix,
-#                                         working_dir,
-#                                         command_prefix,
-#                                         command_suffix)
-
-
-# class ParallelBlastTaxonomyAssigner(ParallelTaxonomyAssigner):
-#     _job_prefix = 'BTA'
-
-#     def _precommand_initiation(
-#             self, input_fp, output_dir, working_dir, params):
-#         if not params['blast_db']:
-#             # Build the blast database from the reference_seqs_fp -- all procs
-#             # will then access one db rather than create one per proc.
-#             blast_db, db_files_to_remove = \
-#                 build_blast_db_from_fasta_path(params['reference_seqs_fp'])
-#             self.files_to_remove += db_files_to_remove
-#             params['blast_db'] = blast_db
-
-#     def _get_job_commands(self, fasta_fps, output_dir, params, job_prefix,
-#                           working_dir, command_prefix=None,
-#                           command_suffix='; exit'):
-#         command_prefix = command_prefix or \
-#             '/bin/bash; cd %s; export BLASTMAT=%s;' % (working_dir,
-#                                                        params['blastmat_dir'])
-
-#         blast_params = '-m blast -e %s -b %s -t %s ' % (
-#             params['e_value'], params['blast_db'],
-#             params['id_to_taxonomy_fp'])
-
-#         return self._build_job_commands(blast_params, fasta_fps, output_dir,
-#                                         params, job_prefix, working_dir, command_prefix,
-#                                         command_suffix)
