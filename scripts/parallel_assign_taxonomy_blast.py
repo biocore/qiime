@@ -102,7 +102,8 @@ def main():
     params = eval(str(opts))
 
     parallel_runner = ParallelBlastTaxonomyAssigner(
-        retain_temp_files=opts.retain_temp_files)
+        retain_temp_files=opts.retain_temp_files,
+        block=not opts.suppress_blocking)
 
     parallel_runner(opts.input_fasta_fp,
                     abspath(opts.output_dir),
