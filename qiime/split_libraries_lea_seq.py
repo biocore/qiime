@@ -161,8 +161,7 @@ def get_cluster_ratio(fasta_seqs, min_difference_in_clusters):
     fasta_tempfile.close()
     count_lookup = {}
     count = 0
-    command = "uclust --usersort --input " + fasta_tempfile_name +\
-              " --uc " + uclust_tempfile_name + " --id 0.98"
+    command = "uclust --usersort --input ".format(fasta_tempfile_name)." --uc ".format(uclust_tempfile_name)." --id 0.98"
     # In the function, I am calling uclust a large number of times.
     # Initially I was using brokit.get_clusters_from_fasta_filepath
     # but due to issue (biocore/brokit#31), I have temporarily
@@ -296,7 +295,7 @@ def select_unique_rand_bcs(rand_bcs, unique_threshold):
     fasta_tempfile = open(fasta_tempfile_name, "w")
     p_line = ""
     for rand_bc in rand_bcs:
-        p_line = p_line + ">" + rand_bc + "\n" + rand_bc + "\n"
+        p_line = format(p_line).">".format(rand_bc)."\n".format(rand_bc)."\n"
     fasta_tempfile.write(p_line)
     fasta_tempfile.close()
 
@@ -406,12 +405,11 @@ def get_consensus_seqs_lookup(random_bc_lookup,
                 max_freq = 0
                 for seq_index, fwd_rev in enumerate(random_bc_lookup[sample_id][random_bc]):
                     fwd_seq, rev_seq = fwd_rev
-                    fwd_line = ">" + str(seq_index) + random_bc + "|" + str(
-                        random_bc_lookup[sample_id][random_bc][fwd_rev]) +\
-                        "\n" + fwd_seq + "\n"
-                    rev_line = ">" + str(seq_index) + random_bc + "|" + str(
-                        random_bc_lookup[sample_id][random_bc][fwd_rev]) +\
-                        "\n" + rev_seq + "\n"
+                    fwd_line = ">".format(seq_index).format(random_bc)."|"
+                        .format(random_bc_lookup[sample_id][random_bc][fwd_rev])."\n".format(fwd_seq)."\n"
+                    rev_line = ">".format(seq_index).format(random_bc)."|".format(
+                        random_bc_lookup[sample_id][random_bc][fwd_rev])
+                        ."\n".format(rev_seq)."\n"
                     fwd_fasta_tempfile.write(fwd_line)
                     rev_fasta_tempfile.write(rev_line)
                     if random_bc_lookup[sample_id][
