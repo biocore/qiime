@@ -40,7 +40,8 @@ error-corrected consensus sequence for the initial template molecule.
 """
 script_info['script_usage'] = []
 script_info['script_usage'].append((
-    """Example: Specify forward read and reverse read \
+    """General Example: """,
+    """Specify forward read and reverse read \
 fasta files, use the metadata mapping file map.txt,\
 and output the data to output_dir""",
     """output_dir""",
