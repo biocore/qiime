@@ -355,7 +355,7 @@ def check_barcodes(bc_to_sid, barcode_len, barcode_type):
                 "Some or all barcodes in the mapping file are "
                 "not valid golay codes. Do they need to be "
                 "reverse complemented? If these are not golay "
-                "barcodes pass --barcode_type 12 to disable "
+                "barcodes either pass --barcode_type 12 to disable "
                 "barcode error correction, or pass "
                 "--barcode_type  # if the barcodes are not 12 "
                 "base pairs, where   #  is the size of the "
