@@ -223,10 +223,10 @@ script_info['optional_options'] = [
                      'string and the percent query coverage '
                      '[default: %default]'),
 
-    make_option('--sortmerna_best_N_alignments', type='int', default=None,
-                help='If --sortmerna_tabular is set, this option '
-                     'will output the best N alignments per read '
-                     '[default: %default]'),
+    make_option('--sortmerna_best_N_alignments', type='int', default=1,
+                help='Must be set together with --sortmerna_tabular. '
+                     'This option specifies how many alignments per read '
+                     'will be written [default: %default]'),
 
     make_option('--sortmerna_max_pos', type='int', default=10000,
                 help='The maximum number of positions per seed to store '
@@ -670,11 +670,24 @@ def main():
         if sortmerna_e_value < 0:
             option_parser.error('--sortmerna_coverage must be positive.')
 
-        # check that if sortmerna_best_N_alignments is set then so is sortmerna_tabular
-        if sortmerna_best_N_alignments != None:
-            if sortmerna_tabular is False:
-                option_parser.error('must enable --sortmerna_tabular with '
-                                    '--sortmerna_best_N_alignments.')
+        # check sortmerna_best_N_alignments is an integer
+        try:
+            sortmerna_best_N_alignments = int(sortmerna_best_N_alignments)
+        except ValueError:
+            option_parser.error('--sortmerna_best_N_alignments must '
+                                'be an integer value.')
+        if sortmerna_best_N_alignments < 0:
+            option_parser.error('--sortmerna_best_N_alignments must '
+                                'be a positive value.')
+
+        # sortmerna_tabular must be set if sortmerna_best_N_alignments > 1;
+        # sortmerna_best_N_alignments = 1 will always be passed to sortmerna,
+        # with or without sortmerna_tabular, as at least 1 best match is 
+        # required to build an OTU map
+        elif sortmerna_best_N_alignments > 1 and \
+             sortmerna_tabular is False:
+             option_parser.error('--sortmerna_tabular must be set together '
+                                 'with --sortmerna_best_N_alignments.')
 
         # check FASTA reference file or the indexed database (with the FASTA reference file) were provided
         if refseqs_fp is None:
