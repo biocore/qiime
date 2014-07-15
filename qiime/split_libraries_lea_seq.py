@@ -156,8 +156,8 @@ def get_cluster_ratio(fasta_seqs, min_difference_in_clusters):
     close(fd_uc)
     fd_fas, fasta_tempfile_name = mkstemp(dir=temp_dir, suffix='.uc')
     close(fd_fas)
-    fasta_tempfile = open(fasta_tempfile_name, 'w')
-    fasta_tempfile.write(fasta_seqs)
+    with open(fasta_tempfile_name, 'w') as fasta_tempfile:
+        fasta_tempfile.write(fasta_seqs)
     fasta_tempfile.close()
     count_lookup = {}
     count = 0
@@ -217,8 +217,8 @@ def get_consensus(fasta_seqs, min_consensus):
     fd_fas, fasta_tempfile_name = mkstemp(dir=temp_dir, suffix='.fas')
     close(fd_fas)
 
-    fasta_tempfile = open(fasta_tempfile_name, 'w')
-    fasta_tempfile.write(fasta_seqs)
+    with open(fasta_tempfile_name, 'w') as fasta_tempfile:
+        fasta_tempfile.write(fasta_seqs)
     fasta_tempfile.close()
 
     fasta_tempfile = open(fasta_tempfile_name, 'r')
@@ -292,11 +292,10 @@ def select_unique_rand_bcs(rand_bcs, unique_threshold):
     fasta_fd, fasta_tempfile_name = mkstemp(
         dir=temp_dir, prefix='tmp', suffix='.fas')
     rand_bcs = set(rand_bcs)
-    fasta_tempfile = open(fasta_tempfile_name, "w")
-    p_line = ""
-    for rand_bc in rand_bcs:
-        p_line = format(p_line).">".format(rand_bc)."\n".format(rand_bc)."\n"
-    fasta_tempfile.write(p_line)
+    
+    with open(fasta_tempfile_name, 'w') as fasta_tempfile:
+        for rand_bc in rand_bcs:
+            fasta_tempfile.write(format(p_line).">".format(rand_bc)."\n".format(rand_bc)."\n")
     fasta_tempfile.close()
 
     _, _, unique_rand_bcs = get_clusters_from_fasta_filepath(
