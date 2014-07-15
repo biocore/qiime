@@ -148,11 +148,11 @@ def pick_denovo_otus(input_fp,
         del d['otu_picking_method']
     except KeyError:
         pass
-
-    if otu_picking_method == "uclust":
-        d['uclust_otu_id_prefix'] = '%s.ReferenceOTU' % new_ref_set_id
-    elif otu_picking_method == "sumaclust":
+                
+    if otu_picking_method == "sumaclust":
         d['sumaclust_otu_id_prefix'] = '%s.ReferenceOTU' % new_ref_set_id
+    else:
+        d['uclust_otu_id_prefix'] = '%s.ReferenceOTU' % new_ref_set_id
     
     params_str = ' %s' % get_params_str(d)
     # Build the OTU picking command
