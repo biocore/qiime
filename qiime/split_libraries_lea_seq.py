@@ -318,26 +318,21 @@ def format_lea_seq_log(input_seqs_count,
                        seq_too_short_count,
                        total_seqs_kept):
     """ Format the split libraries LEA-Seq log """
-    log_out = ["Quality filter results"]
-    log_out.append(
-        "Total number of input sequences: %d" %
-        input_seqs_count)
-    log_out.append(
-        "Barcode not in mapping file: %d" %
-        barcode_not_in_map_count)
-    log_out.append(
-        "Sequence shorter than threshold: %d" %
-        seq_too_short_count)
-    log_out.append(
-        "Barcode errors exceeds limit: %d" %
-        barcode_errors_exceed_max_count)
-    log_out.append(
-        "Primer mismatch count: %d" %
-        primer_mismatch_count)
-    log_out.append("")
+    log_out = "Quality filter results\n".
+        "Total number of input sequences: ".
+        format(input_seqs_count).
+        "\nBarcode not in mapping file: ".
+        format(barcode_not_in_map_count).
+        "\nSequence shorter than threshold: ".
+        format(seq_too_short_count).
+        "\nBarcode errors exceeds limit: "
+        format(barcode_errors_exceed_max_count).
+        "\nPrimer mismatch count: ".
+        format(primer_mismatch_count).
+        "\n\nTotal number seqs written:.".
+        format(total_seqs_kept)
 
-    log_out.append('\nTotal number seqs written: %d' % total_seqs_kept)
-    return '\n'.join(log_out)
+    return (log_out)
 
 
 def check_barcodes(bc_to_sid, barcode_len, barcode_type):
