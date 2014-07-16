@@ -96,6 +96,48 @@ def get_LEA_seq_consensus_seqs(fwd_read_f, rev_read_f,
     Reads mapping file, input file, and other command line arguments
     fills dictionary called consensus_seq_lookup which will contain:
     sample ID -> random barcode -> consensus_seq
+    Parameters
+    ----------
+    fwd_read_f: file
+        forward read fastq file
+    rev_read_f: file
+        reverse read fastq file
+    map_f: file
+        metadata mapping file
+    output_dir: dirpath
+        output directory path
+    barcode_type: string
+        barcode type, can be either integer or golay_12
+    barcode_len: int
+        barcode length
+    barcode_correction_fn: function
+        applicable only for gloay_12 barcodes
+    max_barcode_errors: int
+        maximum allowable errors in barcodes, applicable for golay_12
+    min_consensus: float
+        minimum score allowable at any position in sequence
+    max_cluster_ratio: float
+        cluster_ratio below which you need to find the consensus sequence
+    min_difference_in_bcs: float
+        threshold for selecting unique barcodes
+    fwd_length: int
+        standard length, used for truncating of the forward sequence
+    rev_length: int
+        standard length, used for truncating of the reverse sequence
+    min_reads_per_random_bc:
+        minimum number of reads per random bc, for it not to be discarded
+    min_difference_in_clusters: float
+        percent identity threshold for cluster formation
+    barcode_column: string
+        header of barcode column
+    reverse_primer_column: string
+        header of the reverse primer column
+    Returns
+    ----------
+    consensus_seq_lookup: defaultdict
+        contains consensus sequence for each sample id and random barcode
+    log_out: string
+        to be printed in log file
     """
 
     (bc_to_sid,
@@ -148,6 +190,17 @@ def get_cluster_ratio(fasta_seqs, min_difference_in_clusters):
     """
     Uses uclust to calculate cluster ratio
     cluster_ratio=num_of_seq_in_cluster_with_max_seq/num_of_seq_in cluster_with_second_higest_seq
+    Parameters
+    ----------
+    fasta_seqs: list
+        list of fasta sequences
+    min_difference_in_clusters: float
+        percent identity threshold for cluster formation
+    Returns
+    ----------
+    cluster_ratio: float
+        cluster ratio of the sequences using uclust
+        cluster_ratio=num_of_seq_in_cluster_with_max_seq/num_of_seq_in cluster_with_second_higest_seq
     """
     cluster_percent_id = min_difference_in_clusters
     temp_dir = get_qiime_temp_dir()
@@ -208,6 +261,14 @@ def get_consensus(fasta_seqs, min_consensus):
     ....
 
     number = number of times this seq has appeared with this random_barcode
+    Parameters
+    ----------
+    fasta_seqs: list
+    min_consensus: float
+    Returns
+    ----------
+    consensus_seq: string
+        consensus sequence for the given list of sequences
     """
     seqs = list()
     counts = list()
