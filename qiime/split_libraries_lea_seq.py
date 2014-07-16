@@ -52,8 +52,17 @@ class BarcodeLenMismatchError(Exception):
 def extract_primer(seq, possible_primers, min_idx=None, max_idx=None):
     """
     Extracts primers from sequence, given possible primers
-    returns before_primer, primer, sequence without primer
-
+    Parameters
+    ----------
+    seq: string
+    possible_primers: list
+    min_idx: int, optional
+    max_idx: int, optional
+    Returns
+    ----------
+    before_primer: string
+    primer: string
+    after_primer: string
     """
 
     primer_idx = None   # index of primer in sequence
@@ -346,7 +355,14 @@ def select_unique_rand_bcs(rand_bcs, unique_threshold):
     due to sequencing errors.
     Uses uclust to remove barcodes that are similar thatn
     threshold.
-    returns: a set containing random unique random barcodes.
+    Parameters
+    ----------
+    rand_bcs: list
+    unique_threshold: float
+    Returns
+    ----------
+    unique_rand_bcs: set
+        set of unique random barcodes.
     """
     temp_dir = get_qiime_temp_dir()
     fasta_fd, fasta_tempfile_name = mkstemp(
@@ -376,7 +392,20 @@ def format_lea_seq_log(input_seqs_count,
                        primer_mismatch_count,
                        seq_too_short_count,
                        total_seqs_kept):
-    """ Format the split libraries LEA-Seq log """
+    """ Format the split libraries LEA-Seq log 
+    Parameters
+    ----------
+    input_seqs_count: int
+    barcode_errors_exceed_max_count: int
+    barcode_not_in_map_count: int
+    primer_mismatch_count: int
+    seq_too_short_count: int
+    total_seqs_kept: int
+    Returns
+    ----------
+    log_out: string
+        to be printed in log file
+    """
     log_out = "Quality filter results\nTotal number of input sequences: {}\nBarcode not in mapping file: {}\nSequence shorter than threshold: {}\nBarcode errors exceeds limit: {}\nPrimer mismatch count: {}\n\nTotal number seqs written: {}".format(input_seqs_count, barcode_not_in_map_count, seq_too_short_count, barcode_errors_exceed_max_count, primer_mismatch_count, total_seqs_kept)
     return (log_out)
 
@@ -386,6 +415,14 @@ def check_barcodes(bc_to_sid, barcode_len, barcode_type):
     Make sure that barcodes (which are guaranteed to be of
     the same length at this point) are the correct length
     that the user specified.
+    Parameters
+    ----------
+    bc_to_sid: dict
+    barcode_len: int
+    barcode_type: string
+    Returns
+    ----------
+    Nothing
     """
     barcode_len_in_map = len(bc_to_sid.keys()[0])
     if barcode_len_in_map != barcode_len:
@@ -418,10 +455,31 @@ def get_consensus_seqs_lookup(random_bc_lookup,
                               min_difference_in_clusters,
                               max_cluster_ratio):
     """
-    Generate LEA-seq consensus sequence
-    returns defaultdict called consensus_seq_lookup
-    which will contain:
-    sample ID -> random barcode -> consensus_seq
+    Generates LEA-seq consensus sequence
+    For each sample id, for each random barcode, consensus sequence is created
+    according to the LEA seq algorithm.
+    Parameters
+    ----------
+    random_bc_lookup: defaultdict
+        contains sample ID -> random barcode -> list of seqs
+    random_bc_reads: defaultdict
+        contains sample ID -> random barcode -> number of reads
+    random_bcs: list
+        list of random barcodes
+    min_difference_in_bcs: float
+        threshold for selecting unique barcodes
+    min_reads_per_random_bc:
+        minimum number of reads per random bc, for it not to be discarded
+    output_dir: dirpath
+        output directory path
+    min_difference_in_clusters: float
+        percent identity threshold for cluster formation
+    max_cluster_ratio: float
+        cluster_ratio below which you need to find the consensus sequence
+    Returns
+    ----------
+    consensus_seq_lookup: defaultdict
+    contains sample ID -> random barcode -> consensus_seq
     """
 
     consensus_seq_lookup = defaultdict(lambda:
@@ -498,7 +556,41 @@ def read_fwd_rev_read(fwd_read_f,
                       max_barcode_errors,
                       fwd_length,
                       rev_length):
-
+    """
+    Reads fwd and rev read fastq files
+    Parameters
+    ----------
+    fwd_read_f: file
+        forward read fastq file
+    rev_read_f: file
+        reverse read fastq file
+    bc_to_sid: dict
+    barcode_len: int
+        barcode length
+    barcode_correction_fn: function
+        applicable only for gloay_12 barcodes
+    bc_to_fwd_primers: dict
+    bc_to_rev_primers: dict 
+    max_barcode_errors: int
+        maximum allowable errors in barcodes, applicable for golay_12
+    fwd_length: int
+        standard length, used for truncating of the forward sequence
+    rev_length: int
+        standard length, used for truncating of the reverse sequence
+    Returns
+    ----------
+    random_bc_lookup: defaultdict
+        contains sample ID -> random barcode -> list of seqs
+    random_bc_reads: defaultdict
+        contains sample ID -> random barcode -> number of reads
+    random_bcs: list
+    barcode_errors_exceed_max_count: int
+    barcode_not_in_map_count: int
+    primer_mismatch_count: int
+    seq_too_short_count: int
+    input_seqs_count: int
+    total_seqs_kept: int
+    """
     random_bc_lookup = defaultdict(lambda:
                                    defaultdict(lambda:
                                                defaultdict(int)))
@@ -616,7 +708,25 @@ def process_mapping_file(map_f,
                          REVERSE_PRIMER_COLUMN):
     """Ensures that sample IDs and barcodes are unique, that barcodes are
     all the same length, and that primers are present. Ensures barcodes
-    and primers only contain valid characters."""
+    and primers only contain valid characters.
+    Parameters
+    ----------
+    map_f: file
+        metadata mapping file
+    barcode_type: string
+        barcode type, can be either integer or golay_12
+    barcode_len: int
+        barcode length
+    barcode_column: string
+        header of barcode column
+    reverse_primer_column: string
+        header of the reverse primer column
+    Returns
+    ----------
+    bc_to_sid: dict
+    bc_to_fwd_primers: dict
+    bc_to_rev_primers: dict
+    """
 
     _, _, bc_to_sid, _, _, bc_to_fwd_primers, _ = check_map(map_f, False)
     map_f.seek(0)
