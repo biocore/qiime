@@ -160,7 +160,7 @@ def get_cluster_ratio(fasta_seqs, min_difference_in_clusters):
     fasta_tempfile.close()
     count_lookup = {}
     count = 0
-    command = "uclust --usersort --input ".format(fasta_tempfile_name)." --uc ".format(uclust_tempfile_name)." --id 0.98"
+    command = "uclust --usersort --input ".format(fasta_tempfile_name)," --uc ".format(uclust_tempfile_name)," --id 0.98"
     # In the function, I am calling uclust a large number of times.
     # Initially I was using brokit.get_clusters_from_fasta_filepath
     # but due to issue (biocore/brokit#31), I have temporarily
@@ -294,7 +294,7 @@ def select_unique_rand_bcs(rand_bcs, unique_threshold):
     
     with open(fasta_tempfile_name, 'w') as fasta_tempfile:
         for rand_bc in rand_bcs:
-            fasta_tempfile.write(format(p_line).">".format(rand_bc)."\n".format(rand_bc)."\n")
+            fasta_tempfile.write(format(p_line),">".format(rand_bc),"\n".format(rand_bc),"\n")
     fasta_tempfile.close()
 
     _, _, unique_rand_bcs = get_clusters_from_fasta_filepath(
@@ -316,19 +316,7 @@ def format_lea_seq_log(input_seqs_count,
                        seq_too_short_count,
                        total_seqs_kept):
     """ Format the split libraries LEA-Seq log """
-    log_out = "Quality filter results\n".
-        "Total number of input sequences: ".
-        format(input_seqs_count).
-        "\nBarcode not in mapping file: ".
-        format(barcode_not_in_map_count).
-        "\nSequence shorter than threshold: ".
-        format(seq_too_short_count).
-        "\nBarcode errors exceeds limit: "
-        format(barcode_errors_exceed_max_count).
-        "\nPrimer mismatch count: ".
-        format(primer_mismatch_count).
-        "\n\nTotal number seqs written:.".
-        format(total_seqs_kept)
+    log_out = "Quality filter results\n","Total number of input sequences: ".format(input_seqs_count),"\nBarcode not in mapping file: ".format(barcode_not_in_map_count),"\nSequence shorter than threshold: ".format(seq_too_short_count),"\nBarcode errors exceeds limit: ".format(barcode_errors_exceed_max_count),"\nPrimer mismatch count: ".format(primer_mismatch_count),"\n\nTotal number seqs written:.".format(total_seqs_kept)
 
     return (log_out)
 
@@ -398,11 +386,8 @@ def get_consensus_seqs_lookup(random_bc_lookup,
                 max_freq = 0
                 for seq_index, fwd_rev in enumerate(random_bc_lookup[sample_id][random_bc]):
                     fwd_seq, rev_seq = fwd_rev
-                    fwd_line = ">".format(seq_index).format(random_bc)."|"
-                        .format(random_bc_lookup[sample_id][random_bc][fwd_rev])."\n".format(fwd_seq)."\n"
-                    rev_line = ">".format(seq_index).format(random_bc)."|".format(
-                        random_bc_lookup[sample_id][random_bc][fwd_rev])
-                        ."\n".format(rev_seq)."\n"
+                    fwd_line = ">".format(seq_index).format(random_bc),"|".format(random_bc_lookup[sample_id][random_bc][fwd_rev]),"\n".format(fwd_seq),"\n"
+                    rev_line = ">".format(seq_index).format(random_bc),"|".format(random_bc_lookup[sample_id][random_bc][fwd_rev]),"\n".format(rev_seq),"\n"
                     fwd_fasta_tempfile.write(fwd_line)
                     rev_fasta_tempfile.write(rev_line)
                     if random_bc_lookup[sample_id][
