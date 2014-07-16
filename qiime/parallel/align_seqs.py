@@ -18,7 +18,7 @@ from brokit.formatdb import build_blast_db_from_fasta_path
 
 from qiime.align_seqs import compute_min_alignment_length
 from qiime.parallel.util import (ParallelWrapper, input_fasta_splitter,
-                                 concatenate_files_from_dirs)
+                                 merge_files_from_dirs, concatenate_files)
 from qiime.parallel.context import context
 from qiime.workflow.util import generate_log_fp
 from qiime.util import get_qiime_temp_dir
@@ -136,16 +136,19 @@ class ParallelAlignSeqsPyNast(ParallelWrapper):
         log_fp = join(output_dir, "%s_log.txt" % prefix)
         # Merge the results by concatenating the output files
         self._job_graph.add_node("CONCAT_ALIGNED",
-                                 job=(concatenate_files_from_dirs, aligned_fp,
-                                      output_dirs, "*_aligned.fasta"),
+                                 job=(merge_files_from_dirs, aligned_fp,
+                                      output_dirs, "*_aligned.fasta",
+                                      concatenate_files),
                                  requires_deps=False)
         self._job_graph.add_node("CONCAT_FAILURES",
-                                 job=(concatenate_files_from_dirs, failures_fp,
-                                      output_dirs, "*_failures.fasta"),
+                                 job=(merge_files_from_dirs, failures_fp,
+                                      output_dirs, "*_failures.fasta",
+                                      concatenate_files),
                                  requires_deps=False)
         self._job_graph.add_node("CONCAT_LOGS",
-                                 job=(concatenate_files_from_dirs, log_fp,
-                                      output_dirs, "*_log.txt"),
+                                 job=(merge_files_from_dirs, log_fp,
+                                      output_dirs, "*_log.txt",
+                                      concatenate_files),
                                  requires_deps=False)
         # Make sure that the concatenate jobs are executed after the worker
         # nodes are finished

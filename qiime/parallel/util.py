@@ -164,7 +164,7 @@ def concatenate_files(output_fp, temp_out_fps):
                     out_f.write(line)
 
 
-def concatenate_files_from_dirs(output_fp, output_dirs, suffix):
+def merge_files_from_dirs(output_fp, output_dirs, format_str, merge_func):
     """Wraps the concatenate_files function so it can generate the actual list
     of files to concatenate from the directories in output_dirs
 
@@ -174,17 +174,19 @@ def concatenate_files_from_dirs(output_fp, output_dirs, suffix):
         The path to the output file
     output_dirs : list of str
         The list of directories in which we should search for the files
-    suffix : str
-        The suffix of the files that we have to search for. It should already
-        include the '*' if needed
+    format_str : str
+        The formatted string of the files that we have to search for. It should
+        include any wildcard that glob can parse (e.g. '*')
+    merge_func : function
+        The function used to merge the results. Signature: f(output_fp, files)
     """
     # Importing here so it is available to the workers
     from glob import glob
     from os.path import join
     files = []
     for out_dir in output_dirs:
-        files.extend(glob(join(out_dir, suffix)))
-    concatenate_files(output_fp, files)
+        files.extend(glob(join(out_dir, format_str)))
+    merge_func(output_fp, files)
 
 
 def input_fasta_splitter(input_fp, output_dir, num):
