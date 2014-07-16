@@ -220,7 +220,6 @@ def get_cluster_ratio(fasta_seqs, min_difference_in_clusters):
     with open(fasta_tempfile_name, 'w') as fasta_tempfile:
         fasta_tempfile.write(fasta_seqs)
     fasta_tempfile.close()
-    count_lookup = {}
     count = 0
     command = "uclust --usersort --input {} --uc {} --id 0.98".format(fasta_tempfile_name, uclust_tempfile_name)
     # In the function, I am calling uclust a large number of times.
@@ -228,6 +227,8 @@ def get_cluster_ratio(fasta_seqs, min_difference_in_clusters):
     # but due to issue (biocore/brokit#31), I have temporarily
     # reverted to qiime_system_call.
 
+    count_lookup = {}
+    
     qiime_system_call(command)
     uclust_tempfile = open(uclust_tempfile_name, 'r')
     for line in uclust_tempfile:
