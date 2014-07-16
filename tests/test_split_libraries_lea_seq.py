@@ -162,7 +162,6 @@ Sequence shorter than threshold: 5
 Barcode errors exceeds limit: 2
 Primer mismatch count: 4
 
-
 Total number seqs written: 6"""
         self.assertEqual(actual, expected)
 
