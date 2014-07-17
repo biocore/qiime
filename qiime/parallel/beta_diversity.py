@@ -14,6 +14,7 @@ from os.path import join, split, splitext, abspath, exists, basename
 from os import makedirs
 from tempfile import mkdtemp
 from math import ceil
+from shutil import move
 
 import networkx as nx
 from skbio.util.misc import create_dir
@@ -159,119 +160,21 @@ class ParallelBetaDiversityMultiple(ParallelWrapper):
         metrics = params['metrics'].split(',')
 
         for i, input_fp in enumerate(input_fps):
+            prefix = splitext(basename(input_fp))[0]
+            node_name = "BDIV_%d" % i
+            out_dir = join(working_dir, node_name)
             base_name = splitext(basename(input_fp))[0]
             cmd = ("beta_diversity.py -i %s -o %s %s -m %s %s"
                    % (input_fp, out_dir, tree_str, params['metrics'],
                       full_tree_str))
-
-
-# class ParallelBetaDiversityMultiple(ParallelBetaDiversity):
-
-#     def _get_job_commands(self,
-#                           input_fps,
-#                           output_dir,
-#                           params,
-#                           job_prefix,
-#                           working_dir,
-#                           command_prefix='/bin/bash; ',
-#                           command_suffix='; exit'):
-#         """Generate beta diversity to split multiple OTU tables to multiple jobs
-#         """
-
-#         if params['full_tree']:
-#             full_tree_str = '-f'
-#         else:
-#             full_tree_str = ''
-
-#         if params['tree_path']:
-#             tree_str = '-t %s' % params['tree_path']
-#         else:
-#             tree_str = ''
-
-#         commands = []
-#         result_filepaths = []
-
-#         metrics = params['metrics']
-
-#         for input_fp in input_fps:
-#             input_path, input_fn = split(input_fp)
-#             input_basename, input_ext = splitext(input_fn)
-#             output_fns = \
-#                 ['%s_%s.txt' % (metric, input_basename)
-#                  for metric in metrics.split(',')]
-#             rename_command, current_result_filepaths = self._get_rename_command(
-#                 output_fns, working_dir, output_dir)
-#             result_filepaths += current_result_filepaths
-
-#             command = '%s %s -i %s -o %s %s -m %s %s %s %s' %\
-#                 (command_prefix,
-#                  self._script_name,
-#                  input_fp,
-#                  working_dir,
-#                  tree_str,
-#                  params['metrics'],
-#                  full_tree_str,
-#                  rename_command,
-#                  command_suffix)
-
-#             commands.append(command)
-
-#         commands = self._merge_to_n_commands(commands,
-#                                              params['jobs_to_start'],
-#                                              command_prefix=command_prefix,
-#                                              command_suffix=command_suffix)
-
-#         return commands, result_filepaths
-
-
-# def parallel_beta_diversity_process_run_results_f(f):
-#     """ Handles re-assembling of a distance matrix from component vectors
-#     """
-#     # iterate over component, output fp lines
-#     for line in f:
-#         fields = line.strip().split('\t')
-#         dm_components = fields[:-1]
-#         output_fp = fields[-1]
-#         # assemble the current dm
-#         dm = assemble_distance_matrix(map(open, dm_components))
-#         # and write it to file
-#         output_f = open(output_fp, 'w')
-#         output_f.write(dm)
-#         output_f.close()
-
-#     return True
-
-
-# def assemble_distance_matrix(dm_components):
-#     """ assemble distance matrix components into a complete dm string
-
-#     """
-#     print "I get called."
-#     data = {}
-#     # iterate over compenents
-#     for c in dm_components:
-#         # create a blank list to store the column ids
-#         col_ids = []
-#         # iterate over lines
-#         for line in c:
-#             # split on tabs remove leading and trailing whitespace
-#             fields = line.strip().split()
-#             if fields:
-#                 # if no column ids seen yet, these are them
-#                 if not col_ids:
-#                     col_ids = fields
-#                 # otherwise this is a data row so add it to data
-#                 else:
-#                     sid = fields[0]
-#                     data[sid] = dict(zip(col_ids, fields[1:]))
-
-#     # grab the col/row ids as a list so it's ordered
-#     labels = data.keys()
-#     # create an empty list to build the dm
-#     dm = []
-#     # construct the dm one row at a time
-#     for l1 in labels:
-#         dm.append([data[l1][l2] for l2 in labels])
-#     # create the dm string and return it
-#     dm = format_distance_matrix(labels, dm)
-#     return dm
+            self._job_graph.add_node(node_name, job=(cmd,),
+                                     requires_deps=False)
+            for metric in metrics:
+                fn = "%s_%s.txt" % (metric, prefix)
+                cmd_fp = join(out_dir, fn)
+                output_fp = join(output_dir, fn)
+                move_node = "MOVE_%s_%s" % (node_name, metric)
+                self._job_graph.add_node(move_node,
+                                         job=(move, cmd_fp, output_fp),
+                                         requires_deps=False)
+                self._job_graph.add_edge(node_name, move_node)
