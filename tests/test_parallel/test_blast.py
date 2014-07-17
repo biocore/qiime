@@ -3,7 +3,7 @@ from __future__ import division
 
 __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2012, The QIIME project"
-__credits__ = ["Jai Ram Rideout"]
+__credits__ = ["Jai Ram Rideout", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Jai Ram Rideout"
@@ -37,9 +37,10 @@ class ParallelBlasterTests(TestCase):
                                 suffix='')
         self.dirs_to_remove.append(self.test_out)
 
-        fd, self.tmp_seq_filepath = mkstemp(dir=self.test_out,
-                                           prefix='qiime_parallel_blaster_tests_input',
-                                           suffix='.fasta')
+        fd, self.tmp_seq_filepath = mkstemp(
+            dir=self.test_out,
+            prefix='qiime_parallel_blaster_tests_input',
+            suffix='.fasta')
         close(fd)
         seq_file = open(self.tmp_seq_filepath, 'w')
         seq_file.write(blast_test_seqs)
@@ -57,12 +58,12 @@ class ParallelBlasterTests(TestCase):
     def tearDown(self):
         """ """
         disable_timeout()
-        remove_files(self.files_to_remove)
-        # remove directories last, so we don't get errors
-        # trying to remove files which may be in the directories
-        for d in self.dirs_to_remove:
-            if exists(d):
-                rmtree(d)
+        # remove_files(self.files_to_remove)
+        # # remove directories last, so we don't get errors
+        # # trying to remove files which may be in the directories
+        # for d in self.dirs_to_remove:
+        #     if exists(d):
+        #         rmtree(d)
 
     def test_parallel_blaster(self):
         """Test ParallelBlaster functions as expected."""
@@ -76,12 +77,7 @@ class ParallelBlasterTests(TestCase):
                   }
 
         app = ParallelBlaster()
-        r = app(self.tmp_seq_filepath,
-                self.test_out,
-                params,
-                job_prefix='BLASTTEST',
-                poll_directly=True,
-                suppress_submit_jobs=False)
+        app(self.tmp_seq_filepath, self.test_out, params)
 
         # Basic sanity checks: we should get two blast hits (lines). We ignore
         # all of the comments in the file. Each line should have 12 fields
