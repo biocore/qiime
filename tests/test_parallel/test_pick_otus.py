@@ -41,8 +41,8 @@ class ParallelPickOtusTests(TestCase):
         self.dirs_to_remove.append(self.test_out)
 
         fd, self.refseqs1_fp = mkstemp(dir=self.test_out,
-                                      prefix='qiime_refseqs',
-                                      suffix='.fasta')
+                                       prefix='qiime_refseqs',
+                                       suffix='.fasta')
         close(fd)
         refseqs1_f = open(self.refseqs1_fp, 'w')
         refseqs1_f.write(refseqs1)
@@ -50,8 +50,8 @@ class ParallelPickOtusTests(TestCase):
         self.files_to_remove.append(self.refseqs1_fp)
 
         fd, self.inseqs1_fp = mkstemp(dir=self.test_out,
-                                     prefix='qiime_inseqs',
-                                     suffix='.fasta')
+                                      prefix='qiime_inseqs',
+                                      suffix='.fasta')
         close(fd)
         inseqs1_f = open(self.inseqs1_fp, 'w')
         inseqs1_f.write(inseqs1)
@@ -91,12 +91,7 @@ class ParallelPickOtusUclustRefTests(ParallelPickOtusTests):
                   }
 
         app = ParallelPickOtusUclustRef()
-        r = app(self.inseqs1_fp,
-                self.test_out,
-                params,
-                job_prefix='PTEST',
-                poll_directly=True,
-                suppress_submit_jobs=False)
+        app(self.inseqs1_fp, self.test_out, params)
         otu_map_fp = glob(join(self.test_out, '*otus.txt'))[0]
         otu_map = parse_otu_map(open(otu_map_fp, 'U'))
         # some basic sanity checks: at least one OTU per reference sequence
