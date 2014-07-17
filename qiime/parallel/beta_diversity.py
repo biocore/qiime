@@ -60,8 +60,12 @@ def merge_distance_matrix(output_fp, component_files):
 
 class ParallelBetaDiversitySingle(ParallelWrapper):
     def _get_sample_id_groups(self, biom_fp, num_groups):
+        """Groups the sample ids on biom_fp in num_groups groups"""
+        # Get the sample ids
         sample_ids = load_table(biom_fp).ids()
+        # Compute the number of ids that has to be in each group
         ids_per_group = int(ceil(len(sample_ids)/float(num_groups)))
+        # Group sample ids
         sample_id_groups = []
         start = 0
         end = ids_per_group
@@ -69,6 +73,7 @@ class ParallelBetaDiversitySingle(ParallelWrapper):
             sample_id_groups.append(sample_ids[start:end])
             start = end
             end += ids_per_group
+
         return sample_id_groups
 
     def _construct_job_graph(self, input_fp, output_dir, params,
@@ -78,6 +83,7 @@ class ParallelBetaDiversitySingle(ParallelWrapper):
 
         input_fp = abspath(input_fp)
         output_dir = abspath(output_dir)
+
         # Create the output directory
         if not exists(output_dir):
             makedirs(output_dir)
@@ -94,6 +100,7 @@ class ParallelBetaDiversitySingle(ParallelWrapper):
         # Generate the log file
         self._log_file = generate_log_fp(output_dir)
 
+        # Parse parameters
         full_tree_str = '-f' if params['full_tree'] else ''
         tree_str = ('-t %s' % abspath(params['tree_path'])
                     if params['tree_path'] else '')
@@ -154,11 +161,13 @@ class ParallelBetaDiversityMultiple(ParallelWrapper):
         # Generate the log file
         self._log_file = generate_log_fp(output_dir)
 
+        # Parse parameters
         full_tree_str = '-f' if params['full_tree'] else ''
         tree_str = ('-t %s' % abspath(params['tree_path'])
                     if params['tree_path'] else '')
         metrics = params['metrics'].split(',')
 
+        # Generate the comands
         for i, input_fp in enumerate(input_fps):
             prefix = splitext(basename(input_fp))[0]
             node_name = "BDIV_%d" % i
@@ -169,6 +178,7 @@ class ParallelBetaDiversityMultiple(ParallelWrapper):
                       full_tree_str))
             self._job_graph.add_node(node_name, job=(cmd,),
                                      requires_deps=False)
+            # Add nodes to move the output files to the correct location
             for metric in metrics:
                 fn = "%s_%s.txt" % (metric, prefix)
                 cmd_fp = join(out_dir, fn)
@@ -177,4 +187,6 @@ class ParallelBetaDiversityMultiple(ParallelWrapper):
                 self._job_graph.add_node(move_node,
                                          job=(move, cmd_fp, output_fp),
                                          requires_deps=False)
+                # Make sure that the move nodes are executed after the job is
+                # done
                 self._job_graph.add_edge(node_name, move_node)
