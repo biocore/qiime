@@ -58,12 +58,12 @@ class ParallelBlasterTests(TestCase):
     def tearDown(self):
         """ """
         disable_timeout()
-        # remove_files(self.files_to_remove)
-        # # remove directories last, so we don't get errors
-        # # trying to remove files which may be in the directories
-        # for d in self.dirs_to_remove:
-        #     if exists(d):
-        #         rmtree(d)
+        remove_files(self.files_to_remove)
+        # remove directories last, so we don't get errors
+        # trying to remove files which may be in the directories
+        for d in self.dirs_to_remove:
+            if exists(d):
+                rmtree(d)
 
     def test_parallel_blaster(self):
         """Test ParallelBlaster functions as expected."""
