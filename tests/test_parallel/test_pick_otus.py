@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso", "Jens Reeder"]
+__credits__ = ["Greg Caporaso", "Jens Reeder", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -136,7 +136,7 @@ class ParallelPickOtusTrieTests(ParallelPickOtusTests):
             ('s7', 'AAATAAAAA')
         ]
         fd, self.small_seq_path = mkstemp(prefix='TrieOtuPickerTest_',
-                                         suffix='.fasta')
+                                          suffix='.fasta')
         close(fd)
         self.files_to_remove = [self.small_seq_path]
         f = open(self.small_seq_path, 'w')
