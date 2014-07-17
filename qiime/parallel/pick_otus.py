@@ -185,7 +185,28 @@ class ParallelPickOtusUclustRef(ParallelPickOtus):
 
 
 class ParallelPickOtusUsearch61Ref(ParallelPickOtus):
-    pass
+    def _picker_specific_nodes(self, params, working_dir):
+        return [], False
+
+    def _get_specific_params_str(self, params):
+        # Generate the parameters to pass to pick_otus.py. This must exclude
+        # parameters that get passed only to the parallel version
+        # (e.g jobs_to_start) and values that get overwritten (e.g.,
+        # input_fasta_fp)
+        param_fields = []
+        ignored_params = {"input_fasta_fp", "output_dir", "jobs_to_start",
+                          "retain_temp_files", "suppress_submit_jobs",
+                          "poll_directly", "cluster_jobs_fp",
+                          "suppress_polling", "job_prefix", "seconds_to_sleep"}
+        for name, value in params.items():
+            if name in ignored_params or value is False:
+                pass
+            elif value is True:
+                param_fields.append('--%s' % name)
+            else:
+                param_fields.append('--%s %s' % (name, value))
+        return ("-m usearch61_ref --suppress_new_clusters %s"
+                % ' '.join(param_fields))
 
 
 class ParallelPickOtusBlast(ParallelPickOtus):

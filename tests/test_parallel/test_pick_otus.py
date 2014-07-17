@@ -20,7 +20,8 @@ from skbio.util.misc import remove_files
 from unittest import TestCase, main
 from qiime.parallel.pick_otus import (ParallelPickOtusUclustRef,
                                       ParallelPickOtusBlast,
-                                      ParallelPickOtusTrie)
+                                      ParallelPickOtusTrie,
+                                      ParallelPickOtusUsearch61Ref)
 from qiime.util import get_qiime_temp_dir
 from qiime.test import initiate_timeout, disable_timeout
 from qiime.parse import parse_otu_map
@@ -62,12 +63,12 @@ class ParallelPickOtusTests(TestCase):
     def tearDown(self):
         """ """
         disable_timeout()
-        remove_files(self.files_to_remove)
-        # remove directories last, so we don't get errors
-        # trying to remove files which may be in the directories
-        for d in self.dirs_to_remove:
-            if exists(d):
-                rmtree(d)
+        # remove_files(self.files_to_remove)
+        # # remove directories last, so we don't get errors
+        # # trying to remove files which may be in the directories
+        # for d in self.dirs_to_remove:
+        #     if exists(d):
+        #         rmtree(d)
 
 
 class ParallelPickOtusUclustRefTests(ParallelPickOtusTests):
@@ -94,6 +95,27 @@ class ParallelPickOtusUclustRefTests(ParallelPickOtusTests):
         otu_map_fp = glob(join(self.test_out, '*otus.txt'))[0]
         otu_map = parse_otu_map(open(otu_map_fp, 'U'))
         # some basic sanity checks: at least one OTU per reference sequence
+        self.assertTrue(len(otu_map[0]) > 5)
+        self.assertEqual(set(otu_map[2]), set(['r1', 'r2', 'r3', 'r4', 'r5']))
+
+
+class ParallelPickOtusTestsUsearch61Ref(ParallelPickOtusTests):
+
+    def test_parallel_pick_otus_usearch61_ref(self):
+        """test_parallel_pick_otus_usearch61_ref functions as expected"""
+        params = {'refseqs_fp': self.refseqs1_fp,
+                  'similarity': 0.97,
+                  'max_accepts': 1,
+                  'max_rejects': 8,
+                  'stepwords': 8,
+                  'word_length': 8,
+                  'enable_rev_strand_match': True}
+        app = ParallelPickOtusUsearch61Ref()
+        app(self.inseqs1_fp, self.test_out, params)
+        otu_map_fp = glob(join(self.test_out, '*otus.txt'))[0]
+        with open(otu_map_fp, 'U') as f:
+            otu_map = parse_otu_map(f)
+        # Some basic sanity checks: at least one OTU per reference sequence
         self.assertTrue(len(otu_map[0]) > 5)
         self.assertEqual(set(otu_map[2]), set(['r1', 'r2', 'r3', 'r4', 'r5']))
 
