@@ -42,7 +42,7 @@ class ParallelWrapper(object):
         self._filepaths_to_remove = []
         self._dirpaths_to_remove = []
 
-    def _construct_job_graph(self, **kwargs):
+    def _construct_job_graph(self, *args, **kwargs):
         """Constructs the workflow graph and the jobs to execute"""
         raise NotImplementedError(
             "This method should be overwritten by the subclass")
