@@ -174,6 +174,15 @@ script_info['script_usage'] = []
 
 script_info['script_usage'].append(("", "Run the subsampled open-reference "
                                     "OTU picking workflow on seqs1.fna using refseqs.fna as the reference "
+                                    "collection and using sortmerna and sumaclust as the OTU picking "
+                                    "methods. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented "
+                                    "here as $PWD, but will genenerally look like "
+                                    "/home/ubuntu/my_analysis/", "%prog -i $PWD/seqs1.fna -r $PWD/refseqs.fna "
+                                    "-o $PWD/ucrss_sortmerna_sumaclust/ -p $PWD/ucrss_smr_suma_params.txt "
+                                    "-m sortmerna_sumaclust"))
+
+script_info['script_usage'].append(("", "Run the subsampled open-reference "
+                                    "OTU picking workflow on seqs1.fna using refseqs.fna as the reference "
                                     "collection. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path "
                                     "represented here as $PWD, but will generally look something like "
                                     "/home/ubuntu/my_analysis/", "%prog -i $PWD/seqs1.fna -r $PWD/refseqs.fna "
@@ -218,7 +227,8 @@ script_info['script_usage'].append(("", "Run the subsampled open-reference "
 
 script_info['script_usage_output_to_remove'] = [
     '$PWD/ucrss/', '$PWD/ucrss_iter/', '$PWD/ucrss_usearch/',
-    '$PWD/ucrss_iter_no_tree/', '$PWD/ucrss_iter_no_tax/'
+    '$PWD/ucrss_iter_no_tree/', '$PWD/ucrss_iter_no_tax/',
+    '$PWD/ucrss_sortmerna_sumaclust/'
 ]
 
 script_info['output_description'] = ""
@@ -320,10 +330,11 @@ def main():
     elif otu_picking_method == 'sortmerna_sumaclust':
         denovo_otu_picking_method = 'sumaclust'
         reference_otu_picking_method = 'sortmerna'
-        if prefilter_percent_id > 0:
-            raise ValueError("SortMeRNA uses the E-value to filter out "
-                             "erroneous sequences, this option does not "
-                             "apply for this tool.")
+        # SortMeRNA uses the E-value to filter out erroneous
+        # sequences, this option does not apply for this 
+        # tool
+        if prefilter_percent_id > 0.0:
+            prefilter_percent_id = None
     else:
         # it shouldn't be possible to get here
         option_parser.error('Unkown OTU picking method: %s' %

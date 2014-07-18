@@ -568,7 +568,6 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # confirm that the new reference sequences is the same length as the
         # input reference sequences plus the number of new non-singleton otus
-        #
         self.assertEqual(count_seqs(new_refseqs_fp)[0],
                          count_seqs(self.test_data['refseqs'][0])[0] +
                          len([o for o in otu_table.ids(axis='observation')
@@ -1048,7 +1047,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         self.assertEqual(len(otu_table.ids(axis='observation')),
                          num_align_seqs)
 
-        # Reference OTUs have correct taxonomy assignment (can't confirm the )
+        # Reference OTUs have correct taxonomy assignment
         obs_idx = otu_table.index('295053', axis='observation')
         self.assertEqual(
             otu_table.metadata(axis='observation')[obs_idx]['taxonomy'],
@@ -1212,7 +1211,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         self.assertEqual(len(otu_table.ids(axis='observation')),
                          num_align_seqs)
 
-        # Reference OTUs have correct taxonomy assignment (can't confirm the )
+        # Reference OTUs have correct taxonomy assignment
         obs_idx = otu_table.index('295053', axis='observation')
         self.assertEqual(
             otu_table.metadata(axis='observation')[obs_idx]['taxonomy'],
@@ -1353,7 +1352,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         self.assertEqual(len(otu_table.ids(axis='observation')),
                          num_align_seqs)
 
-        # Reference OTUs have correct taxonomy assignment (can't confirm the )
+        # Reference OTUs have correct taxonomy assignment
         obs_idx = otu_table.index('295053', axis='observation')
         self.assertEqual(
             otu_table.metadata(axis='observation')[obs_idx]['taxonomy'],
@@ -1494,7 +1493,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
         self.assertEqual(len(otu_table.ids(axis='observation')),
                          num_align_seqs)
 
-        # Reference OTUs have correct taxonomy assignment (can't confirm the )
+        # Reference OTUs have correct taxonomy assignment
         obs_idx = otu_table.index('295053',axis='observation')
         self.assertEqual(
             otu_table.metadata(axis='observation')[obs_idx]['taxonomy'],
