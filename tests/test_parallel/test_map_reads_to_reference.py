@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -23,8 +23,9 @@ from biom import load_table
 from qiime.test import initiate_timeout, disable_timeout
 from qiime.util import get_qiime_temp_dir
 from qiime.parse import parse_otu_map
-from qiime.parallel.map_reads_to_reference import (ParallelDatabaseMapperBlat,
-    ParallelDatabaseMapperUsearch, ParallelDatabaseMapperBwaShort)
+from qiime.parallel.map_reads_to_reference import (
+    ParallelDatabaseMapperBlat, ParallelDatabaseMapperUsearch,
+    ParallelDatabaseMapperBwaShort)
 
 
 class ParallelDatabaseMapperTests(TestCase):
@@ -41,8 +42,8 @@ class ParallelDatabaseMapperTests(TestCase):
         self.dirs_to_remove.append(self.test_out)
 
         fd, self.refseqs1_fp = mkstemp(dir=self.test_out,
-                                      prefix='qiime_refseqs',
-                                      suffix='.fasta')
+                                       prefix='qiime_refseqs',
+                                       suffix='.fasta')
         close(fd)
         refseqs1_f = open(self.refseqs1_fp, 'w')
         refseqs1_f.write(refseqs1)
@@ -50,8 +51,8 @@ class ParallelDatabaseMapperTests(TestCase):
         self.files_to_remove.append(self.refseqs1_fp)
 
         fd, self.refseqs2_fp = mkstemp(dir=self.test_out,
-                                      prefix='qiime_refseqs',
-                                      suffix='.fasta')
+                                       prefix='qiime_refseqs',
+                                       suffix='.fasta')
         close(fd)
         refseqs2_f = open(self.refseqs2_fp, 'w')
         refseqs2_f.write(refseqs2)
@@ -59,8 +60,8 @@ class ParallelDatabaseMapperTests(TestCase):
         self.files_to_remove.append(self.refseqs2_fp)
 
         fd, self.inseqs1_fp = mkstemp(dir=self.test_out,
-                                     prefix='qiime_inseqs',
-                                     suffix='.fasta')
+                                      prefix='qiime_inseqs',
+                                      suffix='.fasta')
         close(fd)
         inseqs1_f = open(self.inseqs1_fp, 'w')
         inseqs1_f.write(inseqs1)
@@ -68,8 +69,8 @@ class ParallelDatabaseMapperTests(TestCase):
         self.files_to_remove.append(self.inseqs1_fp)
 
         fd, self.inseqs2_fp = mkstemp(dir=self.test_out,
-                                     prefix='qiime_inseqs',
-                                     suffix='.fasta')
+                                      prefix='qiime_inseqs',
+                                      suffix='.fasta')
         close(fd)
         inseqs2_f = open(self.inseqs2_fp, 'w')
         inseqs2_f.write(inseqs2)
@@ -107,10 +108,7 @@ class ParallelDatabaseMapperUsearchTests(ParallelDatabaseMapperTests):
         app = ParallelDatabaseMapperUsearch()
         r = app(self.inseqs1_fp,
                 self.test_out,
-                params,
-                job_prefix='PTEST',
-                poll_directly=True,
-                suppress_submit_jobs=False)
+                params)
         observation_map_fp = glob(
             join(self.test_out, 'observation_map.txt'))[0]
         omap = parse_otu_map(open(observation_map_fp, 'U'))
@@ -141,10 +139,7 @@ class ParallelDatabaseMapperBlatTests(ParallelDatabaseMapperTests):
         app = ParallelDatabaseMapperBlat()
         r = app(self.inseqs1_fp,
                 self.test_out,
-                params,
-                job_prefix='PTEST',
-                poll_directly=True,
-                suppress_submit_jobs=False)
+                params)
         observation_map_fp = glob(
             join(self.test_out, 'observation_map.txt'))[0]
         omap = parse_otu_map(open(observation_map_fp, 'U'))
@@ -167,9 +162,7 @@ class ParallelDatabaseMapperBwaShortTests(ParallelDatabaseMapperTests):
         app = ParallelDatabaseMapperBwaShort()
         r = app(self.inseqs2_fp,
                 self.test_out,
-                params,
-                poll_directly=True,
-                suppress_submit_jobs=False)
+                params)
         observation_map_fp = join(self.test_out, 'observation_map.txt')
         self.assertTrue(exists(observation_map_fp))
         observation_table_fp = join(self.test_out, 'observation_table.biom')
@@ -192,9 +185,7 @@ class ParallelDatabaseMapperBwaShortTests(ParallelDatabaseMapperTests):
         app = ParallelDatabaseMapperBwaShort()
         r = app(self.inseqs2_fp,
                 self.test_out,
-                params,
-                poll_directly=True,
-                suppress_submit_jobs=False)
+                params)
         observation_map_fp = join(self.test_out, 'observation_map.txt')
         self.assertTrue(exists(observation_map_fp))
         observation_table_fp = join(self.test_out, 'observation_table.biom')
