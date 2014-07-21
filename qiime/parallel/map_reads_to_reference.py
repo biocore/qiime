@@ -171,8 +171,8 @@ class ParallelDatabaseMapperBwaShort(ParallelDatabaseMapper):
                                       work_dirs, "*.log", concatenate_files),
                                  requires_deps=False)
         out_sam_fp = join(output_dir, 'bwa_raw_out.sam')
-        self._job_graph.add_node("MERGE_BL9",
+        self._job_graph.add_node("MERGE_SAM",
                                  job=(merge_files_from_dirs, out_sam_fp,
                                       work_dirs, "*.sam", concatenate_files),
                                  requires_deps=False)
-        return ["MERGE_LOGS", "MERGE_BL9"]
+        return ["MERGE_LOGS", "MERGE_SAM"]
