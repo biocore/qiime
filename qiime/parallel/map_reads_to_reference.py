@@ -23,6 +23,30 @@ from qiime.parallel.context import context
 from qiime.parallel.pick_otus import merge_otu_maps
 
 
+def command_wrapper(cmd, idx, dep_results=None):
+    """Wraps the command to be executed so it can use the results produced by
+    the jobs in which the command depends on
+
+    Parameters
+    ----------
+    cmd : str
+        Command to execute
+    idx : int
+        The fasta fp index that this job has to execute
+    dep_results : dict of {node_name: tuple}
+        The results in which cmd depends on
+    """
+    from qiime.parallel.context import system_call
+    if "SPLIT_FASTA" not in dep_results:
+        raise ValueError("Wrong job graph workflow. Node 'SPLIT_FASTA' "
+                         "not listed as dependency of current node")
+    fasta_fps = dep_results["SPLIT_FASTA"]
+
+    cmd = cmd % fasta_fps[idx]
+
+    return system_call(cmd)
+
+
 def generate_biom_table(biom_fp, observation_map_fp, observation_metadata_fp):
     # Importing here so the become available on the workers
     from qiime.make_otu_table import make_otu_table
@@ -70,20 +94,26 @@ class ParallelDatabaseMapper(ParallelWrapper):
         refseqs_fp = abspath(params['refseqs_fp'])
 
         # Split the input filepath
-        fasta_fps = input_fasta_splitter(input_fp, working_dir, jobs_to_start)
+        self._job_graph.add_node("SPLIT_FASTA",
+                                 job=(input_fasta_splitter, input_fp,
+                                      working_dir, jobs_to_start),
+                                 requires_deps=False)
 
         out_dirs = []
         nodes = []
         mapper_specific_param_str = self._get_specific_params_str(params)
-        for i, fasta_fp in enumerate(fasta_fps):
+        for i in range(jobs_to_start):
             node = "PDM_%d" % i
             out_dir = join(working_dir, node)
             nodes.append(node)
             out_dirs.append(out_dir)
-            cmd = ("map_reads_to_reference.py -i %s -r %s -o %s %s"
-                   % (fasta_fp, refseqs_fp, out_dir,
-                      mapper_specific_param_str))
-            self._job_graph.add_node(node, job=(cmd,), requires_deps=False)
+            cmd = ("map_reads_to_reference.py -i %s -r {0} -o {1} {2}".format(
+                refseqs_fp, out_dir, mapper_specific_param_str))
+            self._job_graph.add_node(node, job=(command_wrapper, cmd, i),
+                                     requires_deps=True)
+            # Make sure that any of the workers are executed until the
+            # SPLIT_FASTA node is executed
+            self._job_graph.add_edge("SPLIT_FASTA", node)
 
         # Generate the observation map
         out_obs_map = join(output_dir, 'observation_map.txt')
