@@ -17,11 +17,11 @@ import networkx as nx
 from brokit.formatdb import build_blast_db_from_fasta_path
 
 from qiime.align_seqs import compute_min_alignment_length
-from qiime.parallel.util import (ParallelWrapper, input_fasta_splitter,
-                                 merge_files_from_dirs, concatenate_files)
+from qiime.parallel.wrapper import ParallelWrapper
+from qiime.parallel.util import (input_fasta_splitter, merge_files_from_dirs,
+                                 concatenate_files)
 from qiime.parallel.context import context
 from qiime.workflow.util import generate_log_fp
-from qiime.util import get_qiime_temp_dir
 
 
 def command_wrapper(cmd, idx, dep_results=None):

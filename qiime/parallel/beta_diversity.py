@@ -10,17 +10,17 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
-from os.path import join, split, splitext, abspath, exists, basename
+from os.path import join, splitext, abspath, exists, basename
 from os import makedirs
 from tempfile import mkdtemp
 from math import ceil
 from shutil import move
 
 import networkx as nx
-from skbio.util.misc import create_dir
 from biom import load_table
 
-from qiime.parallel.util import ParallelWrapper, merge_files_from_dirs
+from qiime.parallel.wrapper import ParallelWrapper
+from qiime.parallel.util import merge_files_from_dirs
 from qiime.parallel.context import context
 from qiime.workflow.util import generate_log_fp
 from qiime.format import format_distance_matrix
@@ -172,7 +172,6 @@ class ParallelBetaDiversityMultiple(ParallelWrapper):
             prefix = splitext(basename(input_fp))[0]
             node_name = "BDIV_%d" % i
             out_dir = join(working_dir, node_name)
-            base_name = splitext(basename(input_fp))[0]
             cmd = ("beta_diversity.py -i %s -o %s %s -m %s %s"
                    % (input_fp, out_dir, tree_str, params['metrics'],
                       full_tree_str))

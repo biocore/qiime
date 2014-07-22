@@ -20,9 +20,9 @@ from brokit.formatdb import build_blast_db_from_fasta_path
 from skbio.parse.sequences import parse_fasta
 
 from qiime.parallel.context import context
-from qiime.parallel.util import (ParallelWrapper, input_fasta_splitter,
-                                 merge_files_from_dirs, concatenate_files,
-                                 BufferedWriter)
+from qiime.parallel.wrapper import ParallelWrapper
+from qiime.parallel.util import (input_fasta_splitter, merge_files_from_dirs,
+                                 concatenate_files, BufferedWriter)
 from qiime.workflow.util import generate_log_fp
 
 

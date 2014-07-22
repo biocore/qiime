@@ -13,7 +13,7 @@ from tempfile import mkdtemp
 
 import networkx as nx
 
-from qiime.parallel.util import ParallelWrapper
+from qiime.parallel.wrapper import ParallelWrapper
 from qiime.workflow.util import generate_log_fp
 
 

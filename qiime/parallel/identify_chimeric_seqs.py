@@ -9,7 +9,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 
-from os.path import abspath, basename, splitext, join
+from os.path import abspath, basename, join
 from shutil import copyfile
 from tempfile import mkdtemp
 
@@ -19,8 +19,8 @@ from skbio.parse.sequences import parse_fasta
 
 from qiime.identify_chimeric_seqs import make_cidx_file
 from qiime.util import write_degapped_fasta_to_file
-from qiime.parallel.util import (ParallelWrapper, input_fasta_splitter,
-                                 concatenate_files)
+from qiime.parallel.wrapper import ParallelWrapper
+from qiime.parallel.util import input_fasta_splitter, concatenate_files
 from qiime.parallel.context import context, system_call
 from qiime.workflow.util import generate_log_fp
 

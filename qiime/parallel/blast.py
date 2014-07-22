@@ -19,8 +19,8 @@ from brokit.formatdb import build_blast_db_from_fasta_path
 from qiime.util import load_qiime_config
 from qiime.workflow.util import generate_log_fp
 from qiime.parallel.context import context
-from qiime.parallel.util import (ParallelWrapper, input_fasta_splitter,
-                                 concatenate_files)
+from qiime.parallel.wrapper import ParallelWrapper
+from qiime.parallel.util import input_fasta_splitter, concatenate_files
 
 
 def command_wrapper(cmd, idx, dep_results=None):
@@ -107,7 +107,6 @@ class ParallelBlaster(ParallelWrapper):
                                       working_dir, jobs_to_start),
                                  requires_deps=False)
         dep_jobs.append("SPLIT_FASTA")
-        # fasta_fps = input_fasta_splitter(input_fp, working_dir, jobs_to_start)
 
         node_names = []
         temp_outs = []

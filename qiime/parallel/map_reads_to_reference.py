@@ -17,8 +17,9 @@ from tempfile import mkdtemp
 import networkx as nx
 
 from qiime.workflow.util import generate_log_fp
-from qiime.parallel.util import (ParallelWrapper, input_fasta_splitter,
-                                 merge_files_from_dirs, concatenate_files)
+from qiime.parallel.wrapper import ParallelWrapper
+from qiime.parallel.util import (input_fasta_splitter, merge_files_from_dirs,
+                                 concatenate_files)
 from qiime.parallel.context import context
 from qiime.parallel.pick_otus import merge_otu_maps
 

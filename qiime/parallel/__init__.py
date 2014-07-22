@@ -18,7 +18,8 @@ __credits__ = ["Rob Knight",
                "Meg Pirrung",
                "Jens Reeder",
                "Daniel McDonald",
-               "Catherine Lozupone"]
+               "Catherine Lozupone",
+               "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
