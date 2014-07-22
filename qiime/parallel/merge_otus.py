@@ -14,7 +14,7 @@ from tempfile import mkdtemp
 import networkx as nx
 
 from qiime.parallel.wrapper import ParallelWrapper
-from qiime.workflow.util import generate_log_fp
+from qiime.workflow.util import generate_log_fp, WorkflowLogger
 
 
 class ParallelMergeOtus(ParallelWrapper):
@@ -28,7 +28,7 @@ class ParallelMergeOtus(ParallelWrapper):
             makedirs(output_dir)
 
         # Generate the log file
-        self._log_file = generate_log_fp(output_dir)
+        self._logger = WorkflowLogger(generate_log_fp(output_dir))
 
         # Create the working directory
         working_dir = mkdtemp(prefix='MOTU_', dir=output_dir)

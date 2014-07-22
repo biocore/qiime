@@ -21,7 +21,7 @@ from qiime.parallel.wrapper import ParallelWrapper
 from qiime.parallel.util import (input_fasta_splitter, merge_files_from_dirs,
                                  concatenate_files)
 from qiime.parallel.context import context
-from qiime.workflow.util import generate_log_fp
+from qiime.workflow.util import generate_log_fp, WorkflowLogger
 
 
 def command_wrapper(cmd, idx, dep_results=None):
@@ -75,7 +75,7 @@ class ParallelAlignSeqsPyNast(ParallelWrapper):
             jobs_to_start = context.get_number_of_workers()
 
         # Generate the log file
-        self._log_file = generate_log_fp(output_dir)
+        self._logger = WorkflowLogger(generate_log_fp(output_dir))
 
         # Get a folder to store the temporary files
         working_dir = mkdtemp(prefix='align_seqs_', dir=output_dir)

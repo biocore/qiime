@@ -22,7 +22,7 @@ from biom import load_table
 from qiime.parallel.wrapper import ParallelWrapper
 from qiime.parallel.util import merge_files_from_dirs
 from qiime.parallel.context import context
-from qiime.workflow.util import generate_log_fp
+from qiime.workflow.util import generate_log_fp, WorkflowLogger
 from qiime.format import format_distance_matrix
 
 
@@ -98,7 +98,7 @@ class ParallelBetaDiversitySingle(ParallelWrapper):
         self._dirpaths_to_remove.append(working_dir)
 
         # Generate the log file
-        self._log_file = generate_log_fp(output_dir)
+        self._logger = WorkflowLogger(generate_log_fp(output_dir))
 
         # Parse parameters
         full_tree_str = '-f' if params['full_tree'] else ''
@@ -159,7 +159,7 @@ class ParallelBetaDiversityMultiple(ParallelWrapper):
         self._dirpaths_to_remove.append(working_dir)
 
         # Generate the log file
-        self._log_file = generate_log_fp(output_dir)
+        self._logger = WorkflowLogger(generate_log_fp(output_dir))
 
         # Parse parameters
         full_tree_str = '-f' if params['full_tree'] else ''

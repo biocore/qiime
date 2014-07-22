@@ -16,7 +16,7 @@ from os import makedirs
 import networkx as nx
 
 from qiime.parallel.wrapper import ParallelWrapper
-from qiime.workflow.util import generate_log_fp
+from qiime.workflow.util import generate_log_fp, WorkflowLogger
 
 
 class ParallelAlphaDiversity(ParallelWrapper):
@@ -34,7 +34,7 @@ class ParallelAlphaDiversity(ParallelWrapper):
             makedirs(output_dir)
 
         # Create the log file
-        self._log_file = generate_log_fp(output_dir)
+        self._logger = WorkflowLogger(generate_log_fp(output_dir))
 
         for i, input_fp in enumerate(input_fps):
             _, input_fn = split(input_fp)

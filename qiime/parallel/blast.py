@@ -17,7 +17,7 @@ import networkx as nx
 from brokit.formatdb import build_blast_db_from_fasta_path
 
 from qiime.util import load_qiime_config
-from qiime.workflow.util import generate_log_fp
+from qiime.workflow.util import generate_log_fp, WorkflowLogger
 from qiime.parallel.context import context
 from qiime.parallel.wrapper import ParallelWrapper
 from qiime.parallel.util import input_fasta_splitter, concatenate_files
@@ -64,7 +64,7 @@ class ParallelBlaster(ParallelWrapper):
         output_dir = abspath(output_dir)
 
         # Generate the log file
-        self._log_file = generate_log_fp(output_dir)
+        self._logger = WorkflowLogger(generate_log_fp(output_dir))
 
         # If the number of jobs to start is not provided, we default to the
         # number of workers

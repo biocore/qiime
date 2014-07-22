@@ -16,7 +16,7 @@ from os import makedirs
 import networkx as nx
 
 from qiime.parallel.wrapper import ParallelWrapper
-from qiime.workflow.util import generate_log_fp
+from qiime.workflow.util import WorkflowLogger
 
 
 class ParallelMultipleRarefactions(ParallelWrapper):
@@ -40,7 +40,7 @@ class ParallelMultipleRarefactions(ParallelWrapper):
                                      else '')
 
         # Create the log file
-        self._log_file = generate_log_fp(output_dir)
+        self._logger = WorkflowLogger()
 
         # Create the output directory if it does not exists
         if not exists(output_dir):

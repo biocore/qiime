@@ -22,7 +22,7 @@ from qiime.util import write_degapped_fasta_to_file
 from qiime.parallel.wrapper import ParallelWrapper
 from qiime.parallel.util import input_fasta_splitter, concatenate_files
 from qiime.parallel.context import context, system_call
-from qiime.workflow.util import generate_log_fp
+from qiime.workflow.util import generate_log_fp, WorkflowLogger
 
 
 def command_wrapper(cmd, method, idx, dep_results=None):
@@ -111,7 +111,7 @@ class ParallelChimericSequenceIdentifier(ParallelWrapper):
             jobs_to_start = context.get_number_of_workers()
 
         # Generate the lo
-        self._log_file = generate_log_fp(output_dir)
+        self._logger = WorkflowLogger(generate_log_fp(output_dir))
 
         # Check that the method is supported
         if method not in ['ChimeraSlayer', 'blast_fragments']:

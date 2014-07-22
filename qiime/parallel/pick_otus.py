@@ -23,7 +23,7 @@ from qiime.parallel.context import context
 from qiime.parallel.wrapper import ParallelWrapper
 from qiime.parallel.util import (input_fasta_splitter, merge_files_from_dirs,
                                  concatenate_files, BufferedWriter)
-from qiime.workflow.util import generate_log_fp
+from qiime.workflow.util import generate_log_fp, WorkflowLogger
 
 
 def command_wrapper(cmd, idx, needs_blast, dep_results=None):
@@ -91,7 +91,7 @@ class ParallelPickOtus(ParallelWrapper):
             makedirs(output_dir)
 
         # Generate the log file
-        self._log_file = generate_log_fp(output_dir)
+        self._logger = WorkflowLogger(generate_log_fp(output_dir))
 
         # If the number of jobs to start is not provided, we default to the
         # number of workers
@@ -252,7 +252,7 @@ class ParallelPickOtusTrie(ParallelWrapper):
             makedirs(output_dir)
 
         # Generate the log file
-        self._log_file = generate_log_fp(output_dir)
+        self._logger = WorkflowLogger(generate_log_fp(output_dir))
 
         # Get a folder to store the temporary files
         working_dir = mkdtemp(prefix='otu_picker_', dir=output_dir)
