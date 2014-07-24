@@ -61,17 +61,18 @@ class ParallelBetaDiversitySingle(ParallelWrapper):
     def _get_sample_id_groups(self, biom_fp, num_groups):
         """Groups the sample ids on biom_fp in num_groups groups"""
         # Get the sample ids
-        sample_ids = load_table(biom_fp).ids()
+        sample_ids = list(load_table(biom_fp).ids())
         # Compute the number of ids that has to be in each group
         ids_per_group = int(len(sample_ids)/num_groups)
         # Group sample ids
         sample_id_groups = []
         start = 0
         end = ids_per_group
-        for i in range(num_groups):
+        for i in range(num_groups-1):
             sample_id_groups.append(sample_ids[start:end])
             start = end
             end += ids_per_group
+        sample_id_groups.append(sample_ids[start:])
 
         return sample_id_groups
 
@@ -159,8 +160,7 @@ class ParallelBetaDiversityMultiple(ParallelWrapper):
         self._dirpaths_to_remove.append(working_dir)
 
         # Generate the log file
-        self._logger = WorkflowLogger(
-            generate_log_fp(output_dir, basefile_name="parallel_log"))
+        self._logger = WorkflowLogger()
 
         # Parse parameters
         full_tree_str = '-f' if params['full_tree'] else ''

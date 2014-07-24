@@ -18,7 +18,25 @@ from unittest import TestCase, main
 from skbio.util.misc import remove_files
 
 from qiime.util import get_qiime_temp_dir
-from qiime.parallel.util import BufferedWriter
+from qiime.parallel.util import (BufferedWriter, concatenate_files,
+                                 merge_files_from_dir, input_fasta_splitter)
+
+
+class UtilTests(TestCase):
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
+    def test_concatenate_files(self):
+        pass
+
+    def test_merge_files_from_dir(self):
+        pass
+
+    def test_input_fasta_splitter(self):
+        pass
 
 
 class BufferedWriterTests(TestCase):
