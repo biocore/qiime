@@ -224,17 +224,13 @@ script_info['optional_options'] = [
                      '[default: %default]'),
 
     make_option('--sortmerna_best_N_alignments', type='int', default=1,
-                help='If --sortmerna_tabular is set, this option '
-                     'will output the best N alignments per read '
-                     '[default: %default]'),
+                help='Must be set together with --sortmerna_tabular. '
+                     'This option specifies how many alignments per read '
+                     'will be written [default: %default]'),
 
     make_option('--sortmerna_max_pos', type='int', default=10000,
                 help='The maximum number of positions per seed to store '
                      ' in the indexed database [default: %default]'),
-
-    make_option('--sortmerna_otu_id_prefix', type='string', default="QiimeOTU",
-                help='Prefix to closed-reference SortMeRNA clusters'
-                     '[default: %default]'),
 
     # end SortMeRNA specific parameters
     make_option('--min_aligned_percent',
@@ -507,7 +503,6 @@ def main():
     sortmerna_tabular = opts.sortmerna_tabular
     sortmerna_best_N_alignments = opts.sortmerna_best_N_alignments
     sortmerna_max_pos = opts.sortmerna_max_pos
-    sortmerna_otu_id_prefix = opts.sortmerna_otu_id_prefix
 
     # usearch specific parameters
     percent_id_err = opts.percent_id_err
@@ -675,11 +670,24 @@ def main():
         if sortmerna_e_value < 0:
             option_parser.error('--sortmerna_coverage must be positive.')
 
-        # check that if sortmerna_best_N_alignments is set then so is sortmerna_tabular
-        if sortmerna_best_N_alignments != None:
-            if sortmerna_tabular is False:
-                option_parser.error('must enable --sortmerna_tabular with '
-                                    '--sortmerna_best_N_alignments.')
+        # check sortmerna_best_N_alignments is an integer
+        try:
+            sortmerna_best_N_alignments = int(sortmerna_best_N_alignments)
+        except ValueError:
+            option_parser.error('--sortmerna_best_N_alignments must '
+                                'be an integer value.')
+        if sortmerna_best_N_alignments < 0:
+            option_parser.error('--sortmerna_best_N_alignments must '
+                                'be a positive value.')
+
+        # sortmerna_tabular must be set if sortmerna_best_N_alignments > 1;
+        # sortmerna_best_N_alignments = 1 will always be passed to sortmerna,
+        # with or without sortmerna_tabular, as at least 1 best match is 
+        # required to build an OTU map
+        elif sortmerna_best_N_alignments > 1 and \
+             sortmerna_tabular is False:
+             option_parser.error('--sortmerna_tabular must be set together '
+                                 'with --sortmerna_best_N_alignments.')
 
         # check FASTA reference file or the indexed database (with the FASTA reference file) were provided
         if refseqs_fp is None:
@@ -687,12 +695,7 @@ def main():
         elif sortmerna_db:
             if isfile(sortmerna_db + '.stats') is False:
                 option_parser.error('%s does not exist, make sure you have indexed '
-                                    'the database using indexdb_rna' % (sortmerna_db + '.stats'))
-
-        # set default cluster identifier for SortMeRNA
-        if sortmerna_otu_id_prefix is None:
-            sortmerna_otu_id_prefix = "QiimeOTU"
-        
+                                    'the database using indexdb_rna' % (sortmerna_db + '.stats'))        
 
     # End input validation
 
@@ -926,8 +929,7 @@ def main():
                   'best': sortmerna_best_N_alignments,
                   'max_pos': sortmerna_max_pos,
                   'prefilter_identical_sequences':
-                  prefilter_identical_sequences,
-                  'otu_id_prefix': sortmerna_otu_id_prefix}
+                  prefilter_identical_sequences}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,
                    result_path=result_path, log_path=log_path,
