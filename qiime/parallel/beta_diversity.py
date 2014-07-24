@@ -13,7 +13,6 @@ __email__ = "gregcaporaso@gmail.com"
 from os.path import join, splitext, abspath, exists, basename
 from os import makedirs
 from tempfile import mkdtemp
-from math import ceil
 from shutil import move
 
 import networkx as nx
@@ -64,7 +63,7 @@ class ParallelBetaDiversitySingle(ParallelWrapper):
         # Get the sample ids
         sample_ids = load_table(biom_fp).ids()
         # Compute the number of ids that has to be in each group
-        ids_per_group = int(ceil(len(sample_ids)/float(num_groups)))
+        ids_per_group = int(len(sample_ids)/num_groups)
         # Group sample ids
         sample_id_groups = []
         start = 0
@@ -98,7 +97,8 @@ class ParallelBetaDiversitySingle(ParallelWrapper):
         self._dirpaths_to_remove.append(working_dir)
 
         # Generate the log file
-        self._logger = WorkflowLogger(generate_log_fp(output_dir))
+        self._logger = WorkflowLogger(
+            generate_log_fp(output_dir, basefile_name="parallel_log"))
 
         # Parse parameters
         full_tree_str = '-f' if params['full_tree'] else ''
@@ -159,7 +159,8 @@ class ParallelBetaDiversityMultiple(ParallelWrapper):
         self._dirpaths_to_remove.append(working_dir)
 
         # Generate the log file
-        self._logger = WorkflowLogger(generate_log_fp(output_dir))
+        self._logger = WorkflowLogger(
+            generate_log_fp(output_dir, basefile_name="parallel_log"))
 
         # Parse parameters
         full_tree_str = '-f' if params['full_tree'] else ''
