@@ -243,7 +243,7 @@ class SortmernaV2OtuPicker(OtuPicker):
                 self._apply_identical_sequences_prefilter(seq_path)
 
         # Call sortmerna for reference clustering
-        clusters, failures, smr_files_to_remove =\
+        cluster_map, failures, smr_files_to_remove =\
             sortmerna_ref_cluster(seq_path=seq_path,
                                   sortmerna_db=self.sortmerna_db,
                                   refseqs_fp=refseqs_fp,
@@ -260,11 +260,14 @@ class SortmernaV2OtuPicker(OtuPicker):
         self.files_to_remove.extend(smr_files_to_remove)
         remove_files(self.files_to_remove, error_on_missing=False)
 
+        # Expand identical sequences to create full OTU map
         if prefilter_identical_sequences:
-            # Expand identical sequences to create full OTU map
+            cluster_names = cluster_map.keys()
+            clusters = [cluster_map[c] for c in cluster_names]
             clusters =\
                 self._map_filtered_clusters_to_full_clusters(
                     clusters, exact_match_id_map)
+            cluster_map = dict(zip(cluster_names, clusters))
 
             # Expand failures
             temp_failures = []
@@ -272,7 +275,7 @@ class SortmernaV2OtuPicker(OtuPicker):
                 temp_failures.extend(exact_match_id_map[fa])
             failures = temp_failures
 
-        self.log_lines.append('Num OTUs: %d' % len(clusters))
+        self.log_lines.append('Num OTUs: %d' % len(cluster_map))
         self.log_lines.append('Num failures: %d' % len(failures))
 
         # Write failures to file
@@ -282,14 +285,6 @@ class SortmernaV2OtuPicker(OtuPicker):
             failure_file.write('\n')
             failure_file.close()
 
-        # Add prefix ID to closed-reference OTUs
-        otu_id_prefix = self.Params['otu_id_prefix']
-        if otu_id_prefix is None:
-            clusters = dict(enumerate(clusters))
-        else:
-            clusters = dict(('%s%d' % (otu_id_prefix, i), c)
-                            for i, c in enumerate(clusters))
-
         # Write OTU map
         if result_path:
             # If the user provided a result_path, write the
@@ -297,7 +292,7 @@ class SortmernaV2OtuPicker(OtuPicker):
             # cluster (this will over-write the default SortMeRNA
             # OTU map with the extended OTU map)
             of = open(result_path, 'w')
-            for cluster_id, cluster in clusters.items():
+            for cluster_id, cluster in cluster_map.items():
                 of.write('%s\t%s\n' % (cluster_id, '\t'.join(cluster)))
             of.close()
             result = None
@@ -306,7 +301,7 @@ class SortmernaV2OtuPicker(OtuPicker):
             # if the user did not provide a result_path, store
             # the clusters in a dict of {otu_id:[seq_ids]}, where
             # otu_id is arbitrary
-            result = clusters
+            result = cluster_map
             self.log_lines.append('Result path: None, returned as dict.')            
 
         # Log the run

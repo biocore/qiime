@@ -23,6 +23,7 @@ QIIME 1.8.0-dev (changes since 1.8.0 go here)
 * Changed default parameters for uclust-based OTU picking: ``max_accepts`` is now 1 (was 8), ``max_rejects`` is now 8 (was 500), ``stepwords`` is now 8 (was 20), and ``word_length`` is now 8 (was 12). These changes greatly reduce runtime, with minimal effect on the results. See Rideout et al., 2014 ([PeerJ pre-print](https://peerj.com/preprints/411/)) for more details.
 * Disabled the prefilter by default in ``pick_open_reference_otus.py``. This change greatly reduces runtime, with minimal effect on the results. See Rideout et al., 2014 ([PeerJ pre-print](https://peerj.com/preprints/411/)) for more details.
 * ``merge_mapping_files.py`` can now take an argument to convert the header names to upper case, so it will merge for example a category named `treatment` and another one named `TREATMENT` from two different mapping files.
+* Beta support has been added for performing subsampled open reference OTU picking using SortMeRNA ([Bioinformatics](http://www.ncbi.nlm.nih.gov/pubmed/23071270)(for the closed-reference steps) and SumaClust ([In Preparation](http://metabarcoding.org/sumatra)) (for the open reference steps). This can be accessed with 'pick_open_reference_otus.py -m sortmerna_sumaclust'.
 
 QIIME 1.8.0 (11 Dec 2013)
 =========================
