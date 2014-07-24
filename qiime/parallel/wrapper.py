@@ -109,10 +109,11 @@ class ParallelWrapper(object):
     def _clean_up_paths(self):
         """Removes the temporary paths"""
         if not self._retain_temp_files:
+            self._logger.write("\nCleaning up temporary files")
             for fp in self._filepaths_to_remove:
                 remove(fp)
             for dp in self._dirpaths_to_remove:
-                rmtree(fp)
+                rmtree(dp)
 
     def _job_blocker(self, results):
         # Block until all jobs are done
@@ -121,6 +122,7 @@ class ParallelWrapper(object):
         self._logger.write("Done\n")
         self._validate_job_status(results)
         self._validate_execution_order(results)
+        self._clean_up_paths()
         self._logger.close()
 
     def __call__(self, *args, **kwargs):
