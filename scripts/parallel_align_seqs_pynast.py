@@ -62,7 +62,8 @@ script_info['optional_options'] = [
     make_option('-p', '--min_percent_id', action='store',
                 type='float', help='Minimum percent ' +
                 'sequence identity to closest blast hit to include sequence in' +
-                ' alignment [default: %default]', default=75.0),
+                ' alignment, expressed as a real number between 0 and 100 '
+                '[default: %default]', default=75.0),
     options_lookup['jobs_to_start'],
     options_lookup['retain_temp_files'],
     options_lookup['suppress_submit_jobs'],

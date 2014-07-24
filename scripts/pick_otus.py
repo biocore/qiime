@@ -215,7 +215,8 @@ script_info['optional_options'] = [
 
     make_option('--sortmerna_coverage', type='float', default=0.97,
                 help='Mininum percent query coverage (of an alignment) '
-                     'to consider a hit [default: %default]'),
+                     'to consider a hit, expressed as a fraction between 0 '
+                     'and 1 [default: %default]'),
 
     make_option('--sortmerna_tabular', default=False, action='store_true',
                 help='Output alignments in the Blast tabular format '
@@ -235,7 +236,8 @@ script_info['optional_options'] = [
     # end SortMeRNA specific parameters
     make_option('--min_aligned_percent',
                 help='Minimum percent of query sequence that can be aligned '
-                     'to consider a hit (BLAST OTU picker only) '
+                     'to consider a hit, expressed as a fraction between 0 '
+                     'and 1 (BLAST OTU picker only) '
                      '[default: %default]',
                 default=0.50, type='float'),
 
@@ -367,7 +369,8 @@ script_info['optional_options'] = [
 
     make_option('-j', '--percent_id_err', default=0.97,
                 help="Percent identity threshold for cluster error detection "
-                      "with usearch. [default: %default]", type='float'),
+                      "with usearch, expressed as a fraction between 0 and "
+                      "1. [default: %default]", type='float'),
 
     make_option('-g', '--minsize', default=4, help="Minimum cluster size "
                                                     "for size filtering with usearch. [default: %default]",

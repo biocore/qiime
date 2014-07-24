@@ -275,10 +275,12 @@ script_info['optional_options'] = [
     options_lookup['jobs_to_start_workflow'],
     make_option('-s', '--percent_subsample', type='float', default='0.001',
                 help='Percent of failure sequences to include in the subsample to '
-                'cluster de novo (larger numbers should give more comprehensive '
-                'results but will be slower) [default:%default]'),
+                'cluster de novo, expressed as a fraction between 0 and 1 '
+                '(larger numbers should give more comprehensive results but '
+                'will be slower) [default:%default]'),
     make_option('--prefilter_percent_id', type='float', default='0.0',
-                help='Sequences are pre-clustered at this percent id against the '
+                help='Sequences are pre-clustered at this percent id '
+                '(expressed as a fraction between 0 and 1) against the '
                 'reference and any reads which fail to hit are discarded (a quality '
                 'filter); pass 0.0 to disable [default:%default]'),
     make_option('--step1_otu_map_fp', type='existing_filepath',

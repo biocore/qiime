@@ -156,8 +156,9 @@ script_info['optional_options'] = [
 
     make_option('--percent_id', action='store',
                 type='float', dest='percent_id',
-                help='sequence similarity clustering ' +
-                'threshold [default: %default]', default=0.97),
+                help='sequence similarity clustering '
+                'threshold, expressed as a fraction between 0 and 1 '
+                '[default: %default]', default=0.97),
 
     make_option('--low_cut-off', action='store',
                 type='float', dest='low_cutoff',
