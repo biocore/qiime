@@ -57,12 +57,14 @@ script_info['optional_options'] = [
                 help='Database to blast against [default: %s]'
                      % blast_db_default_help,
                 default=qiime_config['pynast_template_alignment_blastdb']),
-    make_option('-e', '--min_length', type='int', default=-1,
+    make_option('-e', '--min_length', type='int',
                 help='Minimum sequence length to include in alignment '
-                     '[default: 75% of the median input sequence length]'),
+                     '[default: 75% of the median input sequence length]',
+                default=-1),
     make_option('-p', '--min_percent_id', action='store', type='float',
                 help='Minimum percent sequence identity to closest blast hit '
-                     'to include sequence in alignment [default: %default]',
+                     'to include sequence in alignment, expressed as a real '
+                     'number between 0 and 100 [default: %default]',
                 default=75.0),
     options_lookup['jobs_to_start'],
     options_lookup['retain_temp_files'],

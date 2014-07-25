@@ -61,16 +61,16 @@ script_info['optional_options'] = [
                 help='Ref seqs to search against. [default: %default]',
                 default=default_reference_seqs_fp, type='existing_filepath'),
     make_option('--uclust_min_consensus_fraction', type='float',
-                help='Minimum fraction of database hits that must have a '
-                     'specific taxonomic assignment to assign that taxonomy '
-                     'to a query [default: %default]',
-                default=0.51),
-    make_option('--uclust_similarity', type='float', default=0.90,
-                help='Minimum percent similarity to consider a database match '
-                     'a hit [default: %default]'),
-    make_option('--uclust_max_accepts', type='int', default=3,
-                help='Number of database hits to consider when making an '
-                     'assignment [default: %default]'),
+                help=('Minimum fraction of database hits that must have a '
+                      'specific taxonomic assignment to assign that taxonomy '
+                      'to a query [default: %default]'), default=0.51),
+    make_option('--uclust_similarity', type='float',
+                help=('Minimum percent similarity to consider a database '
+                      'match a hit, expressed as a fraction between 0 and 1 '
+                      '[default: %default]'), default=0.90),
+    make_option('--uclust_max_accepts', type='int',
+                help=('Number of database hits to consider when making '
+                      'an assignment [default: %default]'), default=3),
     options_lookup['jobs_to_start'],
     options_lookup['retain_temp_files'],
     options_lookup['suppress_submit_jobs'],

@@ -179,7 +179,7 @@ script_info['optional_options'] = [
     make_option('--usearch61_mindiv', default=0.8, help=("Minimum divergence, "
                                                          "i.e. 100% - identity between the query and closest reference "
                                                          "database sequence. Expressed as a percentage, so the default "
-                                                         "is 0.8%, which allows chimeras that are up to 99.2% similar to "
+                                                         "is 0.8, which allows chimeras that are up to 99.2% similar to "
                                                          "a reference sequence. This value is chosen to improve "
                                                          "sensitivity to very low-divergence chimeras.  Must be > 0."
                                                          "[default: %default]"), type='float'),
@@ -191,7 +191,8 @@ script_info['optional_options'] = [
 
     make_option('--percent_id_usearch61', default=0.97,
                 help=("Percent identity threshold for clustering "
-                      "with usearch61. [default: %default]"), type='float'),
+                      "with usearch61, expressed as a fraction between 0 and "
+                      "1. [default: %default]"), type='float'),
 
     make_option('--minlen', default=64, help=("Minimum length of sequence "
                 "allowed for usearch61 [default: %default]"), type='int'),

@@ -66,9 +66,9 @@ script_info['optional_options'] = [
                 help='database to blast against [default: %default]'),
 
     make_option('--min_aligned_percent', default=0.50, type='float',
-                help='Minimum percent of query sequence that can be aligned to'
-                     ' consider a hit (BLAST OTU picker only) [default: '
-                     '%default]'),
+                help='Minimum percent of query sequence that can be aligned '
+                     'to consider a hit, expressed as a fraction between 0 '
+                     'and 1 (BLAST OTU picker only) [default: %default]'),
 
     options_lookup['jobs_to_start'],
     options_lookup['retain_temp_files'],
