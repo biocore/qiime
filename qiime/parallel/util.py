@@ -22,7 +22,7 @@ def concatenate_files(output_fp, temp_out_fps):
         for tmp_fp in temp_out_fps:
             with open(tmp_fp, 'U') as in_f:
                 for line in in_f:
-                    out_f.write(line)
+                    out_f.write('%s\n' % line.strip('\n'))
 
 
 def merge_files_from_dirs(output_fp, output_dirs, format_str, merge_func):
