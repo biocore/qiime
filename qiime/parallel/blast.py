@@ -62,6 +62,9 @@ class ParallelBlaster(ParallelWrapper):
         complexity_str = ('T' if not params['disable_low_complexity_filter']
                           else 'F')
         output_dir = abspath(output_dir)
+        # Create the output directory
+        if not exists(output_dir):
+            makedirs(output_dir)
 
         # Generate the log file
         self._logger = WorkflowLogger(generate_log_fp(output_dir))
@@ -70,10 +73,6 @@ class ParallelBlaster(ParallelWrapper):
         # number of workers
         if jobs_to_start is None:
             jobs_to_start = context.get_number_of_workers()
-
-        # Create the output directory
-        if not exists(output_dir):
-            makedirs(output_dir)
 
         # Get the blastall executable form the qiime config
         blastall_fp = load_qiime_config()['blastall_fp']
