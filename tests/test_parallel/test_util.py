@@ -19,7 +19,7 @@ from skbio.util.misc import remove_files
 
 from qiime.util import get_qiime_temp_dir
 from qiime.parallel.util import (BufferedWriter, concatenate_files,
-                                 merge_files_from_dir, input_fasta_splitter)
+                                 merge_files_from_dirs, input_fasta_splitter)
 
 
 class UtilTests(TestCase):
@@ -32,7 +32,7 @@ class UtilTests(TestCase):
     def test_concatenate_files(self):
         pass
 
-    def test_merge_files_from_dir(self):
+    def test_merge_files_from_dirs(self):
         pass
 
     def test_input_fasta_splitter(self):
