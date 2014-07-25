@@ -9,7 +9,8 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 
-from os.path import abspath, basename, join
+from os.path import abspath, basename, join, exists
+from os import makedirs
 from shutil import copyfile
 from tempfile import mkdtemp
 
@@ -110,7 +111,11 @@ class ParallelChimericSequenceIdentifier(ParallelWrapper):
         if jobs_to_start is None:
             jobs_to_start = context.get_number_of_workers()
 
-        # Generate the lo
+        # Create the output directory
+        if not exists(output_dir):
+            makedirs(output_dir)
+
+        # Generate the log
         self._logger = WorkflowLogger(generate_log_fp(output_dir))
 
         # Check that the method is supported
