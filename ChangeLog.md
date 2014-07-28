@@ -26,6 +26,8 @@ QIIME 1.8.0-dev (changes since 1.8.0 go here)
 * Beta support has been added for performing subsampled open reference OTU picking using SortMeRNA ([Bioinformatics](http://www.ncbi.nlm.nih.gov/pubmed/23071270)(for the closed-reference steps) and SumaClust ([In Preparation](http://metabarcoding.org/sumatra)) (for the open reference steps). This can be accessed with 'pick_open_reference_otus.py -m sortmerna_sumaclust'.
 * Beta support has been added for performing closed-reference OTU picking using SortMeRNA ([Bioinformatics](http://www.ncbi.nlm.nih.gov/pubmed/23071270). This can be accessed with 'pick_closed_reference_otus.py -p params.txt' where params.txt includes the line "pick_otus:otu_picking_method sortmerna".
 * Beta support has been added for performing de novo OTU picking using SumaClust ([In Preparation](http://metabarcoding.org/sumatra)). This can be accessed with 'pick_de_novo_otus.py -p params.txt' where params.txt includes the line "pick_otus:otu_picking_method sumaclust".
+* numpy version requirement has been updated to 1.7.1 or later.
+
 
 QIIME 1.8.0 (11 Dec 2013)
 =========================
