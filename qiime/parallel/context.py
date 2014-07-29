@@ -1,14 +1,11 @@
 from IPython.parallel import Client
 from subprocess import Popen, PIPE
 
+from qiime.parallel.util import ComputeError
 from qiime.util import load_qiime_config
 
 
 qiime_config = load_qiime_config()
-
-
-class ComputeError(Exception):
-    pass
 
 
 def system_call(cmd):

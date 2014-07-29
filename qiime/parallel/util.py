@@ -17,6 +17,10 @@ from qiime.util import load_qiime_config
 qiime_config = load_qiime_config()
 
 
+class ComputeError(Exception):
+    pass
+
+
 def concatenate_files(output_fp, temp_out_fps):
     with open(output_fp, 'w') as out_f:
         for tmp_fp in temp_out_fps:
