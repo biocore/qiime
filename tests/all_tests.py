@@ -84,7 +84,7 @@ def main():
         Popen(["parallel", "start", "--profile", "default", "-n", "4"])
         shutdown_ipython = True
         # It takes some time to register the workers
-        sleep(10)
+        sleep(20)
 
     # Run through all of QIIME's unit tests, and keep track of any files which
     # fail unit tests.
