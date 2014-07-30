@@ -55,28 +55,48 @@ def merge_files_from_dirs(output_fp, output_dirs, format_str, merge_func):
 
 
 def input_fasta_splitter(input_fp, output_dir, num):
+    """Splits the input fasta file in num chunks and puts the on output_dir
+
+    Parameters
+    ----------
+    input_fp : str
+        Path to the input fasta file
+    output_dir : str
+        Path to the output directory. It will be created if it does not exists
+    num : int
+        Number of chunks in which the input fasta file should be divided
+
+    Returns
+    -------
+    list of str
+        A list of paths to the chunk files
+    """
     # Importing here so it becomes available on the workers
-    from os.path import basename, splitext
-    from qiime.util import count_seqs
-    from qiime.split import split_fasta
-    # First compute the number of sequences per file
-    # Count the number of sequences in the fasta file
-    num_input_seqs = count_seqs(input_fp)[0]
+    from os.path import exists, basename, splitext, join
+    from os import makedirs
+    from skbio.parse.sequences import parse_fasta
 
-    # divide the number of sequences by the number of jobs to start
-    num_seqs_per_file = num_input_seqs / num
+    if not exists(output_dir):
+        makedirs(output_dir)
 
-    # if we don't have a perfect split, round up
-    if num_seqs_per_file % 1 != 0:
-        num_seqs_per_file += 1
-
-    # Get the number of sequences as an integer
-    num_seqs_per_file = int(num_seqs_per_file)
-
-    # Generate a prefix for the files
+    # Generate a prefix for the output files
     prefix = splitext(basename(input_fp))[0]
-    fasta_fps = split_fasta(open(input_fp), num_seqs_per_file, prefix,
-                            working_dir=output_dir)
+    fasta_fps = [join(output_dir, '%s.%s.fasta' % (prefix, i))
+                 for i in range(num)]
+    # Open all the files
+    open_files = [open(fp, 'w') for fp in fasta_fps]
+
+    # Write the chunks
+    for i, seq_data in enumerate(parse_fasta(input_fp)):
+        seq_id, seq = seq_data
+        idx = i % num
+        open_files[idx].write('>%s\n%s\n' % (seq_id, seq))
+
+    # close all the files
+    for of in open_files:
+        of.close()
+
+    # Return the list of filepaths
     return fasta_fps
 
 
