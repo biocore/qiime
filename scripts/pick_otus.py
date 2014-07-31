@@ -29,29 +29,31 @@ script_info['script_description'] = """The OTU picking step assigns similar sequ
 
 Currently, the following clustering methods have been implemented in QIIME:
 
-1. cd-hit (Li & Godzik, 2006; Li, Jaroszewski, & Godzik, 2001), which applies a \"longest-sequence-first list removal algorithm\" to cluster sequences.
+1.  cd-hit (Li & Godzik, 2006; Li, Jaroszewski, & Godzik, 2001), which applies a \"longest-sequence-first list removal algorithm\" to cluster sequences.
 
-2. blast (Altschul, Gish, Miller, Myers, & Lipman, 1990), which compares and clusters each sequence against a reference database of sequences.
+2.  blast (Altschul, Gish, Miller, Myers, & Lipman, 1990), which compares and clusters each sequence against a reference database of sequences.
 
-3. Mothur (Schloss et al., 2009), which requires an input file of aligned sequences.  The input file of aligned sequences may be generated from an input file like the one described below by running align_seqs.py.  For the Mothur method, the clustering algorithm may be specified as nearest-neighbor, furthest-neighbor, or average-neighbor.  The default algorithm is furthest-neighbor.
+3.  Mothur (Schloss et al., 2009), which requires an input file of aligned sequences.  The input file of aligned sequences may be generated from an input file like the one described below by running align_seqs.py.  For the Mothur method, the clustering algorithm may be specified as nearest-neighbor, furthest-neighbor, or average-neighbor.  The default algorithm is furthest-neighbor.
 
-4. prefix/suffix [Qiime team, unpublished], which will collapse sequences which are identical in their first and/or last bases (i.e., their prefix and/or suffix). The prefix and suffix lengths are provided by the user and default to 50 each.
+4.  prefix/suffix [Qiime team, unpublished], which will collapse sequences which are identical in their first and/or last bases (i.e., their prefix and/or suffix). The prefix and suffix lengths are provided by the user and default to 50 each.
 
-5. Trie [Qiime team, unpublished], which collapsing identical sequences and sequences which are subsequences of other sequences.
+5.  Trie [Qiime team, unpublished], which collapsing identical sequences and sequences which are subsequences of other sequences.
 
-6. uclust (Edgar, RC 2010), creates \"seeds\" of sequences which generate clusters based on percent identity.
+6.  uclust (Edgar, RC 2010), creates \"seeds\" of sequences which generate clusters based on percent identity.
 
-7. uclust_ref (Edgar, RC 2010), as uclust, but takes a reference database to use as seeds.  New clusters can be toggled on or off.
+7.  uclust_ref (Edgar, RC 2010), as uclust, but takes a reference database to use as seeds.  New clusters can be toggled on or off.
 
-8. usearch (Edgar, RC 2010, version v5.2.236), creates \"seeds\" of sequences which generate clusters based on percent identity, filters low abundance clusters, performs de novo and reference based chimera detection.
+8.  usearch (Edgar, RC 2010, version v5.2.236), creates \"seeds\" of sequences which generate clusters based on percent identity, filters low abundance clusters, performs de novo and reference based chimera detection.
 
-9. usearch_ref (Edgar, RC 2010, version v5.2.236), as usearch, but takes a reference database to use as seeds.  New clusters can be toggled on or off.
+9.  usearch_ref (Edgar, RC 2010, version v5.2.236), as usearch, but takes a reference database to use as seeds.  New clusters can be toggled on or off.
 
 Quality filtering pipeline with usearch 5.X is described as usearch_qf "usearch quality filter", described here: http://qiime.org/tutorials/usearch_quality_filter.html
 
-8. usearch61 (Edgar, RC 2010, version v6.1.544), creates \"seeds\" of sequences which generate clusters based on percent identity.
+8.  usearch61 (Edgar, RC 2010, version v6.1.544), creates \"seeds\" of sequences which generate clusters based on percent identity.
 
-9. usearch61_ref (Edgar, RC 2010, version v6.1.544), as usearch61, but takes a reference database to use as seeds.  New clusters can be toggled on or off.
+9.  usearch61_ref (Edgar, RC 2010, version v6.1.544), as usearch61, but takes a reference database to use as seeds.  New clusters can be toggled on or off.
+
+11. sumaclust (Mercier, C. et al, 2014, version 1.0), creates \"seeds\" of sequences which generate clusters based on similarity threshold.
 
 10. sortmerna_v2 (Kopylova, E. et al., 2012), takes a reference database to use as seeds. 
 
@@ -168,130 +170,150 @@ script_info['required_options'] = [
 script_info['optional_options'] = [
     make_option('-m', '--otu_picking_method', type='choice',
                 choices=otu_picking_method_choices, default="uclust",
-                help=('Method for picking OTUs.  Valid choices are: ' +
+                help='Method for picking OTUs.  Valid choices are: ' +
                       ', '.join(otu_picking_method_choices) +
                       '. The mothur method requires an input file '
                       'of aligned sequences.  usearch will enable the usearch quality '
-                      'filtering pipeline. [default: %default]')),
+                      'filtering pipeline. [default: %default]'),
 
     make_option('-c', '--clustering_algorithm', type='choice',
                 choices=MothurOtuPicker.ClusteringAlgorithms, default='furthest',
-                help=('Clustering algorithm for mothur otu picking method.  Valid '
+                help='Clustering algorithm for mothur otu picking method.  Valid '
                       'choices are: ' +
                       ', '.join(MothurOtuPicker.ClusteringAlgorithms) +
-                      '. [default: %default]')),
+                      '. [default: %default]'),
 
     make_option('-M', '--max_cdhit_memory', type='int', default=400,
-                help=('Maximum available memory to cd-hit-est (via the program\'s -M '
+                help='Maximum available memory to cd-hit-est (via the program\'s -M '
                       'option) for cdhit OTU picking method (units of Mbyte) '
-                      '[default: %default]')),
+                      '[default: %default]'),
 
     make_option('-o', '--output_dir', type='new_dirpath',
-                help=('Path to store result file '
-                      '[default: ./<OTU_METHOD>_picked_otus/]')),
+                help='Path to store result file '
+                      '[default: ./<OTU_METHOD>_picked_otus/]'),
 
     make_option('-r', '--refseqs_fp', type='existing_filepath',
-                help=('Path to reference sequences to search against when using -m '
+                help='Path to reference sequences to search against when using -m '
                       'blast, -m sortmerna, -m uclust_ref, -m usearch_ref, or -m '
-                      'usearch61_ref [default: %default]')),
+                      'usearch61_ref [default: %default]'),
 
     make_option('-b', '--blast_db', type='blast_db',
-                help=('Pre-existing database to blast against when using -m blast '
-                      '[default: %default]')),
+                help='Pre-existing database to blast against when using -m blast '
+                      '[default: %default]'),
 
     make_option('-e', '--max_e_value_blast', type='float', default=1e-10,
-                help=('Max E-value when clustering with BLAST [default: %default]')),
+                help='Max E-value when clustering with BLAST '
+                     '[default: %default]'),
 
-# SortMeRNA specific parameters
-    make_option('--sortmerna_db', type='string', 
-                help=('Pre-existing database to search against when using -m sortmerna '
-                      '[default: %default]')),
+    # SortMeRNA specific parameters
+    make_option('--sortmerna_db', type='string',
+                help='Pre-existing database to search against when using '
+                     '-m sortmerna [default: %default]'),
 
     make_option('--sortmerna_e_value', type='float', default=1,
-                help=('Maximum E-value when clustering [default = %default]')),
+                help='Maximum E-value when clustering [default = %default]'),
 
     make_option('--sortmerna_coverage', type='float', default=0.97,
-                help=('Mininum percent query coverage (of an alignment) '
-                      'to consider a hit [default: %default]')),
+                help='Mininum percent query coverage (of an alignment) '
+                     'to consider a hit, expressed as a fraction between 0 '
+                     'and 1 [default: %default]'),
 
     make_option('--sortmerna_tabular', default=False, action='store_true',
-                help=('Output alignments in the Blast tabular format '
-                      'with two additional columns including the CIGAR '
-                      'string and the percent query coverage [default: %default]')),
+                help='Output alignments in the Blast tabular format '
+                     'with two additional columns including the CIGAR '
+                     'string and the percent query coverage '
+                     '[default: %default]'),
 
-    make_option('--sortmerna_best_N_alignments', type='int',
-                help=('If --sortmerna_tabular is set, this option '
-                      'will output the best N alignments per read [default: %default]')),
+    make_option('--sortmerna_best_N_alignments', type='int', default=1,
+                help='Must be set together with --sortmerna_tabular. '
+                     'This option specifies how many alignments per read '
+                     'will be written [default: %default]'),
 
     make_option('--sortmerna_max_pos', type='int', default=10000,
-                help=('The maximum number of positions per seed to store in the '
-                      ' indexed database [default: %default]')),
-# end SortMeRNA specific parameters
+                help='The maximum number of positions per seed to store '
+                     ' in the indexed database [default: %default]'),
 
+    # end SortMeRNA specific parameters
     make_option('--min_aligned_percent',
-                help=('Minimum percent of query sequence that can be aligned to '
-                      'consider a hit (BLAST OTU picker only) [default: %default]'),
+                help='Minimum percent of query sequence that can be aligned '
+                     'to consider a hit, expressed as a fraction between 0 '
+                     'and 1 (BLAST OTU picker only) '
+                     '[default: %default]',
                 default=0.50, type='float'),
 
     make_option('-s', '--similarity', type='float', default=0.97,
                 help=('Sequence similarity threshold (for blast, cdhit, uclust, '
-                      'uclust_ref, usearch, usearch_ref, usearch61, usearch61_ref or sortmerna'
-                      ') [default: %default]')),
+                      'uclust_ref, usearch, usearch_ref, usearch61, usearch61_ref, '
+                      'sumaclust or sortmerna [default: %default]')),
+
+    make_option('--sumaclust_exact', action='store_true', default=False,
+                help='A sequence is assigned to the best matching seed '
+                     'rather than the first matching seed passing the '
+                     'similarity threshold [default: %default]'),
+
+    make_option('--sumaclust_l', action='store_true', default=True,
+                help='Reference sequence length if the shortest '
+                     '[default: %default]'),
+
+    make_option('--sumaclust_otu_id_prefix', default="denovo", type='string',
+                help='OTU identifier prefix (string) for the de novo '
+                     'SumaClust OTU picker [default: %default, OTU ids '
+                     'are ascending integers]'),
 
     make_option('-q', '--trie_reverse_seqs', action='store_true',
                 default=False,
-                help=('Reverse seqs before picking OTUs with the Trie OTU picker for '
-                      'suffix (rather than prefix) collapsing [default: %default]')),
+                help='Reverse seqs before picking OTUs with the Trie OTU picker for '
+                      'suffix (rather than prefix) collapsing [default: %default]'),
 
     make_option('-n', '--prefix_prefilter_length', type='int', default=None,
-                help=('Prefilter data so seqs with identical first '
+                help='Prefilter data so seqs with identical first '
                       'prefix_prefilter_length are automatically grouped into a single '
                       'OTU.  This is useful for large sequence collections where OTU '
                       'picking doesn\'t scale well [default: %default; 100 is a good '
-                      'value]')),
+                      'value]'),
 
     make_option('-t', '--trie_prefilter', action='store_true',
                 default=False,
-                help=('prefilter data so seqs which are identical prefixes of a longer '
+                help='prefilter data so seqs which are identical prefixes of a longer '
                       'seq are automatically grouped into a single OTU; useful for '
                       'large sequence collections where OTU picking doesn\'t scale '
-                      'well [default: %default]')),
+                      'well [default: %default]'),
 
     make_option('-p', '--prefix_length', type='int', default=50,
-                help=('Prefix length when using the prefix_suffix otu picker; '
+                help='Prefix length when using the prefix_suffix otu picker; '
                       'WARNING: CURRENTLY DIFFERENT FROM prefix_prefilter_length '
-                      '(-n)! [default: %default]')),
+                      '(-n)! [default: %default]'),
 
     make_option('-u', '--suffix_length', type='int', default=50,
-                help=('Suffix length when using the prefix_suffix otu picker '
-                      '[default: %default]')),
+                help='Suffix length when using the prefix_suffix otu picker '
+                      '[default: %default]'),
 
     make_option('-z', '--enable_rev_strand_match', action='store_true',
                 default=False,
-                help=('Enable reverse strand matching for uclust, uclust_ref, '
+                help='Enable reverse strand matching for uclust, uclust_ref, '
                       'usearch, usearch_ref, usearch61, or usearch61_ref otu picking, '
-                      'will double the amount of memory used. [default: %default]')),
+                      'will double the amount of memory used. [default: %default]'),
 
     make_option('-D', '--suppress_presort_by_abundance_uclust',
                 action='store_true',
                 default=False,
-                help=('Suppress presorting of sequences by abundance when picking'
-                      ' OTUs with uclust or uclust_ref [default: %default]')),
+                help='Suppress presorting of sequences by abundance when picking'
+                      ' OTUs with uclust or uclust_ref [default: %default]'),
 
     make_option('-A', '--optimal_uclust', action='store_true',
                 default=False,
-                help=('Pass the --optimal flag to uclust for uclust otu'
-                      ' picking. [default: %default]')),
+                help='Pass the --optimal flag to uclust for uclust otu'
+                      ' picking. [default: %default]'),
 
     make_option('-E', '--exact_uclust', action='store_true',
                 default=False,
-                help=('Pass the --exact flag to uclust for uclust otu'
-                      ' picking. [default: %default]')),
+                help='Pass the --exact flag to uclust for uclust otu'
+                      ' picking. [default: %default]'),
 
     make_option('-B', '--user_sort', action='store_true',
                 default=False,
-                help=('Pass the --user_sort flag to uclust for uclust otu'
-                      ' picking. [default: %default]')),
+                help='Pass the --user_sort flag to uclust for uclust otu'
+                      ' picking. [default: %default]'),
 
     make_option('-C', '--suppress_new_clusters', action='store_true',
                 default=False,
@@ -302,17 +324,17 @@ script_info['optional_options'] = [
     make_option('--max_accepts', default='default',
                 help="max_accepts value to uclust, uclust_ref, usearch61, and "
                 "usearch61_ref.  By default, will use value suggested by "
-                "method (uclust: 20, usearch61: 1) [default: %default]"),
+                "method (uclust: 1, usearch61: 1) [default: %default]"),
 
     make_option('--max_rejects', default='default',
                 help="max_rejects value for uclust, uclust_ref, usearch61, and "
                 "usearch61_ref.  With default settings, will use value "
                 "recommended by clustering method used "
-                "(uclust: 500, usearch61: 8 for usearch_fast_cluster option,"
+                "(uclust: 8, usearch61: 8 for usearch_fast_cluster option,"
                 " 32 for reference and smallmem options) "
                 "[default: %default]"),
 
-    make_option('--stepwords', type='int', default=20,
+    make_option('--stepwords', type='int', default=8,
                 help="stepwords value to uclust and "
                 "uclust_ref [default: %default]"),
 
@@ -320,129 +342,125 @@ script_info['optional_options'] = [
                 help="word length value for uclust, uclust_ref, and "
                 "usearch, usearch_ref, usearch61, and usearch61_ref. "
                 "With default setting, will use the setting recommended by "
-                "the method (uclust: 12, usearch: 64, usearch61: 8).  int "
+                "the method (uclust: 8, usearch: 64, usearch61: 8).  int "
                 "value can be supplied to override this setting. "
                 "[default: %default]"),
 
     make_option('--uclust_otu_id_prefix', default="denovo", type='string',
-                help=("OTU identifier prefix (string) for the de novo uclust"
+                help="OTU identifier prefix (string) for the de novo uclust"
                       " OTU picker and for new clusters when uclust_ref is used "
                       "without -C [default: %default, OTU ids are ascending"
-                      " integers]")),
+                      " integers]"),
 
     make_option('--suppress_uclust_stable_sort', default=False,
-                action='store_true', help=("Don't pass --stable-sort to "
-                                           "uclust [default: %default]")),
+                action='store_true', help="Don't pass --stable-sort to "
+                                           "uclust [default: %default]"),
 
-    make_option('--suppress_uclust_prefilter_exact_match',
-                default=False, action='store_true', help=("Don't collapse "
-                                                          "exact matches before calling uclust [default: %default]")),
+    make_option('--suppress_prefilter_exact_match',
+                default=False, action='store_true', 
+                help="Don't collapse exact matches before calling "
+                  "sortmerna, sumaclust or uclust [default: %default]"),
 
     make_option('-d', '--save_uc_files', default=True, action='store_false',
-                help=("Enable preservation of intermediate uclust (.uc) files "
+                help="Enable preservation of intermediate uclust (.uc) files "
                       "that are used to generate clusters via uclust.  Also enables "
                       "preservation of all intermediate files created by usearch "
-                      " and usearch61. [default: %default]")),
+                      " and usearch61. [default: %default]"),
 
     make_option('-j', '--percent_id_err', default=0.97,
-                help=("Percent identity threshold for cluster error detection "
-                      "with usearch. [default: %default]"), type='float'),
+                help="Percent identity threshold for cluster error detection "
+                      "with usearch, expressed as a fraction between 0 and "
+                      "1. [default: %default]", type='float'),
 
-    make_option('-g', '--minsize', default=4, help=("Minimum cluster size "
-                                                    "for size filtering with usearch. [default: %default]"),
+    make_option('-g', '--minsize', default=4, help="Minimum cluster size "
+                                                    "for size filtering with usearch. [default: %default]",
                 type='int'),
 
-    make_option('-a', '--abundance_skew', default=2.0, help=("Abundance skew "
+    make_option('-a', '--abundance_skew', default=2.0, help="Abundance skew "
                                                              "setting for de novo chimera detection with usearch. "
-                                                             "[default: %default]"), type='float'),
+                                                             "[default: %default]", type='float'),
 
     make_option('-f', '--db_filepath', type='existing_filepath', default=None,
-                help=("Reference database of fasta sequences for reference "
-                      "based chimera detection with usearch. [default: %default]")),
+                help="Reference database of fasta sequences for reference "
+                      "based chimera detection with usearch. [default: %default]"),
 
-    make_option('--perc_id_blast', default=0.97, help=("Percent ID for "
+    make_option('--perc_id_blast', default=0.97, help="Percent ID for "
                                                        "mapping OTUs created by usearch back to original sequence"
-                                                       " IDs [default: %default]"), type='float'),
+                                                       " IDs [default: %default]", type='float'),
 
-    make_option('--de_novo_chimera_detection', help=(
-        "Deprecated:  de novo chimera detection performed by default, "
+    make_option('--de_novo_chimera_detection', help="Deprecated:  de novo chimera detection performed by default, "
         "pass --suppress_de_novo_chimera_detection to disable."
-        " [default: %default]")),
+        " [default: %default]"),
 
     make_option('-k', '--suppress_de_novo_chimera_detection', default=False,
-                help=("Suppress de novo chimera detection in usearch. "
-                      "[default: %default]"), action='store_true'),
+                help="Suppress de novo chimera detection in usearch. "
+                      "[default: %default]", action='store_true'),
 
     make_option('--reference_chimera_detection',
-                help=("Deprecated:  Reference based chimera detection performed "
+                help="Deprecated:  Reference based chimera detection performed "
                       "by default, pass --supress_reference_chimera_detection to "
-                      "disable [default: %default]")),
+                      "disable [default: %default]"),
 
     make_option('-x', '--suppress_reference_chimera_detection', default=False,
-                help=("Suppress reference based chimera detection in usearch. "
-                      "[default: %default]"), action='store_true'),
+                help="Suppress reference based chimera detection in usearch. "
+                      "[default: %default]", action='store_true'),
 
-    make_option('--cluster_size_filtering', help=("Deprecated, "
+    make_option('--cluster_size_filtering', help="Deprecated, "
                                                   "cluster size filtering enabled by default, pass "
                                                   "--suppress_cluster_size_filtering to disable."
-                                                  "  [default: %default]")),
+                                                  "  [default: %default]"),
 
     make_option('-l', '--suppress_cluster_size_filtering', default=False,
-                help=("Suppress cluster size filtering in usearch.  "
-                      "[default: %default]"), action='store_true'),
+                help="Suppress cluster size filtering in usearch.  "
+                      "[default: %default]", action='store_true'),
 
-    make_option('--remove_usearch_logs', default=False, help=("Disable "
+    make_option('--remove_usearch_logs', default=False, help="Disable "
                                                               "creation of logs when usearch is called.  Up to nine logs are "
                                                               "created, depending on filtering steps enabled.  "
-                                                              "[default: %default]"), action='store_true'),
+                                                              "[default: %default]", action='store_true'),
 
-    make_option('--derep_fullseq', default=False, help=("Dereplication "
+    make_option('--derep_fullseq', default=False, help="Dereplication "
                 "of full sequences, instead of subsequences. Faster than "
                                                         "the default --derep_subseqs in usearch. "
-                                                        "[default: %default]"), action='store_true'),
+                                                        "[default: %default]", action='store_true'),
 
     make_option('-F', '--non_chimeras_retention', default='union',
-                help=("Selects "
+                help="Selects "
                       "subsets of sequences detected as non-chimeras to retain after "
                       "de novo and reference based chimera detection.  Options are "
                       "intersection or union.  union will retain sequences that are "
                       "flagged as non-chimeric from either filter, while intersection "
                       "will retain only those sequences that are flagged as non-"
-                      "chimeras from both detection methods. [default: %default]"),
+                      "chimeras from both detection methods. [default: %default]",
                 type='string'),
 
-    make_option('--minlen', default=64, help=("Minimum length of sequence "
+    make_option('--minlen', default=64, help="Minimum length of sequence "
                 "allowed for usearch, usearch_ref, usearch61, and "
-                "usearch61_ref. [default: %default]"), type='int'),
+                "usearch61_ref. [default: %default]", type='int'),
 
-    make_option('--usearch_fast_cluster', default=False, help=("Use fast "
+    make_option('--usearch_fast_cluster', default=False, help="Use fast "
                 "clustering option for usearch or usearch61_ref with new "
                 "clusters.  --enable_rev_strand_match can not be enabled "
                 "with this option, and the only valid option for "
                 "usearch61_sort_method is 'length'.  This option uses more "
                 "memory than the default option for de novo clustering."
-                " [default: %default]"), action='store_true'),
+                " [default: %default]", action='store_true'),
 
-    make_option('--usearch61_sort_method', default='abundance', help=(
+    make_option('--usearch61_sort_method', default='abundance', help=
                 "Sorting method for usearch61 and usearch61_ref.  Valid "
                 "options are abundance, length, or None.  If the "
                 "--usearch_fast_cluster option is enabled, the only sorting "
-                "method allowed in length. [default: %default]"), type='str'),
+                "method allowed in length. [default: %default]", type='str'),
 
-    make_option('--sizeorder', default=False, help=(
+    make_option('--sizeorder', default=False, help=
                 "Enable size based preference in clustering with usearch61. "
                 "Requires that --usearch61_sort_method be abundance. "
-                "[default: %default]"), action='store_true'),
+                "[default: %default]", action='store_true'),
 
-    make_option('--threads', default='one_per_cpu', help=(
-                "Specify number of threads per core to be used for  "
-                "usearch61 and sortmerna commands that utilize multithreading. "
-                "By default, will calculate the number of cores to utilize so a single "
-                "thread will be used per CPU. Specify a fractional number, e.g."
-                " 1.0 for 1 thread per core, or 0.5 for a single thread on "
-                "a two core CPU. Only applies to usearch61 and sortmerna. "
-                "[default: %default]"))
-
+    make_option('--threads', default=1, help=
+                "Specify number of threads (1 thread per core) to be used for usearch61, "
+                "sortmerna and sumaclust commands that utilize multithreading. "
+                "[default: %default]")
 ]
 
 script_info['version'] = __version__
@@ -475,7 +493,7 @@ def main():
     uclust_stable_sort = not opts.suppress_uclust_stable_sort
     save_uc_files = opts.save_uc_files
     prefilter_identical_sequences =\
-        not opts.suppress_uclust_prefilter_exact_match
+        not opts.suppress_prefilter_exact_match
     derep_fullseq = opts.derep_fullseq
     chimeras_retention = opts.non_chimeras_retention
     verbose = opts.verbose
@@ -509,6 +527,11 @@ def main():
     usearch61_sort_method = opts.usearch61_sort_method
     sizeorder = opts.sizeorder
 
+    # sumaclust specific parameters
+    sumaclust_exact = opts.sumaclust_exact
+    sumaclust_l = opts.sumaclust_l
+    sumaclust_otu_id_prefix = opts.sumaclust_otu_id_prefix
+
     # Set default values according to clustering method
     if word_length != "default":
         try:
@@ -517,12 +540,10 @@ def main():
             raise ValueError("--word_length must either be 'default' "
                              "or an int value")
     if word_length == "default":
-        if otu_picking_method in ["uclust", "uclust_ref"]:
-            word_length = 12
-        elif otu_picking_method in ["usearch", "usearch_ref"]:
+        if otu_picking_method in ["usearch", "usearch_ref"]:
             word_length = 64
         else:
-            # default setting for usearch61
+            # default setting for usearch61, uclust, uclust_ref
             word_length = 8
 
     if max_accepts != "default":
@@ -532,11 +553,8 @@ def main():
             option_parser.error("--max_accepts must either be 'default' "
                                 "or an int value")
     if max_accepts == "default":
-        if otu_picking_method in ["uclust", "uclust_ref"]:
-            max_accepts = 20
-        else:
-            # default setting for usearch61
-            max_accepts = 1
+        # default setting for usearch61, uclust, uclust_ref
+        max_accepts = 1
 
     if max_rejects != "default":
         try:
@@ -546,7 +564,7 @@ def main():
                                 "or an int value")
     if max_rejects == "default":
         if otu_picking_method in ["uclust", "uclust_ref"]:
-            max_rejects = 500
+            max_rejects = 8
         # usearch61 settings, depends upon fast clustering option
         else:
             if usearch_fast_cluster:
@@ -628,21 +646,18 @@ def main():
         else:
             refseqs_fp = abspath(refseqs_fp)
 
-    # calculate threads as 1 per CPU, or use float of input value
-    if threads == 'one_per_cpu':
-        threads = float(1 / cpu_count())
-    else:
-        # Make sure input is a float
+    # number of threads to use
+    if threads == 1:
+        # Make sure input is an integer
         try:
-            threads = float(threads)
+            threads = int(threads)
         except ValueError:
-            option_parser.error("--threads must be a float value if "
-                                "default 'one_per_cpu' value overridden.")
+            option_parser.error("--threads must be a integer value.")
 
 
     if otu_picking_method == 'sortmerna':
 
-    # check sortmerna_e_value is a float and positive
+        # check sortmerna_e_value is a float and positive
         try:
             sortmerna_e_value = float(sortmerna_e_value)
         except ValueError:
@@ -650,7 +665,7 @@ def main():
         if sortmerna_e_value < 0:
             option_parser.error("--sortmerna_e_value must be positive.")
 
-    # check sortmerna_coverage is a float and in [0,1]
+        # check sortmerna_coverage is a float and in [0,1]
         try:
             sortmerna_coverage = float(sortmerna_coverage)
         except ValueError:
@@ -658,20 +673,32 @@ def main():
         if sortmerna_e_value < 0:
             option_parser.error('--sortmerna_coverage must be positive.')
 
-    # check that if sortmerna_best_N_alignments is set then so is sortmerna_tabular
-        if sortmerna_best_N_alignments != None:
-            if sortmerna_tabular is False:
-                option_parser.error('must enable --sortmerna_tabular with '
-                                    '--sortmerna_best_N_alignments.')
+        # check sortmerna_best_N_alignments is an integer
+        try:
+            sortmerna_best_N_alignments = int(sortmerna_best_N_alignments)
+        except ValueError:
+            option_parser.error('--sortmerna_best_N_alignments must '
+                                'be an integer value.')
+        if sortmerna_best_N_alignments < 0:
+            option_parser.error('--sortmerna_best_N_alignments must '
+                                'be a positive value.')
 
-    # check FASTA reference file or the indexed database (with the FASTA reference file) were provided
+        # sortmerna_tabular must be set if sortmerna_best_N_alignments > 1;
+        # sortmerna_best_N_alignments = 1 will always be passed to sortmerna,
+        # with or without sortmerna_tabular, as at least 1 best match is 
+        # required to build an OTU map
+        elif sortmerna_best_N_alignments > 1 and \
+             sortmerna_tabular is False:
+             option_parser.error('--sortmerna_tabular must be set together '
+                                 'with --sortmerna_best_N_alignments.')
+
+        # check FASTA reference file or the indexed database (with the FASTA reference file) were provided
         if refseqs_fp is None:
             option_parser.error('sortmerna always requires refseqs_fp (with or without sortmerna_db)')
         elif sortmerna_db:
             if isfile(sortmerna_db + '.stats') is False:
                 option_parser.error('%s does not exist, make sure you have indexed '
-                                    'the database using indexdb_rna' % (sortmerna_db + '.stats'))
-        
+                                    'the database using indexdb_rna' % (sortmerna_db + '.stats'))        
 
     # End input validation
 
@@ -731,7 +758,7 @@ def main():
         otu_picker(input_seqs_filepath,
                    result_path=result_path, log_path=log_path, HALT_EXEC=False)
 
-    ## usearch (usearch_qf)
+    # usearch (usearch_qf)
     elif otu_picking_method == 'usearch':
         params = {'percent_id': similarity,
                   'maxrejects': max_rejects,
@@ -836,7 +863,7 @@ def main():
                    log_path=log_path, failure_path=failure_path,
                    otu_prefix=otu_prefix, HALT_EXEC=False)
 
-    ## uclust (reference-based)
+    # uclust (reference-based)
     elif otu_picking_method == 'uclust_ref':
         params = {'Similarity': similarity,
                   'enable_rev_strand_matching': opts.enable_rev_strand_match,
@@ -903,11 +930,27 @@ def main():
                   'threads': threads,
                   'blast': sortmerna_tabular,
                   'best': sortmerna_best_N_alignments,
-                  'max_pos': sortmerna_max_pos}
+                  'max_pos': sortmerna_max_pos,
+                  'prefilter_identical_sequences':
+                  prefilter_identical_sequences}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,
-                    output_dir=output_dir, log_path=log_path,
-                    sortmerna_db=sortmerna_db, refseqs_fp=refseqs_fp)
+                   result_path=result_path, log_path=log_path,
+                   sortmerna_db=sortmerna_db, refseqs_fp=refseqs_fp,
+                   failure_path=failure_path)
+
+    # sumaclust
+    elif otu_picking_method == 'sumaclust':
+        params = {'similarity': similarity,
+                  'exact': sumaclust_exact,
+                  'threads': threads,
+                  'l': sumaclust_l,
+                  'prefilter_identical_sequences':
+                  prefilter_identical_sequences,
+                  'sumaclust_otu_id_prefix': sumaclust_otu_id_prefix}
+        otu_picker = otu_picker_constructor(params)
+        otu_picker(input_seqs_filepath,
+                   result_path=result_path, log_path=log_path)
 
     # other -- shouldn't be able to get here as a KeyError would have
     # been raised earlier

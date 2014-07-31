@@ -13,14 +13,16 @@ __email__ = "justinak@gmail.com"
 
 from os.path import join
 from operator import add
+from datetime import datetime
+from random import choice
 
 from numpy import zeros
-from random import choice
-from biom.table import table_factory
+from biom.table import Table
 
-from qiime.format import format_mapping_file, format_biom_table
+from qiime.format import format_mapping_file
 from qiime.parse import parse_mapping_file
-from qiime.util import make_option, create_dir, parse_command_line_parameters
+from qiime.util import (make_option, create_dir, parse_command_line_parameters,
+                        write_biom_table, get_generated_by_for_biom_tables)
 from qiime.sort import natsort
 
 
@@ -240,21 +242,22 @@ def simsam_range(table,
     for simulated_sample_size in simulated_sample_sizes:
         # create the output mapping file data
         output_mapping_lines = \
-            process_map(mapping_lines, simulated_sample_size, table.SampleIds)
+            process_map(mapping_lines, simulated_sample_size, table.ids())
         for dissimilarity in dissimilarities:
             # create the simulated otu table
             output_sample_ids, output_otu_ids, output_data, output_metadata = \
-                sim_otu_table(table.SampleIds,
-                              table.ObservationIds,
-                              table.iterSamples(),
-                              table.ObservationMetadata,
+                sim_otu_table(table.ids(),
+                              table.ids(axis='observation').tolist(),
+                              table.iter(),
+                              table.metadata(axis='observation'),
                               tree,
                               simulated_sample_size,
                               dissimilarity)
-            output_table = table_factory(output_data,
-                                         output_sample_ids,
-                                         output_otu_ids,
-                                         observation_metadata=output_metadata)
+            output_table = Table(
+                output_data, output_otu_ids, output_sample_ids,
+                observation_metadata=output_metadata,
+                generated_by=get_generated_by_for_biom_tables(),
+                create_date=datetime.now().isoformat())
             yield (output_table,
                    output_mapping_lines,
                    simulated_sample_size,
@@ -296,9 +299,7 @@ def simsam_range_to_files(table,
 
         output_table_fp = join(output_dir, '%s_n%d_d%r.biom' %
                                (output_table_basename, simulated_sample_size, dissimilarity))
-        output_table_f = open(output_table_fp, 'w')
-        output_table_f.write(format_biom_table(output_table))
-        output_table_f.close()
+        write_biom_table(output_table, output_table_fp)
 
         if output_mapping_lines is not None:
             output_map_fp = join(output_dir, '%s_n%d_d%r.txt' %

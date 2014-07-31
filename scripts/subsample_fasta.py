@@ -30,7 +30,8 @@ script_info['output_description'] = """"""
 script_info['required_options'] = [
     options_lookup['fasta_as_primary_input'],
     make_option('-p', '--percent_subsample', action='store', type='float',
-                help='Specify the percentage of sequences to subsample')
+                help='Specify the percentage (as a fraction between 0 and 1) '
+                'of sequences to subsample')
 ]
 script_info['optional_options'] = [
     options_lookup['output_fp']

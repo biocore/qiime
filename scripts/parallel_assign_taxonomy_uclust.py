@@ -55,7 +55,8 @@ script_info['optional_options'] = [
                       'specific taxonomic assignment to assign that taxonomy '
                       'to a query [default: %default]'), default=0.51),
     make_option('--uclust_similarity', type='float',
-                help=('Minimum percent similarity to consider a database match a hit '
+                help=('Minimum percent similarity to consider a database '
+                      'match a hit, expressed as a fraction between 0 and 1 '
                       '[default: %default]'), default=0.90),
     make_option('--uclust_max_accepts', type='int',
                 help=('Number of database hits to consider when making '

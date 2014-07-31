@@ -8,7 +8,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Will Van Treuren"
 __email__ = "wdwvt1@gmail.com"
 
-from numpy import array
+from numpy import asarray
 from qiime.parse import parse_mapping_file_to_dict
 from collections import defaultdict
 
@@ -41,10 +41,10 @@ def make_sample_node_table(bt, mf_dict):
     '''
     # make sure to use only the sample ids found in the biom file as the
     # mapping file may have a superset of the ids found in the biom file
-    sids = bt.SampleIds
+    sids = bt.ids()
     header = '#NodeID\tNodeType\tAbundance\t' + \
         '\t'.join(mf_dict[sids[0]].keys())
-    lines = [header] + ['%s\tsample\t%s\t' % (sid, bt.sampleData(sid).sum()) +
+    lines = [header] + ['%s\tsample\t%s\t' % (sid, bt.data(sid, axis='sample').sum()) +
                         '\t'.join(mf_dict[sid].values()) for sid in sids]
     return lines
 
@@ -81,28 +81,30 @@ def make_otu_node_table(bt, md_key, md_fields):
     header = '#NodeID\tNodeType\tAbundance\t' + '\t'.join(md_fields)
     lines = [header]
     # assume that all metadata has same format so testing any entry sufficient
-    md_type = type(bt.ObservationMetadata[0][md_key])
+    md_type = type(bt.metadata(axis='observation')[0][md_key])
     if md_type is str or md_type is unicode:
         # there are a huge number of possible ways in which the string could be
         # formatted. if its not splittable on a semicolon (preferred for qiime)
         # no splitting will occur.
-        for i, otu in enumerate(bt.ObservationIds):
-            line = '%s\totu\t%s\t' % (otu, bt.observationData(otu).sum())
-            line += bt.ObservationMetadata[i][md_key].replace(';', '\t')
+        for i, otu in enumerate(bt.ids(axis='observation')):
+            line = '%s\totu\t%s\t' % (otu, bt.data(otu, 'observation').sum())
+            line += bt.metadata(axis='observation')[i][md_key].replace(';',
+                                                                       '\t')
             lines.append(line)
     if md_type is list:
-        for i, otu in enumerate(bt.ObservationIds):
-            line = '%s\totu\t%s\t' % (otu, bt.observationData(otu).sum())
-            line += '\t'.join(bt.ObservationMetadata[i][md_key])
+        for i, otu in enumerate(bt.ids(axis='observation')):
+            line = '%s\totu\t%s\t' % (otu, bt.data(otu, 'observation').sum())
+            line += '\t'.join(bt.metadata(axis='observation')[i][md_key])
             lines.append(line)
     if md_type is defaultdict:
         # if md_type is defaultdict keys in md_fields that fail will produce
         # empty lists or strs. these will cause TypeErrors in join.
         try:
-            for i, otu in enumerate(bt.ObservationIds):
-                line = '%s\totu\t%s\t' % (otu, bt.observationData(otu).sum())
-                line += '\t'.join([bt.ObservationMetadata[i][md_key][k] for k in
-                                   md_fields])
+            for i, otu in enumerate(bt.ids(axis='observation')):
+                line = '%s\totu\t%s\t' % (otu, bt.data(otu, 'observation').sum())
+                line += '\t'.join(
+                    [bt.metadata(axis='observation')[i][md_key][k]
+                     for k in md_fields])
                 lines.append(line)
         except TypeError:
             raise ValueError('The md_fields provided were not all found in ' +
@@ -110,10 +112,12 @@ def make_otu_node_table(bt, md_key, md_fields):
     if md_type is dict:
         # md_fields not found will cause keyerrors
         try:
-            for i, otu in enumerate(bt.ObservationIds):
-                line = '%s\totu\t%s\t' % (otu, bt.observationData(otu).sum())
-                line += '\t'.join([bt.ObservationMetadata[i][md_key][k] for k in
-                                   md_fields])
+            for i, otu in enumerate(bt.ids(axis='observation')):
+                line = ('%s\totu\t%s\t'
+                        % (otu, bt.data(otu, 'observation').sum()))
+                line += '\t'.join(
+                    [bt.metadata(axis='observation')[i][md_key][k]
+                     for k in md_fields])
                 lines.append(line)
         except KeyError:
             raise ValueError('The md_fields provided were not all found in ' +
@@ -210,12 +214,12 @@ def make_edge_table(bt):
     The abundance is occurrence of the OTU and will be used to weight the edges.
     Input is a biom table.
     '''
-    data = array([bt.observationData(i) for i in bt.ObservationIds])
-    oids = array(bt.ObservationIds)
+    data = asarray([d for d in bt.iter_data(axis='observation', dense=True)])
+    oids = asarray(bt.ids(axis='observation'))
     header = '#Sample\tOTU\tAbundance'
     lines = [header]
-    for sample in bt.SampleIds:
-        sample_ind = bt.getSampleIndex(sample)
+    for sample in bt.ids():
+        sample_ind = bt.index(sample, 'sample')
         otu_ids = oids[data[:, sample_ind].nonzero()[0]]
         otu_abs = data[:, sample_ind][data[:, sample_ind].nonzero()[0]]
         connections = ['%s\t%s\t%s' % (sample, otu, ab) for otu, ab in

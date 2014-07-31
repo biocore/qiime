@@ -74,8 +74,9 @@ script_info['optional_options'] = [
                 'the mean of the sequences [default: %default]',
                 default=3.0),
     make_option('-e', '--entropy_threshold', action='store',
-                type='float', help='Sets percent threshold for removing base ' +
-                'positions with the highest entropy.  For example, if 0.10 were ' +
+                type='float', help='Percent threshold for removing base ' +
+                'positions with the highest entropy, expressed as a fraction '
+                'between 0 and 1.  For example, if 0.10 were ' +
                 'specified, the top 10% most entropic base positions would be ' +
                 'filtered.  If this value is used, any lane mask supplied will be ' +
                 'ignored.  Entropy filtered occurs after gap filtering.  ' +

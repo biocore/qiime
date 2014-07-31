@@ -11,13 +11,13 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 
-from optparse import make_option
+from biom import load_table
+
 from qiime.util import (parse_command_line_parameters,
                         get_options_lookup, make_option)
 from qiime.filter import (filter_samples_from_distance_matrix,
                           sample_ids_from_metadata_description,
                           get_seqs_to_keep_lookup_from_seq_id_file)
-from biom.parse import parse_biom_table
 from qiime.parse import parse_distmat
 
 options_lookup = get_options_lookup()
@@ -66,13 +66,12 @@ script_info['version'] = __version__
 
 
 def main():
-    option_parser, opts, args =\
-        parse_command_line_parameters(**script_info)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     output_f = open(opts.output_distance_matrix, 'w')
     if opts.otu_table_fp:
-        otu_table = parse_biom_table(open(opts.otu_table_fp, 'U'))
-        samples_to_keep = otu_table.SampleIds
+        otu_table = load_table(opts.otu_table_fp)
+        samples_to_keep = otu_table.ids()
         # samples_to_keep = \
         # sample_ids_from_otu_table(open(opts.otu_table_fp,'U'))
     elif opts.sample_id_fp:
@@ -86,11 +85,12 @@ def main():
         except ValueError as e:
             option_parser.error(e.message)
     else:
-        option_parser.error(
-            'must pass either --sample_id_fp, -t, or -m and -s')
-    # note that negate gets a little weird here. The function we're calling removes the specified
-    # samples from the distance matrix, but the other QIIME filter scripts keep these samples specified.
-    # So, the interface of this script is designed to keep the specified samples, and therefore
+        option_parser.error('must pass either --sample_id_fp, -t, or -m and '
+                            '-s')
+    # note that negate gets a little weird here. The function we're calling
+    # removes the specified samples from the distance matrix, but the other
+    # QIIME filter scripts keep these samples specified.  So, the interface of
+    # this script is designed to keep the specified samples, and therefore
     # negate=True is passed to filter_samples_from_distance_matrix by default.
     d = filter_samples_from_distance_matrix(
         parse_distmat(

@@ -15,21 +15,18 @@ from collections import defaultdict
 from random import shuffle, sample
 from numpy import array, inf
 from skbio.parse.sequences import parse_fasta
-from qiime.parse import (
-    parse_distmat, parse_mapping_file, parse_metadata_state_descriptions
-)
-from qiime.format import (
-    format_otu_table, format_distance_matrix, format_mapping_file
-)
+from biom import load_table
+
+from qiime.parse import (parse_distmat, parse_mapping_file,
+                         parse_metadata_state_descriptions)
+from qiime.format import format_distance_matrix, format_mapping_file
 from qiime.util import MetadataMap
-from biom.parse import parse_biom_table
 
 
 def get_otu_ids_from_taxonomy_f(positive_taxa=None,
                                 negative_taxa=None,
                                 metadata_field="taxonomy"):
-    """ get function for Table.filterObservations for taxon-based filtering
-
+    """ return function to pass to Table.filter_observations for taxon-based filtering
         positive_taxa : a list of strings that will be compared to each
          taxonomy level in an observation's (i.e., OTU's) metadata_field. If
          one of the levels matches exactly (except for case) to an item in
@@ -80,7 +77,7 @@ def get_otu_ids_from_taxonomy_f(positive_taxa=None,
                          "exclusive.\nOffending values are: %s" %
                          ' '.join(positive_taxa & negative_taxa))
 
-    # Define the function that can be passed to Table.filterObservations
+    # Define the function that can be passed to Table.filter_observations
     def result(v, oid, md):
         positive_hit = False
         negative_hit = False
@@ -221,7 +218,7 @@ def sample_ids_from_category_state_coverage(mapping_f,
         # file.
         required_states = set(map(str, required_states))
         valid_coverage_states = set(metadata_map.getCategoryValues(
-            metadata_map.SampleIds, coverage_category))
+            metadata_map.sample_ids, coverage_category))
         invalid_coverage_states = required_states - valid_coverage_states
 
         if invalid_coverage_states:
@@ -254,7 +251,7 @@ def sample_ids_from_category_state_coverage(mapping_f,
 
     if splitter_category is None:
         results = _filter_sample_ids_from_category_state_coverage(
-            metadata_map, metadata_map.SampleIds, coverage_category,
+            metadata_map, metadata_map.sample_ids, coverage_category,
             subject_category, consider_state, min_num_states,
             required_states)
     else:
@@ -262,7 +259,7 @@ def sample_ids_from_category_state_coverage(mapping_f,
         # match the current splitter category state and using those for the
         # actual filtering.
         splitter_category_states = defaultdict(list)
-        for samp_id in metadata_map.SampleIds:
+        for samp_id in metadata_map.sample_ids:
             splitter_category_state = \
                 metadata_map.getCategoryValue(samp_id, splitter_category)
             splitter_category_states[splitter_category_state].append(samp_id)
@@ -491,8 +488,8 @@ def negate_tips_to_keep(tips_to_keep, tree):
 
 
 def get_seqs_to_keep_lookup_from_biom(biom_f):
-    otu_table = parse_biom_table(biom_f)
-    return {}.fromkeys(otu_table.ObservationIds)
+    otu_table = load_table(biom_f)
+    return set(otu_table.ids(axis='observation'))
 
 
 def get_seqs_to_keep_lookup_from_seq_id_file(id_to_keep_f):
@@ -536,7 +533,7 @@ def filter_samples_from_otu_table(
                                    min_count,
                                    max_count,
                                    0, inf)
-    return otu_table.filterSamples(filter_f)
+    return otu_table.filter(filter_f, axis='sample', inplace=False)
 
 
 def filter_otus_from_otu_table(otu_table, ids_to_keep, min_count, max_count,
@@ -547,7 +544,7 @@ def filter_otus_from_otu_table(otu_table, ids_to_keep, min_count, max_count,
                                    max_count,
                                    min_samples, max_samples,
                                    negate_ids_to_keep)
-    return otu_table.filterObservations(filter_f)
+    return otu_table.filter(filter_f, axis='observation', inplace=False)
 
 # end functions used by filter_samples_from_otu_table.py and
 # filter_otus_from_otu_table.py
@@ -559,12 +556,10 @@ def filter_otu_table_to_n_samples(otu_table, n):
         If n is greater than the number of samples or less than zero a
          ValueError will be raised.
     """
-    try:
-        ids_to_keep = sample(otu_table.SampleIds, n)
-    except ValueError:
+    if not (0 < n <= len(otu_table.ids())):
         raise ValueError("Number of samples to filter must be between 0 and "
                          "the number of samples.")
-    return filter_samples_from_otu_table(otu_table, ids_to_keep, 0, inf)
+    return otu_table.subsample(n, axis='sample', by_id=True)
 
 
 def filter_otus_from_otu_map(input_otu_map_fp,

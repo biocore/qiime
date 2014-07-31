@@ -52,7 +52,8 @@ script_info['optional_options'] = [
 
     make_option('-s', '--min_percent_id', type='float', default=0.75,
                 help=(
-                    'Min percent id to consider a match [default: %default]')),
+                    'Min percent id to consider a match, expressed as a '
+                    'fraction between 0 and 1 [default: %default]')),
 
     make_option('--max_diff', type='float', default=None,
                 help=('maxDiff to consider a match (applicable for -m bwa) -- '
@@ -61,11 +62,15 @@ script_info['optional_options'] = [
 
     make_option('--queryalnfract', type='float', default=0.35,
                 help=(
-                    'Min percent of the query seq that must match to consider a match (usearch only) [default: %default]')),
+                    'Min percent of the query seq that must match to consider '
+                    'a match, expressed as a fraction between 0 and 1 '
+                    '(usearch only) [default: %default]')),
 
     make_option('--targetalnfract', type='float', default=0.0,
                 help=(
-                    'Min percent of the target/reference seq that must match to consider a match (usearch only) [default: %default]')),
+                    'Min percent of the target/reference seq that must match '
+                    'to consider a match, expressed as a fraction between 0 '
+                    'and 1 (usearch only) [default: %default]')),
 
     make_option('--max_accepts', type='int', default=1,
                 help="max_accepts value (usearch only) [default: %default]"),

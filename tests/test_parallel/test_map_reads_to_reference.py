@@ -19,13 +19,12 @@ from tempfile import mkstemp, mkdtemp
 from skbio.util.misc import remove_files
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
-from biom.parse import parse_biom_table
+from biom import load_table
 from qiime.test import initiate_timeout, disable_timeout
 from qiime.util import get_qiime_temp_dir
 from qiime.parse import parse_otu_map
-from qiime.parallel.map_reads_to_reference import \
-    (ParallelDatabaseMapperUsearch, ParallelDatabaseMapperBlat,
-     ParallelDatabaseMapperBwaShort)
+from qiime.parallel.map_reads_to_reference import (ParallelDatabaseMapperBlat,
+    ParallelDatabaseMapperUsearch, ParallelDatabaseMapperBwaShort)
 
 
 class ParallelDatabaseMapperTests(TestCase):
@@ -174,10 +173,10 @@ class ParallelDatabaseMapperBwaShortTests(ParallelDatabaseMapperTests):
         observation_map_fp = join(self.test_out, 'observation_map.txt')
         self.assertTrue(exists(observation_map_fp))
         observation_table_fp = join(self.test_out, 'observation_table.biom')
-        table = parse_biom_table(open(observation_table_fp, 'U'))
-        self.assertItemsEqual(table.SampleIds, ['s2', 's1'])
+        table = load_table(observation_table_fp)
+        self.assertItemsEqual(table.ids(), ['s2', 's1'])
         self.assertItemsEqual(
-            table.ObservationIds,
+            table.ids(axis='observation'),
             ['r1',
              'r2',
              'r3',
@@ -199,9 +198,10 @@ class ParallelDatabaseMapperBwaShortTests(ParallelDatabaseMapperTests):
         observation_map_fp = join(self.test_out, 'observation_map.txt')
         self.assertTrue(exists(observation_map_fp))
         observation_table_fp = join(self.test_out, 'observation_table.biom')
-        table = parse_biom_table(open(observation_table_fp, 'U'))
-        self.assertItemsEqual(table.SampleIds, ['s2', 's1'])
-        self.assertItemsEqual(table.ObservationIds, ['r2', 'r3', 'r4', 'r5'])
+        table = load_table(observation_table_fp)
+        self.assertItemsEqual(table.ids(), ['s2', 's1'])
+        self.assertItemsEqual(table.ids(axis='observation'),
+                              ['r2', 'r3', 'r4', 'r5'])
         self.assertEqual(table.sum(), 5)
 
 refseqs1 = """>eco:b0001-pr
