@@ -78,7 +78,7 @@ def main():
     shutdown_ipython = False
     try:
         from qiime.parallel.context import context
-    except ComputeError, ValueError:
+    except (ComputeError, ValueError):
         # Nope, no IPython cluster running, start one
         cwd = getcwd()
         Popen(["parallel", "start", "--profile", "default", "-n", "4"])
