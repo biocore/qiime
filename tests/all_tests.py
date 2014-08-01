@@ -9,6 +9,8 @@ import re
 from sys import exit
 from time import sleep
 
+from IPython.core.profileapp import ProfileCreate
+
 from qiime.parallel.util import ComputeError
 from qiime.parallel.manager import stop_cluster
 from qiime.util import (parse_command_line_parameters, get_options_lookup,
@@ -81,7 +83,9 @@ def main():
     except (ComputeError, ValueError):
         # Nope, no IPython cluster running, start one
         cwd = getcwd()
-        Popen(["parallel", "start", "--profile", "default", "-n", "4"])
+        pc = ProfileCreate(name="qiime_tests")
+        pc.initialize()
+        Popen(["parallel", "start", "--profile", "qiime_tests", "-n", "4"])
         shutdown_ipython = True
         # It takes some time to register the workers
         sleep(10)
@@ -136,7 +140,7 @@ def main():
     # If we started the ipython cluster, we should stop it
     if shutdown_ipython:
         chdir(cwd)
-        stop_cluster('default')
+        stop_cluster('qiime_tests')
 
     print "==============\nResult summary\n=============="
 
