@@ -51,7 +51,8 @@ class BarcodeLenMismatchError(Exception):
 
 def extract_primer(seq, possible_primers, min_idx=None, max_idx=None):
     """
-    Extracts primers from sequence, given possible primers
+    Given possible primers, extracts primers from
+    sequence from min_idx to max_idx
     Parameters
     ----------
     seq: string
