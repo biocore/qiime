@@ -83,9 +83,10 @@ def main():
     except (ComputeError, ValueError):
         # Nope, no IPython cluster running, start one
         cwd = getcwd()
-        pc = ProfileCreate(name="qiime_tests")
+        pc = ProfileCreate()
         pc.initialize()
-        Popen(["parallel", "start", "--profile", "qiime_tests", "-n", "4"])
+        sleep(5)
+        Popen(["parallel", "start", "--profile", "default", "-n", "4"])
         shutdown_ipython = True
         # It takes some time to register the workers
         sleep(10)
@@ -140,7 +141,7 @@ def main():
     # If we started the ipython cluster, we should stop it
     if shutdown_ipython:
         chdir(cwd)
-        stop_cluster('qiime_tests')
+        stop_cluster('default')
 
     print "==============\nResult summary\n=============="
 
