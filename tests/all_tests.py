@@ -83,7 +83,7 @@ def main():
     except (ComputeError, ValueError):
         # Nope, no IPython cluster running, start one
         cwd = getcwd()
-        pc = ProfileCreate()
+        pc = ProfileCreate(name="default")
         pc.initialize()
         sleep(5)
         Popen(["parallel", "start", "--profile", "default", "-n", "4"])
