@@ -53,9 +53,11 @@ Quality filtering pipeline with usearch 5.X is described as usearch_qf "usearch 
 
 9.  usearch61_ref (Edgar, RC 2010, version v6.1.544), as usearch61, but takes a reference database to use as seeds.  New clusters can be toggled on or off.
 
-11. sumaclust (Mercier, C. et al, 2014, version 1.0), creates \"seeds\" of sequences which generate clusters based on similarity threshold.
+10. sumaclust (Mercier, C. et al., 2014, version 1.0), creates \"seeds\" of sequences which generate clusters based on similarity threshold.
 
-10. sortmerna_v2 (Kopylova, E. et al., 2012), takes a reference database to use as seeds. 
+11. sortmerna_v2 (Kopylova, E. et al., 2012), takes a reference database to use as seeds. 
+
+12. swarm (Mahe, F. et al., 2014), creates \"seeds\" of sequences which generate clusters based on a resolution threshold.
 
 
 Chimera checking with usearch 6.X is implemented in identify_chimeric_seqs.py.  Chimera checking should be done first with usearch 6.X, and the filtered resulting fasta file can then be clustered.
@@ -146,6 +148,15 @@ script_info['script_usage'].append(
     ("""usearch example where reference-based chimera detection is disabled, and minimum cluster size filter is reduced from default (4) to 2:""",
      """""",
      """%prog -i seqs.fna -m usearch --word_length 64 --suppress_reference_chimera_detection --minsize 2 -o usearch_qf_results_no_ref_chim_detection/"""))
+
+script_info['script_usage'].append(
+    ("Use de novo OTU-picker Swarm: ",
+     "Using the seqs.fna file generated from split_libraries.py and "
+     "outputting the results to the directory \"$PWD/picked_otus_swarm/\", "
+     "while using default parameters (resolution = 1) ",
+     "%prog -i $PWD/seqs.fna -m swarm -o $PWD/picked_otus_swarm"))
+
+script_info['script_usage_output_to_remove'] = ['$PWD/picked_otus_swarm/']
 
 script_info['output_description'] = """The output consists of two files (i.e. seqs_otus.txt and seqs_otus.log). The .txt file is composed of tab-delimited lines, where the first field on each line corresponds to an (arbitrary) cluster identifier, and the remaining fields correspond to sequence identifiers assigned to that cluster. Sequence identifiers correspond to those provided in the input FASTA file.  Usearch (i.e. usearch quality filter) can additionally have log files for each intermediate call to usearch.
 
@@ -259,6 +270,20 @@ script_info['optional_options'] = [
                 help='OTU identifier prefix (string) for the de novo '
                      'SumaClust OTU picker [default: %default, OTU ids '
                      'are ascending integers]'),
+
+    # Swarm specific parameters
+    make_option('--swarm_resolution', default=1, type='int',
+                help='Maximum number of differences allowed between '
+                     'two amplicons, meaning that two amplicons will '
+                     'be grouped if they have integer (or less) '
+                     'differences (see Swarm manual for more details). '
+                     '[default: %default]'),
+
+    make_option('--swarm_otu_id_prefix', default="denovo", type='string',
+                help='OTU identifier prefix (string) for the de novo '
+                     'Swarm OTU picker [default: %default, OTU ids '
+                     'are ascending integers]'),
+    # end Swarm specific parameters
 
     make_option('-q', '--trie_reverse_seqs', action='store_true',
                 default=False,
@@ -459,7 +484,7 @@ script_info['optional_options'] = [
 
     make_option('--threads', default=1, help=
                 "Specify number of threads (1 thread per core) to be used for usearch61, "
-                "sortmerna and sumaclust commands that utilize multithreading. "
+                "sortmerna, sumaclust and swarm commands that utilize multithreading. "
                 "[default: %default]")
 ]
 
@@ -506,6 +531,10 @@ def main():
     sortmerna_tabular = opts.sortmerna_tabular
     sortmerna_best_N_alignments = opts.sortmerna_best_N_alignments
     sortmerna_max_pos = opts.sortmerna_max_pos
+
+    # swarm specific parameters
+    swarm_resolution = opts.swarm_resolution
+    swarm_otu_id_prefix = opts.swarm_otu_id_prefix
 
     # usearch specific parameters
     percent_id_err = opts.percent_id_err
@@ -698,7 +727,18 @@ def main():
         elif sortmerna_db:
             if isfile(sortmerna_db + '.stats') is False:
                 option_parser.error('%s does not exist, make sure you have indexed '
-                                    'the database using indexdb_rna' % (sortmerna_db + '.stats'))        
+                                    'the database using indexdb_rna' % (sortmerna_db + '.stats'))
+
+    if otu_picking_method == 'swarm':
+        # check resolution is a positive integer
+        try:
+            swarm_resolution = int(swarm_resolution)
+        except ValueError:
+            option_parser.error('--swarm_resolution=INT must '
+                                'be an integer value.')
+        if sortmerna_best_N_alignments < 1:
+            option_parser.error('--swarm_resolution=INT must '
+                                'be a positive integer value.')                   
 
     # End input validation
 
@@ -948,6 +988,15 @@ def main():
                   'prefilter_identical_sequences':
                   prefilter_identical_sequences,
                   'sumaclust_otu_id_prefix': sumaclust_otu_id_prefix}
+        otu_picker = otu_picker_constructor(params)
+        otu_picker(input_seqs_filepath,
+                   result_path=result_path, log_path=log_path)
+
+    # swarm
+    elif otu_picking_method == 'swarm':
+        params = {'resolution': swarm_resolution,
+                  'threads': threads,
+                  'swarm_otu_id_prefix': swarm_otu_id_prefix}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,
                    result_path=result_path, log_path=log_path)

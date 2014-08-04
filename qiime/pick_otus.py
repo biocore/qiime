@@ -17,7 +17,7 @@ grouping those sequences by similarity.
 
 from copy import copy
 from itertools import ifilter
-from os.path import splitext, split, abspath, join
+from os.path import splitext, split, abspath, join, dirname
 from os import makedirs, close, rename
 from itertools import imap
 from tempfile import mkstemp
@@ -45,6 +45,7 @@ from brokit.usearch import (usearch_qf,
                             usearch61_denovo_cluster,
                             usearch61_ref_cluster)
 from brokit.sumaclust_v1 import sumaclust_denovo_cluster
+from brokit.swarm_v127 import swarm_denovo_cluster
 
 
 class OtuPicker(FunctionWithParams):
@@ -717,6 +718,75 @@ class SumaClustOtuPicker(OtuPicker):
             # results to file with one tab-separated line per
             # cluster (this will over-write the default SumaClust
             # OTU map with the extended OTU map)
+            of = open(result_path, 'w')
+            for cluster_id, cluster in clusters.items():
+                of.write('%s\t%s\n' % (cluster_id, '\t'.join(cluster)))
+            of.close()
+            result = None
+            self.log_lines.append('Result path: %s\n' % result_path)
+        else:
+            # if the user did not provide a result_path, store
+            # the clusters in a dict of {otu_id:[seq_ids]}, where
+            # otu_id is arbitrary
+            result = clusters
+            self.log_lines.append('Result path: None, returned as dict.')
+
+        # Log the run
+        if log_path:
+            log_file = open(log_path, 'w')
+            self.log_lines.insert(0, str(self))
+            log_file.write('\n'.join(self.log_lines))
+            log_file.close()
+
+        return result
+
+
+class SwarmOtuPicker(OtuPicker):
+
+    """ Swarm is a de novo OTU picker, an exact clustering method based
+        on a single-linkage algorithm. It is open source and supports
+        SSE2 multithreading.
+
+        Clusters are created by their local clustering threshold 'd',
+        which is computed as the number of nucleotide differences
+        (substitution, insertion or deletion) between two amplicons
+        in the optimal pairwise global alignment.
+
+        This class is compatible with Swarm v.1.2.7
+    """
+
+    def __init__(self, params):
+        """ Return a new SwarmOtuPicker object with specified params.
+            The defaults are set in the Swarm API
+        """
+
+        OtuPicker.__init__(self, params)
+
+    def __call__(self, seq_path=None, result_path=None, log_path=None):
+
+        self.log_lines = []
+
+        # Run Swarm, return a list of lists (clusters)
+        clusters = swarm_denovo_cluster(
+            seq_path=seq_path,
+            d=self.Params['resolution'],
+            threads=self.Params['threads'],
+            HALT_EXEC=False)
+
+        self.log_lines.append('Num OTUs: %d' % len(clusters))
+
+        # Add prefix ID to de novo OTUs
+        otu_id_prefix = self.Params['swarm_otu_id_prefix']
+        if otu_id_prefix is None:
+            clusters = dict(enumerate(clusters))
+        else:
+            clusters = dict(('%s%d' % (otu_id_prefix, i), c)
+                            for i, c in enumerate(clusters))
+
+        if result_path:
+            # If the user provided a result_path, write the
+            # results to file with one tab-separated line per
+            # cluster
             of = open(result_path, 'w')
             for cluster_id, cluster in clusters.items():
                 of.write('%s\t%s\n' % (cluster_id, '\t'.join(cluster)))
@@ -2063,7 +2133,8 @@ otu_picking_method_constructors = {
     'usearch61': Usearch610DeNovoOtuPicker,
     'usearch61_ref': Usearch61ReferenceOtuPicker,
     'sumaclust': SumaClustOtuPicker,
-    'sortmerna': SortmernaV2OtuPicker
+    'sortmerna': SortmernaV2OtuPicker,
+    'swarm': SwarmOtuPicker
 }
 
 otu_picking_method_choices = otu_picking_method_constructors.keys()
