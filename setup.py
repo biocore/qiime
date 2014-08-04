@@ -238,7 +238,7 @@ setup(name='qiime',
                 'qiime/denoiser', 'qiime/workflow', 'qiime_test_data'],
       scripts=glob('scripts/*py') + glob('scripts/ec2*') +
       glob('scripts/FlowgramAli_4frame') + glob('scripts/FastTree') +
-      glob('scripts/uclust'),
+      glob('scripts/uclust') + glob('parallel'),
       package_data={'qiime':
                     ['support_files/qiime_config',
                      'support_files/css/*css',
