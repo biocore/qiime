@@ -83,7 +83,7 @@ def main():
         print ("\nIPython parallel cluster not found, starting one with 4 "
                "workers using the default profile... ")
         cwd = getcwd()
-        Popen(["parallel", "start", "--profile", "default", "-n", "4"])
+        Popen(["parallel.py", "start", "--profile", "default", "-n", "4"])
         shutdown_ipython = True
         # It takes some time to register the workers
         sleep(10)
@@ -139,7 +139,7 @@ def main():
     # If we started the ipython cluster, we should stop it
     if shutdown_ipython:
         print ("\nShutting down IPython parallel cluster... ")
-        chdir(cwd)
+        chdir(cwd)  # create an issue for this
         stop_cluster('default')
         print ("Ok\n")
 
