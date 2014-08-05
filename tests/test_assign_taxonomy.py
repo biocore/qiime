@@ -22,7 +22,7 @@ from shutil import copy as copy_file, rmtree
 
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal, assert_allclose
-from skbio.app.util import ApplicationError
+from burrito.util import ApplicationError
 from skbio.util.misc import remove_files, create_dir
 from skbio.parse.sequences import parse_fasta
 from skbio.core.alignment import SequenceCollection

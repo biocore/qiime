@@ -16,7 +16,7 @@ from os.path import exists, splitext, split
 from qiime.util import make_option
 from numpy import array
 
-from skbio.app.util import ApplicationError
+from burrito.util import ApplicationError
 
 from qiime.util import parse_command_line_parameters, create_dir
 from qiime.denoise_wrapper import fast_denoiser

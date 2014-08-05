@@ -8,8 +8,8 @@ from subprocess import PIPE, Popen
 
 from skbio.util.misc import remove_files
 
-from skbio.app.parameters import ValuedParameter
-from skbio.app.util import (which, CommandLineApplication, ResultPath,
+from burrito.parameters import ValuedParameter
+from burrito.util import (which, CommandLineApplication, ResultPath,
                             ApplicationError, ApplicationNotFoundError)
 from skbio.parse.sequences import parse_fasta
 
