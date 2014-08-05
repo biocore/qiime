@@ -90,7 +90,7 @@ script_info['script_usage'].append(
 script_info['script_usage'].append(
     ("""Uclust Reference-based OTU picking example""",
      """uclust_ref can be passed via -m to pick OTUs against a reference set where sequences within the similarity threshold to a reference sequence will cluster to an OTU defined by that reference sequence, and sequences outside of the similarity threshold to a reference sequence will form new clusters. OTU identifiers will be set to reference sequence identifiers when sequences cluster to reference sequences, and 'qiime_otu_<integer>' for new OTUs. Creation of new clusters can be suppressed by passing -C, in which case sequences outside of the similarity threshold to any reference sequence will be listed as failures in the log file, and not included in any OTU.""",
-     """%prog -i seqs.fna -r refseqs.fasta -m uclust_ref --uclust_otu_id_prefix qiime_otu_"""))
+     """%prog -i seqs.fna -r refseqs.fasta -m uclust_ref --denovo_otu_id_prefix qiime_otu_"""))
 
 script_info['script_usage'].append(
     ("""Example (cdhit method):""",
@@ -266,23 +266,20 @@ script_info['optional_options'] = [
                 help='Reference sequence length if the shortest '
                      '[default: %default]'),
 
-    make_option('--sumaclust_otu_id_prefix', default="denovo", type='string',
+    make_option('--denovo_otu_id_prefix', default="denovo", type='string',
                 help='OTU identifier prefix (string) for the de novo '
-                     'SumaClust OTU picker [default: %default, OTU ids '
-                     'are ascending integers]'),
+                     'OTU pickers (sumaclust, swarm and uclust) '
+                     '[default: %default, OTU ids are ascending'
+                     'integers]'),
 
     # Swarm specific parameters
     make_option('--swarm_resolution', default=1, type='int',
                 help='Maximum number of differences allowed between '
                      'two amplicons, meaning that two amplicons will '
                      'be grouped if they have integer (or less) '
-                     'differences (see Swarm manual for more details). '
+                     'differences (see Swarm manual at '
+                     'https://github.com/torognes/swarm for more details). '
                      '[default: %default]'),
-
-    make_option('--swarm_otu_id_prefix', default="denovo", type='string',
-                help='OTU identifier prefix (string) for the de novo '
-                     'Swarm OTU picker [default: %default, OTU ids '
-                     'are ascending integers]'),
     # end Swarm specific parameters
 
     make_option('-q', '--trie_reverse_seqs', action='store_true',
@@ -370,12 +367,6 @@ script_info['optional_options'] = [
                 "the method (uclust: 8, usearch: 64, usearch61: 8).  int "
                 "value can be supplied to override this setting. "
                 "[default: %default]"),
-
-    make_option('--uclust_otu_id_prefix', default="denovo", type='string',
-                help="OTU identifier prefix (string) for the de novo uclust"
-                      " OTU picker and for new clusters when uclust_ref is used "
-                      "without -C [default: %default, OTU ids are ascending"
-                      " integers]"),
 
     make_option('--suppress_uclust_stable_sort', default=False,
                 action='store_true', help="Don't pass --stable-sort to "
@@ -523,6 +514,7 @@ def main():
     chimeras_retention = opts.non_chimeras_retention
     verbose = opts.verbose
     threads = opts.threads
+    denovo_otu_id_prefix = opts.denovo_otu_id_prefix
 
     # sortmerna specific parameters
     sortmerna_db = opts.sortmerna_db
@@ -534,7 +526,6 @@ def main():
 
     # swarm specific parameters
     swarm_resolution = opts.swarm_resolution
-    swarm_otu_id_prefix = opts.swarm_otu_id_prefix
 
     # usearch specific parameters
     percent_id_err = opts.percent_id_err
@@ -559,7 +550,6 @@ def main():
     # sumaclust specific parameters
     sumaclust_exact = opts.sumaclust_exact
     sumaclust_l = opts.sumaclust_l
-    sumaclust_otu_id_prefix = opts.sumaclust_otu_id_prefix
 
     # Set default values according to clustering method
     if word_length != "default":
@@ -731,12 +721,7 @@ def main():
 
     if otu_picking_method == 'swarm':
         # check resolution is a positive integer
-        try:
-            swarm_resolution = int(swarm_resolution)
-        except ValueError:
-            option_parser.error('--swarm_resolution=INT must '
-                                'be an integer value.')
-        if sortmerna_best_N_alignments < 1:
+        if swarm_resolution < 1:
             option_parser.error('--swarm_resolution=INT must '
                                 'be a positive integer value.')                   
 
@@ -789,7 +774,7 @@ def main():
                   'max_rejects': max_rejects,
                   'stepwords': stepwords,
                   'word_length': word_length,
-                  'new_cluster_identifier': opts.uclust_otu_id_prefix,
+                  'new_cluster_identifier': opts.denovo_otu_id_prefix,
                   'stable_sort': uclust_stable_sort,
                   'save_uc_files': save_uc_files,
                   'output_dir': output_dir,
@@ -854,7 +839,7 @@ def main():
 
     # usearch 6.1 (de novo OTU picking only)
     elif otu_picking_method == 'usearch61':
-        otu_prefix = opts.uclust_otu_id_prefix or 'denovo'
+        otu_prefix = opts.denovo_otu_id_prefix or 'denovo'
         params = {
             'percent_id': similarity,
             'wordlength': word_length,
@@ -879,7 +864,7 @@ def main():
 
     # usearch 6.1 reference OTU picking
     elif otu_picking_method == 'usearch61_ref':
-        otu_prefix = opts.uclust_otu_id_prefix or 'denovo'
+        otu_prefix = opts.denovo_otu_id_prefix or 'denovo'
         params = {
             'percent_id': similarity,
             'wordlength': word_length,
@@ -918,7 +903,7 @@ def main():
                   'max_rejects': max_rejects,
                   'stepwords': stepwords,
                   'word_length': word_length,
-                  'new_cluster_identifier': opts.uclust_otu_id_prefix,
+                  'new_cluster_identifier': opts.denovo_otu_id_prefix,
                   'stable_sort': uclust_stable_sort,
                   'save_uc_files': save_uc_files,
                   'output_dir': output_dir,
@@ -987,7 +972,7 @@ def main():
                   'l': sumaclust_l,
                   'prefilter_identical_sequences':
                   prefilter_identical_sequences,
-                  'sumaclust_otu_id_prefix': sumaclust_otu_id_prefix}
+                  'denovo_otu_id_prefix': denovo_otu_id_prefix}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,
                    result_path=result_path, log_path=log_path)
@@ -996,7 +981,7 @@ def main():
     elif otu_picking_method == 'swarm':
         params = {'resolution': swarm_resolution,
                   'threads': threads,
-                  'swarm_otu_id_prefix': swarm_otu_id_prefix}
+                  'denovo_otu_id_prefix': denovo_otu_id_prefix}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,
                    result_path=result_path, log_path=log_path)

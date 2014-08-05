@@ -706,7 +706,7 @@ class SumaClustOtuPicker(OtuPicker):
         self.log_lines.append('Num OTUs: %d' % len(clusters))
 
         # Add prefix ID to de novo OTUs
-        otu_id_prefix = self.Params['sumaclust_otu_id_prefix']
+        otu_id_prefix = self.Params['denovo_otu_id_prefix']
         if otu_id_prefix is None:
             clusters = dict(enumerate(clusters))
         else:
@@ -776,7 +776,7 @@ class SwarmOtuPicker(OtuPicker):
         self.log_lines.append('Num OTUs: %d' % len(clusters))
 
         # Add prefix ID to de novo OTUs
-        otu_id_prefix = self.Params['swarm_otu_id_prefix']
+        otu_id_prefix = self.Params['denovo_otu_id_prefix']
         if otu_id_prefix is None:
             clusters = dict(enumerate(clusters))
         else:

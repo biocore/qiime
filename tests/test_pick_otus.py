@@ -383,7 +383,7 @@ class SumaClustOtuPickerTests(TestCase):
                     'l': True,
                     'prefilter_identical_sequences':
                     True,
-                    'sumaclust_otu_id_prefix':
+                    'denovo_otu_id_prefix':
                     'DenovoOTU'})
 
         clusters = app(seq_path=self.file_read_seqs,
@@ -406,7 +406,7 @@ class SumaClustOtuPickerTests(TestCase):
                     'l': True,
                     'prefilter_identical_sequences':
                     False,
-                    'sumaclust_otu_id_prefix':
+                    'denovo_otu_id_prefix':
                     'DenovoOTU'})
 
         clusters = app(seq_path=self.file_read_seqs,
@@ -429,7 +429,7 @@ class SumaClustOtuPickerTests(TestCase):
                     'l': True,
                     'prefilter_identical_sequences':
                     True,
-                    'sumaclust_otu_id_prefix': None})
+                    'denovo_otu_id_prefix': None})
 
         clusters = app(seq_path=self.file_read_seqs,
                        result_path=self.result_path,
@@ -506,7 +506,7 @@ class SwarmOtuPickerTests(TestCase):
                     'threads': 1,
                     'prefilter_identical_sequences':
                     True,
-                    'swarm_otu_id_prefix':
+                    'denovo_otu_id_prefix':
                     'denovo'})
 
         clusters = app(seq_path=self.file_read_seqs,
@@ -541,7 +541,7 @@ class SwarmOtuPickerTests(TestCase):
                     'threads': 1,
                     'prefilter_identical_sequences':
                     True,
-                    'swarm_otu_id_prefix': None})
+                    'denovo_otu_id_prefix': None})
 
         clusters = app(seq_path=self.file_read_seqs,
                        result_path=self.result_path,

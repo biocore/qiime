@@ -240,7 +240,7 @@ pick_otus:exact_uclust
 pick_otus:user_sort
 pick_otus:suppress_presort_by_abundance_uclust
 pick_otus:suppress_new_clusters
-pick_otus:uclust_otu_id_prefix  workflowOTU
+pick_otus:denovo_otu_id_prefix  workflowOTU
 
 # Parallel options
 parallel:jobs_to_start	2
