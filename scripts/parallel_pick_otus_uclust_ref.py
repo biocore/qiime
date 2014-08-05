@@ -83,7 +83,7 @@ script_info['optional_options'] = [
                 help=("Enable preservation of intermediate uclust (.uc) files "
                       "that are used to generate clusters via uclust. "
                       "[default: %default]")),
-    make_option('--uclust_otu_id_prefix', default=None,
+    make_option('--denovo_otu_id_prefix', default=None,
                 help=("OTU identifier prefix (string) for the de novo uclust"
                       " OTU picker [default: %default, OTU ids are ascending"
                       " integers]")),
