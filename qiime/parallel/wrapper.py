@@ -66,12 +66,13 @@ class ParallelWrapper(object):
         for node in self._job_graph:
             started = results[node].metadata.started
             if started is None:
-                self._logger.write("Job %s: metadata not available" % node)
+                self._logger.write("Job %s: starting time not available"
+                                   % node)
                 continue
             for parent in self._job_graph.predecessors(node):
                 finished = results[parent].metadata.completed
                 if finished is None:
-                    self._logger.write("Job %s: metadata not available"
+                    self._logger.write("Job %s: finish time not available"
                                        % parent)
                     continue
                 if started < finished:
