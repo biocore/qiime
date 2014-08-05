@@ -25,6 +25,7 @@ QIIME 1.8.0-dev (changes since 1.8.0 go here)
 * ``merge_mapping_files.py`` can now take an argument to convert the header names to upper case, so it will merge for example a category named `treatment` and another one named `TREATMENT` from two different mapping files.
 * Beta support has been added for performing subsampled open reference OTU picking using SortMeRNA ([Bioinformatics](http://www.ncbi.nlm.nih.gov/pubmed/23071270)(for the closed-reference steps) and SumaClust ([In Preparation](http://metabarcoding.org/sumatra)) (for the open reference steps). This can be accessed with 'pick_open_reference_otus.py -m sortmerna_sumaclust'.
 * numpy version requirement has been updated to 1.7.1 or later.
+* Updated to use [burrito](https://github.com/biocore/burrito) instead of scikit-bio for imports from the application controller framework, as the former is replacing the latter.
 
 QIIME 1.8.0 (11 Dec 2013)
 =========================
