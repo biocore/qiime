@@ -20,7 +20,7 @@ from tempfile import mkdtemp
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
 from brokit.denoiser import Flowgram, parse_sff, FlowgramCollection
-from skbio.app.util import ApplicationNotFoundError
+from burrito.util import ApplicationNotFoundError
 
 from qiime.denoiser.flowgram_clustering import *
 from qiime.denoiser.utils import FlowgramContainerArray

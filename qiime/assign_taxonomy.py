@@ -23,7 +23,7 @@ from tempfile import NamedTemporaryFile
 from cStringIO import StringIO
 from collections import Counter, defaultdict
 
-from skbio.app.util import ApplicationNotFoundError
+from burrito.util import ApplicationNotFoundError
 from skbio.parse.sequences import parse_fasta
 
 from brokit.blast import blast_seqs, Blastall, BlastResult

@@ -11,11 +11,11 @@ from cStringIO import StringIO
 from itertools import imap
 from subprocess import check_call
 
-from skbio.app.util import ApplicationNotFoundError
+from burrito.util import ApplicationNotFoundError
 from cogent.parse.binary_sff import (
     parse_binary_sff, format_binary_sff, write_binary_sff, decode_accession,
 )
-from skbio.app.util import which
+from burrito.util import which
 
 from qiime.util import qiime_open, is_gzip
 

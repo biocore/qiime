@@ -7,7 +7,7 @@ from os.path import join, split, abspath
 
 from brokit.formatdb import FormatDb
 from skbio.util.misc import remove_files
-from skbio.app.parameters import FilePath
+from burrito.parameters import FilePath
 
 from qiime.util import get_qiime_temp_dir
 from qiime.exclude_seqs_by_blast import (check_options,

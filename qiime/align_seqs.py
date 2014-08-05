@@ -32,7 +32,7 @@ import brokit.muscle_v38
 import brokit.mafft
 
 from cogent.parse.rfam import MinimalRfamParser, ChangedSequence
-from skbio.app.util import ApplicationNotFoundError
+from burrito.util import ApplicationNotFoundError
 from skbio.core.exception import RecordError
 from skbio.parse.sequences import parse_fasta
 

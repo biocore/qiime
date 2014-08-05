@@ -19,8 +19,8 @@ from random import sample
 
 from asynchat import async_chat
 from socket import socket, AF_INET, SOCK_STREAM, gethostname, error
-from skbio.app.util import ApplicationNotFoundError
-from skbio.app.util import which
+from burrito.util import ApplicationNotFoundError
+from burrito.util import which
 from qiime.util import load_qiime_config, get_qiime_temp_dir
 
 
