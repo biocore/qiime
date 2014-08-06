@@ -13,7 +13,6 @@ from os.path import splitext, abspath, basename, exists, join
 from os import makedirs
 from tempfile import mkdtemp
 
-import networkx as nx
 from brokit.formatdb import build_blast_db_from_fasta_path
 
 from qiime.util import load_qiime_config
@@ -53,9 +52,6 @@ def command_wrapper(cmd, idx, dep_results=None):
 class ParallelBlaster(ParallelWrapper):
     def _construct_job_graph(self, input_fp, output_dir, params,
                              jobs_to_start=None):
-        # Create the workflow graph
-        self._job_graph = nx.DiGraph()
-
         # Do the parameter parsing
         input_fp = abspath(input_fp)
         output_dir = abspath(output_dir)

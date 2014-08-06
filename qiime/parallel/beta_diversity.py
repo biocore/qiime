@@ -15,7 +15,6 @@ from os import makedirs
 from tempfile import mkdtemp
 from shutil import move
 
-import networkx as nx
 from biom import load_table
 
 from qiime.parallel.wrapper import ParallelWrapper
@@ -78,9 +77,6 @@ class ParallelBetaDiversitySingle(ParallelWrapper):
 
     def _construct_job_graph(self, input_fp, output_dir, params,
                              jobs_to_start=None):
-        # Create the workflow graph
-        self._job_graph = nx.DiGraph()
-
         input_fp = abspath(input_fp)
         output_dir = abspath(output_dir)
 
@@ -147,9 +143,6 @@ class ParallelBetaDiversitySingle(ParallelWrapper):
 
 class ParallelBetaDiversityMultiple(ParallelWrapper):
     def _construct_job_graph(self, input_fps, output_dir, params):
-        # Create the workflow graph
-        self._job_graph = nx.DiGraph()
-
         output_dir = abspath(output_dir)
         # Create the output directory
         if not exists(output_dir):

@@ -15,7 +15,6 @@ from os.path import basename, join, abspath, exists, splitext
 from os import makedirs
 from tempfile import mkdtemp
 
-import networkx as nx
 from brokit.formatdb import build_blast_db_from_fasta_path
 from skbio.parse.sequences import parse_fasta
 
@@ -82,9 +81,6 @@ def merge_otu_maps(output_fp, otu_maps):
 class ParallelPickOtus(ParallelWrapper):
     def _construct_job_graph(self, input_fp, output_dir, params,
                              jobs_to_start=None):
-        # Create the workflow graph
-        self._job_graph = nx.DiGraph()
-
         # Create the output directory if it does not exists
         output_dir = abspath(output_dir)
         if not exists(output_dir):
@@ -243,9 +239,6 @@ class ParallelPickOtusTrie(ParallelWrapper):
     algorithms, we are not extending the ParallelPickOtus class
     """
     def _construct_job_graph(self, input_fp, output_dir, params):
-        # Create the workflow graph
-        self._job_graph = nx.DiGraph()
-
         # Create the output directory if it does not exists
         output_dir = abspath(output_dir)
         if not exists(output_dir):

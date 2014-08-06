@@ -11,17 +11,12 @@ from os.path import abspath, exists, splitext, basename, join
 from os import makedirs, rename
 from tempfile import mkdtemp
 
-import networkx as nx
-
 from qiime.parallel.wrapper import ParallelWrapper
 from qiime.workflow.util import generate_log_fp, WorkflowLogger
 
 
 class ParallelMergeOtus(ParallelWrapper):
     def _construct_job_graph(self, input_fps, output_dir):
-        # Create the workflow graph
-        self._job_graph = nx.DiGraph()
-
         # Create the output directory
         output_dir = abspath(output_dir)
         if not exists(output_dir):

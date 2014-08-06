@@ -60,7 +60,6 @@ def command_wrapper(cmd, method, idx, dep_results=None):
 
 
 class ParallelChimericSequenceIdentifier(ParallelWrapper):
-
     def _blast_fragments_cmd_gen(self, num_files, params, working_dir):
         """Generates the commands for identify_chimeric_seqs.py using the
         blast_fragments method"""
@@ -96,9 +95,6 @@ class ParallelChimericSequenceIdentifier(ParallelWrapper):
     def _construct_job_graph(self, input_fp, output_dir, params,
                              jobs_to_start=None):
         """Builds the job workflow graph"""
-        # Create the workflow graph
-        self._job_graph = nx.DiGraph()
-
         # Do the parameter parsing
         input_fp = abspath(input_fp)
         output_dir = abspath(output_dir)

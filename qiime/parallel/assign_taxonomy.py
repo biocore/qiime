@@ -14,7 +14,6 @@ from os import makedirs
 from tempfile import mkdtemp
 
 from brokit.formatdb import build_blast_db_from_fasta_path
-import networkx as nx
 
 from qiime.parallel.wrapper import ParallelWrapper
 from qiime.parallel.util import (input_fasta_splitter, merge_files_from_dirs,
@@ -56,9 +55,6 @@ def command_wrapper(cmd, idx, needs_blast, dep_results=None):
 class ParallelTaxonomyAssigner(ParallelWrapper):
     def _construct_job_graph(self, input_fp, output_dir, params,
                              jobs_to_start=None):
-        # Create the workflow graph
-        self._job_graph = nx.DiGraph()
-
         # Create the output directory if it does not exists
         output_dir = abspath(output_dir)
         if not exists(output_dir):

@@ -32,7 +32,7 @@ class ParallelWrapper(object):
         #     - "requires_deps": a boolean indicating if a dictionary with the
         #       results of the previous jobs (keyed by node name) is passed to
         #       the job using the kwargs argument with name 'dep_results'
-        self._job_graph = None
+        self._job_graph = nx.DiGraph()
         # self._logger: A WorkflowLogger object. Should be defined when
         # calling the subclass' _construct_job_graph method
         self._logger = None

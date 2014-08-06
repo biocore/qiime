@@ -13,17 +13,12 @@ __email__ = "gregcaporaso@gmail.com"
 from os.path import join, abspath, exists, split
 from os import makedirs
 
-import networkx as nx
-
 from qiime.parallel.wrapper import ParallelWrapper
 from qiime.workflow.util import WorkflowLogger
 
 
 class ParallelAlphaDiversity(ParallelWrapper):
     def _construct_job_graph(self, input_fps, output_dir, params):
-        # Create the job Graph
-        self._job_graph = nx.DiGraph()
-
         # Do the parameter parsing
         tree_str = '-t %s' % params['tree_path'] if params['tree_path'] else ''
         metrics = params['metrics']

@@ -13,8 +13,6 @@ __email__ = "gregcaporaso@gmail.com"
 from os.path import join, abspath, exists
 from os import makedirs
 
-import networkx as nx
-
 from qiime.parallel.wrapper import ParallelWrapper
 from qiime.workflow.util import WorkflowLogger
 
@@ -23,8 +21,6 @@ class ParallelMultipleRarefactions(ParallelWrapper):
 
     def _construct_job_graph(self, input_fp, output_dir, params):
         """Constructs the workflow graph and the jobs to execute"""
-        self._job_graph = nx.DiGraph()
-
         # Do the parameter parsing
         min_seqs = params['min']
         max_seqs = params['max']

@@ -14,8 +14,6 @@ from os.path import abspath, exists, join
 from os import makedirs
 from tempfile import mkdtemp
 
-import networkx as nx
-
 from qiime.workflow.util import generate_log_fp, WorkflowLogger
 from qiime.parallel.wrapper import ParallelWrapper
 from qiime.parallel.util import (input_fasta_splitter, merge_files_from_dirs,
@@ -72,9 +70,6 @@ def generate_biom_table(biom_fp, observation_map_fp, observation_metadata_fp):
 class ParallelDatabaseMapper(ParallelWrapper):
     def _construct_job_graph(self, input_fp, output_dir, params,
                              jobs_to_start=None):
-        # Create the workflow graph
-        self._job_graph = nx.DiGraph()
-
         # Create the output directory if it does not exists
         output_dir = abspath(output_dir)
         if not exists(output_dir):
