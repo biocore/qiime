@@ -55,7 +55,7 @@ def merge_files_from_dirs(output_fp, output_dirs, format_str, merge_func):
 
 
 def input_fasta_splitter(input_fp, output_dir, num):
-    """Splits the input fasta file in num chunks and puts the on output_dir
+    """Splits the input fasta file in num chunks and puts them on output_dir
 
     Parameters
     ----------
@@ -74,7 +74,7 @@ def input_fasta_splitter(input_fp, output_dir, num):
     # Importing here so it becomes available on the workers
     from os.path import exists, basename, splitext, join
     from os import makedirs
-    from skbio.parse.sequences import parse_fasta
+    from skbio.parse.sequences import load
 
     if not exists(output_dir):
         makedirs(output_dir)
@@ -87,10 +87,9 @@ def input_fasta_splitter(input_fp, output_dir, num):
     open_files = [open(fp, 'w') for fp in fasta_fps]
 
     # Write the chunks
-    for i, seq_data in enumerate(parse_fasta(input_fp)):
-        seq_id, seq = seq_data
-        idx = i % num
-        open_files[idx].write('>%s\n%s\n' % (seq_id, seq))
+    for i, rec in enumerate(load([input_fp])):
+        open_files[i % num].write('>%s\n%s\n' % (rec['SequenceID'],
+                                                 rec['Sequence']))
 
     # close all the files
     for of in open_files:
