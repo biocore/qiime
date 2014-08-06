@@ -34,7 +34,7 @@ def command_wrapper(cmd, idx, dep_results=None):
         Command to execute
     idx : int
         The fasta fp index that this job has to execute
-    dep_results : dict of {node_name: tuple}
+    dep_results : dict of {node_name: object}
         The results in which cmd depends on
     """
     from qiime.parallel.context import system_call
@@ -82,20 +82,19 @@ class ParallelAlignSeqsPyNast(ParallelWrapper):
         self._dirpaths_to_remove.append(working_dir)
         dep_job_names = []
 
-        # Pre-command initiation
         if not blast_db:
-            # Build the blast database from reference_seqs_fp -- all procs
-            # will then access one db rather than create on per proc
-            self._job_graph.add_node("BUILD_BLAST_DB",
-                                     job=(build_blast_db_from_fasta_path,
-                                          template_fp, False, working_dir,
-                                          False),
-                                     requires_deps=False)
+            # The user did not provided the blast db, so the we have to
+            # build it
+            job = (build_blast_db_from_fasta_path, template_fp, False,
+                   working_dir, False)
         else:
-            func = lambda: (blast_db, None)
-            self._job_graph.add_node("BUILD_BLAST_DB",
-                                     job=(func, ),
-                                     requires_deps=False)
+            # The user did provided the blast db, we just submit a dummy
+            # job that makes the workflow easier
+            job = (lambda: (blast_db, None), )
+
+        # Add the blast db builder node to the workflow
+        self._job_graph.add_node("BUILD_BLAST_DB", job=job,
+                                 requires_deps=False)
         dep_job_names.append("BUILD_BLAST_DB")
 
         if min_length < 0:
