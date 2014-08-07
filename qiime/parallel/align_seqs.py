@@ -18,36 +18,9 @@ from brokit.formatdb import build_blast_db_from_fasta_path
 from qiime.align_seqs import compute_min_alignment_length
 from qiime.parallel.wrapper import ParallelWrapper
 from qiime.parallel.util import (input_fasta_splitter, merge_files_from_dirs,
-                                 concatenate_files)
+                                 concatenate_files, command_wrapper)
 from qiime.parallel.context import context
 from qiime.workflow.util import generate_log_fp, WorkflowLogger
-
-
-def command_wrapper(cmd, idx, dep_results=None):
-    """Wraps the command to be executed so it can use the results produced by
-    the jobs in which the command depends on
-
-    Parameters
-    ----------
-    cmd : str
-        Command to execute
-    idx : int
-        The fasta fp index that this job has to execute
-    dep_results : dict of {node_name: object}
-        The results in which cmd depends on
-    """
-    from qiime.parallel.context import system_call
-    if "SPLIT_FASTA" not in dep_results:
-        raise ValueError("Wrong job graph workflow. Node 'SPLIT_FASTA' "
-                         "not listed as dependency of current node")
-    fasta_fps = dep_results["SPLIT_FASTA"]
-
-    if "BUILD_BLAST_DB" not in dep_results:
-        raise ValueError("Wrong job graph workflow. Node 'BUILD_BLAST_DB' "
-                         "not listed as dependency of current node")
-    blast_db, db_files_to_remove = dep_results["BUILD_BLAST_DB"]
-    cmd = cmd % (fasta_fps[idx], blast_db)
-    return system_call(cmd)
 
 
 class ParallelAlignSeqsPyNast(ParallelWrapper):
@@ -107,6 +80,9 @@ class ParallelAlignSeqsPyNast(ParallelWrapper):
         # Get job commands
         output_dirs = []
         node_names = []
+        keys = ["SPLIT_FASTA", "BUILD_BLAST_DB"]
+        funcs = {"SPLIT_FASTA": lambda idx, results: results[idx],
+                 "BUILD_BLAST_DB": lambda idx, results: results[0]}
         for i in range(jobs_to_start):
             # out_dir = mkdtemp(prefix="align_seqs_%d" % i, dir=wor)
             out_dir = join(working_dir, "align_seqs_%d" % i)
@@ -119,7 +95,8 @@ class ParallelAlignSeqsPyNast(ParallelWrapper):
             node_name = "AS_%d" % i
             node_names.append(node_name)
             self._job_graph.add_node(node_name,
-                                     job=(command_wrapper, cmd, i),
+                                     job=(command_wrapper, cmd, i, keys,
+                                          funcs),
                                      requires_deps=True)
             # Adding the dependency edges to the graph
             for dep_node_name in dep_job_names:

@@ -21,6 +21,33 @@ class ComputeError(Exception):
     pass
 
 
+def command_wrapper(cmd, idx, keys, funcs, dep_results=None):
+    """Wraps the command to be executed so it can use the results produced by
+    the jobs in which the command depends on
+
+    Parameters
+    ----------
+    cmd : str
+        Command to execute
+    idx : int
+        The fasta fp index that this job has to execute
+    dep_results : dict of {node_name: object}
+        The results in which cmd depends on
+    """
+    from qiime.parallel.context import system_call
+    if not dep_results:
+        raise RuntimeError("The command wrapper has not received any "
+                           "dep_results")
+    if not set(keys).issubset(dep_results.keys()):
+        raise ValueError("Wrong job graph workflow. Nodes %s "
+                         "not listed as dependency of current node"
+                         % set(keys).difference(dep_results.keys()))
+
+    results = tuple(funcs[k](idx, dep_results[k]) for k in keys)
+    cmd = cmd % (results)
+    return system_call(cmd)
+
+
 def concatenate_files(output_fp, temp_out_fps):
     with open(output_fp, 'w') as out_f:
         for tmp_fp in temp_out_fps:
