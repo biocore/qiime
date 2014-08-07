@@ -304,8 +304,8 @@ class UpstreamWorkflowTests(TestCase):
         self.assertTrue(getsize(log_fp) > 0)
 
     def test_run_pick_de_novo_otus_swarm_rdp_tax_assign(self):
-        """run_pick_de_novo_otus using swarm generates expected 
-           results with rdp tax assignment
+        """run_pick_de_novo_otus using swarm (default parameters)
+           generates expected results with rdp tax assignment
         """
 
         self.params['assign_taxonomy'] = \
@@ -396,8 +396,8 @@ class UpstreamWorkflowTests(TestCase):
         self.assertTrue(getsize(log_fp) > 0)
 
     def test_run_pick_de_novo_otus_swarm_rdp_tax_assign_modify_resolution(self):
-        """run_pick_de_novo_otus using swarm generates expected 
-           results with rdp tax assignment
+        """run_pick_de_novo_otus using swarm (d=4 which approximates 97%% id) 
+           generates expected results with rdp tax assignment
         """
 
         self.params['assign_taxonomy'] = \
