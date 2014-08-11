@@ -14,10 +14,11 @@ import sys
 from StringIO import StringIO
 from shutil import rmtree
 from os.path import exists
-from cogent.util.unit_test import TestCase, main
-from cogent.util.misc import remove_files, create_dir
+from tempfile import mkdtemp
+
+from skbio.util.misc import remove_files
+from unittest import TestCase, main
 from qiime.util import (get_qiime_temp_dir,
-                        get_tmp_filename,
                         load_qiime_config)
 from qiime.parse import (parse_qiime_parameters)
 from qiime.test import (initiate_timeout,
@@ -36,12 +37,10 @@ class CoreDiversityAnalysesTests(TestCase):
 
         # Create example output directory
         tmp_dir = get_qiime_temp_dir()
-        self.test_out = get_tmp_filename(tmp_dir=tmp_dir,
+        self.test_out = mkdtemp(dir=tmp_dir,
                                          prefix='core_qiime_analyses_test_',
-                                         suffix='',
-                                         result_constructor=str)
+                                         suffix='')
         self.dirs_to_remove.append(self.test_out)
-        create_dir(self.test_out)
 
         # Get input data
         self.test_data = get_test_data_fps()
@@ -60,7 +59,7 @@ class CoreDiversityAnalysesTests(TestCase):
 
         # Define number of seconds a test can run for before timing out
         # and failing
-        initiate_timeout(420)
+        initiate_timeout(480)
 
     def tearDown(self):
 

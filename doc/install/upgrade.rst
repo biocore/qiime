@@ -4,7 +4,7 @@ Upgrading to the latest version of QIIME
 ========================================
 This page describes various ways to upgrade your QIIME installation to a new version.
 
-For a detailed history of the most notable changes between versions see the `QIIME ChangeLog <https://github.com/qiime/qiime/blob/master/ChangeLog.md>`_. This points to the most recent version, so will usually also give a preview of the changes that are coming in the next version of QIIME.
+For a detailed history of the most notable changes between versions see the `QIIME ChangeLog <https://github.com/biocore/qiime/blob/master/ChangeLog.md>`_. This points to the most recent version, so will usually also give a preview of the changes that are coming in the next version of QIIME.
 
 Linux users
 -----------
@@ -20,4 +20,4 @@ If you run QIIME using the AWS EC2 service, visit `this page <http://qiime.org/h
 
 Mac OS X users / Native QIIME installation
 ------------------------------------------
-If you run QIIME on Mac OS X or have a native install (e.g. you are not using `qiime-deploy <https://github.com/qiime/qiime-deploy>`_ to install QIIME on Linux), you will need to manually upgrade the versions of QIIME's dependencies that have changed. To see a complete list of required dependency versions, please see `this page <install.html>`_. For a list of dependency versions that have changed between QIIME releases, please see the `QIIME ChangeLog <https://github.com/qiime/qiime/blob/master/ChangeLog.md>`_.
+If you run QIIME on Mac OS X or have a native install (e.g. you are not using `qiime-deploy <https://github.com/qiime/qiime-deploy>`_ to install QIIME on Linux), you will need to manually upgrade the versions of QIIME's dependencies that have changed. To see a complete list of required dependency versions, please see `this page <install.html>`_. For a list of dependency versions that have changed between QIIME releases, please see the `QIIME ChangeLog <https://github.com/biocore/qiime/blob/master/ChangeLog.md>`_.

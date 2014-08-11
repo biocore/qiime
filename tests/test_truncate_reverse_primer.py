@@ -11,15 +11,18 @@ __maintainer__ = "William Walters"
 __email__ = "William.A.Walters@colorado.edu"
 
 from os.path import exists, join, basename
+from os import close
 from shutil import rmtree
+from tempfile import mkdtemp, mkstemp
 
-from cogent.util.unit_test import TestCase, main
-from qiime.util import get_tmp_filename, create_dir
-from cogent.util.misc import remove_files, get_random_directory_name
+from unittest import TestCase, main
+from qiime.util import create_dir
+from skbio.util.misc import remove_files
 
 from qiime.truncate_reverse_primer import get_rev_primer_seqs,\
     get_output_filepaths, truncate_rev_primers, truncate_reverse_primer
 
+from skbio.core.exception import BiologicalSequenceError
 
 class FakeOutFile(object):
 
@@ -55,42 +58,44 @@ class TruncateRemoveReversePrimerTests(TestCase):
         self.expected_truncation_zero_mismatches_truncate_remove =\
             expected_truncation_zero_mismatches_truncate_remove
 
-        self.fasta_fp = get_tmp_filename(
-            prefix='fasta_seqs_',
-            suffix='.fna')
+        fd, self.fasta_fp = mkstemp(prefix='fasta_seqs_',
+                                    suffix='.fna')
+        close(fd)
         seq_file = open(self.fasta_fp, 'w')
         seq_file.write(self.sample_fasta_file1_data)
         seq_file.close()
 
-        self.fasta_badlabels_fp = get_tmp_filename(
-            prefix="fasta_seqs_badlabels_",
-            suffix=".fna")
+        fd, self.fasta_badlabels_fp = mkstemp(prefix="fasta_seqs_badlabels_",
+                                              suffix=".fna")
+        close(fd)
         seq_file = open(self.fasta_badlabels_fp, "w")
         seq_file.write(self.sample_fasta_file_bad_labels_data)
         seq_file.close()
 
-        self.mapping_fp = get_tmp_filename(
-            prefix='sample_mapping_',
-            suffix='.txt')
+        fd, self.mapping_fp = mkstemp(prefix='sample_mapping_',
+                                      suffix='.txt')
+        close(fd)
         mapping_file = open(self.mapping_fp, "w")
         mapping_file.write(self.sample_mapping_file1_data)
         mapping_file.close()
 
-        self.mapping_bad_header_fp = get_tmp_filename(
-            prefix='sample_mapping_badheader_',
-            suffix=".txt")
+        fd, self.mapping_bad_header_fp = mkstemp(
+                                        prefix='sample_mapping_badheader_',
+                                        suffix=".txt")
+        close(fd)
         mapping_file = open(self.mapping_bad_header_fp, "w")
         mapping_file.write(self.sample_mapping_file_no_revprimer_header)
         mapping_file.close()
 
-        self.mapping_bad_primer_fp = get_tmp_filename(
-            prefix='sample_mapping_badprimer_',
-            suffix=".txt")
+        fd, self.mapping_bad_primer_fp = mkstemp(
+                                        prefix='sample_mapping_badprimer_',
+                                        suffix=".txt")
+        close(fd)
         mapping_file = open(self.mapping_bad_primer_fp, "w")
         mapping_file.write(self.sample_mapping_file_bad_revprimer)
         mapping_file.close()
 
-        self.output_dir = get_random_directory_name(prefix='/tmp/')
+        self.output_dir = mkdtemp()
         self.output_dir += '/'
 
         create_dir(self.output_dir)
@@ -120,12 +125,12 @@ class TruncateRemoveReversePrimerTests(TestCase):
         """Raises errors with invalid mapping file """
 
         # Raises error if missing ReversePrimer column
-        self.assertRaises(KeyError, get_rev_primer_seqs,
-                          open(self.mapping_bad_header_fp, "U"))
+        with open(self.mapping_bad_header_fp, "U") as f:
+            self.assertRaises(KeyError, get_rev_primer_seqs, f)
 
         # Raises error if invalid characters in primer
-        self.assertRaises(ValueError, get_rev_primer_seqs,
-                          open(self.mapping_bad_primer_fp, "U"))
+        with open(self.mapping_bad_primer_fp, "U") as f:
+            self.assertRaises(BiologicalSequenceError, get_rev_primer_seqs, f)
 
     def test_get_output_filepaths(self):
         """ Properly returns output filepaths """

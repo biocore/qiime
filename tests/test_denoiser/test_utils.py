@@ -14,16 +14,16 @@ __email__ = "jens.reeder@gmail.com"
 from os import remove, rmdir
 from shutil import rmtree
 from os.path import exists
+from tempfile import mkdtemp
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 
-from cogent import Sequence
-from cogent.parse.fasta import MinimalFastaParser
-from cogent.parse.flowgram import Flowgram
-from cogent.parse.flowgram_collection import FlowgramCollection
-from cogent.app.util import ApplicationNotFoundError
-from qiime.util import get_tmp_filename
-from cogent.util.misc import remove_files, create_dir
+from skbio.core.sequence import BiologicalSequence
+from skbio.parse.sequences import parse_fasta
+from brokit.denoiser import Flowgram, FlowgramCollection
+from burrito.util import ApplicationNotFoundError
+from skbio.util.misc import remove_files, create_dir
 
 from qiime.util import get_qiime_project_dir
 from qiime.denoiser.utils import make_stats, get_representatives,\
@@ -111,13 +111,12 @@ class TestUtils(TestCase):
         self.files_to_remove.append("/tmp/test_store_mapping_mapping.txt")
         store_mapping(self.mapping, "/tmp/", prefix="test_store_mapping")
         observed = list(open("/tmp/test_store_mapping_mapping.txt", "U"))
-        self.assertEqualItems(observed, expected)
+        self.assertItemsEqual(observed, expected)
 
     def test_store_cluster(self):
         """store_clusters stores the centroid seqs for each cluster."""
 
-        self.tmpdir = get_tmp_filename(tmp_dir="./", suffix="_store_clusters/")
-        create_dir(self.tmpdir)
+        self.tmpdir = mkdtemp(dir="./", suffix="_store_clusters/")
 
         self.files_to_remove.append(self.tmpdir + "singletons.fasta")
         self.files_to_remove.append(self.tmpdir + "centroids.fasta")
@@ -125,10 +124,10 @@ class TestUtils(TestCase):
         # empty map results in empty files
         store_clusters({}, self.tiny_test, self.tmpdir)
         actual_centroids = list(
-            MinimalFastaParser(open(self.tmpdir + "centroids.fasta")))
+            parse_fasta(open(self.tmpdir + "centroids.fasta")))
         self.assertEqual(actual_centroids, [])
         actual_singletons = list(
-            MinimalFastaParser(open(self.tmpdir + "singletons.fasta")))
+            parse_fasta(open(self.tmpdir + "singletons.fasta")))
         self.assertEqual(actual_singletons, [])
 
         # non-empty map creates non-empty files, centroids sorted by size
@@ -146,10 +145,10 @@ class TestUtils(TestCase):
 
         store_clusters(mapping, self.tiny_test, self.tmpdir)
         actual_centroids = list(
-            MinimalFastaParser(open(self.tmpdir + "centroids.fasta")))
+            parse_fasta(open(self.tmpdir + "centroids.fasta")))
         self.assertEqual(actual_centroids, centroids)
         actual_singletons = list(
-            MinimalFastaParser(open(self.tmpdir + "singletons.fasta")))
+            parse_fasta(open(self.tmpdir + "singletons.fasta")))
         self.assertEqual(actual_singletons, singletons)
 
     def test_get_representatives(self):
@@ -162,12 +161,13 @@ BABA
 >4: 1
 ABABAA
 >8: 2
-BABBA"""
+BABBA
+"""
         seqs = self.data.iteritems
         mapping = self.mapping
         test_result = list(get_representatives(mapping, seqs()))
-        test_result_as_fasta = "\n".join(
-            map(lambda a: a.toFasta(), test_result))
+        test_result_as_fasta = "".join(
+            map(lambda a: a.to_fasta(), test_result))
 
         self.assertEqual(test_result_as_fasta, result)
 
@@ -177,8 +177,8 @@ BABBA"""
         seqs = [('1', "ACGT"), ('2', "TAGC"), ('a', "TTTTT")]
 
         observed = list(get_representatives(mapping, seqs))
-        expected = [Sequence(name=">1", seq="ACGT"), Sequence(name='2',
-                                                              seq="TAGC")]
+        expected = [BiologicalSequence("ACGT", id="1"),
+                    BiologicalSequence("TAGC", id='2')]
         self.assertEqual(observed, expected)
 
     def test_squeeze_seq(self):
@@ -357,9 +357,8 @@ BABBA"""
     def test_checkpoints(self):
         """storing and loading of checkpoints works"""
 
-        self.tmpdir = get_tmp_filename(
-            tmp_dir="./",
-            suffix="_test_checkpoints/")
+        self.tmpdir = mkdtemp(dir="./",
+                              suffix="_test_checkpoints/")
 
         bestscores = dict({1: 0.9,
                            2: 1.1,

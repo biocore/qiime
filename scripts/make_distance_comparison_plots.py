@@ -11,14 +11,13 @@ __email__ = "jai.rideout@gmail.com"
 
 from os.path import join
 from string import strip
-from cogent.util.misc import create_dir
+from skbio.util.misc import create_dir
+from skbio.draw.distributions import grouped_distributions
 from qiime.colors import data_colors, data_color_order
 from qiime.group import get_field_state_comparisons
-from qiime.make_distance_histograms import matplotlib_rgb_color
+from qiime.colors import matplotlib_rgb_color
 from qiime.parse import (group_by_field, parse_distmat, parse_mapping_file,
                          QiimeParseError)
-from qiime.pycogent_backports.distribution_plots import (
-    generate_comparative_plots)
 from qiime.stats import all_pairs_t_test, tail_types
 from qiime.util import (get_options_lookup, make_option,
                         parse_command_line_parameters)
@@ -338,16 +337,17 @@ def main():
         option_parser.error("The specified width and height of the image must "
                             "be greater than zero.")
 
-    plot_figure = generate_comparative_plots(opts.plot_type, plot_data,
-                                             x_values=x_spacing, data_point_labels=plot_x_axis_labels,
-                                             distribution_labels=comparison_field_states,
-                                             distribution_markers=plot_colors, x_label=plot_x_label,
-                                             y_label=plot_y_label, title=plot_title,
-                                             x_tick_labels_orientation=opts.x_tick_labels_orientation,
-                                             y_min=y_min, y_max=y_max, whisker_length=opts.whisker_length,
-                                             error_bar_type=opts.error_bar_type,
-                                             distribution_width=opts.distribution_width,
-                                             figure_width=width, figure_height=height)
+    plot_figure = grouped_distributions(
+        opts.plot_type, plot_data, x_values=x_spacing,
+        data_point_labels=plot_x_axis_labels,
+        distribution_labels=comparison_field_states,
+        distribution_markers=plot_colors, x_label=plot_x_label,
+        y_label=plot_y_label, title=plot_title,
+        x_tick_labels_orientation=opts.x_tick_labels_orientation, y_min=y_min,
+        y_max=y_max, whisker_length=opts.whisker_length,
+        error_bar_type=opts.error_bar_type,
+        distribution_width=opts.distribution_width, figure_width=width,
+        figure_height=height)
 
     # Save the plot in the specified format.
     output_plot_fp = join(opts.output_dir, "%s_Distance_Comparisons.%s" %

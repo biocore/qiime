@@ -3,10 +3,8 @@ from __future__ import division
 
 __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Justin Kuczynski",
-               "Jose Carlos Clemente Litran",
-               "Rob Knight",
-               "Greg Caporaso"]  # remember to add yourself
+__credits__ = ["Justin Kuczynski", "Jose Carlos Clemente Litran", "Rob Knight",
+               "Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Justin Kuczynski"
@@ -18,15 +16,15 @@ this takes an otu table and generates a series of subsampled (without
 replacement) otu tables.
 """
 import os.path
+
 import numpy
 from numpy import inf
-from cogent.maths.stats.rarefaction import (subsample,
-                                            subsample_freq_dist_nonzero,
-                                            subsample_random,
-                                            subsample_multinomial)
-from qiime.util import FunctionWithParams
-from qiime.filter import filter_samples_from_otu_table, filter_otus_from_otu_table
-from qiime.format import format_biom_table
+from skbio.math.subsample import subsample
+from biom.err import errstate
+
+from qiime.util import FunctionWithParams, write_biom_table
+from qiime.filter import (filter_samples_from_otu_table,
+                          filter_otus_from_otu_table)
 
 
 class SingleRarefactionMaker(FunctionWithParams):
@@ -42,7 +40,7 @@ class SingleRarefactionMaker(FunctionWithParams):
         self.otu_table = self.getBiomData(otu_path)
 
         self.max_num_taxa = -1
-        for val in self.otu_table.iterObservationData():
+        for val in self.otu_table.iter_data(axis='observation'):
             self.max_num_taxa = max(self.max_num_taxa, val.sum())
 
     def rarefy_to_file(self, output_fname, small_included=False,
@@ -55,7 +53,7 @@ class SingleRarefactionMaker(FunctionWithParams):
             for rep in range(self.num_reps):"""
 
         if not include_lineages:
-            for (val, id, meta) in self.otu_table.iterObservations():
+            for (val, id, meta) in self.otu_table.iter(axis='observation'):
                 del meta['taxonomy']
 
         sub_otu_table = get_rare_data(self.otu_table,
@@ -64,20 +62,18 @@ class SingleRarefactionMaker(FunctionWithParams):
                                       subsample_f=subsample_f)
 
         if empty_otus_removed:
-            sub_otu_table = filter_otus_from_otu_table(sub_otu_table,
-                                                       sub_otu_table.ObservationIds,
-                                                       1, inf, 0, inf)
+            sub_otu_table = filter_otus_from_otu_table(
+                sub_otu_table, sub_otu_table.ids(axis='observation'),
+                1, inf, 0, inf)
 
         self._write_rarefaction(output_fname, sub_otu_table)
 
     def _write_rarefaction(self, fname, sub_otu_table):
         """ depth and rep can be numbers or strings
         """
-        if sub_otu_table.isEmpty():
+        if sub_otu_table.is_empty():
             return
-        f = open(fname, 'w')
-        f.write(format_biom_table(sub_otu_table))
-        f.close()
+        write_biom_table(sub_otu_table, fname)
 
 
 class RarefactionMaker(FunctionWithParams):
@@ -90,11 +86,10 @@ class RarefactionMaker(FunctionWithParams):
         """
         self.rare_depths = range(min, max + 1, step)
         self.num_reps = num_reps
-        #self.otu_table = parse_biom_table(open(otu_path,'U'))
         self.otu_table = self.getBiomData(otu_path)
         self.max_num_taxa = -1
         tmp = -1
-        for val in self.otu_table.iterObservationData():
+        for val in self.otu_table.iter_data(axis='observation'):
             if val.sum() > tmp:
                 tmp = val.sum()
         self.max_num_taxa = tmp
@@ -106,7 +101,7 @@ class RarefactionMaker(FunctionWithParams):
 
         this prevents large memory usage"""
         if not include_lineages:
-            for (val, id, meta) in self.otu_table.iterObservations():
+            for (val, id, meta) in self.otu_table.iter(axis='observation'):
                 try:
                     del meta['taxonomy']
                 except (TypeError, KeyError) as e:
@@ -122,8 +117,8 @@ class RarefactionMaker(FunctionWithParams):
                                               subsample_f=subsample_f)
                 if empty_otus_removed:
                     sub_otu_table = filter_otus_from_otu_table(
-                        sub_otu_table,
-                        sub_otu_table.ObservationIds, 1, inf, 0, inf)
+                        sub_otu_table, sub_otu_table.ids(axis='observation'),
+                        1, inf, 0, inf)
 
                 self._write_rarefaction(depth, rep, sub_otu_table)
 
@@ -156,13 +151,12 @@ class RarefactionMaker(FunctionWithParams):
     def _write_rarefaction(self, depth, rep, sub_otu_table):
         """ depth and rep can be numbers or strings
         """
-        if sub_otu_table.isEmpty():
+        if sub_otu_table.is_empty():
             return
 
         fname = 'rarefaction_' + str(depth) + '_' + str(rep) + '.biom'
-        f = open(os.path.join(self.output_dir, fname), 'w')
-        f.write(format_biom_table(sub_otu_table))
-        f.close()
+        fname = os.path.join(self.output_dir, fname)
+        write_biom_table(sub_otu_table, fname)
 
 
 def get_rare_data(otu_table,
@@ -176,44 +170,21 @@ def get_rare_data(otu_table,
     - otu_table (input and out) is otus(rows) by samples (cols)
     - no otus are removed, even if they are absent in the rarefied table"""
 
-    if not include_small_samples:
-        otu_table = filter_samples_from_otu_table(
-            otu_table,
-            otu_table.SampleIds,
-            seqs_per_sample,
-            inf)
+    with errstate(empty='raise'):
+        if not include_small_samples:
+            otu_table = filter_samples_from_otu_table(
+                otu_table,
+                otu_table.ids(),
+                seqs_per_sample,
+                inf)
 
-    # subsample samples that have too many sequences
-    def func(x, s_id, s_md):
-        if x.sum() < seqs_per_sample:
-            return x
-        else:
-            return subsample_f(x, seqs_per_sample)
+        # subsample samples that have too many sequences
+        def func(x, s_id, s_md):
+            if x.sum() < seqs_per_sample:
+                return x
+            else:
+                return subsample_f(x.astype(int), seqs_per_sample)
 
-    subsampled_otu_table = otu_table.transformSamples(func)
+        subsampled_otu_table = otu_table.transform(func, axis='sample')
 
-    # remove small samples if required
-
-    return subsampled_otu_table
-
-# Not necessary anymore; tagged for removal
-
-
-def remove_empty_otus(otu_mtx, otu_ids, otu_lineages=None):
-    """ return matrix and otu_ids with otus of all 0's removed
-
-    otu_mtx (in and out) is otus (rows) by samples (cols)"""
-    nonempty_otu_idxs = []
-    res_otu_ids = []
-    for i in range(len(otu_ids)):
-        if otu_mtx[i].sum() != 0:
-            nonempty_otu_idxs.append(i)
-            res_otu_ids.append(otu_ids[i])
-    res_otu_mtx = otu_mtx[nonempty_otu_idxs, :]
-
-    if otu_lineages is None or otu_lineages == []:
-        res_otu_lineages = []
-    else:
-        res_otu_lineages = [otu_lineages[i] for i in nonempty_otu_idxs]
-
-    return res_otu_mtx, res_otu_ids, res_otu_lineages
+        return subsampled_otu_table

@@ -5,16 +5,16 @@ from __future__ import division
 
 __author__ = "Dan Knights"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Dan Knights"]
+__credits__ = ["Dan Knights",
+               "Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Dan Knights"
 __email__ = "daniel.knights@colorado.edu"
 
 
-from numpy import array, concatenate, asarray, transpose, log, invert, asarray,\
-    float32, float64, unique, fliplr
-from cogent.parse.table import SeparatorFormatParser
+from numpy import (array, concatenate, asarray, transpose, log, invert,
+                   asarray, float32, float64, unique, fliplr, inf)
 from optparse import OptionParser
 from qiime.util import MissingFileError
 import os
@@ -23,8 +23,9 @@ use('Agg', warn=False)
 import matplotlib
 from matplotlib.pylab import *
 from qiime.beta_diversity import get_nonphylogenetic_metric
-from cogent.core.tree import PhyloNode
-from cogent.cluster.UPGMA import UPGMA_cluster
+from scipy.cluster.hierarchy import linkage
+from skbio.core.tree import TreeNode
+from skbio.core.distance import DistanceMatrix
 from qiime.parse import parse_newick, PhyloNode
 from qiime.filter import filter_samples_from_otu_table
 
@@ -35,9 +36,9 @@ def get_overlapping_samples(map_rows, otu_table):
        Returns: new_map_rows, new_otu_table
     """
     map_sample_ids = zip(*map_rows)[0]
-    shared_ids = set(map_sample_ids) & set(otu_table.SampleIds)
+    shared_ids = set(map_sample_ids) & set(otu_table.ids())
 
-    otu_table = filter_samples_from_otu_table(otu_table, shared_ids, 0, inf)
+    otu_table = filter_samples_from_otu_table(otu_table, shared_ids, -inf, inf)
 
     new_map = []
     for sam_id in map_sample_ids:
@@ -69,13 +70,10 @@ def get_order_from_categories(otu_table, category_labels):
 
     for label in unique(category_labels):
         label_ix = category_labels == label
-        selected = [s for (i, s) in zip(label_ix, otu_table.SampleIds) if i]
-        sub_otu_table = filter_samples_from_otu_table(
-            otu_table,
-            selected,
-            0,
-            inf)
-        data = asarray([val for val in sub_otu_table.iterObservationData()])
+        selected = [s for (i, s) in zip(label_ix, otu_table.ids()) if i]
+        sub_otu_table = filter_samples_from_otu_table(otu_table, selected,
+                                                      -inf, inf)
+        data = asarray([val for val in sub_otu_table.iter_data(axis='observation')])
         label_ix_ix = get_clusters(data, axis='column')
 
         sample_order += list(nonzero(label_ix)[0][array(label_ix_ix)])
@@ -124,45 +122,16 @@ def names_to_indices(names, ordered_names):
     return array(indices)
 
 
-def get_log_transform(otu_table, eps=None):
-    """Returns log10 of the data, setting zero values to eps.
-
-       If eps is None, eps is set to 1/2 the smallest nonzero value.
-    """
-    # NOTE: compared with qiime.make_otu_heatmap_html, this function does
-    # *not* do a data = data - (data).min() before returning value.
-    # This behavior is correct according to Dan Knights, but consider if
-    # we ever merge these two scripts
-
-    # explicit conversion to float: transform
-    def f(s_v, s_id, s_md):
-        return float64(s_v)
-    float_otu_table = otu_table.transformSamples(f)
-
-    if eps is None:
-        # get the minimum among nonzero entries and divide by two
-        eps = inf
-        for (obs, sam) in float_otu_table.nonzero():
-            eps = minimum(eps, float_otu_table.getValueByIds(obs, sam))
-        if eps == inf:
-            raise ValueError('All values in the OTU table are zero!')
-        else:
-            eps = eps / 2
-
-    # set zero entries to eps/2 using a transform
-    g = lambda x: x if (x != 0) else eps
-
-    def g_m(s_v, s_id, s_md):
-        return asarray(map(g, s_v))
-
-    eps_otu_table = float_otu_table.transformSamples(g_m)
+def get_log_transform(otu_table):
+    """Returns log10 of the data"""
+    if otu_table.nnz == 0:
+        raise ValueError('All values in the OTU table are zero!')
 
     # take log of all values
     def h(s_v, s_id, s_md):
         return log10(s_v)
-    log_otu_table = eps_otu_table.transformSamples(h)
 
-    return log_otu_table
+    return otu_table.transform(h, axis='sample', inplace=False)
 
 
 def get_clusters(x_original, axis=['row', 'column'][0]):
@@ -172,14 +141,12 @@ def get_clusters(x_original, axis=['row', 'column'][0]):
         x = x.T
     nr = x.shape[0]
     metric_f = get_nonphylogenetic_metric('euclidean')
-    row_dissims = metric_f(x)
+    row_dissims = DistanceMatrix(metric_f(x), map(str, range(nr)))
     # do upgma - rows
-    BIG = 1e305
-    row_nodes = map(PhyloNode, map(str, range(nr)))
-    for i in range(len(row_dissims)):
-        row_dissims[i, i] = BIG
-    row_tree = UPGMA_cluster(row_dissims, row_nodes, BIG)
-    row_order = [int(tip.Name) for tip in row_tree.iterTips()]
+    # Average in SciPy's cluster.heirarchy.linkage is UPGMA
+    linkage_matrix = linkage(row_dissims.condensed_form(), method='average')
+    tree = TreeNode.from_linkage_matrix(linkage_matrix, row_dissims.ids)
+    row_order = [int(tip.name) for tip in tree.tips()]
     return row_order
 
 
@@ -197,16 +164,19 @@ def get_fontsize(numrows):
 
 
 def plot_heatmap(otu_table, row_labels, col_labels, filename='heatmap.pdf',
-                 width=5, height=5, textborder=.25):
+                 width=5, height=5, textborder=.25, color_scheme="jet"):
     """Create a heatmap plot, save as a pdf.
 
         'width', 'height' are in inches
 
         'textborder' is the fraction of the figure allocated for the
         tick labels on the x and y axes
+
+        color_scheme: choices can be found at
+         http://wiki.scipy.org/Cookbook/Matplotlib/Show_colormaps
     """
-    nrow = len(otu_table.ObservationIds)
-    ncol = len(otu_table.SampleIds)
+    nrow = len(otu_table.ids(axis='observation'))
+    ncol = len(otu_table.ids())
 
     # determine appropriate font sizes for tick labels
     row_fontsize = get_fontsize(nrow)
@@ -214,11 +184,11 @@ def plot_heatmap(otu_table, row_labels, col_labels, filename='heatmap.pdf',
 
     # create figure and plot heatmap
     fig = figure(figsize=(width, height))
-    my_cmap = get_cmap('gist_gray')
+    my_cmap = get_cmap(color_scheme)
     # numpy magic: [:,::-1] actually means fliplr()
     #imshow(x[:,::-1],interpolation='nearest', aspect='auto', cmap=my_cmap)
 
-    data = [val for val in otu_table.iterObservationData()]
+    data = [val for val in otu_table.iter_data(axis='observation')]
     imshow(fliplr(data), interpolation='nearest', aspect='auto', cmap=my_cmap)
     ax = fig.axes[0]
 

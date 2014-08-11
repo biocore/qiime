@@ -11,6 +11,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
+import re
 from os import access, X_OK, R_OK, W_OK, getenv, environ, remove, devnull
 from os.path import isdir, exists, split, join
 from sys import platform, version as python_version, executable, stdout
@@ -27,9 +28,14 @@ except ImportError as e:
     raise ImportError("%s\n%s" % (e, core_dependency_missing_msg))
 
 try:
-    from cogent.util.misc import app_path, get_random_directory_name, remove_files
-    from cogent.app.util import ApplicationNotFoundError, ApplicationError
-    from cogent import __version__ as pycogent_lib_version
+    from scipy import __version__ as scipy_lib_version
+except ImportError as e:
+    raise ImportError("%s\n%s" % (e, core_dependency_missing_msg))
+
+try:
+    from tempfile import mkdtemp
+    from skbio.util.misc import remove_files
+    from burrito.util import ApplicationNotFoundError, ApplicationError
 except ImportError as e:
     raise ImportError("%s\n%s" % (e, core_dependency_missing_msg))
 
@@ -37,12 +43,12 @@ try:
     from qiime.parse import parse_qiime_config_file
     from qiime.util import (load_qiime_config,
                             get_qiime_project_dir,
-                            parse_command_line_parameters,
                             get_qiime_library_version,
                             get_qiime_scripts_dir,
                             get_rdp_jarpath,
                             get_java_version,
                             get_pynast_version,
+                            parse_command_line_parameters,
                             make_option,
                             qiime_system_call,
                             get_qiime_temp_dir)
@@ -52,12 +58,23 @@ except ImportError as e:
 
 try:
     from biom import __version__ as biom_lib_version
-except ImportError:
+except ImportError as e:
     raise ImportError("%s\n%s" % (e, core_dependency_missing_msg))
 
 try:
     from qcli import __version__ as qcli_lib_version
-except ImportError:
+except ImportError as e:
+    raise ImportError("%s\n%s" % (e, core_dependency_missing_msg))
+
+try:
+    from pyqi import __version__ as pyqi_lib_version
+except ImportError as e:
+    raise ImportError("%s\n%s" % (e, core_dependency_missing_msg))
+
+try:
+    from skbio import __version__ as skbio_lib_version
+    from burrito.util import which
+except ImportError as e:
     raise ImportError("%s\n%s" % (e, core_dependency_missing_msg))
 
 try:
@@ -118,7 +135,7 @@ class QIIMEConfig(TestCase):
         fp = self.config["cluster_jobs_fp"]
 
         if fp:
-            full_path = app_path(fp)
+            full_path = which(fp)
             if full_path:
                 fp = full_path
 
@@ -227,7 +244,7 @@ class QIIMEDependencyBase(QIIMEConfig):
     def test_uclust_supported_version(self):
         """uclust is in path and version is supported """
         acceptable_version = (1, 2, 22)
-        self.assertTrue(app_path('uclust'),
+        self.assertTrue(which('uclust'),
                         "uclust not found. This may or may not be a problem depending on " +
                         "which components of QIIME you plan to use.")
         command = 'uclust --version'
@@ -247,44 +264,69 @@ class QIIMEDependencyBase(QIIMEConfig):
 
     def test_python_supported_version(self):
         """python is in path and version is supported """
-        acceptable_version = (2, 7, 3)
+        min_acceptable_version = (2, 7, 0)
+        min_unacceptable_version = (3, 0, 0)
+
         command = 'python --version'
         proc = Popen(command, shell=True, universal_newlines=True,
                      stdout=PIPE, stderr=STDOUT)
         stdout = proc.stdout.read()
-        version_string = stdout.strip().split('Python')[-1].strip()
+
+        version_str_matches = re.findall('Python\s+(\S+)\s*', stdout.strip())
+        self.assertEqual(len(version_str_matches), 1,
+                         "Could not determine the Python version in '%s'." %
+                         stdout)
+        version_string = version_str_matches[0]
+
         try:
             if version_string[-1] == '+':
                 version_string = version_string[:-1]
             version = tuple(map(int, version_string.split('.')))
             if len(version) == 2:
                 version = (version[0], version[1], 0)
-            pass_test = version == acceptable_version
+            pass_test = (version >= min_acceptable_version and
+                         version < min_unacceptable_version)
         except ValueError:
             pass_test = False
             version_string = stdout
         self.assertTrue(pass_test,
-                        "Unsupported python version. %s is required, but running %s."
-                        % ('.'.join(map(str, acceptable_version)), version_string))
+                        "Unsupported Python version. Must be >= %s and < %s, "
+                        "but running %s."
+                        % ('.'.join(map(str, min_acceptable_version)),
+                           '.'.join(map(str, min_unacceptable_version)),
+                           version_string))
 
-    def test_numpy_suported_version(self):
+    def test_numpy_supported_version(self):
         """numpy version is supported """
-        min_acceptable_version = (1, 5, 1)
-        max_acceptable_version = (1, 7, 1)
+        min_acceptable_version = (1, 7, 1)
         try:
             from numpy import __version__ as numpy_lib_version
             version = tuple(map(int, numpy_lib_version.split('.')))
-            pass_test = (version >= min_acceptable_version and
-                         version <= max_acceptable_version)
+            pass_test = (version >= min_acceptable_version)
             version_string = str(numpy_lib_version)
         except ImportError:
             pass_test = False
             version_string = "Not installed"
         self.assertTrue(pass_test,
-                        "Unsupported numpy version. Must be >= %s and <= %s , but running %s."
+                        "Unsupported numpy version. Must be >= %s, but running %s."
                         % ('.'.join(map(str, min_acceptable_version)),
-                           '.'.join(map(str, max_acceptable_version)),
                             version_string))
+
+    def test_scipy_supported_version(self):
+        """scipy version is supported """
+        min_acceptable_version = (0, 13, 0)
+        try:
+            from scipy import __version__ as scipy_lib_version
+            version = tuple(map(int, scipy_lib_version.split('.')))
+            pass_test = version >= min_acceptable_version
+            version_string = str(scipy_lib_version)
+        except ImportError:
+            pass_test = False
+            version_string = "Not installed"
+        self.assertTrue(
+            pass_test,
+            "Unsupported scipy version. Must be >= %s, but running %s." %
+            ('.'.join(map(str, min_acceptable_version)), version_string))
 
     def test_matplotlib_suported_version(self):
         """matplotlib version is supported """
@@ -334,23 +376,37 @@ class QIIMEDependencyBase(QIIMEConfig):
     def test_FastTree_supported_version(self):
         """FastTree is in path and version is supported """
         acceptable_version = (2, 1, 3)
-        self.assertTrue(app_path('FastTree'),
+        self.assertTrue(which('FastTree'),
                         "FastTree not found. This may or may not be a problem depending on " +
                         "which components of QIIME you plan to use.")
-        command = "FastTree 2>&1 > %s | grep version" % devnull
+
+        # If FastTree is run interactively, it outputs the following line:
+        #     Usage for FastTree version 2.1.3 SSE3:
+        #
+        # If run non-interactively:
+        #     FastTree Version 2.1.3 SSE3
+        command = "FastTree 2>&1 > %s | grep -i version" % devnull
         proc = Popen(command, shell=True, universal_newlines=True,
                      stdout=PIPE, stderr=STDOUT)
-        stdout = proc.stdout.read()
-        version_string = stdout.strip().split(' ')[4].strip()
+        stdout = proc.stdout.read().strip()
+
+        version_str_matches = re.findall('ersion\s+(\S+)\s+', stdout)
+        self.assertEqual(len(version_str_matches), 1,
+                         "Could not find FastTree version info in usage text "
+                         "'%s'." % stdout)
+
+        version_str = version_str_matches[0]
+
         try:
-            version = tuple(map(int, version_string.split('.')))
+            version = tuple(map(int, version_str.split('.')))
             pass_test = version == acceptable_version
         except ValueError:
             pass_test = False
-            version_string = stdout
+
+        acceptable_version_str = '.'.join(map(str, acceptable_version))
         self.assertTrue(pass_test,
-                        "Unsupported FastTree version. %s is required, but running %s."
-                        % ('.'.join(map(str, acceptable_version)), version_string))
+                        "Unsupported FastTree version. %s is required, but "
+                        "running %s." % (acceptable_version_str, version_str))
 
 
 class QIIMEDependencyFull(QIIMEDependencyBase):
@@ -371,17 +427,17 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
         self.assertTrue(exists(seq_lookup_file),
                         "$SEQ_LOOKUP_FILE variable is not set to an existing filepath.")
 
-        self.assertTrue(app_path("SplitKeys.pl"),
+        self.assertTrue(which("SplitKeys.pl"),
                         "Couldn't find SplitKeys.pl. " +
                         "Perhaps AmpliconNoise Scripts directory isn't in $PATH?" +
                         " See %s for help." % url)
 
-        self.assertTrue(app_path("FCluster"),
+        self.assertTrue(which("FCluster"),
                         "Couldn't find FCluster. " +
                         "Perhaps the AmpliconNoise bin directory isn't in $PATH?" +
                         " See %s for help." % url)
 
-        self.assertTrue(app_path("Perseus"),
+        self.assertTrue(which("Perseus"),
                         "Couldn't find Perseus. " +
                         "Perhaps the AmpliconNoise bin directory isn't in $PATH?" +
                         " See %s for help." % url)
@@ -407,7 +463,7 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
         # likely fail as well and need to be updated.
         # Tested with the version of microbiomeutil_2010-04-29
 
-        chim_slay = app_path("ChimeraSlayer.pl")
+        chim_slay = which("ChimeraSlayer.pl")
         self.assertTrue(chim_slay, "ChimeraSlayer was not found in your $PATH")
         dir, app_name = split(chim_slay)
         self.assertTrue(
@@ -421,7 +477,7 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
         blastall = self.config["blastall_fp"]
         if not self.config["blastall_fp"].startswith("/"):
             # path is relative, figure out absolute path
-            blast_all = app_path(blastall)
+            blast_all = which(blastall)
             if not blast_all:
                 raise ApplicationNotFoundError(
                     "blastall_fp set to %s, but is not in your PATH. Either use an absolute path to or put it in your PATH." %
@@ -433,7 +489,7 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
     def test_blast_supported_version(self):
         """blast is in path and version is supported """
         acceptable_version = (2, 2, 22)
-        self.assertTrue(app_path('blastall'),
+        self.assertTrue(which('blastall'),
                         "blast not found. This may or may not be a problem depending on " +
                         "which components of QIIME you plan to use.")
         command = 'blastall | grep blastall'
@@ -454,7 +510,7 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
     def test_cdbtools_supported_version(self):
         """cdbtools is in path and version is supported """
         acceptable_version = (0, 99)
-        self.assertTrue(app_path('cdbfasta'),
+        self.assertTrue(which('cdbfasta'),
                         "cdbtools not found. This may or may not be a problem depending on " +
                         "which components of QIIME you plan to use.")
         command = "cdbfasta -v"
@@ -475,7 +531,7 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
     def test_INFERNAL_supported_version(self):
         """INFERNAL is in path and version is supported """
         acceptable_version = (1, 0, 2)
-        self.assertTrue(app_path('cmbuild'),
+        self.assertTrue(which('cmbuild'),
                         "Infernal not found. This may or may not be a problem depending on " +
                         "which components of QIIME you plan to use.")
         command = "cmbuild -h | grep INF"
@@ -496,7 +552,7 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
     def test_muscle_supported_version(self):
         """muscle is in path and version is supported """
         acceptable_version = (3, 8, 31)
-        self.assertTrue(app_path('muscle'),
+        self.assertTrue(which('muscle'),
                         "muscle not found. This may or may not be a problem depending on " +
                         "which components of QIIME you plan to use.")
         command = "muscle -version"
@@ -517,7 +573,7 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
     def test_mothur_supported_version(self):
         """mothur is in path and version is supported """
         acceptable_version = (1, 25, 0)
-        self.assertTrue(app_path('mothur'),
+        self.assertTrue(which('mothur'),
                         "mothur not found. This may or may not be a problem depending on " +
                         "which components of QIIME you plan to use.")
         # mothur creates a log file in cwd, so create a tmp and cd there first
@@ -557,7 +613,7 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
     def test_raxmlHPC_supported_version(self):
         """raxmlHPC is in path and version is supported """
         acceptable_version = [(7, 3, 0), (7, 3, 0)]
-        self.assertTrue(app_path('raxmlHPC'),
+        self.assertTrue(which('raxmlHPC'),
                         "raxmlHPC not found. This may or may not be a problem depending on " +
                         "which components of QIIME you plan to use.")
         command = "raxmlHPC -v | grep version"
@@ -578,7 +634,7 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
     def test_clearcut_supported_version(self):
         """clearcut is in path and version is supported """
         acceptable_version = (1, 0, 9)
-        self.assertTrue(app_path('clearcut'),
+        self.assertTrue(which('clearcut'),
                         "clearcut not found. This may or may not be a problem depending on " +
                         "which components of QIIME you plan to use.")
         command = "clearcut -V"
@@ -598,7 +654,7 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
 
     def test_cdhit_supported_version(self):
         """cd-hit is in path and version is supported """
-        self.assertTrue(app_path('cd-hit'),
+        self.assertTrue(which('cd-hit'),
                         "cd-hit not found. This may or may not be a problem depending on " +
                         "which components of QIIME you plan to use.")
         # cd-hit does not have a version print in their program
@@ -606,7 +662,7 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
     def test_rtax_supported_version(self):
         """rtax is in path and version is supported """
         acceptable_version = [(0, 984)]
-        self.assertTrue(app_path('rtax'),
+        self.assertTrue(which('rtax'),
                         "rtax not found. This may or may not be a problem depending on " +
                         "which components of QIIME you plan to use.")
         command = "rtax 2>&1 > %s | grep Version | awk '{print $2}'" % devnull
@@ -624,55 +680,10 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
                         "Unsupported rtax version. %s is required, but running %s."
                         % ('.'.join(map(str, acceptable_version)), version_string))
 
-    def test_pplacer_supported_version(self):
-        """pplacer is in path and version is supported """
-        acceptable_version = [(1, 1), (1, 1)]
-        self.assertTrue(app_path('pplacer'),
-                        "pplacer not found. This may or may not be a problem depending on " +
-                        "which components of QIIME you plan to use.")
-        command = "pplacer --version"
-        proc = Popen(command, shell=True, universal_newlines=True,
-                     stdout=PIPE, stderr=STDOUT)
-        stdout = proc.stdout.read()
-        version_string = stdout.strip()[1:4]
-        try:
-            version = tuple(map(int, version_string.split('.')))
-            pass_test = version in acceptable_version
-        except ValueError:
-            pass_test = False
-            version_string = stdout
-        self.assertTrue(pass_test,
-                        "Unsupported pplacer version. %s is required, but running %s."
-                        % ('.'.join(map(str, acceptable_version)), version_string))
-
-    def test_ParsInsert_supported_version(self):
-        """ParsInsert is in path and version is supported """
-        acceptable_version = ["1.04"]
-        self.assertTrue(app_path('ParsInsert'),
-                        "ParsInsert not found. This may or may not be a problem depending on " +
-                        "which components of QIIME you plan to use.")
-        command = "ParsInsert -v | grep App | awk '{print $3}'"
-        proc = Popen(command, shell=True, universal_newlines=True,
-                     stdout=PIPE, stderr=STDOUT)
-        stdout = proc.stdout.read()
-
-        # remove log file generated
-        remove_files(['ParsInsert.log'], error_on_missing=False)
-
-        version_string = stdout.strip()
-        try:
-            pass_test = version_string in acceptable_version
-        except ValueError:
-            pass_test = False
-            version_string = stdout
-        self.assertTrue(pass_test,
-                        "Unsupported ParsInsert version. %s is required, but running %s."
-                        % ('.'.join(map(str, acceptable_version)), version_string))
-
     def test_usearch_supported_version(self):
         """usearch is in path and version is supported """
         acceptable_version = [(5, 2, 236), (5, 2, 236)]
-        self.assertTrue(app_path('usearch'),
+        self.assertTrue(which('usearch'),
                         "usearch not found. This may or may not be a problem depending on " +
                         "which components of QIIME you plan to use.")
         command = "usearch --version"
@@ -693,7 +704,7 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
     def test_R_supported_version(self):
         """R is in path and version is supported """
         minimum_version = (2, 12, 0)
-        self.assertTrue(app_path('R'),
+        self.assertTrue(which('R'),
                         "R not found. This may or may not be a problem depending on " +
                         "which components of QIIME you plan to use.")
         command = "R --version | grep 'R version' | awk '{print $3}'"
@@ -787,11 +798,13 @@ def main():
         print "%*s:\t%s" % (max_len, v[0], v[1])
 
     version_info = [
-        ("PyCogent version", pycogent_lib_version),
         ("NumPy version", numpy_lib_version),
+        ("SciPy version", scipy_lib_version),
         ("matplotlib version", matplotlib_lib_version),
         ("biom-format version", biom_lib_version),
         ("qcli version", qcli_lib_version),
+        ("pyqi version", pyqi_lib_version),
+        ("scikit-bio version", skbio_lib_version),
         ("QIIME library version", get_qiime_library_version()),
         ("QIIME script version", __version__),
         ("PyNAST version (if installed)", pynast_lib_version),

@@ -14,10 +14,9 @@ __email__ = "jens.reeder@gmail.com"
 
 from os import makedirs, remove
 from os.path import exists
+from tempfile import mkdtemp
 
-from qiime.util import get_tmp_filename
-from cogent.util.misc import create_dir
-
+from skbio.util.misc import create_dir
 from qiime.util import parse_command_line_parameters, get_options_lookup,\
     make_option
 
@@ -157,8 +156,9 @@ script_info['optional_options'] = [
 
     make_option('--percent_id', action='store',
                 type='float', dest='percent_id',
-                help='sequence similarity clustering ' +
-                'threshold [default: %default]', default=0.97),
+                help='sequence similarity clustering '
+                'threshold, expressed as a fraction between 0 and 1 '
+                '[default: %default]', default=0.97),
 
     make_option('--low_cut-off', action='store',
                 type='float', dest='low_cutoff',
@@ -236,14 +236,11 @@ def main(commandline_args=None):
     if opts.output_dir:
         # make sure it always ends on /
         tmpoutdir = opts.output_dir + "/"
+        create_dir(tmpoutdir, not opts.force)
     else:
         # make random dir in current dir
-        tmpoutdir = get_tmp_filename(
-            tmp_dir="",
-            prefix="denoiser_",
-            suffix="/")
-
-    create_dir(tmpoutdir, not opts.force)
+        tmpoutdir = mkdtemp(dir="", prefix="denoiser_", suffix="/")
+	
 
     log_fp = 'denoiser.log'
 

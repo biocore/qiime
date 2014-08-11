@@ -12,11 +12,12 @@ __email__ = "gregcaporaso@gmail.com"
 
 from itertools import izip
 from numpy import inf, isinf
-from cogent.parse.fasta import MinimalFastaParser
-from biom.parse import parse_biom_table
-from qiime.util import parse_command_line_parameters, make_option
+from skbio.parse.sequences import parse_fasta
+from biom import load_table
+
+from qiime.util import (parse_command_line_parameters, make_option,
+                        write_biom_table)
 from qiime.filter import filter_otus_from_otu_table
-from qiime.format import format_biom_table
 
 script_info = {}
 script_info[
@@ -76,8 +77,7 @@ script_info['version'] = __version__
 
 
 def main():
-    option_parser, opts, args =\
-        parse_command_line_parameters(**script_info)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     input_fp = opts.input_fp
     output_fp = opts.output_fp
@@ -106,21 +106,19 @@ def main():
                             "min counts, max counts, min samples, max samples, min_count_fraction, "
                             "or exclude_fp (or some combination of those).")
 
-    otu_table = parse_biom_table(open(opts.input_fp, 'U'))
+    otu_table = load_table(opts.input_fp)
 
     if min_count_fraction > 0:
         min_count = otu_table.sum() * min_count_fraction
         print otu_table.sum(), min_count
 
-    output_f = open(opts.output_fp, 'w')
-
-    otu_ids_to_keep = set(otu_table.ObservationIds)
+    otu_ids_to_keep = set(otu_table.ids(axis='observation'))
 
     if otu_ids_to_exclude_fp:
         if otu_ids_to_exclude_fp.endswith('.fasta') or \
            otu_ids_to_exclude_fp.endswith('.fna'):
             otu_ids_to_exclude = set([id_.strip().split()[0]
-                                      for id_, seq in MinimalFastaParser(open(otu_ids_to_exclude_fp, 'U'))])
+                                      for id_, seq in parse_fasta(open(otu_ids_to_exclude_fp, 'U'))])
         else:
             otu_ids_to_exclude = set([l.strip().split('\t')[0]
                                       for l in open(otu_ids_to_exclude_fp, 'U')])
@@ -134,8 +132,7 @@ def main():
                                                     min_samples,
                                                     max_samples,
                                                     negate_ids_to_exclude)
-    output_f.write(format_biom_table(filtered_otu_table))
-    output_f.close()
+    write_biom_table(filtered_otu_table, opts.output_fp)
 
 if __name__ == "__main__":
     main()

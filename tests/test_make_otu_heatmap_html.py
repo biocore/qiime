@@ -13,14 +13,15 @@ from numpy import array, log
 import shutil
 from shutil import rmtree
 from os.path import join
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 from qiime.make_otu_heatmap_html import (
     make_html_doc, create_javascript_array,
     filter_by_otu_hits,
     get_log_transform,
     generate_heatmap_plots)
 from qiime.util import create_dir, get_qiime_project_dir
-from biom.table import table_factory
+from biom.table import Table
 
 
 class TopLevelTests(TestCase):
@@ -33,20 +34,20 @@ class TopLevelTests(TestCase):
 
         otu_table_vals = array([[0, 0], [1, 5]])
 
-        self.otu_table = table_factory(otu_table_vals,
-                                       ['Sample1', 'Sample2'],
+        self.otu_table = Table(otu_table_vals,
                                        ['OTU1', 'OTU2'],
-                                       [None, None],
+                                       ['Sample1', 'Sample2'],
                                        [{"taxonomy": ["Bacteria"]},
-                                        {"taxonomy": ["Archaea"]}])
+                                        {"taxonomy": ["Archaea"]}],
+                                       [None, None],)
 
         filt_otu_table_vals = array([[1, 5]])
 
-        self.filt_otu_table = table_factory(filt_otu_table_vals,
-                                            ['Sample1', 'Sample2'],
+        self.filt_otu_table = Table(filt_otu_table_vals,
                                             ['OTU2'],
-                                            [None, None],
-                                            [{"taxonomy": ["Archaea"]}])
+                                            ['Sample1', 'Sample2'],
+                                            [{"taxonomy": ["Archaea"]}],
+                                            [None, None])
 
         self.num_otu_hits = 5
         self._folders_to_cleanup = []
@@ -76,32 +77,7 @@ javascript array"""
         obs = filter_by_otu_hits(self.num_otu_hits, self.otu_table)
 
         # see note in test_get_log_transform about this assert
-        self.assertEqual(obs._data.items(), self.filt_otu_table._data.items())
-
-    def test_get_log_transform(self):
-        orig_data = array([[0, 1, 2], [1000, 0, 0]])
-
-        orig_otu_table = table_factory(orig_data,
-                                       ['Sample1', 'Sample2', 'Sample3'],
-                                       ['OTU1', 'OTU2'],
-                                       [None, None, None],
-                                       [{"taxonomy": ["Bacteria"]},
-                                        {"taxonomy": ["Archaea"]}])
-
-        exp_data = array([[0, 0.69314718, 1.38629436], [7.60090246, 0, 0]])
-        exp_otu_table = table_factory(exp_data,
-                                      ['Sample1', 'Sample2', 'Sample3'],
-                                      ['OTU1', 'OTU2'],
-                                      [None, None, None],
-                                      [{"taxonomy": ["Bacteria"]},
-                                       {"taxonomy": ["Archaea"]}])
-
-        log_otu_table = get_log_transform(orig_otu_table, eps=None)
-
-        # comparing directly log_otu_table against exp_otu_table doesn't work,
-        #  needs to be modified in the otu table object
-        self.assertFloatEqual(list(log_otu_table.iterSampleData()),
-                              list(exp_otu_table.iterSampleData()))
+        self.assertEqual(obs, self.filt_otu_table)
 
     def test_generate_heatmap_plots(self):
         """generate_heatmap_plots: create default output files"""
@@ -131,12 +107,12 @@ javascript array"""
         # generate otu_table object
         orig_data = array([[0, 1, 2], [1000, 0, 0]])
 
-        orig_otu_table = table_factory(orig_data,
-                                       ['Sample1', 'Sample2', 'Sample3'],
+        orig_otu_table = Table(orig_data,
                                        ['OTU1', 'OTU2'],
-                                       [None, None, None],
+                                       ['Sample1', 'Sample2', 'Sample3'],
                                        [{"taxonomy": ["Bacteria"]},
-                                        {"taxonomy": ["Archaea"]}])
+                                        {"taxonomy": ["Archaea"]}],
+                                       [None, None, None])
 
         # put in an OTU sort order and sample order
         otu_sort = ['OTU2', 'OTU1']

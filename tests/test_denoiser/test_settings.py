@@ -15,8 +15,8 @@ __email__ = "jens.reeder@gmail.com"
 from os import access, X_OK, R_OK
 from os.path import exists
 from subprocess import Popen, PIPE, STDOUT
-from cogent.util.misc import app_path
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
+from burrito.util import which
 from qiime.util import load_qiime_config, which
 from qiime.denoiser.utils import get_flowgram_ali_exe
 
@@ -30,7 +30,7 @@ class DenoiserTests(TestCase):
         submit_script = qiime_config['cluster_jobs_fp']
 
         if (submit_script):
-            full_path = app_path(submit_script)
+            full_path = which(submit_script)
             if full_path:
                 submit_script = full_path
             self.assertTrue(exists(submit_script),

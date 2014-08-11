@@ -10,19 +10,19 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 
-"""Test suite for the compare_categories.py module."""
-
 from os.path import exists, join
 from shutil import rmtree
 from tempfile import mkdtemp, NamedTemporaryFile
-from cogent.util.misc import remove_files
-from cogent.util.unit_test import TestCase, main
+from skbio.util.misc import remove_files
+
+from unittest import TestCase, main
+from skbio.core.exception import DistanceMatrixError
+
 from qiime.compare_categories import compare_categories
 from qiime.util import get_qiime_temp_dir
 
 
 class CompareCategoriesTests(TestCase):
-
     """Tests for the compare_categories.py module."""
 
     def setUp(self):
@@ -75,7 +75,7 @@ class CompareCategoriesTests(TestCase):
 
         self.cat_methods = ['adonis', 'anosim', 'mrpp', 'permanova',
                             'permdisp', 'dbrda']
-        self.num_methods = ['best', 'morans_i']
+        self.num_methods = ['bioenv', 'morans_i']
         self.cat_categories = ['Treatment']
         self.num_categories = ['DOB']
         self.num_perms = 42
@@ -130,7 +130,7 @@ class CompareCategoriesTests(TestCase):
 
     def test_compare_categories_invalid_input(self):
         """Test compare_categories() on invalid input that should error out."""
-        # Non-numeric categories with BEST and Moran's I.
+        # Non-numeric categories with BIO-ENV and Moran's I.
         for method in self.num_methods:
             self.assertRaises(TypeError, compare_categories, self.dm1_fp,
                               self.map1_fp, method, self.cat_categories, self.num_perms,
@@ -148,13 +148,13 @@ class CompareCategoriesTests(TestCase):
                               self.map1_fp, method, 'SampleID', self.num_perms,
                               self.test_dir)
 
-        # Non-symmetric/hollow distance matrix.
+        # Asymmetric/non-hollow distance matrix.
         for method in self.num_methods:
-            self.assertRaises(ValueError, compare_categories,
+            self.assertRaises(DistanceMatrixError, compare_categories,
                               self.invalid_dm_fp, self.map1_fp, method,
                               self.num_categories, self.num_perms, self.test_dir)
         for method in self.cat_methods:
-            self.assertRaises(ValueError, compare_categories,
+            self.assertRaises(DistanceMatrixError, compare_categories,
                               self.invalid_dm_fp, self.map1_fp, method,
                               self.cat_categories, self.num_perms, self.test_dir)
 
@@ -172,21 +172,9 @@ class CompareCategoriesTests(TestCase):
 
         # Only a single category value.
         for method in self.cat_methods + self.num_methods:
-            if method == 'best':
-                # BEST is okay with this type of category.
-                compare_categories(self.dm1_fp,
-                                   self.map1_fp, method, ['Single'], self.num_perms,
-                                   self.test_dir)
-                results_fp = join(self.test_dir, '%s_results.txt' % method)
-                self.files_to_remove.append(results_fp)
-                results_f = open(results_fp, 'U')
-                results = results_f.readlines()
-                results_f.close()
-                self.assertTrue(len(results) > 0)
-            else:
-                self.assertRaises(ValueError, compare_categories, self.dm1_fp,
-                                  self.map1_fp, method, ['Single'], self.num_perms,
-                                  self.test_dir)
+            self.assertRaises(ValueError, compare_categories, self.dm1_fp,
+                              self.map1_fp, method, ['Single'], self.num_perms,
+                              self.test_dir)
 
         # Bad number of permutations.
         for method in self.cat_methods:
@@ -231,7 +219,7 @@ S2\t0.0\t0.0\t0.1
 S3\t0.5\t0.1\t0.0
 """
 
-# Non-symmetric. :(
+# Asymmetric. :(
 invalid_dm_str = """\tPC.354\tPC.355\tPC.356\tPC.481\tPC.593\tPC.607\tPC.634\tPC.635\tPC.636
 PC.354\t0.0\t0.599483768391\t0.618074717633\t0.582763100909\t0.566949022108\t0.714717232268\t0.772001731764\t0.690237118413\t0.740681707488
 PC.355\t0.595483768391\t0.0\t0.581427669668\t0.613726772383\t0.65945132763\t0.745176523638\t0.733836123821\t0.720305073505\t0.680785600439

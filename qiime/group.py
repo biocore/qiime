@@ -14,7 +14,7 @@ __email__ = "jai.rideout@gmail.com"
 
 from collections import defaultdict
 from numpy import array
-from qiime.pycogent_backports.test import is_symmetric_and_hollow
+from qiime.stats import is_symmetric_and_hollow
 from qiime.parse import group_by_field
 
 
@@ -322,7 +322,7 @@ def _get_indices(input_items, wanted_items):
     as a scalar, not an iterable.
     """
     # Note: Some of this code is taken from Jeremy Widmann's
-    # get_valid_indices() function, part of make_distance_histograms.py.
+    # get_valid_indices() function, part of make_distance_histograms.py from QIIME 1.8.0.
     try:
         iter(input_items)
     except:
@@ -369,7 +369,7 @@ def _get_groupings(dist_matrix_header, dist_matrix, groups, within=True,
     omitted.
     """
     # Note: Much of this code is taken from Jeremy Widmann's
-    # distances_by_groups() function, part of make_distance_histograms.py.
+    # distances_by_groups() function, part of make_distance_histograms.py from QIIME 1.8.0.
     if not suppress_symmetry_and_hollowness_check:
         if not is_symmetric_and_hollow(dist_matrix):
             raise ValueError("The distance matrix must be symmetric and "
@@ -612,14 +612,14 @@ def extract_per_individual_state_metadata_from_sample_metadata_and_biom(
         filter_missing_data=True)
     results = {}
     if observation_ids is None:
-        observation_ids = biom_table.ObservationIds
+        observation_ids = biom_table.ids(axis='observation')
     for observation_id in observation_ids:
-        observation_data = biom_table.observationData(observation_id)
+        observation_data = biom_table.data(observation_id, 'observation')
         results[observation_id] = {}
         for individual_id, sample_ids in per_individual_states.items():
             per_state_metadata_values = []
             for sample_id in sample_ids:
-                sample_index = biom_table.getSampleIndex(sample_id)
+                sample_index = biom_table.index(sample_id, 'sample')
                 per_state_metadata_values.append(
                     observation_data[sample_index])
             results[observation_id][individual_id] = per_state_metadata_values

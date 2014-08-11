@@ -12,17 +12,19 @@ __email__ = "justinak@gmail.com"
 
 from os.path import exists
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
+from itertools import izip
 from cogent.parse.tree import DndParser
 
 from biom.parse import parse_biom_table
-from biom.table import table_factory
+from biom.table import Table
+from biom.util import biom_open
 from qiime.parse import parse_mapping_file
-from qiime.util import (load_qiime_config, get_tmp_filename,
-                        get_qiime_temp_dir, create_dir)
+from qiime.util import load_qiime_config, get_qiime_temp_dir
 import qiime.simsam
 
-import tempfile
+from tempfile import gettempdir, mkdtemp
 import string
 import random
 import os
@@ -36,12 +38,10 @@ class SimsamTests(TestCase):
     def setUp(self):
         self.dirs_to_remove = []
         tmp_dir = get_qiime_temp_dir()
-        self.test_out = get_tmp_filename(tmp_dir=tmp_dir,
-                                         prefix='qiime_parallel_tests_',
-                                         suffix='',
-                                         result_constructor=str)
+        self.test_out = mkdtemp(dir=tmp_dir,
+                                prefix='qiime_parallel_tests_',
+                                suffix='')
         self.dirs_to_remove.append(self.test_out)
-        create_dir(self.test_out)
 
         self.map_f = map_lines.split('\n')
         self.otu_table = parse_biom_table(otu_table_lines.split('\n'))
@@ -55,11 +55,32 @@ class SimsamTests(TestCase):
             if os.path.exists(d):
                 shutil.rmtree(d)
 
+    def test_create_tip_index(self):
+        """Create a tip index at the root"""
+        t = DndParser("((a,b)c,(d,e)f)g;")
+        qiime.simsam.create_tip_index(t)
+        self.assertEqual({'a':t.getNodeMatchingName('a'),
+                          'b':t.getNodeMatchingName('b'),
+                          'd':t.getNodeMatchingName('d'),
+                          'e':t.getNodeMatchingName('e')}, t._tip_index)
+
+    def test_cache_tip_names(self):
+        """Cache tip names over the tree"""
+        t = DndParser("((a,b)c,(d,e)f)g;")
+        qiime.simsam.cache_tip_names(t)
+        self.assertEqual(t._tip_names, ['a', 'b', 'd', 'e'])
+        self.assertEqual(t.Children[0]._tip_names, ['a', 'b'])
+        self.assertEqual(t.Children[1]._tip_names, ['d', 'e'])
+        self.assertEqual(t.Children[0].Children[0]._tip_names, ['a'])
+        self.assertEqual(t.Children[0].Children[1]._tip_names, ['b'])
+        self.assertEqual(t.Children[1].Children[0]._tip_names, ['d'])
+        self.assertEqual(t.Children[1].Children[1]._tip_names, ['e'])
+
     def test_script(self):
         """ test the whole simsam script
         """
         qiime_config = load_qiime_config()
-        tempdir = qiime_config['temp_dir'] or tempfile.gettempdir()
+        tempdir = qiime_config['temp_dir'] or gettempdir()
         maindir = os.path.join(tempdir,
                                ''.join(random.choice(string.ascii_letters + string.digits)
                                        for x in range(10)))
@@ -91,32 +112,30 @@ class SimsamTests(TestCase):
 
         num_replicates = 3  # ensure this matches cmd above
 
-        res = open(
-            os.path.join(
-                out_dir,
-                'otuf_n%d_d0.003.biom' %
-                num_replicates),
-            'U')
+        result_fp = os.path.join(out_dir, 'otuf_n%d_d0.003.biom' %
+                                 num_replicates)
+        with biom_open(result_fp) as biom_file:
+            res_table = Table.from_hdf5(biom_file)
+
         orig_table = parse_biom_table(open(otuf, 'U'))
-        res_table = parse_biom_table(res)
 
         # 3 samples per input sample
         self.assertEqual(
-            len(res_table.SampleIds),
-            num_replicates * len(orig_table.SampleIds))
+            len(res_table.ids()),
+            num_replicates * len(orig_table.ids()))
 
         # sample_ids have correct naming and order
-        for i in range(len(orig_table.SampleIds)):
+        for i in range(len(orig_table.ids())):
             for j in range(num_replicates):
-                exp = orig_table.SampleIds[i] + '.' + str(j)
+                exp = orig_table.ids()[i] + '.' + str(j)
                 self.assertEqual(
-                    res_table.SampleIds[i * num_replicates + j],
+                    res_table.ids()[i * num_replicates + j],
                     exp)
 
         # same total sequences in each replicate sample
-        num_orig_samples = len(orig_table.SampleIds)
-        orig_sams = orig_table.iterSampleData()
-        res_sams = res_table.iterSampleData()
+        num_orig_samples = len(orig_table.ids())
+        orig_sams = orig_table.iter_data(axis='sample')
+        res_sams = res_table.iter_data(axis='sample')
         for i in range(num_orig_samples):
             orig_sam = orig_sams.next()
             for j in range(num_replicates):
@@ -129,7 +148,7 @@ class SimsamTests(TestCase):
         """ simsam script with 0 distance should just replicate input samples
         """
         qiime_config = load_qiime_config()
-        tempdir = qiime_config['temp_dir'] or tempfile.gettempdir()
+        tempdir = qiime_config['temp_dir'] or gettempdir()
         maindir = os.path.join(tempdir,
                                ''.join(random.choice(string.ascii_letters + string.digits)
                                        for x in range(10)))
@@ -161,41 +180,40 @@ class SimsamTests(TestCase):
             raise RuntimeError('script returned stderr: ' + scripterr)
 
         num_replicates = 3  # ensure this matches cmd above
-        res = open(
-            os.path.join(
-                out_dir,
-                'otuf_n%d_d0.0.biom' %
-                num_replicates),
-            'U')
+        result_fp = os.path.join(out_dir, 'otuf_n%d_d0.0.biom' %
+                                 num_replicates)
+        with biom_open(result_fp) as biom_file:
+            res_table = Table.from_hdf5(biom_file)
+
         orig_table = parse_biom_table(open(otuf, 'U'))
-        res_table = parse_biom_table(res)
 
         # 3 samples per input sample
         self.assertEqual(
-            len(res_table.SampleIds),
-            num_replicates * len(orig_table.SampleIds))
+            len(res_table.ids()),
+            num_replicates * len(orig_table.ids()))
 
         # sample_ids have correct naming and order
-        for i in range(len(orig_table.SampleIds)):
+        for i in range(len(orig_table.ids())):
             for j in range(num_replicates):
-                exp = orig_table.SampleIds[i] + '.' + str(j)
+                exp = orig_table.ids()[i] + '.' + str(j)
                 self.assertEqual(
-                    res_table.SampleIds[i * num_replicates + j],
+                    res_table.ids()[i * num_replicates + j],
                     exp)
 
         # same otu ids
-        self.assertEqual(res_table.ObservationIds, orig_table.ObservationIds)
+        self.assertEqual(res_table.ids(axis='observation').tolist(),
+                         orig_table.ids(axis='observation').tolist())
 
         # same otu table, just replicated thrice
         # note this requires the same sorting of otus, input is correct sorting
-        num_orig_samples = len(orig_table.SampleIds)
-        orig_sams = orig_table.iterSampleData()
-        res_sams = res_table.iterSampleData()
+        num_orig_samples = len(orig_table.ids())
+        orig_sams = orig_table.iter_data(axis='sample')
+        res_sams = res_table.iter_data(axis='sample')
         for i in range(num_orig_samples):
             orig_sam = orig_sams.next()
             for j in range(num_replicates):
                 res_sam = res_sams.next()
-                self.assertEqual(res_sam, orig_sam)
+                self.assertItemsEqual(res_sam, orig_sam)
 
     def test_sim_otu_table(self):
         """ simulated otu table should be right order, number of seqs
@@ -218,11 +236,11 @@ class SimsamTests(TestCase):
         tree = DndParser("(A:0.1,B:0.2,(C:0.3,D:0.4):0.5);")
         num_replicates = 3
         dissimilarity = 0.15
-        rich_table = table_factory(otu_mtx, sample_ids, otu_ids,
+        rich_table = Table(otu_mtx, sample_ids, otu_ids,
                                    observation_metadata=otu_metadata)
         res_sam_names, res_otus, res_otu_mtx, res_otu_metadata = \
             qiime.simsam.sim_otu_table(
-                sample_ids, otu_ids, rich_table.iterSamples(), otu_metadata,
+                sample_ids, otu_ids, rich_table.iter(axis='sample'), otu_metadata,
                 tree, num_replicates, dissimilarity)
 
         # dissim is too small to change otu C, it should always be there
@@ -230,7 +248,8 @@ class SimsamTests(TestCase):
         c_index = res_otus.index('C')
         c_row = res_otu_mtx[c_index]
         self.assertEqual(res_otu_metadata[c_index], {'tax': 'otu_C is cool'})
-        self.assertGreaterThan(c_row, [2, 2, 2, 8, 8, 8])
+        for o, e in izip(c_row,[2 , 2, 2, 8, 8, 8]):
+            self.assertGreater(o, e)
 
         # order of samples should remain the same as input,
         # and eash replicate sample
@@ -254,7 +273,7 @@ class SimsamTests(TestCase):
         # Huge dissimilarity to ensure we get new OTUs.
         dissimilarity = 100000
 
-        rich_table = table_factory(otu_mtx, sample_ids, otu_ids,
+        rich_table = Table(otu_mtx, sample_ids, otu_ids,
                                    observation_metadata=otu_metadata)
 
         otu_id_results = []
@@ -262,21 +281,22 @@ class SimsamTests(TestCase):
         for i in range(1000):
             res_sam_names, res_otus, res_otu_mtx, res_otu_metadata = \
                 qiime.simsam.sim_otu_table(sample_ids, otu_ids,
-                                           rich_table.iterSamples(
+                                           rich_table.iter(axis='sample'
                                            ), otu_metadata, tree,
                                            num_replicates, dissimilarity)
             otu_id_results.extend(res_otus)
             otu_md_results.extend(res_otu_metadata)
 
         # We should see all OTUs show up at least once.
-        self.assertContains(otu_id_results, 'A')
-        self.assertContains(otu_id_results, 'B')
-        self.assertContains(otu_id_results, 'C')
-        self.assertContains(otu_id_results, 'D')
+
+        self.assertTrue('A' in otu_id_results)
+        self.assertTrue('B' in otu_id_results)
+        self.assertTrue('C' in otu_id_results)
+        self.assertTrue('D' in otu_id_results)
 
         # We should see at least one blank metadata entry since A and B are not
         # in the original table.
-        self.assertContains(otu_md_results, None)
+        self.assertTrue(None in otu_md_results)
 
     def test_get_new_otu_id_small(self):
         """ small dissim should return old tip id"""
@@ -294,10 +314,10 @@ class SimsamTests(TestCase):
         for i in range(1000):
             results.append(qiime.simsam.get_new_otu_id(old_otu_id='D',
                                                        tree=tree, dissim=.6))
-        self.assertContains(results, 'C')
-        self.assertContains(results, 'D')
-        self.assertNotContains(results, 'A')
-        self.assertNotContains(results, 'B')
+        self.assertTrue('C' in results)
+        self.assertTrue('D' in results)
+        self.assertTrue('A' not in results)
+        self.assertTrue('B' not in results)
 
     def test_combine_sample_dicts(self):
         """ combining sample dicts should give correct otu table and sorting
@@ -313,19 +333,19 @@ class SimsamTests(TestCase):
                                    [0, 5, 0],
                                    ])
         self.assertEqual(res_otu_ids, exp_otu_ids)
-        self.assertEqual(res_otu_mtx, exp_otu_mtx)
+        assert_almost_equal(res_otu_mtx, exp_otu_mtx)
 
     def test_create_replicated_mapping_file(self):
         """Test creating replicate samples in a mapping file."""
         # 3 replicates, with two extra samples in the mapping file.
         obs = qiime.simsam.create_replicated_mapping_file(self.map_f, 3,
-                                                          self.otu_table.SampleIds)
+                                                          self.otu_table.ids())
         self.assertEqual(obs, exp_rep_map_lines)
 
         # Must specify at least one replicate.
         self.assertRaises(ValueError,
                           qiime.simsam.create_replicated_mapping_file, self.map_f, 0,
-                          self.otu_table.SampleIds)
+                          self.otu_table.ids())
 
     def test_simsam_range_correct_number_of_output(self):
         """simsam_range yields correct number of output tables
@@ -354,24 +374,24 @@ class SimsamTests(TestCase):
             [1], [0.1], self.tutorial_map)
         actual = list(actual)
         self.assertEqual(
-            len(actual[0][0].SampleIds),
-            len(self.tutorial_otu_table.SampleIds))
+            len(actual[0][0].ids()),
+            len(self.tutorial_otu_table.ids()))
 
         actual = qiime.simsam.simsam_range(
             self.tutorial_otu_table, self.tutorial_tree,
             [2], [0.1], self.tutorial_map)
         actual = list(actual)
         self.assertEqual(
-            len(actual[0][0].SampleIds),
-            2 * len(self.tutorial_otu_table.SampleIds))
+            len(actual[0][0].ids()),
+            2 * len(self.tutorial_otu_table.ids()))
 
         actual = qiime.simsam.simsam_range(
             self.tutorial_otu_table, self.tutorial_tree,
             [4], [0.1], self.tutorial_map)
         actual = list(actual)
         self.assertEqual(
-            len(actual[0][0].SampleIds),
-            4 * len(self.tutorial_otu_table.SampleIds))
+            len(actual[0][0].ids()),
+            4 * len(self.tutorial_otu_table.ids()))
 
     def test_simsam_range_functions_without_mapping_file(self):
         """simsam_range yields correct number of output tables
@@ -397,11 +417,12 @@ class SimsamTests(TestCase):
         self.assertTrue(exists('%s/world_n2_d0.1.txt' % self.test_out))
 
         # confirm same sample ids in table and mapping file
-        t = parse_biom_table(open('%s/hello_n2_d0.1.biom' % self.test_out))
+        with biom_open('%s/hello_n2_d0.1.biom' % self.test_out) as biom_file:
+            t = Table.from_hdf5(biom_file)
         d, _, _ = \
             parse_mapping_file(open('%s/world_n2_d0.1.txt' % self.test_out))
         mapping_sample_ids = [e[0] for e in d]
-        self.assertEqualItems(t.SampleIds, mapping_sample_ids)
+        self.assertItemsEqual(t.ids(), mapping_sample_ids)
 
 
 map_lines = """#SampleID\tTreatment\tDescription

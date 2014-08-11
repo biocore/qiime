@@ -7,7 +7,7 @@ __author__ = "Will Van Treuren, Luke Ursell"
 __copyright__ = "Copyright 2013, The QIIME project"
 __credits__ = ["Will Van Treuren", "Luke Ursell", "Catherine Lozupone",
                "Jesse Stombaugh", "Doug Wendel", "Dan Knights", "Greg Caporaso",
-               "Jai Ram Rideout"]
+               "Jai Ram Rideout", "Daniel McDonald"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Will Van Treuren"
@@ -15,16 +15,16 @@ __email__ = "wdwvt1@gmail.com"
 
 from qiime.util import (parse_command_line_parameters, make_option,
                         sync_biom_and_mf)
-from qiime.pycogent_backports.test import (benjamini_hochberg_step_down,
-                                           bonferroni_correction)
+from qiime.stats import (benjamini_hochberg_step_down,
+                                   bonferroni_correction)
 from qiime.otu_significance import (get_sample_cats, get_sample_indices,
                                     get_cat_sample_groups, group_significance_row_generator,
                                     group_significance_output_formatter,
                                     sort_by_pval, run_group_significance_test,
                                     TWO_GROUP_TESTS, GROUP_TEST_CHOICES)
 from qiime.parse import parse_mapping_file_to_dict
-from biom.parse import parse_biom_table
-from numpy import array, where, seterr
+from biom import load_table
+from numpy import array, where, seterr, allclose
 
 # set invalid comparisons error level to ignore. when nans are compared they
 # frequently trigger this error. its not informative from the user perspective
@@ -120,7 +120,7 @@ The assumptions we do not check for are:
 # implement the requirement here. The KW test does assume that the distributions
 * from which the samples come are the same (although they may be non-normal)
 * except for their location parameter, and we do not check this.
-* G-test:
+* G-test: we check that the data are counts rather than relative abundance.
 * Mann-Whitney-U: Equality of variance between groups. Sample 1 is IID, Sample 2
 * is IID. Sample 1 and Sample 2 are mutually independent.
 * ANOVA: ANOVA assumes equality of variance between groups (homoscedasticity),
@@ -193,7 +193,10 @@ OTU - OTU id
 Test-Statistic - the value of the test statistic for the given test
 P - the raw P value returned by the given test.
 FDR_P - the P value corrected by the Benjamini-Hochberg FDR procedure for
- multiple comparisons.
+ multiple comparisons. This is the 'step up' procedure as described in
+ 'Controlling the False Discovery Rate: A Practical and Powerful Approach to
+ Multiple Testing' Yoav Benjamini and Yosef Hochberg. Journal of the Royal
+ Statistical Society. Series B (Methodological), Vol. 57, No. 1 (1995) 289-300.
 Bonferroni_P - the P value corrected by the Bonferroni procedure for multiple
  comparisons.
 groupX_mean - there will be as many of these headers as there are unique values
@@ -239,7 +242,7 @@ Taxonomy - this column will be present only if the biom table contained Taxonomy
 """
 script_info['required_options'] = [
     make_option('-i', '--otu_table_fp',
-                help='path to biom format table or to directory containing OTU tables',
+                help='path to biom format table',
                 type='existing_path'),
     make_option('-m', '--mapping_fp', type='existing_filepath',
                 help='path to category mapping file'),
@@ -274,14 +277,14 @@ script_info['version'] = __version__
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
     # sync the mapping file and the biom file
-    tmp_bt = parse_biom_table(open(opts.otu_table_fp, 'U'))
+    tmp_bt = load_table(opts.otu_table_fp)
     tmp_pmf, _ = parse_mapping_file_to_dict(opts.mapping_fp)
     pmf, bt, nonshared_samples = sync_biom_and_mf(tmp_pmf, tmp_bt)
 
     # test error conditions for overlapping mf and bt
     if not opts.biom_samples_are_superset:
         # user indicates biom sample should be subset of mapping file samples
-        if any([i in nonshared_samples for i in tmp_bt.SampleIds]):
+        if any([i in nonshared_samples for i in tmp_bt.ids()]):
             raise ValueError('The samples in the biom table are a superset of' +
                              ' the samples in the mapping file. The script will abort in' +
                              ' this case even though the calculations wouldn\'t be' +
@@ -315,6 +318,18 @@ def main():
             raise ValueError('The number of samples is too small to use the ' +
                              'Mann-Whitney-U normal approximation. Review the script ' +
                              'documentation.')
+
+    # check that the G-test was not selected if the table appears to be
+    # relative abundance
+    if opts.test == 'g_test':
+        if allclose(bt.sum(axis='sample'), 1.) or (bt.sum(axis='whole') == 1.):
+            raise ValueError('It appears that the biom table you have passed '
+                'is a relative abundance table where values i,j (obsevation i '
+                'count in sample j) are fractional and the sum of the columns '
+                'is 1.0. This will fail to work properly with the G-test. If '
+                'your data sums to 1 in each column but your data is not '
+                'relative abundance then the tests will fail anyway because '
+                'of the reduced number of observations.')
 
     # run actual tests
     data_feed = group_significance_row_generator(bt, cat_sam_indices)

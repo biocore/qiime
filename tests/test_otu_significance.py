@@ -10,7 +10,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Luke Ursell"
 __email__ = "lkursell@gmail.com"
 
-from cogent.util.unit_test import TestCase, main
+from unittest import TestCase, main
 from qiime.otu_significance import (get_sample_cats, get_cat_sample_groups,
                                     get_sample_indices, group_significance_row_generator, sort_by_pval,
                                     run_group_significance_test, group_significance_output_formatter,
@@ -18,17 +18,14 @@ from qiime.otu_significance import (get_sample_cats, get_cat_sample_groups,
                                     run_grouped_correlation, CORRELATION_TEST_CHOICES,
                                     grouped_correlation_formatter, correlation_row_generator,
                                     run_correlation_test)
-from qiime.pycogent_backports.test import (assign_correlation_pval, fisher,
-                                           fisher_population_correlation)
-from numpy import array, hstack, corrcoef
+from qiime.stats import (assign_correlation_pval, fisher,
+                                   fisher_population_correlation)
+from numpy import array, hstack, corrcoef, asarray
 from numpy.random import seed
-from cogent.util.dict2d import Dict2D
-from qiime.util import get_tmp_filename
+from numpy.testing import assert_almost_equal
 from os import remove
 from qiime.parse import parse_mapping_file_to_dict, parse_otu_table
 from biom.parse import parse_biom_table
-from qiime.format import format_biom_table
-
 
 class GroupSignificanceFunctionsTests(TestCase):
 
@@ -109,19 +106,20 @@ class GroupSignificanceFunctionsTests(TestCase):
         # run with ordered example
         sample_indices = {'cat1': [0, 1], 'cat2': [3, 2], 'cat3': [4, 5]}
         bt = parse_biom_table(BT_IN_1)
-        data = array([bt.observationData(i) for i in bt.ObservationIds])
+        data = asarray([d for d in bt.iter_data(dense=True,
+                                                axis='observation')])
         obs = list(group_significance_row_generator(bt, sample_indices))
         exp = zip(data.take([0, 1], 1),
                   data.take([3, 2], 1), data.take([4, 5], 1))
         for o, e in zip(obs, exp):
-            self.assertFloatEqual(e, o)
+            assert_almost_equal(e, o)
         # run with unequal length example
         sample_indices = {'g0': [0, 1, 4, 5], 'g1': [3], 'g2': [2]}
         obs = list(group_significance_row_generator(bt, sample_indices))
         exp = zip(data.take([0, 1, 4, 5], 1),
                   data.take([3], 1), data.take([2], 1))
         for o, e in zip(obs, exp):
-            [self.assertFloatEqual(i, j) for i, j in
+            [assert_almost_equal(i, j) for i, j in
                 zip(sorted(hstack(e)), sorted(hstack(o)))]
             # the order of e and o are not the same. this isn't a problem in
             # the actual function because we iterate over the order of the
@@ -151,9 +149,9 @@ class GroupSignificanceFunctionsTests(TestCase):
         obs_test_stats, obs_pvals, obs_means = \
             run_group_significance_test(row_gen, 'nonparametric_t_test',
                                         GROUP_TEST_CHOICES, reps=1000)
-        self.assertFloatEqual(exp_test_stats, obs_test_stats)
-        self.assertFloatEqual(exp_pvals, obs_pvals)
-        self.assertFloatEqual(exp_means, obs_means)
+        assert_almost_equal(exp_test_stats, obs_test_stats)
+        assert_almost_equal(exp_pvals, obs_pvals)
+        assert_almost_equal(exp_means, obs_means)
         # test with nonparametric t-test but different ordering
         sample_indices = {'cat1': [0, 1, 5], 'cat2': [4, 3, 2]}
         row_gen = group_significance_row_generator(bt, sample_indices)
@@ -161,9 +159,9 @@ class GroupSignificanceFunctionsTests(TestCase):
         obs_test_stats, obs_pvals, obs_means = \
             run_group_significance_test(row_gen, 'nonparametric_t_test',
                                         GROUP_TEST_CHOICES, reps=1000)
-        self.assertFloatEqual(exp_test_stats, obs_test_stats)
-        self.assertFloatEqual(exp_pvals, obs_pvals)
-        self.assertFloatEqual(exp_means, obs_means)
+        assert_almost_equal(exp_test_stats, obs_test_stats)
+        assert_almost_equal(exp_pvals, obs_pvals)
+        assert_almost_equal(exp_means, obs_means)
         # test with BT_4 biom table
         sample_indices = {'cat1': [0, 3, 1, 4], 'cat2': [5, 2, 7, 6]}
         row_gen = group_significance_row_generator(bt_4, sample_indices)
@@ -183,9 +181,9 @@ class GroupSignificanceFunctionsTests(TestCase):
         obs_test_stats, obs_pvals, obs_means = \
             run_group_significance_test(row_gen, 'nonparametric_t_test',
                                         GROUP_TEST_CHOICES, reps=1000)
-        self.assertFloatEqual(exp_test_stats, obs_test_stats)
-        self.assertFloatEqual(exp_pvals, obs_pvals)
-        self.assertFloatEqual(exp_means, obs_means)
+        assert_almost_equal(exp_test_stats, obs_test_stats)
+        assert_almost_equal(exp_pvals, obs_pvals)
+        assert_almost_equal(exp_means, obs_means)
 
         # test with parametric t test
         # bt_1 agrees with Prism
@@ -207,9 +205,9 @@ class GroupSignificanceFunctionsTests(TestCase):
         obs_test_stats, obs_pvals, obs_means = \
             run_group_significance_test(row_gen, 'parametric_t_test',
                                         GROUP_TEST_CHOICES)
-        self.assertFloatEqual(exp_test_stats, obs_test_stats)
-        self.assertFloatEqual(exp_pvals, obs_pvals)
-        self.assertFloatEqual(exp_means, obs_means)
+        assert_almost_equal(exp_test_stats, obs_test_stats)
+        assert_almost_equal(exp_pvals, obs_pvals)
+        assert_almost_equal(exp_means, obs_means)
         # test with BT_4
         sample_indices = {'cat1': [0, 1, 2, 3], 'cat2': [4, 5, 6, 7]}
         row_gen = group_significance_row_generator(bt_4, sample_indices)
@@ -229,15 +227,16 @@ class GroupSignificanceFunctionsTests(TestCase):
         obs_test_stats, obs_pvals, obs_means = \
             run_group_significance_test(row_gen, 'parametric_t_test',
                                         GROUP_TEST_CHOICES)
-        self.assertFloatEqual(exp_test_stats, obs_test_stats)
-        self.assertFloatEqual(exp_pvals, obs_pvals)
-        self.assertFloatEqual(exp_means, obs_means)
+        assert_almost_equal(exp_test_stats, obs_test_stats)
+        assert_almost_equal(exp_pvals, obs_pvals)
+        assert_almost_equal(exp_means, obs_means)
 
         # test with bootstrapped mann_whitney_u
         sample_indices = {'cat1': [4, 1, 2], 'cat2': [5, 0, 3]}
         row_gen = group_significance_row_generator(bt, sample_indices)
-        exp_test_stats = [7.0, 7.0, 7.0, 6.0, 7.0, 7.0]
-        exp_pvals = [0.333, 0.305, 0.3, 0.623, 0.295, 0.334]
+        exp_test_stats = [2.0, 2.0, 2.0, 3.0, 2.0, 2.0]
+        exp_pvals = array([0.22977023, 0.2047952, 0.19280719, 0.44255744,
+                           0.18781219, 0.22477522])
         exp_means = [[39.666666666666664, 61.0],
                      [24.333333333333332, 40.0],
                      [27.0, 42.333333333333336],
@@ -248,14 +247,15 @@ class GroupSignificanceFunctionsTests(TestCase):
         obs_test_stats, obs_pvals, obs_means = \
             run_group_significance_test(row_gen, 'bootstrap_mann_whitney_u',
                                         GROUP_TEST_CHOICES, reps=1000)
-        self.assertFloatEqual(exp_test_stats, obs_test_stats)
-        self.assertFloatEqual(exp_pvals, obs_pvals)
-        self.assertFloatEqual(exp_means, obs_means)
+        assert_almost_equal(exp_test_stats, obs_test_stats)
+        assert_almost_equal(exp_pvals, obs_pvals)
+        assert_almost_equal(exp_means, obs_means)
         # test with BT_4
         sample_indices = {'cat1': [0, 1, 2, 3], 'cat2': [4, 5, 6, 7]}
         row_gen = group_significance_row_generator(bt_4, sample_indices)
-        exp_test_stats = [10.0, 15.0, 11.0, 14.0, 15.0, 9.0]
-        exp_pvals = [0.605, 0.033, 0.414, 0.097, 0.041, 0.814]
+        exp_test_stats = [6.0, 1.0, 5.0, 2.0, 1.0, 7.0]
+        exp_pvals = array([0.49050949, 0.01598402, 0.31968032, 0.06193806,
+                           0.02997003, 0.6953047])
         exp_means = [[52.25, 43.0],
                      [20.5, 44.0],
                      [29.25, 52.25],
@@ -266,17 +266,15 @@ class GroupSignificanceFunctionsTests(TestCase):
         obs_test_stats, obs_pvals, obs_means = \
             run_group_significance_test(row_gen, 'bootstrap_mann_whitney_u',
                                         GROUP_TEST_CHOICES, reps=1000)
-        self.assertFloatEqual(exp_test_stats, obs_test_stats)
-        self.assertFloatEqual(exp_pvals, obs_pvals)
-        self.assertFloatEqual(exp_means, obs_means)
+        assert_almost_equal(exp_test_stats, obs_test_stats)
+        assert_almost_equal(exp_pvals, obs_pvals)
+        assert_almost_equal(exp_means, obs_means)
 
         # test with parametric mann whitney u
         sample_indices = {'cat1': [0, 3, 1], 'cat2': [4, 2, 5]}
         row_gen = group_significance_row_generator(bt, sample_indices)
-        exp_test_stats = [6.0, 6.0, 5.0, 5.0, 6.0, 5.0]
-        exp_pvals = [0.51269076026192328, 0.51269076026192328,
-                     0.82725934656271127, 0.82725934656271127, 0.51269076026192328,
-                     0.82725934656271127]
+        exp_test_stats = [3.0, 3.0, 4.0, 4.0, 3.0, 4.0]
+        exp_pvals = array([0.66252058, 0.66252058, 1., 1., 0.66252058, 1.])
         exp_means = [[52.666666666666664, 48.0],
                      [23.666666666666668, 40.666666666666664],
                      [34.0, 35.333333333333336],
@@ -286,16 +284,15 @@ class GroupSignificanceFunctionsTests(TestCase):
         obs_test_stats, obs_pvals, obs_means = \
             run_group_significance_test(row_gen, 'mann_whitney_u',
                                         GROUP_TEST_CHOICES)
-        self.assertFloatEqual(exp_test_stats, obs_test_stats)
-        self.assertFloatEqual(exp_pvals, obs_pvals)
-        self.assertFloatEqual(exp_means, obs_means)
+        assert_almost_equal(exp_test_stats, obs_test_stats)
+        assert_almost_equal(exp_pvals, obs_pvals)
+        assert_almost_equal(exp_means, obs_means)
         # test with BT_4
         sample_indices = {'cat1': [0, 1, 2, 3], 'cat2': [4, 5, 6, 7]}
         row_gen = group_significance_row_generator(bt_4, sample_indices)
-        exp_test_stats = [10.0, 15.0, 11.0, 14.0, 15.0, 9.0]
-        exp_pvals = [0.5637028616507731, 0.043308142810791955,
-                     0.38363032713198975, 0.083264516663550406, 0.043308142810791955,
-                     0.77282999268444752]
+        exp_test_stats = [6.0, 1.0, 5.0, 2.0, 1.0, 7.0]
+        exp_pvals = array([0.66500554, 0.06060197, 0.46782508, 0.1123512,
+                           0.06060197, 0.88523391])
         exp_means = [[52.25, 43.0],
                      [20.5, 44.0],
                      [29.25, 52.25],
@@ -305,9 +302,9 @@ class GroupSignificanceFunctionsTests(TestCase):
         obs_test_stats, obs_pvals, obs_means = \
             run_group_significance_test(row_gen, 'mann_whitney_u',
                                         GROUP_TEST_CHOICES)
-        self.assertFloatEqual(exp_test_stats, obs_test_stats)
-        self.assertFloatEqual(exp_pvals, obs_pvals)
-        self.assertFloatEqual(exp_means, obs_means)
+        assert_almost_equal(exp_test_stats, obs_test_stats)
+        assert_almost_equal(exp_pvals, obs_pvals)
+        assert_almost_equal(exp_means, obs_means)
 
         # test with ANOVA
         sample_indices = {'cat1': [0, 3], 'cat2': [4, 5], 'cat3': [2, 1]}
@@ -327,9 +324,9 @@ class GroupSignificanceFunctionsTests(TestCase):
         obs_test_stats, obs_pvals, obs_means = \
             run_group_significance_test(row_gen, 'ANOVA',
                                         GROUP_TEST_CHOICES)
-        self.assertFloatEqual(exp_test_stats, obs_test_stats)
-        self.assertFloatEqual(exp_pvals, obs_pvals)
-        self.assertFloatEqual(exp_means, obs_means)
+        assert_almost_equal(exp_test_stats, obs_test_stats)
+        assert_almost_equal(exp_pvals, obs_pvals)
+        assert_almost_equal(exp_means, obs_means)
         # test with uneven group sizes
         sample_indices = {'cat1': [0, 2, 3, 1], 'cat2': [4, 5]}
         row_gen = group_significance_row_generator(bt, sample_indices)
@@ -348,9 +345,9 @@ class GroupSignificanceFunctionsTests(TestCase):
         obs_test_stats, obs_pvals, obs_means = \
             run_group_significance_test(row_gen, 'ANOVA',
                                         GROUP_TEST_CHOICES)
-        self.assertFloatEqual(exp_test_stats, obs_test_stats)
-        self.assertFloatEqual(exp_pvals, obs_pvals)
-        self.assertFloatEqual(exp_means, obs_means)
+        assert_almost_equal(exp_test_stats, obs_test_stats)
+        assert_almost_equal(exp_pvals, obs_pvals)
+        assert_almost_equal(exp_means, obs_means)
         # test with bt_4
         sample_indices = {'cat1': [0, 1, 2, 3], 'cat2': [4, 5, 6, 7]}
         row_gen = group_significance_row_generator(bt_4, sample_indices)
@@ -369,9 +366,9 @@ class GroupSignificanceFunctionsTests(TestCase):
         obs_test_stats, obs_pvals, obs_means = \
             run_group_significance_test(row_gen, 'ANOVA',
                                         GROUP_TEST_CHOICES)
-        self.assertFloatEqual(exp_test_stats, obs_test_stats)
-        self.assertFloatEqual(exp_pvals, obs_pvals)
-        self.assertFloatEqual(exp_means, obs_means)
+        assert_almost_equal(exp_test_stats, obs_test_stats)
+        assert_almost_equal(exp_pvals, obs_pvals)
+        assert_almost_equal(exp_means, obs_means)
 
         # test with g goodness of fit
         sample_indices = {'cat1': [0, 3], 'cat2': [4, 5], 'cat3': [2, 1]}
@@ -391,9 +388,9 @@ class GroupSignificanceFunctionsTests(TestCase):
         obs_test_stats, obs_pvals, obs_means = \
             run_group_significance_test(row_gen, 'g_test',
                                         GROUP_TEST_CHOICES)
-        self.assertFloatEqual(exp_test_stats, obs_test_stats)
-        self.assertFloatEqual(exp_pvals, obs_pvals)
-        self.assertFloatEqual(exp_means, obs_means)
+        assert_almost_equal(exp_test_stats, obs_test_stats)
+        assert_almost_equal(exp_pvals, obs_pvals)
+        assert_almost_equal(exp_means, obs_means)
         # test with individual groups
         sample_indices = {'cat1': [0], 'cat2': [1], 'cat3': [3],
                           'cat4': [2], 'cat5': [5], 'cat6': [4]}
@@ -413,9 +410,9 @@ class GroupSignificanceFunctionsTests(TestCase):
         obs_test_stats, obs_pvals, obs_means = \
             run_group_significance_test(row_gen, 'g_test',
                                         GROUP_TEST_CHOICES)
-        self.assertFloatEqual(exp_test_stats, obs_test_stats)
-        self.assertFloatEqual(exp_pvals, obs_pvals)
-        self.assertFloatEqual(exp_means, obs_means)
+        assert_almost_equal(exp_test_stats, obs_test_stats)
+        assert_almost_equal(exp_pvals, obs_pvals)
+        assert_almost_equal(exp_means, obs_means)
         # test with uneven length groups
         sample_indices = {'cat1': [0, 3, 4, 5], 'cat3': [2, 1]}
         row_gen = group_significance_row_generator(bt, sample_indices)
@@ -434,9 +431,9 @@ class GroupSignificanceFunctionsTests(TestCase):
         obs_test_stats, obs_pvals, obs_means = \
             run_group_significance_test(row_gen, 'g_test',
                                         GROUP_TEST_CHOICES)
-        self.assertFloatEqual(exp_test_stats, obs_test_stats)
-        self.assertFloatEqual(exp_pvals, obs_pvals)
-        self.assertFloatEqual(exp_means, obs_means)
+        assert_almost_equal(exp_test_stats, obs_test_stats)
+        assert_almost_equal(exp_pvals, obs_pvals)
+        assert_almost_equal(exp_means, obs_means)
         # test with bt_4
         sample_indices = {'cat1': [0, 1, 2, 3], 'cat2': [4, 5, 6, 7]}
         row_gen = group_significance_row_generator(bt_4, sample_indices)
@@ -455,9 +452,9 @@ class GroupSignificanceFunctionsTests(TestCase):
         obs_test_stats, obs_pvals, obs_means = \
             run_group_significance_test(row_gen, 'g_test',
                                         GROUP_TEST_CHOICES)
-        self.assertFloatEqual(exp_test_stats, obs_test_stats)
-        self.assertFloatEqual(exp_pvals, obs_pvals)
-        self.assertFloatEqual(exp_means, obs_means)
+        assert_almost_equal(exp_test_stats, obs_test_stats)
+        assert_almost_equal(exp_pvals, obs_pvals)
+        assert_almost_equal(exp_means, obs_means)
 
         # test with Kruskal Wallis
         sample_indices = {'cat1': [0, 3], 'cat2': [4, 5], 'cat3': [2, 1]}
@@ -477,9 +474,9 @@ class GroupSignificanceFunctionsTests(TestCase):
         obs_test_stats, obs_pvals, obs_means = \
             run_group_significance_test(row_gen, 'kruskal_wallis',
                                         GROUP_TEST_CHOICES)
-        self.assertFloatEqual(exp_test_stats, obs_test_stats)
-        self.assertFloatEqual(exp_pvals, obs_pvals)
-        self.assertFloatEqual(exp_means, obs_means)
+        assert_almost_equal(exp_test_stats, obs_test_stats)
+        assert_almost_equal(exp_pvals, obs_pvals)
+        assert_almost_equal(exp_means, obs_means)
         # test with individual groups
         sample_indices = {'cat1': [0], 'cat2': [1], 'cat3': [3],
                           'cat4': [2], 'cat5': [5], 'cat6': [4]}
@@ -497,9 +494,9 @@ class GroupSignificanceFunctionsTests(TestCase):
         obs_test_stats, obs_pvals, obs_means = \
             run_group_significance_test(row_gen, 'kruskal_wallis',
                                         GROUP_TEST_CHOICES)
-        self.assertFloatEqual(exp_test_stats, obs_test_stats)
-        self.assertFloatEqual(exp_pvals, obs_pvals)
-        self.assertFloatEqual(exp_means, obs_means)
+        assert_almost_equal(exp_test_stats, obs_test_stats)
+        assert_almost_equal(exp_pvals, obs_pvals)
+        assert_almost_equal(exp_means, obs_means)
         # test with uneven length groups
         sample_indices = {'cat1': [0, 3, 4, 5], 'cat3': [2, 1]}
         row_gen = group_significance_row_generator(bt, sample_indices)
@@ -516,9 +513,9 @@ class GroupSignificanceFunctionsTests(TestCase):
         obs_test_stats, obs_pvals, obs_means = \
             run_group_significance_test(row_gen, 'kruskal_wallis',
                                         GROUP_TEST_CHOICES)
-        self.assertFloatEqual(exp_test_stats, obs_test_stats)
-        self.assertFloatEqual(exp_pvals, obs_pvals)
-        self.assertFloatEqual(exp_means, obs_means)
+        assert_almost_equal(exp_test_stats, obs_test_stats)
+        assert_almost_equal(exp_pvals, obs_pvals)
+        assert_almost_equal(exp_means, obs_means)
         # test with bt_4
         sample_indices = {'cat1': [0, 1, 2, 3], 'cat2': [4, 5, 6, 7]}
         row_gen = group_significance_row_generator(bt_4, sample_indices)
@@ -536,9 +533,9 @@ class GroupSignificanceFunctionsTests(TestCase):
         obs_test_stats, obs_pvals, obs_means = \
             run_group_significance_test(row_gen, 'kruskal_wallis',
                                         GROUP_TEST_CHOICES)
-        self.assertFloatEqual(exp_test_stats, obs_test_stats)
-        self.assertFloatEqual(exp_pvals, obs_pvals)
-        self.assertFloatEqual(exp_means, obs_means)
+        assert_almost_equal(exp_test_stats, obs_test_stats)
+        assert_almost_equal(exp_pvals, obs_pvals)
+        assert_almost_equal(exp_means, obs_means)
 
     def test_group_significance_output_formatter(self):
         """output_formatter works"""
@@ -680,8 +677,8 @@ class GroupedCorrelationTests(TestCase):
         obs_cvs, obs_mds, obs_otus = grouped_correlation_row_generator(bt, pmf,
                                                                        category, gc_to_samples)
         self.assertEqual(obs_cvs, self.cvs1)
-        self.assertFloatEqual(obs_mds, self.mds1)
-        self.assertFloatEqual(obs_otus, self.otus1)
+        assert_almost_equal(obs_mds, self.mds1)
+        assert_almost_equal(obs_otus, self.otus1)
         # make sure it throws an error on non float md
         self.assertRaises(ValueError, grouped_correlation_row_generator, bt,
                           pmf, 'field', gc_to_samples)
@@ -719,11 +716,11 @@ class GroupedCorrelationTests(TestCase):
             run_grouped_correlation(self.mds1, self.otus1, 'pearson',
                                     CORRELATION_TEST_CHOICES, 'parametric_t_distribution')
 
-        self.assertFloatEqual(obs_rhos, exp_rhos)
-        self.assertFloatEqual(obs_pvals, exp_pvals)
-        self.assertFloatEqual(obs_f_pvals, exp_f_pvals)
-        self.assertFloatEqual(obs_f_rhos, exp_f_rhos)
-        self.assertFloatEqual(obs_f_hs, exp_f_hs)
+        assert_almost_equal(obs_rhos, exp_rhos)
+        assert_almost_equal(obs_pvals, exp_pvals)
+        assert_almost_equal(obs_f_pvals, exp_f_pvals)
+        assert_almost_equal(obs_f_rhos, exp_f_rhos)
+        assert_almost_equal(obs_f_hs, exp_f_hs)
 
     def test_grouped_correlation_formatter(self):
         """Test that grouped correlation results are correctly formatted."""
@@ -795,7 +792,7 @@ class GroupedCorrelationTests(TestCase):
                        (array([32., 8., 54., 98., 29., 50.]),
                         array([1., 2., 3., 4., 5., 6.]))]
 
-        self.assertEqual(data_result, data_output)
+        assert_almost_equal(data_result, data_output)
 
     def test_run_correlation_test(self):
         """Test run_correlation_test works."""
@@ -848,8 +845,8 @@ class GroupedCorrelationTests(TestCase):
         obs_ccs, obs_pvals = run_correlation_test(data_gen, 'pearson',
                                                   CORRELATION_TEST_CHOICES,
                                                   pval_assignment_method='parametric_t_distribution')
-        self.assertFloatEqual(exp_ccs, obs_ccs)
-        self.assertFloatEqual(exp_pvals, obs_pvals)
+        assert_almost_equal(exp_ccs, obs_ccs)
+        assert_almost_equal(exp_pvals, obs_pvals)
 
         # test with bootstrapped pvalues
         seed(0)
@@ -866,8 +863,8 @@ class GroupedCorrelationTests(TestCase):
         # more-extreme correlation coefficients can differ by 1. With 1000
         # permutations used in the test, this difference is 1 / 1000 = 0.001,
         # hence the larger epsilon used here.
-        self.assertFloatEqual(obs_pvals[:-1], exp_bootstrapped_pvals)
-        self.assertFloatEqual(obs_pvals[-1], 0.54600000000000004, eps=1e-3)
+        assert_almost_equal(obs_pvals[:-1], exp_bootstrapped_pvals)
+        assert_almost_equal(obs_pvals[-1], 0.54600000000000004)
 
         # spearman
         exp_ccs = [0.25714285714285712,
@@ -894,8 +891,8 @@ class GroupedCorrelationTests(TestCase):
                                                   CORRELATION_TEST_CHOICES,
                                                   pval_assignment_method='parametric_t_distribution')
 
-        self.assertFloatEqual(exp_ccs, obs_ccs)
-        self.assertFloatEqual(exp_pvals, obs_pvals)
+        assert_almost_equal(exp_ccs, obs_ccs)
+        assert_almost_equal(exp_pvals, obs_pvals)
 
         # test with bootstrapped pvalues
         seed(0)
@@ -903,7 +900,7 @@ class GroupedCorrelationTests(TestCase):
         obs_ccs, obs_pvals = run_correlation_test(data_gen, 'spearman',
                                                   CORRELATION_TEST_CHOICES, pval_assignment_method='bootstrapped',
                                                   permutations=1000)
-        self.assertFloatEqual(exp_bootstrapped_pvals, obs_pvals)
+        assert_almost_equal(exp_bootstrapped_pvals, obs_pvals)
 
         # kendall
         data_gen = correlation_row_generator(bt, pmf, 'test_corr')
@@ -927,8 +924,8 @@ class GroupedCorrelationTests(TestCase):
                                                   CORRELATION_TEST_CHOICES,
                                                   pval_assignment_method='kendall')
 
-        self.assertFloatEqual(exp_ccs, obs_ccs)
-        self.assertFloatEqual(exp_pvals, obs_pvals)
+        assert_almost_equal(exp_ccs, obs_ccs)
+        assert_almost_equal(exp_pvals, obs_pvals)
 
         # test with bootstrapped pvalues
         seed(0)
@@ -936,7 +933,7 @@ class GroupedCorrelationTests(TestCase):
         obs_ccs, obs_pvals = run_correlation_test(data_gen, 'kendall',
                                                   CORRELATION_TEST_CHOICES, pval_assignment_method='bootstrapped',
                                                   permutations=1000)
-        self.assertFloatEqual(exp_bootstrapped_pvals, obs_pvals)
+        assert_almost_equal(exp_bootstrapped_pvals, obs_pvals)
 
 # globals used by certain tests.
 BT_IN_1 = '{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","type": "OTU table","generated_by": "testCode","date": "2013-08-20T15:48:21.166180","matrix_type": "sparse","matrix_element_type": "float","shape": [6, 6],"data": [[0,0,28.0],[0,1,52.0],[0,2,51.0],[0,3,78.0],[0,4,16.0],[0,5,77.0],[1,0,25.0],[1,1,14.0],[1,2,11.0],[1,3,32.0],[1,4,48.0],[1,5,63.0],[2,0,31.0],[2,1,2.0],[2,2,15.0],[2,3,69.0],[2,4,64.0],[2,5,27.0],[3,0,36.0],[3,1,68.0],[3,2,70.0],[3,3,65.0],[3,4,33.0],[3,5,62.0],[4,0,16.0],[4,1,41.0],[4,2,59.0],[4,3,40.0],[4,4,15.0],[4,5,3.0],[5,0,32.0],[5,1,8.0],[5,2,54.0],[5,3,98.0],[5,4,29.0],[5,5,50.0]],"rows": [{"id": "OTU1", "metadata": {"taxonomy": ["k__One"]}},{"id": "OTU2", "metadata": {"taxonomy": ["k__Two"]}},{"id": "OTU3", "metadata": {"taxonomy": ["k__Three"]}},{"id": "OTU4", "metadata": {"taxonomy": ["k__Four"]}},{"id": "OTU5", "metadata": {"taxonomy": ["k__Five"]}},{"id": "OTU6", "metadata": {"taxonomy": ["k__Six"]}}],"columns": [{"id": "Sample1", "metadata": null},{"id": "Sample2", "metadata": null},{"id": "Sample3", "metadata": null},{"id": "Sample4", "metadata": null},{"id": "Sample5", "metadata": null},{"id": "Sample6", "metadata": null}]}'

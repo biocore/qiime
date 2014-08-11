@@ -13,9 +13,9 @@ __email__ = "justinak@gmail.com"
 import numpy
 from os import remove
 
-from cogent.util.misc import create_dir
-from cogent.util.unit_test import TestCase, main
-from qiime.util import get_tmp_filename
+from skbio.util.misc import create_dir
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 
 from qiime.cluster_quality import clust_qual_ratio
 
@@ -33,8 +33,8 @@ class FunctionTests(TestCase):
              's2': {'color': 'blue'},
                 's3': {'color': 'red'}}
         bet, within = clust_qual_ratio(dists, [map_data, []], 'color')
-        self.assertFloatEqual(sorted(bet), [1, 2.1])
-        self.assertFloatEqual(within, [3.])
+        assert_almost_equal(sorted(bet), [1, 2.1])
+        assert_almost_equal(within, [3.])
 
 # run unit tests if run from command-line
 if __name__ == '__main__':

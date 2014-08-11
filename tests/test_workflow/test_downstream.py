@@ -15,13 +15,12 @@ from StringIO import StringIO
 from shutil import rmtree
 from glob import glob
 from os.path import join, exists, getsize, split, splitext
-from cogent.util.unit_test import TestCase, main
-from cogent.util.misc import remove_files
+from tempfile import mkdtemp
+
+from unittest import TestCase, main
+from skbio.util.misc import remove_files
 from qiime.compare_alpha_diversity import compare_alpha_diversities
-from qiime.util import (get_tmp_filename,
-                        load_qiime_config,
-                        get_qiime_temp_dir,
-                        create_dir)
+from qiime.util import load_qiime_config, get_qiime_temp_dir
 from qiime.parse import (parse_qiime_parameters,
                          parse_distmat_to_dict)
 from qiime.test import (initiate_timeout,
@@ -45,12 +44,10 @@ class DownstreamWorkflowTests(TestCase):
 
         # Create example output directory
         tmp_dir = get_qiime_temp_dir()
-        self.test_out = get_tmp_filename(tmp_dir=tmp_dir,
-                                         prefix='core_qiime_analyses_test_',
-                                         suffix='',
-                                         result_constructor=str)
+        self.test_out = mkdtemp(dir=tmp_dir,
+                                prefix='core_qiime_analyses_test_',
+                                suffix='')
         self.dirs_to_remove.append(self.test_out)
-        create_dir(self.test_out)
 
         self.qiime_config = load_qiime_config()
         self.params = parse_qiime_parameters(params_f1)

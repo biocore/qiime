@@ -10,17 +10,20 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
-from cogent.util.unit_test import TestCase, main
-from cogent import LoadSeqs
+from os import close
+from tempfile import mkstemp
+from unittest import TestCase, main
+
+from biom.parse import parse_biom_table
+from biom.table import Table
+from skbio.core.sequence import DNA
+from skbio.core.alignment import SequenceCollection
+from skbio.parse.sequences import parse_fasta
+
 from qiime.split import (split_mapping_file_on_field,
                          split_otu_table_on_sample_metadata,
-                         split_fasta)
-from qiime.util import (get_qiime_temp_dir,
-                        remove_files,
-                        get_tmp_filename)
-from qiime.format import format_biom_table
-from biom.parse import parse_biom_table
-from biom.table import DenseOTUTable
+                         split_fasta, OTUTableSplitError)
+from qiime.util import get_qiime_temp_dir, remove_files
 
 
 class SplitTests(TestCase):
@@ -31,8 +34,9 @@ class SplitTests(TestCase):
         """ """
         self.mapping_f1 = mapping_f1.split('\n')
         self.mapping_f2 = mapping_f2.split('\n')
+        self.mapping_f3 = mapping_f3.split('\n')
         self.mapping_exp = list(mapping_exp)
-        self.otu_table_f1 = otu_table_f1.split('\n')
+        self.otu_table_f1 = parse_biom_table(otu_table_f1)
 
     def test_split_mapping_file_on_field(self):
         """ split_mapping_file_on_field functions as expected with valid input
@@ -46,23 +50,27 @@ class SplitTests(TestCase):
 
     def test_split_otu_table_on_sample_metadata(self):
         """ split_otu_table_on_sample_metadata functions as expected with valid input """
+
         actual = list(split_otu_table_on_sample_metadata(self.otu_table_f1,
                                                          self.mapping_f1,
                                                          "Treatment"))
-        for id_, e in actual:
-            try:
-                parse_biom_table(e)
-            except:
-                print e
-        actual = [(id_, parse_biom_table(e)) for id_, e in actual]
+
+        actual = [(id_, e) for id_, e in actual]
         exp = [(id_, parse_biom_table(e)) for id_, e in otu_table_exp1]
 
         actual.sort()
         exp.sort()
 
         for a, e in zip(actual, exp):
-            self.assertEqual(a, e, "OTU tables are not equal:\n%s\n%s" %
-                             (format_biom_table(a[1]), format_biom_table(e[1])))
+            self.assertTrue(a == e)
+
+    def test_split_otu_table_on_sample_metadata_exceptions(self):
+
+        # mapping file 3 has no sample identifiers matching the OTU table
+        with self.assertRaises(OTUTableSplitError):
+            a = list(split_otu_table_on_sample_metadata(self.otu_table_f1,
+                                                        self.mapping_f3,
+                                                        "Treatment"))
 
     def test_split_otu_table_on_sample_metadata_extra_mapping_entries(self):
         """ split_otu_table_on_sample_metadata functions as expected with extra mapping data """
@@ -70,23 +78,22 @@ class SplitTests(TestCase):
                                                          self.mapping_f2,
                                                          "Treatment"))
 
-        actual = [(id_, parse_biom_table(e)) for id_, e in actual]
+        actual = [(id_, e) for id_, e in actual]
         exp = [(id_, parse_biom_table(e)) for id_, e in otu_table_exp1]
 
         actual.sort()
         exp.sort()
 
         for a, e in zip(actual, exp):
-            self.assertEqual(a, e, "OTU tables are not equal:\n%s\n%s" %
-                             (format_biom_table(a[1]), format_biom_table(e[1])))
+            self.assertTrue(a == e)
 
     def test_split_fasta_equal_num_seqs_per_file(self):
         """split_fasta funcs as expected when equal num seqs go to each file
         """
-        filename_prefix = get_tmp_filename(tmp_dir=get_qiime_temp_dir(),
-                                           prefix='split_fasta_tests',
-                                           suffix='',
-                                           result_constructor=str)
+        fd, filename_prefix = mkstemp(dir=get_qiime_temp_dir(),
+                                     prefix='split_fasta_tests',
+                                     suffix='')
+        close(fd)
         infile = ['>seq1', 'AACCTTAA', '>seq2', 'TTAACC', 'AATTAA',
                   '>seq3', 'CCTT--AA']
 
@@ -100,16 +107,16 @@ class SplitTests(TestCase):
 
         self.assertEqual(actual, expected)
         self.assertEqual(
-            LoadSeqs(data=infile, aligned=False),
-            LoadSeqs(data=actual_seqs, aligned=False))
+            SequenceCollection.from_fasta_records(parse_fasta(infile), DNA),
+            SequenceCollection.from_fasta_records(parse_fasta(actual_seqs), DNA))
 
     def test_split_fasta_diff_num_seqs_per_file(self):
         """split_fasta funcs as expected when diff num seqs go to each file
         """
-        filename_prefix = get_tmp_filename(tmp_dir=get_qiime_temp_dir(),
-                                           prefix='split_fasta_tests',
-                                           suffix='',
-                                           result_constructor=str)
+        fd, filename_prefix = mkstemp(dir=get_qiime_temp_dir(),
+                                     prefix='split_fasta_tests',
+                                     suffix='')
+        close(fd)
         infile = ['>seq1', 'AACCTTAA', '>seq2', 'TTAACC', 'AATTAA',
                   '>seq3', 'CCTT--AA']
 
@@ -126,23 +133,24 @@ class SplitTests(TestCase):
         # building seq collections from infile and the split files result in
         # equivalent seq collections
         self.assertEqual(
-            LoadSeqs(data=infile, aligned=False),
-            LoadSeqs(data=actual_seqs, aligned=False))
+            SequenceCollection.from_fasta_records(parse_fasta(infile), DNA),
+            SequenceCollection.from_fasta_records(parse_fasta(actual_seqs), DNA))
 
     def test_split_fasta_diff_num_seqs_per_file_alt(self):
         """split_fasta funcs always catches all seqs
         """
         # start with 59 seqs (b/c it's prime, so should make more
         # confusing splits)
-        in_seqs = LoadSeqs(data=[('seq%s' % k, 'AACCTTAA') for k in range(59)])
-        infile = in_seqs.toFasta().split('\n')
+        in_seqs = SequenceCollection.from_fasta_records(
+            [('seq%s' % k, 'AACCTTAA') for k in range(59)], DNA)
+        infile = in_seqs.to_fasta().split('\n')
 
         # test seqs_per_file from 1 to 1000
         for i in range(1, 1000):
-            filename_prefix = get_tmp_filename(tmp_dir=get_qiime_temp_dir(),
-                                               prefix='split_fasta_tests',
-                                               suffix='',
-                                               result_constructor=str)
+            fd, filename_prefix = mkstemp(dir=get_qiime_temp_dir(),
+                                         prefix='split_fasta_tests',
+                                         suffix='')
+            close(fd)
 
             actual = split_fasta(infile, i, filename_prefix)
 
@@ -156,8 +164,8 @@ class SplitTests(TestCase):
             # building seq collections from infile and the split files result in
             # equivalent seq collections
             self.assertEqual(
-                LoadSeqs(data=infile, aligned=False),
-                LoadSeqs(data=actual_seqs, aligned=False))
+                SequenceCollection.from_fasta_records(parse_fasta(infile), DNA),
+                SequenceCollection.from_fasta_records(parse_fasta(actual_seqs), DNA))
 
 
 mapping_f1 = """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment	DOB	Description
@@ -185,6 +193,20 @@ PC.634	ACAGAGTCGGCT	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	Fasting_mouse_I.D._634
 PC.635	ACCGCAGAGTCA	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	Fasting_mouse_I.D._635
 PC.636	ACGGTGAGTGTC	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	Fasting_mouse_I.D._636
 Fake.sample	ACGGTGAGTGTC	YATGCTGCCTCCCGTAGGAGT	Other	20080116	Fasting_mouse_I.D._636
+"""
+
+mapping_f3 = """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment	DOB	Description
+#Example mapping file for the QIIME analysis package.  These 9 samples are from a study of the effects of exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).
+354	AGCACGAGCCTA	YATGCTGCCTCCCGTAGGAGT	Co_ntrol	20061218	Control_mouse_I.D._354
+355	AACTCGTCGATG	YATGCTGCCTCCCGTAGGAGT	Control	20061218	Control_mouse_I.D._355
+356	ACAGACCACTCA	YATGCTGCCTCCCGTAGGAGT	Co_ntrol	20061126	Control_mouse_I.D._356
+481	ACCAGCGACTAG	YATGCTGCCTCCCGTAGGAGT	Control	20070314	Control_mouse_I.D._481
+593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._593
+607	AACTGTGCGTAC	YATGCTGCCTCCCGTAGGAGT	Fast	20071112	Fasting_mouse_I.D._607
+634	ACAGAGTCGGCT	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	Fasting_mouse_I.D._634
+635	ACCGCAGAGTCA	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	Fasting_mouse_I.D._635
+636	ACGGTGAGTGTC	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	Fasting_mouse_I.D._636
+sample	ACGGTGAGTGTC	YATGCTGCCTCCCGTAGGAGT	Other	20080116	Fasting_mouse_I.D._636
 """
 
 mapping_exp = [("Co_ntrol", """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment	DOB	Description

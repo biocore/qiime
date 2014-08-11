@@ -10,11 +10,12 @@ __email__ = "William.A.Walters@colorado.edu"
 
 from os.path import isdir, isfile, basename
 from shutil import rmtree
+from os import close
+from tempfile import mkstemp
 
 from numpy import array
-from cogent.util.unit_test import TestCase, main
-from qiime.util import get_tmp_filename
-from cogent.util.misc import remove_files
+from unittest import TestCase, main
+from skbio.util.misc import remove_files
 
 from qiime.util import create_dir
 from qiime.truncate_fasta_qual_files import parse_fasta_file,\
@@ -33,30 +34,30 @@ class TruncateFastaQualFilesTests(TestCase):
 
         # create the temporary input files that will be used with the
         # filter_fasta function
-        self.fasta_fp = get_tmp_filename(
-            prefix='fasta_seqs_',
-            suffix='.fasta')
+        fd, self.fasta_fp = mkstemp(prefix='fasta_seqs_',
+                                    suffix='.fasta')
+        close(fd)
         seq_file = open(self.fasta_fp, 'w')
         seq_file.write(fasta_seqs)
         seq_file.close()
 
-        self.qual_fp = get_tmp_filename(
-            prefix='qual_scores_',
-            suffix='.qual')
+        fd, self.qual_fp = mkstemp(prefix='qual_scores_',
+                                   suffix='.qual')
+        close(fd)
         seq_file = open(self.qual_fp, 'w')
         seq_file.write(qual_scores)
         seq_file.close()
 
-        self.diff_name_fasta_fp = get_tmp_filename(
-            prefix='fasta_seqs_diff_name_',
-            suffix='.fasta')
+        fd, self.diff_name_fasta_fp = mkstemp(prefix='fasta_seqs_diff_name_',
+                                              suffix='.fasta')
+        close(fd)
         seq_file = open(self.diff_name_fasta_fp, 'w')
         seq_file.write(diff_name_fasta_seqs)
         seq_file.close()
 
-        self.diff_len_fasta_fp = get_tmp_filename(
-            prefix='fasta_seqs_diff_len_',
-            suffix='.fasta')
+        fd, self.diff_len_fasta_fp = mkstemp(prefix='fasta_seqs_diff_len_',
+                                             suffix='.fasta')
+        close(fd)
         seq_file = open(self.diff_len_fasta_fp, 'w')
         seq_file.write(diff_len_fasta_seqs)
         seq_file.close()
@@ -168,8 +169,8 @@ class TruncateFastaQualFilesTests(TestCase):
         actual_fasta_seqs, actual_qual_scores =\
             truncate_seqs(fasta_seqs, qual_scores, base_pos)
 
-        self.assertEqual(actual_fasta_seqs, expected_fasta)
-        self.assertEqual(actual_qual_scores, expected_qual)
+        self.assertDictEqual(actual_fasta_seqs, expected_fasta)
+        self.assertItemsEqual(expected_qual, actual_qual_scores)
 
     def test_get_output_filepaths(self):
         """ Generates output filepaths for fasta, qual files correctly """

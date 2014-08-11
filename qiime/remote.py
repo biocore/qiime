@@ -16,7 +16,7 @@ from csv import writer
 from re import sub
 from socket import gaierror
 from StringIO import StringIO
-from cogent.app.util import ApplicationNotFoundError
+from burrito.util import ApplicationNotFoundError
 
 
 def raise_gdata_not_found_error(*args, **kwargs):

@@ -15,8 +15,8 @@ from itertools import izip
 from collections import defaultdict
 
 from qiime.parse import QiimeParseError, MinimalQualParser
-from cogent.parse.fasta import MinimalFastaParser
-from cogent.parse.fastq import MinimalFastqParser
+from skbio.parse.sequences import parse_fasta
+from skbio.parse.sequences import parse_fastq
 
 
 def convert_fastaqual_fastq(fasta_file_path, qual_file_path,
@@ -96,7 +96,7 @@ def convert_fastq(fasta_file_path, qual_file_path, output_directory='.',
 
     # iterate through the FASTA and QUAL files entry by entry (assume the
     # entries are synchronized)
-    for fasta_data, qual_data in izip(MinimalFastaParser(fasta_file),
+    for fasta_data, qual_data in izip(parse_fasta(fasta_file),
                                       MinimalQualParser(qual_file)):
 
         qual_header = qual_data[0]
@@ -222,8 +222,10 @@ def convert_fastaqual(fasta_file_path, output_directory='.',
         fasta_out_lookup = defaultdict(str)
         qual_out_lookup = defaultdict(str)
 
-    for header, sequence, qual in MinimalFastqParser(open(fastq_fp, 'U'),
-                                                     strict=False):
+    fpo = ascii_increment
+    for header, sequence, qual in parse_fastq(open(fastq_fp, 'U'),
+                                              strict=False,
+                                              phred_offset=fpo):
         label = header.split()[0]
         sample_id = label.split('_')[0]
 
@@ -239,20 +241,17 @@ def convert_fastaqual(fasta_file_path, output_directory='.',
         if full_fasta_headers:
             label = header
 
-        # convert quality scores
-        qual_scores = []
-        for qual_char in qual:
-            if (ord(qual_char) - ascii_increment) < 0:
-                raise ValueError("Output qual scores are negative values. "
-                                 "Use different ascii_increment value than %s" %
-                                 str(ascii_increment))
-            else:
-                qual_scores.append(str(ord(qual_char) - ascii_increment))
+        if (qual < 0).any():
+            raise ValueError("Output qual scores are negative values. "
+                             "Use different ascii_increment value than %s" %
+                             str(ascii_increment))
 
         # write QUAL file, 60 qual scores per line
-        qual_record = '>' + label + '\n'
-        for i in range(0, len(qual_scores), 60):
-            qual_record += ' '.join(qual_scores[i:i + 60]) + '\n'
+        qual_record = [">%s\n" % label]
+        for i in range(0, len(qual), 60):
+            qual_record.append(' '.join([str(q) for q in qual[i:i + 60]]))
+            qual_record.append('\n')
+        qual_record = ''.join(qual_record)
 
         if multiple_output_files:
             qual_out_lookup[qual_out_fp] += qual_record

@@ -18,7 +18,7 @@ import cogent.maths.unifrac.fast_tree as fast_tree
  #    G, unnormalized_G, weighted_unifrac)
 from cogent.maths.unifrac.fast_unifrac import fast_unifrac, fast_unifrac_one_sample
 from qiime.parse import make_envs_dict
-import numpy
+import numpy as np
 import warnings
 
 
@@ -92,7 +92,7 @@ def make_unifrac_row_metric(weighted, metric, is_symmetric):
                               one_sample_name +
                               ". Distances involving that sample aren't meaningful")
                 unifrac_res = (
-                    numpy.array([0.0]),
+                    np.array([0.0]),
                     [one_sample_name])  # self only
             else:
                 raise e
@@ -131,10 +131,10 @@ def _reorder_unifrac_res(unifrac_res, sample_names_in_desired_order):
     unifrac_sample_names = unifrac_res[1]
     unifrac_sample_names_idx = dict([(n, i)
                                     for i, n in enumerate(unifrac_sample_names)])
-    if unifrac_sample_names == sample_names:
+    if list(unifrac_sample_names) == list(sample_names):
         dist_mtx = unifrac_dist_mtx
     else:
-        dist_mtx = numpy.zeros((len(sample_names), len(sample_names)))
+        dist_mtx = np.zeros((len(sample_names), len(sample_names)))
 
         for i, sam_i in enumerate(sample_names):
 
@@ -176,10 +176,10 @@ def _reorder_unifrac_res_one_sample(
     unifrac_sample_names = unifrac_res[1]
     unifrac_sample_names_idx = dict([(n, i)
                                     for i, n in enumerate(unifrac_sample_names)])
-    if unifrac_sample_names == sample_names:
+    if list(unifrac_sample_names) == list(sample_names):
         dist_arry = unifrac_dist_arry
     else:
-        dist_arry = numpy.zeros(len(sample_names))
+        dist_arry = np.zeros(len(sample_names))
 
         for i, sam_i in enumerate(sample_names):
 

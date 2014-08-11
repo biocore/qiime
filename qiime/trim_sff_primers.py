@@ -3,7 +3,7 @@
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Rob Knight", 'Kyle Bittinger']
+__credits__ = ["Rob Knight", 'Kyle Bittinger', "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Kyle Bittinger"
@@ -14,19 +14,19 @@ __email__ = "kylebittinger@gmail.com"
 Replaces the sff files with the trimmed versions.
 """
 
-import itertools
-import os
-import shutil
-import subprocess
-import sys
-import tempfile
+from itertools import imap
+from os import walk, devnull, remove, rename, close
+from os.path import splitext, join, exists
+from shutil import move
+from subprocess import check_call
+from sys import stderr
+from tempfile import mkstemp, TemporaryFile
 
-from cogent.util.misc import app_path
-from cogent.app.util import ApplicationNotFoundError
+from burrito.util import ApplicationNotFoundError
+from cogent.parse.binary_sff import parse_binary_sff, write_binary_sff
+from burrito.util import which
+
 from qiime.parse import parse_mapping_file
-from cogent.parse.binary_sff import (
-    parse_binary_sff, write_binary_sff
-)
 
 
 def get_technical_lengths(input_map, debug=False):
@@ -63,11 +63,11 @@ def get_technical_lengths(input_map, debug=False):
 def get_per_lib_sff_fps(sff_dir):
     """Return a dict mapping library ID's to SFF filepaths in a directory.
     """
-    for dirpath, dirnames, fnames in os.walk(sff_dir):
+    for dirpath, dirnames, fnames in walk(sff_dir):
         for fname in fnames:
             if fname.endswith('.sff'):
-                libname, _ = os.path.splitext(fname)
-                yield libname, os.path.join(dirpath, fname)
+                libname, _ = splitext(fname)
+                yield libname, join(dirpath, fname)
 
 
 def set_clip_qual_left(sff_data, technical_read_length):
@@ -86,7 +86,7 @@ def set_clip_qual_left(sff_data, technical_read_length):
         read['clip_qual_left'] = clip_idx
         return read
 
-    return header, itertools.imap(adjust_read, reads)
+    return header, imap(adjust_read, reads)
 
 
 def set_sff_trimpoints(sff_dir, technical_lengths):
@@ -101,11 +101,12 @@ def set_sff_trimpoints(sff_dir, technical_lengths):
         clipped_header, clipped_reads = set_clip_qual_left(
             sff_data, readlength)
 
-        _, temp_fp = tempfile.mkstemp(dir=sff_dir)
+        fd, temp_fp = mkstemp(dir=sff_dir)
+        close(fd)
         with open(temp_fp, 'w') as f:
             write_binary_sff(f, clipped_header, clipped_reads)
 
-        shutil.move(temp_fp, sff_fp)
+        move(temp_fp, sff_fp)
 
 
 def set_sff_trimpoints_with_sfftools(
@@ -116,10 +117,10 @@ def set_sff_trimpoints_with_sfftools(
     This function essentially provides the reference implementation.
     It uses the official sfftools from Roche to process the SFF files.
     """
-    if not (os.path.exists(sffinfo_path) or app_path(sffinfo_path)):
+    if not (exists(sffinfo_path) or which(sffinfo_path)):
         raise ApplicationNotFoundError(
             'sffinfo executable not found. Is it installed and in your $PATH?')
-    if not (os.path.exists(sfffile_path) or app_path(sfffile_path)):
+    if not (exists(sfffile_path) or which(sfffile_path)):
         raise ApplicationNotFoundError(
             'sfffile executable not found. Is it installed and in your $PATH?')
 
@@ -132,8 +133,8 @@ def set_sff_trimpoints_with_sfftools(
         sffinfo_args = [sffinfo_path, '-s', sff_fp]
         if debug:
             print "Running sffinfo command %s" % sffinfo_args
-        sffinfo_output_file = tempfile.TemporaryFile()
-        subprocess.check_call(sffinfo_args, stdout=sffinfo_output_file)
+        sffinfo_output_file = TemporaryFile()
+        check_call(sffinfo_args, stdout=sffinfo_output_file)
         sffinfo_output_file.seek(0)
 
         seqlengths = {}
@@ -155,7 +156,7 @@ def set_sff_trimpoints_with_sfftools(
                 trim_file.write(
                     "%s\t%s\t%s\n" % (id_, left_trim, right_trim))
             else:
-                sys.stderr.write(
+                stderr.write(
                     'Rejected read %s with trim points %s and %s (orig '
                     'length %s)' % (id_, left_trim, curr_length, length))
         trim_file.close()
@@ -165,6 +166,6 @@ def set_sff_trimpoints_with_sfftools(
             sfffile_path, '-t', trim_fp, '-o', trimmed_sff_fp, sff_fp]
         if debug:
             print "Running sfffile command:", sfffile_args
-        subprocess.check_call(sfffile_args, stdout=open(os.devnull, 'w'))
-        os.remove(sff_fp)
-        os.rename(trimmed_sff_fp, sff_fp)
+        check_call(sfffile_args, stdout=open(devnull, 'w'))
+        remove(sff_fp)
+        rename(trimmed_sff_fp, sff_fp)

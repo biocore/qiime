@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 import os
 import shutil
-import tempfile
-from cogent.util.unit_test import TestCase, main
-from cogent.app.util import ApplicationNotFoundError
-from cogent.util.misc import app_path
+
+from tempfile import mkdtemp
+from unittest import TestCase, main
+
+from burrito.util import ApplicationNotFoundError
 from qiime.process_sff import (
     make_flow_txt, make_fna, make_qual, prep_sffs_in_dir, convert_Ti_to_FLX,
     adjust_sff_cycles, check_sffinfo)
@@ -44,8 +45,8 @@ class TopLevelTests(TestCase):
                                           'test_gz.sff.gz')
 
         # copy sff file to working directory
-        self.sff_dir = tempfile.mkdtemp()
-        self.gz_sff_dir = tempfile.mkdtemp()
+        self.sff_dir = mkdtemp()
+        self.gz_sff_dir = mkdtemp()
         self.sff_fp = os.path.join(self.sff_dir, 'test.sff')
         self.sff_gz_fp = os.path.join(self.gz_sff_dir, 'test_gz.sff.gz')
         shutil.copy(sff_original_fp, self.sff_fp)
@@ -156,8 +157,8 @@ class TopLevelTests(TestCase):
 
     def test_prep_sffs_in_dir_FLX(self):
         """test_prep_sffs_in_dir should convert to FLX read lengths."""
-        output_dir = tempfile.mkdtemp()
-        gz_output_dir = tempfile.mkdtemp()
+        output_dir = mkdtemp()
+        gz_output_dir = mkdtemp()
 
         prep_sffs_in_dir(
             self.sff_dir, output_dir, make_flowgram=True, convert_to_flx=True)
@@ -184,8 +185,8 @@ class TopLevelTests(TestCase):
 
     def test_prep_sffs_in_dir_no_trim(self):
         """test_prep_sffs_in_dir should use the no_trim option only if sffinfo exists."""
-        output_dir = tempfile.mkdtemp()
-        gz_output_dir = tempfile.mkdtemp()
+        output_dir = mkdtemp()
+        gz_output_dir = mkdtemp()
 
         try:
             check_sffinfo()

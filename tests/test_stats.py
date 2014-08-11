@@ -4,7 +4,8 @@ from __future__ import division
 __author__ = "Michael Dwan"
 __copyright__ = "Copyright 2012, The QIIME project"
 __credits__ = ["Jai Ram Rideout", "Michael Dwan", "Logan Knecht",
-               "Damien Coy", "Levi McCracken", "Andrew Cochran"]
+               "Damien Coy", "Levi McCracken", "Andrew Cochran",
+               "Will Van Treuren"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Jai Ram Rideout"
@@ -15,17 +16,50 @@ __email__ = "jai.rideout@gmail.com"
 from shutil import rmtree
 from os.path import exists, join
 from string import digits
-from cogent.util.unit_test import TestCase, main
-from cogent.util.misc import remove_files, create_dir
-from numpy import array, asarray, roll, median, nan
-from numpy.random import permutation, shuffle
-from biom.parse import parse_biom_table
+from tempfile import mkdtemp
+
+from skbio.util.misc import remove_files
+from unittest import TestCase, main
+from warnings import filterwarnings
+from numpy.testing import assert_almost_equal, assert_allclose
+from numpy import (array, asarray, roll, median, nan, arange, matrix,
+                   concatenate, nan, ndarray, number, ones,
+                   reshape, testing, tril, var, log, fill_diagonal)
+
+
+from numpy.random import permutation, shuffle, seed
+
+from itertools import izip
+from types import StringType, ListType, FloatType, TupleType
+from biom import Table
+from biom.util import biom_open
+
 from qiime.stats import (all_pairs_t_test, _perform_pairwise_tests,
-                         Anosim, Best, CategoryStats, CorrelationStats, DistanceMatrixStats,
-                         MantelCorrelogram, Mantel, PartialMantel, Permanova, quantile,
-                         _quantile, paired_difference_analyses)
-from qiime.util import (DistanceMatrix, MetadataMap, get_qiime_temp_dir,
-                        get_tmp_filename)
+                         CorrelationStats,
+                         DistanceMatrixStats, MantelCorrelogram, Mantel,
+                         PartialMantel, quantile, _quantile,
+                         paired_difference_analyses,
+                         G_2_by_2, g_fit, t_paired, t_one_sample,
+                         t_two_sample, mc_t_two_sample,
+                         _permute_observations,
+                         correlation_t, ZeroExpectedError, fisher,
+                         safe_sum_p_log_p, permute_2d, mantel,
+                         mantel_t, _flatten_lower_triangle, pearson,
+                         spearman, ANOVA_one_way, mw_t,
+                         mw_boot, is_symmetric_and_hollow,
+                         tail, fdr_correction,
+                         benjamini_hochberg_step_down,
+                         bonferroni_correction, fisher_z_transform,
+                         fisher_population_correlation,
+                         inverse_fisher_z_transform,
+                         z_transform_pval, kruskal_wallis, kendall,
+                         kendall_pval, assign_correlation_pval,
+                         cscore, williams_correction, t_one_observation,
+                         normprob, tprob, fprob, chi2prob)
+
+from skbio.core.distance import (DissimilarityMatrix, DistanceMatrix)
+
+from qiime.util import MetadataMap, get_qiime_temp_dir
 
 
 class TestHelper(TestCase):
@@ -35,6 +69,20 @@ class TestHelper(TestCase):
     This class should be subclassed by any test classes that want to use its
     members.
     """
+
+    def compare_multiple_level_array(self, observed, expected):
+        """ Compare multiple level arrays.
+
+        It expecte observed and expected arrays, where each element is an
+        array of elements.
+        """
+        if isinstance(observed, (TupleType, ListType)):
+            for obs, exp in izip(observed, expected):
+                self.compare_multiple_level_array(obs, exp)
+        elif observed is not None and isinstance(observed, (number, ndarray, FloatType)):
+            assert_almost_equal(observed, expected, decimal=5)
+        else:
+            self.assertEqual(observed, expected)
 
     def setUp(self):
         """Define some useful test objects."""
@@ -77,8 +125,7 @@ class TestHelper(TestCase):
                                 \t0.725100672826\t0.632524644216\
                                 \t0.727154987937\t0.699880573956\
                                 \t0.560605525642\t0.575788039321\t0.0"]
-        self.overview_dm = DistanceMatrix.parseDistanceMatrix(
-            self.overview_dm_str)
+        self.overview_dm = DistanceMatrix.from_file(self.overview_dm_str)
 
         # The overview tutorial's metadata mapping file.
         self.overview_map_str = ["#SampleID\tBarcodeSequence\tTreatment\tDOB",
@@ -107,7 +154,7 @@ class TestHelper(TestCase):
         self.test_map = MetadataMap.parseMetadataMap(self.test_map_str)
 
         # A 1x1 dm.
-        self.single_ele_dm = DistanceMatrix(array([[0]]), ['s1'], ['s1'])
+        self.single_ele_dm = DistanceMatrix([[0]], ['s1'])
 
         # How many times to test a p-value.
         self.p_val_tests = 10
@@ -131,7 +178,7 @@ class TestHelper(TestCase):
             else:
                 obs = fn()
             p_val = obs[p_val_key]
-            self.assertIsProb(p_val)
+            self.assertTrue(0.0 <= p_val < 1.0)
             if p_val >= exp_min and p_val <= exp_max:
                 found_match = True
                 break
@@ -167,13 +214,13 @@ class NonRandomShuffler(object):
         return x
 
 
-class StatsTests(TestCase):
+class StatsTests(TestHelper):
 
     """Tests for top-level functions in the stats module."""
 
     def setUp(self):
         """Set up data that will be used by the tests."""
-        # For testing Monte Carlo functionality.
+        self.value_for_seed = 20
 
         # Single comp.
         self.labels1 = ['foo', 'bar']
@@ -290,13 +337,11 @@ foo	bar	N/A	N/A	N/A	N/A	N/A
         """Test on valid dataset w/ 1 comp."""
         # Verified with R's t.test function.
         exp = [['foo', 'bar', -6.5999999999999996, 0.0070804795641244006,
-                0.0070804795641244006, 0.10199999999999999, 0.10199999999999999]]
+                0.0070804795641244006, 0.100000000001, 0.10000000000001]]
+        seed(self.value_for_seed)
         obs = _perform_pairwise_tests(self.labels1, self.dists1, 'two-sided',
                                       999)
-        self.assertEqual(len(obs), len(exp))
-        self.assertFloatEqual(obs[0][:5], exp[0][:5])
-        self.assertIsProb(obs[0][5])
-        self.assertFloatEqual(obs[0][5], obs[0][6])
+        self.compare_multiple_level_array(obs, exp)
 
     def test_perform_pairwise_tests_multi_comp(self):
         """Test on valid dataset w/ multiple comps."""
@@ -309,24 +354,23 @@ foo	bar	N/A	N/A	N/A	N/A	N/A
                                                               0.17300665686731195, nan, nan]]
         obs = _perform_pairwise_tests(self.labels2, self.dists2, 'two-sided',
                                       0)
-        self.assertFloatEqual(obs, exp)
+        self.compare_multiple_level_array(obs, exp)
 
     def test_perform_pairwise_tests_too_few_obs(self):
         """Test on dataset w/ too few observations."""
-        exp = [['foo', 'bar', nan, nan, nan, nan, nan], ['foo', 'baz',
-                                                         -
-                                                         7.794228634059948, 0.008032650971672552, 0.016065301943345104,
-                                                         nan, nan], ['bar', 'baz',
-                                                                     -
-                                                                     2.598076211353316, 0.060844967173160069, 0.12168993434632014,
-                                                                     nan, nan]]
+        exp = [['foo', 'bar', nan, nan, nan, nan, nan],
+               ['foo', 'baz', -7.794228634059948, 0.008032650971672552,
+                0.016065301943345104, nan, nan],
+               ['bar', 'baz', -2.598076211353316, 0.060844967173160069,
+                0.12168993434632014, nan, nan]]
+
         obs = _perform_pairwise_tests(self.labels3, self.dists3, 'low', 0)
-        self.assertFloatEqual(obs, exp)
+        self.compare_multiple_level_array(obs, exp)
 
         exp = [['foo', 'bar', nan, nan, nan, nan, nan]]
         obs = _perform_pairwise_tests(['foo', 'bar'], [[], [1, 2, 4]], 'high',
                                       20)
-        self.assertFloatEqual(obs, exp)
+        self.compare_multiple_level_array(obs, exp)
 
 
 class DistanceMatrixStatsTests(TestHelper):
@@ -386,14 +430,12 @@ class DistanceMatrixStatsTests(TestHelper):
                           'DistanceMatrices', self.overview_dm)
         self.assertRaises(TypeError, setattr, self.empty_dms,
                           'DistanceMatrices', [1])
-        self.assertRaises(ValueError, setattr, self.empty_dms,
+        self.assertRaises(TypeError, setattr, self.empty_dms,
                           'DistanceMatrices',
-                          [DistanceMatrix(
-                              array([[1, 2], [3, 4]]), ['foo', 'bar'],
-                              ['foo', 'bar']),
-                           DistanceMatrix(
-                               array([[1, 2], [3, 4.5]]), ['foo', 'bar'],
-                               ['foo', 'bar'])])
+                          [DissimilarityMatrix(
+                              array([[0, 2], [3, 0]]), ['foo', 'bar']),
+                           DissimilarityMatrix(
+                               array([[0, 2], [3.5, 0]]), ['foo', 'bar'])])
 
         # Test constructor as well.
         self.assertRaises(TypeError, DistanceMatrixStats, None)
@@ -403,13 +445,11 @@ class DistanceMatrixStatsTests(TestHelper):
         self.assertRaises(TypeError, DistanceMatrixStats, {})
         self.assertRaises(TypeError, DistanceMatrixStats, self.overview_dm)
         self.assertRaises(TypeError, DistanceMatrixStats, [1])
-        self.assertRaises(ValueError, DistanceMatrixStats,
-                          [DistanceMatrix(
-                              array([[1, 2], [3, 4]]), ['foo', 'bar'],
-                              ['foo', 'bar']),
-                           DistanceMatrix(
-                               array([[1, 2], [3, 4.5]]), ['foo', 'bar'],
-                               ['foo', 'bar'])])
+        self.assertRaises(TypeError, DistanceMatrixStats,
+                          [DissimilarityMatrix(
+                              array([[0, 2], [3, 0]]), ['foo', 'bar']),
+                           DissimilarityMatrix(
+                               array([[0, 2], [3.5, 0]]), ['foo', 'bar'])])
 
     def test_DistanceMatrices_setter_wrong_number(self):
         """Test setting an invalid number of distance matrices."""
@@ -423,23 +463,6 @@ class DistanceMatrixStatsTests(TestHelper):
         """Test setting distance matrices that are too small."""
         self.assertRaises(ValueError, setattr, self.size_dms,
                           'DistanceMatrices', [self.single_ele_dm, self.single_ele_dm])
-
-    def test_DistanceMatrices_setter_suppress_symmetry_check(self):
-        """Test suppressing symmetry check."""
-        dms = DistanceMatrixStats([],
-                                  suppress_symmetry_and_hollowness_check=True)
-        dms.DistanceMatrices = [
-            DistanceMatrix(array([[1, 2], [3, 4]]), ['foo', 'bar'],
-                           ['foo', 'bar']),
-            DistanceMatrix(array([[1, 2], [3, 4.5]]), ['foo', 'bar'],
-                           ['foo', 'bar'])]
-
-        dms = DistanceMatrixStats([
-            DistanceMatrix(array([[1, 2], [3, 4]]), ['foo', 'bar'],
-                           ['foo', 'bar']),
-            DistanceMatrix(array([[1, 2], [3, 4.5]]), ['foo', 'bar'],
-                           ['foo', 'bar'])],
-            suppress_symmetry_and_hollowness_check=True)
 
     def test_call(self):
         """Test __call__() returns an empty result set."""
@@ -473,13 +496,13 @@ class CorrelationStatsTests(TestHelper):
 
     def test_DistanceMatrices_setter_mismatched_labels(self):
         """Test setting dms with mismatching sample ID labels."""
-        mismatch = DistanceMatrix(array([[0]]), ['s2'], ['s2'])
+        mismatch = DistanceMatrix(array([[0]]), ['s2'])
 
         self.assertRaises(ValueError, setattr, self.cs, 'DistanceMatrices',
                           [self.single_ele_dm, mismatch])
         # Also test that constructor raises this error.
         self.assertRaises(ValueError, CorrelationStats, [self.single_ele_dm,
-                          mismatch])
+                                                         mismatch])
 
     def test_DistanceMatrices_setter_wrong_dims(self):
         """Test setting dms with mismatching dimensions."""
@@ -487,7 +510,7 @@ class CorrelationStatsTests(TestHelper):
                           [self.overview_dm, self.single_ele_dm])
         # Also test that constructor raises this error.
         self.assertRaises(ValueError, CorrelationStats, [self.overview_dm,
-                          self.single_ele_dm])
+                                                         self.single_ele_dm])
 
     def test_DistanceMatrices_setter_too_few(self):
         """Test setting dms with not enough of them."""
@@ -500,621 +523,7 @@ class CorrelationStatsTests(TestHelper):
         self.assertEqual(self.cs(), {})
 
 
-class CategoryStatsTests(TestHelper):
-
-    """Tests for the CategoryStats class."""
-
-    def setUp(self):
-        """Define some useful data to use in testing."""
-        super(CategoryStatsTests, self).setUp()
-        self.cs_overview = CategoryStats(self.overview_map, [self.overview_dm],
-                                         ["Treatment", "DOB"])
-
-    def test_MetadataMap_setter(self):
-        """Should set the mdmap property."""
-        self.cs_overview.MetadataMap = self.overview_map
-        self.assertEqual(self.cs_overview.MetadataMap, self.overview_map)
-
-    def test_MetadataMap_setter_invalid_input(self):
-        """Setter must receive the correct and compatible object types."""
-        self.assertRaises(TypeError, setattr, self.cs_overview, 'MetadataMap',
-                          "foo")
-        self.assertRaises(TypeError, setattr, self.cs_overview, 'MetadataMap',
-                          [])
-        self.assertRaises(TypeError, setattr, self.cs_overview, 'MetadataMap',
-                          {})
-        self.assertRaises(TypeError, setattr, self.cs_overview, 'MetadataMap',
-                          None)
-        self.assertRaises(TypeError, setattr, self.cs_overview, 'MetadataMap',
-                          self.overview_dm)
-
-    def test_MetadataMap_getter(self):
-        """Test valid return of MetadataMap property."""
-        self.assertEqual(self.cs_overview.MetadataMap, self.overview_map)
-
-    def test_Categories_setter_invalid_input(self):
-        """Must receive a list of categories that are in the mapping file."""
-        self.assertRaises(TypeError, setattr, self.cs_overview, 'Categories',
-                          "Hello!")
-        self.assertRaises(TypeError, setattr, self.cs_overview, 'Categories',
-                          self.overview_dm)
-        self.assertRaises(ValueError, setattr, self.cs_overview, 'Categories',
-                          ["hehehe", 123, "hello"])
-        self.assertRaises(ValueError, setattr, self.cs_overview, 'Categories',
-                          ["foo"])
-
-        # Test setting a unique category.
-        self.assertRaises(ValueError, CategoryStats, self.test_map,
-                          [self.overview_dm], ["Description"])
-        cs_test = CategoryStats(self.test_map, [self.overview_dm], ["Foo"])
-        self.assertRaises(ValueError, setattr, cs_test, 'Categories',
-                          ["Description"])
-
-        # Test setting a category with only a single value.
-        self.assertRaises(ValueError, setattr, cs_test, 'Categories', ["Bar"])
-
-        # Test setting a category that is non-numeric.
-        self.assertRaises(TypeError, CategoryStats, self.overview_map,
-                          [self.overview_dm], ["Treatment"],
-                          suppress_numeric_category_check=False)
-
-    def test_Categories_getter(self):
-        """Test valid return of Categories property."""
-        expected = ['Treatment', 'DOB']
-        observed = self.cs_overview.Categories
-        self.assertEqual(observed, expected)
-
-    def test_RandomFunction_getter(self):
-        """Test retrieval of a random function reference."""
-        self.assertEqual(self.cs_overview.RandomFunction, permutation)
-
-    def test_RandomFunction_setter(self):
-        """Test setter for the random function to use in p-value calc."""
-        self.assertEqual(self.cs_overview.RandomFunction, permutation)
-        nrs = NonRandomShuffler()
-        self.cs_overview.RandomFunction = nrs.permutation
-        self.assertEqual(self.cs_overview.RandomFunction, nrs.permutation)
-
-    def test_RandomFunction_setter_invalid_input(self):
-        """Test setter for the random function with non-callable input."""
-        self.assertRaises(TypeError, setattr, self.cs_overview,
-                          'RandomFunction', 42)
-        self.assertRaises(TypeError, setattr, self.cs_overview,
-                          'RandomFunction', 42.0)
-        self.assertRaises(TypeError, setattr, self.cs_overview,
-                          'RandomFunction', "j")
-        self.assertRaises(TypeError, setattr, self.cs_overview,
-                          'RandomFunction', None)
-        self.assertRaises(TypeError, setattr, self.cs_overview,
-                          'RandomFunction', [])
-        self.assertRaises(TypeError, setattr, self.cs_overview,
-                          'RandomFunction', ())
-        self.assertRaises(TypeError, setattr, self.cs_overview,
-                          'RandomFunction', {})
-
-    def test_validate_compatibility(self):
-        """Test for compatible sample IDs between dms and mdmap."""
-        self.assertEqual(self.cs_overview._validate_compatibility(), None)
-
-        self.cs_overview.DistanceMatrices = [self.single_ele_dm]
-        self.assertRaises(ValueError, self.cs_overview._validate_compatibility)
-
-        self.cs_overview.DistanceMatrices = [self.overview_dm]
-        self.cs_overview.MetadataMap = self.test_map
-        self.assertRaises(ValueError, self.cs_overview._validate_compatibility)
-
-    def test_call(self):
-        """Test _call__() returns an empty result set."""
-        self.assertEqual(self.cs_overview(), {})
-        self.assertEqual(self.cs_overview(10), {})
-
-    def test_call_bad_perms(self):
-        """Test __call__() fails upon receiving invalid number of perms."""
-        self.assertRaises(ValueError, self.cs_overview, -1)
-
-    def test_call_incompatible_data(self):
-        """Test __call__() fails after incompatible dms/mdmap pair is set."""
-        self.cs_overview.DistanceMatrices = [self.single_ele_dm,
-                                             self.single_ele_dm]
-        self.assertRaises(ValueError, self.cs_overview)
-
-
-class AnosimTests(TestHelper):
-
-    """Tests for the Anosim class.
-
-    This testing code is heavily based on Andrew Cochran's original suite of
-    unit tests for ANOSIM.
-    """
-
-    def setUp(self):
-        """Define some useful data to use in testing."""
-        super(AnosimTests, self).setUp()
-
-        # Define two small dms for easy testing. One has ties in the ranks.
-        self.small_dm_str = ["\tsam1\tsam2\tsam3\tsam4",
-                             "sam1\t0\t1\t5\t4",
-                             "sam2\t1\t0\t3\t2",
-                             "sam3\t5\t3\t0\t3",
-                             "sam4\t4\t2\t3\t0"]
-        self.small_dm = DistanceMatrix.parseDistanceMatrix(self.small_dm_str)
-
-        self.small_dm_tie_str = ["\tsam1\tsam2\tsam3\tsam4",
-                                 "sam1\t0\t1\t1\t4",
-                                 "sam2\t1\t0\t3\t2",
-                                 "sam3\t1\t3\t0\t3",
-                                 "sam4\t4\t2\t3\t0"]
-        self.small_dm_tie = DistanceMatrix.parseDistanceMatrix(
-            self.small_dm_tie_str)
-
-        self.small_map_str = ["#SampleID\tBarcodeSequence\
-                              \tLinkerPrimerSequence\tTreatment\tDOB\
-                              \tDescription",
-                              "sam1\tAGCACGAGCCTA\tYATGCTGCCTCCCGTAGGAGT\
-                              \tControl\t20061218\tControl_mouse_I.D._354",
-                              "sam2\tAACTCGTCGATG\tYATGCTGCCTCCCGTAGGAGT\
-                              \tControl\t20061218\tControl_mouse_I.D._355",
-                              "sam3\tACAGACCACTCA\tYATGCTGCCTCCCGTAGGAGT\
-                              \tFast\t20061126\tControl_mouse_I.D._356",
-                              "sam4\tACCAGCGACTAG\tYATGCTGCCTCCCGTAGGAGT\
-                              \tFast\t20070314\tControl_mouse_I.D._481"]
-        self.small_map = MetadataMap.parseMetadataMap(self.small_map_str)
-
-        # Create a group map, which maps sample ID to category value (e.g.
-        # sample 1 to 'control' and sample 2 to 'fast'). This comes in handy
-        # for testing some of the private methods in the Anosim class. This
-        # group map can be used for testing both the small dm data and the
-        # small dm with ties data.
-        self.small_group_map = {}
-        for samp_id in self.small_dm.SampleIds:
-            self.small_group_map[samp_id] = self.small_map.getCategoryValue(
-                samp_id, 'Treatment')
-
-        # Create three Anosim instances: one for the small dm, one for the
-        # small dm with ties, and one for the overview tutorial dataset.
-        self.anosim_small = Anosim(self.small_map, self.small_dm, 'Treatment')
-        self.anosim_small_tie = Anosim(self.small_map, self.small_dm_tie,
-                                       'Treatment')
-        self.anosim_overview = Anosim(self.overview_map, self.overview_dm,
-                                      'Treatment')
-
-    def test_call_overview(self):
-        """Test __call__() on overview data with Treatment category."""
-        # These results were verified with R.
-        exp = {'method_name': 'ANOSIM', 'p_value': 0.0080000000000000002,
-               'r_value': 0.8125}
-        obs = self.anosim_overview()
-        self.assertEqual(obs['method_name'], exp['method_name'])
-        self.assertFloatEqual(obs['r_value'], exp['r_value'])
-        self.assertCorrectPValue(0, 0.06, self.anosim_overview)
-
-    def test_call_small(self):
-        """Test __call__() on small dm."""
-        # These results were verified with R.
-        exp = {'method_name': 'ANOSIM', 'p_value': 0.31, 'r_value': 0.625}
-        obs = self.anosim_small()
-
-        self.assertEqual(obs['method_name'], exp['method_name'])
-        self.assertFloatEqual(obs['r_value'], exp['r_value'])
-        self.assertCorrectPValue(0.28, 0.42, self.anosim_small)
-
-    def test_call_small_ties(self):
-        """Test __call__() on small dm with ties in ranks."""
-        # These results were verified with R.
-        exp = {'method_name': 'ANOSIM', 'p_value': 0.67600000000000005,
-               'r_value': 0.25}
-        obs = self.anosim_small_tie()
-
-        self.assertEqual(obs['method_name'], exp['method_name'])
-        self.assertFloatEqual(obs['r_value'], exp['r_value'])
-        self.assertCorrectPValue(0.56, 0.75, self.anosim_small_tie)
-
-    def test_call_no_perms(self):
-        """Test __call__() on small dm with no permutations."""
-        # These results were verified with R.
-        exp = {'method_name': 'ANOSIM', 'p_value': 1.0, 'r_value': 0.625}
-        obs = self.anosim_small(0)
-
-        self.assertEqual(obs['method_name'], exp['method_name'])
-        self.assertFloatEqual(obs['r_value'], exp['r_value'])
-        self.assertFloatEqual(obs['p_value'], exp['p_value'])
-
-    def test_call_incompatible_data(self):
-        """Should fail on incompatible mdmap/dm combo and bad perms."""
-        self.assertRaises(ValueError, self.anosim_small, -1)
-        self.anosim_small.DistanceMatrices = [self.single_ele_dm]
-        self.assertRaises(ValueError, self.anosim_small)
-
-    def test_anosim_small(self):
-        """Test _anosim() on small dm."""
-        # These results were verified with R.
-        exp = 0.625
-        obs = self.anosim_small._anosim(self.small_group_map)
-        self.assertFloatEqual(obs, exp)
-
-    def test_anosim_small_ties(self):
-        """Test _anosim() on small dm with ties."""
-        # These results were verified with R.
-        exp = 0.25
-        obs = self.anosim_small_tie._anosim(self.small_group_map)
-        self.assertFloatEqual(obs, exp)
-
-    def test_remove_ties1(self):
-        """Test removal of ties. Should return [1.5,1.5]."""
-        result = self.anosim_small._remove_ties([1, 1], [1, 2])
-        self.assertEqual(result, [1.5, 1.5])
-
-    def test_remove_ties2(self):
-        """Should return [3.5,3.5,3.5,3.5,3.5,3.5]."""
-        result = self.anosim_small._remove_ties(
-            [1, 1, 1, 1, 1, 1], [1, 2, 3, 4, 5, 6])
-        self.assertEqual(result, [3.5, 3.5, 3.5, 3.5, 3.5, 3.5])
-
-    def test_remove_ties3(self):
-        """Should return [1,3.5,3.5,3.5,3.5,6]."""
-        result = self.anosim_small._remove_ties(
-            [1, 3, 3, 3, 3, 8], [1, 2, 3, 4, 5, 6])
-        self.assertEqual(result, [1, 3.5, 3.5, 3.5, 3.5, 6])
-
-    def test_remove_ties4(self):
-        """Should return [1,2,3,4]."""
-        result = self.anosim_small._remove_ties([1, 2, 3, 4], [1, 2, 3, 4])
-        self.assertEqual(result, [1, 2, 3, 4])
-
-    def test_remove_ties5(self):
-        """Should return [1,3,3,3,5.5,5.5,7]."""
-        result = self.anosim_small._remove_ties([1, 2, 2, 2, 3, 3, 5],
-                                                [1, 2, 3, 4, 5, 6, 7])
-        self.assertEqual(result, [1, 3, 3, 3, 5.5, 5.5, 7])
-
-    def test_remove_ties6(self):
-        """Should return [1.5,1.5,3.5,3.5]."""
-        result = self.anosim_small._remove_ties([1, 1, 2, 2], [1, 2, 3, 4])
-        self.assertEqual(result, [1.5, 1.5, 3.5, 3.5])
-
-    def test_get_adjusted_vals(self):
-        """Test computing adjusted ranks for ties."""
-        exp = [4, 4, 4]
-        obs = self.anosim_small._get_adjusted_vals([3, 4, 5], 0, 2)
-        self.assertEqual(obs, exp)
-
-    def test_compute_r1(self):
-        """Should return .625 for the R statistic on the small dm."""
-        sorted_rank = [1.0, 2.0, 3.5, 3.5, 5.0, 6.0]
-        sorted_group = [1.0, 0.0, 0.0, 1.0, 0.0, 0.0]
-        sorted_rank = array(sorted_rank)
-        sorted_group = array(sorted_group)
-        result = self.anosim_small._compute_r_value(
-            sorted_rank,
-            sorted_group,
-            4)
-        self.assertEqual(result, .625)
-
-    def test_anosim_p_test(self):
-        """p-value should be .5 for this test."""
-        nrs = NonRandomShuffler()
-        self.anosim_small.RandomFunction = nrs.permutation
-
-        exp = {'method_name': 'ANOSIM', 'p_value': 0.5, 'r_value': 0.625}
-        obs = self.anosim_small(3)
-
-        self.assertEqual(obs['method_name'], exp['method_name'])
-        self.assertFloatEqual(obs['r_value'], exp['r_value'])
-        self.assertFloatEqual(obs['p_value'], exp['p_value'])
-
-
-class PermanovaTests(TestHelper):
-
-    def setUp(self):
-        """Define some useful data to use in testing."""
-        super(PermanovaTests, self).setUp()
-
-        # Some distance matrices to help test Permanova.
-        self.distmtx_str = ["\tsam1\tsam2\tsam3\tsam4",
-                            "sam1\t0\t1\t5\t4",
-                            "sam2\t1\t0\t3\t2",
-                            "sam3\t5\t3\t0\t3",
-                            "sam4\t4\t2\t3\t0"]
-
-        self.distmtx = DistanceMatrix.parseDistanceMatrix(self.distmtx_str)
-        self.distmtx_samples = self.distmtx.SampleIds
-
-        self.distmtx_tie_str = ["\tsam1\tsam2\tsam3\tsam4",
-                                "sam1\t0\t1\t1\t4",
-                                "sam2\t1\t0\t3\t2",
-                                "sam3\t1\t3\t0\t3",
-                                "sam4\t4\t2\t3\t0"]
-        self.distmtx_tie = DistanceMatrix.parseDistanceMatrix(
-            self.distmtx_tie_str)
-        self.distmtx_tie_samples = self.distmtx_tie.SampleIds
-
-        # For testing with uneven group sizes.
-        self.distmtx_uneven_str = ["\tsam1\tsam2\tsam3\tsam4\tsam5",
-                                   "sam1\t0\t3\t7\t2\t1",
-                                   "sam2\t3\t0\t5\t4\t1",
-                                   "sam3\t7\t5\t0\t2\t6",
-                                   "sam4\t2\t4\t2\t0\t2",
-                                   "sam5\t1\t1\t6\t2\t0"]
-        self.distmtx_uneven = DistanceMatrix.parseDistanceMatrix(
-            self.distmtx_uneven_str)
-        self.distmtx_uneven_samples = self.distmtx_uneven.SampleIds
-
-        # Some group maps to help test Permanova, data_map can be used with
-        # distmtx and distmtx_tie while data_map_uneven can only be used
-        # with distmtx_uneven.
-        self.data_map_str = ["#SampleID\tBarcodeSequence\tLinkerPrimerSequence\
-                \tTreatment\tDOB\tDescription",
-                             "sam1\tAGCACGAGCCTA\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\
-                \tControl_mouse_I.D._354",
-                             "sam2\tAACTCGTCGATG\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\
-                \tControl_mouse_I.D._355",
-                             "sam3\tACAGACCACTCA\tYATGCTGCCTCCCGTAGGAGT\tFast\t20061126\
-                \tControl_mouse_I.D._356",
-                             "sam4\tACCAGCGACTAG\tYATGCTGCCTCCCGTAGGAGT\tFast\t20070314\
-                \tControl_mouse_I.D._481"]
-        self.data_map = MetadataMap.parseMetadataMap(self.data_map_str)
-
-        # For testing with uneven group sizes.
-        self.data_map_uneven_str = ["#SampleID\tBarcodeSequence\
-                \tLinkerPrimerSequence\tTreatment\tDOB\tDescription",
-                                    "sam1\tAGCACGAGCCTA\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\
-                \tControl_mouse_I.D._354",
-                                    "sam2\tAACTCGTCGATG\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\
-                \tControl_mouse_I.D._355",
-                                    "sam3\tACAGACCACTCA\tYATGCTGCCTCCCGTAGGAGT\tFast\t20061126\
-                \tControl_mouse_I.D._356",
-                                    "sam4\tACCAGCGACTAG\tYATGCTGCCTCCCGTAGGAGT\tAwesome\t20070314\
-                \tControl_mouse_I.D._481",
-                                    "sam5\tACCAGCGACTAG\tYATGCTGCCTCCCCTATADST\tAwesome\t202020\
-                \tcontrolmouseid"]
-        self.data_map_uneven = MetadataMap.parseMetadataMap(
-            self.data_map_uneven_str)
-
-        # Formatting the two data_maps to meet permanova requirements.
-        self.map = {}
-        for samp_id in self.data_map.SampleIds:
-            self.map[samp_id] = self.data_map.getCategoryValue(samp_id,
-                                                               'Treatment')
-        self.map_uneven = {}
-        for samp_id in self.data_map_uneven.SampleIds:
-            self.map_uneven[samp_id] = self.data_map_uneven.getCategoryValue(
-                samp_id, 'Treatment')
-
-        # Creating instances of Permanova to run the tests on.
-        self.permanova_plain = Permanova(self.data_map, self.distmtx,
-                                         'Treatment')
-        self.permanova_tie = Permanova(self.data_map, self.distmtx_tie,
-                                       'Treatment')
-        self.permanova_uneven = Permanova(self.data_map_uneven,
-                                          self.distmtx_uneven, 'Treatment')
-        self.permanova_overview = Permanova(self.overview_map,
-                                            self.overview_dm, 'Treatment')
-
-    def test_permanova1(self):
-        """permanova() should return 4.4."""
-        exp = 4.4
-        obs = self.permanova_plain._permanova(self.map)
-        self.assertEqual(obs, exp)
-
-    def test_permanova2(self):
-        """Should result in 2."""
-        exp = 2
-        obs = self.permanova_tie._permanova(self.map)
-        self.assertEqual(obs, exp)
-
-    def test_permanova3(self):
-        """Should result in 3.58462."""
-        exp = 3.58462
-        obs = self.permanova_uneven._permanova(self.map_uneven)
-        self.assertFloatEqual(obs, exp)
-
-    def test_compute_f1(self):
-        """Should return 4.4, testing just function."""
-        distances = [1, 5, 4, 3, 2, 3]
-        grouping = [0, -1, -1, -1, -1, 1]
-        distances = array(distances)
-        grouping = array(grouping)
-        result = self.permanova_plain._compute_f_value(
-            distances, grouping, 4, 2,
-            [2, 2])
-        self.assertEqual(result, 4.4)
-
-    def test_call_plain(self):
-        """Test __call__() on plain dm."""
-        exp = {'method_name': 'PERMANOVA', 'p_value': "?", 'f_value': 4.4}
-        obs = self.permanova_plain()
-
-        self.assertEqual(obs['method_name'], exp['method_name'])
-        self.assertFloatEqual(obs['f_value'], exp['f_value'])
-        self.assertCorrectPValue(0.28, 0.42, self.permanova_plain)
-
-    def test_call_tie(self):
-        """Test __call__() on dm with ties in ranks."""
-        exp = {'method_name': 'PERMANOVA', 'p_value': "?", 'f_value': 2}
-        obs = self.permanova_tie()
-
-        self.assertEqual(obs['method_name'], exp['method_name'])
-        self.assertFloatEqual(obs['f_value'], exp['f_value'])
-        self.assertCorrectPValue(0.56, 0.75, self.permanova_tie)
-
-    def test_call_uneven(self):
-        """Test __call__() on uneven group sizes with no permutations."""
-        exp = {'method_name': 'PERMANOVA', 'p_value': 1.0, 'f_value': 3.58462}
-        obs = self.permanova_uneven(0)
-
-        self.assertEqual(obs['method_name'], exp['method_name'])
-        self.assertFloatEqual(obs['f_value'], exp['f_value'])
-        self.assertFloatEqual(obs['p_value'], exp['p_value'])
-
-    def test_call_overview(self):
-        """Test __call__() on the overview dataset."""
-        exp = {'method_name': 'PERMANOVA', 'p_value': 0.039215686274509803,
-               'f_value': 2.2966506517077487}
-        obs = self.permanova_overview(50)
-
-        self.assertEqual(obs['method_name'], exp['method_name'])
-        self.assertFloatEqual(obs['f_value'], exp['f_value'])
-        self.assertCorrectPValue(0.005, 0.07, self.permanova_overview, 50)
-
-    def test_call_incompatible_data(self):
-        """Should fail on incompatible mdmap/dm combo and bad perms."""
-        self.assertRaises(ValueError, self.permanova_plain, -1)
-        self.permanova_plain.DistanceMatrices = [self.single_ele_dm]
-        self.assertRaises(ValueError, self.permanova_plain)
-
-
-class BestTests(TestHelper):
-
-    """Tests for the Best class."""
-
-    def setUp(self):
-        """Define some useful data to use in testing."""
-        super(BestTests, self).setUp()
-
-        self.bv_dm_88soils_str = ["\tMT2.141698\tCA1.141704\tBB2.141659\t"
-                                  "CO2.141657\tTL3.141709\tSN3.141650", "MT2.141698\t0.0\t"
-                                  "0.623818643706\t0.750015427505\t0.585201193913\t0.729023583672\t"
-                                  "0.622135587669", "CA1.141704\t0.623818643706\t0.0\t0.774881224555"
-                                  "\t0.649822398416\t0.777203137034\t0.629507320436", "BB2.141659\t"
-                                  "0.750015427505\t0.774881224555\t0.0\t0.688845424001\t0.567470311282"
-                                  "\t0.721707516043", "CO2.141657\t0.585201193913\t0.649822398416\t"
-                                  "0.688845424001\t0.0\t0.658853575764\t0.661223617505", "TL3.141709\t"
-                                  "0.729023583672\t0.777203137034\t0.567470311282\t0.658853575764\t0.0\t"
-                                  "0.711173405838", "SN3.141650\t0.622135587669\t0.629507320436\t"
-                                  "0.721707516043\t0.661223617505\t0.711173405838\t0.0"]
-        self.bv_dm_88soils = DistanceMatrix.parseDistanceMatrix(
-            self.bv_dm_88soils_str)
-
-        self.bv_map_88soils_str = ["#SampleId\tTOT_ORG_CARB\tSILT_CLAY\t"
-                                   "ELEVATION\tSOIL_MOISTURE_DEFICIT\tCARB_NITRO_RATIO\t"
-                                   "ANNUAL_SEASON_TEMP\tANNUAL_SEASON_PRECPT\tPH\tCMIN_RATE\tLONGITUDE\t"
-                                   "LATITUDE", "MT2.141698\t39.1\t35\t1000\t70\t23.087\t7\t450\t6.66\t"
-                                   "19.7\t-114\t46.8", "CA1.141704\t16.7\t73\t2003\t198\t13\t10.3\t400\t"
-                                   "7.27\t2.276\t-111.7666667\t36.05", "BB2.141659\t52.2\t44\t400\t-680\t"
-                                   "21.4\t6.1\t1200\t4.6\t2.223\t-68.1\t44.86666667", "CO2.141657\t18.1\t"
-                                   "24\t2400\t104\t31.8\t6.1\t350\t5.68\t9.223\t-105.3333333\t"
-                                   "40.58333333", "TL3.141709\t53.9\t52\t894\t-212\t24.6\t-9.3\t400\t"
-                                   "4.23\t16.456\t-149.5833333\t68.63333333", "SN3.141650\t16.6\t20\t"
-                                   "3000\t-252\t13.9\t3.6\t600\t5.74\t6.289\t-118.1666667\t36.45"]
-        self.bv_map_88soils = MetadataMap.parseMetadataMap(
-            self.bv_map_88soils_str)
-
-        self.cats = ['TOT_ORG_CARB', 'SILT_CLAY', 'ELEVATION',
-                     'SOIL_MOISTURE_DEFICIT', 'CARB_NITRO_RATIO',
-                     'ANNUAL_SEASON_TEMP', 'ANNUAL_SEASON_PRECPT', 'PH',
-                     'CMIN_RATE', 'LONGITUDE', 'LATITUDE']
-        self.best = Best(self.bv_dm_88soils, self.bv_map_88soils, self.cats)
-
-    def test_vector_dist(self):
-        """Test the _vector_dist helper method."""
-        v1 = [1, 4, 2]
-        v2 = [-1, 12, 4]
-
-        exp = 8.48528137424
-        obs = self.best._vector_dist(v1, v2)
-        self.assertFloatEqual(exp, obs)
-
-        v1 = [1, 2, 100, 4, 2]
-        v2 = [-1, 12, 4, 12, 99]
-
-        exp = 137.087563258
-        obs = self.best._vector_dist(v1, v2)
-        self.assertFloatEqual(exp, obs)
-
-    def test_make_cat_mat(self):
-        """Test the _make_cat_mat method."""
-        exp = [('6.66', '46.8'),
-               ('7.27', '36.05'),
-               ('4.6', '44.86666667'),
-               ('5.68', '40.58333333'),
-               ('4.23', '68.63333333'),
-               ('5.74', '36.45')]
-
-        obs = self.best._make_cat_mat(['PH', 'LONGITUDE', 'LATITUDE'], [1, 3])
-        self.assertEqual(exp, obs)
-
-        exp = [('6.66', '-114', '46.8'),
-               ('7.27', '-111.7666667', '36.05'),
-               ('4.6', '-68.1', '44.86666667'),
-               ('5.68', '-105.3333333', '40.58333333'),
-               ('4.23', '-149.5833333', '68.63333333'),
-               ('5.74', '-118.1666667', '36.45')]
-
-        obs = self.best._make_cat_mat(['PH', 'LONGITUDE', 'LATITUDE'],
-                                      [1, 2, 3])
-        self.assertEqual(exp, obs)
-
-    def test_derive_euclidean_dm(self):
-        """Test the derive_euclidean_dm method."""
-        cat_mat = [('6.66', '46.8'),
-                   ('7.27', '36.05'),
-                   ('4.6', '44.86666667'),
-                   ('5.68', '40.58333333'),
-                   ('4.23', '68.63333333'),
-                   ('5.74', '36.45')]
-
-        dm_lbls = ['MT2.141698', 'CA1.141704', 'BB2.141659',
-                   'CO2.141657', 'TL3.141709', 'SN3.141650']
-
-        mtx = [
-            [0.0, 10.7672930674, 2.82513322958, 6.29343661968,
-             21.9681438519, 10.3908084382],
-            [10.7672930674, 0.0, 9.21208506093, 4.80408275125,
-             32.7248408842, 1.58142340946],
-            [2.82513322958, 9.21208506093, 0.0, 4.41739114202,
-             23.7695465697, 8.49351975531],
-            [6.29343661968, 4.80408275125, 4.41739114202, 0.0,
-             28.0874527147, 4.13376879093],
-            [21.9681438519, 32.7248408842, 23.7695465697,
-             28.0874527147, 0.0, 32.2187374711],
-            [10.3908084382, 1.58142340946, 8.49351975531,
-             4.13376879093, 32.2187374711, 0.0]]
-
-        exp = DistanceMatrix(asarray(mtx), dm_lbls, dm_lbls)
-        obs = self.best._derive_euclidean_dm(cat_mat,
-                                             self.bv_dm_88soils.Size)
-
-    def test_call(self):
-        """Test the overall functionality of Best."""
-        exp = {'method_name': 'BEST',
-               'rho_vals': [
-                   (0.75, '8'),
-                   (0.5, '1,11'),
-                   (0.5107142857142857, '1,8,11'),
-                   (0.47857142857142854, '1,6,8,11'),
-                   (0.46071428571428574, '1,5,6,8,9'),
-                   (0.4357142857142857, '1,5,6,8,9,11'),
-                   (0.38928571428571423, '1,2,4,5,6,7,8'),
-                   (0.38928571428571423, '1,2,4,5,6,7,8,9'),
-                   (0.38928571428571423, '1,2,4,5,6,7,8,9,10'),
-                   (0.38928571428571423, '1,2,4,5,6,7,8,9,10,11'),
-                   (0.16785714285714282, '1,2,3,4,5,6,7,8,9,10,11')],
-               'num_vars': 11,
-               'vars': ['TOT_ORG_CARB = 1', 'SILT_CLAY = 2',
-                        'ELEVATION = 3', 'SOIL_MOISTURE_DEFICIT = 4',
-                        'CARB_NITRO_RATIO = 5', 'ANNUAL_SEASON_TEMP = 6',
-                        'ANNUAL_SEASON_PRECPT = 7', 'PH = 8',
-                        'CMIN_RATE = 9', 'LONGITUDE = 10',
-                        'LATITUDE = 11']}
-
-        # the difference caused by the new spearmans_rho function is in the
-        # final decimal place of the rho_vals. its not a significant difference,
-        # but the test is failing because we are doing a dict comparison for
-        # float values.
-        obs = self.best()
-        self.assertEqual(exp['method_name'], obs['method_name'])
-        self.assertEqual(exp['num_vars'], obs['num_vars'])
-        self.assertEqual(exp['vars'], obs['vars'])
-        for i, j in zip(exp['rho_vals'], obs['rho_vals']):
-            self.assertFloatEqual(i[0], j[0])
-            self.assertEqual(i[1], j[1])
-        # check that the keys are the same since we have checked all the values
-        # we expect to be there are the same
-        self.assertTrue(set(exp.keys()) == set(obs.keys()))
-
-
 class MantelCorrelogramTests(TestHelper):
-
     """Tests for the MantelCorrelogram class."""
 
     def setUp(self):
@@ -1127,10 +536,8 @@ class MantelCorrelogramTests(TestHelper):
 
         # Smallest test case: 3x3 matrices.
         ids = ['s1', 's2', 's3']
-        dm1 = DistanceMatrix(array([[0, 1, 2], [1, 0, 3], [2, 3, 0]]),
-                             ids, ids)
-        dm2 = DistanceMatrix(array([[0, 2, 5], [2, 0, 8], [5, 8, 0]]),
-                             ids, ids)
+        dm1 = DistanceMatrix(array([[0, 1, 2], [1, 0, 3], [2, 3, 0]]), ids)
+        dm2 = DistanceMatrix(array([[0, 2, 5], [2, 0, 8], [5, 8, 0]]), ids)
 
         self.small_mc = MantelCorrelogram(dm1, dm2)
 
@@ -1185,14 +592,14 @@ class MantelCorrelogramTests(TestHelper):
         exp_class_index = [0.5757052546507142, 0.60590471266814283,
                            0.63610417068557146, 0.66630362870299997, 0.69650308672042849,
                            0.72670254473785723, 0.75690200275528574]
-        self.assertFloatEqual(obs['class_index'], exp_class_index)
+        assert_almost_equal(obs['class_index'], exp_class_index)
 
         exp_num_dist = [12, 6, 8, 10, 12, 16, 8]
         self.assertEqual(obs['num_dist'], exp_num_dist)
 
         exp_mantel_r = [0.73244729118260765, 0.31157641757444593,
                         0.17627427296718071, None, None, None, None]
-        self.assertFloatEqual(obs['mantel_r'], exp_mantel_r)
+        self.compare_multiple_level_array(obs['mantel_r'], exp_mantel_r)
 
         # Test matplotlib Figure for a sane state.
         obs_fig = obs['correlogram_plot']
@@ -1200,10 +607,10 @@ class MantelCorrelogramTests(TestHelper):
         self.assertEqual(obs_ax.get_title(), "Mantel Correlogram")
         self.assertEqual(obs_ax.get_xlabel(), "Distance class index")
         self.assertEqual(obs_ax.get_ylabel(), "Mantel correlation statistic")
-        self.assertFloatEqual(obs_ax.get_xticks(), [0.57, 0.58, 0.59, 0.6,
-                                                    0.61, 0.62, 0.63, 0.64, 0.65])
-        self.assertFloatEqual(obs_ax.get_yticks(), [0.1, 0.2, 0.3, 0.4, 0.5,
-                                                    0.6, 0.7, 0.8, 0.9])
+        assert_almost_equal(obs_ax.get_xticks(), [0.57, 0.58, 0.59, 0.6,
+                                                  0.61, 0.62, 0.63, 0.64, 0.65])
+        assert_almost_equal(obs_ax.get_yticks(), [0.1, 0.2, 0.3, 0.4, 0.5,
+                                                  0.6, 0.7, 0.8, 0.9])
 
         # Test p-values and corrected p-values.
         found_match = False
@@ -1213,11 +620,11 @@ class MantelCorrelogramTests(TestHelper):
             corr_p_vals = obs['mantel_p_corr']
             self.assertEqual(len(p_vals), 7)
             self.assertEqual(p_vals[3:], [None, None, None, None])
-            self.assertIsProb(p_vals[0])
-            self.assertIsProb(p_vals[1])
-            self.assertIsProb(p_vals[2])
-            self.assertFloatEqual(corr_p_vals,
-                                  [p_val * 3 if p_val is not None else None for p_val in p_vals])
+            self.assertTrue(0.0 <= p_vals[0] <= 1.0)
+            self.assertTrue(0.0 <= p_vals[1] <= 1.0)
+            self.assertTrue(0.0 <= p_vals[2] <= 1.0)
+            self.compare_multiple_level_array(corr_p_vals,
+                                              [p_val * 3 if p_val is not None else None for p_val in p_vals])
 
             if (p_vals[0] >= 0 and p_vals[0] <= 0.01 and p_vals[1] > 0.01 and
                     p_vals[1] <= 0.1 and p_vals[2] > 0.1 and p_vals[2] <= 0.5):
@@ -1235,13 +642,13 @@ class MantelCorrelogramTests(TestHelper):
         self.assertEqual(obs['method_name'], exp_method_name)
 
         exp_class_index = [3.0, 5.0, 7.0]
-        self.assertFloatEqual(obs['class_index'], exp_class_index)
+        assert_almost_equal(obs['class_index'], exp_class_index)
 
         exp_num_dist = [2, 2, 2]
         self.assertEqual(obs['num_dist'], exp_num_dist)
 
         exp_mantel_r = [0.86602540378443871, None, None]
-        self.assertFloatEqual(obs['mantel_r'], exp_mantel_r)
+        self.compare_multiple_level_array(obs['mantel_r'], exp_mantel_r)
 
         # Test matplotlib Figure for a sane state.
         obs_fig = obs['correlogram_plot']
@@ -1249,10 +656,10 @@ class MantelCorrelogramTests(TestHelper):
         self.assertEqual(obs_ax.get_title(), "Mantel Correlogram")
         self.assertEqual(obs_ax.get_xlabel(), "Distance class index")
         self.assertEqual(obs_ax.get_ylabel(), "Mantel correlation statistic")
-        self.assertFloatEqual(obs_ax.get_xticks(), [2.85, 2.9, 2.95, 3., 3.05,
-                                                    3.1, 3.15, 3.2])
-        self.assertFloatEqual(obs_ax.get_yticks(), [0.82, 0.83, 0.84, 0.85,
-                                                    0.86, 0.87, 0.88, 0.89, 0.9, 0.91])
+        assert_almost_equal(obs_ax.get_xticks(), [2.85, 2.9, 2.95, 3., 3.05,
+                                                  3.1, 3.15, 3.2])
+        assert_almost_equal(obs_ax.get_yticks(), [0.82, 0.83, 0.84, 0.85,
+                                                  0.86, 0.87, 0.88, 0.89, 0.9, 0.91])
 
         # Test p-values and corrected p-values.
         found_match = False
@@ -1262,8 +669,8 @@ class MantelCorrelogramTests(TestHelper):
             corr_p_vals = obs['mantel_p_corr']
             self.assertEqual(len(p_vals), 3)
             self.assertEqual(p_vals[1:], [None, None])
-            self.assertIsProb(p_vals[0])
-            self.assertFloatEqual(corr_p_vals, p_vals)
+            self.assertTrue(0.0 <= p_vals[0] <= 1.0)
+            self.compare_multiple_level_array(corr_p_vals, p_vals)
 
             if p_vals[0] >= 0 and p_vals[0] <= 0.5:
                 found_match = True
@@ -1276,7 +683,7 @@ class MantelCorrelogramTests(TestHelper):
                [3.0, 5.0, 7.0])
         obs = self.small_mc._find_distance_classes(
             self.small_mc.DistanceMatrices[1], 3)
-        self.assertFloatEqual(obs, exp)
+        self.compare_multiple_level_array(obs, exp)
 
         exp = (array([[-1, 1, 2, 0, 0, 5, 7, 4, 6],
                       [1, -1, 0, 2, 3, 6, 6, 6, 4],
@@ -1291,7 +698,7 @@ class MantelCorrelogramTests(TestHelper):
                 0.70594042, 0.73236494, 0.75878947])
         obs = self.mc._find_distance_classes(
             self.mc.DistanceMatrices[1], 8)
-        self.assertFloatEqual(obs, exp)
+        self.compare_multiple_level_array(obs, exp)
 
     def test_find_distance_classes_variable_size_bins(self):
         """Test finding distance classes with variable-size bins."""
@@ -1299,27 +706,27 @@ class MantelCorrelogramTests(TestHelper):
         exp = (array([[-1, 0, 0], [0, -1, 0], [0, 0, -1]]), [5.0])
         obs = self.small_mc_var_bins._find_distance_classes(
             self.small_mc_var_bins.DistanceMatrices[1], 1)
-        self.assertFloatEqual(obs, exp)
+        self.compare_multiple_level_array(obs, exp)
 
         # Multiple distance classes (even #).
         exp = (array([[-1, 0, 0], [0, -1, 1], [0, 1, -1]]), [3.5, 6.5])
         obs = self.small_mc_var_bins._find_distance_classes(
             self.small_mc_var_bins.DistanceMatrices[1], 2)
-        self.assertFloatEqual(obs, exp)
+        self.compare_multiple_level_array(obs, exp)
 
         # Multiple distance classes (odd #).
         exp = (array([[-1, 0, 1], [0, -1, 2], [1, 2, -1]]),
                [2.0, 3.5, 6.5])
         obs = self.small_mc_var_bins._find_distance_classes(
             self.small_mc_var_bins.DistanceMatrices[1], 3)
-        self.assertFloatEqual(obs, exp)
+        self.compare_multiple_level_array(obs, exp)
 
         # More classes than distances.
         exp = (array([[-1, 0, 1], [0, -1, 2], [1, 2, -1]]),
                [2.0, 3.5, 6.5, 8])
         obs = self.small_mc_var_bins._find_distance_classes(
             self.small_mc_var_bins.DistanceMatrices[1], 4)
-        self.assertFloatEqual(obs, exp)
+        self.compare_multiple_level_array(obs, exp)
 
     def test_find_distance_classes_invalid_num_classes(self):
         """Test finding the distance classes for a bad number of classes."""
@@ -1357,19 +764,19 @@ class MantelCorrelogramTests(TestHelper):
         """Test finding equal-spaced breakpoints in a range."""
         exp = [-2.2204460492503131e-16, 1.0, 2.0, 3.0, 4.0, 5.0]
         obs = self.mc._find_break_points(0, 5, 5)
-        self.assertFloatEqual(obs, exp)
+        assert_almost_equal(obs, exp)
 
         exp = [-2.0, -1.66666666667, -1.33333333333, -1.0]
         obs = self.mc._find_break_points(-2, -1, 3)
-        self.assertFloatEqual(obs, exp)
+        assert_almost_equal(obs, exp)
 
         exp = [-1.0, -0.5, 0.0, 0.5, 1.0]
         obs = self.mc._find_break_points(-1, 1, 4)
-        self.assertFloatEqual(obs, exp)
+        assert_almost_equal(obs, exp)
 
         exp = [-1.0, 1.0]
         obs = self.mc._find_break_points(-1, 1, 1)
-        self.assertFloatEqual(obs, exp)
+        assert_almost_equal(obs, exp)
 
     def test_find_break_points_invalid_range(self):
         """Test finding breakpoints on an invalid range."""
@@ -1385,7 +792,7 @@ class MantelCorrelogramTests(TestHelper):
         """Test p-value correction for a small list of p-values."""
         exp = [0.003, 0.006, 0.003]
         obs = self.mc._correct_p_values([0.001, 0.002, 0.001])
-        self.assertFloatEqual(obs, exp)
+        assert_almost_equal(obs, exp)
 
     def test_correct_p_values_all_None(self):
         """Test p-value correction for all None p-values."""
@@ -1397,28 +804,28 @@ class MantelCorrelogramTests(TestHelper):
         """Test p-value correction for mixture of None and valid p-values."""
         exp = [None, 0.008, 0.01, None]
         obs = self.mc._correct_p_values([None, 0.004, 0.005, None])
-        self.assertFloatEqual(obs, exp)
+        self.assertEqual(obs, exp)
 
     def test_correct_p_values_no_change(self):
         """Test p-value correction where none is needed."""
         exp = [None, 0.008]
         obs = self.mc._correct_p_values([None, 0.008])
-        self.assertFloatEqual(obs, exp)
+        self.assertEqual(obs, exp)
         exp = [0.007]
         obs = self.mc._correct_p_values([0.007])
-        self.assertFloatEqual(obs, exp)
+        assert_almost_equal(obs, exp)
 
     def test_correct_p_values_large_correction(self):
         """Test p-value correction that exceeds 1.0."""
         exp = [1, None, 0.03, 0.03]
         obs = self.mc._correct_p_values([0.5, None, 0.01, 0.01])
-        self.assertFloatEqual(obs, exp)
+        self.compare_multiple_level_array(obs, exp)
 
     def test_correct_p_values_empty(self):
         """Test p-value correction on empty list."""
         exp = []
         obs = self.mc._correct_p_values([])
-        self.assertFloatEqual(obs, exp)
+        assert_almost_equal(obs, exp)
 
     def test_generate_correlogram(self):
         """Test creating a correlogram plot."""
@@ -1428,8 +835,8 @@ class MantelCorrelogramTests(TestHelper):
         self.assertEqual(obs_ax.get_title(), "Mantel Correlogram")
         self.assertEqual(obs_ax.get_xlabel(), "Distance class index")
         self.assertEqual(obs_ax.get_ylabel(), "Mantel correlation statistic")
-        self.assertFloatEqual(obs_ax.get_xticks(), [0., 0.5, 1., 1.5, 2.])
-        self.assertFloatEqual(obs_ax.get_yticks(), [-1., -0.5, 0., 0.5, 1.])
+        assert_almost_equal(obs_ax.get_xticks(), [0., 0.5, 1., 1.5, 2.])
+        assert_almost_equal(obs_ax.get_yticks(), [-1., -0.5, 0., 0.5, 1.])
 
     def test_generate_correlogram_empty(self):
         """Test creating a correlogram plot with no data."""
@@ -1452,8 +859,8 @@ class MantelTests(TestHelper):
         sample_ids = ["S1", "S2", "S3"]
         m1 = array([[0, 1, 2], [1, 0, 3], [2, 3, 0]])
         m2 = array([[0, 2, 7], [2, 0, 6], [7, 6, 0]])
-        m1_dm = DistanceMatrix(m1, sample_ids, sample_ids)
-        m2_dm = DistanceMatrix(m2, sample_ids, sample_ids)
+        m1_dm = DistanceMatrix(m1, sample_ids)
+        m2_dm = DistanceMatrix(m2, sample_ids)
 
         self.small_mantel = Mantel(m1_dm, m2_dm, 'less')
         self.overview_mantel = Mantel(self.overview_dm, self.overview_dm,
@@ -1503,8 +910,8 @@ class MantelTests(TestHelper):
         obs_tail_type = overview_mantel_output['tail_type']
 
         self.assertEqual(expected_method_name, obs_method_name)
-        self.assertFloatEqual(expected_r_value, obs_r_value)
-        self.assertFloatEqual(expected_perm_stats_len, obs_perm_stats_len)
+        assert_almost_equal(expected_r_value, obs_r_value)
+        assert_almost_equal(expected_perm_stats_len, obs_perm_stats_len)
         self.assertEqual(expected_number_of_permutations, obs_num_permutations)
         self.assertEqual(expected_tail_type, obs_tail_type)
         self.assertCorrectPValue(0, 0.006, self.overview_mantel, 999)
@@ -1519,7 +926,7 @@ class MantelTests(TestHelper):
         self.assertEqual(results['method_name'], 'Mantel')
         self.assertEqual(results['num_perms'], 999)
         self.assertEqual(results['tail_type'], 'less')
-        self.assertFloatEqual(results['r_value'], 0.755928946018)
+        assert_almost_equal(results['r_value'], 0.755928946018)
         self.assertEqual(len(results['perm_stats']), 999)
         self.assertCorrectPValue(0.6, 1.0, self.small_mantel, 999)
 
@@ -1539,23 +946,18 @@ class PartialMantelTests(TestHelper):
 
         # Just a small matrix that is easy to edit and observe.
         smpl_ids = ['s1', 's2', 's3']
-        self.small_pm = PartialMantel(DistanceMatrix(array([[0, 1, 4],
-                                                            [1, 0, 3], [4, 3, 0]]), smpl_ids, smpl_ids),
-                                      DistanceMatrix(
-                                          array(
-                                              [[0, 2, 5], [2, 0, 8], [5, 8, 0]]), smpl_ids,
-                                          smpl_ids), DistanceMatrix(
-                                          array([[0, 9, 10], [9, 0, 2],
-                                                 [10, 2, 0]]), smpl_ids, smpl_ids))
+        self.small_pm = PartialMantel(
+            DistanceMatrix(array([[0, 1, 4], [1, 0, 3], [4, 3, 0]]), smpl_ids),
+            DistanceMatrix(array([[0, 2, 5], [2, 0, 8], [5, 8, 0]]), smpl_ids),
+            DistanceMatrix(array([[0, 9, 10], [9, 0, 2], [10, 2, 0]]),
+                           smpl_ids))
 
-        self.small_pm_diff = PartialMantel(DistanceMatrix(array([[0, 1, 4],
-                                                                 [1, 0, 3], [4, 3, 0]]), smpl_ids, smpl_ids),
-                                           DistanceMatrix(
-                                               array(
-                                                   [[0, 20, 51], [20, 0, 888], [51, 888, 0]]),
-                                               smpl_ids, smpl_ids), DistanceMatrix(
-                                               array([[0, 9, 10], [9, 0, 2],
-                                                      [10, 2, 0]]), smpl_ids, smpl_ids))
+        self.small_pm_diff = PartialMantel(
+            DistanceMatrix(array([[0, 1, 4], [1, 0, 3], [4, 3, 0]]), smpl_ids),
+            DistanceMatrix(array([[0, 20, 51], [20, 0, 888], [51, 888, 0]]),
+                           smpl_ids),
+            DistanceMatrix(array([[0, 9, 10], [9, 0, 2], [10, 2, 0]]),
+                           smpl_ids))
 
         smpl_ids = ['s1', 's2', 's3', 's4', 's5']
         self.small_pm_diff2 = PartialMantel(
@@ -1563,17 +965,17 @@ class PartialMantelTests(TestHelper):
                                   [1, 0, 1.5, 1.6, 1.7],
                                   [2, 1.5, 0, 0.8, 1.9],
                                   [3, 1.6, 0.8, 0, 1.0],
-                                  [1.4, 1.7, 1.9, 1.0, 0]]), smpl_ids, smpl_ids),
+                                  [1.4, 1.7, 1.9, 1.0, 0]]), smpl_ids),
             DistanceMatrix(array([[0, 1, 2, 3, 4.1],
                                   [1, 0, 5, 6, 7],
                                   [2, 5, 0, 8, 9],
                                   [3, 6, 8, 0, 10],
-                                  [4.1, 7, 9, 10, 0]]), smpl_ids, smpl_ids),
+                                  [4.1, 7, 9, 10, 0]]), smpl_ids),
             DistanceMatrix(array([[0, 1, 2, 3, 4],
                                   [1, 0, 5, 6, 7],
                                   [2, 5, 0, 8, 9.1],
                                   [3, 6, 8, 0, 10],
-                                  [4, 7, 9.1, 10, 0]]), smpl_ids, smpl_ids))
+                                  [4, 7, 9.1, 10, 0]]), smpl_ids))
 
     def test_DistanceMatrices_setter(self):
         """Test setting matrices using a valid number of distance matrices."""
@@ -1593,16 +995,6 @@ class PartialMantelTests(TestHelper):
         self.assertRaises(ValueError, setattr, self.pm, 'DistanceMatrices',
                           [self.single_ele_dm, self.single_ele_dm, self.single_ele_dm])
 
-    def test_call(self):
-        """Test running partial Mantel analysis on valid input."""
-        obs = self.pm()
-        exp_method_name = 'Partial Mantel'
-        exp_mantel_r = 0.49999999999999989
-
-        self.assertEqual(obs['method_name'], exp_method_name)
-        self.assertFloatEqual(obs['mantel_r'], exp_mantel_r)
-        self.assertCorrectPValue(0.001, 0.01, self.pm, p_val_key='mantel_p')
-
     def test_call_small(self):
         """Test the running of partial Mantel analysis on small input."""
         obs = self.small_pm()
@@ -1610,18 +1002,18 @@ class PartialMantelTests(TestHelper):
         self.assertEqual(obs['method_name'], exp_method_name)
 
         exp_mantel_r = 0.99999999999999944
-        self.assertFloatEqual(obs['mantel_r'], exp_mantel_r)
+        assert_almost_equal(obs['mantel_r'], exp_mantel_r)
         # We're not testing that this p-value falls between a certain range
         # because this test has poor stability across platforms/numpy
         # configurations. Just make sure the p-value is between 0 and 1.
-        self.assertIsProb(obs['mantel_p'])
+        self.assertTrue(0.0 <= obs['mantel_p'] <= 1.0)
 
         obs = self.small_pm_diff()
         exp_method_name = 'Partial Mantel'
         self.assertEqual(obs['method_name'], exp_method_name)
 
         exp_mantel_r = 0.99999999999999734
-        self.assertFloatEqual(obs['mantel_r'], exp_mantel_r)
+        assert_almost_equal(obs['mantel_r'], exp_mantel_r)
         self.assertCorrectPValue(0.25, 0.4, self.small_pm_diff,
                                  p_val_key='mantel_p')
 
@@ -1630,12 +1022,12 @@ class PartialMantelTests(TestHelper):
         self.assertEqual(obs['method_name'], exp_method_name)
 
         exp_mantel_r = -0.350624881409
-        self.assertFloatEqual(obs['mantel_r'], exp_mantel_r)
+        assert_almost_equal(obs['mantel_r'], exp_mantel_r)
         self.assertCorrectPValue(0.8, 1.0, self.small_pm_diff2,
                                  p_val_key='mantel_p')
 
 
-class TopLevelTests(TestCase):
+class TopLevelTests(TestHelper):
 
     def setUp(self):
         pass
@@ -1651,13 +1043,13 @@ class TopLevelTests(TestCase):
         expected_output = [1.9, 2.8, 3.25, 5.5, 7.75, 7.93]
         list_of_quantiles = [0.1, 0.2, 0.25, 0.5, 0.75, 0.77]
         output = quantile(sample_data, list_of_quantiles)
-        self.assertFloatEqual(expected_output, output)
+        assert_almost_equal(expected_output, output)
 
         sample_data = array([42, 32, 24, 57, 15, 34, 83, 24, 60, 67, 55, 17,
                              83, 17, 80, 65, 14, 34, 39, 53])
         list_of_quantiles = [0.5]
         output = quantile(sample_data, list_of_quantiles)
-        self.assertFloatEqual(output, median(sample_data))
+        assert_almost_equal(output, median(sample_data))
 
         # quantiles must be between [0, 1]
         with self.assertRaises(AssertionError):
@@ -1675,16 +1067,16 @@ class TopLevelTests(TestCase):
         """checks for correct quantiles according to R. type 7 algorithm"""
         # regular cases
         sample_data = array(range(25, 42))
-        self.assertFloatEqual(_quantile(sample_data, 0.5), median(sample_data))
+        assert_almost_equal(_quantile(sample_data, 0.5), median(sample_data))
 
         # sorted data is assumed for this function
         sample_data = sorted(
             array([0.17483293, 0.99891939, 0.81377467, 0.8137437,
                    0.51990174, 0.35521497, 0.98751461]))
-        self.assertFloatEqual(_quantile(sample_data, 0.10), 0.283062154)
+        assert_almost_equal(_quantile(sample_data, 0.10), 0.283062154)
 
 
-class PairedDifferenceTests(TestCase):
+class PairedDifferenceTests(TestHelper):
 
     def setUp(self):
         self.personal_ids_to_state_values1 = \
@@ -1706,12 +1098,10 @@ class PairedDifferenceTests(TestCase):
         self.files_to_remove = []
         self.dirs_to_remove = []
         tmp_dir = get_qiime_temp_dir()
-        self.test_out = get_tmp_filename(tmp_dir=tmp_dir,
-                                         prefix='qiime_paired_diff_tests_',
-                                         suffix='',
-                                         result_constructor=str)
+        self.test_out = mkdtemp(dir=tmp_dir,
+                                prefix='qiime_paired_diff_tests_',
+                                suffix='')
         self.dirs_to_remove.append(self.test_out)
-        create_dir(self.test_out)
 
     def tearDown(self):
 
@@ -1734,19 +1124,17 @@ class PairedDifferenceTests(TestCase):
             ymin=0.0,
             ymax=1.0)
         self.assertTrue(exists(join(self.test_out,
-                        'paired_difference_comparisons.txt')))
+                                    'paired_difference_comparisons.txt')))
         self.assertTrue(
             exists(join(self.test_out, 'firmicutes-abundance.pdf')))
         self.assertTrue(
             exists(join(self.test_out, 'bacteroidetes-abundance.pdf')))
         # three output paths returned
         self.assertEqual(len(actual[0]), 5)
-        # expected t values returned
-        self.assertFloatEqual(actual[1]['firmicutes-abundance'][4], 1.645, 3)
-        self.assertFloatEqual(
-            actual[1]['bacteroidetes-abundance'][4],
-            -4.500,
-            3)
+        # expected t values returned, they should be less than (firmicutes) or
+        # greater (bacteroidetes) than 2
+        self.assertLess(abs(actual[1]['firmicutes-abundance'][4]), 2)
+        self.assertLess(2, abs(actual[1]['bacteroidetes-abundance'][4]))
 
     def test_paired_difference_analyses_biom_output(self):
         """paired_difference_analyses generates correct biom tables
@@ -1762,30 +1150,31 @@ class PairedDifferenceTests(TestCase):
         biom_table_fp = join(self.test_out, 'differences.biom')
         self.assertTrue(exists(biom_table_fp))
         self.assertTrue(exists(join(self.test_out, 'differences_sids.txt')))
-        table = parse_biom_table(open(biom_table_fp, 'U'))
-        self.assertEqualItems(table.SampleIds, ['subject1', 'subject2'])
-        self.assertEqualItems(table.ObservationIds,
+        with biom_open(biom_table_fp) as biom_file:
+            table = Table.from_hdf5(biom_file)
+        self.assertItemsEqual(table.ids(), ['subject1', 'subject2'])
+        self.assertItemsEqual(table.ids(axis='observation'),
                               ['firmicutes-abundance', 'bacteroidetes-abundance'])
-        self.assertFloatEqual(table
-                              [table.getObservationIndex(
-                                  'firmicutes-abundance')]
-                              [table.getSampleIndex('subject1')],
+        assert_almost_equal(table
+                              [(table.index('firmicutes-abundance',
+                                            axis='observation'),
+                               table.index('subject1', axis='sample'))],
                               0.1, 2)
-        self.assertFloatEqual(table
-                              [table.getObservationIndex(
-                                  'bacteroidetes-abundance')]
-                              [table.getSampleIndex('subject1')],
-                              -0.1, 2)
-        self.assertFloatEqual(table
-                              [table.getObservationIndex(
-                                  'firmicutes-abundance')]
-                              [table.getSampleIndex('subject2')],
-                              0.41, 2)
-        self.assertFloatEqual(table
-                              [table.getObservationIndex(
-                                  'bacteroidetes-abundance')]
-                              [table.getSampleIndex('subject2')],
+        assert_almost_equal(table
+                              [(table.index('bacteroidetes-abundance',
+                                            axis='observation'),
+                              table.index('subject1', axis='sample'))],
                               -0.07, 2)
+        assert_almost_equal(table
+                              [(table.index('firmicutes-abundance',
+                                            axis='observation'),
+                              table.index('subject2', axis='sample'))],
+                              0.41, 2)
+        assert_almost_equal(table
+                              [(table.index('bacteroidetes-abundance',
+                                            axis='observation'),
+                              table.index('subject2', axis='sample'))],
+                              -0.10, 2)
 
         # missing data should raise ValueError
         self.assertRaises(ValueError, paired_difference_analyses,
@@ -1810,19 +1199,17 @@ class PairedDifferenceTests(TestCase):
             ymin=None,
             ymax=None)
         self.assertTrue(exists(join(self.test_out,
-                        'paired_difference_comparisons.txt')))
+                                    'paired_difference_comparisons.txt')))
         self.assertTrue(
             exists(join(self.test_out, 'firmicutes-abundance.pdf')))
         self.assertTrue(
             exists(join(self.test_out, 'bacteroidetes-abundance.pdf')))
         # three output paths returned
         self.assertEqual(len(actual[0]), 5)
-        # expected t values returned
-        self.assertFloatEqual(actual[1]['firmicutes-abundance'][4], 1.645, 3)
-        self.assertFloatEqual(
-            actual[1]['bacteroidetes-abundance'][4],
-            -4.500,
-            3)
+        # expected t values returned, they should be less than (firmicutes) or
+        # greater (bacteroidetes) than 2
+        self.assertLess(0, actual[1]['firmicutes-abundance'][4])
+        self.assertLess(actual[1]['bacteroidetes-abundance'][4], 0)
 
     def test_paired_difference_analyses_analysis_cat_subset(self):
         """paired_difference_analyses fns w a subset of analysis categories
@@ -1835,7 +1222,7 @@ class PairedDifferenceTests(TestCase):
             ymin=0.0,
             ymax=1.0)
         self.assertTrue(exists(join(self.test_out,
-                        'paired_difference_comparisons.txt')))
+                                    'paired_difference_comparisons.txt')))
         self.assertTrue(
             exists(join(self.test_out, 'firmicutes-abundance.pdf')))
         self.assertFalse(
@@ -1843,7 +1230,1203 @@ class PairedDifferenceTests(TestCase):
         # three output paths returned
         self.assertEqual(len(actual[0]), 4)
         # expected t values returned
-        self.assertFloatEqual(actual[1]['firmicutes-abundance'][4], 1.645, 3)
+        assert_almost_equal(actual[1]['firmicutes-abundance'][4], 1.645, 3)
+
+
+class TestsHelper(TestCase):
+
+    """Class with utility methods useful for other tests."""
+
+    # How many times a p-value should be tested to fall in a given range
+    # before failing the test.
+    p_val_tests = 20
+
+    def assertCorrectPValue(self, exp_min, exp_max, fn, args=None,
+                            kwargs=None, p_val_idx=0):
+        """Tests that the stochastic p-value falls in the specified range.
+
+        Performs the test self.p_val_tests times and fails if the observed
+        p-value does not fall into the specified range at least once. Each
+        p-value is also tested that it falls in the range 0.0 to 1.0.
+
+        This method assumes that fn is callable, and will unpack and pass args
+        and kwargs to fn if they are provided. It also assumes that fn returns
+        a single value (the p-value to be tested) or a tuple of results (any
+        length greater than or equal to 1), with the p-value at position
+        p_val_idx.
+
+        This is primarily used for testing the Mantel and correlation_test
+        functions.
+        """
+
+        found_match = False
+        for i in range(self.p_val_tests):
+            if args is not None and kwargs is not None:
+                obs = fn(*args, **kwargs)
+            elif args is not None:
+                obs = fn(*args)
+            elif kwargs is not None:
+                obs = fn(**kwargs)
+            else:
+                obs = fn()
+
+            try:
+                p_val = float(obs)
+            except TypeError:
+                p_val = obs[p_val_idx]
+            self.assertTrue(0.0 <= p_val <= 1.0)
+            if p_val >= exp_min and p_val <= exp_max:
+                found_match = True
+                break
+        self.assertTrue(found_match)
+
+
+class TestsTests(TestCase):
+
+    """Tests miscellaneous functions."""
+
+    def test_tail(self):
+        """tail should return x/2 if test is true; 1-(x/2) otherwise"""
+        assert_allclose(tail(0.25, 'a' == 'a'), 0.25 / 2)
+        assert_allclose(tail(0.25, 'a' != 'a'), 1 - (0.25 / 2))
+
+    def test_fisher(self):
+        """fisher results should match p 795 Sokal and Rohlf"""
+        assert_allclose(fisher([0.073, 0.086, 0.10, 0.080, 0.060]),
+                        0.0045957946540917905, atol=10e-7)
+
+    def test_permute_2d(self):
+        """permute_2d permutes rows and cols of a matrix."""
+        a = reshape(arange(9), (3, 3))
+        assert_allclose(permute_2d(a, [0, 1, 2]), a)
+        assert_allclose(permute_2d(a, [2, 1, 0]),
+                        array([[8, 7, 6], [5, 4, 3],
+                               [2, 1, 0]]))
+        assert_allclose(permute_2d(a, [1, 2, 0]),
+                        array([[4, 5, 3], [7, 8, 6],
+                               [1, 2, 0]]))
+
+
+class GTests(TestCase):
+
+    """Tests implementation of the G tests for fit and independence."""
+
+    def test_G_2_by_2_2tailed_equal(self):
+        """G_2_by_2 should return 0 if all cell counts are equal"""
+        assert_allclose(0, G_2_by_2(1, 1, 1, 1, False, False)[0])
+        assert_allclose(0, G_2_by_2(100, 100, 100, 100, False,
+                                    False)[0])
+        assert_allclose(0, G_2_by_2(100, 100, 100, 100, True,
+                                    False)[0])
+
+    def test_G_2_by_2_bad_data(self):
+        """G_2_by_2 should raise ValueError if any counts are negative"""
+        self.assertRaises(ValueError, G_2_by_2, 1, -1, 1, 1)
+
+    def test_G_2_by_2_2tailed_examples(self):
+        """G_2_by_2 values should match examples in Sokal & Rohlf"""
+        # example from p 731, Sokal and Rohlf (1995)
+        # without correction
+        assert_allclose(G_2_by_2(12, 22, 16, 50, False, False)[0],
+                        1.33249, 0.0001)
+        assert_allclose(G_2_by_2(12, 22, 16, 50, False, False)[1],
+                        0.24836, 0.0001)
+        # with correction
+        assert_allclose(G_2_by_2(12, 22, 16, 50, True, False)[0],
+                        1.30277, 0.0001)
+        assert_allclose(G_2_by_2(12, 22, 16, 50, True, False)[1],
+                        0.25371, 0.0001)
+
+    def test_G_2_by_2_1tailed_examples(self):
+        """G_2_by_2 values should match values from codon_binding program"""
+        # first up...the famous arginine case
+        assert_allclose(G_2_by_2(36, 16, 38, 106), (29.111609, 0),
+                        atol=10e-7)
+        # then some other miscellaneous positive and negative values
+        assert_allclose(
+            G_2_by_2(0, 52, 12, 132), (-7.259930, 0.996474), atol=10e-7)
+        assert_allclose(
+            G_2_by_2(5, 47, 14, 130), (-0.000481, 0.508751), atol=10e-7)
+        assert_allclose(
+            G_2_by_2(5, 47, 36, 108), (-6.065167, 0.993106), atol=10e-7)
+
+    def test_g_fit(self):
+        """Test G fit is correct with and without Williams correction."""
+        # test with williams correction
+        data = [array(i) for i in [63, 31, 28, 12, 39, 16, 40, 12]]
+        exp_G = 69.030858949133162 / 1.00622406639
+        exp_p = 2.8277381487281706e-12
+        obs_G, obs_p = g_fit(data, williams=True)
+        assert_allclose(obs_G, exp_G)
+        assert_allclose(obs_p, exp_p, atol=1e-7)
+        # test with hand computed example and williams correction
+        data = [array([75, 65, 48]), array([200]), array([10, 250, 13,
+                                                          85])]
+        exp_G = 85.90859811005285 / 1.0018930430667
+        exp_p = 2.4012235241479195e-19
+        obs_G, obs_p = g_fit(data, williams=True)
+        assert_allclose(obs_G, exp_G)
+        assert_allclose(obs_p, exp_p, atol=1e-7)
+        # test without williams correction on another hand computed example
+        data = [array([10, 12, 15, 7]), array([15, 12, 17, 18]),
+                array([6, 9, 13])]
+        exp_G = 1.6610421781232
+        exp_p = 0.43582212499949591
+        obs_G, obs_p = g_fit(data, williams=False)
+        assert_allclose(obs_G, exp_G)
+        assert_allclose(obs_p, exp_p, atol=1e-7)
+
+    def test_williams_correction(self):
+        """Test that the Williams correction is correctly computed."""
+        n = 100
+        a = 10
+        G = 10.5783
+        exp = 10.387855973813421
+        assert_allclose(williams_correction(n, a, G), exp,
+                        rtol=1e-5)
+        # test with an example from Sokal and Rohlf pg 699
+        n = 241
+        a = 8
+        G = 8.82396
+        exp = 8.76938
+        assert_allclose(williams_correction(n, a, G), exp,
+                        rtol=1e-5)
+
+    def test_safe_sum_p_log_p(self):
+        """safe_sum_p_log_p should ignore zero elements, not raise error"""
+        m = array([2, 4, 0, 8])
+        self.assertEqual(safe_sum_p_log_p(m, 2), 2 * 1 + 4 * 2 + 8 * 3)
+
+
+class StatTests(TestsHelper):
+
+    """Tests that the t and z tests are implemented correctly"""
+
+    def setUp(self):
+        super(StatTests, self).setUp()
+
+        self.x = [7.33, 7.49, 7.27, 7.93, 7.56, 7.81, 7.46, 6.94, 7.49, 7.44,
+                  7.95, 7.47, 7.04, 7.10, 7.64]
+        self.y = [7.53, 7.70, 7.46, 8.21, 7.81, 8.01, 7.72, 7.13, 7.68, 7.66,
+                  8.11, 7.66, 7.20, 7.25, 7.79]
+
+    def test_t_paired_2tailed(self):
+        """t_paired should match values from Sokal & Rohlf p 353"""
+        x, y = self.x, self.y
+        # check value of t and the probability for 2-tailed
+        assert_allclose(t_paired(y, x)[0], 19.7203, 1e-4)
+        assert_allclose(t_paired(y, x)[1], 1.301439e-11, 1e-4)
+
+    def test_t_paired_no_variance(self):
+        """t_paired should return None if lists are invariant"""
+        x = [1, 1, 1]
+        y = [0, 0, 0]
+        assert_allclose(t_paired(x, x), (nan, nan))
+        assert_allclose(t_paired(x, y), (nan, nan))
+
+    def test_t_paired_1tailed(self):
+        """t_paired should match pre-calculated 1-tailed values"""
+        x, y = self.x, self.y
+        # check probability for 1-tailed low and high
+        assert_allclose(
+            t_paired(y, x, "low")[1], 1 - (1.301439e-11 / 2), 1e-4)
+        assert_allclose(
+            t_paired(x, y, "high")[1], 1 - (1.301439e-11 / 2), 1e-4)
+        assert_allclose(
+            t_paired(y, x, "high")[1], 1.301439e-11 / 2, 1e-4)
+        assert_allclose(
+            t_paired(x, y, "low")[1], 1.301439e-11 / 2, 1e-4)
+
+    def test_t_paired_specific_difference(self):
+        """t_paired should allow a specific difference to be passed"""
+        x, y = self.x, self.y
+        # difference is 0.2, so test should be non-significant if 0.2 passed
+        self.assertFalse(t_paired(y, x, exp_diff=0.2)[0] > 1e-10)
+        # same, except that reversing list order reverses sign of difference
+        self.assertFalse(t_paired(x, y, exp_diff=-0.2)[0] > 1e-10)
+        # check that there's no significant difference from the true mean
+        assert_allclose(
+            t_paired(y, x, exp_diff=0.2)[1], 1, 1e-4)
+
+    def test_t_paired_bad_data(self):
+        """t_paired should raise ValueError on lists of different lengths"""
+        self.assertRaises(ValueError, t_paired, self.y, [1, 2, 3])
+
+    def test_t_two_sample(self):
+        """t_two_sample should match example on p.225 of Sokal and Rohlf"""
+        I = array([7.2, 7.1, 9.1, 7.2, 7.3, 7.2, 7.5])
+        II = array([8.8, 7.5, 7.7, 7.6, 7.4, 6.7, 7.2])
+        assert_allclose(t_two_sample(I, II, 'two-sided'),
+                        (-0.1184, 0.45385 * 2),
+                        atol=10e-3)
+
+    def test_t_two_sample_no_variance(self):
+        """t_two_sample should properly handle lists that are invariant"""
+        # By default should return (None, None) to mimic R's t.test.
+        x = array([1, 1., 1])
+        y = array([0, 0, 0.0])
+        self.assertEqual(t_two_sample(x, x), (nan, nan))
+        self.assertEqual(t_two_sample(x, y), (nan, nan))
+
+        # Should still receive (nan, nan) if the lists have no variance and
+        # have the same single value.
+        self.assertEqual(t_two_sample(x, x), (nan, nan))
+        self.assertEqual(t_two_sample(x, [1, 1]), (nan, nan))
+
+    def test_t_one_sample(self):
+        """t_one_sample results should match those from R"""
+        x = array(range(-5, 5))
+        y = array(range(-1, 10))
+        assert_allclose(t_one_sample(x), (-0.5222, 0.6141), atol=10e-3)
+        assert_allclose(t_one_sample(y), (4, 0.002518), atol=10e-3)
+        # do some one-tailed tests as well
+        assert_allclose(t_one_sample(y, tails='low'), (4, 0.9987), atol=10e-3)
+        assert_allclose(
+            t_one_sample(y, tails='high'), (4, 0.001259), atol=10e-3)
+
+    def test_t_two_sample_switch(self):
+        """t_two_sample should call t_one_observation if 1 item in sample."""
+        sample = array([4.02, 3.88, 3.34, 3.87, 3.18])
+        x = array([3.02])
+        assert_allclose(t_two_sample(x, sample), (-1.5637254, 0.1929248))
+        assert_allclose(t_two_sample(sample, x), (-1.5637254, 0.1929248))
+
+        # can't do the test if both samples have single item
+        assert_allclose(t_two_sample(x, x), (nan, nan))
+
+        # Test special case if t=0.
+        assert_allclose(t_two_sample([2], [1, 2, 3]), (0.0, 1.0))
+        assert_allclose(t_two_sample([1, 2, 3], [2]), (0.0, 1.0))
+
+    def test_t_one_observation(self):
+        """t_one_observation should match p. 228 of Sokal and Rohlf"""
+        sample = array([4.02, 3.88, 3.34, 3.87, 3.18])
+        x = 3.02
+        # note that this differs after the 3rd decimal place from what's in
+        # the book, because Sokal and Rohlf round their intermediate steps...
+        assert_allclose(t_one_observation(x, sample), (-1.5637254, 0.1929248))
+
+    def test_t_one_observation_no_variance(self):
+        """t_one_observation should correctly handle an invariant list."""
+        sample = array([1.0, 1.0, 1.0])
+
+        assert_allclose(t_one_observation(1, sample), (nan, nan))
+        assert_allclose(t_one_observation(2, sample, exp_diff=3), (nan, nan))
+        assert_allclose(t_one_observation(2, sample, tails='low'), (nan, nan))
+
+    def test_mc_t_two_sample(self):
+        """Test gives correct results with valid input data."""
+        # Verified against R's t.test() and Deducer::perm.t.test().
+
+        # With numpy array as input.
+        exp = (-0.11858541225631833, 0.90756579317867436)
+        I = array([7.2, 7.1, 9.1, 7.2, 7.3, 7.2, 7.5])
+        II = array([8.8, 7.5, 7.7, 7.6, 7.4, 6.7, 7.2])
+        obs = mc_t_two_sample(I, II)
+        assert_allclose(obs[:2], exp)
+        self.assertEqual(len(obs[2]), 999)
+        self.assertCorrectPValue(0.8, 0.9, mc_t_two_sample, [I, II],
+                                 p_val_idx=3)
+
+        # With python list as input.
+        exp = (-0.11858541225631833, 0.90756579317867436)
+        I = [7.2, 7.1, 9.1, 7.2, 7.3, 7.2, 7.5]
+        II = [8.8, 7.5, 7.7, 7.6, 7.4, 6.7, 7.2]
+        obs = mc_t_two_sample(I, II)
+        assert_allclose(obs[:2], exp)
+        self.assertEqual(len(obs[2]), 999)
+        self.assertCorrectPValue(0.8, 0.9, mc_t_two_sample, [I, II],
+                                 p_val_idx=3)
+
+        exp = (-0.11858541225631833, 0.45378289658933718)
+        obs = mc_t_two_sample(I, II, tails='low')
+        assert_allclose(obs[:2], exp)
+        self.assertEqual(len(obs[2]), 999)
+        self.assertCorrectPValue(0.4, 0.47, mc_t_two_sample, [I, II],
+                                 {'tails': 'low'}, p_val_idx=3)
+
+        exp = (-0.11858541225631833, 0.54621710341066287)
+        obs = mc_t_two_sample(I, II, tails='high', permutations=99)
+        assert_allclose(obs[:2], exp)
+        self.assertEqual(len(obs[2]), 99)
+        self.assertCorrectPValue(0.4, 0.62, mc_t_two_sample, [I, II],
+                                 {'tails': 'high', 'permutations': 99},
+                                 p_val_idx=3)
+
+        exp = (-2.8855783649036986, 0.99315596652421401)
+        obs = mc_t_two_sample(I, II, tails='high',
+                              permutations=99, exp_diff=1)
+        assert_allclose(obs[:2], exp)
+        self.assertEqual(len(obs[2]), 99)
+        self.assertCorrectPValue(0.55, 0.99, mc_t_two_sample, [I, II],
+                                 {'tails': 'high', 'permutations': 99,
+                                  'exp_diff': 1}, p_val_idx=3)
+
+    def test_mc_t_two_sample_unbalanced_obs(self):
+        """Test gives correct results with unequal number of obs per sample."""
+        # Verified against R's t.test() and Deducer::perm.t.test().
+        exp = (-0.10302479888889175, 0.91979753020527177)
+        I = array([7.2, 7.1, 9.1, 7.2, 7.3, 7.2])
+        II = array([8.8, 7.5, 7.7, 7.6, 7.4, 6.7, 7.2])
+        obs = mc_t_two_sample(I, II)
+        assert_allclose(obs[:2], exp)
+        self.assertEqual(len(obs[2]), 999)
+        self.assertCorrectPValue(0.8, 0.9, mc_t_two_sample, [I, II],
+                                 p_val_idx=3)
+
+    def test_mc_t_two_sample_single_obs_sample(self):
+        """Test works correctly with one sample having a single observation."""
+        sample = array([4.02, 3.88, 3.34, 3.87, 3.18])
+        x = array([3.02])
+        exp = (-1.5637254, 0.1929248)
+        obs = mc_t_two_sample(x, sample)
+        assert_allclose(obs[:2], exp, atol=1e-6)
+        assert_allclose(len(obs[2]), 999)
+        self.assertTrue(0.0 <= obs[3] <= 1.0)
+
+        # Test the case where we can have no variance in the permuted lists.
+        x = array([1, 1, 2])
+        y = array([1])
+        exp = (-0.5, 0.666666666667)
+        obs = mc_t_two_sample(x, y)
+        assert_allclose(obs[:2], exp)
+        assert_allclose(len(obs[2]), 999)
+        self.assertTrue(0.0 <= obs[3] <= 1.0)
+
+    def test_mc_t_two_sample_no_perms(self):
+        """Test gives empty permutation results if no perms are given."""
+        exp = (-0.11858541225631833, 0.90756579317867436, [], nan)
+        I = array([7.2, 7.1, 9.1, 7.2, 7.3, 7.2, 7.5])
+        II = array([8.8, 7.5, 7.7, 7.6, 7.4, 6.7, 7.2])
+        obs = mc_t_two_sample(I, II, permutations=0)
+        assert_allclose(obs[0], exp[0])
+        assert_allclose(obs[1], exp[1])
+        self.assertEqual(obs[2], exp[2])
+        assert_allclose(obs[3], exp[3])
+
+    def test_mc_t_two_sample_no_mc(self):
+        """Test no MC stats if initial t-test is bad."""
+        x = array([1, 1, 1])
+        y = array([0, 0, 0])
+        self.assertEqual(mc_t_two_sample(x, y), (nan, nan, [], nan))
+
+    def test_mc_t_two_sample_no_variance(self):
+        """Test input with no variance. Should match Deducer::perm.t.test."""
+        x = array([1, 1, 1])
+        y = array([2, 2, 2])
+
+        exp = (nan, nan)
+        obs = mc_t_two_sample(x, y, permutations=1000)
+        self.assertEqual(obs[:2], exp)
+
+    def test_mc_t_two_sample_no_permuted_variance(self):
+        """Test with chance of getting no variance with some perms."""
+        # Verified against R's t.test() and Deducer::perm.t.test().
+        x = array([1, 1, 2])
+        y = array([2, 2, 1])
+
+        exp = (-0.70710678118654791, 0.51851851851851838)
+        obs = mc_t_two_sample(x, y, permutations=1000)
+
+        assert_allclose(obs[:2], exp)
+        self.assertEqual(len(obs[2]), 1000)
+        self.assertCorrectPValue(0.90, 1.0, mc_t_two_sample, [x, y],
+                                 {'permutations': 1000}, p_val_idx=3)
+
+    def test_mc_t_two_sample_invalid_input(self):
+        """Test fails on various invalid input."""
+        # self.assertRaises(ValueError, mc_t_two_sample, [1, 2, 3],
+        #                   [4., 5., 4.], tails='foo')
+        # self.assertRaises(ValueError, mc_t_two_sample, [1, 2, 3],
+        #                   [4., 5., 4.], permutations=-1)
+        self.assertRaises(ValueError, mc_t_two_sample, [1], [4.])
+        self.assertRaises(ValueError, mc_t_two_sample, [1, 2], [])
+
+    def test_permute_observations(self):
+        """Test works correctly on small input dataset."""
+        I = [10, 20., 1]
+        II = [2, 4, 5, 7]
+        obs = _permute_observations(I, II, 1)
+        self.assertEqual(len(obs[0]), 1)
+        self.assertEqual(len(obs[1]), 1)
+        self.assertEqual(len(obs[0][0]), len(I))
+        self.assertEqual(len(obs[1][0]), len(II))
+        assert_allclose(sorted(concatenate((obs[0][0],
+                                            obs[1][0]))),
+                        sorted(I + II))
+
+    def test_tail(self):
+        """tail should return prob/2 if test is true, or 1-(prob/2) if false
+        """
+        assert_allclose(tail(0.25, True), 0.125)
+        assert_allclose(tail(0.25, False), 0.875)
+        assert_allclose(tail(1, True), 0.5)
+        assert_allclose(tail(1, False), 0.5)
+        assert_allclose(tail(0, True), 0)
+        assert_allclose(tail(0, False), 1)
+
+
+class CorrelationTests(TestsHelper):
+
+    """Tests of correlation coefficients and Mantel test."""
+
+    def setUp(self):
+        """Sets up variables used in the tests."""
+        super(CorrelationTests, self).setUp()
+
+        # For testing spearman and correlation_test using method='spearman'.
+        # Taken from the Spearman wikipedia article. Also used for testing
+        # Pearson (verified with R).
+        self.data1 = [106, 86, 100, 101, 99, 103, 97, 113, 112, 110]
+        self.data2 = [7, 0, 27, 50, 28, 29, 20, 12, 6, 17]
+
+        # For testing spearman.
+        self.a = [1, 2, 4, 3, 1, 6, 7, 8, 10, 4]
+        self.b = [2, 10, 20, 1, 3, 7, 5, 11, 6, 13]
+        self.c = [7, 1, 20, 13, 3, 57, 5, 121, 2, 9]
+        self.r = (1.7, 10, 20, 1.7, 3, 7, 5, 11, 6.5, 13)
+        self.x = (1, 2, 4, 3, 1, 6, 7, 8, 10, 4, 100, 2, 3, 77)
+
+        # Ranked copies for testing spearman.
+        self.b_ranked = [2, 7, 10, 1, 3, 6, 4, 8, 5, 9]
+        self.c_ranked = [5, 1, 8, 7, 3, 9, 4, 10, 2, 6]
+
+        # silence the warnings that will tests for correlation_test
+        filterwarnings('ignore', category=RuntimeWarning)
+
+    def test_mantel(self):
+        """mantel should be significant for same matrix, not for random"""
+        a = reshape(arange(25), (5, 5))
+        a = tril(a) + tril(a).T
+        fill_diagonal(a, 0)
+        b = a.copy()
+        # closely related -- should be significant
+        self.assertCorrectPValue(0.0, 0.049, mantel, (a, b, 1000))
+
+        c = reshape(ones(25), (5, 5))
+        c[0, 1] = 3.0
+        c[1, 0] = 3.0
+        fill_diagonal(c, 0)
+        # not related -- should not be significant
+        self.assertCorrectPValue(0.06, 1.0, mantel, (a, c, 1000))
+
+    def test_mantel_test_one_sided_greater(self):
+        """Test one-sided mantel test (greater)."""
+        # This test output was verified by R (their mantel function does a
+        # one-sided greater test).
+        m1 = array([[0, 1, 2], [1, 0, 3], [2, 3, 0]])
+        m2 = array([[0, 2, 7], [2, 0, 6], [7, 6, 0]])
+        p, stat, perms = mantel_t(m1, m1, 999, alt='greater')
+        assert_allclose(stat, 1.0)
+        self.assertEqual(len(perms), 999)
+
+        self.assertCorrectPValue(0.09, 0.25, mantel_t, (m1, m1, 999),
+                                 {'alt': 'greater'})
+
+        p, stat, perms = mantel_t(m1, m2, 999, alt='greater')
+        assert_allclose(stat, 0.755928946018)
+        self.assertEqual(len(perms), 999)
+        self.assertCorrectPValue(0.2, 0.5, mantel_t, (m1, m2, 999),
+                                 {'alt': 'greater'})
+
+    def test_mantel_test_one_sided_less(self):
+        """Test one-sided mantel test (less)."""
+        # This test output was verified by R (their mantel function does a
+        # one-sided greater test, but I modified their output to do a one-sided
+        # less test).
+        m1 = array([[0, 1, 2], [1, 0, 3], [2, 3, 0]])
+        m2 = array([[0, 2, 7], [2, 0, 6], [7, 6, 0]])
+        m3 = array([[0, 0.5, 0.25], [0.5, 0, 0.1], [0.25, 0.1, 0]])
+        p, stat, perms = mantel_t(m1, m1, 999, alt='less')
+        assert_allclose(p, 1.0)
+        assert_allclose(stat, 1.0)
+        self.assertEqual(len(perms), 999)
+
+        p, stat, perms = mantel_t(m1, m2, 999, alt='less')
+        assert_allclose(stat, 0.755928946018)
+        self.assertEqual(len(perms), 999)
+        self.assertCorrectPValue(0.6, 1.0, mantel_t, (m1, m2, 999),
+                                 {'alt': 'less'})
+
+        p, stat, perms = mantel_t(m1, m3, 999, alt='less')
+        assert_allclose(stat, -0.989743318611)
+        self.assertEqual(len(perms), 999)
+        self.assertCorrectPValue(0.1, 0.25, mantel_t, (m1, m3, 999),
+                                 {'alt': 'less'})
+
+    def test_mantel_test_two_sided(self):
+        """Test two-sided mantel test."""
+        # This test output was verified by R (their mantel function does a
+        # one-sided greater test, but I modified their output to do a two-sided
+        # test).
+        m1 = array([[0, 1, 2], [1, 0, 3], [2, 3, 0]])
+        m2 = array([[0, 2, 7], [2, 0, 6], [7, 6, 0]])
+        m3 = array([[0, 0.5, 0.25], [0.5, 0, 0.1], [0.25, 0.1, 0]])
+        p, stat, perms = mantel_t(m1, m1, 999, alt='two sided')
+        assert_allclose(stat, 1.0)
+        self.assertEqual(len(perms), 999)
+        self.assertCorrectPValue(0.20, 0.45, mantel_t, (m1, m1, 999),
+                                 {'alt': 'two sided'})
+
+        p, stat, perms = mantel_t(m1, m2, 999, alt='two sided')
+        assert_allclose(stat, 0.755928946018)
+        self.assertEqual(len(perms), 999)
+        self.assertCorrectPValue(0.6, 0.75, mantel_t, (m1, m2, 999),
+                                 {'alt': 'two sided'})
+
+        p, stat, perms = mantel_t(m1, m3, 999, alt='two sided')
+        assert_allclose(stat, -0.989743318611)
+        self.assertEqual(len(perms), 999)
+        self.assertCorrectPValue(0.2, 0.45, mantel_t, (m1, m3, 999),
+                                 {'alt': 'two sided'})
+
+    def test_mantel_test_invalid_distance_matrix(self):
+        """Test mantel test with invalid distance matrix."""
+        # Single asymmetric, non-hollow distance matrix.
+        self.assertRaises(ValueError, mantel_t, array([[1, 2], [3, 4]]),
+                          array([[0, 0], [0, 0]]), 999)
+
+        # Two asymmetric distance matrices.
+        self.assertRaises(ValueError, mantel_t, array([[0, 2], [3, 0]]),
+                          array([[0, 1], [0, 0]]), 999)
+
+    def test_mantel_test_invalid_input(self):
+        """Test mantel test with invalid input."""
+        self.assertRaises(ValueError, mantel_t, array([[1]]),
+                          array([[1]]), 999, alt='foo')
+        self.assertRaises(ValueError, mantel_t, array([[1]]),
+                          array([[1, 2], [3, 4]]), 999)
+        self.assertRaises(ValueError, mantel_t, array([[1]]),
+                          array([[1]]), 0)
+        self.assertRaises(ValueError, mantel_t, array([[1]]),
+                          array([[1]]), -1)
+
+    def test_is_symmetric_and_hollow(self):
+        """Should correctly test for symmetry and hollowness of dist mats."""
+        self.assertTrue(is_symmetric_and_hollow(array([[0, 1], [1, 0]])))
+        self.assertTrue(is_symmetric_and_hollow(matrix([[0, 1], [1, 0]])))
+        self.assertTrue(is_symmetric_and_hollow(matrix([[0.0, 0],
+                                                        [0.0, 0]])))
+        self.assertTrue(not is_symmetric_and_hollow(
+            array([[0.001, 1], [1, 0]])))
+        self.assertTrue(not is_symmetric_and_hollow(
+            array([[0, 1.1], [1, 0]])))
+        self.assertTrue(not is_symmetric_and_hollow(
+            array([[0.5, 1.1], [1, 0]])))
+
+    def test_flatten_lower_triangle(self):
+        """Test flattening various dms' lower triangulars."""
+        self.assertEqual(_flatten_lower_triangle(
+            array([[8]])), [])
+        self.assertEqual(_flatten_lower_triangle(
+            array([[1, 2], [3, 4]])), [3])
+        self.assertEqual(_flatten_lower_triangle(
+            array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])), [4, 7, 8])
+
+    def test_pearson(self):
+        """Test pearson correlation method on valid data."""
+        # This test output was verified by R.
+        assert_allclose(pearson([1, 2], [1, 2]), 1.0)
+        assert_allclose(pearson([1, 2, 3], [1, 2, 3]), 1.0)
+        assert_allclose(pearson([1, 2, 3], [1, 2, 4]), 0.9819805)
+
+    def test_pearson_invalid_input(self):
+        """Test running pearson on bad input."""
+        self.assertRaises(ValueError, pearson, [1.4, 2.5], [5.6, 8.8, 9.0])
+        self.assertRaises(ValueError, pearson, [1.4], [5.6])
+
+    def test_spearman(self):
+        """Test the spearman function with valid input."""
+        # One vector has no ties.
+        exp = 0.3719581
+        obs = spearman(self.a, self.b)
+        assert_allclose(obs, exp)
+
+        # Both vectors have no ties.
+        exp = 0.2969697
+        obs = spearman(self.b, self.c)
+        assert_allclose(obs, exp)
+
+        # Both vectors have ties.
+        exp = 0.388381
+        obs = spearman(self.a, self.r)
+        assert_allclose(obs, exp)
+
+        exp = -0.17575757575757578
+        obs = spearman(self.data1, self.data2)
+        assert_allclose(obs, exp)
+
+    def test_spearman_no_variation(self):
+        """Test the spearman function with a vector having no variation."""
+        exp = nan
+        obs = spearman([1, 1, 1], [1, 2, 3])
+        assert_allclose(obs, exp)
+
+    def test_spearman_ranked(self):
+        """Test the spearman function with a vector that is already ranked."""
+        exp = 0.2969697
+        obs = spearman(self.b_ranked, self.c_ranked)
+        assert_allclose(obs, exp)
+
+    def test_spearman_one_obs(self):
+        """Test running spearman on a single observation."""
+        self.assertRaises(ValueError, spearman, [1.0], [5.0])
+
+    def test_spearman_invalid_input(self):
+        """Test the spearman function with invalid input."""
+        self.assertRaises(ValueError, spearman, [], [])
+        self.assertRaises(ValueError, spearman, self.a, [])
+
+    def test_correlation_test_pearson(self):
+        """Test correlation_t using pearson on valid input."""
+        # These results were verified with R.
+        # Test with non-default confidence level and permutations.
+        obs = correlation_t(self.data1, self.data2, method='pearson',
+                            confidence_level=0.90, permutations=990)
+        assert_allclose(obs[:2], (-0.03760147,
+                                  0.91786297277172868), atol=10e-7)
+        self.assertEqual(len(obs[2]), 990)
+        for r in obs[2]:
+            self.assertTrue(r >= -1.0 and r <= 1.0)
+        self.assertCorrectPValue(0.9, 0.93, correlation_t,
+                                 (self.data1, self.data2),
+                                 {'method': 'pearson',
+                                  'confidence_level': 0.90,
+                                  'permutations': 990},
+                                 p_val_idx=3)
+        assert_allclose(obs[4], (-0.5779077, 0.5256224))
+
+        # Test with non-default tail type.
+        obs = correlation_t(self.data1, self.data2, method='pearson',
+                            confidence_level=0.90, permutations=990,
+                            tails='low')
+        assert_allclose(obs[:2], (-0.03760147,
+                                  0.45893148638586434), atol=10e-7)
+        self.assertEqual(len(obs[2]), 990)
+        for r in obs[2]:
+            self.assertTrue(r >= -1.0 and r <= 1.0)
+        self.assertCorrectPValue(0.41, 0.46, correlation_t,
+                                 (self.data1, self.data2),
+                                 {'method': 'pearson',
+                                  'confidence_level': 0.90,
+                                  'permutations': 990,
+                                  'tails': 'low'},
+                                 p_val_idx=3)
+        assert_allclose(obs[4], (-0.5779077, 0.5256224))
+
+    def test_correlation_test_spearman(self):
+        """Test correlation_t using spearman on valid input."""
+        # This example taken from Wikipedia page:
+        # http://en.wikipedia.org/wiki/Spearman's_rank_correlation_coefficient
+        obs = correlation_t(self.data1, self.data2, method='spearman',
+                            tails='high')
+        assert_allclose(obs[:2], (-0.17575757575757578,
+                                  0.686405827612))
+        self.assertEqual(len(obs[2]), 999)
+        for rho in obs[2]:
+            self.assertTrue(rho >= -1.0 and rho <= 1.0)
+        self.assertCorrectPValue(0.67, 0.7, correlation_t,
+                                 (self.data1, self.data2),
+                                 {'method': 'spearman',
+                                  'tails': 'high'},
+                                 p_val_idx=3)
+        assert_allclose(obs[4], (-0.7251388558041697,
+                                 0.51034422964834503))
+
+        # The p-value is off because the example uses a one-tailed test, while
+        # we use a two-tailed test. Someone confirms the answer that we get
+        # here for a two-tailed test:
+        # http://stats.stackexchange.com/questions/22816/calculating-p-value-
+        #     for-spearmans-rank-correlation-coefficient-example-on-wikip
+        obs = correlation_t(self.data1, self.data2, method='spearman',
+                            tails='two-sided')
+        assert_allclose(obs[:2], (-0.17575757575757578,
+                                  0.62718834477648433))
+        self.assertEqual(len(obs[2]), 999)
+        for rho in obs[2]:
+            self.assertTrue(rho >= -1.0 and rho <= 1.0)
+        self.assertCorrectPValue(0.60, 0.64, correlation_t,
+                                 (self.data1, self.data2),
+                                 {'method': 'spearman', 'tails': 'two-sided'},
+                                 p_val_idx=3)
+        assert_allclose(obs[4], (-0.7251388558041697,
+                                 0.51034422964834503))
+
+    def test_correlation_test_invalid_input(self):
+        """Test correlation_t using invalid input."""
+        self.assertRaises(ValueError, correlation_t, self.data1, self.data2,
+                          method='foo')
+        # self.assertRaises(ValueError, correlation_t, self.data1, self.data2,
+        #                   tails='foo')
+        self.assertRaises(ValueError, correlation_t, self.data1, self.data2,
+                          permutations=-1)
+        self.assertRaises(ValueError, correlation_t, self.data1, self.data2,
+                          confidence_level=-1)
+        self.assertRaises(ValueError, correlation_t, self.data1, self.data2,
+                          confidence_level=1.1)
+        self.assertRaises(ValueError, correlation_t, self.data1, self.data2,
+                          confidence_level=0)
+        self.assertRaises(ValueError, correlation_t, self.data1, self.data2,
+                          confidence_level=0.0)
+        self.assertRaises(ValueError, correlation_t, self.data1, self.data2,
+                          confidence_level=1)
+        self.assertRaises(ValueError, correlation_t, self.data1, self.data2,
+                          confidence_level=1.0)
+
+    def test_correlation_test_no_permutations(self):
+        """Test correlation_t with no permutations."""
+        # These results were verified with R.
+        exp = (-0.2581988897471611, 0.7418011102528389, [], None,
+               (-0.97687328610475876, 0.93488023560400879))
+        obs = correlation_t([1, 2, 3, 4], [1, 2, 1, 1], permutations=0)
+        assert_allclose(obs[0], exp[0])
+        assert_allclose(obs[1], exp[1])
+        assert_allclose(obs[2], exp[2])
+        self.assertEqual(obs[3], exp[3])
+        assert_allclose(obs[4], exp[4])
+
+    def test_correlation_test_perfect_correlation(self):
+        """Test correlation_t with perfectly-correlated input vectors."""
+        # These results were verified with R.
+        obs = correlation_t([1, 2, 3, 4], [1, 2, 3, 4])
+        assert_allclose(obs[:2], (1.0, 0.0))
+        self.assertEqual(len(obs[2]), 999)
+        for r in obs[2]:
+            self.assertTrue(r >= -1.0 and r <= 1.0)
+        self.assertCorrectPValue(0.06, 0.09, correlation_t,
+                                 ([1, 2, 3, 4], [1, 2, 3, 4]),
+                                 p_val_idx=3)
+        assert_allclose(obs[4], (0.99999999999998879, 1.0))
+
+    def test_correlation_test_small_obs(self):
+        """Test correlation_t with a small number of observations."""
+        # These results were verified with R.
+        obs = correlation_t([1, 2, 3], [1, 2, 3])
+        assert_allclose(obs[:2], (1.0, 0))
+        self.assertEqual(len(obs[2]), 999)
+        for r in obs[2]:
+            self.assertTrue(r >= -1.0 and r <= 1.0)
+        self.assertCorrectPValue(0.3, 0.4, correlation_t,
+                                 ([1, 2, 3], [1, 2, 3]),
+                                 p_val_idx=3)
+        self.assertEqual(obs[4], (None, None))
+
+        obs = correlation_t([1, 2, 3], [1, 2, 3], method='spearman')
+        assert_allclose(obs[:2], (1.0, 0))
+        self.assertEqual(len(obs[2]), 999)
+        for r in obs[2]:
+            self.assertTrue(r >= -1.0 and r <= 1.0)
+        self.assertCorrectPValue(0.3, 0.4, correlation_t,
+                                 ([1, 2, 3], [1, 2, 3]),
+                                 {'method': 'spearman'}, p_val_idx=3)
+        self.assertEqual(obs[4], (None, None))
+
+    def test_mw_test(self):
+        """mann-whitney test results should match Sokal & Rohlf"""
+        # using Sokal and Rolhf and R wilcox.test
+        # x <- c(104, 109, 112, 114, 116, 118, 118, 119, 121, 123, 125, 126,
+        #        126, 128, 128, 128)
+        # y <- c(100, 105, 107, 107, 108, 111, 116, 120, 121, 123)
+        # wilcox.test(x,y)
+        # W = 123.5, p-value = 0.0232
+        x = [104, 109, 112, 114, 116, 118, 118, 119, 121, 123, 125, 126, 126,
+             128, 128, 128]
+        y = [100, 105, 107, 107, 108, 111, 116, 120, 121, 123]
+        u, p = mw_t(x, y, continuity=True, two_sided=True)
+        # a return of 123.5 would also be okay, there is a consensus to use the
+        # smaller U statistic, but the probability calculated from each is the
+        # same
+        self.assertTrue(u == 36.5 or u == 123.5)
+        assert_allclose(p, .0232, rtol=1e-3)
+
+    def test_mw_boot(self):
+        """excercising the Monte-carlo variant of mann-whitney"""
+        x = [104, 109, 112, 114, 116, 118, 118, 119, 121, 123, 125, 126, 126,
+             128, 128, 128]
+        y = [100, 105, 107, 107, 108, 111, 116, 120, 121, 123]
+        u, p = mw_boot(x, y, 10)
+        self.assertTrue(u == 36.5 or u == 123.5)
+        self.assertTrue(0 <= p <= 0.5)
+
+    def test_kendall(self):
+        """tests new kendall tau implamentation, returns tau, prob"""
+        # test from pg. 594 Sokal and Rohlf, Box 15.7
+        v1 = [8.7, 8.5, 9.4, 10, 6.3, 7.8, 11.9, 6.5, 6.6, 10.6, 10.2, 7.2,
+              8.6, 11.1, 11.6]
+        v2 = [5.95, 5.65, 6.00, 5.70, 4.70, 5.53, 6.40, 4.18, 6.15, 5.93, 5.70,
+              5.68, 6.13, 6.30, 6.03]
+        obs_tau = kendall(v1, v2)
+        obs_prob = kendall_pval(obs_tau, len(v1))
+        exp_tau = 0.49761335152811925
+        exp_prob = 0.0097188572446995618
+        assert_allclose(obs_tau, exp_tau)
+        assert_allclose(obs_prob, exp_prob)
+        # random vectors checked against scipy. v1 has 33 ties, v2 32
+        v1 = array(
+            [1.2, 9.7, 8.8, 1.7, 8.6, 9.9, 6.8, 7.3, 5.5, 5.4, 8.3,
+             3.6, 7.5, 2., 9.3, 5.1, 8.4, 0.3, 8.2, 2.4, 9.8, 8.5,
+             2.1, 6., 1.8, 3.7, 1.4, 4.6, 7.6, 5.2, 0.9, 5.2, 4.7,
+             2.9, 5., 6.9, 1.3, 6.7, 5.2, 2.4, 6.9, 2., 7.4, 0.4,
+             8.2, 9.5, 2.9, 5.7, 2.4, 8.8, 1.6, 3.5, 5.1, 3.6, 3.3,
+             7.5, 0.9, 9.3, 5.4, 6.9, 9.3, 2.3, 1.9, 8.1, 3.2, 4.2,
+             8.7, 3., 9.8, 5.3, 6.2, 4.8, 9., 2.8, 5.5, 8.4, 4.1,
+             5.6, 5.4, 6.9, 3.8, 2.7, 0.3, 3.9, 8.2, 6.6, 1.9, 3.9,
+             2., 4.4, 0.8, 6.5, 4.8, 1.5, 9.9, 9.1, 9.9, 6.2, 2.9,
+             2.])
+        v2 = array([6.6, 8.6, 3.9, 6.1, 0.9, 8.4, 10., 3.3, 0.4,
+                    3.9, 7.6, 8.2, 8.6, 3., 6.9, 0.6, 8.4, 8.1,
+                    6.3, 0.5, 5.2, 6.4, 8., 9.9, 1.2, 6.7, 8.4,
+                    2.7, 8.4, 4.1, 4.6, 5.1, 5.2, 5.3, 2.2, 2.2,
+                    4.3, 7.1, 1.4, 6.6, 7.6, 4.5, 7.8, 3.5, 7.1,
+                    0.6, 4.6, 3.2, 2.2, 0.2, 3.9, 5.9, 7.7, 8.8,
+                    1.3, 5.1, 5.6, 8.3, 8.8, 1.7, 5.2, 6.9, 1.3,
+                    1.4, 4.9, 9.4, 2.3, 3.7, 9.1, 3.4, 1.6, 4.1,
+                    9.7, 2.8, 9.9, 0.5, 2., 2.7, 3.3, 2.4, 3.6,
+                    7.9, 6.5, 7., 4.2, 1.8, 1.6, 1.9, 5.5, 0.,
+                    1.4, 2.2, 7.2, 8.2, 1.1, 2.5, 5.3, 0.2, 9., 0.2])
+        exp_tau, exp_prob = (0.024867511238807951, 0.71392573687923555)
+        obs_tau = kendall(v1, v2)
+        obs_prob = kendall_pval(obs_tau, len(v1))
+        assert_allclose(obs_tau, exp_tau)
+        assert_allclose(obs_prob, exp_prob)
+
+
+class TestDistMatrixPermutationTest(TestCase):
+
+    """Tests of distance_matrix_permutation_test"""
+
+    def setUp(self):
+        """sets up variables for testing"""
+        self.matrix = array(
+            [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
+        self.cells = [(0, 1), (1, 3)]
+        self.cells2 = [(0, 2), (2, 3)]
+
+    def test_ANOVA_one_way(self):
+        """ANOVA one way returns same values as ANOVA on a stats package
+        """
+        g1 = array([10.0, 11.0, 10.0, 5.0, 6.0])
+        g2 = array([1.0, 2.0, 3.0, 4.0, 1.0, 2.0])
+        g3 = array([6.0, 7.0, 5.0, 6.0, 7.0])
+        i = [g1, g2, g3]
+        F, pval = ANOVA_one_way(i)
+
+        assert_allclose(F, 18.565450643776831)
+        assert_allclose(pval, 0.00015486238993089464)
+
+    def test_kruskal_wallis(self):
+        """Test kruskal_wallis on Sokal & Rohlf Box 13.6 dataset"""
+        d_control = [75, 67, 70, 75, 65, 71, 67, 67, 76, 68]
+        d_2_gluc = [57, 58, 60, 59, 62, 60, 60, 57, 59, 61]
+        d_2_fruc = [58, 61, 56, 58, 57, 56, 61, 60, 57, 58]
+        d_1_1 = [58, 59, 58, 61, 57, 56, 58, 57, 57, 59]
+        d_2_sucr = [62, 66, 65, 63, 64, 62, 65, 65, 62, 67]
+        data = [d_control, d_2_gluc, d_2_fruc, d_1_1, d_2_sucr]
+        kw_stat, pval = kruskal_wallis(data)
+        assert_allclose(kw_stat, 38.436807439)
+        assert_allclose(pval, 9.105424085598766e-08)
+        # test using a random data set against scipy
+        x_0 = array([0, 0, 0, 31, 12, 0, 25, 26, 775, 13])
+        x_1 = array([14, 15, 0, 15, 12, 13])
+        x_2 = array([0, 0, 0, 55, 92, 11, 11, 11, 555])
+        # kruskal(x_0, x_1, x_2) = (0.10761259465923653, 0.94761564440615031)
+        exp = (0.10761259465923653, 0.94761564440615031)
+        obs = kruskal_wallis([x_0, x_1, x_2])
+        assert_allclose(obs, exp)
+
+
+class PvalueTests(TestCase):
+
+    '''Test that the methods for handling Pvalues return the results we expect.
+
+    Note: eps is being set lower on some of these because Sokal and Rohlf
+    provide only ~5 sig figs and our integrals diverge by that much or more.
+    '''
+
+    def setUp(self):
+        '''Nothing needed for all tests.'''
+        pass
+
+    def test_fdr_correction(self):
+        """Test that the fdr_correction works as anticipated."""
+        pvals = array([.1, .7, .5, .3, .9])
+        exp = array([.5, .7 * 5 / 4., .5 * 5 / 3., .3 * 5 / 2., .9])
+        obs = fdr_correction(pvals)
+        assert_allclose(obs, exp)
+
+    def test_benjamini_hochberg_step_down(self):
+        """Test that the BH step down procedure behaves as it does in R."""
+        # r values
+        # q = c(0.64771481,  0.93517796,  0.7169902 ,  0.18223457,  0.26918556,
+        #  0.1450153 ,  0.22448242,  0.74723508,  0.89061034,  0.74007906)
+        # p.adjust(q, method='BH')
+        #  [1] 0.9340439 0.9351780 0.9340439 0.6729639 0.6729639 0.6729639
+        #      0.6729639
+        #  [8] 0.9340439 0.9351780 0.9340439
+        pvals = array([0.64771481, 0.93517796, 0.7169902, 0.18223457,
+                       0.26918556, 0.1450153, 0.22448242, 0.74723508,
+                       0.89061034, 0.74007906])
+        exp = array([0.9340439, 0.9351780, 0.9340439, 0.6729639, 0.6729639,
+                     0.6729639, 0.6729639, 0.9340439, 0.9351780, 0.9340439])
+        obs = benjamini_hochberg_step_down(pvals)
+        assert_allclose(obs, exp)
+        # example 2
+        pvals = array([1.32305426, 1.9345059, 0.87129877, 1.89957702,
+                       1.85712616, 0.68757988, 0.41248969, 0.20751712,
+                       1.97658599, 1.06209437])
+        exp = array([1., 1., 1., 1., 1., 1., 1., 1., 1., 1.])
+        obs = benjamini_hochberg_step_down(pvals)
+        assert_allclose(obs, exp)
+
+    def test_bonferroni_correction(self):
+        """Test that Bonferroni correction behaves correctly."""
+        pvals = array([.1, .7, .5, .3, .9])
+        exp = pvals * 5.
+        obs = bonferroni_correction(pvals)
+        assert_allclose(obs, exp)
+
+    def test_fisher_z_transform(self):
+        '''Test Fisher Z transform is correct.'''
+        r = .657
+        exp = .5 * log(1.657 / .343)
+        obs = fisher_z_transform(r)
+        assert_allclose(exp, obs)
+        r = 1
+        obs = fisher_z_transform(r)
+        assert_allclose(obs, nan)
+        r = -1
+        obs = fisher_z_transform(r)
+        assert_allclose(obs, nan)
+        r = -5.6
+        obs = fisher_z_transform(r)
+        assert_allclose(obs, nan)
+        # from sokal and rohlf pg 575
+        r = .972
+        obs = fisher_z_transform(r)
+        exp = 2.12730
+        assert_allclose(exp, obs, rtol=1e-4)
+
+    def test_z_transform_pval(self):
+        '''Test that pval associated with Fisher Z is correct.'''
+        r = .6
+        n = 100
+        obs = z_transform_pval(r, n)
+        exp = 3.4353390341723208e-09
+        assert_allclose(exp, obs)
+        r = .5
+        n = 3
+        obs = z_transform_pval(r, n)
+        assert_allclose(obs, nan)
+
+    def test_inverse_fisher_z_transform(self):
+        '''Test that Fisher's Z transform is computed correctly.'''
+        z = .65
+        exp = 0.5716699660851171
+        obs = inverse_fisher_z_transform(z)
+        assert_allclose(exp, obs)
+
+    def test_fisher_population_correlation(self):
+        '''Test that the population rho and homogeneity coeff are correct.'''
+        # note: the error tolerances are lower than they would normally be
+        # because sokal and rolhf don't give many significant figures
+        # example from Sokal and Rohlf Biometry pg. 580 - 582
+        rs = array([.29, .7, .58, .56, .55, .67, .65, .61, .64, .56])
+        ns = array([100, 46, 28, 74, 33, 27, 52, 26, 20, 17])
+        zbar = .615268
+        X2 = 15.26352
+        pop_r = .547825
+        hval = chi2prob(X2, len(ns) - 1)
+        obs_p_rho, obs_hval = fisher_population_correlation(rs, ns)
+        assert_allclose(obs_p_rho, pop_r, rtol=1e-5)
+        assert_allclose(obs_hval, hval, rtol=1e-5)
+        # test with nans
+        rs = array(
+            [.29, .7, nan, .58, .56, .55, .67, .65, .61, .64, .56])
+        ns = array([100, 46, 400, 28, 74, 33, 27, 52, 26, 20, 17])
+        obs_p_rho, obs_hval = fisher_population_correlation(rs, ns)
+        assert_allclose(obs_p_rho, pop_r, rtol=1e-5)
+        assert_allclose(obs_hval, hval, rtol=1e-5)
+        # test with short vectors
+        rs = [.6, .5, .4, .6, .7]
+        ns = [10, 12, 42, 11, 3]
+        obs_p_rho, obs_hval = fisher_population_correlation(rs, ns)
+        assert_allclose(obs_p_rho, nan)
+        assert_allclose(obs_hval, nan)
+        # test with data with rs >1
+        rs = [.6, .5, .4, 1.4]
+        ns = [10, 50, 100, 10]
+        self.assertRaises(ValueError, fisher_population_correlation, rs, ns)
+
+    def test_assign_correlation_pval(self):
+        '''Test that correlation pvalues are assigned correctly with each meth.
+        '''
+        # test with parametric t distribution, use example from Sokal and Rohlf
+        # Biometry pg 576.
+        r = .86519
+        n = 12
+        ts = 5.45618  # only 5 sig figs in sokal and rohlf
+        exp = tprob(ts, n - 2, tails='two-sided')
+        obs = assign_correlation_pval(r, n, 'parametric_t_distribution')
+        assert_allclose(exp, obs, rtol=1e-5)
+        # test with too few samples
+        n = 3
+        self.assertRaises(ValueError, assign_correlation_pval, r, n,
+                          'parametric_t_distribution')
+        # test with fisher_z_transform
+        r = .29
+        n = 100
+        z = 0.29856626366017841  # .2981 in biometry
+        exp = z_transform_pval(z, n)
+        obs = assign_correlation_pval(r, n, 'fisher_z_transform')
+        assert_allclose(exp, obs, rtol=1e-5)
+        r = .61
+        n = 26
+        z = 0.70892135942740819  # .7089 in biometry
+        exp = z_transform_pval(z, n)
+        obs = assign_correlation_pval(r, n, 'fisher_z_transform')
+        assert_allclose(exp, obs, rtol=1e-5)
+        # prove that we can have specify the other options, and as long as we
+        # dont have bootstrapped selected we are fine.
+        v1 = array([10, 11, 12])
+        v2 = array([10, 14, 15])
+        obs = assign_correlation_pval(r, n, 'fisher_z_transform',
+                                      permutations=1000, perm_test_fn=pearson,
+                                      v1=v1, v2=v2)
+        assert_allclose(exp, obs)
+        # test with bootstrapping, seed for reproducibility.
+        seed(0)
+        v1 = array([54, 71, 60, 54, 42, 64, 43, 89, 96, 38])
+        v2 = array([79, 52, 56, 92, 7, 8, 2, 83, 77, 87])
+        # c = corrcoef(v1,v2)[0][1]
+        exp = .357
+        obs = assign_correlation_pval(0.33112494, 20000, 'bootstrapped',
+                                      permutations=1000, perm_test_fn=pearson,
+                                      v1=v1, v2=v2)
+        assert_allclose(exp, obs)
+        # make sure it throws an error
+        self.assertRaises(ValueError, assign_correlation_pval, 7, 20000,
+                          'bootstrapped', perm_test_fn=pearson, v1=None, v2=v2)
+        # test that it does properly with kendall
+        exp = kendall_pval(r, n)
+        obs = assign_correlation_pval(r, n, 'kendall')
+        assert_allclose(exp, obs)
+
+    def test_cscore(self):
+        '''Test cscore is calculated correctly.'''
+        # test using example from Stone and Roberts pg 75
+        v1 = array([1, 0, 0, 0, 1, 1, 0, 1, 0, 1])
+        v2 = array([1, 1, 1, 0, 1, 0, 1, 1, 1, 0])
+        obs = cscore(v1, v2)
+        exp = 8
+        self.assertEqual(obs, exp)
+        # test using examples verified in ecosim
+        v1 = array([4, 6, 12, 13, 14, 0, 0, 0, 14, 11, 9, 6, 0, 1, 1, 0, 0,
+                    4])
+        v2 = array([4, 0, 0, 113, 1, 2, 20, 0, 1, 0, 19, 16, 0, 13, 6, 0, 5,
+                    4])
+        # from R
+        # library(vegan)
+        # library(bipartite)
+        # m = matrix(c(4,6,12,13,14,0,0,0,14,11,9,6,0,1,1,0,0,4,4,0,0,113,1,2,
+        #              20,0,1,0,19,16,0,13,6,0,5,4), 18,2)
+        # C.score(m, normalise=FALSE)
+        exp = 9
+        obs = cscore(v1, v2)
+        self.assertEqual(obs, exp)
+
+
+class DistributionTests(TestCase):
+    '''Test that the distributions from scipy are perfoming as we expect.'''
+
+    def setUp(self):
+        '''Nothing needed for all tests.'''
+        pass
+
+    def test_normal_probability_distribution(self):
+        '''Test that the normal probability distribution performs correctly.'''
+        # test against R
+        # library('stats')
+        # pnorm(4.5, mean = 0, sd=1, lower.tail=TRUE)
+        # 0.9999966
+        p = normprob(4.5, direction='low', mean=0, std=1)
+        assert_allclose(p, 0.9999966)
+        # pnorm(-14.5, mean = -5, sd=20, lower.tail=FALSE)
+        # 0.3173935
+        p = normprob(-14.5, direction='two-sided', mean=-5, std=20)
+        assert_allclose(p, 0.3173935*2)
+        # > pnorm(4.5, mean = 0, sd=1, lower.tail=FALSE)
+        # [1] 3.397673e-06
+        p = normprob(4.5, direction='high', mean=0, std=1)
+        assert_allclose(p, 3.397673e-06)
+        p = normprob(4.5, direction='two-sided', mean=0, std=1)
+        assert_allclose(p, 3.397673e-06*2)
+        # test that a ValueError is correctly raised
+        self.assertRaises(ValueError, normprob, 4.5, direction='dne')
+
+    def test_chi2_probability_distribution(self):
+        '''Test that chi2 probability distribution performs correctly.'''
+        # test against R
+        # library('stats')
+        # pchisq(13.4, 4, lower.tail=TRUE)
+        # 0.990522
+        p = chi2prob(13.4, 4, direction='low')
+        assert_allclose(p, 0.990522)
+        # > pchisq(13.4, 4, lower.tail=FALSE)
+        # [1] 0.009478022
+        p = chi2prob(13.4, 4, direction='high')
+        assert_allclose(p, 0.009478022)
+        # test when we have a negative chi2 stat
+        p = chi2prob(-10, 5, direction='high')
+        assert_allclose(p, nan)
+        # test another value
+        # > pchisq(45, 35)
+        # [1] 0.8800662
+        p = chi2prob(45, 35, direction='low')
+        assert_allclose(p, 0.8800662)
+        # test that a ValueError is correctly raised
+        self.assertRaises(ValueError, chi2prob, 4.5, 3, direction='dne')
+
+    def test_t_probability_distribution(self):
+        '''Test that the t probability distribution performs correctly.'''
+        # test against R
+        # library('stats')
+        # pt(2.5, 10, lower.tail=TRUE)
+        # 0.9842766
+        t = tprob(2.5, 10, tails='low')
+        assert_allclose(t, 0.9842766, atol=1e-7)
+        # pt(2.5, 10, lower.tail=FALSE)
+        # 0.01572342
+        t = tprob(2.5, 10, tails='high')
+        assert_allclose(t, 0.01572342, atol=1e-7)
+        # both tails
+        t = tprob(2.5, 10, tails='two-sided')
+        assert_allclose(t, 2*0.01572342, atol=1e-7)
+        # > pt(-6.7,2)
+        # [1] 0.01077945
+        t = tprob(-6.7, 2, tails='two-sided')
+        assert_allclose(t, 2*0.01077945, atol=1e-7)
+        # test that a ValueError is correctly raised
+        self.assertRaises(ValueError, tprob, 4.5, 3, tails='dne')
+
+    def test_f_probability_distribution(self):
+        '''Test that the f probability distribution performs correctly.'''
+        # test against R
+        # library('stats')
+        # pf(4.5, 3, 5)
+        # 0.9305489
+        p = fprob(4.5, 3, 5, direction='low')
+        assert_allclose(p, 0.9305489, atol=1e-7)
+        p = fprob(4.5, 3, 5, direction='high')
+        assert_allclose(p, 1 - 0.9305489, atol=1e-7)
+        # pf(33.5, 2, 5)
+        # 0.9987292
+        p = fprob(33.5, 2, 5, direction='low')
+        assert_allclose(p, 0.9987292, atol=1e-7)
+        # test when we have a negative f stat
+        p = fprob(-10, 5, 6, direction='high')
+        assert_allclose(p, nan)
+        # test that a ValueError is correctly raised
+        self.assertRaises(ValueError, fprob, 4.5, 3, 5, direction='dne')
 
 if __name__ == "__main__":
     main()

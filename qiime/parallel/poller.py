@@ -6,7 +6,7 @@ from optparse import OptionParser
 from os import getenv, remove
 from os.path import exists, isdir
 from shutil import rmtree
-from cogent.util.misc import remove_files
+from skbio.util.misc import remove_files
 from qiime.parse import parse_tmp_to_final_filepath_map_file
 
 __author__ = "Greg Caporaso"

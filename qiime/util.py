@@ -6,7 +6,7 @@ __credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso",
                "Justin Kuczynski", "Jens Reeder", "Catherine Lozupone",
                "Jai Ram Rideout", "Logan Knecht", "Michael Dwan",
                "Levi McCracken", "Damien Coy", "Yoshiki Vazquez Baeza",
-               "Will Van Treuren"]  # remember to add yourself if you make changes
+               "Will Van Treuren", "Adam Robbins-Pianka"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -18,71 +18,56 @@ __email__ = "gregcaporaso@gmail.com"
 A lot of this might migrate into cogent at some point.
 """
 
-from StringIO import StringIO
-from os import getenv, makedirs
-from operator import itemgetter
-from os.path import abspath, basename, exists, dirname, join, isdir, splitext
+from os import getenv, listdir, close
+from os.path import abspath, basename, exists, dirname, join, splitext, isfile
 from collections import defaultdict
-import gzip
-import sys
-import os
+from gzip import open as gz_open
+from sys import stderr
 from copy import deepcopy
 from datetime import datetime
-from subprocess import Popen, PIPE, STDOUT
+from subprocess import Popen
 from random import random
 from itertools import repeat, izip
-from biom.util import compute_counts_per_sample_stats
-from numpy import min, max, median, mean
-import numpy
+from tempfile import mkstemp
+from functools import partial
+
+from numpy import (array, zeros, shape, vstack, ndarray, asarray,
+                   float, where, isnan, std, sqrt, ravel, mean, median,
+                   sum as np_sum, nan, sort)
 from numpy.ma import MaskedArray
 from numpy.ma.extras import apply_along_axis
-from numpy import array, zeros, argsort, shape, vstack, ndarray, asarray, \
-    float, where, isnan, mean, std, sqrt, ravel
 
-from biom.table import DenseTable
+from biom.util import compute_counts_per_sample_stats, biom_open
+from biom import load_table
 from biom.parse import parse_biom_table
-import biom
+from biom.table import Table
 
-from cogent.util.dict2d import Dict2D
-from cogent import LoadSeqs, Sequence, DNA
 from cogent.parse.tree import DndParser
-from cogent.core.tree import PhyloNode
 from cogent.cluster.procrustes import procrustes
-from cogent.core.alignment import Alignment
-from cogent.core.moltype import MolType, IUPAC_DNA_chars, IUPAC_DNA_ambiguities,\
-    IUPAC_DNA_ambiguities_complements, DnaStandardPairs, ModelDnaSequence
-from cogent.data.molecular_weight import DnaMW
-from cogent.core.sequence import DnaSequence
-from cogent.app.blast import Blastall
-from cogent.app.util import (ApplicationError, CommandLineApplication,
-                             get_tmp_filename as cogent_get_tmp_filename, FilePath)
-from cogent.parse.blast import BlastResult
-from cogent.parse.fasta import MinimalFastaParser
-from cogent.util.misc import remove_files
-from cogent.util.dict2d import Dict2D
-from cogent.app.formatdb import build_blast_db_from_fasta_path,\
-    build_blast_db_from_fasta_file
-from cogent import LoadSeqs
-from cogent.util.misc import (create_dir,
-                              handle_error_codes)
 
-from qcli import (parse_command_line_parameters,
-                  make_option,
-                  qcli_system_call)
+from skbio.util.misc import remove_files, create_dir
+from burrito.util import ApplicationError, CommandLineApplication, FilePath
+from burrito.util import which
+from skbio.core.sequence import DNASequence
+from skbio.parse.sequences import parse_fasta
 
-from qiime.pycogent_backports.test import is_symmetric_and_hollow
+from brokit.blast import Blastall, BlastResult
+from brokit.formatdb import (build_blast_db_from_fasta_path,
+                             build_blast_db_from_fasta_file)
+
+
+from qcli import make_option, qcli_system_call, parse_command_line_parameters
+
 from qiime import __version__ as qiime_library_version
-from qiime.parse import (parse_distmat,
-                         parse_mapping_file_to_dict,
-                         parse_qiime_config_files,
+from qiime.parse import (parse_qiime_config_files,
                          parse_coords,
                          parse_newick,
                          fields_to_dict,
                          PhyloNode,
                          parse_mapping_file,
                          parse_denoiser_mapping,
-                         MinimalFastqParser)
-
+                         parse_fastq,
+                         mapping_file_to_dict)
 
 # for backward compatibility - compute_seqs_per_library_stats has
 # been removed in favor of biom.util.compute_counts_per_sample_stats,
@@ -194,6 +179,7 @@ class FunctionWithParams(object):
         """Writes result to result_path. May need to format in subclasses."""
         f = open(result_path, 'w')
         f.write(self.formatResult(result))
+        f.write('\n')
         f.close()
 
     def getTree(self, tree_source):
@@ -238,54 +224,15 @@ class FunctionWithParams(object):
     def getBiomData(self, data):
         """returns a biom object regardless of whether path or object given"""
         try:
-            if os.path.isfile(data):
-                otu_table = parse_biom_table(qiime_open(data, 'U'))
-                return otu_table
+            if isfile(data):
+                return load_table(data)
         except TypeError:
-            if any([type(data) in
-                    [biom.table.DenseFunctionTable,
-                     biom.table.DenseGeneTable,
-                     biom.table.DenseMetaboliteTable,
-                     biom.table.DenseOTUTable,
-                     biom.table.DenseOrthologTable,
-                     biom.table.DensePathwayTable,
-                     biom.table.DenseTable,
-                     biom.table.DenseTaxonTable,
-                     biom.table.FunctionTable,
-                     biom.table.GeneTable,
-                     biom.table.MetaboliteTable,
-                     biom.table.OTUTable,
-                     biom.table.OrthologTable,
-                     biom.table.PathwayTable,
-                     biom.table.SparseFunctionTable,
-                     biom.table.SparseGeneTable,
-                     biom.table.SparseMetaboliteTable,
-                     biom.table.SparseOTUTable,
-                     biom.table.SparseOrthologTable,
-                     biom.table.SparsePathwayTable,
-                     biom.table.SparseTable,
-                     biom.table.SparseTaxonTable]]):
+            if type(data) == Table:
                 otu_table = data
                 return otu_table
             else:
                 raise TypeError('Data is neither a path to a biom table or a' +
                                 ' biom table object.')
-
-    def getAlignment(self, aln_source):
-        """Returns parsed alignment from putative alignment source"""
-        if isinstance(aln_source, Alignment):
-            aln = aln_source
-        elif aln_source:
-            try:
-                aln = LoadSeqs(aln_source, Aligned=True)
-            except (TypeError, IOError, AssertionError):
-                raise AlignmentMissingError(
-                    "Couldn't read alignment file at path: %s" %
-                    aln_source)
-        else:
-            raise AlignmentMissingError(str(self.Name) +
-                                        " requires an alignment, but no alignment was supplied.")
-        return aln
 
     def __call__(self, result_path=None, log_path=None,
                  *args, **kwargs):
@@ -303,16 +250,9 @@ class FunctionWithParams(object):
             return result
 
 
-def trim_fastq(fastq_lines, output_length):
-    """trim fastq seqs/quals to output_length bases """
-    for seq_id, seq, qual in MinimalFastqParser(fastq_lines, strict=False):
-        yield '@%s\n%s\n+\n%s\n' % (seq_id, seq[:output_length],
-                                    qual[:output_length])
-
-
 def trim_fasta(fasta_lines, output_length):
     """trim fasta seqs to output_length bases """
-    for seq_id, seq in MinimalFastaParser(fasta_lines):
+    for seq_id, seq in parse_fasta(fasta_lines):
         yield '>%s\n%s\n' % (seq_id, seq[:output_length])
 
 
@@ -349,34 +289,7 @@ def get_qiime_scripts_dir():
                               "Installation Guide: "
                               "http://qiime.org/install/install.html).")
 
-    return os.path.dirname(script_fp)
-
-
-def which(executable_name):
-    """Equivalent to ``which executable_name`` in a *nix environment.
-
-    Will return ``None`` if ``executable_name`` cannot be found in ``PATH`` or
-    if ``PATH`` is not set. Otherwise will return the first match in ``PATH``.
-
-    Note: this function will likely not work on Windows.
-
-    Code taken and modified from:
-        http://www.velocityreviews.com/forums/t689526-python-library-call-equivalent-to-which-command.html
-
-    """
-    exec_fp = None
-
-    if 'PATH' in os.environ:
-        paths = os.environ['PATH']
-
-        for path in paths.split(os.pathsep):
-            curr_exec_fp = os.path.join(path, executable_name)
-
-            if os.access(curr_exec_fp, os.X_OK):
-                exec_fp = curr_exec_fp
-                break
-
-    return exec_fp
+    return dirname(script_fp)
 
 
 def get_qiime_temp_dir():
@@ -390,17 +303,6 @@ def get_qiime_temp_dir():
     else:
         result = '/tmp/'
     return result
-
-
-def get_tmp_filename(tmp_dir=None, prefix="tmp", suffix=".txt",
-                     result_constructor=FilePath):
-    """ Wrap cogent.app.util.get_tmp_filename to modify the default tmp_dir """
-    if tmp_dir is None:
-        tmp_dir = get_qiime_temp_dir()
-    return cogent_get_tmp_filename(tmp_dir=tmp_dir,
-                                   prefix=prefix,
-                                   suffix=suffix,
-                                   result_constructor=result_constructor)
 
 
 def load_qiime_config():
@@ -443,7 +345,7 @@ def qiime_blast_seqs(seqs,
     """Blast list of sequences.
 
     seqs: a list (or object with list-like interace) of (seq_id, seq)
-     tuples (e.g., the output of MinimalFastaParser)
+     tuples (e.g., the output of parse_fasta)
 
     """
 
@@ -511,7 +413,7 @@ def qiime_blastx_seqs(seqs,
     """Blast list of sequences.
 
     seqs: a list (or object with list-like interace) of (seq_id, seq)
-     tuples (e.g., the output of MinimalFastaParser)
+     tuples (e.g., the output of parse_fasta)
 
     """
     return qiime_blast_seqs(seqs,
@@ -548,7 +450,7 @@ def extract_seqs_by_sample_id(seqs, sample_ids, negate=False):
 def split_fasta_on_sample_ids(seqs):
     """ yields (sample_id, seq_id, seq) for each entry in seqs
 
-        seqs: (seq_id,seq) pairs, as generated by MinimalFastaParser
+        seqs: (seq_id,seq) pairs, as generated by parse_fasta
 
     """
     for seq_id, seq in seqs:
@@ -559,7 +461,7 @@ def split_fasta_on_sample_ids(seqs):
 def split_fasta_on_sample_ids_to_dict(seqs):
     """ return split_fasta_on_sample_ids as {sample_id: [(seq_id, seq), ], }
 
-        seqs: (seq_id,seq) pairs, as generated by MinimalFastaParser
+        seqs: (seq_id,seq) pairs, as generated by parse_fasta
 
     """
     result = {}
@@ -575,7 +477,7 @@ def write_seqs_to_fasta(fp, seqs, write_mode='w'):
     """Write seqs to fp with specified write mode ('a' or 'w')
 
         seqs: list of (seq_id,seq) tuples, as obtained from
-         MinimalFastaParser
+         parse_fasta
     """
     f = open(fp, write_mode)
     for s in seqs:
@@ -583,12 +485,40 @@ def write_seqs_to_fasta(fp, seqs, write_mode='w'):
     f.close()
 
 
+def get_generated_by_for_biom_tables():
+    """Returns a "generated by" string for use when creating BIOM tables
+
+    Returns
+    -------
+    str
+    """
+    return "QIIME " + get_qiime_library_version()
+
+
+def write_biom_table(biom_table, biom_table_fp, compress=True):
+    """Writes a BIOM table to the specified filepath
+
+    Parameters
+    ----------
+    biom_table : biom.Table
+        The table object to write out
+    biom_tabl_fp : str
+        The path to the output file
+    compress : bool, optional
+        Defaults to ``True``. If True, built-in compression on the output HDF5
+        file will be enabled
+    """
+    with biom_open(biom_table_fp, 'w') as biom_file:
+        biom_table.to_hdf5(biom_file, get_generated_by_for_biom_tables(),
+                           compress)
+
+
 def split_fasta_on_sample_ids_to_files(seqs,
                                        output_dir,
                                        per_sample_buffer_size=500):
     """ output of split_fasta_on_sample_ids to fasta in specified output_dir
 
-        seqs: (seq_id,seq) pairs, as generated by MinimalFastaParser
+        seqs: (seq_id,seq) pairs, as generated by parse_fasta
         output_dir: string defining directory where output should be
          written, will be created if it doesn't exist
 
@@ -763,10 +693,10 @@ def matrix_stats(headers_list, distmats):
         raise ValueError("error, not all input matrices have" +
                          " identical column/row headers")
 
-    all_mats = numpy.array(distmats)  # 3d numpy array: mtx, row, col
-    means = numpy.mean(all_mats, axis=0)
-    medians = numpy.median(all_mats, axis=0)
-    stdevs = numpy.std(all_mats, axis=0)
+    all_mats = array(distmats)  # 3d numpy array: mtx, row, col
+    means = mean(all_mats, axis=0)
+    medians = median(all_mats, axis=0)
+    stdevs = std(all_mats, axis=0)
 
     return deepcopy(headers_list[0]), means, medians, stdevs
 
@@ -778,7 +708,7 @@ def convert_otu_table_relative(otu_table):
     """
     sample_ids, otu_ids, otu_counts, consensus = otu_table
     otu_counts = asarray(otu_counts, float)
-    otu_counts = otu_counts / otu_counts.sum(axis=0)
+    otu_counts = otu_counts / otu_counts.sum()
     otu_counts = where(isnan(otu_counts), 0.0, otu_counts)
     return (sample_ids, otu_ids, otu_counts, consensus)
 
@@ -827,20 +757,20 @@ def load_pcoa_files(pcoa_dir):
     """loads PCoA files from filepaths
     """
     support_pcoas = []
-    pcoa_filenames = os.listdir(pcoa_dir)
+    pcoa_filenames = listdir(pcoa_dir)
     # ignore invisible files like .DS_Store
     pcoa_filenames = [fname for fname in pcoa_filenames if not
                       fname.startswith('.')]
-    master_pcoa = open(os.path.join(pcoa_dir, pcoa_filenames[0]), 'U')
+    master_pcoa = open(join(pcoa_dir, pcoa_filenames[0]), 'U')
     master_pcoa = parse_coords(master_pcoa)
     for fname in pcoa_filenames:
         try:
-            f = open(os.path.join(pcoa_dir, fname), 'U')
+            f = open(join(pcoa_dir, fname), 'U')
             pcoa_res = parse_coords(f)
             support_pcoas.append(pcoa_res)
             f.close()
         except IOError as err:
-            sys.stderr.write('error loading support pcoa ' + fname + '\n')
+            stderr.write('error loading support pcoa ' + fname + '\n')
             exit(1)
     return master_pcoa, support_pcoas
 
@@ -878,7 +808,7 @@ def summarize_pcoas(master_pcoa, support_pcoas,
         jn_flipped_matrices, method)
     # compute average eigvals
     all_eigvals_stack = vstack(all_eigvals)
-    eigval_sum = numpy.sum(all_eigvals_stack, axis=0)
+    eigval_sum = np_sum(all_eigvals_stack, axis=0)
     eigval_average = eigval_sum / float(len(all_eigvals))
     return matrix_average, matrix_low, matrix_high, eigval_average, m_names
 
@@ -897,7 +827,7 @@ def _compute_jn_pcoa_avg_ranges(jn_flipped_matrices, method):
     x, y = shape(jn_flipped_matrices[0])
     all_flat_matrices = [matrix.ravel() for matrix in jn_flipped_matrices]
     summary_matrix = vstack(all_flat_matrices)
-    matrix_sum = numpy.sum(summary_matrix, axis=0)
+    matrix_sum = np_sum(summary_matrix, axis=0)
     matrix_average = matrix_sum / float(len(jn_flipped_matrices))
     matrix_average = matrix_average.reshape(x, y)
     if method == 'IQR':
@@ -984,13 +914,13 @@ def idealfourths(data, axis=None):
         x = data.compressed()
         n = len(x)
         if n < 3:
-            return [numpy.nan, numpy.nan]
+            return [nan, nan]
         (j, h) = divmod(n / 4. + 5 / 12., 1)
         qlo = (1 - h) * x[j - 1] + h * x[j]
         k = n - j
         qup = (1 - h) * x[k] + h * x[k - 1]
         return [qlo, qup]
-    data = numpy.sort(data, axis=axis).view(MaskedArray)
+    data = sort(data, axis=axis).view(MaskedArray)
     if (axis is None):
         return _idf(data)
     else:
@@ -1008,20 +938,6 @@ def isarray(a):
 
     return validity
 
-# make an alphabet that allows '.' as additional gaps
-DNA_with_more_gaps = MolType(
-    Sequence=DnaSequence,
-    motifset=IUPAC_DNA_chars,
-    Ambiguities=IUPAC_DNA_ambiguities,
-    label="dna",
-    Gaps=".",
-    MWCalculator=DnaMW,
-    Complements=IUPAC_DNA_ambiguities_complements,
-    Pairs=DnaStandardPairs,
-    make_alphabet_group=True,
-    ModelSeq=ModelDnaSequence,
-)
-
 
 def degap_fasta_aln(seqs):
     """degap a Fasta aligment.
@@ -1030,24 +946,19 @@ def degap_fasta_aln(seqs):
     """
 
     for (label, seq) in seqs:
-        degapped_seq = Sequence(moltype=DNA_with_more_gaps,
-                                seq=seq, name=label).degap()
-        degapped_seq.Name = label
-        yield degapped_seq
+        yield DNASequence(seq, id=label).degap()
 
 
 def write_degapped_fasta_to_file(seqs, tmp_dir="/tmp/"):
     """ write degapped seqs to temp fasta file."""
+    fd, tmp_filename = mkstemp(dir=tmp_dir, prefix="degapped_",
+                               suffix=".fasta")
+    close(fd)
 
-    tmp_filename = get_tmp_filename(
-        tmp_dir=tmp_dir,
-        prefix="degapped_",
-        suffix=".fasta")
-    fh = open(tmp_filename, "w")
+    with open(tmp_filename, 'w') as fh:
+        for seq in degap_fasta_aln(seqs):
+            fh.write(seq.to_fasta())
 
-    for seq in degap_fasta_aln(seqs):
-        fh.write(seq.toFasta() + "\n")
-    fh.close()
     return tmp_filename
 
 
@@ -1285,7 +1196,7 @@ def inflate_denoiser_output(
          out map back to original sequence identifiers.
 
         The seqs objects passed in are lists of (seq_id, seq) tuples,
-         as returned from MinimalFastaParser.
+         as returned from parse_fasta.
 
 
     """
@@ -1307,7 +1218,7 @@ def inflate_denoiser_output(
 # Functions for counting sequences in fasta files
 
 
-def count_seqs(fasta_filepath, parser=MinimalFastaParser):
+def count_seqs(fasta_filepath, parser=parse_fasta):
     """ Count the sequences in fasta_filepath
 
         fasta_filepath: string indicating the full path to the file
@@ -1317,7 +1228,7 @@ def count_seqs(fasta_filepath, parser=MinimalFastaParser):
     return count_seqs_from_file(open(fasta_filepath, 'U'), parser=parser)
 
 
-def count_seqs_from_file(fasta_file, parser=MinimalFastaParser):
+def count_seqs_from_file(fasta_file, parser=parse_fasta):
     """Return number of sequences in fasta_file (no format checking performed)
 
         fasta_file: an open file object
@@ -1351,7 +1262,7 @@ def count_seqs_in_filepaths(fasta_filepaths, seq_counter=count_seqs):
         # if the file is actually fastq, use the fastq parser.
         # otherwise use the fasta parser
         if fasta_filepath.endswith('.fastq'):
-            parser = MinimalFastqParser
+            parser = parse_fastq
         elif fasta_filepath.endswith('.tre') or \
                 fasta_filepath.endswith('.ph') or \
                 fasta_filepath.endswith('.ntree'):
@@ -1361,7 +1272,7 @@ def count_seqs_in_filepaths(fasta_filepaths, seq_counter=count_seqs):
                 t = DndParser(f, constructor=PhyloNode)
                 return zip(t.iterTips(), repeat(''))
         else:
-            parser = MinimalFastaParser
+            parser = parse_fasta
 
         try:
             # get the count of sequences in the current file
@@ -1377,105 +1288,6 @@ def count_seqs_in_filepaths(fasta_filepaths, seq_counter=count_seqs):
     return counts, total, inaccessible_filepaths
 
 # End functions for counting sequences in fasta files
-
-
-def get_top_fastq_two_lines(open_file):
-    """ This function returns the first 4 lines of the open fastq file
-    """
-    line1 = open_file.readline()
-    line2 = open_file.readline()
-    line3 = open_file.readline()
-    line4 = open_file.readline()
-    open_file.seek(0)
-    return line1, line2, line3, line4
-
-
-def get_split_libraries_fastq_params_and_file_types(fastq_fps, mapping_fp):
-    """ The function takes a list of open fastq files and a mapping file, then
-        returns a recommended parameters string for split_libraries_fastq
-    """
-    # parse the mapping
-    data, headers, run_description = parse_mapping_file(open(mapping_fp, 'U'))
-
-    # determine the which column of mapping file is the BarcodeSequence
-    for i, col_head in enumerate(headers):
-        if col_head == 'BarcodeSequence':
-            barcode_column = i
-
-    # create a set of barcodes for easier lookup
-    barcode_mapping_column = set(zip(*data)[barcode_column])
-
-    # create set of reverse complement barcodes from mapping file
-    revcomp_barcode_mapping_column = []
-    for i in barcode_mapping_column:
-        revcomp_barcode_mapping_column.append(DNA.rc(i))
-        barcode_len = len(i)
-    revcomp_barcode_mapping_column = set(revcomp_barcode_mapping_column)
-
-    # get the filenames and sort them, so the file1 corresponds to file2
-    fastq_fps.sort()
-
-    # get the len of the sequence in each of the files, so we can determine
-    # which file is the sequence file and which is the barcode sequence
-    get_file_type_info = {}
-    for fastq_file in fastq_fps:
-        # allow for gzipped files to be used
-        if fastq_file.endswith('.gz'):
-            fastq_fp = gzip_open(fastq_file)
-        else:
-            fastq_fp = open(fastq_file, 'U')
-
-        file_lines = get_top_fastq_two_lines(fastq_fp)
-        parsed_fastq = MinimalFastqParser(file_lines, strict=False)
-        for i, seq_data in enumerate(parsed_fastq):
-            if i == 0:
-                get_file_type_info[fastq_file] = len(seq_data[1])
-            else:
-                break
-        fastq_fp.close()
-
-    # iterate over the sequence lengths and assign each file to either
-    # a sequence list or barcode list
-    barcode_files = []
-    sequence_files = []
-    for i in range(0, len(fastq_fps), 2):
-        if get_file_type_info[fastq_fps[i]] < get_file_type_info[fastq_fps[i + 1]]:
-            barcode_files.append(fastq_fps[i])
-            sequence_files.append(fastq_fps[i + 1])
-        else:
-            barcode_files.append(fastq_fps[i + 1])
-            sequence_files.append(fastq_fps[i])
-
-    # count the number of barcode matches in the forward and reverse direction
-    # to determine if the rev_comp_barcode option needs passed
-    fwd_count = 0
-    rev_count = 0
-    for bfile in barcode_files:
-        # allow for gzipped files to be used
-        if fastq_file.endswith('.gz'):
-            fastq_fp = gzip_open(bfile)
-        else:
-            fastq_fp = open(bfile, 'U')
-
-        parsed_fastq = MinimalFastqParser(fastq_fp, strict=False)
-        for bdata in parsed_fastq:
-            if bdata[1][:barcode_len] in barcode_mapping_column:
-                fwd_count += 1
-            elif bdata[1][:barcode_len] in revcomp_barcode_mapping_column:
-                rev_count += 1
-        fastq_fp.close()
-
-    # determine which barcode direction is correct
-    if rev_count > fwd_count:
-        barcode_orientation = '--rev_comp_mapping_barcodes'
-    else:
-        barcode_orientation = ''
-
-    # generate the string to use in command call to split_libraries_fastq
-    split_lib_str = '-i %s -b %s %s' % (','.join(sequence_files),
-                                        ','.join(barcode_files),
-                                        barcode_orientation)
-    return split_lib_str
 
 
 def iseq_to_qseq_fields(line, barcode_in_header,
@@ -1510,7 +1322,7 @@ def is_gzip(fp):
 
 
 def gzip_open(fp):
-    return gzip.open(fp, 'rb')
+    return gz_open(fp, 'rb')
 
 
 def qiime_open(fp, permission='U'):
@@ -1537,40 +1349,34 @@ def make_compatible_distance_matrices(dm1, dm2, lookup=None):
     dm1_data = dm1[1]
     dm2_ids = dm2[0]
     dm2_data = dm2[1]
+
     if lookup:
         try:
             dm1_ids = [lookup[e] for e in dm1_ids]
             dm2_ids = [lookup[e] for e in dm2_ids]
         except KeyError as e:
-            raise KeyError("All entries in both DMs must be in "
-                           "lookup if a lookup is provided. Missing: %s" % str(e))
+            raise KeyError("All entries in both DMs must be in lookup if a "
+                           "lookup is provided. Missing: %s" % str(e))
     order = [e for e in dm1_ids if e in dm2_ids]
 
-    # create Dict2D from dm1
-    d1 = {}
-    for i, r in enumerate(dm1_ids):
-        d1[r] = {}
-        for j, c in enumerate(dm1_ids):
-            d1[r][c] = dm1_data[i, j]
-    result1 = Dict2D(data=d1, RowOrder=order, ColOrder=order)
-    # remove entries not in order
-    result1.purge()
-    # return 2d list in order
-    result1 = array(result1.toLists())
+    if len(order) == 0:
+        return ([], []), ([], [])
 
-    # create Dict2D from dm2
-    d2 = {}
-    for i, r in enumerate(dm2_ids):
-        d2[r] = {}
-        for j, c in enumerate(dm2_ids):
-            d2[r][c] = dm2_data[i, j]
-    result2 = Dict2D(data=d2, RowOrder=order, ColOrder=order)
-    # remove entries not in order
-    result2.purge()
-    # return 2d list in order
-    result2 = array(result2.toLists())
+    # store the intersected distance matrices here
+    matrices = []
 
-    return (order, result1), (order, result2)
+    # iterate over the distance matrices and identifiers to match the data
+    # note that the order must be the same between the two matrices
+    for ids, distance_matrix in [(dm1_ids, dm1_data), (dm2_ids, dm2_data)]:
+
+        # the order is kept by getting the indices from this list
+        indices = [ids.index(element) for element in order]
+
+        # this matrix contains the matched up data
+        out = distance_matrix[indices][:, indices]
+        matrices.append(out)
+
+    return (order, matrices[0]), (order, matrices[1])
 
 
 def get_rdp_jarpath():
@@ -1635,7 +1441,7 @@ def subsample_fasta(input_fasta_fp,
 
     output_fasta = open(output_fp, "w")
 
-    for label, seq in MinimalFastaParser(input_fasta):
+    for label, seq in parse_fasta(input_fasta):
         if random() < percent_subsample:
             output_fasta.write('>%s\n%s\n' % (label, seq))
 
@@ -1656,7 +1462,7 @@ def subsample_fastq(input_fastq_fp,
     input_fastq = open(input_fastq_fp, "U")
     output_fastq = open(output_fp, "w")
 
-    for label, seq, qual in MinimalFastqParser(input_fastq, strict=False):
+    for label, seq, qual in parse_fastq(input_fastq, strict=False):
         if random() < percent_subsample:
             output_fastq.write(
                 '@%s\n%s\n+%s\n%s\n' %
@@ -1679,8 +1485,8 @@ def subsample_fastqs(input_fastq1_fp,
     input_fastq2 = open(input_fastq2_fp, "U")
     output_fastq2 = open(output_fastq2_fp, "w")
 
-    for fastq1, fastq2 in izip(MinimalFastqParser(input_fastq1, strict=False),
-                               MinimalFastqParser(input_fastq2, strict=False)):
+    for fastq1, fastq2 in izip(parse_fastq(input_fastq1, strict=False),
+                               parse_fastq(input_fastq2, strict=False)):
         label1, seq1, qual1 = fastq1
         label2, seq2, qual2 = fastq2
         if random() < percent_subsample:
@@ -1715,117 +1521,6 @@ def summarize_otu_sizes_from_otu_map(otu_map_f):
     return result
 
 
-class DistanceMatrix(DenseTable):
-
-    """This class represents a QIIME distance matrix.
-
-    Public attributes:
-        SampleIds - the list of sample ID strings (i.e. row/column headers)
-    """
-
-    _biom_type = "Distance matrix"
-
-    @staticmethod
-    def parseDistanceMatrix(lines):
-        """Parses a QIIME distance matrix file into a DistanceMatrix object.
-
-        This static method is basically a factory that reads in the given
-        distance matrix file contents and returns a DistanceMatrix instance.
-        This method is provided for convenience.
-
-        Arguments:
-            lines - a list of strings representing the file contents of a QIIME
-                distance matrix
-        """
-        sample_ids, matrix_data = parse_distmat(lines)
-        return DistanceMatrix(matrix_data, sample_ids, sample_ids)
-
-    def __init__(self, *args, **kwargs):
-        """Instantiates a DistanceMatrix object.
-
-        A distance matrix must be square and its sample IDs are exactly the
-        same as its observation IDs (a biom table has sample IDs for column
-        labels and observation IDs for row labels). A distance matrix must be
-        at least 1x1 in size.
-
-        Please refer to the biom.table.Table class documentation for a list of
-        acceptable arguments to the constructor. The data matrix argument (the
-        first argument) is expected to be a numpy array.
-
-        We have to match the parent class constructor exactly in this case due
-        to how several of the parent class methods are implemented (they assume
-        all subclasses have the same constructor signature). Otherwise, I would
-        have just made a simple constructor that took the matrix data and a
-        single list of sample IDs (because the row/col IDs are the same for a
-        distance matrix). As there is no easy way around this at the moment,
-        users of this class must pass the same list of sample IDs as the
-        observation IDs parameter as well.
-        """
-        super(DistanceMatrix, self).__init__(*args, **kwargs)
-
-        # Make sure the matrix isn't empty, is square, and our sample IDs match
-        # the observation IDs.
-        data_matrix = args[0]
-        if 0 in data_matrix.shape:
-            raise ValueError("The input data matrix must be at least 1x1 in "
-                             "size.")
-        if data_matrix.shape[0] != data_matrix.shape[1]:
-            raise ValueError("The input distance matrix must be square.")
-        if self.SampleIds != self.ObservationIds:
-            raise ValueError("The sample IDs must match the observation IDs.")
-
-    @property
-    def Size(self):
-        """Returns the size of the distance matrix (number of rows or cols)."""
-        return len(self.SampleIds)
-
-    @property
-    def DataMatrix(self):
-        """Returns the matrix of distances as a numpy array.
-
-        The returned matrix is not a copy of the matrix stored in this object.
-        """
-        return asarray(self._data)
-
-    def max(self):
-        """Returns the maximum value present in the distance matrix.
-
-        Since distance matrices are guaranteed to be at least 1x1 in size, this
-        method will always return a valid maximum.
-        """
-        max_val = self[0][0]
-        for row_idx in range(self.Size):
-            for col_idx in range(self.Size):
-                if self[row_idx][col_idx] > max_val:
-                    max_val = self[row_idx][col_idx]
-        return max_val
-
-    def flatten(self, lower=True):
-        """Returns a list containing the flattened distance matrix.
-
-        The returned list will contain the elements in column-major order
-        (i.e. from leftmost to rightmost column, starting from the first row).
-
-        Arguments:
-            lower - If True, only the lower triangular elements will be
-                included (the diagonal will not be included). If False, all
-                elements (including the diagonal) will be included
-        """
-        flattened = []
-        for col_num in range(self.Size):
-            for row_num in range(self.Size):
-                if lower:
-                    if col_num < row_num:
-                        flattened.append(self[row_num][col_num])
-                else:
-                    flattened.append(self[row_num][col_num])
-        return flattened
-
-    def is_symmetric_and_hollow(self):
-        """Returns True if the distance matrix is symmetric and hollow."""
-        return is_symmetric_and_hollow(self._data)
-
-
 class MetadataMap():
 
     """This class represents a QIIME metadata mapping file.
@@ -1835,8 +1530,12 @@ class MetadataMap():
             strings)
     """
 
+    req_header_prefix = ['SampleID', 'BarcodeSequence',
+                         'LinkerPrimerSequence']
+    req_header_suffix = ['Description']
+
     @staticmethod
-    def parseMetadataMap(lines):
+    def parseMetadataMap(lines, case_insensitive=False):
         """Parses a QIIME metadata mapping file into a MetadataMap object.
 
         This static method is basically a factory that reads in the given
@@ -1846,8 +1545,33 @@ class MetadataMap():
         Arguments:
             lines - a list of strings representing the file contents of a QIIME
                 metadata mapping file
+            case_insensitive - a boolean to uppercase non required mapping file
+                headers
         """
-        return MetadataMap(*parse_mapping_file_to_dict(lines))
+        mapping_data, header, comments = parse_mapping_file(lines)
+        if case_insensitive:
+            req_header = set(MetadataMap.req_header_prefix + MetadataMap.req_header_suffix)
+            for i in range(len(header)):
+                if header[i] not in req_header:
+                    header[i] = header[i].upper()
+        mapping = mapping_file_to_dict(mapping_data, header)
+        return MetadataMap(mapping, comments)
+
+    @staticmethod
+    def mergeMappingFiles(mapping_files, no_data_value='no_data',
+                          case_insensitive=False):
+        """ Merge list of mapping files into a single mapping file
+
+            mapping_files: open file objects containing mapping data
+            no_data_value: value to be used in cases where there is no
+            mapping field associated with a sample ID (default: 'no_data')
+        """
+        func = partial(MetadataMap.parseMetadataMap,
+                       case_insensitive=case_insensitive)
+        metadata_maps = map(func, mapping_files)
+        merged = sum(metadata_maps[1:], metadata_maps[0])
+        merged.no_data_value = no_data_value
+        return merged
 
     def __init__(self, sample_metadata, Comments):
         """Instantiates a MetadataMap object.
@@ -1864,6 +1588,7 @@ class MetadataMap():
         """
         self._metadata = sample_metadata
         self.Comments = Comments
+        self.no_data_value = 'no_data'
 
     def __eq__(self, other):
         """Test this instance for equality with another.
@@ -1885,6 +1610,108 @@ class MetadataMap():
             classes.
         """
         return not self.__eq__(other)
+
+    def __str__(self):
+        """Returns a tab-separated version of the mapping file
+
+        Missing data will be filled in with the value set in the member
+        variable no_data_value.
+
+        Note: that required columns will be in the required positions, but
+              optional columns may be re-ordered compared to the input data.
+        """
+        # this will hold the output lines while we are generating them
+        output_lines = []
+
+        # Build an ordered list of headers
+        # 2. The optional columns in the mapping file
+        headers_present = self._metadata.iteritems().next()[1].keys()
+        optional_headers = list(set(headers_present) -
+                                set(self.req_header_prefix +
+                                    self.req_header_suffix))
+
+        headers = (self.req_header_prefix + optional_headers +
+                   self.req_header_suffix)
+
+        output_lines.extend(self.Comments)
+        output_lines.append('#' + '\t'.join(headers))
+
+        for sample_id, data in self._metadata.iteritems():
+            current_data = []
+
+            # Get the first required columns
+            current_data.append(sample_id)
+            # skip the SampleID required header, since we get that from the
+            # dict we are currently iterating over
+            for header in self.req_header_prefix[1:]:
+                current_data.append(data[header])
+
+            # Get the optional columns; allow for None in these columns
+            for header in optional_headers:
+                value = self.no_data_value if data[header] is None else \
+                    data[header]
+
+                current_data.append(value)
+
+            # get the last required columns
+            for header in self.req_header_suffix:
+                current_data.append(data[header])
+
+            output_lines.append('\t'.join([str(x) for x in current_data]))
+
+        return '\n'.join(output_lines) + '\n'
+
+    def __add__(self, other):
+        """Merges two mapping files
+
+        Fills in None where there is no data (i.e., when one mapping file
+        does not have a column in the other).  The comments from both mapping
+        files will be concatenated.
+        """
+        # Make a defaultdict of defaultdicts, the latter of which returns
+        # None when an key is not present
+        merged_data = defaultdict(lambda: defaultdict(lambda: None))
+
+        # We will keep track of all unique sample_ids and metadata headers
+        # we have seen as we go
+        all_sample_ids = set()
+        all_headers = set()
+
+        # add all values from self into the merged_data structure
+        for sample_id, data in self._metadata.iteritems():
+            all_sample_ids.add(sample_id)
+            for header, value in data.iteritems():
+                all_headers.add(header)
+                merged_data[sample_id][header] = value
+
+        # then add all data from other
+        for sample_id, data in other._metadata.iteritems():
+            all_sample_ids.add(sample_id)
+            for header, value in data.iteritems():
+                all_headers.add(header)
+                # if the two mapping files have identical sample_ids and
+                # metadata columns but have DIFFERENT values, raise a value
+                # error
+                if merged_data[sample_id][header] is not None and \
+                        merged_data[sample_id][header] != value:
+                    raise ValueError("Different values provided for %s for "
+                                     "sample %s in different mapping files."
+                                     % (header, sample_id))
+                else:
+                    merged_data[sample_id][header] = value
+
+        # Now, convert what we have seen into a normal dict
+        normal_dict = {}
+        for sample_id in all_sample_ids:
+            if sample_id not in normal_dict:
+                normal_dict[sample_id] = {}
+
+            for header in all_headers:
+                normal_dict[sample_id][header] = \
+                    merged_data[sample_id][header]
+
+        # and create a MetadataMap object from it; concatenate comments
+        return self.__class__(normal_dict, self.Comments + other.Comments)
 
     def getSampleMetadata(self, sample_id):
         """Returns the metadata associated with a particular sample.
@@ -1930,7 +1757,7 @@ class MetadataMap():
         Arguments:
             category - the category that will be checked
         """
-        category_values = self.getCategoryValues(self.SampleIds, category)
+        category_values = self.getCategoryValues(self.sample_ids, category)
 
         is_numeric = True
         for category_value in category_values:
@@ -1946,10 +1773,10 @@ class MetadataMap():
         Arguments:
             category - the category that will be checked for uniqueness
         """
-        category_values = self.getCategoryValues(self.SampleIds, category)
+        category_values = self.getCategoryValues(self.sample_ids, category)
 
         is_unique = False
-        if len(set(category_values)) == len(self.SampleIds):
+        if len(set(category_values)) == len(self.sample_ids):
             is_unique = True
         return is_unique
 
@@ -1962,7 +1789,7 @@ class MetadataMap():
         Arguments:
             category - the category that will be checked
         """
-        category_values = self.getCategoryValues(self.SampleIds, category)
+        category_values = self.getCategoryValues(self.sample_ids, category)
 
         single_value = False
         if len(set(category_values)) == 1:
@@ -1970,7 +1797,7 @@ class MetadataMap():
         return single_value
 
     @property
-    def SampleIds(self):
+    def sample_ids(self):
         """Returns the IDs of all samples in the metadata map.
 
         The sample IDs are returned as a list of strings in alphabetical order.
@@ -1984,8 +1811,8 @@ class MetadataMap():
         The category names are returned as a list of strings in alphabetical
         order.
         """
-        return sorted(self.getSampleMetadata(self.SampleIds[0]).keys()) \
-            if len(self.SampleIds) > 0 else []
+        return sorted(self.getSampleMetadata(self.sample_ids[0]).keys()) \
+            if len(self.sample_ids) > 0 else []
 
     def filterSamples(self, sample_ids_to_keep, strict=True):
         """Remove samples that are not in ``sample_ids_to_keep``.
@@ -1994,12 +1821,12 @@ class MetadataMap():
         sample IDs in ``sample_ids_to_keep`` cannot be found in the metadata
         map.
         """
-        for sid in self.SampleIds:
+        for sid in self.sample_ids:
             if sid not in sample_ids_to_keep:
                 del self._metadata[sid]
 
         if strict:
-            extra_samples = set(sample_ids_to_keep) - set(self.SampleIds)
+            extra_samples = set(sample_ids_to_keep) - set(self.sample_ids)
 
             if extra_samples:
                 raise ValueError("Could not find the following sample IDs in "
@@ -2216,7 +2043,7 @@ def sync_biom_and_mf(pmf, bt):
     will be an empty set.
     """
     mf_samples = set(pmf)
-    bt_samples = set(bt.SampleIds)
+    bt_samples = set(bt.ids())
     if mf_samples == bt_samples:
         # agreement, can continue without fear of breaking code
         return pmf, bt, set()
@@ -2232,12 +2059,12 @@ def sync_biom_and_mf(pmf, bt):
 
         def _f(sv, sid, smd):
             return sid in shared_samples
-        nbt = bt.filterSamples(_f)
+        nbt = bt.filter(_f, axis='sample')
     return npmf, nbt, nonshared_samples
 
 
 def biom_taxonomy_formatter(bt, md_key):
-    """Return md strings from bt using md_key in order of bt.ObservationMetadata
+    """Return md strings from bt using md_key in order of bt.observation_metadata
 
     There are multiple legacy formats for metadata encoding in biom formats
     including as lists, dicts, and strings. This function attempts to figure out
@@ -2248,32 +2075,59 @@ def biom_taxonomy_formatter(bt, md_key):
     Inputs:
      bt - biom table object
      md_key - string, the key to return the metadata from the biom table.
-    Outputs a list of strings (in order of bt.ObservationMetadata entries) of
+    Outputs a list of strings (in order of bt.observation_metadata entries) of
     metadata. If no metadata could be found using the given key the function
     will print a warning and return None.
     """
-    if bt.ObservationMetadata is None:
-        print 'No metadata in biom table.'
+    if bt.metadata(axis='observation') is None:
+        print 'Warning: No metadata in biom table. Won\'t alter calculations.'
         return None
     else:
-        dtype = bt.ObservationMetadata[0][md_key]
+        dtype = bt.metadata(axis='observation')[0][md_key]
     if isinstance(dtype, dict):
         data = []
-        for md in bt.ObservationMetadata:
+        for md in bt.metadata(axis='observation'):
             tmp = []
             for k, v in md[md_key].iteritems():
                 tmp.append('%s_%s' % (k, v))
             data.append(' '.join(tmp))
         # data = [' '.join(['%s_%s' % (k,v) for k,v in md[md_key].items()]) for \
-        #     md in bt.ObservationMetadata]
+        #     md in bt.observation_metadata]
         return map(str, data)
     elif isinstance(dtype, list):
         return (
-            map(str, [';'.join(md[md_key]) for md in bt.ObservationMetadata])
+            map(str, ['; '.join(md[md_key])
+                      for md in bt.metadata(axis='observation')])
         )
     elif isinstance(dtype, (str, unicode)):
-        return map(str, [md[md_key] for md in bt.ObservationMetadata])
+        return map(str, [md[md_key] for md in bt.metadata(axis='observation')])
     else:
         print ('Metadata format could not be determined or metadata key (%s) ' +
                'was incorrect. Metadata will not be returned.') % md_key
         return None
+
+
+def invert_dict(d):
+    """Returns inverse of d, setting keys to values and values to list of keys.
+
+    Note that each value will _always_ be a list, even if one item.
+
+    Can be invoked with anything that can be an argument for dict(), including
+    an existing dict or a list of tuples. However, keys are always appended in
+    arbitrary order, not the input order.
+
+    WARNING: will fail if any values are unhashable, e.g. if they are dicts or
+    lists.
+
+    Ported from PyCogent's cogent.util.misc.InverseDictMulti.
+    """
+    if isinstance(d, dict):
+        temp = d
+    else:
+        temp = dict(d)
+    result = {}
+    for key, val in temp.iteritems():
+        if val not in result:
+            result[val] = []
+        result[val].append(key)
+    return result

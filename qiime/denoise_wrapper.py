@@ -15,12 +15,11 @@ from os import system, listdir, remove, rmdir
 from os.path import exists, split
 from re import search
 from itertools import chain
-from qiime.util import get_tmp_filename
-from cogent.parse.fasta import MinimalFastaParser
-from cogent.util.misc import remove_files, app_path
-from cogent.parse.flowgram_parser import lazy_parse_sff_handle
-from cogent.app.util import ApplicationNotFoundError, ApplicationError
-from cogent.parse.record import RecordError
+
+from skbio.parse.sequences import parse_fasta
+from brokit.denoiser import lazy_parse_sff_handle
+from burrito.util import ApplicationNotFoundError, ApplicationError
+
 from qiime.util import load_qiime_config
 from qiime.denoiser.flowgram_clustering import denoise_seqs
 
@@ -38,8 +37,8 @@ def fast_denoiser(
                      verbose=verbose, titanium=titanium)
 
     # read centroids and singletons
-    centroids = MinimalFastaParser(open(tmp_outdir + "/centroids.fasta"))
-    singletons = MinimalFastaParser(open(tmp_outdir + "/singletons.fasta"))
+    centroids = parse_fasta(open(tmp_outdir + "/centroids.fasta"))
+    singletons = parse_fasta(open(tmp_outdir + "/singletons.fasta"))
 
     seqs = chain(centroids, singletons)
 

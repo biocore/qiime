@@ -15,9 +15,10 @@ import warnings
 warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
 from optparse import OptionParser
 from qiime.parse import parse_distmat
-from cogent.core.tree import PhyloNode
-from cogent.cluster.UPGMA import UPGMA_cluster
-from cogent.phylo.nj import nj
+from scipy.cluster.hierarchy import linkage
+from skbio.core.tree import TreeNode
+from skbio.core.distance import DistanceMatrix
+from skbio.core.tree import nj
 import os.path
 
 
@@ -35,22 +36,19 @@ def multiple_file_upgma(input_dir, output_dir):
 
 def single_file_upgma(input_file, output_file):
     # read in dist matrix
-    f = open(input_file, 'U')
-    headers, data = parse_distmat(f)
-    f.close()
+    dist_mat = DistanceMatrix.from_file(input_file)
 
-    # do upgma
-    nodes = map(PhyloNode, headers)
-    BIG = 1e305
-    U = data.copy()
-    for i in range(len(U)):
-        U[i, i] = BIG
-    c = UPGMA_cluster(U, nodes, BIG)
+    # SciPy uses average as UPGMA:
+    # http://docs.scipy.org/doc/scipy/reference/generated/
+    #    scipy.cluster.hierarchy.linkage.html#scipy.cluster.hierarchy.linkage
+    linkage_matrix = linkage(dist_mat.condensed_form(), method='average')
+
+    tree = TreeNode.from_linkage_matrix(linkage_matrix, dist_mat.ids)
 
     # write output
     f = open(output_file, 'w')
     try:
-        f.write(c.getNewick(with_distances=True))
+        f.write(tree.to_newick(with_distances=True))
     except AttributeError:
         if c is None:
             raise RuntimeError("""input file %s did not make a UPGMA tree.
@@ -60,22 +58,13 @@ def single_file_upgma(input_file, output_file):
 
 
 def single_file_nj(input_file, output_file):
-    # read in dist matrix
-    f = open(input_file, 'U')
-    headers, data = parse_distmat(f)
-    f.close()
+    dm = DistanceMatrix.from_file(input_file)
 
-    # do nj
-    distdict = {}
-    for i in range(len(headers)):
-        for j in range(len(headers)):
-            distdict[(headers[i], headers[j])] = data[i, j]  # need j,i too?
-
-    tree = nj(distdict)
+    tree = nj(dm)
 
     # write output
     f = open(output_file, 'w')
-    f.write(tree.getNewick(with_distances=True))
+    f.write(tree.to_newick(with_distances=True))
     f.close()
 
 

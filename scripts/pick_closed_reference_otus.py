@@ -50,11 +50,21 @@ script_info['script_usage'].append(
      "Pick OTUs, assign taxonomy, and create an OTU table against a reference set of OTUs using usearch_ref. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).",
      "%prog -i $PWD/seqs.fna -r $PWD/refseqs.fna -o $PWD/otus_usearch/ -p $PWD/usearch_params.txt -t $PWD/taxa.txt"))
 
+script_info['script_usage'].append(
+    ("",
+     "Pick OTUs, assign taxonomy, and create an OTU table against a "
+     "reference set of OTUs using sortmerna. ALWAYS SPECIFY ABSOLUTE "
+     "FILE PATHS (absolute path represented here as $PWD, but will "
+     "generally look something like /home/ubuntu/my_analysis/). ",
+     "%prog -i $PWD/seqs.fna -r $PWD/refseqs.fna -o $PWD/otus_sortmerna/ "
+     "-p $PWD/sortmerna_params.txt -t $PWD/taxa.txt"))
+
 script_info[
     'script_usage_output_to_remove'] = [
     '$PWD/otus/',
     '$PWD/otus_w_tax/',
-    '$PWD/otus_usearch/']
+    '$PWD/otus_usearch/',
+    '$PWD/otus_sortmerna/']
 
 script_info['output_description'] = ""
 
@@ -138,19 +148,18 @@ def main():
                                    parallel,
                                    option_parser)
 
-    try:
-        makedirs(output_dir)
-    except OSError:
-        if opts.force:
-            pass
-        else:
-            option_parser.error("Output directory already exists. Please choose"
-                                " a different directory, or force overwrite with -f.")
-
     if print_only:
         command_handler = print_commands
     else:
         command_handler = call_commands_serially
+        try:
+            makedirs(output_dir)
+        except OSError:
+            if opts.force:
+                pass
+            else:
+                option_parser.error("Output directory already exists. Please choose"
+                                    " a different directory, or force overwrite with -f.")
 
     if verbose:
         status_update_callback = print_to_stdout

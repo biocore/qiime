@@ -14,18 +14,19 @@ __email__ = "gregcaporaso@gmail.com"
 from collections import defaultdict
 from random import shuffle, sample
 from numpy import array, inf
-from cogent.parse.fasta import MinimalFastaParser
-from qiime.parse import parse_distmat, parse_mapping_file, parse_metadata_state_descriptions
-from qiime.format import format_otu_table, format_distance_matrix, format_mapping_file
+from skbio.parse.sequences import parse_fasta
+from biom import load_table
+
+from qiime.parse import (parse_distmat, parse_mapping_file,
+                         parse_metadata_state_descriptions)
+from qiime.format import format_distance_matrix, format_mapping_file
 from qiime.util import MetadataMap
-from biom.parse import parse_biom_table
 
 
 def get_otu_ids_from_taxonomy_f(positive_taxa=None,
                                 negative_taxa=None,
                                 metadata_field="taxonomy"):
-    """ return function to pass to Table.filterObservations for taxon-based filtering
-
+    """ return function to pass to Table.filter_observations for taxon-based filtering
         positive_taxa : a list of strings that will be compared to each
          taxonomy level in an observation's (i.e., OTU's) metadata_field. If
          one of the levels matches exactly (except for case) to an item in
@@ -71,11 +72,12 @@ def get_otu_ids_from_taxonomy_f(positive_taxa=None,
 
     # The positive_taxa and negative_taxa lists must be mutually exclusive.
     if len(positive_taxa & negative_taxa) != 0:
-        raise ValueError("Your positive and negative taxa lists contain overlapping values. "
-                         "These lists must be mutually exclusive.\n"
-                         "Offending values are: %s" % ' '.join(positive_taxa & negative_taxa))
+        raise ValueError("Your positive and negative taxa lists contain "
+                         "overlapping values. These lists must be mutually "
+                         "exclusive.\nOffending values are: %s" %
+                         ' '.join(positive_taxa & negative_taxa))
 
-    # Define the function that can be passed to Table.filterObservations
+    # Define the function that can be passed to Table.filter_observations
     def result(v, oid, md):
         positive_hit = False
         negative_hit = False
@@ -104,7 +106,7 @@ def sample_ids_from_metadata_description(mapping_f, valid_states_str):
     sample_ids = get_sample_ids(map_data, map_header, valid_states)
 
     if len(sample_ids) < 1:
-        raise ValueError("All samples have been filtered out for the criteria" +
+        raise ValueError("All samples have been filtered out for the criteria"
                          " described in the valid states")
 
     return sample_ids
@@ -150,8 +152,8 @@ def sample_ids_from_category_state_coverage(mapping_f,
     are filtered by how well a subject covers (i.e. has at least one sample
     for) the category states in coverage_category.
 
-    Two filtering criteria are provided (min_num_states and required_states). At
-    least one must be provided. If both are provided, the subject must meet
+    Two filtering criteria are provided (min_num_states and required_states).
+    At least one must be provided. If both are provided, the subject must meet
     both criteria to pass the filter (i.e. providing both filters is an AND,
     not an OR, operation).
 
@@ -216,7 +218,7 @@ def sample_ids_from_category_state_coverage(mapping_f,
         # file.
         required_states = set(map(str, required_states))
         valid_coverage_states = set(metadata_map.getCategoryValues(
-            metadata_map.SampleIds, coverage_category))
+            metadata_map.sample_ids, coverage_category))
         invalid_coverage_states = required_states - valid_coverage_states
 
         if invalid_coverage_states:
@@ -243,13 +245,13 @@ def sample_ids_from_category_state_coverage(mapping_f,
         raise ValueError("You must specify either the minimum number of "
                          "category states the subject must have samples for "
                          "(min_num_states), or the minimal category states "
-                         "the subject must have samples for (required_states), "
-                         "or both. Supplying neither filtering criteria is "
-                         "not supported.")
+                         "the subject must have samples for "
+                         "(required_states), or both. Supplying neither "
+                         "filtering criteria is not supported.")
 
     if splitter_category is None:
         results = _filter_sample_ids_from_category_state_coverage(
-            metadata_map, metadata_map.SampleIds, coverage_category,
+            metadata_map, metadata_map.sample_ids, coverage_category,
             subject_category, consider_state, min_num_states,
             required_states)
     else:
@@ -257,7 +259,7 @@ def sample_ids_from_category_state_coverage(mapping_f,
         # match the current splitter category state and using those for the
         # actual filtering.
         splitter_category_states = defaultdict(list)
-        for samp_id in metadata_map.SampleIds:
+        for samp_id in metadata_map.sample_ids:
             splitter_category_state = \
                 metadata_map.getCategoryValue(samp_id, splitter_category)
             splitter_category_states[splitter_category_state].append(samp_id)
@@ -324,7 +326,7 @@ def _filter_sample_ids_from_category_state_coverage(metadata_map,
 def filter_fasta(input_seqs, output_seqs_f, seqs_to_keep, negate=False):
     """ Write filtered input_seqs to output_seqs_f which contains only seqs_to_keep
 
-        input_seqs can be the output of MinimalFastaParser or MinimalFastqParser
+        input_seqs can be the output of parse_fasta or parse_fastq
     """
     seqs_to_keep_lookup = {}.fromkeys([seq_id.split()[0]
                                        for seq_id in seqs_to_keep])
@@ -345,7 +347,7 @@ def filter_fasta(input_seqs, output_seqs_f, seqs_to_keep, negate=False):
 def filter_fastq(input_seqs, output_seqs_f, seqs_to_keep, negate=False):
     """ Write filtered input_seqs to output_seqs_f which contains only seqs_to_keep
 
-        input_seqs can be the output of MinimalFastaParser or MinimalFastqParser
+        input_seqs can be the output of parse_fasta or parse_fastq
     """
     seqs_to_keep_lookup = {}.fromkeys([seq_id.split()[0]
                                        for seq_id in seqs_to_keep])
@@ -486,15 +488,15 @@ def negate_tips_to_keep(tips_to_keep, tree):
 
 
 def get_seqs_to_keep_lookup_from_biom(biom_f):
-    otu_table = parse_biom_table(biom_f)
-    return {}.fromkeys(otu_table.ObservationIds)
+    otu_table = load_table(biom_f)
+    return set(otu_table.ids(axis='observation'))
 
 
 def get_seqs_to_keep_lookup_from_seq_id_file(id_to_keep_f):
     """generate a lookup dict of chimeras in chimera file."""
     return (
         set([l.split()[0].strip()
-            for l in id_to_keep_f if not l.startswith('#') and l])
+            for l in id_to_keep_f if l.strip() and not l.startswith('#')])
     )
 get_seq_ids_from_seq_id_file = get_seqs_to_keep_lookup_from_seq_id_file
 
@@ -502,7 +504,7 @@ get_seq_ids_from_seq_id_file = get_seqs_to_keep_lookup_from_seq_id_file
 def get_seqs_to_keep_lookup_from_fasta_file(fasta_f):
     """return the sequence ids within the fasta file"""
     return (
-        set([seq_id.split()[0] for seq_id, seq in MinimalFastaParser(fasta_f)])
+        set([seq_id.split()[0] for seq_id, seq in parse_fasta(fasta_f)])
     )
 get_seq_ids_from_fasta_file = get_seqs_to_keep_lookup_from_fasta_file
 
@@ -531,17 +533,18 @@ def filter_samples_from_otu_table(
                                    min_count,
                                    max_count,
                                    0, inf)
-    return otu_table.filterSamples(filter_f)
+    return otu_table.filter(filter_f, axis='sample', inplace=False)
 
 
 def filter_otus_from_otu_table(otu_table, ids_to_keep, min_count, max_count,
-                               min_samples, max_samples, negate_ids_to_keep=False):
+                               min_samples, max_samples,
+                               negate_ids_to_keep=False):
     filter_f = get_filter_function({}.fromkeys(ids_to_keep),
                                    min_count,
                                    max_count,
                                    min_samples, max_samples,
                                    negate_ids_to_keep)
-    return otu_table.filterObservations(filter_f)
+    return otu_table.filter(filter_f, axis='observation', inplace=False)
 
 # end functions used by filter_samples_from_otu_table.py and
 # filter_otus_from_otu_table.py
@@ -553,12 +556,10 @@ def filter_otu_table_to_n_samples(otu_table, n):
         If n is greater than the number of samples or less than zero a
          ValueError will be raised.
     """
-    try:
-        ids_to_keep = sample(otu_table.SampleIds, n)
-    except ValueError:
-        raise ValueError(
-            "Number of samples to filter must be between 0 and the number of samples.")
-    return filter_samples_from_otu_table(otu_table, ids_to_keep, 0, inf)
+    if not (0 < n <= len(otu_table.ids())):
+        raise ValueError("Number of samples to filter must be between 0 and "
+                         "the number of samples.")
+    return otu_table.subsample(n, axis='sample', by_id=True)
 
 
 def filter_otus_from_otu_map(input_otu_map_fp,
@@ -567,14 +568,15 @@ def filter_otus_from_otu_map(input_otu_map_fp,
                              min_sample_count=1):
     """ Filter otus with fewer than min_count sequences from input_otu_map_fp
 
-        With very large data sets the number of singletons can be very large, and it becomes
-        more efficent to filter them at the otu map stage than the otu table stage.
+        With very large data sets the number of singletons can be very large,
+        and it becomes more efficent to filter them at the otu map stage than
+        the otu table stage.
 
         There are two outputs from this function: the output file (which is the
-         filtered otu map) and the list of retained otu ids as a set. Since I need
-         to return the retained ids for pick_open_reference_otus,
-         this takes filepaths instead of file handles (since it can't be a generator
-         and return something).
+        filtered otu map) and the list of retained otu ids as a set. Since I
+        need to return the retained ids for pick_open_reference_otus, this
+        takes filepaths instead of file handles (since it can't be a generator
+        and return something).
 
     """
     results = set()

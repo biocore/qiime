@@ -16,7 +16,6 @@ from qiime.util import (parse_command_line_parameters, load_qiime_config,
 from os import popen, system, makedirs, mkdir
 from os.path import split, splitext, join
 from subprocess import check_call, CalledProcessError
-from qiime.util import get_tmp_filename
 from cogent.core.tree import TreeNode
 from random import choice
 from time import sleep, time

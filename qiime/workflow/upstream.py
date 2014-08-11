@@ -122,8 +122,8 @@ def run_pick_de_novo_otus(input_fp,
         except KeyError:
             pass
 
-        if 'uclust_otu_id_prefix' not in d:
-            d['uclust_otu_id_prefix'] = 'DeNovoOTU'
+        if 'denovo_otu_id_prefix' not in d:
+            d['denovo_otu_id_prefix'] = 'DeNovoOTU'
         params_str = ' %s' % get_params_str(d)
 
         failures_list_fp = '%s/%s_failures.txt' % \
@@ -331,7 +331,8 @@ def run_pick_closed_reference_otus(
 
     # confirm that a valid otu picking method was supplied before doing
     # any work
-    reference_otu_picking_methods = ['blast', 'uclust_ref', 'usearch61_ref']
+    reference_otu_picking_methods = ['blast', 'uclust_ref', 'usearch61_ref',
+                                     'sortmerna']
 
     try:
         otu_picking_method = params['pick_otus']['otu_picking_method']

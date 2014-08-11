@@ -12,7 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 
 from glob import glob
 from os.path import split, splitext
-from cogent.util.misc import create_dir
+from skbio.util.misc import create_dir
 from qiime.util import (parse_command_line_parameters, make_option,
                         iseq_to_qseq_fields, gzip_open)
 from qiime.format import illumina_data_to_fastq

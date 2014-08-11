@@ -12,15 +12,15 @@ __maintainer__ = "Dan Knights"
 __email__ = "daniel.knights@colorado.edu"
 
 
-from os import remove, system, mkdir
+from os import remove, system, close
 from shutil import rmtree
 from os.path import join, exists
-from tempfile import NamedTemporaryFile, mkdtemp
-from cogent.util.unit_test import TestCase, main
-from cogent.app.util import ApplicationError
-from qiime.util import get_tmp_filename
+from tempfile import NamedTemporaryFile, mkdtemp, mkstemp
 
-from cogent.util.misc import remove_files
+from unittest import TestCase, main
+from burrito.util import ApplicationError
+
+from skbio.util.misc import remove_files
 from qiime.detrend import detrend_pcoa
 from numpy import array
 
@@ -41,18 +41,16 @@ class DetrendTests(TestCase):
     def setUp(self):
 
         # Temporary input file
-        self.tmp_pc_fp = get_tmp_filename(
-            prefix='R_test_pcoa',
-            suffix='.txt'
-        )
+        fd, self.tmp_pc_fp = mkstemp(prefix='R_test_pcoa',
+                                    suffix='.txt')
+        close(fd)
         seq_file = open(self.tmp_pc_fp, 'w')
         seq_file.write(test_pc)
         seq_file.close()
 
-        self.tmp_map_fp = get_tmp_filename(
-            prefix='R_test_map_',
-            suffix='.txt'
-        )
+        fd, self.tmp_map_fp = mkstemp(prefix='R_test_map_',
+                                     suffix='.txt')
+        close(fd)
         map_file = open(self.tmp_map_fp, 'w')
         map_file.write(test_map)
         map_file.close()

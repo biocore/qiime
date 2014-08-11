@@ -10,12 +10,12 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Antonio Gonzalez Pena"
 __email__ = "antgonza@gmail.com"
 
+from os.path import split, splitext
+
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.util import make_option
-from os.path import split, splitext
-from cogent.parse.fasta import MinimalFastaParser
-from cogent import DNA
-from qiime.adjust_seq_orientation import rc_fasta_file, append_rc, null_seq_desc_mapper
+from qiime.adjust_seq_orientation import (rc_fasta_file,
+    append_rc, null_seq_desc_mapper)
 
 options_lookup = get_options_lookup()
 

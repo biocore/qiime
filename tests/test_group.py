@@ -14,8 +14,9 @@ __email__ = "jai.rideout@gmail.com"
 
 from numpy import array, matrix
 from biom.parse import parse_biom_table
-from biom.exception import UnknownID
-from cogent.util.unit_test import TestCase, main
+from biom.exception import UnknownIDError
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
 
 from qiime.parse import (parse_mapping_file, parse_distmat,
                          group_by_field, parse_coords,
@@ -208,7 +209,7 @@ class GroupTests(TestCase):
                                          0.67500000000000004, 0.65400000000000003, 0.69599999999999995,
                                          0.73099999999999998, 0.75800000000000001, 0.73799999999999999,
                                          0.73699999999999999]}}
-        self.assertFloatEqual(comparison_groupings, expected)
+        self.assertDictEqual(comparison_groupings, expected)
 
         comparison_groupings = get_field_state_comparisons(
             self.dist_matrix_header, self.dist_matrix, self.mapping_header,
@@ -221,7 +222,7 @@ class GroupTests(TestCase):
                                          0.67500000000000004, 0.65400000000000003, 0.69599999999999995,
                                          0.73099999999999998, 0.75800000000000001, 0.73799999999999999,
                                          0.73699999999999999]}}
-        self.assertFloatEqual(comparison_groupings, expected)
+        self.assertDictEqual(comparison_groupings, expected)
 
     def test_get_field_state_comparisons_small(self):
         """get_field_state_comparisons() should return a 2D dictionary of
@@ -231,7 +232,7 @@ class GroupTests(TestCase):
             self.small_mapping_header, self.small_mapping,
             self.small_field, ['SampleFieldState1'])
         expected = {'SampleFieldState2': {'SampleFieldState1': [0.5]}}
-        self.assertFloatEqual(comparison_groupings, expected)
+        self.assertDictEqual(comparison_groupings, expected)
 
     def test_get_field_state_comparisons_tiny(self):
         """get_field_state_comparisons() should return an empty dictionary."""
@@ -329,16 +330,25 @@ class GroupTests(TestCase):
 
     def test_get_ordered_coordinates(self):
         """get_ordered_coordinates functions as expected """
-        pc_lines = ["pc vector number\t1\t2\t3\t4",
+        pc_lines = ["Eigvals\t4",
+                    "191.54\t169.99\t30.45\t19.19",
+                    "",
+                    "Proportion explained\t4",
+                    "18.13\t16.09\t2.88\t1.66",
+                    "",
+                    "Species\t0\t0",
+                    "",
+                    "Site\t5\t4",
                     "s1\t-0.049\t0.245\t0.146\t-0.036",
                     "s5\t-0.267\t-0.228\t-0.024\t-0.095",
                     "s3\t-0.285\t-0.260\t-0.017\t-0.070",
                     "s2\t-0.002\t0.216\t-0.052\t-0.085",
                     "s4\t-0.328\t-0.299\t-0.025\t0.051",
                     "",
+                    "Biplot\t0\t0",
                     "",
-                    "eigvals\t191.54\t169.99\t30.45\t19.19",
-                    "% variation explained\t18.13\t16.09\t2.88\t1.66"]
+                    "Site constraints\t0\t0",
+                    ""]
 
         pc = parse_coords(pc_lines)
         expected_coords = [[-0.049, 0.245, 0.146, -0.036],
@@ -349,7 +359,7 @@ class GroupTests(TestCase):
         expected_sids = ['s1', 's2', 's3', 's4', 's5']
         actual_coords, actual_sids = get_ordered_coordinates(
             pc[0], pc[1], ['s1', 's2', 's3', 's4', 's5'])
-        self.assertEqual(actual_coords, expected_coords)
+        assert_almost_equal(actual_coords, expected_coords)
         self.assertEqual(actual_sids, expected_sids)
 
         pc = parse_coords(pc_lines)
@@ -358,7 +368,7 @@ class GroupTests(TestCase):
         expected_sids = ['s1', 's5']
         actual_coords, actual_sids = get_ordered_coordinates(
             pc[0], pc[1], ['s1', 's5'])
-        self.assertEqual(actual_coords, expected_coords)
+        assert_almost_equal(actual_coords, expected_coords)
         self.assertEqual(actual_sids, expected_sids)
 
         pc = parse_coords(pc_lines)
@@ -367,7 +377,7 @@ class GroupTests(TestCase):
         expected_sids = ['s1', 's5']
         actual_coords, actual_sids = get_ordered_coordinates(
             pc[0], pc[1], ['s1', 's6', 's5'])
-        self.assertEqual(actual_coords, expected_coords)
+        assert_almost_equal(actual_coords, expected_coords)
         self.assertEqual(actual_sids, expected_sids)
 
         pc = parse_coords(pc_lines)
@@ -699,7 +709,7 @@ class GroupTests(TestCase):
 
         # invalid observation id
         self.assertRaises(
-            UnknownID,
+            UnknownIDError,
             extract_per_individual_state_metadata_from_sample_metadata_and_biom,
             self.individual_states_and_responses_map_f1,
             self.paired_difference_biom1,

@@ -13,14 +13,15 @@ __email__ = "vantreur@colorado.edu"
 from itertools import combinations, izip
 from collections import defaultdict
 from numpy import array, isnan, min as np_min
-from cogent.draw.distribution_plots import generate_box_plots
+from skbio.draw.distributions import boxplots
 from qiime.format import format_p_value_for_num_iters
 from qiime.parse import (parse_mapping_file_to_dict,
                          parse_rarefaction,
                          group_by_field,
                          parse_mapping_file)
-from qiime.pycogent_backports.test import (mc_t_two_sample, t_two_sample,
-                                           benjamini_hochberg_step_down, bonferroni_correction, fdr_correction)
+from qiime.stats import (mc_t_two_sample, t_two_sample,
+                         benjamini_hochberg_step_down,
+                         bonferroni_correction, fdr_correction)
 from itertools import combinations
 from collections import defaultdict
 
@@ -193,8 +194,7 @@ def generate_alpha_diversity_boxplots(rarefaction_lines,
         x_tick_labels.append("%s (n=%d)" % (cat, len(avg_diversities)))
         distributions.append(avg_diversities)
 
-    return generate_box_plots(distributions,
-                              x_tick_labels=x_tick_labels)
+    return boxplots(distributions, x_tick_labels=x_tick_labels)
 
 
 def compare_alpha_diversities(rarefaction_lines, mapping_lines, category,

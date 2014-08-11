@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Adam Robbins-Pianka"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -12,12 +12,16 @@ __email__ = "gregcaporaso@gmail.com"
 
 from glob import glob
 from shutil import rmtree
+from os import close
 from os.path import exists, join
-from cogent.util.unit_test import TestCase, main
-from cogent.util.misc import remove_files, create_dir
-from biom.parse import parse_biom_table
-from qiime.util import (get_qiime_temp_dir,
-                        get_tmp_filename)
+from tempfile import mkdtemp, mkstemp
+from unittest import TestCase, main
+
+from skbio.util.misc import remove_files
+from numpy.testing import assert_array_equal
+from biom import load_table
+
+from qiime.util import get_qiime_temp_dir
 from qiime.parse import parse_distmat
 from qiime.test import initiate_timeout, disable_timeout
 from qiime.parallel.multiple_rarefactions import ParallelMultipleRarefactions
@@ -32,16 +36,15 @@ class ParallelMultipleRarefactionsTests(TestCase):
 
         # Create example output directory
         tmp_dir = get_qiime_temp_dir()
-        self.test_out = get_tmp_filename(tmp_dir=tmp_dir,
-                                         prefix='qiime_parallel_tests_',
-                                         suffix='',
-                                         result_constructor=str)
+        self.test_out = mkdtemp(dir=tmp_dir,
+                                prefix='qiime_parallel_tests_',
+                                suffix='')
         self.dirs_to_remove.append(self.test_out)
-        create_dir(self.test_out)
 
-        self.input1_fp = get_tmp_filename(tmp_dir=self.test_out,
-                                          prefix='qiime_inseqs',
-                                          suffix='.fasta')
+        fd, self.input1_fp = mkstemp(dir=self.test_out,
+                                    prefix='qiime_inseqs',
+                                    suffix='.fasta')
+        close(fd)
         input1_f = open(self.input1_fp, 'w')
         input1_f.write(input1)
         input1_f.close()
@@ -80,14 +83,14 @@ class ParallelMultipleRarefactionsTests(TestCase):
         biom_tables = glob('%s/*biom' % self.test_out)
         self.assertEqual(len(biom_tables), 20)
         biom_tables.sort()
-        input_table = parse_biom_table(open(self.input1_fp))
+        input_table = load_table(self.input1_fp)
         # sanity checks on first table (sampled at 11 seqs/sample)
-        output_table = parse_biom_table(open(biom_tables[0]))
-        self.assertEqual(output_table.SampleIds, input_table.SampleIds)
+        output_table = load_table(biom_tables[0])
+        assert_array_equal(output_table.ids(), input_table.ids())
         self.assertEqual(output_table.sum(), 99)
         # sanity checks on first table (sampled at 91 seqs/sample)
-        output_table = parse_biom_table(open(biom_tables[-1]))
-        self.assertEqual(output_table.SampleIds, input_table.SampleIds)
+        output_table = load_table(biom_tables[-1])
+        assert_array_equal(output_table.ids(), input_table.ids())
         self.assertEqual(output_table.sum(), 819)
 
 

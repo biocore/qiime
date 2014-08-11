@@ -3,31 +3,30 @@
 
 from __future__ import division
 
-from os import remove, makedirs, system
-from os.path import (split, splitext, basename, isdir, abspath, isfile, exists,
-                     join)
+from os.path import split, basename, abspath, exists, join
 from subprocess import PIPE, Popen
-from datetime import datetime
 
-from cogent.util.misc import remove_files, app_path
-from cogent.parse.fasta import MinimalFastaParser
-from cogent.app.formatdb import build_blast_db_from_fasta_path
-from cogent.app.parameters import ValuedParameter, FlagParameter
-from cogent.app.util import CommandLineApplication, ResultPath,\
-    ApplicationError, ApplicationNotFoundError
-from cogent.util.misc import remove_files
+from skbio.util.misc import remove_files
 
-from qiime.util import (FunctionWithParams, degap_fasta_aln,
-                        write_degapped_fasta_to_file, get_tmp_filename, create_dir,
+from burrito.parameters import ValuedParameter
+from burrito.util import (which, CommandLineApplication, ResultPath,
+                            ApplicationError, ApplicationNotFoundError)
+from skbio.parse.sequences import parse_fasta
+
+from qiime.util import (FunctionWithParams, write_degapped_fasta_to_file,
                         split_fasta_on_sample_ids_to_files)
 from qiime.assign_taxonomy import BlastTaxonAssigner
-from qiime.pycogent_backports.usearch import (usearch61_smallmem_cluster,
-                                              usearch61_chimera_check_denovo, parse_usearch61_clusters,
-                                              usearch61_chimera_check_ref)
+
+from brokit.formatdb import build_blast_db_from_fasta_path
+from brokit.usearch import (usearch61_smallmem_cluster,
+                            usearch61_chimera_check_denovo,
+                            parse_usearch61_clusters,
+                            usearch61_chimera_check_ref)
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso", "Jens Reeder", "William Walters"]
+__credits__ = ["Greg Caporaso", "Jens Reeder", "William Walters",
+               "Jai Ram Rideout", "Adam Robbins-Pianka"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -249,7 +248,7 @@ class BlastFragmentsChimeraChecker(ChimeraChecker):
     def getResult(self, seq_path):
         """ """
         # Iterate over seq_id, seq pairs from seq_path
-        for seq_id, seq in MinimalFastaParser(open(seq_path)):
+        for seq_id, seq in parse_fasta(open(seq_path)):
             # Generate a list of fragments
             fragments = self._fragment_seq(seq)
             # Assign the taxonomy for each of the fragments
@@ -573,7 +572,7 @@ def make_cidx_file(fp):
     environment it mkaes sense to manually make and delete the file.
     """
 
-    if app_path("cdbfasta"):
+    if which("cdbfasta"):
         # cdbfasta comes with the microbiometools/CS
         # should always be installed when using CS
         args = ["cdbfasta", fp]
@@ -624,7 +623,7 @@ def get_chimeras_from_Nast_aligned(seqs_fp, ref_db_aligned_fp=None,
     else:
         if not ref_db_fasta_fp:
             # make degapped reference file
-            ref_db_fasta_fp = write_degapped_fasta_to_file(MinimalFastaParser(
+            ref_db_fasta_fp = write_degapped_fasta_to_file(parse_fasta(
                 open(ref_db_aligned_fp)))
             files_to_remove.append(ref_db_fasta_fp)
         # use user db
@@ -741,7 +740,7 @@ def usearch61_chimera_check(input_seqs_fp,
             print "Splitting fasta according to SampleID..."
         full_seqs = open(input_seqs_fp, "U")
         sep_fastas =\
-            split_fasta_on_sample_ids_to_files(MinimalFastaParser(full_seqs),
+            split_fasta_on_sample_ids_to_files(parse_fasta(full_seqs),
                                                output_dir)
         full_seqs.close()
 
@@ -1066,7 +1065,7 @@ def fix_abundance_labels(output_consensus_fp, filtered_consensus_fp):
 
     filtered_f = open(filtered_consensus_fp, "w")
 
-    for label, seq in MinimalFastaParser(consensus_f):
+    for label, seq in parse_fasta(consensus_f):
         fasta_label = label.split()[0]
         size = "size=" + label.split('size=')[1].replace(';', '')
         final_label = "%s;%s" % (fasta_label, size)

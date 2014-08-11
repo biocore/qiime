@@ -17,23 +17,28 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
-from os import remove
-from os.path import abspath, join, exists
+from os import remove, close
+from os.path import abspath, join, exists, split
 from shutil import rmtree
+from tempfile import mkstemp, mkdtemp
+from filecmp import cmp
 
-from cogent.util.misc import create_dir
-from cogent.util.unit_test import TestCase, main
-from cogent.util.misc import remove_files
-from cogent import DNA
-from cogent.app.formatdb import build_blast_db_from_fasta_path
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
+from skbio.core.sequence import DNA
+from skbio.util.misc import create_dir, remove_files
+from brokit.formatdb import build_blast_db_from_fasta_path
+from brokit.sortmerna_v2 import build_database_sortmerna
 
-from qiime.util import get_tmp_filename, load_qiime_config, create_dir
+from qiime.util import load_qiime_config
+from qiime.parse import fields_to_dict
 from qiime.pick_otus import (CdHitOtuPicker, OtuPicker,
                              MothurOtuPicker, PrefixSuffixOtuPicker, TrieOtuPicker, BlastOtuPicker,
                              expand_otu_map_seq_ids, map_otu_map_files, UclustOtuPicker,
                              UclustReferenceOtuPicker, expand_failures, UsearchOtuPicker,
                              UsearchReferenceOtuPicker, get_blast_hits, BlastxOtuPicker,
-                             Usearch610DeNovoOtuPicker, Usearch61ReferenceOtuPicker)
+                             Usearch610DeNovoOtuPicker, Usearch61ReferenceOtuPicker,
+                             SumaClustOtuPicker, SortmernaV2OtuPicker, SwarmOtuPicker)
 
 
 class OtuPickerTests(TestCase):
@@ -72,11 +77,192 @@ class OtuPickerTests(TestCase):
         self.assertEqual(actual, expected)
 
 
+class SortmernaV2OtuPickerTests(TestCase):
+    """ Tests for SortMeRNA (closed-reference) OTU picker """
+
+    def setUp(self):
+        self.output_dir = mkdtemp()
+        self.reference_seq_fp = sortmerna_reference_seqs_fp
+        self.read_seqs_fp = sortmerna_read_seqs_fp
+        self.otumap_fp = sortmerna_otumap_fp
+        self.failures_fp = sortmerna_failures_fp
+
+        # create temporary file with reference sequences defined
+        # in reference_seqs_fp
+        f, self.file_reference_seq_fp = mkstemp(prefix='temp_references_',
+                                                suffix='.fasta')
+        close(f)
+
+        # write _reference_ sequences to tmp file
+        with open(self.file_reference_seq_fp, 'w') as tmp:
+            tmp.write(self.reference_seq_fp)
+
+        # create temporary file with read sequences defined in read_seqs_fp
+        f, self.file_read_seqs_fp = mkstemp(prefix='temp_reads_',
+                                            suffix='.fasta')
+        close(f)
+
+        # write _read_ sequences to tmp file
+        with open(self.file_read_seqs_fp, 'w') as tmp:
+            tmp.write(self.read_seqs_fp)
+
+        # create temporary file with the OTU map (97% id)
+        f, self.file_otumap_fp = mkstemp(prefix='temp_otumap_',
+                                         suffix='.txt')
+        close(f)
+
+        # write expected OTU map to tmp file
+        with open(self.file_otumap_fp, 'w') as tmp:
+            tmp.write(self.otumap_fp)
+
+        # create a temporary file with failures
+        f, self.file_failures_fp = mkstemp(prefix='temp_failures_',
+                                           suffix='.txt')
+
+        with open(self.file_failures_fp, 'w') as tmp:
+            tmp.write(self.failures_fp)
+
+        self.result_path = '%s/%s_otus.txt' % (self.output_dir, 'temp_reads')
+        self.log_path = '%s/%s_otus.log' % (self.output_dir, 'temp_reads')
+        self.failure_path = '%s/%s_failures.txt' % (
+            self.output_dir, 'temp_reads')
+
+        # list of files to remove
+        self.files_to_remove = [self.file_reference_seq_fp,
+                                self.file_read_seqs_fp,
+                                self.file_otumap_fp,
+                                self.file_failures_fp,
+                                self.result_path,
+                                self.log_path,
+                                self.failure_path]
+
+    def tearDown(self):
+        remove_files(self.files_to_remove)
+        rmtree(self.output_dir)
+
+    def check_output(self,
+                     clusters=None):
+        """ common function used to validate SortMeRNA's
+            output files for each test
+        """
+
+        # clusters should be empty (written to file)
+        self.assertTrue(clusters is None)
+
+        # clusters OTU map exists
+        self.assertTrue(exists(self.result_path))
+
+        # failures output file exists
+        self.assertTrue(exists(self.failure_path))
+
+        # expected failures file matches expected
+        self.assertTrue(cmp(self.file_failures_fp, self.failure_path))
+
+        # log exists
+        self.assertTrue(exists(self.log_path))
+
+    def test_call_default_params_db_not_indexed(self):
+        """ clusters seqs within 97% identity with default parameters,
+            non-indexed database passed
+        """
+
+        app = SortmernaV2OtuPicker(
+            params={'max_e_value': 1,
+                    'similarity': 0.97,
+                    'coverage': 0.97,
+                    'threads': 1,
+                    'blast': False,
+                    'best': 1,
+                    'max_pos': 250,
+                    'prefilter_identical_sequences': True,
+                    'otu_id_prefix': 'RefOTU'})
+
+        clusters = app(
+            seq_path=self.file_read_seqs_fp,
+            result_path=self.result_path,
+            log_path=self.log_path,
+            sortmerna_db=None,
+            refseqs_fp=self.file_reference_seq_fp,
+            failure_path=self.failure_path)
+
+        self.check_output(clusters)
+
+        # clusters OTU map is correct
+        self.assertTrue(cmp(self.file_otumap_fp, self.result_path))
+
+    def test_call_default_params_db_indexed(self):
+        """ clusters seqs within 97% identity with default parameters,
+            indexed database passed
+        """
+        # rebuild the index
+        sortmerna_db, db_files_to_remove = build_database_sortmerna(
+            abspath(self.file_reference_seq_fp),
+            max_pos=250,
+            output_dir=self.output_dir)
+
+        # Files created by indexdb_rna to be deleted
+        self.files_to_remove.extend(db_files_to_remove)
+
+        app = SortmernaV2OtuPicker(
+            params={'max_e_value': 1,
+                    'similarity': 0.97,
+                    'coverage': 0.97,
+                    'threads': 1,
+                    'blast': False,
+                    'best': 1,
+                    'max_pos': 250,
+                    'prefilter_identical_sequences': True,
+                    'otu_id_prefix': 'RefOTU'})
+
+        clusters = app(
+            seq_path=self.file_read_seqs_fp,
+            result_path=self.result_path,
+            log_path=self.log_path,
+            sortmerna_db=None,
+            refseqs_fp=self.file_reference_seq_fp,
+            failure_path=self.failure_path)
+
+        self.check_output(clusters)
+
+        # clusters OTU map is correct
+        self.assertTrue(cmp(self.file_otumap_fp, self.result_path))
+
+    def test_call_no_dereplication(self):
+        """ clusters seqs within 97% identity with default parameters,
+            do not dereplicate the reads prior to alignment
+        """
+
+        app = SortmernaV2OtuPicker(
+            params={'max_e_value': 1,
+                    'similarity': 0.97,
+                    'coverage': 0.97,
+                    'threads': 1,
+                    'blast': False,
+                    'best': 1,
+                    'max_pos': 250,
+                    'prefilter_identical_sequences': False,
+                    'otu_id_prefix': 'RefOTU'})
+
+        clusters = app(
+            seq_path=self.file_read_seqs_fp,
+            result_path=self.result_path,
+            log_path=self.log_path,
+            sortmerna_db=None,
+            refseqs_fp=self.file_reference_seq_fp,
+            failure_path=self.failure_path)
+
+        self.check_output(clusters)
+
+        # clusters OTU map is correct
+        self.assertTrue(cmp(self.file_otumap_fp, self.result_path))
+
+
 class MothurOtuPickerTests(TestCase):
 
     def setUp(self):
-        self.small_seq_path = get_tmp_filename(
-            prefix='MothurOtuPickerTest_', suffix='.fasta')
+        fd, self.small_seq_path = mkstemp(prefix='MothurOtuPickerTest_',
+                                         suffix='.fasta')
+        close(fd)
         f = open(self.small_seq_path, 'w')
         f.write(
             '>aaaaaa\nTAGGCTCTGATATAATAGCTCTC---------\n'
@@ -92,28 +278,290 @@ class MothurOtuPickerTests(TestCase):
         app = MothurOtuPicker({})
         observed_otus = app(self.small_seq_path)
         expected_otus = [['cccccc'], ['bbbbbb'], ['aaaaaa']]
-        self.assertEqualItems(observed_otus.keys(),
+        assert_almost_equal(observed_otus.keys(),
                               [0, 1, 2])
-        self.assertEqualItems(observed_otus.values(),
+        self.assertItemsEqual(observed_otus.values(),
                               expected_otus)
 
     def test_call_low_similarity(self):
         app = MothurOtuPicker({'Similarity': 0.35})
         observed_otus = app(self.small_seq_path)
         expected_otus = [['bbbbbb', 'cccccc'], ['aaaaaa']]
-        self.assertEqualItems(observed_otus.keys(),
+        assert_almost_equal(observed_otus.keys(),
                               [0, 1])
-        self.assertEqualItems(observed_otus.values(),
+        self.assertItemsEqual(observed_otus.values(),
                               expected_otus)
 
     def test_call_nearest_neighbor(self):
         app = MothurOtuPicker({'Algorithm': 'nearest', 'Similarity': 0.35})
         observed_otus = app(self.small_seq_path)
         expected_otus = [['bbbbbb', 'cccccc'], ['aaaaaa']]
-        self.assertEqualItems(observed_otus.keys(),
+        self.assertItemsEqual(observed_otus.keys(),
                               [0, 1])
-        self.assertEqualItems(observed_otus.values(),
+        self.assertItemsEqual(observed_otus.values(),
                               expected_otus)
+
+
+class SumaClustOtuPickerTests(TestCase):
+    """ Tests of the SumaClust de novo OTU picker """
+
+    def setUp(self):
+        self.output_dir = mkdtemp()
+        self.read_seqs = sumaclust_reads_seqs
+
+        # create temporary file with read sequences defined in read_seqs
+        f, self.file_read_seqs = mkstemp(prefix='temp_reads_',
+                                         suffix='.fasta')
+        close(f)
+
+        # write read sequences to tmp file
+        with open(self.file_read_seqs, 'w') as tmp:
+            tmp.write(self.read_seqs)
+
+        # create temporary file with final OTU map
+        f, self.file_otumap = mkstemp(prefix='temp_otumap',
+                                      suffix='.txt')
+        close(f)
+
+        self.result_path = '%s/%s_otus.txt' % (self.output_dir, 'temp_reads')
+        self.log_path = '%s/%s_otus.log' % (self.output_dir, 'temp_reads')
+
+        # list of files to remove
+        self.files_to_remove = [self.file_read_seqs,
+                                self.file_otumap,
+                                self.result_path,
+                                self.log_path]
+
+    def tearDown(self):
+        remove_files(self.files_to_remove)
+        rmtree(self.output_dir)
+
+    def check_clusters(self,
+                       clusters=None):
+
+        # Check the OTU map was output with the correct size
+        self.assertTrue(exists(self.result_path))
+
+        # Place actual clusters in a list of lists
+        actual_clusters = [line.strip().split('\t')[1:]
+                           for line in open(self.result_path, 'U')]
+        actual_clusters.sort()
+
+        # Check the returned clusters list of lists is as expected
+        expected_clusters = [['s1_844', 's1_1886', 's1_5347', 's1_5737',
+                              's1_7014', 's1_7881', 's1_7040', 's1_6200',
+                              's1_1271', 's1_8615'],
+                             ['s1_8977', 's1_10439', 's1_12366', 's1_15985',
+                              's1_21935', 's1_11650', 's1_11001', 's1_8592',
+                              's1_14735', 's1_4677'],
+                             ['s1_630', 's1_4572', 's1_5748', 's1_13961',
+                              's1_2369', 's1_3750', 's1_7634', 's1_8623',
+                              's1_8744', 's1_6846']]
+        expected_clusters.sort()
+
+        # Should be 3 clusters
+        self.assertEqual(len(actual_clusters), 3)
+
+        # List of actual clusters matches list of expected clusters
+        for actual_cluster, expected_cluster in zip(actual_clusters,
+                                                    expected_clusters):
+            actual_cluster.sort()
+            expected_cluster.sort()
+            self.assertEqual(actual_cluster, expected_cluster)
+
+    def test_call_default_params(self):
+        """ SumaClust should return an OTU map
+            with content identical to the expected OTU map,
+            sequences are de-replicated prior to
+            clustering
+        """
+
+        app = SumaClustOtuPicker(
+            params={'similarity': 0.97,
+                    'exact': False,
+                    'threads': 1,
+                    'l': True,
+                    'prefilter_identical_sequences':
+                    True,
+                    'denovo_otu_id_prefix':
+                    'DenovoOTU'})
+
+        clusters = app(seq_path=self.file_read_seqs,
+                       result_path=self.result_path,
+                       log_path=self.log_path)
+
+        self.check_clusters(clusters)
+
+    def test_call_no_dereplication(self):
+        """ SumaClust should return an OTU map
+            with content identical to the expected OTU map,
+            sequences are _not_ de-replicated prior to
+            clustering
+        """
+
+        app = SumaClustOtuPicker(
+            params={'similarity': 0.97,
+                    'exact': False,
+                    'threads': 1,
+                    'l': True,
+                    'prefilter_identical_sequences':
+                    False,
+                    'denovo_otu_id_prefix':
+                    'DenovoOTU'})
+
+        clusters = app(seq_path=self.file_read_seqs,
+                       result_path=self.result_path,
+                       log_path=self.log_path)
+
+        self.check_clusters(clusters)
+
+    def test_call_no_otu_id_prefix(self):
+        """ SumaClust should return an OTU map
+            with content identical to the expected OTU map,
+            resulting clusters do not have an assigned
+            sumaclust_otu_id_prefix
+        """
+
+        app = SumaClustOtuPicker(
+            params={'similarity': 0.97,
+                    'exact': False,
+                    'threads': 1,
+                    'l': True,
+                    'prefilter_identical_sequences':
+                    True,
+                    'denovo_otu_id_prefix': None})
+
+        clusters = app(seq_path=self.file_read_seqs,
+                       result_path=self.result_path,
+                       log_path=self.log_path)
+
+        self.check_clusters(clusters)
+
+class SwarmOtuPickerTests(TestCase):
+    """ Tests of the Swarm de novo OTU picker """
+
+    def setUp(self):
+        self.output_dir = mkdtemp()
+        # use same reads for clustering as for SumaClust
+        self.read_seqs = sumaclust_reads_seqs
+
+        # create temporary file with read sequences defined in read_seqs
+        f, self.file_read_seqs = mkstemp(prefix='temp_reads_',
+                                         suffix='.fasta')
+        close(f)
+
+        # write read sequences to tmp file
+        with open(self.file_read_seqs, 'w') as tmp:
+            tmp.write(self.read_seqs)
+
+        self.result_path = '%s/%s_otus.txt' % (self.output_dir, 'temp_reads')
+        self.log_path = '%s/%s_otus.log' % (self.output_dir, 'temp_reads')
+
+        # list of files to remove
+        self.files_to_remove = [self.file_read_seqs,
+                                self.result_path,
+                                self.log_path]
+
+    def tearDown(self):
+        remove_files(self.files_to_remove)
+        rmtree(self.output_dir)
+
+    def check_clusters(self,
+                       otu_map=None):
+
+        actual_clusters = list(otu_map.values())
+        actual_clusters.sort()
+
+        # Check the returned clusters list of lists is as expected
+        expected_clusters = [['s1_844', 's1_1886', 's1_5347', 's1_5737',
+                              's1_7014', 's1_7881', 's1_7040', 's1_6200',
+                              's1_1271', 's1_8615'],
+                             ['s1_8977', 's1_10439', 's1_12366', 's1_15985',
+                              's1_21935', 's1_11650', 's1_11001', 's1_8592',
+                              's1_14735', 's1_4677'],
+                             ['s1_630', 's1_4572', 's1_5748', 's1_13961',
+                              's1_2369', 's1_3750', 's1_7634', 's1_8623',
+                              's1_8744', 's1_6846']]
+        expected_clusters.sort()
+
+        # Should be 3 clusters
+        self.assertEqual(len(actual_clusters), 3)
+
+        # List of actual clusters matches list of expected clusters
+        for actual_cluster, expected_cluster in zip(actual_clusters,
+                                                    expected_clusters):
+            actual_cluster.sort()
+            expected_cluster.sort()
+            self.assertEqual(actual_cluster, expected_cluster)
+
+    def test_call_default_params(self):
+        """ Swarm should return an OTU map
+            with content identical to the expected OTU map,
+            sequences are de-replicated prior to
+            clustering
+        """
+
+        app = SwarmOtuPicker(
+            params={'resolution': 1,
+                    'threads': 1,
+                    'prefilter_identical_sequences':
+                    True,
+                    'denovo_otu_id_prefix':
+                    'denovo'})
+
+        clusters = app(seq_path=self.file_read_seqs,
+                       result_path=self.result_path,
+                       log_path=self.log_path)
+
+        # resulting clusters are written to result_path
+        self.assertTrue(clusters is None)
+
+        otu_map = fields_to_dict(open(self.result_path))
+
+        # Check denovo0, denovo1 and denovo2 are the
+        # cluster names
+        self.assertTrue('denovo0' in otu_map,
+                        'de novo OTU (denovo0) is not in the final OTU map.')
+        self.assertTrue('denovo1' in otu_map,
+                        'de novo OTU (denovo1) is not in the final OTU map.')
+        self.assertTrue('denovo2' in otu_map,
+                        'de novo OTU (denovo2) is not in the final OTU map.')
+
+        self.check_clusters(otu_map)
+
+    def test_no_otu_id_prefix(self):
+        """ Swarm should return an OTU map
+            with content identical to the expected OTU map,
+            sequences are de-replicated prior to
+            clustering
+        """
+
+        app = SwarmOtuPicker(
+            params={'resolution': 1,
+                    'threads': 1,
+                    'prefilter_identical_sequences':
+                    True,
+                    'denovo_otu_id_prefix': None})
+
+        clusters = app(seq_path=self.file_read_seqs,
+                       result_path=self.result_path,
+                       log_path=self.log_path)
+
+        # resulting clusters are written to result_path
+        self.assertTrue(clusters is None)
+
+        otu_map = fields_to_dict(open(self.result_path))
+
+        # Check 0, 1 and 2 are the
+        # cluster names
+        self.assertTrue('0' in otu_map,
+                        'de novo OTU (0) is not in the final OTU map.')
+        self.assertTrue('1' in otu_map,
+                        'de novo OTU (1) is not in the final OTU map.')
+        self.assertTrue('2' in otu_map,
+                        'de novo OTU (2) is not in the final OTU map.')
+
+        self.check_clusters(otu_map)
 
 
 class BlastxOtuPickerTests(TestCase):
@@ -143,10 +591,12 @@ class BlastxOtuPickerTests(TestCase):
             ('ref5', 'RATGEREL'),
         ]
 
-        self.seqs_fp = get_tmp_filename(
-            prefix='BlastOtuPickerTest_', suffix='.fasta')
-        self.reference_seqs_pr_fp = get_tmp_filename(
-            prefix='BlastOtuPickerTest_', suffix='.fasta')
+        fd, self.seqs_fp = mkstemp(prefix='BlastOtuPickerTest_',
+                                   suffix='.fasta')
+        close(fd)
+        fd, self.reference_seqs_pr_fp = mkstemp(prefix='BlastOtuPickerTest_',
+                                                suffix='.fasta')
+        close(fd)
 
         f = open(self.seqs_fp, 'w')
         f.write('\n'.join(['>%s\n%s' % s for s in self.seqs]))
@@ -236,18 +686,21 @@ class BlastOtuPickerTests(TestCase):
         ]
 
         self.ref_seqs_rc = [
-            ('ref1', DNA.rc('TGCAGCTTGAGCCACAGGAGAGAGAGAGCTTC')),
-            ('ref2', DNA.rc('ACCGATGAGATATTAGCACAGGGGAATTAGAACCA')),
-            ('ref3', DNA.rc('TGTCGAGAGTGAGATGAGATGAGAACA')),
-            ('ref4', DNA.rc('ACGTATTTTAATGGGGCATGGT')),
+            ('ref1', str(DNA('TGCAGCTTGAGCCACAGGAGAGAGAGAGCTTC').rc())),
+            ('ref2', str(DNA('ACCGATGAGATATTAGCACAGGGGAATTAGAACCA').rc())),
+            ('ref3', str(DNA('TGTCGAGAGTGAGATGAGATGAGAACA').rc())),
+            ('ref4', str(DNA('ACGTATTTTAATGGGGCATGGT').rc())),
         ]
 
-        self.seqs_fp = get_tmp_filename(
-            prefix='BlastOtuPickerTest_', suffix='.fasta')
-        self.reference_seqs_fp = get_tmp_filename(
-            prefix='BlastOtuPickerTest_', suffix='.fasta')
-        self.reference_seqs_rc_fp = get_tmp_filename(
-            prefix='BlastOtuPickerTest_', suffix='.fasta')
+        fd, self.seqs_fp = mkstemp(prefix='BlastOtuPickerTest_',
+                                  suffix='.fasta')
+        close(fd)
+        fd, self.reference_seqs_fp = mkstemp(prefix='BlastOtuPickerTest_',
+                                            suffix='.fasta')
+        close(fd)
+        fd, self.reference_seqs_rc_fp = mkstemp(prefix='BlastOtuPickerTest_',
+                                               suffix='.fasta')
+        close(fd)
 
         f = open(self.seqs_fp, 'w')
         f.write('\n'.join(['>%s\n%s' % s for s in self.seqs]))
@@ -375,10 +828,11 @@ class BlastOtuPickerTests(TestCase):
         ref_seqs = [
             ('r1', 'TGCAGCTTGAGCCACGCCGAATAGCCGAGTTTGACCGGGCCCAGGAGGAGAGAGAGAGCTTC')]
 
-        seqs_fp = get_tmp_filename(
-            prefix='BlastOtuPickerTest_', suffix='.fasta')
-        reference_seqs_fp = get_tmp_filename(
-            prefix='BlastOtuPickerTest_', suffix='.fasta')
+        fd, seqs_fp = mkstemp(prefix='BlastOtuPickerTest_', suffix='.fasta')
+        close(fd)
+        fd, reference_seqs_fp = mkstemp(prefix='BlastOtuPickerTest_',
+                                       suffix='.fasta')
+        close(fd)
 
         f = open(seqs_fp, 'w')
         f.write('\n'.join(['>%s\n%s' % s for s in seqs]))
@@ -447,7 +901,7 @@ class BlastOtuPickerTests(TestCase):
                     'ref2': ['s4'],
                     'ref3': ['s5']}
         actual = self.otu_picker(self.seqs_fp, blast_db=blast_db)
-        self.assertEqual(actual, expected)
+        self.assertItemsEqual(actual, expected)
 
     def test_call_multiple_blast_runs(self):
         """BLAST OTU Picker not affected by alt SeqsPerBlastRun
@@ -484,8 +938,9 @@ class PrefixSuffixOtuPickerTests(TestCase):
             ('s6', 'ACGTATTTTAATTTGGCATGGT'),
         ]
 
-        self.small_seq_path = get_tmp_filename(
-            prefix='PrefixSuffixOtuPickerTest_', suffix='.fasta')
+        fd, self.small_seq_path = mkstemp(prefix='PrefixSuffixOtuPickerTest_',
+                                         suffix='.fasta')
+        close(fd)
         self._files_to_remove = [self.small_seq_path]
         f = open(self.small_seq_path, 'w')
         f.write('\n'.join(['>%s\n%s' % s for s in self.seqs]))
@@ -523,8 +978,9 @@ class PrefixSuffixOtuPickerTests(TestCase):
              'ACGTAATGGTCCCCCCCCCGGGGGGGGCCCCCCGGG'),
             ('s2_dup', 'ATTTAATGGT'),
         ]
-        seq_path = get_tmp_filename(
-            prefix='PrefixSuffixOtuPickerTest_', suffix='.fasta')
+        fd, seq_path = mkstemp(prefix='PrefixSuffixOtuPickerTest_',
+                              suffix='.fasta')
+        close(fd)
         self._files_to_remove.append(seq_path)
         f = open(seq_path, 'w')
         f.write('\n'.join(['>%s\n%s' % s for s in seqs]))
@@ -542,21 +998,21 @@ class PrefixSuffixOtuPickerTests(TestCase):
                                  prefix_length=400, suffix_length=0)
         actual_clusters = actual.values()
         expected_clusters = expected.values()
-        self.assertEqualItems(actual_clusters, expected_clusters)
+        self.assertItemsEqual(actual_clusters, expected_clusters)
 
         # long suffixes collapses identical sequences
         actual = self.otu_picker(seq_path,
                                  prefix_length=0, suffix_length=400)
         actual_clusters = actual.values()
         expected_clusters = expected.values()
-        self.assertEqualItems(actual_clusters, expected_clusters)
+        self.assertItemsEqual(actual_clusters, expected_clusters)
 
         # long prefix and suffixes collapses identical sequences
         actual = self.otu_picker(seq_path,
                                  prefix_length=400, suffix_length=400)
         actual_clusters = actual.values()
         expected_clusters = expected.values()
-        self.assertEqualItems(actual_clusters, expected_clusters)
+        self.assertItemsEqual(actual_clusters, expected_clusters)
 
     def test_collapse_exact_matches_prefix_and_suffix(self):
         """Prefix/suffix: collapse_exact_matches fns with pref/suf len > 0
@@ -669,15 +1125,17 @@ class TrieOtuPickerTests(TestCase):
             ('s7', 'AAAAATAAA')
         ]
 
-        self.small_seq_path = get_tmp_filename(
-            prefix='TrieOtuPickerTest_', suffix='.fasta')
+        fd, self.small_seq_path = mkstemp(prefix='TrieOtuPickerTest_',
+                                         suffix='.fasta')
+        close(fd)
         self._files_to_remove = [self.small_seq_path]
         f = open(self.small_seq_path, 'w')
         f.write('\n'.join(['>%s\n%s' % s for s in seqs]))
         f.close()
 
-        self.small_seq_path_rev = get_tmp_filename(
-            prefix='TrieOtuPickerTest_', suffix='.fasta')
+        fd, self.small_seq_path_rev = mkstemp(prefix='TrieOtuPickerTest_',
+                                             suffix='.fasta')
+        close(fd)
         self._files_to_remove.append(self.small_seq_path_rev)
         f = open(self.small_seq_path_rev, 'w')
         f.write('\n'.join(['>%s\n%s' % s for s in seqs_rev]))
@@ -724,30 +1182,34 @@ class Usearch610DeNovoOtuPickerTests(TestCase):
             dna_seqs_usearch_97perc_id_len_diff
         self.dna_seqs_usearch_97perc_dups = dna_seqs_usearch_97perc_dups
 
-        self.tmp_seq_filepath_97perc_id = get_tmp_filename(
+        fd, self.tmp_seq_filepath_97perc_id = mkstemp(
             prefix='Usearch610DeNovoOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_seq_filepath_97perc_id, 'w')
         seq_file.write(self.dna_seqs_usearch_97perc_id)
         seq_file.close()
 
-        self.tmp_seq_filepath_97perc_id_rc = get_tmp_filename(
+        fd, self.tmp_seq_filepath_97perc_id_rc = mkstemp(
             prefix='Usearch610DeNovoOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_seq_filepath_97perc_id_rc, 'w')
         seq_file.write(self.dna_seqs_usearch_97perc_id_rc)
         seq_file.close()
 
-        self.tmp_seqs_usearch97perc_id_len_diff = get_tmp_filename(
+        fd, self.tmp_seqs_usearch97perc_id_len_diff = mkstemp(
             prefix="Usearch610DeNovoOtuPickerTest_",
             suffix=".fasta")
+        close(fd)
         seq_file = open(self.tmp_seqs_usearch97perc_id_len_diff, "w")
         seq_file.write(self.dna_seqs_usearch_97perc_id_len_diff)
         seq_file.close()
 
-        self.tmp_seqs_usearch_97perc_dups = get_tmp_filename(
+        fd, self.tmp_seqs_usearch_97perc_dups = mkstemp(
             prefix="Usearch610DeNovoOtuPickerTest_",
             suffix=".fasta")
+        close(fd)
         seq_file = open(self.tmp_seqs_usearch_97perc_dups, "w")
         seq_file.write(self.dna_seqs_usearch_97perc_dups)
         seq_file.close()
@@ -800,7 +1262,7 @@ class Usearch610DeNovoOtuPickerTests(TestCase):
         expected_clusters = {'denovo0': ['usearch_ecoli_seq',
                                          'usearch_ecoli_seq_2bp_change', 'usearch_ecoli_seq_1bp_change']}
 
-        self.assertEqualItems(obs_clusters, expected_clusters)
+        self.assertItemsEqual(obs_clusters, expected_clusters)
 
     def test_call_default_params_and_higher_id(self):
         """ clusters seqs within 99% identity with default parameters """
@@ -821,8 +1283,8 @@ class Usearch610DeNovoOtuPickerTests(TestCase):
 
         # should be exactly 3 clusters
         self.assertEqual(len(obs_clusters), 3)
-        self.assertEqualItems(obs_clusters.keys(), expected_clusters.keys())
-        self.assertEqualItems(
+        self.assertItemsEqual(obs_clusters.keys(), expected_clusters.keys())
+        self.assertItemsEqual(
             obs_clusters.values(),
             expected_clusters.values())
 
@@ -921,7 +1383,7 @@ class Usearch610DeNovoOtuPickerTests(TestCase):
         expected_clusters = {'denovo0': ['usearch_ecoli_seq',
                                          'usearch_ecoli_seq_1bp_change', 'usearch_ecoli_seq_2bp_change']}
 
-        self.assertEqualItems(obs_clusters, expected_clusters)
+        self.assertItemsEqual(obs_clusters, expected_clusters)
 
     def test_call_default_params_minlen(self):
         """ Discards reads that fall below minlen setting """
@@ -958,7 +1420,7 @@ class Usearch610DeNovoOtuPickerTests(TestCase):
         expected_clusters = {'test0': ['usearch_ecoli_seq',
                                        'usearch_ecoli_seq_2bp_change', 'usearch_ecoli_seq_1bp_change']}
 
-        self.assertEqualItems(obs_clusters, expected_clusters)
+        self.assertItemsEqual(obs_clusters, expected_clusters)
 
     def test_usearch61_length_sorting(self):
         """ Sorting according to length, clusters seqs """
@@ -1016,37 +1478,42 @@ class Usearch61ReferenceOtuPickerTests(TestCase):
         self.dna_seqs_usearch_97perc_dups = dna_seqs_usearch_97perc_dups
         self.dna_seqs_rc_single_seq = dna_seqs_rc_single_seq
 
-        self.tmp_seq_filepath_97perc_id = get_tmp_filename(
+        fd, self.tmp_seq_filepath_97perc_id = mkstemp(
             prefix='Usearch610DeNovoOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_seq_filepath_97perc_id, 'w')
         seq_file.write(self.dna_seqs_usearch_97perc_id)
         seq_file.close()
 
-        self.tmp_seq_filepath_97perc_id_rc = get_tmp_filename(
+        fd, self.tmp_seq_filepath_97perc_id_rc = mkstemp(
             prefix='Usearch610DeNovoOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_seq_filepath_97perc_id_rc, 'w')
         seq_file.write(self.dna_seqs_usearch_97perc_id_rc)
         seq_file.close()
 
-        self.tmp_seqs_usearch97perc_id_len_diff = get_tmp_filename(
+        fd, self.tmp_seqs_usearch97perc_id_len_diff = mkstemp(
             prefix="Usearch610DeNovoOtuPickerTest_",
             suffix=".fasta")
+        close(fd)
         seq_file = open(self.tmp_seqs_usearch97perc_id_len_diff, "w")
         seq_file.write(self.dna_seqs_usearch_97perc_id_len_diff)
         seq_file.close()
 
-        self.tmp_seqs_usearch_97perc_dups = get_tmp_filename(
+        fd, self.tmp_seqs_usearch_97perc_dups = mkstemp(
             prefix="Usearch610DeNovoOtuPickerTest_",
             suffix=".fasta")
+        close(fd)
         seq_file = open(self.tmp_seqs_usearch_97perc_dups, "w")
         seq_file.write(self.dna_seqs_usearch_97perc_dups)
         seq_file.close()
 
-        self.tmp_seqs_rc_single_seq = get_tmp_filename(
+        fd, self.tmp_seqs_rc_single_seq = mkstemp(
             prefix="Usearch610DeNovoOtuPickerTest_",
             suffix=".fasta")
+        close(fd)
         seq_file = open(self.tmp_seqs_rc_single_seq, "w")
         seq_file.write(self.dna_seqs_rc_single_seq)
         seq_file.close()
@@ -1390,7 +1857,7 @@ class Usearch61ReferenceOtuPickerTests(TestCase):
 
         expected_failures = ['usearch_ecoli_seq',
                              'usearch_ecoli_seq_2bp_change', 'usearch_ecoli_seq_1bp_change']
-        self.assertEqualItems(failures, expected_failures)
+        self.assertItemsEqual(failures, expected_failures)
 
     def test_closed_reference_with_match_usearch61(self):
         """ usearch61 does closed reference OTU picking successfully """
@@ -1487,30 +1954,34 @@ class UsearchOtuPickerTests(TestCase):
         self.ref_database = usearch_ref_seqs1
 
         self.temp_dir = load_qiime_config()['temp_dir']
-        self.tmp_seq_filepath1 = get_tmp_filename(
+        fd, self.tmp_seq_filepath1 = mkstemp(
             prefix='UsearchOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_seq_filepath1, 'w')
         seq_file.write(self.dna_seqs_3)
         seq_file.close()
 
-        self.tmp_seq_filepath1_derep = get_tmp_filename(
+        fd, self.tmp_seq_filepath1_derep = mkstemp(
             prefix='UsearchOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_seq_filepath1_derep, 'w')
         seq_file.write(self.dna_seqs_3_derep)
         seq_file.close()
 
-        self.tmp_seq_filepath2 = get_tmp_filename(
+        fd, self.tmp_seq_filepath2 = mkstemp(
             prefix='UsearchOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_seq_filepath2, 'w')
         seq_file.write(self.dna_seqs_4)
         seq_file.close()
 
-        self.tmp_ref_database = get_tmp_filename(
+        fd, self.tmp_ref_database = mkstemp(
             prefix='UsearchRefDatabase_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_ref_database, 'w')
         seq_file.write(self.ref_database)
         seq_file.close()
@@ -1529,9 +2000,10 @@ class UsearchOtuPickerTests(TestCase):
 
     def seqs_to_temp_fasta(self, seqs):
         """ """
-        fp = get_tmp_filename(
+        fd, fp = mkstemp(
             prefix='UsearchOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(fp, 'w')
         self._files_to_remove.append(fp)
         for s in seqs:
@@ -1863,14 +2335,16 @@ class UsearchOtuPickerTests(TestCase):
         # during ref based detection, then write the OTU mapping file in
         # QIIME format.
 
-        self.tmp_result_path = get_tmp_filename(
+        fd, self.tmp_result_path = mkstemp(
             prefix='UsearchOTUMapping_',
             suffix='.txt')
+        close(fd)
         f = open(self.tmp_result_path, "w")
 
-        self.tmp_failures_path = get_tmp_filename(
+        fd, self.tmp_failures_path = mkstemp(
             prefix='UsearchFailures_',
             suffix='.txt')
+        close(fd)
         f = open(self.tmp_failures_path, "w")
 
         self._files_to_remove.append(self.tmp_result_path)
@@ -1927,37 +2401,42 @@ class UsearchReferenceOtuPickerTests(TestCase):
         self.otu_ref_database = uclustref_query_seqs1
 
         self.temp_dir = load_qiime_config()['temp_dir']
-        self.tmp_seq_filepath1 = get_tmp_filename(
+        fd, self.tmp_seq_filepath1 = mkstemp(
             prefix='UsearchOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_seq_filepath1, 'w')
         seq_file.write(self.dna_seqs_3)
         seq_file.close()
 
-        self.tmp_seq_filepath1_derep = get_tmp_filename(
+        fd, self.tmp_seq_filepath1_derep = mkstemp(
             prefix='UsearchOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_seq_filepath1_derep, 'w')
         seq_file.write(self.dna_seqs_3_derep)
         seq_file.close()
 
-        self.tmp_seq_filepath2 = get_tmp_filename(
+        fd, self.tmp_seq_filepath2 = mkstemp(
             prefix='UsearchOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_seq_filepath2, 'w')
         seq_file.write(self.dna_seqs_4)
         seq_file.close()
 
-        self.tmp_ref_database = get_tmp_filename(
+        fd, self.tmp_ref_database = mkstemp(
             prefix='UsearchRefDatabase_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_ref_database, 'w')
         seq_file.write(self.ref_database)
         seq_file.close()
 
-        self.tmp_otu_ref_database = get_tmp_filename(
+        fd, self.tmp_otu_ref_database = mkstemp(
             prefix='UsearchRefOtuDatabase_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_otu_ref_database, 'w')
         seq_file.write(self.otu_ref_database)
         seq_file.close()
@@ -1977,9 +2456,10 @@ class UsearchReferenceOtuPickerTests(TestCase):
 
     def seqs_to_temp_fasta(self, seqs):
         """ """
-        fp = get_tmp_filename(
+        fd, fp = mkstemp(
             prefix='UsearchOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(fp, 'w')
         self._files_to_remove.append(fp)
         for s in seqs:
@@ -2350,14 +2830,16 @@ class UsearchReferenceOtuPickerTests(TestCase):
         # during ref based detection, then write the OTU mapping file in
         # QIIME format.
 
-        self.tmp_result_path = get_tmp_filename(
+        fd, self.tmp_result_path = mkstemp(
             prefix='UsearchOTUMapping_',
             suffix='.txt')
+        close(fd)
         f = open(self.tmp_result_path, "w")
 
-        self.tmp_failures_path = get_tmp_filename(
+        fd, self.tmp_failures_path = mkstemp(
             prefix='UsearchFailures_',
             suffix='.txt')
+        close(fd)
         f = open(self.tmp_failures_path, "w")
 
         self._files_to_remove.append(self.tmp_result_path)
@@ -2414,30 +2896,35 @@ class UclustOtuPickerTests(TestCase):
     def setUp(self):
         # create the temporary input files
         self.temp_dir = load_qiime_config()['temp_dir']
-        self.tmp_seq_filepath1 = get_tmp_filename(
+        fd, self.tmp_seq_filepath1 = mkstemp(
+            dir=self.temp_dir,
             prefix='UclustOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_seq_filepath1, 'w')
         seq_file.write(dna_seqs_3)
         seq_file.close()
 
-        self.tmp_seq_filepath2 = get_tmp_filename(
+        fd, self.tmp_seq_filepath2 = mkstemp(
             prefix='UclustOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_seq_filepath2, 'w')
         seq_file.write(dna_seqs_4)
         seq_file.close()
 
-        self.tmp_seq_filepath3 = get_tmp_filename(
+        fd, self.tmp_seq_filepath3 = mkstemp(
             prefix='UclustOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_seq_filepath3, 'w')
         seq_file.write(dna_seqs_5)
         seq_file.close()
 
-        self.tmp_seq_filepath4 = get_tmp_filename(
+        fd, self.tmp_seq_filepath4 = mkstemp(
             prefix='UclustOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_seq_filepath4, 'w')
         seq_file.write(dna_seqs_6)
         seq_file.close()
@@ -2451,9 +2938,10 @@ class UclustOtuPickerTests(TestCase):
 
     def seqs_to_temp_fasta(self, seqs):
         """ """
-        fp = get_tmp_filename(
+        fd, fp = mkstemp(
             prefix='UclustReferenceOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(fp, 'w')
         self._files_to_remove.append(fp)
         for s in seqs:
@@ -2629,8 +3117,7 @@ class UclustOtuPickerTests(TestCase):
                                       'output_dir': self.temp_dir})
         obs = app(self.tmp_seq_filepath1)
 
-        uc_fasta_fp = "_".join(self.tmp_seq_filepath1.split('_')[0:2])
-        uc_output_fp = uc_fasta_fp.replace('.fasta', '_clusters.uc')
+        uc_output_fp = self.tmp_seq_filepath1.replace('.fasta', '_clusters.uc')
 
         uc_output_f = open(uc_output_fp, "U")
         self._files_to_remove.append(uc_output_fp)
@@ -2767,9 +3254,10 @@ class UclustOtuPickerTests(TestCase):
         """UclustHitOtuPicker.__call__ output to file functions as expected
         """
 
-        tmp_result_filepath = get_tmp_filename(
+        fd, tmp_result_filepath = mkstemp(
             prefix='UclustOtuPickerTest.test_call_output_to_file_',
             suffix='.txt')
+        close(fd)
 
         app = UclustOtuPicker(params={'Similarity': 0.90,
                                       'suppress_sort': False,
@@ -2815,12 +3303,14 @@ class UclustOtuPickerTests(TestCase):
         """UclustOtuPicker.__call__ writes log when expected
         """
 
-        tmp_log_filepath = get_tmp_filename(
+        fd, tmp_log_filepath = mkstemp(
             prefix='UclustOtuPickerTest.test_call_output_to_file_l_',
             suffix='.txt')
-        tmp_result_filepath = get_tmp_filename(
+        close(fd)
+        fd, tmp_result_filepath = mkstemp(
             prefix='UclustOtuPickerTest.test_call_output_to_file_r_',
             suffix='.txt')
+        close(fd)
 
         app = UclustOtuPicker(params={'Similarity': 0.99,
                                       'save_uc_files': False})
@@ -2840,10 +3330,10 @@ class UclustOtuPickerTests(TestCase):
                            "enable_rev_strand_matching:False",
                            "suppress_sort:True",
                            "optimal:False",
-                           'max_accepts:20',
-                           'max_rejects:500',
-                           'stepwords:20',
-                           'word_length:12',
+                           'max_accepts:1',
+                           'max_rejects:8',
+                           'stepwords:8',
+                           'word_length:8',
                            "exact:False",
                            "Num OTUs:10",
                            "new_cluster_identifier:None",
@@ -2857,7 +3347,7 @@ class UclustOtuPickerTests(TestCase):
         # NOTE: Since app.params is a dict, the order of lines is not
         # guaranteed, so testing is performed to make sure that
         # the equal unordered lists of lines is present in actual and expected
-        self.assertEqualItems(log_file_str.split('\n'), log_file_99_exp)
+        self.assertItemsEqual(log_file_str.split('\n'), log_file_99_exp)
 
     def test_map_filtered_clusters_to_full_clusters(self):
         """UclustOtuPicker._map_filtered_clusters_to_full_clusters functions as expected
@@ -2904,16 +3394,19 @@ class UclustReferenceOtuPickerTests(TestCase):
     def setUp(self):
         """ """
         self.temp_dir = load_qiime_config()['temp_dir']
-        self.tmp_seq_filepath1 = get_tmp_filename(
+        fd, self.tmp_seq_filepath1 = mkstemp(
+            dir=self.temp_dir,
             prefix='UclustReferenceOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_seq_filepath1, 'w')
         seq_file.write(uclustref_query_seqs1)
         seq_file.close()
 
-        self.temp_ref_filepath1 = get_tmp_filename(
+        fd, self.temp_ref_filepath1 = mkstemp(
             prefix='UclustReferenceOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         ref_file = open(self.temp_ref_filepath1, 'w')
         ref_file.write(uclustref_ref_seqs1)
         ref_file.close()
@@ -2927,9 +3420,10 @@ class UclustReferenceOtuPickerTests(TestCase):
 
     def seqs_to_temp_fasta(self, seqs):
         """ """
-        fp = get_tmp_filename(
+        fd, fp = mkstemp(
             prefix='UclustReferenceOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(fp, 'w')
         self._files_to_remove.append(fp)
         for s in seqs:
@@ -3106,8 +3600,9 @@ class UclustReferenceOtuPickerTests(TestCase):
                                        'suppress_new_clusters': True,
                                        'save_uc_files': False,
                                        'prefilter_identical_sequences': False})
-        fail_path_no_prefilter = get_tmp_filename(
+        fd, fail_path_no_prefilter = mkstemp(
             prefix='UclustRefOtuPickerFailures', suffix='.txt')
+        close(fd)
         self._files_to_remove.append(fail_path_no_prefilter)
         obs_no_prefilter = uc(self.seqs_to_temp_fasta(seqs),
                               self.seqs_to_temp_fasta(ref_seqs),
@@ -3123,8 +3618,9 @@ class UclustReferenceOtuPickerTests(TestCase):
                                        'suppress_new_clusters': True,
                                        'save_uc_files': False,
                                        'prefilter_identical_sequences': True})
-        fail_path_prefilter = get_tmp_filename(
+        fd, fail_path_prefilter = mkstemp(
             prefix='UclustRefOtuPickerFailures', suffix='.txt')
+        close(fd)
         self._files_to_remove.append(fail_path_prefilter)
         obs_prefilter = uc(self.seqs_to_temp_fasta(seqs),
                            self.seqs_to_temp_fasta(ref_seqs),
@@ -3208,14 +3704,17 @@ class UclustReferenceOtuPickerTests(TestCase):
     def test_call_log_file(self):
         """UclustReferenceOtuPicker.__call__ writes log when expected
         """
-        tmp_log_filepath = get_tmp_filename(prefix='UclustReferenceOtuPicker',
-                                            suffix='log')
-        tmp_result_filepath = get_tmp_filename(
+        fd, tmp_log_filepath = mkstemp(prefix='UclustReferenceOtuPicker',
+                                      suffix='log')
+        close(fd)
+        fd, tmp_result_filepath = mkstemp(
             prefix='UclustReferenceOtuPicker',
             suffix='txt')
-        tmp_failure_filepath = get_tmp_filename(
+        close(fd)
+        fd, tmp_failure_filepath = mkstemp(
             prefix='UclustReferenceOtuPicker',
             suffix='txt')
+        close(fd)
         seqs = [('s1', 'ACCTTGTTACTTT'),
                 ('s2', 'ACCTAGTTACTTT'),
                 ('s3', 'TTGCGTAACGTTTGAC'),
@@ -3259,10 +3758,10 @@ class UclustReferenceOtuPickerTests(TestCase):
                            "Num OTUs:1",
                            "Num new OTUs:0",
                            "Num failures:2",
-                           'max_accepts:20',
-                           'max_rejects:500',
-                           'stepwords:20',
-                           'word_length:12',
+                           'max_accepts:1',
+                           'max_rejects:8',
+                           'stepwords:8',
+                           'word_length:8',
                            "stable_sort:True",
                            "new_cluster_identifier:QiimeOTU",
                            "next_new_cluster_number:1",
@@ -3276,10 +3775,10 @@ class UclustReferenceOtuPickerTests(TestCase):
         # guaranteed, so testing is performed to make sure that
         # the equal unordered lists of lines is present in actual and expected
 
-        self.assertEqualItems(log_file_str.split('\n'), log_file_99_exp)
+        self.assertItemsEqual(log_file_str.split('\n'), log_file_99_exp)
 
         failures_file_99_exp = ["s3", "s4"]
-        self.assertEqualItems(fail_file_str.split('\n'), failures_file_99_exp)
+        self.assertItemsEqual(fail_file_str.split('\n'), failures_file_99_exp)
 
     def test_default_parameters_new_clusters_allowed(self):
         """UclustReferenceOtuPicker: default parameters, new clusters allowed
@@ -3357,8 +3856,7 @@ class UclustReferenceOtuPickerTests(TestCase):
         self.assertEqual(obs_cluster_ids, exp_cluster_ids)
         self.assertEqual(obs_clusters, exp_clusters)
 
-        uc_fasta_fp = "_".join(self.tmp_seq_filepath1.split('_')[0:2])
-        uc_output_fp = uc_fasta_fp.replace('.fasta', '_clusters.uc')
+        uc_output_fp = self.tmp_seq_filepath1.replace('.fasta', '_clusters.uc')
 
         uc_output_f = open(uc_output_fp, "U")
         self._files_to_remove.append(uc_output_fp)
@@ -3444,16 +3942,18 @@ class CdHitOtuPickerTests(TestCase):
 
     def setUp(self):
         # create the temporary input files
-        self.tmp_seq_filepath1 = get_tmp_filename(
+        fd, self.tmp_seq_filepath1 = mkstemp(
             prefix='CdHitOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_seq_filepath1, 'w')
         seq_file.write(dna_seqs_1)
         seq_file.close()
 
-        self.tmp_seq_filepath2 = get_tmp_filename(
+        fd, self.tmp_seq_filepath2 = mkstemp(
             prefix='CdHitOtuPickerTest_',
             suffix='.fasta')
+        close(fd)
         seq_file = open(self.tmp_seq_filepath2, 'w')
         seq_file.write(dna_seqs_2)
         seq_file.close()
@@ -3507,9 +4007,10 @@ class CdHitOtuPickerTests(TestCase):
         """CdHitOtuPicker.__call__ output to file functions as expected
         """
 
-        tmp_result_filepath = get_tmp_filename(
+        fd, tmp_result_filepath = mkstemp(
             prefix='CdHitOtuPickerTest.test_call_output_to_file_',
             suffix='.txt')
+        close(fd)
 
         app = CdHitOtuPicker(params={'Similarity': 0.90})
         obs = app(self.tmp_seq_filepath1, result_path=tmp_result_filepath)
@@ -3530,12 +4031,14 @@ class CdHitOtuPickerTests(TestCase):
         """CdHitOtuPicker.__call__ writes log when expected
         """
 
-        tmp_log_filepath = get_tmp_filename(
+        fd, tmp_log_filepath = mkstemp(
             prefix='CdHitOtuPickerTest.test_call_output_to_file_l_',
             suffix='.txt')
-        tmp_result_filepath = get_tmp_filename(
+        close(fd)
+        fd, tmp_result_filepath = mkstemp(
             prefix='CdHitOtuPickerTest.test_call_output_to_file_r_',
             suffix='.txt')
+        close(fd)
 
         app = CdHitOtuPicker(params={'Similarity': 0.99})
         obs = app(self.tmp_seq_filepath1,
@@ -3558,7 +4061,7 @@ class CdHitOtuPickerTests(TestCase):
         # NOTE: Since app.params is a dict, the order of lines is not
         # guaranteed, so testing is performed to make sure that
         # the equal unordered lists of lines is present in actual and expected
-        self.assertEqualItems(log_file_str.split('\n'), log_file_99_exp)
+        self.assertItemsEqual(log_file_str.split('\n'), log_file_99_exp)
 
     def test_prefilter_exact_prefixes_no_filtering(self):
         """ CdHitOtuPicker._prefilter_exact_prefixes fns as expected when no seqs get filtered
@@ -3765,10 +4268,10 @@ class PickOtusStandaloneFunctions(TestCase):
         """expanding failures generated by chained otu picking fns as expected
         """
         expected_f1 = ['0', '2']
-        self.assertEqualItems(expand_failures(self.failures1, self.otu_map2),
+        self.assertItemsEqual(expand_failures(self.failures1, self.otu_map2),
                               expected_f1)
         expected_f2 = ['0', '1', '2']
-        self.assertEqualItems(expand_failures(self.failures2, self.otu_map2),
+        self.assertItemsEqual(expand_failures(self.failures2, self.otu_map2),
                               expected_f2)
 
     def test_expand_failures_two_otu_maps(self):
@@ -3778,7 +4281,7 @@ class PickOtusStandaloneFunctions(TestCase):
 
         actual = expand_failures(self.failures1,
                                  expand_otu_map_seq_ids(self.otu_map2, self.otu_map1))
-        self.assertEqualItems(actual, expected_f1)
+        self.assertItemsEqual(actual, expected_f1)
 
     def test_map_otu_map_files_failures_file_two_otu_maps1(self):
         """map_otu_map_files: correctly maps two otu files and failures
@@ -4151,6 +4654,316 @@ CTTCTTCTGCGGGTAACGTCAATGAGCAAAGGTATTAACTTTACTCCCTCCGCCCCGCTGAAAGTACTTTACAACCCGTA
 
 dna_seqs_rc_single_seq = """>usearch_ecoli_seq_2bp_change_rc
 CTTCTTCTGCGGGTAACGTCAATGAGCAAAGGTATTAACTTTACTCCCTCCGCCCCGCTGAAAGTACTTTACAACCCGTAGGCCTTCTTCATACACGCG
+"""
+
+# Reads to cluster
+# there are 30 reads representing 3 species (gives 3 clusters)
+sumaclust_reads_seqs = """>s1_630 reference=1049393 amplicon=complement(497..788)
+GTGCCAGCAGCCGCGGTAATACAGAGGTCTCAAGCGTTGTTCGGATTCATTGGGCGTAAAGGGTGCGTAGGTGGCGGGGTAAGTCAGGTGTGAAATCTCG
+>s1_2369 reference=1049393 amplicon=complement(497..788) errors=73%A
+GTGCCAGCAGCCGCGGTAATACAGAGGTCTCAAGCGTTGTTCGGATTCATTGGGCGTAAAGGGTGCGTAGGTAGCGGGGTAAGTCAGGTGTGAAATCTCG
+>s1_3750 reference=1049393 amplicon=complement(497..788) errors=100%A
+GTGCCAGCAGCCGCGGTAATACAGAGGTCTCAAGCGTTGTTCGGATTCATTGGGCGTAAAGGGTGCGTAGGTGGCGGGGTAAGTCAGGTGTGAAATCTCA
+>s1_4572 reference=1049393 amplicon=complement(497..788)
+GTGCCAGCAGCCGCGGTAATACAGAGGTCTCAAGCGTTGTTCGGATTCATTGGGCGTAAAGGGTGCGTAGGTGGCGGGGTAAGTCAGGTGTGAAATCTCG
+>s1_5748 reference=1049393 amplicon=complement(497..788)
+GTGCCAGCAGCCGCGGTAATACAGAGGTCTCAAGCGTTGTTCGGATTCATTGGGCGTAAAGGGTGCGTAGGTGGCGGGGTAAGTCAGGTGTGAAATCTCG
+>s1_6846 reference=1049393 amplicon=complement(497..788) errors=67%A
+GTGCCAGCAGCCGCGGTAATACAGAGGTCTCAAGCGTTGTTCGGATTCATTGGGCGTAAAGGGTGCATAGGTGGCGGGGTAAGTCAGGTGTGAAATCTCG
+>s1_7634 reference=1049393 amplicon=complement(497..788) errors=99%T
+GTGCCAGCAGCCGCGGTAATACAGAGGTCTCAAGCGTTGTTCGGATTCATTGGGCGTAAAGGGTGCGTAGGTGGCGGGGTAAGTCAGGTGTGAAATCTTG
+>s1_8623 reference=1049393 amplicon=complement(497..788) errors=17-
+GTGCCAGCAGCCGCGGAATACAGAGGTCTCAAGCGTTGTTCGGATTCATTGGGCGTAAAGGGTGCGTAGGTGGCGGGGTAAGTCAGGTGTGAAATCTCG
+>s1_8744 reference=1049393 amplicon=complement(497..788) errors=62%A
+GTGCCAGCAGCCGCGGTAATACAGAGGTCTCAAGCGTTGTTCGGATTCATTGGGCGTAAAGAGTGCGTAGGTGGCGGGGTAAGTCAGGTGTGAAATCTCG
+>s1_13961 reference=1049393 amplicon=complement(497..788)
+GTGCCAGCAGCCGCGGTAATACAGAGGTCTCAAGCGTTGTTCGGATTCATTGGGCGTAAAGGGTGCGTAGGTGGCGGGGTAAGTCAGGTGTGAAATCTCG
+>s1_4677 reference=4382408 amplicon=complement(487..778) errors=74%T
+GTGCCAGCAGCCGCGGTAATACGGAGGGTCCAAGCGTTGTCCGGAATCACTGGGTGTAAAGGGTGCGTAGGCGTGTCTGTAAGTCAGAGGTGAAAGCCCA
+>s1_8592 reference=4382408 amplicon=complement(487..778) errors=95+A
+GTGCCAGCAGCCGCGGTAATACGGAGGGTCCAAGCGTTGTCCGGAATCACTGGGTGTAAAGGGTGCGTAGGCGGGTCTGTAAGTCAGAGGTGAAAAGCCCA
+>s1_8977 reference=4382408 amplicon=complement(487..778)
+GTGCCAGCAGCCGCGGTAATACGGAGGGTCCAAGCGTTGTCCGGAATCACTGGGTGTAAAGGGTGCGTAGGCGGGTCTGTAAGTCAGAGGTGAAAGCCCA
+>s1_10439 reference=4382408 amplicon=complement(487..778)
+GTGCCAGCAGCCGCGGTAATACGGAGGGTCCAAGCGTTGTCCGGAATCACTGGGTGTAAAGGGTGCGTAGGCGGGTCTGTAAGTCAGAGGTGAAAGCCCA
+>s1_11001 reference=4382408 amplicon=complement(487..778) errors=91%G
+GTGCCAGCAGCCGCGGTAATACGGAGGGTCCAAGCGTTGTCCGGAATCACTGGGTGTAAAGGGTGCGTAGGCGGGTCTGTAAGTCAGAGGGGAAAGCCCA
+>s1_11650 reference=4382408 amplicon=complement(487..778) errors=78-
+GTGCCAGCAGCCGCGGTAATACGGAGGGTCCAAGCGTTGTCCGGAATCACTGGGTGTAAAGGGTGCGTAGGCGGGTCGTAAGTCAGAGGTGAAAGCCCA
+>s1_12366 reference=4382408 amplicon=complement(487..778)
+GTGCCAGCAGCCGCGGTAATACGGAGGGTCCAAGCGTTGTCCGGAATCACTGGGTGTAAAGGGTGCGTAGGCGGGTCTGTAAGTCAGAGGTGAAAGCCCA
+>s1_14735 reference=4382408 amplicon=complement(487..778) errors=94%C
+GTGCCAGCAGCCGCGGTAATACGGAGGGTCCAAGCGTTGTCCGGAATCACTGGGTGTAAAGGGTGCGTAGGCGGGTCTGTAAGTCAGAGGTGACAGCCCA
+>s1_15985 reference=4382408 amplicon=complement(487..778)
+GTGCCAGCAGCCGCGGTAATACGGAGGGTCCAAGCGTTGTCCGGAATCACTGGGTGTAAAGGGTGCGTAGGCGGGTCTGTAAGTCAGAGGTGAAAGCCCA
+>s1_21935 reference=4382408 amplicon=complement(487..778)
+GTGCCAGCAGCCGCGGTAATACGGAGGGTCCAAGCGTTGTCCGGAATCACTGGGTGTAAAGGGTGCGTAGGCGGGTCTGTAAGTCAGAGGTGAAAGCCCA
+>s1_844 reference=129416 amplicon=complement(522..813)
+GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTATTCGGAATTACTGGGCGTAAAGGGCGTGTAGGCGGCTTTGTAAGTCAGATGTGAAAGCCCA
+>s1_1271 reference=129416 amplicon=complement(522..813) errors=94%C
+GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTATTCGGAATTACTGGGCGTAAAGGGCGTGTAGGCGGCTTTGTAAGTCAGATGTGACAGCCCA
+>s1_1886 reference=129416 amplicon=complement(522..813)
+GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTATTCGGAATTACTGGGCGTAAAGGGCGTGTAGGCGGCTTTGTAAGTCAGATGTGAAAGCCCA
+>s1_5347 reference=129416 amplicon=complement(522..813)
+GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTATTCGGAATTACTGGGCGTAAAGGGCGTGTAGGCGGCTTTGTAAGTCAGATGTGAAAGCCCA
+>s1_5737 reference=129416 amplicon=complement(522..813)
+GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTATTCGGAATTACTGGGCGTAAAGGGCGTGTAGGCGGCTTTGTAAGTCAGATGTGAAAGCCCA
+>s1_6200 reference=129416 amplicon=complement(522..813) errors=92%C
+GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTATTCGGAATTACTGGGCGTAAAGGGCGTGTAGGCGGCTTTGTAAGTCAGATGTCAAAGCCCA
+>s1_7014 reference=129416 amplicon=complement(522..813)
+GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTATTCGGAATTACTGGGCGTAAAGGGCGTGTAGGCGGCTTTGTAAGTCAGATGTGAAAGCCCA
+>s1_7040 reference=129416 amplicon=complement(522..813) errors=40%G
+GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAGTCGGAATTACTGGGCGTAAAGGGCGTGTAGGCGGCTTTGTAAGTCAGATGTGAAAGCCCA
+>s1_7881 reference=129416 amplicon=complement(522..813)
+GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTATTCGGAATTACTGGGCGTAAAGGGCGTGTAGGCGGCTTTGTAAGTCAGATGTGAAAGCCCA
+>s1_8615 reference=129416 amplicon=complement(522..813) errors=81%G
+GTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTATTCGGAATTACTGGGCGTAAAGGGCGTGTAGGCGGCTTTGTGAGTCAGATGTGAAAGCCCA
+"""
+
+# Reference sequence database
+sortmerna_reference_seqs_fp = """>426848
+AGAGTTTGATCCTGGCTCAGGATGAACGCTAGCGGCAGGCTTAATACATGCAAGTCGAGGGGCAGCACTGGTAGCAATAC
+CTGGTGGCGACCGGCGGACGGGTGCGTAACACGTATGCAACCTACCCTGTACAGGGGGATAGCCCGAGGAAATTCGGATT
+AATACCCCATACGATAAGAATCGGCATCGATTTTTATTGAAAGCTCCGGCGGTACAGGATGGGCATGCGCCCCATTAGCT
+AGTTGGTGAGGTAACGGCTCACCAAGGCTACGATGGGTAGGGGGCCTGAGAGGGTGATCCCCCACACTGGAACTGAGACA
+CGGTCCAGACTCCTACGGGAGGCAGCAGTAAGGAATATTGGTCAATGGGCGCAAGCCTGAACCAGCCATGCCGCGTGCAG
+GAAGACTGCCATTATGGTTGTAAACTGCTTTTATATGGGAAGAAACCTCCGGACGTGTCCGGAGCTGACGGTACCATGTG
+AATAAGGATCGGCTAACTCCGTGCCAGCAGCCGCGGTAATACGGAGGATCCAAGCGTTATCCGGATTTATTGGGTTTAAA
+GGGTGCGTAGGCGGCGTGTTAAGTCAGAGGTGAAATTCGGCAGCTCAACTGTCAAATTGCCTTTGATACTGGCACACTTG
+AATGCGATTGAGGTAGGCGGAATGTGACATGTAGCGGTGAAATGCTTAGACATGTGACAGAACACCGATTGCGAAGGCAG
+CTTACCAAGTCGTTATTGACGCTGAGGCACGAAAGCGTGGGGAGCAAACAGGATTAGATACCCTGGTAGTCCACGCCGTA
+AACGATGATAACTCGACGTTAGCGATACACTGTTAGCGTCCAAGCGAAAGCGTTAAGTTATCCACCTGGGAAGTACGATC
+GCAAGGTTGAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGATGATACGCGAGGA
+ACCTTACCAGGGCTTAAATGGGGAACGACCTTCTGGGAAACCAGAATTTCTTTTAGACGGTCCTCAAGGTGCTGCATGGT
+TGTCGTCAGCTCGTGCCGTGAGGTGTTGGGTTAAGTCCCGCAACGAGCGCAACCCCTACTGTTAGTTGCCAGCGGATAAT
+GCCGGGGACTCTAGCGGAACTGCCTGTGCAAACAGAGAGGAAGGTGGGGATGACGTCAAATCATCACGGCCCTTACGTCC
+TGGGCTACACACGTGCTACAATGGCCGGTACAGAGGGCAGCCACTTCGTGAGAAGGAGCGAATCCTTAAAGCCGGTCTCA
+GTTCGGATTGTAGTCTGCAACTCGACTACATGAAGCTGGAATCGCTAGTAATCGCGTATCAGCCATGACGCGGTGAATAC
+GTTCCCGGGCCTTGTACACACCGCCCGTCAAGCCATGGGAATTGGGAGTACCTAAAGTCGGTAACCGCAAGGAGCCGCCT
+AAGGTAATACCAGTGACTGGGGCTAAGTCGTAACAAGGTAGCCGTA
+>42684
+AGAGTTTGATCCTGGCTCAGATTGAACGCTGGCGGCATGCTTTACACATGCAAGTCGGACGGCAGCACAGAGGAGCTTGC
+TTCTTGGGTGGCGAGTGGCGAACGGGTGAGTGACGCATCGGAACGTACCGAGTAATGGGGGATAACTGTCCGAAAGGACA
+GCTAATACCGCATACGCCCTGAGGGGGAAAGCGGGGGATCTTAGGACCTCGCGTTATTCGAGCGGCCGATGTCTGATTAG
+CTGGTTGGCGGGGTAAAGGCCCACCAAGGCGACGATCAGTAGCGGGTCTGAGAGGATGATCCGCCACACTGGGACTGAGA
+CACGGCCCAGACTCCTACGGGAGGCAGCAGTGGGGAATTTTGGACAATGGGCGCAAGCCTGATCCAGCCATGCCGCGTGT
+CTGAAGAAGGCCTTCGGGTTGTAAAGGACTTTTGTCAGGGAAGAAAAGGAACGTGTTAATACCATGTTCTGATGACGGTA
+CCTGAAGAATAAGCACCGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGGTGCGAGCGTTAATCGGAATTACTGG
+GCGTAAAGCGGGCGCAGACGGTTACTTAAGCGGGATGTGAAATCCCCGGGCTCAACCCGGGAACTGCGTTCCGAACTGGG
+TGGCTAGAGTGTGTCAGAGGGGGGTAGAATTCCACGTGTAGCAGTGAAATGCGTAGAGATGTGGAGGAATACCGATGGCG
+AAGGCAGCCCCCTGGGATAACACTGACGTTCATGCCCGAAAGCGTGGGTAGCAAACAGGGTTAGATACCCTGGTAGTCCA
+CGCCCTAAACGATGTCGATTAGCTGTTGGGGCACTTGATGCCTTAGTAGCGTAGCTAACGCGTGAAATCGACCGCCTGGG
+GAGTACGGTCGCAAGATTAAAACTCAAAGGAATTGACGGGGACCCGCACAAGCGGTGGATGATGTGGATTAATTCGATGC
+AACGCGAAGAACCTTACCTGGTCTTGACATGTACGGAATCTTCCAGAGACGGAAGGGTGCCTTCGGGAGCCGTAACACAG
+GTGCTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCGCAACGAGCGCAACCCTTGTCATTAGTTG
+CCATCACTTGGTTGGGCACTCTAATGAGACTGCCGGTGACAAACCGGAGGAAGGTGGGGATGACGTCAAGTCCTCATGGC
+CCTTATGACCAGGGCTTCACACGTCATACAATGGTCGGTACAGAGGGTAGCCAAGCCGCGAGGCGGAGCCAATCCCAGAA
+AACCGATCGTAGTCCGGATTGCACTCTGCAACTCGAGTGCATGAAGTCGGAATCGCTAGTAATCGCAGGTCAGCATACTG
+CGGTGAATACGTTCCCGGGTCTTGTACACACCGCCCGTCACACCATGGGAGTGGGGGATACCAGAAGCAGGTAGGCTAAC
+CGCAAGGAGGCCGCTTGCCACGGTATGCTTCATGACTGGGGTGAAGTCGTAACAAGGTAAC
+>342684
+AGAGTTTGATCCTGGCTCAGGATGAACGCTAGCGGCAGGCTTAACACATGCAAGTCGAGGGGCATCGCGGGTAGCAATAC
+CTGGCGGCGACCGGCGGAAGGGTGCGTAACGCGTGAGCGACATACCCGTGACAGGGGGATAACAGATGGAAACGTCTCCT
+AATACCCCATAAGATCATATATCGCATGGTATGTGATTGAAAGGTGAGAACCGGTCACGGATTGGCTCGCGTCCCATCAG
+GTAGACGGCGGGGCAGCGGCCCGCCGTGCCGACGACGGGTAGGGGCTCTGAGAGGAGTGACCCCCACAATGGAACTGAGA
+CACGGTCCATACTCCTACGGGAGGCAGCAGTGAGGAATATTGGTCAATGGGCGGAAGCCTGAACCAGCCATGCCGCGTGC
+GGGAGGACGGCCCTATGGGTTGTAAACCGCTTTTGAGTGAGAGCAATAAGGTTCACGTGTGGACCGATGAGAGTATCATT
+CGAATAAGCATCGGCTAACTCCGTGCCAGCAGCCGCGGTAATACGGAGGATGCGAGCGTTATCCGGATTCATTGGGTTTA
+AAGGGTGCGTAGGCGGACATGTAAGTCCGAGGTGAAAGACCGGGGCCCAACCCCGGGGTTGCCTCGGATACTGTGTGTCT
+GGAGTGGACGTGCCGCCGGGGGAATGAGTGGTGTAGCGGTGAAATGCATAGATGTCACTCAGAACACCGATTGCGAAGGC
+ACCTGGCGAATGTCTTACTGACGCTGAGGCACGAAAGCGTGGGGATCGAACAGGATTAGATACCCTGGTAGTCCACGCAG
+TAAACGATGATGGCTGTCCGTTCGCTCCGATAGGAGTGAGTAGACAAGCGAAAGCGCTAAGCCATCCACCTGGGGAGTAC
+GGCCGCAAGGCTGAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGAGGAACATGTGGTTTAATTCGATGATACGCG
+AGGAACCTTACCCGGGCTCGAACGGCAGGTGAACGATGCAGAGATGCAAAGGCCCTTCGGGGCGTCTGTCGAGGTGCTGC
+ATGGTTGTCGTCAGCTCGTGCCGTGAGGTGTCGGCTCAAGTGCCATAACGAGCGCAACCCTTGCCTGCAGTTGCCATCGG
+GTAAAGCCGGGGACTCTGCAGGGACTGCCACCGCAAGGTGAGAGGAGGGGGGGGATGACGTCAAATCAGCACGGCCCTTA
+CGTCCGGGGCGACACACGTGTTACAATGGCGGCCACAGCGGGAAGCCACCCAGTGATGGGGCGCGGATCCCAAAAAAGCC
+GCCTCAGTTCGGATCGGAGTCTGCAACCCGACTCCGTGAAGCTGGATTCGCTAGTAATCGCGCATCAGCCATGGCGCGGT
+GAATACGTTCCCGGGCCTTGTACACACCGCCCGTCAAGCCATGGGAGTCGTGGGCGCCTGAAGGCCGTGACCGCGAGGAG
+CGGCCTAGGGCGAACGCGGTGACTGGGGCTAAGTCGTAACAAGGTA
+>295053
+AGAGTTTGATCCTGGCTCAGGACGAACGCTGGCGGCGTGCCTAACACATGCAAGTCGAACGGAGATGCTCCTTCGGGAGT
+ATCTTAGTGGCGAACGGGTGAGTAACGCGTGAGCAACCTGACCTTCACAGGGGGATAACCGCTGGAAACAGCAGCTAATA
+CCGCATAACGTCGCAAGACCAAAGAGGGGGACCTTCGGGCCTCTTGCCATCGGATGTGCCCAGATGGGATTAGCTTGTTG
+GTGGGGTAACGGCTCACCAAGGCGACGATCCCTAGCTGGTCTGAGAGGATGACCAGCCACACTGGAACTGAGACACGGTC
+CAGACTCCTACGGGAGGCAGCAGTGGGGAATATTGCACAATGGGCGCAAGCCTGATGCAGCCATGCCGCGTGTATGAAGA
+AGGCCTTCGGGTTGTAAAGTACTTTCAGCGGGGAGGAAGGGAGTAAAGTTAATACCTTTGCTCATTGACGTTACCCGCAG
+AAGAAGCACCGGCTAACTCCGTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTACTGGGCGTAAA
+GCGCACGCAGGCGGTTTGTTAAGTCAGATGTGAAATCCCCGGGCTCAACCTGGGAACTGCATCTGATACTGGCAAGCTTG
+AGTCTCGTAGAGGGGGGTAGAATTCCAGGTGTAGCGGTGAAATGCGTAGAGATCTGGAGGAATACCGGTGGCGAAGGCGG
+CCCCCTGGACGAAGACTGACGCTCAGGTGCGAAAGCGTGGGGAGCAAACAGGATTAGATACCCTGGTAGTCCACGCCGTA
+AACGATGTCGACTTGGAGGTTGTGCCCTTGAGGCGTGGCTTCCGGAGCTAACGCGTTAAGTCGACCGCCTGGGGAGTACG
+GCCGCAAGGTTAAAACTCAAATGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGATGCAACGCGA
+AGAACCTTACCTGGTCTTGACATCCACAGAACTTTCCAGAGATGGATTGGTGCCTTCGGGAACTGTGAGACAGGTGCTGC
+ATGGCTGTCGTCAGCTCGTGTTGTGAAATGTTGGGTTAAGTCCCGCAACGAGCGCAACCCTTGTCCTTTGTTGCCAGCGG
+TCCGGCCGGGAACTCAAAGGAGACTGCCAGTGATAAACTGGAGGAAGGTGGGGATGACGTCAAGTCATCATGGCCCTTAC
+GACCAGGGCTACACACGTGCTACAATGGCGCATACAAAGAGAAGCGACCTCGCGAGAGCAAGCGGACCTCATAAAGTGCG
+TCGTAGTCCGGATTGGAGTCTGCAACTCGACTCCATGAAGTCGGAATCGCTAGTAATCGTGGATCAGAATGCCACGGTGA
+ATACGTTCCCGGGCCTTGCACACACCGCC
+>879972
+GACGAACGCTGGCGGCGTGCCTAATACATGCAAGTCGAACGAGATTGACCGGTGCTTGCACTGGTCAATCTAGTGGCGAA
+CGGGTGAGTAACACGTGGGTAACCTGCCCATCAGAGGGGGATAACATTCGGAAACGGATGCTAAAACCGCATAGGTCTTC
+GAACCGCATGGTTTGAAGAGGAAAAGAGGCGCAAGCTTCTGCTGATGGATGGACCCGCGGTGTATTAGCTAGTTGGTGGG
+GTAACGGCTCACCAAGGCGACGATACATAGCCGACCTGAGAGGGTGATCGGCCACACTGGGACTGAGACACGGCCCAGAC
+TCCTACGGGAGGCAGCAGTAGGGAATCTTCGGCAATGGACGGAAGTCTGACCGAGCAACGCCGCGTGAGTGAAGAAGGTT
+TTCGGATCGTAAAGCTCTGTTGTAAGAGAAGAACGAGTGTGAGAGTGGAAAGTTCACACTGTGACGGTATCTTACCAGAA
+AGGGACGGCTAACTACGTGCCAGCAGCCGCGGTAATACGTAGGTCCCGAGCGTTGTCCGGATTTATTGGGCGTAAAGCGA
+GCGCAGGCGGTTAGATAAGTCTGAAGTTAAAGGCTGTGGCTTAACCATAGTACGCTTTGGAAACTGTTTAACTTGAGTGC
+AAGAGGGGAGAGTGGAATTCCATGTGTAGCGGTGAAATGCGTAGATATATGGAGGAACACCGGTGGCGAAAGCGGCTCTC
+TGGCTTGTAACTGACGCTGAGGCTCGAAAGCGTGGGGAGCAAACAGGATTAGATACCCTGGTAGTCCACGCCGTAAACGA
+TGAGTGCTAGGTGTTAGACCCTTTCCGGGGTTTAGTGCCGCAGCTAACGCATTAAGCACTCCGCCTGGGGAGTACGACCG
+CAGGGTTGAAACTCAAAGGAATTGACGGGGGCCCGCACAAGCGGTGGAGCATGTGGTTTAATTCGAAGCAACGCGAAGAA
+CCTTACCAGGTCTTGACATCCCTCTGACCGCTCTAGAGATAGAGCTTTCCTTCGGGACAGAGGTGACAGGTGGTGCATGG
+TTGTCGTCAGCTCGTGTCGTGAGATGTTGGGTTAAGTCCCGCAACGAGCGCAACCCCTATTGTTAGTTGCCATCATTCAG
+TTGGGCACTCTAGCGAGACTGCCGGTAATAAACCGGAGGAAGGTGGGGATGACGTCAAATCATCATGCCCCTTATGACCT
+GGGCTACACACGTGCTACAATGGCTGGTACAACGAGTCGCAAGCCGGTGACGGCAAGCTAATCTCTTAAAGCCAGTCTCA
+GTTCGGATTGTAGGCTGCAACTCGCCTACATGAAGTCGGAATCGCTAGTAATCGCGGATCAGCACGCCGCGGTGAATACG
+TTCCCGGGCCT
+"""
+
+# Reads to search against the database
+# - 10 rRNA reads:   amplicon reads were taken from Qiime study 1685
+# - 10 random reads: simulated using mason with the following command:
+#     mason illumina -N 10 -snN -o simulated_random_reads.fa -n
+#     150 random.fasta
+# - 10 rRNA reads with id < 97: amplicon reads were taken from
+#   Qiime study 1685
+sortmerna_read_seqs_fp = """>HMPMockV1.2.Staggered2.673827_47 M141:79:749142:1:1101:16169:1589
+TACGGAGGGTGCAAGCGTTAATCGGAATTACTGGGCGTAAAGCGCAAGCAGGCGGTTTGTTAAGTCAGATGTGAAATCCC
+CGGGCTCAACCTGGGAACTGCATTTGATACTGGCAAGCTTGAGTCTCGTAGAGGAGGGTAGAATTCCAGGTGTAGCGGGG
+AAATGCGTAGAGATCTGGAGGAATACCGGTGGCGAAGGCGGCTCCATGGACGAAGACTGACGCT
+>HMPMockV1.2.Staggered2.673827_115 M141:79:749142:1:1101:14141:1729
+TACGGAGGGTGCAAGCGTTAATCGGAATTACTGGGCGTAAAGCGCACGCAGGCGGTTTGTTAAGTCAGATGTGAAATCCC
+CCGGCTCAACCTTGGAACTGCATCTGATACGGGCAAGCTTGAGTCTCGTAGAGGGGGGTAGAATTCCAGGTGTAGCGGTG
+AAATGCGTAGAGATCTGGAGGAATACCGGTGGCGAAGGCGGCCCTCTGGACGAAGACTGACGCTCAGGTGCGAAAGCGTG
+GGGAGCAAACA
+>HMPMockV1.2.Staggered2.673827_122 M141:79:749142:1:1101:16032:1739
+TACGGAGGGTGCAAGCGTTAATCGGAATTACTGGGCGTAAAGCGCACGCAGGCGGTTTGTTAAGTCAGATGTGAAATCCC
+CGGGCTCAACCTGGGAACTGCATCTGATACTGGCAAGCTTGAGTCTCGTAGAGGGGGGTAGAATTCCAGGTGTAGCGGTG
+AAATGCGTAGAGATCTGGAGGAATACCGGTGGCGAAGGCGGCCCCCTGGACGAAGACTGACGCTCAGGTGCGAAAGCGTG
+GTGATCAAACA
+>HMPMockV1.2.Staggered2.673827_161 M141:79:749142:1:1101:17917:1787
+TACGGAGGGTGCAAGCGTTAATCGGAATTACTGGGCGTAAAGCGCACGCAGGCGGTTTGTTAAGTCAGATGTGAAATCCC
+CGGGCTCAACCTGGGAACTGCATCTGATACTGGCAAGCTTGAGTCTCGTAGAGGGGGGTAGAATTCCAGGTGTAGCGGTG
+AAATGCGTAGAGATCTGGAGGAATACCGGTGGCGAAGGCGGCTCCCTGGACGAAGACTGACGCTCAGGTGCGAAAGCGTG
+GGGAGCAAACA
+>HMPMockV1.2.Staggered2.673827_180 M141:79:749142:1:1101:16014:1819
+TACGGAGGGTGCAAGCGTTAATCGGAATTACTGGGCGTAAAGCGCACGCAGGTGGTTTGTTAAGTCAGATGTGAAATCCC
+CGGGCTCAACCTGGGAACTGCATCTGATACTGGCAAGCTTGAGTCTCGTAGAGGGGGGTAGAATTCCAGGTGTAGCGGTG
+AAATGCGTAGAGATCTGGAGGAATACCGGTGGCGAAGGCGGCCCCCTGGACGAAGACTGACGCTCAGGTGCGAAAGCGTG
+>HMPMockV1.2.Staggered2.673827_203 M141:79:749142:1:1101:17274:1859
+TACGGAGGTTGCAAGCGTTAATCGGAATTACTGGGCGTAAAGCGCACGCAGGCGGTTTGTTAAGTCAGATGTGAAATCCC
+CCGGCTCAACCTGGGAACTGCATCTGATACTGGCAAGCTTGAGTCTCGTAGAGGGGGGTAGAATTCCAGGTGTAGCGGTG
+AAATGCGTAGAGATCTGGAGGAATACCGGTGGCGAAGGCGGCCTCCTGGACGAAGACTGACGCTCAGGTGCGAAAGCGTG
+GGGATCAAACA
+>HMPMockV1.2.Staggered2.673827_207 M141:79:749142:1:1101:17460:1866
+TACGGAGGGTGCAAGCGTTAATCGGAATTACTGGGCGTAAAGCGCACGCAGGCGGTTTGTTAAGTCAGATGTGAAATCCC
+CGGGCTCAACCTGGGAACTGCATCTGATACTGGCAAGCTTGAGTCTCGTAGAGGGGGGTAGAATTCCAGGTGTAGCGGTG
+AAATGCGTAGAGATCTGGAGGAATACCGGTGGCGAAGGCGGCCCCCTGGACGAAGACTGACGCTCAGGTGCGAAAGCGTG
+GGGAGCAAACA
+>HMPMockV1.2.Staggered2.673827_215 M141:79:749142:1:1101:18390:1876
+TACGGAGGGTGCAAGCGTTAATCGGAATTACTGGGCGTAAAGCGCACGCAGGCGGTTTGTTAAGTCAGATGTGAAATCCC
+CGGGCTCAACCTGGGAACTGCATCTGATACTGGCAAGCTTGAGTCTCGTAGAGGGGGGTAGAATTCCAGGTGTAGCGGTG
+AAATGCGTAGAGATCTGGAGGAATACCGGTGGCGAAGGCGGCCCCCTGGACGAAGACTGACG
+>HMPMockV1.2.Staggered2.673827_218 M141:79:749142:1:1101:18249:1879
+TACGGAGGGTGCAAGCGTTAATCGGAATTACTGGGCGTAAAGCGCACGCAGGCGGTTTGTTAAGTCAGATGTGAAATCCC
+CGGGCTCAACCTGGGAACTTCATCTGATACTGGCAAGCTTGAGTCTCGTAGAGGGGGGTAGAATTCCAGGTGTAGCGGTG
+AAATGCGTAGAGATCTGGAGGAATACCGGTGGCGAAGGCGGCCCCCTGGACGAAGACTGACGCTCAGGTGCGAAAGCGTG
+GGGAGCACACA
+>HMPMockV1.2.Staggered2.673827_220 M141:79:749142:1:1101:15057:1880
+TACGGAGGGTGCAAGCGTTAATCGGAATTACTGGGCGTAAAGCGCACGCAGGCGGTTTGTTAAGTCAGATGTGAAATCCC
+CGGGCTCAACCTGGGAACTGCATCTGATACTGGCAAGCTTGAGTCTCGTAGAGGGGGGTAGAATTCCAGGTGTAGCGGTG
+AAATGCGTAGAGATCTGGAGGAATACCGGTGGCGAAGGCGGCCTCCTGGACGAAGACTGACGCTC
+>simulated_random_reads.fa.000000000
+AGCCGGGTGTCTACGGTCAGGTGTGTTCTGACTACGTAGTTTGACAGCACGTGTCCTTTCCCCTTCCCAAGGTAACGAAT
+TGTCGTTATCAACGTTTCGATCCGTAATTTCACGGAACGACATAAAGGCATCAATACTATCGCCAACAGA
+>simulated_random_reads.fa.000000001
+GTGGACGTCGTGGCGGCGTACTAACTTCCTACAGGCATATCCGGAATAACATTCTGCCGCTTGTCGACATAAGCTGTTCC
+CTACATAGACGACGACGGTTGAAGGGTGTATGTATTCTTTGGGTACGGCTCCTCTGGGCGCATGGTAGCA
+>simulated_random_reads.fa.000000002
+CATTCTTTATAGGCCTACAACACTAATCATCGTTAAGCATAAGGGGAGGAGTGTGCGTGGCATCAAGTCCTGGTTCTTCG
+CCTAGTACCACACCGTCTCACACGCAGCCGCCGACGACCAGTGAGGGCGCGTGGGACACCCATTCGGTCC
+>simulated_random_reads.fa.000000003
+TCGCCTTGGTACAAACAGTCGCGGCACGCTGTATGGAGGACCATAGAGGCACAGGCTGAGGACAGGGGCATGGAAGGTTC
+AATCGCCCCCCACAGCTTTAGGTAGGAAGTACTGTTCTAGTGCCAATTTGATTTTAACGGCAGTTACTCG
+>simulated_random_reads.fa.000000004
+CATATTCTAATATCCTACTTCTGATACCCGATTATACACGACACCACCCCAGGACTGTCGTCACATCCTTATCTGGATAA
+ACATCCGGTTCCGTTTGGCCGTGCTCCGCAAGTGATGCGTCTGTGGAATGTACGTGGAGCGTTGACAGTT
+>simulated_random_reads.fa.000000005
+CCGGATTAGGCATGTTTATAGTACAACGGATTCGCAAAAAGGTCAGGGTAACAATTTTGAAATGCTTTCATACTGCGGTC
+TAAATGGACCACCCTTTAGGTGCAGCCAACTATAGTTGGTCGATTCTCTGAACACGTACCGAAGGCAATT
+>simulated_random_reads.fa.000000006
+AACCCATCGGAATAATCTACTGCTTCGTATGGAACGGTCCTACATTTAAATAAACGTGTCCAGTGCCACCCGATACCTCT
+CGTCAATCAGGGGCTCTCCCTGAATCAGCAGTAAACAAACCCAGTACACTGTCGAACACTACTGAGACCG
+>simulated_random_reads.fa.000000007
+CCGAAGGCAAGTCTGTCGTAGAATGGTTTTTGTCGTTGTAACAACCCCGCTCTAGACCCTGAAAACCATAAAGTCAAGCC
+CAACTAATATTAGAGGCATTCTGGCTACTCCCGCTCACCGCAATCTTCACATACTGTGATACCCTCAGCC
+>simulated_random_reads.fa.000000008
+ATATCCGTTAAACCCCGGATTTGACAATTCATCATCAACGCTACTAACGGCTTTCTCAATTTGGGGCTGTGGCCTATCCG
+CATACGGCTACCTGCGCAAGAAGAGAGTACTGTTAGATGTCACGCTGCACTTGCGAAGACCGGTGGGCGT
+>simulated_random_reads.fa.000000009
+AGCGATGAGTACACAAGATGAGTGAAGGGATTAAACTTCAAACCTTGAAGTGTTACCCGATTTCCTACCATTGGGGATTC
+GTTAATGCTTCGAATGGATCTATATCCGGTGTTTAGCTGACTGTTAAAATACTCTCGTTGTACGAAAGTA
+>HMPMockV1.2.Staggered2.673827_0 M141:79:749142:1:1101:17530:1438
+TACGTAGGTGGCAAGCGTTATCCGGAATTATTGGGCGCAAAGCGCGCGTAGGCGGTTTTTTAAGTCTGATGTGAAAGCCC
+ACGGCTCAACCGTGGAGGGTCATTGGAAACTGGAAAACTTGAGTGCAGAAGAGGAAAGTGGAATTCCATGTGTAGCGGTG
+AAATGCGCAGAGATATGGAGGAACACCAGTGGCGAAGGCGACCTTCTGGTCTGTAACTGACGCTGATGTGCGAAAGCGTG
+>HMPMockV1.2.Staggered2.673827_1 M141:79:749142:1:1101:17007:1451
+TACGTAGGTGGCAAGCGTTATCCGGAATTATTGGGCGTAAAGCGCGCGTAGGCGGTTTTTTAAGTCTGATGTGAAAGCCC
+ACGGCTCAACCGTGGAGGGTCATTGGAAACTGGAAAACTTGAGTGCAGAAGAGGAAAGTGGAATTCCATGTGTAGCGGTG
+AAATGCGCAGAGATATGGAGGAACACCAGTGGCGAAGGCGACTTTCTGGTCTGTAACTTACGCTG
+>HMPMockV1.2.Staggered2.673827_2 M141:79:749142:1:1101:16695:1471
+TACGTAGGTGGCAAGCGTTATCCGGAATTATTGGGCGTAAAGCGCGCGTAGGCGGTTTTTTAAGTCTGATGTGAAAGCCC
+ACGGCTCAACCGTGGAGGGTCATTGGAAACTGGAAAACTTGAGTGCAGAAGAGGAAAGTGGAATTCCATGTGTAGCGGTG
+AAATGCGCAGAGATATGGAGGAACACCAGTGGCGAAGGCGACTTTCTGGTCTGTAACTGACGCTGATGTGCGAAAGCGTG
+GGGA
+>HMPMockV1.2.Staggered2.673827_3 M141:79:749142:1:1101:17203:1479
+TACGTAGGTGGCAAGCGTTATCCGGAATTATTGGGCGTAAAGCGCGCGTAGGCGGTTTTTTAAGTCTGATGTGAAAGCCC
+ACGGCTCAACCGTGGAGGGTCATTGGAAACTGGAAAACTTGAGTGCAGAAGAGGAAAGTGGAATTCCATGTGTAGCGGTG
+AAATGCGTAGAGATATGGAGGAACACCAGTGGCGAAGGCGACGTTCTGGTCTGTAACTGACGCTGATGTGCGAAAGCGTG
+G
+>HMPMockV1.2.Staggered2.673827_4 M141:79:749142:1:1101:14557:1490
+TACGTAGGTGGCAAGCGTTATCCGGAATTATTGGGCGTAAAGCGCGCGTAGGCGGTTTTTTAAGTCTGATGTGAAAGCCC
+ACGGCTCAACCGTGGAGGGTCATTGGAAACTGGAAAACTTGAGTGCAGAAGAGGAAAGTGGAATTCCATGTGTAGCGGTG
+AAATGCGCAGAGATATGGAGGAACACCAGTGGCGAAGGCGACTTTCTGGGCTGTAACTGACGCTGATGTGCGCAAGCGTG
+GTGATCAAACA
+>HMPMockV1.2.Staggered2.673827_5 M141:79:749142:1:1101:16104:1491
+TACGTAGGTGGCAAGCGTTATCCGGAATTATTGGGCGTAAAGCGCGCGTAGGCGGTTTTTTAAGTCTGATGTGAAAGCCC
+ACGGCTCAACCGTGGAGGGTCATTGGAAACTGGAAAACTTGAGTGCAGAAGAGGAAAGTGGAATTCCATGTGTAGCGGTG
+AAATGCGCAGAGATATGGAGGAACACCAGTGGCGAAGGCGACTTTCTGGTCTGTAACTGACGC
+>HMPMockV1.2.Staggered2.673827_6 M141:79:749142:1:1101:16372:1491
+TACGTAGGTGGCAAGCGTTATCCGGAATTATTGGGCGTAAAGCGCGCGTAGGCGGTTTTTTAAGTCTGATGTGAAAGCCC
+ACGGCTCAACCGTGGAGGGTCATTGGAAACTGGAAAACTTGAGTGCAGAAGAGGAAAGTGGAATTCCATGTGTAGCGGTG
+AAATGCGCAGAGATATGGAGGAACAACAGTGGCGAAGGCGACTTTCTGGTCTGTAACTGACGCTGATGTGCGTAAG
+>HMPMockV1.2.Staggered2.673827_7 M141:79:749142:1:1101:17334:1499
+TACGTAGGTGGCAAGCGTTATCCGGAATTATTGGGCGTAAAGCGCGCGTAGGCGGTTTTTTAAGTCTGATGTGAAAGCCC
+ACGGCTCAACCGTGGAGGGTCATTGGAAACTGGAAAACTTGAGTGCAGAAGAGGAAAGTGGAATTCCATGTGTAGCGGTG
+AAATGCGCAGAGATATGGAGGAACACCAGTGGCGAAGGCGACTTTCTGGTCTGTAACTGACGCTGATGT
+>HMPMockV1.2.Staggered2.673827_8 M141:79:749142:1:1101:17273:1504
+TACGTAGGTGGCAAGCGTTATCCGGAATTATTGGGCGTAAAGCGCGCGTAGGCGGTTTTTTAAGTCTGATGTGAAAGCCC
+ACGGCTCAACCGTGGAGGGTCATTGGAAACTGGAAAACTTGAGTGCAGAAGAGGAAAGTGGAATTCCATGTGTAGCGGTG
+AAATGCACAGAGATATGGAGGAACACCAGTGGCGAAGGCGACTTTCTGGTCTGTAACTGACGCTGA
+>HMPMockV1.2.Staggered2.673827_9 M141:79:749142:1:1101:16835:1505
+TACGTAGGTGGCAAGCGTTATCCGGAATTATTGGGCGTAAAGCGCGCGTAGGCGGTTTTTTAAGTCTGATGTGAAAGCCC
+ACGGCTCAACCGTGGAGGGTCATTGGAAACTGGAAAACTTGAGTGCAGAAGAGGAAAGTGGAATTCCATGTGTAGCGGTG
+ACATGCGCAGAGATATGGAGGAACACCAGTGGCGAAGGCGACTTTCTGGTCTGTAACTGACGCTGATGTGCGAAAGCGTG
+GGGAT
+"""
+
+# resulting OTU map for sortmerna_read_seqs_fp vs. sortmerna_reference_seqs_fp
+sortmerna_otumap_fp = """295053\tHMPMockV1.2.Staggered2.673827_47\tHMPMockV1.2.Staggered2.673827_115\tHMPMockV1.2.Staggered2.673827_122\tHMPMockV1.2.Staggered2.673827_161\tHMPMockV1.2.Staggered2.673827_180\tHMPMockV1.2.Staggered2.673827_203\tHMPMockV1.2.Staggered2.673827_207\tHMPMockV1.2.Staggered2.673827_215\tHMPMockV1.2.Staggered2.673827_218\tHMPMockV1.2.Staggered2.673827_220\n"""
+
+# failures file (all random reads in sortmerna_read_seqs_fp)
+sortmerna_failures_fp = """HMPMockV1.2.Staggered2.673827_0
+HMPMockV1.2.Staggered2.673827_1
+HMPMockV1.2.Staggered2.673827_2
+HMPMockV1.2.Staggered2.673827_3
+HMPMockV1.2.Staggered2.673827_4
+HMPMockV1.2.Staggered2.673827_5
+HMPMockV1.2.Staggered2.673827_6
+HMPMockV1.2.Staggered2.673827_7
+HMPMockV1.2.Staggered2.673827_8
+HMPMockV1.2.Staggered2.673827_9
 """
 
 # run unit tests if run from command-line

@@ -4,7 +4,8 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso", "Antonio Gonzalez Pena"]
+__credits__ = ["Greg Caporaso", "Antonio Gonzalez Pena",
+               "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -13,9 +14,14 @@ __email__ = "gregcaporaso@gmail.com"
 
 from os.path import split, splitext, join
 from numpy import inf
-from qiime.util import parse_command_line_parameters, make_option, create_dir
+from biom import load_table
+
+from qiime.util import (parse_command_line_parameters, make_option, create_dir,
+                        write_biom_table)
 from qiime.parse import parse_mapping_file
-from qiime.split import split_mapping_file_on_field, split_otu_table_on_sample_metadata
+from qiime.split import (split_mapping_file_on_field,
+                         split_otu_table_on_sample_metadata,
+                         OTUTableSplitError)
 
 script_info = {}
 script_info[
@@ -83,15 +89,21 @@ def main():
     # split otu table
     otu_table_base_name = splitext(split(otu_table_fp)[1])[0]
     mapping_f = open(mapping_fp, 'U')
-    otu_table_f = open(otu_table_fp, 'U')
-    for fp_str, sub_otu_table_s in split_otu_table_on_sample_metadata(
-            otu_table_f,
-            mapping_f,
-            mapping_field):
-        otu_table_output_fp = join(
-            output_dir, '%s_%s.biom' %
-            (otu_table_base_name, fp_str))
-        open(otu_table_output_fp, 'w').write(sub_otu_table_s)
+
+    otu_table = load_table(otu_table_fp)
+
+    try:
+        for fp_str, sub_otu_table_s in split_otu_table_on_sample_metadata(
+                otu_table,
+                mapping_f,
+                mapping_field):
+            otu_table_output_fp = join(output_dir, '%s_%s.biom' % (
+                otu_table_base_name, fp_str))
+
+            write_biom_table(sub_otu_table_s, otu_table_output_fp)
+    except OTUTableSplitError as e:
+        option_parser.error(e)
+
 
 
 if __name__ == "__main__":

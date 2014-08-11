@@ -11,13 +11,14 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "William Anton Walters"
 __email__ = "william.a.walters@gmail.com"
 
+from os import close
 from unittest import TestCase, main
 from shutil import rmtree
 from os.path import exists, join, split
+from tempfile import mkstemp, mkdtemp
 
-from cogent.util.misc import remove_files
+from skbio.util.misc import remove_files
 
-from qiime.util import get_tmp_filename, create_dir
 from qiime.validate_demultiplexed_fasta import check_fasta_seqs,\
     get_dup_labels_perc, check_labels_sampleids,\
     run_fasta_checks, validate_fasta, check_fasta_seqs_lens, check_all_ids,\
@@ -31,40 +32,46 @@ class ValidateDemultiplexedFastaTests(TestCase):
     def setUp(self):
         """ Creates variables and tmp filepaths for use in unit testing """
 
-        self.sample_fasta_fp = get_tmp_filename(prefix="sample_fasta_",
-                                                suffix=".fna")
+        fd, self.sample_fasta_fp = mkstemp(prefix="sample_fasta_",
+                                          suffix=".fna")
+        close(fd)
         seq_file = open(self.sample_fasta_fp, 'w')
         seq_file.write(sample_fasta_file)
         seq_file.close()
 
-        self.sample_fasta_invalid_fp = get_tmp_filename(prefix="sample_fasta_",
-                                                        suffix=".fna")
+        fd, self.sample_fasta_invalid_fp = mkstemp(prefix="sample_fasta_",
+                                                  suffix=".fna")
+        close(fd)
         seq_file = open(self.sample_fasta_invalid_fp, 'w')
         seq_file.write(sample_fasta_file_invalid)
         seq_file.close()
 
-        self.sample_mapping_fp = get_tmp_filename(prefix="sample_mapping_",
-                                                  suffix=".txt")
+        fd, self.sample_mapping_fp = mkstemp(prefix="sample_mapping_",
+                                            suffix=".txt")
+        close(fd)
         map_file = open(self.sample_mapping_fp, "w")
         map_file.write(sample_mapping_file)
         map_file.close()
 
-        self.sample_tree_3tips_fp = get_tmp_filename(
+        fd, self.sample_tree_3tips_fp = mkstemp(
             prefix="sample_tree3tips_",
             suffix=".tre")
+        close(fd)
         tree_file = open(self.sample_tree_3tips_fp, "w")
         tree_file.write(sample_tree_file_3tips)
         tree_file.close()
 
-        self.sample_tree_5tips_fp = get_tmp_filename(
+        fd, self.sample_tree_5tips_fp = mkstemp(
             prefix="sample_tree3tips_",
             suffix=".tre")
+        close(fd)
         tree_file = open(self.sample_tree_5tips_fp, "w")
         tree_file.write(sample_tree_file_5tips)
         tree_file.close()
 
-        self.sample_mapping_file_errors_fp =\
-            get_tmp_filename(prefix="error_mapping_", suffix=".txt")
+        fd, self.sample_mapping_file_errors_fp =\
+            mkstemp(prefix="error_mapping_", suffix=".txt")
+        close(fd)
         map_file = open(self.sample_mapping_file_errors_fp, "w")
         map_file.write(sample_mapping_file_errors)
         map_file.close()
@@ -75,9 +82,8 @@ class ValidateDemultiplexedFastaTests(TestCase):
                                  self.sample_mapping_file_errors_fp]
 
         self.output_dir =\
-            get_tmp_filename(prefix="validate_demultiplexed_fasta_",
+            mkdtemp(prefix="validate_demultiplexed_fasta_",
                              suffix="/")
-        create_dir(self.output_dir)
 
     def tearDown(self):
         if self._files_to_remove:

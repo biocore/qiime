@@ -5,19 +5,21 @@
 __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project"
 # remember to add yourself if you make changes
-__credits__ = ["Jens Reeder", "Rob Knight"]
+__credits__ = ["Jens Reeder", "Rob Knight", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Jens Reeder"
 __email__ = "jens.reeder@gmail.com"
 
 from os.path import exists
-from os import remove, rename, rmdir, makedirs
+from os import remove, rename, rmdir, makedirs, close
 from subprocess import Popen, PIPE, STDOUT
+from tempfile import mkstemp
 
-from cogent.util.misc import app_path, create_dir
-from cogent.app.util import ApplicationNotFoundError
-from qiime.util import get_tmp_filename
+from skbio.util.misc import create_dir
+from burrito.util import ApplicationNotFoundError
+from burrito.util import which
+
 
 # qsub template
 # requires format string (walltime, ncpus, nodes, queue, job_name,
@@ -84,8 +86,9 @@ def make_jobs(commands, job_prefix, queue, jobs_dir="jobs/",
     filenames = []
     create_dir(jobs_dir)
     for command in commands:
-        job_name = get_tmp_filename(tmp_dir=jobs_dir, prefix=job_prefix + "_",
-                                    suffix=".txt")
+        fd, job_name = mkstemp(dir=jobs_dir, prefix=job_prefix + "_",
+                              suffix=".txt")
+        close(fd)
         out_fh = open(job_name, "w")
 
         out_fh.write(QSUB_TEXT % (walltime, ncpus, nodes, queue, job_prefix,
@@ -102,7 +105,7 @@ def submit_jobs(filenames, verbose=False):
 
     verbose: a binary verbose flag
     """
-    if(not app_path("qsub")):
+    if not which("qsub"):
         raise ApplicationNotFoundError("qsub not found. Can't submit jobs.")
 
     for file in filenames:

@@ -5,7 +5,7 @@ from __future__ import division
 import re
 from operator import itemgetter
 from numpy import array
-from cogent.parse.fasta import MinimalFastaParser
+from skbio.parse.sequences import parse_fasta
 from qiime.parse import parse_mapping_file
 
 __author__ = "Greg Caporaso"
@@ -131,7 +131,7 @@ def sort_fasta_by_abundance(fasta_lines, fasta_out_f):
     """
     seq_index = {}
     count = 0
-    for seq_id, seq in MinimalFastaParser(fasta_lines):
+    for seq_id, seq in parse_fasta(fasta_lines):
         count += 1
         try:
             seq_index[seq].append(seq_id)
@@ -168,9 +168,9 @@ def sort_otu_table(otu_table, sorted_sample_ids):
     """Sort an OTU table by sorted sample ids"""
     # sanity check
     sorted_sample_ids_set = set(sorted_sample_ids)
-    if set(otu_table.SampleIds) - sorted_sample_ids_set:
+    if set(otu_table.ids()) - sorted_sample_ids_set:
         raise KeyError("Sample IDs present in OTU table but not sorted sample id list: " +
-                       ' '.join(list(set(otu_table.SampleIds) - set(sorted_sample_ids))))
+                       ' '.join(list(set(otu_table.ids()) - set(sorted_sample_ids))))
     if len(sorted_sample_ids_set) != len(sorted_sample_ids):
         raise ValueError(
             "Duplicate sample IDs are present in sorted sample id list.")
@@ -178,9 +178,9 @@ def sort_otu_table(otu_table, sorted_sample_ids):
     # only keep the sample ids that are in the table
     safe_sorted_sample_ids = []
     for k in sorted_sample_ids:
-        if otu_table.sampleExists(k):
+        if otu_table.exists(k):
             safe_sorted_sample_ids.append(k)
-    sorted_table = otu_table.sortSampleOrder(safe_sorted_sample_ids)
+    sorted_table = otu_table.sort_order(safe_sorted_sample_ids)
 
     return sorted_table
 

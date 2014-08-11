@@ -10,16 +10,15 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
-from biom.parse import parse_biom_table
+from biom import load_table
 from qiime.group import (
     extract_per_individual_state_metadata_from_sample_metadata,
     extract_per_individual_state_metadata_from_sample_metadata_and_biom)
 from qiime.parse import parse_mapping_file_to_dict
 from qiime.util import (parse_command_line_parameters,
                         make_option)
-from qiime.filter import (filter_mapping_file_from_mapping_f,
-                          sample_ids_from_metadata_description)
-from qiime.stats import (paired_difference_analyses)
+from qiime.filter import sample_ids_from_metadata_description
+from qiime.stats import paired_difference_analyses
 
 script_info = {}
 script_info[
@@ -159,8 +158,8 @@ def main():
                 del mapping_data[sid]
 
     if biom_table_fp:
-        biom_table = parse_biom_table(open(biom_table_fp, 'U'))
-        analysis_categories = observation_ids or biom_table.ObservationIds
+        biom_table = load_table(biom_table_fp)
+        analysis_categories = observation_ids or biom_table.ids(axis='observation')
         personal_ids_to_state_values = \
             extract_per_individual_state_metadata_from_sample_metadata_and_biom(
                 mapping_data,

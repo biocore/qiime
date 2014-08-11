@@ -10,13 +10,19 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
-from cogent.parse.fasta import MinimalFastaParser
-from cogent.util.misc import create_dir
+from skbio.parse.sequences import parse_fasta
+from skbio.util.misc import create_dir
+from biom.table import TableException
+from biom.err import errstate
+
 from qiime.parse import parse_mapping_file
 from qiime.filter import filter_mapping_file, sample_ids_from_metadata_description
-from qiime.format import format_mapping_file, format_biom_table
-from biom.parse import parse_biom_table
-from biom.table import TableException
+from qiime.format import format_mapping_file
+
+
+class OTUTableSplitError(ValueError):
+    """Exception raised when an OTU table cannot be split"""
+    pass
 
 
 def get_mapping_values(mapping_f, mapping_field):
@@ -68,25 +74,35 @@ def split_mapping_file_on_field(mapping_f,
         yield v_fp_str, format_mapping_file(mapping_headers, mapping_data)
 
 
-def split_otu_table_on_sample_metadata(otu_table_f, mapping_f, mapping_field):
-    """ split otu table into sub otu tables where each represent samples corresponding to only a certain value in mapping_field
+def split_otu_table_on_sample_metadata(otu_table, mapping_f, mapping_field):
+    """ split otu table into sub otu tables where each represent samples
+    corresponding to only a certain value in mapping_field
     """
-    mapping_f = list(mapping_f)
-    mapping_values = get_mapping_values(mapping_f, mapping_field)
-    otu_table = parse_biom_table(otu_table_f)
+    with errstate(empty='raise'):
+        mapping_f = list(mapping_f)
+        mapping_values = get_mapping_values(mapping_f, mapping_field)
+        tables = 0
 
-    for v in mapping_values:
-        v_fp_str = v.replace(' ', '_')
-        sample_ids_to_keep = sample_ids_from_metadata_description(
-            mapping_f, valid_states_str="%s:%s" % (mapping_field, v))
+        for v in mapping_values:
+            v_fp_str = v.replace(' ', '_')
+            sample_ids_to_keep = sample_ids_from_metadata_description(
+                mapping_f, valid_states_str="%s:%s" % (mapping_field, v))
 
-        try:
-            filtered_otu_table = otu_table.filterSamples(
-                lambda values, id_, metadata: id_ in sample_ids_to_keep)
-        except TableException:
-            # all samples are filtered out, so no otu table to write
-            continue
-        yield v_fp_str, format_biom_table(filtered_otu_table)
+            try:
+                # filtering cannot be inplace otherwise we lose data
+                filtered_otu_table = otu_table.filter(
+                    lambda values, id_, metadata: id_ in sample_ids_to_keep,
+                    axis='sample', inplace=False)
+                tables += 1
+            except TableException:
+                # all samples are filtered out, so no otu table to write
+                continue
+            yield v_fp_str, filtered_otu_table
+
+        if not tables:
+            raise OTUTableSplitError(
+                "Could not split OTU tables! There are no matches between the "
+                "sample identifiers in the OTU table and the mapping file.")
 
 
 def split_fasta(infile, seqs_per_file, outfile_prefix, working_dir=''):
@@ -111,7 +127,7 @@ def split_fasta(infile, seqs_per_file, outfile_prefix, working_dir=''):
         working_dir += '/'
         create_dir(working_dir)
 
-    for seq_id, seq in MinimalFastaParser(infile):
+    for seq_id, seq in parse_fasta(infile):
         if seq_counter == 0:
             current_out_fp = '%s%s.%d.fasta' \
                 % (working_dir, outfile_prefix, len(out_files))

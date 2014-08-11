@@ -11,12 +11,17 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 
+from os import close
 from shutil import rmtree
 from os.path import exists, join
-from cogent.util.unit_test import TestCase, main
-from cogent.util.misc import remove_files, create_dir
-from biom.parse import parse_biom_table
-from qiime.util import get_qiime_temp_dir, get_tmp_filename
+from tempfile import mkstemp , mkdtemp
+
+from skbio.util.misc import remove_files
+from unittest import TestCase, main
+from numpy.testing import assert_almost_equal
+from biom import load_table
+
+from qiime.util import get_qiime_temp_dir
 from qiime.map_reads_to_reference import (
     usearch_database_mapper, blat_database_mapper, bwa_short_database_mapper,
     bwa_sw_database_mapper, blat_nt_database_mapper)
@@ -33,11 +38,9 @@ class DatabaseAssignmentTests(TestCase):
         """
         """
         tmp_dir = get_qiime_temp_dir()
-        self.test_out = get_tmp_filename(tmp_dir=tmp_dir,
-                                         prefix='qiime_parallel_tests_',
-                                         suffix='',
-                                         result_constructor=str)
-        create_dir(self.test_out)
+        self.test_out = mkdtemp(dir=tmp_dir,
+                                prefix='qiime_parallel_tests_',
+                                suffix='')
         self.dirs_to_remove = [self.test_out]
 
         self.output_fp = join(self.test_out, 'fmap.txt')
@@ -48,32 +51,36 @@ class DatabaseAssignmentTests(TestCase):
         self.files_to_remove = [self.output_fp, self.failure_fp,
                                 self.usearch_fp, self.log_fp, self.bl6_fp]
 
-        self.refseqs1_fp = get_tmp_filename(tmp_dir=self.test_out,
-                                            prefix='qiime_refseqs',
-                                            suffix='.fasta')
+        fd, self.refseqs1_fp = mkstemp(dir=self.test_out,
+                                      prefix='qiime_refseqs',
+                                      suffix='.fasta')
+        close(fd)
         refseqs1_f = open(self.refseqs1_fp, 'w')
         refseqs1_f.write(refseqs1)
         refseqs1_f.close()
         self.files_to_remove.append(self.refseqs1_fp)
 
-        self.refseqs2_fp = get_tmp_filename(tmp_dir=self.test_out,
-                                            prefix='qiime_refseqs',
-                                            suffix='.fasta')
+        fd, self.refseqs2_fp = mkstemp(dir=self.test_out,
+                                      prefix='qiime_refseqs',
+                                      suffix='.fasta')
+        close(fd)
         refseqs2_f = open(self.refseqs2_fp, 'w')
         refseqs2_f.write(refseqs2)
         refseqs2_f.close()
         self.files_to_remove.append(self.refseqs2_fp)
 
-        self.inseqs1_fp = get_tmp_filename(tmp_dir=self.test_out,
-                                           prefix='qiime_inseqs',
-                                           suffix='.fasta')
+        fd, self.inseqs1_fp = mkstemp(dir=self.test_out,
+                                     prefix='qiime_inseqs',
+                                     suffix='.fasta')
+        close(fd)
         inseqs1_f = open(self.inseqs1_fp, 'w')
         inseqs1_f.write(inseqs1)
         inseqs1_f.close()
         self.files_to_remove.append(self.inseqs1_fp)
-        self.inseqs2_fp = get_tmp_filename(tmp_dir=self.test_out,
-                                           prefix='qiime_inseqs',
-                                           suffix='.fasta')
+        fd, self.inseqs2_fp = mkstemp(dir=self.test_out,
+                                     prefix='qiime_inseqs',
+                                     suffix='.fasta')
+        close(fd)
         inseqs2_f = open(self.inseqs2_fp, 'w')
         inseqs2_f.write(inseqs2)
         inseqs2_f.close()
@@ -108,10 +115,10 @@ class UsearchDatabaseAssignmentTests(DatabaseAssignmentTests):
         observation_map_fp = join(self.test_out, 'observation_map.txt')
         self.assertTrue(exists(observation_map_fp))
         observation_table_fp = join(self.test_out, 'observation_table.biom')
-        table = parse_biom_table(open(observation_table_fp, 'U'))
-        self.assertEqualItems(table.SampleIds, ['s2', 's1'])
-        self.assertEqualItems(
-            table.ObservationIds,
+        table = load_table(observation_table_fp)
+        self.assertItemsEqual(table.ids(), ['s2', 's1'])
+        self.assertItemsEqual(
+            table.ids(axis='observation'),
             ['eco:b0122-pr',
              'eco:b0015-pr'])
         self.assertEqual(table.sum(), 5)
@@ -131,10 +138,10 @@ class BlatDatabaseAssignmentTests(DatabaseAssignmentTests):
         observation_map_fp = join(self.test_out, 'observation_map.txt')
         self.assertTrue(exists(observation_map_fp))
         observation_table_fp = join(self.test_out, 'observation_table.biom')
-        table = parse_biom_table(open(observation_table_fp, 'U'))
-        self.assertEqualItems(table.SampleIds, ['s2', 's1'])
-        self.assertEqualItems(
-            table.ObservationIds,
+        table = load_table(observation_table_fp)
+        self.assertItemsEqual(table.ids(), ['s2', 's1'])
+        self.assertItemsEqual(
+            table.ids(axis='observation'),
             ['eco:b0122-pr',
              'eco:b0015-pr'])
         self.assertEqual(table.sum(), 5)
@@ -151,9 +158,9 @@ class BlatDatabaseAssignmentTests(DatabaseAssignmentTests):
         observation_map_fp = join(self.test_out, 'observation_map.txt')
         self.assertTrue(exists(observation_map_fp))
         observation_table_fp = join(self.test_out, 'observation_table.biom')
-        table = parse_biom_table(open(observation_table_fp, 'U'))
-        self.assertEqualItems(table.SampleIds, ['s2', 's1'])
-        self.assertEqualItems(table.ObservationIds,
+        table = load_table(observation_table_fp)
+        self.assertItemsEqual(table.ids(), ['s2', 's1'])
+        self.assertItemsEqual(table.ids(axis='observation'),
                               ['eco:b0122-pr', 'eco:b0015-pr', 'eco:b0001-pr'])
         self.assertEqual(table.sum(), 6)
 
@@ -171,10 +178,10 @@ class BlatNtAssignmentTests(DatabaseAssignmentTests):
         observation_map_fp = join(self.test_out, 'observation_map.txt')
         self.assertTrue(exists(observation_map_fp))
         observation_table_fp = join(self.test_out, 'observation_table.biom')
-        table = parse_biom_table(open(observation_table_fp, 'U'))
-        self.assertEqualItems(table.SampleIds, ['s2', 's1'])
-        self.assertEqualItems(
-            table.ObservationIds,
+        table = load_table(observation_table_fp)
+        self.assertItemsEqual(table.ids(), ['s2', 's1'])
+        self.assertItemsEqual(
+            table.ids(axis='observation'),
             ['r1',
              'r2',
              'r3',
@@ -193,9 +200,10 @@ class BlatNtAssignmentTests(DatabaseAssignmentTests):
         observation_map_fp = join(self.test_out, 'observation_map.txt')
         self.assertTrue(exists(observation_map_fp))
         observation_table_fp = join(self.test_out, 'observation_table.biom')
-        table = parse_biom_table(open(observation_table_fp, 'U'))
-        self.assertEqualItems(table.SampleIds, ['s2', 's1'])
-        self.assertEqualItems(table.ObservationIds, ['r2', 'r3', 'r4', 'r5'])
+        table = load_table(observation_table_fp)
+        self.assertItemsEqual(table.ids(), ['s2', 's1'])
+        self.assertItemsEqual(table.ids(axis='observation'),
+                              ['r2', 'r3', 'r4', 'r5'])
         self.assertEqual(table.sum(), 5)
 
 
@@ -211,10 +219,10 @@ class BwaShortAssignmentTests(DatabaseAssignmentTests):
         observation_map_fp = join(self.test_out, 'observation_map.txt')
         self.assertTrue(exists(observation_map_fp))
         observation_table_fp = join(self.test_out, 'observation_table.biom')
-        table = parse_biom_table(open(observation_table_fp, 'U'))
-        self.assertEqualItems(table.SampleIds, ['s2', 's1'])
-        self.assertEqualItems(
-            table.ObservationIds,
+        table = load_table(observation_table_fp)
+        self.assertItemsEqual(table.ids(), ['s2', 's1'])
+        self.assertItemsEqual(
+            table.ids(axis='observation'),
             ['r1',
              'r2',
              'r3',
@@ -232,9 +240,10 @@ class BwaShortAssignmentTests(DatabaseAssignmentTests):
         observation_map_fp = join(self.test_out, 'observation_map.txt')
         self.assertTrue(exists(observation_map_fp))
         observation_table_fp = join(self.test_out, 'observation_table.biom')
-        table = parse_biom_table(open(observation_table_fp, 'U'))
-        self.assertEqualItems(table.SampleIds, ['s2', 's1'])
-        self.assertEqualItems(table.ObservationIds, ['r2', 'r3', 'r4', 'r5'])
+        table = load_table(observation_table_fp)
+        self.assertItemsEqual(table.ids(), ['s2', 's1'])
+        self.assertItemsEqual(table.ids(axis='observation'),
+                              ['r2', 'r3', 'r4', 'r5'])
         self.assertEqual(table.sum(), 5)
         # float can also be passed for max_diff
         bwa_short_database_mapper(query_fp=self.inseqs2_fp,
@@ -258,10 +267,10 @@ class BwaSwAssignmentTests(DatabaseAssignmentTests):
         observation_map_fp = join(self.test_out, 'observation_map.txt')
         self.assertTrue(exists(observation_map_fp))
         observation_table_fp = join(self.test_out, 'observation_table.biom')
-        table = parse_biom_table(open(observation_table_fp, 'U'))
-        self.assertEqualItems(table.SampleIds, ['s2', 's1'])
-        self.assertEqualItems(
-            table.ObservationIds,
+        table = load_table(observation_table_fp)
+        self.assertItemsEqual(table.ids(), ['s2', 's1'])
+        self.assertItemsEqual(
+            table.ids(axis='observation'),
             ['r1',
              'r2',
              'r3',
