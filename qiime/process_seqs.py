@@ -2,20 +2,55 @@
 
 """Filter poor quality reads, trim barcodes/primers and assign to samples"""
 
-
-from collections import Counter
-from itertools import izip
-
 import numpy as np
+from future.builtins import zip
 from skbio.core.workflow import Workflow, requires, method, not_none
 
 from qiime.hamming import decode_barcode_8 as decode_hamming_8
 from qiime.golay import decode as decode_golay_12
 
 
+def runs_of_ones(bits):
+    """Find positions and lengths of all runs of 1s
+
+    Notes
+    -----
+    Based on this SO post:
+
+    http://stackoverflow.com/questions/1066758/find-length-of-sequences-of-ide\
+    ntical-values-in-a-numpy-array
+
+    Parameters
+    ----------
+    bits : np.array(bool)
+        The vector to check for runs
+
+    Returns
+    -------
+    run_starts : np.array(int)
+        The index positions of the start of any observed runs (inclusive)
+    run_ends : np.array(int)
+        The index positions of the end of any observed runs (exclusive)
+    run_lengths : np.array(int)
+        The length of each run in index order with respect to run_starts and
+        run_ends
+    """
+    # make sure all runs of ones are well-bounded
+    bounded = np.hstack(([0], bits, [0]))
+
+    # get 1 at run starts and -1 at run ends
+    difs = np.diff(bounded)
+    run_starts, = np.where(difs > 0)
+    run_ends, = np.where(difs < 0)
+
+    # because of the diff, the run_starts and run_ends are offset and need to
+    # be corrected to reflect index positions in `bits`
+    return (run_starts, run_ends, run_ends - run_starts)
+
+
 def count_mismatches(seq1, seq2):
     """Counts mismatches between two sequences"""
-    return sum(a != b for a, b in izip(seq1, seq2))
+    return sum(a != b for a, b in zip(seq1, seq2))
 
 
 def has_sequence_qual(state):
@@ -31,6 +66,9 @@ def has_barcode_qual(state):
 class IterAdapter(object):
     """Sequence iterator adapter
 
+    Notes
+    -----
+
     This sequence iterator allows for optionally combining sequence reads with
     barcode data, as well as performing transforms independently on the reads
     or the barcode data. Barcode quality, if available, is also yielded.
@@ -43,6 +81,12 @@ class IterAdapter(object):
     ----------
     seq
     barcode
+
+    Raises
+    ------
+    ValueError
+        If the sequence ID and barcode ID do not match (if barcodes are
+        provided).
 
     Examples
     --------
@@ -79,7 +123,7 @@ class IterAdapter(object):
 
     """
 
-    def __init__(self, seq, barcode=None, **kwargs):
+    def __init__(self, seq, barcode=None):
         self.seq = seq
         self.barcode = barcode
 
@@ -103,7 +147,7 @@ class IterAdapter(object):
                 rec.update(seq)
                 yield rec
         else:
-            for seq, barcode in izip(self.seq, self.barcode):
+            for seq, barcode in zip(self.seq, self.barcode):
                 rec.update(seq)
                 rec.update({new_k: barcode[old_k] for old_k, new_k in remap})
 
@@ -131,6 +175,8 @@ class IterAdapter(object):
 class SequenceWorkflow(Workflow):
     """Implement the sequence processing workflow
 
+    Notes
+    -----
     The sequence processing workflow manages the following tasks, executed in
     the following order::
 
@@ -199,9 +245,9 @@ class SequenceWorkflow(Workflow):
     SequenceWorkflow short circuits if a failure is observed during processing,
     and the specific steps executed are dependent on the runtime options and
     data, the stats may be dependent on runtime conditions. For instance, since
-    demultiplexing is performed prior to sequence quality checks, if a failure
-    occurs during demultiplexing then quality stats, such as min_seq_len, will
-    not get incremented for those sequences.
+    demultiplexing is performed after sequence quality checks, if a failure
+    occurs during quality checks then barcode stats, such as
+    exceed_barcode_error, will not be reflective of those sequences.
 
     quality_max_bad_run_length
         Number of sequences containing a run of poor quality bases
@@ -284,17 +330,15 @@ class SequenceWorkflow(Workflow):
 
         Notes
         -----
+        Overall sequence quality checks and trimming.
 
         Changes to `state`
         ##################
-
         * `Sequence` and `Qual` may be trimmed if quality trimming is enabled.
 
         Triggers for `failed`
         #####################
-
         * If to many nucleotides in `Sequence` are of poor quality.
-
         """
         self._quality_max_bad_run_length()
         self._quality_min_per_read_length_fraction()
@@ -306,10 +350,10 @@ class SequenceWorkflow(Workflow):
 
         Notes
         -----
+        Demultiplexing methods to assign sequences back to samples.
 
         Changes to `state`
         ##################
-
         * `Sample` will be set if an associated sample could be determined.
         * `Original barcode` will be set to the original barcode regardless of
             if the barcode occurred within sequence or as an index.
@@ -319,11 +363,9 @@ class SequenceWorkflow(Workflow):
 
         Triggers for `failed`
         #####################
-
         * If a `Sequence` could not be associated to a sample.
         * If the number of errors observed in the `Original barcode` exceed
             tolerance.
-
         """
         self._demultiplex_golay12()
         self._demultiplex_hamming8()
@@ -338,10 +380,10 @@ class SequenceWorkflow(Workflow):
 
         Notes
         -----
+        Primer validation methods.
 
         Changes to `state`
         ##################
-
         * `Sequence` may be trimmed if a primer is found, and if the runtime
             option `retain_primer` is `False`.
         * `Qual` will be trimmed if `Sequence` is trimmed.
@@ -350,11 +392,9 @@ class SequenceWorkflow(Workflow):
 
         Triggers for `failed`
         #####################
-
         * If the `primer` mapping does not contain primers associated with the
             nucleotide barcode.
         * If the number of primer mismatches exceeds tolerance.
-
         """
         self._primer_instrument_454()
 
@@ -362,17 +402,17 @@ class SequenceWorkflow(Workflow):
     def wf_sequence(self):
         """Final sequence level checks
 
-        Sequence level checks will not alter `state` but may trigger Failed
-        and update `stats`
+        Notes
+        -----
+        Sequence level checks will not alter `state` but may trigger `failed`
+        and update `stats`.
 
         Changes to `state`
-        ------------------
-
+        ##################
         No changes to state are made.
 
         Triggers for `failed`
-        ---------------------
-
+        #####################
         * If a sequence does not mean `min_seq_len`.
         * If the number of ambiguous bases exceed `ambiguous_count`.
 
@@ -380,48 +420,43 @@ class SequenceWorkflow(Workflow):
         self._sequence_length_check()
         self._sequence_ambiguous_count()
 
-    ### End Workflow methods
+    ### End Workflow groups methods
 
     ### Start quality methods
 
     @requires(option='phred_quality_threshold')
     @requires(option='max_bad_run_length')
     def _quality_max_bad_run_length(self):
-        """Fail sequence if there is a poor quality run"""
+        """Fail if there is a poor quality run"""
         max_bad_run_length = self.options['max_bad_run_length']
         phred_quality_threshold = self.options['phred_quality_threshold']
 
-        # can cythonize
-        run_length = 0
-        max_run_length = 0
-        run_start_idx = 0
-        max_run_start_idx = 0
+        # cythonizable
+        poor_quality = self.state['Qual'] < phred_quality_threshold
+        poor_start, poor_stop, poor_length = runs_of_ones(poor_quality)
 
-        for idx, v in enumerate(self.state['Qual']):
-            if v <= phred_quality_threshold:
-                max_run_length += 1
-            else:
-                if run_length > max_run_length:
-                    max_run_length = run_length
-                    max_run_start_idx = run_start_idx
+        if poor_length.size:
+            worst_idx = np.argmax(poor_length)
+            worst_len = poor_length[worst_idx]
+            worst_start_idx = poor_start[worst_idx]
+        else:
+            worst_idx = None
+            worst_len = -1
+            worst_start_idx = None
 
-                run_length = 0
-                run_start_idx = idx
-
-                if max_run_length == 0:
-                    max_run_start_idx = run_start_idx
-
-        if max_run_length > max_bad_run_length:
-            self.state['Qual'] = self.state['Qual'][:max_run_start_idx+1]
-            self.state['Sequence'] = self.state['Sequence'][:max_run_start_idx+1]
+        if worst_len > max_bad_run_length:
+            self.state['Qual'] = self.state['Qual'][:worst_start_idx]
+            self.state['Sequence'] = self.state['Sequence'][:worst_start_idx]
             self.stats['quality_max_bad_run_length'] += 1
 
     @requires(option='phred_quality_threshold')
     @requires(option='min_per_read_length_fraction')
     def _quality_min_per_read_length_fraction(self):
         """Fail a sequence if a percentage of bad quality calls exist"""
-        bad_bases = self.state['Qual'] < self.options['phred_quality_threshold']
+        phred_quality_threshold = self.options['phred_quality_threshold']
+        bad_bases = self.state['Qual'] < phred_quality_threshold
         bad_bases_count = bad_bases.sum(dtype=float)
+
         threshold = 1 - self.options['min_per_read_length_fraction']
 
         if (bad_bases_count / len(self.state['Sequence'])) > threshold:
@@ -446,7 +481,6 @@ class SequenceWorkflow(Workflow):
         """Decode a variable length barcode"""
         raise NotImplementedError
 
-    #### use kwargs for method and bc_length
     def _demultiplex_encoded_barcode(self, method, bc_length):
         """Correct and decode an encoded barcode"""
         if self.state['Barcode'] is not None:
@@ -536,7 +570,7 @@ class SequenceWorkflow(Workflow):
         self.state['Sequence'] = seq
         self.state['Qual'] = qual
 
-    ### End primer methods
+    # End primer methods
 
     ### Start sequence methods
 

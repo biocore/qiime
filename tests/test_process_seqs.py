@@ -9,7 +9,8 @@ from future.builtins import zip
 from skbio import FastqIterator
 from skbio import parse_fastq
 
-from qiime.process_seqs import IterAdapter, SequenceWorkflow, count_mismatches
+from qiime.process_seqs import (IterAdapter, SequenceWorkflow,
+    count_mismatches, runs_of_ones)
 from qiime.util import MetadataMap
 
 
@@ -26,6 +27,19 @@ class SupportTests(TestCase):
         self.assertEqual(count_mismatches(s1, s2), 2)
         self.assertEqual(count_mismatches(s2, s1), 2)
         self.assertEqual(count_mismatches(s2, s2), 0)
+
+    def test_runs_of_ones(self):
+        #                0  1  2  3  4  5  6  7  8  9 10 11 12 13
+        bits = np.array([0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0])
+        exp_starts = np.array([2, 5, 9])
+        exp_ends = np.array([4, 6, 13])
+        exp_lengths = np.array([2, 1, 4])
+
+        obs_starts, obs_ends, obs_lengths = runs_of_ones(bits)
+
+        npt.assert_equal(obs_starts, exp_starts)
+        npt.assert_equal(obs_ends, exp_ends)
+        npt.assert_equal(obs_lengths, exp_lengths)
 
 class IterAdapterTests(TestCase):
     def test_iter(self):
