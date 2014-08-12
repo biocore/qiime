@@ -247,6 +247,8 @@ class ProcessSeqsWorkflowTests(TestCase):
                  'Qual': np.array([1, 2, 3, 4, 5, 6, 7, 8])}
         item3 = {'Final barcode': 'AAAAAAAAAAAA', 'Sequence': 'GGTTGCCC',
                  'Qual': np.array([1, 2, 3, 4, 5, 6, 7, 8])}
+        item4 = {'Final barcode': 'AAAAABCAAAAA', 'Sequence': 'AATTGCCCA',
+                 'Qual': np.array([1, 2, 3, 4, 5, 6, 7, 8])}
 
         wf_obj.initialize_state(item1)
         wf_obj.failed = False
@@ -276,7 +278,18 @@ class ProcessSeqsWorkflowTests(TestCase):
         self.assertEqual(wf_obj.state['Forward primer'], None)
         self.assertTrue(wf_obj.failed)
 
-        # item is not modified in place as retain priemr is True
+        wf_obj.initialize_state(item4)
+        wf_obj.failed = False
+        wf_obj._primer_check_forward()
+
+        # have the primer, but the barcode isn't associated with the primer
+        self.assertEqual(wf_obj.state['Sequence'], 'AATTGCCCA')
+        npt.assert_equal(wf_obj.state['Qual'],
+                         np.array([1, 2, 3, 4, 5, 6, 7, 8]))
+        self.assertEqual(wf_obj.state['Forward primer'], None)
+        self.assertTrue(wf_obj.failed)
+
+        # item is not modified in place as retain primer is True
         wf_obj = self._make_workflow_obj({'max_primer_mismatch': 2,
                                           'retain_primer': True})
         item1 = {'Final barcode': 'AAAAAAAAAAAA', 'Sequence': 'AATTGGCC',
@@ -353,6 +366,22 @@ class ProcessSeqsWorkflowTests(TestCase):
         wf_obj._sequence_ambiguous_count()
         self.assertFalse(wf_obj.failed)
 
+    def test_full_process_simple(self):
+        """Just demux"""
+        wf_obj = self._make_workflow_obj({'demultiplex': True,
+                                          'barcode_type': 'golay_12'})
+
+        seq_raw = fastq1.splitlines()
+        bc_raw = barcode_fastq1.splitlines()
+
+        seq = FastqIterator([seq_raw], phred_offset=64)
+        barcode = FastqIterator([bc_raw], phred_offset=64)
+        it = IterAdapter(seq=seq, barcode=barcode)
+
+        for obs, exp in zip(wf_obj(it), fastq1_expected):
+            for k in exp:
+                npt.assert_equal(obs[k], exp[k])
+
 
 mapping = MetadataMap(
     {'s1': {'BarcodeSequence': 'AAAAAAAAAAAA',
@@ -362,6 +391,161 @@ mapping = MetadataMap(
      's4': {'BarcodeSequence': 'AAAAAAAAAAAT', 'LinkerPrimerSequence': ''},
      's5': {'BarcodeSequence': 'GGAGACAAGGGA', 'LinkerPrimerSequence': ''}},
     [])
+
+# just demultiplex
+fastq1_expected = [
+    {'Barcode errors': 0,
+     'Final barcode': 'AAAAAAAAAAAA',
+     'Original barcode': 'AAAAAAAAAAAA',
+     'Qual': np.array([34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34,
+                       34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 25, 32, 32,
+                       28, 32, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34,
+                       34, 32, 34, 34, 34, 34, 33, 34, 32, 33, 32, 31, 27, 34,
+                       33, 31, 33, 33, 29, 34, 30, 31, 34, 9, 23, 20, 20, 17,
+                       30, 25, 18, 30, 21, 32], dtype=np.int8),
+     'Sequence': ('GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCT'
+                  'TTTAGGAGTCAGCTGTC'),
+     'SequenceID': '990:2:4:11271:5323#1/1'},
+
+    {'Barcode errors': 0,
+     'Final barcode': 'AAAAAAAAAAAC',
+     'Original barcode': 'AAAAAAAAAAAC',
+     'Qual': np.array([34, 34, 35, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34,
+                       34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34,
+                       34, 31, 34, 34, 34, 34, 34, 34, 34, 34, 33, 34, 33, 31,
+                       34, 30, 34, 25, 31, 32, 33, 33, 30, 34, 16, 34, 32, 34,
+                       34, 34, 34,  8, 25,  7, 25, 26, 20, 34, 34, 30, 31, 33,
+                       34, 27, 30, 34, 33, 20], dtype=np.int8),
+     'Sequence': ('GGTTACCTTGTTACGACTTCACCCCAATCATCGGCCCCACCTTAGACAGCTGACTCCTA'
+                  'AAAGGTTATCTCACCGG'),
+     'SequenceID': '990:2:4:11271:5323#1/1'},
+
+    {'Barcode errors': 0,
+     'Final barcode': 'AAAAAAAAAAAA',
+     'Original barcode': 'AAAAAAAAAAAA',
+     'Qual': np.array([34, 31, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34,
+                       34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34,
+                       33, 34, 33, 33, 30, 33, 32, 27, 34, 34, 34, 34, 32, 34,
+                       34, 34, 34, 20, 34, 34, 33, 34, 34, 29, 34, 29, 27, 31,
+                       33, 32, 33, 29, 33, 35, 33, 33, 33, 35, 34, 33, 35, 33,
+                       31, 33, 30, 32, 33, 33], dtype=np.int8),
+     'Sequence': ('GCACACACCGCCCGTCACACCATCCGAGTTGGAGGTACCCGAAGCCGGTAGTCTAACCG'
+                  'CAAGGAGGACGCTGTCG'),
+     'SequenceID': '990:2:4:11272:9538#1/1'},
+
+    {'Barcode errors': 0,
+     'Final barcode': 'AAAAAAAAAAAT',
+     'Original barcode': 'AAAAAAAAAAAT',
+     'Qual': np.array([34, 34, 30, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34,
+                       34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 33, 34,
+                       34, 34, 34, 32, 32, 34, 34, 34, 32, 31, 31, 34, 34, 34,
+                       34, 34, 34, 9, 23, 18, 24, 24, 32, 18, 32, 32, 28, 32,
+                       28, 25, 28, 30, 31, 31, 34, 33, 30, 33, 27, 19, 33, 33,
+                       33, 31, 29, 15, 29, 15], dtype=np.int8),
+     'Sequence': ('GGCTACCTTGTTACGACTTCACCCTCCTCACTAAACGTACCTTCGACAGCGTCCTCCTT'
+                  'GCGGTTAGACTACCGGC'),
+     'SequenceID': '990:2:4:11272:9538#1/1'},
+
+    {'Barcode errors': 0,
+     'Final barcode': 'AAAAAAAAAAAA',
+     'Original barcode': 'AAAAAAAAAAAA',
+     'Qual': np.array([34, 32, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34,
+                       34, 34, 34, 32, 30, 34, 34, 34, 34, 34, 25, 34, 34, 34,
+                       34, 34, 28, 31, 31, 31, 32, 31, 34, 34, 33, 34, 30, 33,
+                       33, 33, 21, 30, 28, 32, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                       2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
+                      dtype=np.int8),
+     'Sequence': ('GCACACACCGCCCGTCACACCATCCGAGTTGGGGGTACCCGAAGCCGGCAGTCTAACCG'
+                  'CAAGGAGGACGCTGTCG'),
+     'SequenceID': '990:2:4:11272:7447#1/1'},
+
+    {'Barcode errors': 0,
+     'Final barcode': 'AAAAAAAAAAAA',
+     'Original barcode': 'AAAAAAAAAAAA',
+     'Qual': np.array([34, 32, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34,
+                       34, 34, 34, 32, 30, 34, 34, 34, 34, 34, 25, 34, 34, 34,
+                       34, 34, 28, 31, 31, 31, 32, 31, 34, 34, 33, 34, 30, 33,
+                       33, 33, 21, 30, 28, 32, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                       2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
+                      dtype=np.int8),
+     'Sequence': ('GGATACCTTGTTACGACTTCACCCTCCTCACTCATCGTACCCTCGACAGCGTCCTCCTT'
+                  'GCTGTTAGACTTCCGGC'),
+     'SequenceID': '990:2:4:11272:7447#1/1'},
+
+    {'Barcode errors': 0,
+     'Final barcode': 'AAAAAAAAAAAC',
+     'Original barcode': 'AAAAAAAAAAAC',
+     'Qual': np.array([34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34,
+                       34, 34, 34, 34, 34, 34, 34, 24, 34, 34, 34, 31, 34, 34,
+                       34, 33, 34, 34, 34, 32, 33, 26, 27, 21, 29, 28, 15, 20,
+                       25, 24, 22, 32, 20, 34, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                       2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
+                      dtype=np.int8),
+     'Sequence': ('GCACTCACCGCCCGTCACGCCACGGAAGCCGGCTGCACCTGAAGCCGGTGGGGCAACCG'
+                  'GCTGTCCCTTTTAGCGG'),
+     'SequenceID': '990:2:4:11272:19991#1/1'},
+
+    {'Barcode errors': 0,
+     'Final barcode': 'AAAAAAAAAAAC',
+     'Original barcode': 'AAAAAAAAAAAC',
+     'Qual': np.array([34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34,
+                       34, 34, 34, 34, 34, 34, 33, 32, 34, 34, 34, 34, 34, 34,
+                       34, 34, 34, 34, 32, 33, 34, 34, 31, 33, 33, 35, 34, 34,
+                       34, 34, 34, 29, 31, 31, 31, 29, 28, 27, 28, 30, 30, 27,
+                       33, 15, 35, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                       2, 2], dtype=np.int8),
+     'Sequence': ('GGCTACCTTGTTACGACTTCGCCCCAGTCACCGACCACACCCTCGACGGCTGCCTCCGG'
+                  'CTGGCCCTTTCCACCCA'),
+     'SequenceID': '990:2:4:11272:19991#1/1'},
+
+    {'Barcode errors': 0,
+     'Final barcode': 'AAAAAAAAAAAT',
+     'Original barcode': 'AAAAAAAAAAAT',
+     'Qual': np.array([34, 34, 34, 34, 31, 34, 34, 34, 34, 34, 34, 34, 34, 34,
+                       34, 32, 32, 32, 17, 32, 32, 32, 2, 2, 2, 2, 2, 2, 2, 2,
+                       2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                       2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                       2, 2, 2, 2, 2, 2, 2, 2], dtype=np.int8),
+     'Sequence': ('GTACTCACCGCCCGTCACGCCATGGGAGTTGGGCTTACCTGAAGCCCGCGAGCTAACCG'
+                  'GAAAGGGGGGGATGTGG'),
+     'SequenceID': '990:2:4:11272:4315#1/1'},
+
+    {'Barcode errors': 0,
+     'Final barcode': 'AAAAAAAAAAAT',
+     'Original barcode': 'AAAAAAAAAAAT',
+     'Qual': np.array([32, 32, 17, 32, 32, 32, 32, 32, 32, 31, 32, 32, 32, 32,
+                       32, 32, 32, 32, 32, 32, 11, 29, 29, 33, 2, 2, 2, 2, 2,
+                       2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                       2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                       2, 2, 2, 2, 2, 2, 2, 2, 2], dtype=np.int8),
+     'Sequence': ('GGCTACCTTGTTACGACTTCACCCCCGTCGCTCGGCGTACCTTCGACCGCTGCCTCCTT'
+                  'TTGGTTATATCTCCGGG'),
+     'SequenceID': '990:2:4:11272:4315#1/1'},
+
+    {'Barcode errors': 2,
+     'Final barcode': 'AAAAAAAAAAAA',
+     'Original barcode': 'GAAAAAAAAAAT',
+     'Qual': np.array([32, 32, 17, 32, 32, 32, 32, 32, 32, 31, 32, 32, 32, 32,
+                       32, 32, 32, 32, 32, 32, 11, 29, 29, 33, 2, 2, 2, 2, 2,
+                       2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                       2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                       2, 2, 2, 2, 2, 2, 2, 2, 2], dtype=np.int8),
+     'Sequence': ('GCACACACCGCCCGTCACACCACGAGAGTCGGCAACACCCGAAGTCGGTGAGGTAACCC'
+                  'CGAAAGGGGAGCCAGCC'),
+     'SequenceID': '990:2:4:11272:5533#1/1'},
+
+    {'Barcode errors': 0,
+     'Final barcode': 'AAAAAAAAAAAT',
+     'Original barcode': 'AAAAAAAAAAAT',
+     'Qual': np.array([34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34,
+                       34, 34, 34, 34, 34, 34, 34, 24, 34, 34, 34, 31, 34, 34,
+                       34, 33, 34, 34, 34, 32, 33, 26, 27, 21, 29, 28, 15, 20,
+                       25, 24, 22, 32, 20, 34, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                       2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
+                      dtype=np.int8),
+     'Sequence': ('GGATACCTTGTTACGACTTCACCCCAATCATCGACCCCACCTTCGGCGGCTGGCTCCCC'
+                  'TTTCGGGGGTACCTCAC'),
+     'SequenceID': '990:2:4:11272:5533#0/1'}]
 
 fastq1 = """@990:2:4:11271:5323#1/1
 GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC
