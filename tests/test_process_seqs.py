@@ -10,7 +10,7 @@ from skbio import FastqIterator
 from skbio import parse_fastq
 
 from qiime.process_seqs import (IterAdapter, SequenceWorkflow,
-    count_mismatches, runs_of_ones)
+                                count_mismatches, runs_of_ones)
 from qiime.util import MetadataMap
 
 
@@ -41,6 +41,7 @@ class SupportTests(TestCase):
         npt.assert_equal(obs_ends, exp_ends)
         npt.assert_equal(obs_lengths, exp_lengths)
 
+
 class IterAdapterTests(TestCase):
     def test_iter(self):
         seq_raw = fastq1.splitlines()
@@ -50,7 +51,8 @@ class IterAdapterTests(TestCase):
         barcode = FastqIterator([bc_raw], phred_offset=64)
         it = IterAdapter(seq=seq, barcode=barcode)
 
-        for rec, s, b in zip(it, parse_fastq(seq_raw, phred_offset=64), parse_fastq(bc_raw, phred_offset=64)):
+        for rec, s, b in zip(it, parse_fastq(seq_raw, phred_offset=64),
+                             parse_fastq(bc_raw, phred_offset=64)):
             self.assertEqual(rec['SequenceID'], s[0])
             self.assertEqual(rec['Sequence'], s[1])
             np.testing.assert_equal(rec['Qual'], s[2])
@@ -66,14 +68,10 @@ class ProcessSeqsWorkflowTests(TestCase):
         self.barcode_fastq1 = barcode_fastq1.split('\n')
         self.fastq2 = fastq2.split('\n')
         self.barcode_fastq2 = barcode_fastq2.split('\n')
-        self.fastq1_expected_no_qual_unassigned = fastq1_expected_no_qual_unassigned
-        self.fastq1_expected_default = fastq1_expected_default
-        self.fastq2_expected_default = fastq2_expected_default
-        self.fastq1_expected_single_barcode = fastq1_expected_single_barcode
         self.mapping = mapping
         self.primers = \
-                {v['BarcodeSequence']: v['LinkerPrimerSequence'].split(',')
-                 for v in mapping._metadata.values()}
+            {v['BarcodeSequence']: v['LinkerPrimerSequence'].split(',')
+             for v in mapping._metadata.values()}
         self.barcodes = {v['BarcodeSequence']: k
                          for k, v in mapping._metadata.items()}
 
@@ -84,13 +82,13 @@ class ProcessSeqsWorkflowTests(TestCase):
 
     def test_workflow_construction(self):
         """Make sure we can construct using our helper method"""
-        x = self._make_workflow_obj({'foo':'bar'})
+        self._make_workflow_obj({'foo': 'bar'})
 
     def test_initialize_state(self):
         """Check the initialization method"""
-        wf_obj = self._make_workflow_obj({'foo':'bar'})
+        wf_obj = self._make_workflow_obj({'foo': 'bar'})
         wf_obj.state['Sequence'] = 'w00t'
-        wf_obj.initialize_state({'Sequence':'foo'})
+        wf_obj.initialize_state({'Sequence': 'foo'})
         self.assertEqual(set(wf_obj.state.values()), set([None, 'foo']))
 
     def test_quality_max_bad_run_length(self):
@@ -169,10 +167,10 @@ class ProcessSeqsWorkflowTests(TestCase):
         wf_obj = self._make_workflow_obj({'demultiplex': True,
                                           'barcode_type': 'golay_12'})
 
-        needs_a_fix = {'Barcode':'GGAGACAAGGGT', 'Sequence':'AATTGGCC'}
-        exact = {'Barcode':'GGAGACAAGGGA', 'Sequence':'AATTGGCC'}
-        from_sequence = {'Barcode':None, 'Sequence':'GGAGACAAGGGAAATTAATT'}
-        unknown_barcode = {'Barcode':'ACACCTGGTGAT', 'Sequence':'AATTGGCC'}
+        needs_a_fix = {'Barcode': 'GGAGACAAGGGT', 'Sequence': 'AATTGGCC'}
+        exact = {'Barcode': 'GGAGACAAGGGA', 'Sequence': 'AATTGGCC'}
+        from_sequence = {'Barcode': None, 'Sequence': 'GGAGACAAGGGAAATTAATT'}
+        unknown_barcode = {'Barcode': 'ACACCTGGTGAT', 'Sequence': 'AATTGGCC'}
 
         wf_obj.initialize_state(needs_a_fix)
         wf_obj.failed = False
@@ -218,10 +216,10 @@ class ProcessSeqsWorkflowTests(TestCase):
         """Verify failing max_barcode_error checking"""
         wf_obj = self._make_workflow_obj({'demultiplex': True,
                                           'barcode_type': 'golay_12',
-                                          'max_barcode_error':0})
+                                          'max_barcode_error': 0})
 
-        needs_a_fix = {'Barcode':'GGAGACAAGGGT', 'Sequence':'AATTGGCC'}
-        exact = {'Barcode':'GGAGACAAGGGA', 'Sequence':'AATTGGCC'}
+        needs_a_fix = {'Barcode': 'GGAGACAAGGGT', 'Sequence': 'AATTGGCC'}
+        exact = {'Barcode': 'GGAGACAAGGGA', 'Sequence': 'AATTGGCC'}
 
         wf_obj.failed = False
         wf_obj.initialize_state(exact)
@@ -241,21 +239,21 @@ class ProcessSeqsWorkflowTests(TestCase):
         """Pull the forward primer as expected"""
         # primer details sourced from self.mapping
 
-        wf_obj = self._make_workflow_obj({'max_primer_mismatch':2,
-                                          'retain_primer':False})
-        item1 = {'Final barcode':'AAAAAAAAAAAA', 'Sequence':'AATTGGCC',
-                 'Qual':np.array([1,2,3,4,5,6,7,8])}
-        item2 = {'Final barcode':'AAAAAAAAAAAA', 'Sequence':'AATTGCCC',
-                 'Qual':np.array([1,2,3,4,5,6,7,8])}
-        item3 = {'Final barcode':'AAAAAAAAAAAA', 'Sequence':'GGTTGCCC',
-                 'Qual':np.array([1,2,3,4,5,6,7,8])}
+        wf_obj = self._make_workflow_obj({'max_primer_mismatch': 2,
+                                          'retain_primer': False})
+        item1 = {'Final barcode': 'AAAAAAAAAAAA', 'Sequence': 'AATTGGCC',
+                 'Qual': np.array([1, 2, 3, 4, 5, 6, 7, 8])}
+        item2 = {'Final barcode': 'AAAAAAAAAAAA', 'Sequence': 'AATTGCCC',
+                 'Qual': np.array([1, 2, 3, 4, 5, 6, 7, 8])}
+        item3 = {'Final barcode': 'AAAAAAAAAAAA', 'Sequence': 'GGTTGCCC',
+                 'Qual': np.array([1, 2, 3, 4, 5, 6, 7, 8])}
 
         wf_obj.initialize_state(item1)
         wf_obj.failed = False
         wf_obj._primer_check_forward()
 
         self.assertEqual(wf_obj.state['Sequence'], 'CC')
-        npt.assert_equal(wf_obj.state['Qual'], np.array([7,8]))
+        npt.assert_equal(wf_obj.state['Qual'], np.array([7, 8]))
         self.assertEqual(wf_obj.state['Forward primer'], 'AATTGG')
         self.assertFalse(wf_obj.failed)
 
@@ -264,7 +262,7 @@ class ProcessSeqsWorkflowTests(TestCase):
         wf_obj._primer_check_forward()
 
         self.assertEqual(wf_obj.state['Sequence'], 'CC')
-        npt.assert_equal(wf_obj.state['Qual'], np.array([7,8]))
+        npt.assert_equal(wf_obj.state['Qual'], np.array([7, 8]))
         self.assertEqual(wf_obj.state['Forward primer'], 'AATTGC')
         self.assertFalse(wf_obj.failed)
 
@@ -273,26 +271,28 @@ class ProcessSeqsWorkflowTests(TestCase):
         wf_obj._primer_check_forward()
 
         self.assertEqual(wf_obj.state['Sequence'], 'GGTTGCCC')
-        npt.assert_equal(wf_obj.state['Qual'], np.array([1,2,3,4,5,6,7,8]))
+        npt.assert_equal(wf_obj.state['Qual'],
+                         np.array([1, 2, 3, 4, 5, 6, 7, 8]))
         self.assertEqual(wf_obj.state['Forward primer'], None)
         self.assertTrue(wf_obj.failed)
 
         # item is not modified in place as retain priemr is True
-        wf_obj = self._make_workflow_obj({'max_primer_mismatch':2,
-                                          'retain_primer':True})
-        item1 = {'Final barcode':'AAAAAAAAAAAA', 'Sequence':'AATTGGCC',
-                 'Qual':np.array([1,2,3,4,5,6,7,8])}
-        item2 = {'Final barcode':'AAAAAAAAAAAA', 'Sequence':'AATTGCCC',
-                 'Qual':np.array([1,2,3,4,5,6,7,8])}
-        item3 = {'Final barcode':'AAAAAAAAAAAA', 'Sequence':'GGTTGCCC',
-                 'Qual':np.array([1,2,3,4,5,6,7,8])}
+        wf_obj = self._make_workflow_obj({'max_primer_mismatch': 2,
+                                          'retain_primer': True})
+        item1 = {'Final barcode': 'AAAAAAAAAAAA', 'Sequence': 'AATTGGCC',
+                 'Qual': np.array([1, 2, 3, 4, 5, 6, 7, 8])}
+        item2 = {'Final barcode': 'AAAAAAAAAAAA', 'Sequence': 'AATTGCCC',
+                 'Qual': np.array([1, 2, 3, 4, 5, 6, 7, 8])}
+        item3 = {'Final barcode': 'AAAAAAAAAAAA', 'Sequence': 'GGTTGCCC',
+                 'Qual': np.array([1, 2, 3, 4, 5, 6, 7, 8])}
 
         wf_obj.initialize_state(item1)
         wf_obj.failed = False
         wf_obj._primer_check_forward()
 
         self.assertEqual(wf_obj.state['Sequence'], 'AATTGGCC')
-        npt.assert_equal(wf_obj.state['Qual'], np.array([1,2,3,4,5,6,7,8]))
+        npt.assert_equal(wf_obj.state['Qual'],
+                         np.array([1, 2, 3, 4, 5, 6, 7, 8]))
         self.assertEqual(wf_obj.state['Forward primer'], 'AATTGG')
         self.assertFalse(wf_obj.failed)
 
@@ -301,7 +301,8 @@ class ProcessSeqsWorkflowTests(TestCase):
         wf_obj._primer_check_forward()
 
         self.assertEqual(wf_obj.state['Sequence'], 'AATTGCCC')
-        npt.assert_equal(wf_obj.state['Qual'], np.array([1,2,3,4,5,6,7,8]))
+        npt.assert_equal(wf_obj.state['Qual'],
+                         np.array([1, 2, 3, 4, 5, 6, 7, 8]))
         self.assertEqual(wf_obj.state['Forward primer'], 'AATTGC')
         self.assertFalse(wf_obj.failed)
 
@@ -310,31 +311,32 @@ class ProcessSeqsWorkflowTests(TestCase):
         wf_obj._primer_check_forward()
 
         self.assertEqual(wf_obj.state['Sequence'], 'GGTTGCCC')
-        npt.assert_equal(wf_obj.state['Qual'], np.array([1,2,3,4,5,6,7,8]))
+        npt.assert_equal(wf_obj.state['Qual'],
+                         np.array([1, 2, 3, 4, 5, 6, 7, 8]))
         self.assertEqual(wf_obj.state['Forward primer'], None)
         self.assertTrue(wf_obj.failed)
 
     def test_sequence_length_check(self):
         """Check the length of the sequence"""
-        wf_obj = self._make_workflow_obj(options={'min_seq_len':5})
-        item1 = {'Sequence':'AATTGGCC'}
-        item2 = {'Sequence':'AATT'}
+        wf_obj = self._make_workflow_obj(options={'min_seq_len': 5})
+        item1 = {'Sequence': 'AATTGGCC'}
+        item2 = {'Sequence': 'AATT'}
 
         wf_obj.state = item1
-        wf_obj.failed = False # note, normally handled by Workflow.__call__
+        wf_obj.failed = False
         wf_obj._sequence_length_check()
         self.assertFalse(wf_obj.failed)
 
         wf_obj.state = item2
-        wf_obj.failed = False # note, normally handled by Workflow.__call__
+        wf_obj.failed = False
         wf_obj._sequence_length_check()
         self.assertTrue(wf_obj.failed)
 
     def test_sequence_ambiguous_count(self):
-        wf_obj = self._make_workflow_obj({'ambiguous_count':2})
-        item1 = {'Sequence':'AATTGGCC'}
-        item2 = {'Sequence':'AANNNTT'}
-        item3 = {'Sequence':'AANTT'}
+        wf_obj = self._make_workflow_obj({'ambiguous_count': 2})
+        item1 = {'Sequence': 'AATTGGCC'}
+        item2 = {'Sequence': 'AANNNTT'}
+        item3 = {'Sequence': 'AANTT'}
 
         wf_obj.state = item1
         wf_obj.failed = False
@@ -435,12 +437,13 @@ test5
 """
 
 mapping = MetadataMap(
-    {'s1':{'BarcodeSequence':'AAAAAAAAAAAA', 'LinkerPrimerSequence':'AATTGG,AATTCC'},
-     's2':{'BarcodeSequence':'AAAAAAAAAAAC', 'LinkerPrimerSequence':''},
-     's3':{'BarcodeSequence':'AAAAAAAAAAAG', 'LinkerPrimerSequence':''},
-     's4':{'BarcodeSequence':'AAAAAAAAAAAT', 'LinkerPrimerSequence':''},
-     's5':{'BarcodeSequence':'GGAGACAAGGGA', 'LinkerPrimerSequence':''}
-    }, [])
+    {'s1': {'BarcodeSequence': 'AAAAAAAAAAAA',
+            'LinkerPrimerSequence': 'AATTGG,AATTCC'},
+     's2': {'BarcodeSequence': 'AAAAAAAAAAAC', 'LinkerPrimerSequence': ''},
+     's3': {'BarcodeSequence': 'AAAAAAAAAAAG', 'LinkerPrimerSequence': ''},
+     's4': {'BarcodeSequence': 'AAAAAAAAAAAT', 'LinkerPrimerSequence': ''},
+     's5': {'BarcodeSequence': 'GGAGACAAGGGA', 'LinkerPrimerSequence': ''}},
+    [])
 
 fastq1 = """@990:2:4:11271:5323#1/1
 GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC
@@ -641,168 +644,6 @@ AAAAAAAAAAAT
 +
 bbbbbbbbbbbb
 """
-
-
-fastq1_expected_no_qual_unassigned = [
-    ("s1_0 990:2:4:11271:5323#1/1 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
-     "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC",
-     "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`",
-     0),
-    ("s2_1 990:2:4:11271:5323#1/1 orig_bc=AAAAAAAAAAAC new_bc=AAAAAAAAAAAC bc_diffs=0",
-     "GGTTACCTTGTTACGACTTCACCCCAATCATCGGCCCCACCTTAGACAGCTGACTCCTAAAAGGTTATCTCACCGG",
-     "bbcbbbbbbbbbbbbbbbbbbbbbbbbbb_bbbbbbbbaba_b^bY_`aa^bPb`bbbbHYGYZTbb^_ab[^baT",
-     1),
-    ("s1_2 990:2:4:11272:9538#1/1 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
-     "GCACACACCGCCCGTCACACCATCCGAGTTGGAGGTACCCGAAGCCGGTAGTCTAACCGCAAGGAGGACGCTGTCG",
-     "b_bbbbbbbbbbbbbbbbbbbbbbbbbbabaa^a`[bbbb`bbbbTbbabb]b][_a`a]acaaacbaca_a^`aa",
-     2),
-    ("s4_3 990:2:4:11272:9538#1/1 orig_bc=AAAAAAAAAAAT new_bc=AAAAAAAAAAAT bc_diffs=0",
-     "GGCTACCTTGTTACGACTTCACCCTCCTCACTAAACGTACCTTCGACAGCGTCCTCCTTGCGGTTAGACTACCGGC",
-     "bb^bbbbbbbbbbbbbbbbbbbbbbbabbbb``bbb`__bbbbbbIWRXX`R``\`\Y\^__ba^a[Saaa_]O]O",
-     3),
-    ("s1_4 990:2:4:11272:7447#1/1 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
-     "GCACACACCGCCCGTCACACCATCCGAGTTGGGGGTACCCGAAGCCGGCAGTCTAACCGCAAGGAGGACGCTGTCG",
-     "b`bbbbbbbbbbbbbbb`^bbbbbYbbbbb\___`_bbab^aaaU^\`BBBBBBBBBBBBBBBBBBBBBBBBBBBB",
-     4),
-    ("s1_5 990:2:4:11272:7447#1/1 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
-     "GGATACCTTGTTACGACTTCACCCTCCTCACTCATCGTACCCTCGACAGCGTCCTCCTTGCTGTTAGACTTCCGGC",
-     "b`bbbbbbbbbbbbbbb`^bbbbbYbbbbb\___`_bbab^aaaU^\`BBBBBBBBBBBBBBBBBBBBBBBBBBBB",
-     5),
-    ("s2_6 990:2:4:11272:19991#1/1 orig_bc=AAAAAAAAAAAC new_bc=AAAAAAAAAAAC bc_diffs=0",
-     "GCACTCACCGCCCGTCACGCCACGGAAGCCGGCTGCACCTGAAGCCGGTGGGGCAACCGGCTGTCCCTTTTAGCGG",
-     "bbbbbbbbbbbbbbbbbbbbbXbbb_bbbabbb`aZ[U]\OTYXV`TbBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
-     6),
-    ("s2_7 990:2:4:11272:19991#1/1 orig_bc=AAAAAAAAAAAC new_bc=AAAAAAAAAAAC bc_diffs=0",
-     "GGCTACCTTGTTACGACTTCGCCCCAGTCACCGACCACACCCTCGACGGCTGCCTCCGGCTGGCCCTTTCCACCCA",
-     "bbbbbbbbbbbbbbbbbbbba`bbbbbbbbbb`abb_aacbbbbb]___]\[\^^[aOcBBBBBBBBBBBBBBBBB",
-     7),
-    ("s4_8 990:2:4:11272:4315#1/1 orig_bc=AAAAAAAAAAAT new_bc=AAAAAAAAAAAT bc_diffs=0",
-     "GTACTCACCGCCCGTCACGCCATGGGAGTTGGGCTTACCTGAAGCCCGCGAGCTAACCGGAAAGGGGGGGATGTGG",
-     "bbbb_bbbbbbbbbb```Q```BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
-     8),
-    ("s4_9 990:2:4:11272:4315#1/1 orig_bc=AAAAAAAAAAAT new_bc=AAAAAAAAAAAT bc_diffs=0",
-     "GGCTACCTTGTTACGACTTCACCCCCGTCGCTCGGCGTACCTTCGACCGCTGCCTCCTTTTGGTTATATCTCCGGG",
-     "``Q``````_``````````K]]aBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
-     9),
-    ("Unassigned_10 990:2:4:11272:5533#1/1 orig_bc=GAAAAAAAAAAT new_bc=GAAAAAAAAAAT bc_diffs=0",
-     "GCACACACCGCCCGTCACACCACGAGAGTCGGCAACACCCGAAGTCGGTGAGGTAACCCCGAAAGGGGAGCCAGCC",
-     "``Q``````_``````````K]]aBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
-     10),
-    ("s4_11 990:2:4:11272:5533#0/1 orig_bc=AAAAAAAAAAAT new_bc=AAAAAAAAAAAT bc_diffs=0",
-     "GGATACCTTGTTACGACTTCACCCCAATCATCGACCCCACCTTCGGCGGCTGGCTCCCCTTTCGGGGGTACCTCAC",
-     "bbbbbbbbbbbbbbbbbbbbbXbbb_bbbabbb`aZ[U]\OTYXV`TbBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
-     11)]
-
-fastq1_expected_default = [
-    ("s1_0 990:2:4:11271:5323#1/1 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
-     "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC",
-     "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`",
-     0),
-    ("s2_1 990:2:4:11271:5323#1/1 orig_bc=AAAAAAAAAAAC new_bc=AAAAAAAAAAAC bc_diffs=0",
-     "GGTTACCTTGTTACGACTTCACCCCAATCATCGGCCCCACCTTAGACAGCTGACTCCTAAAAGGTTATCTCACCGG",
-     "bbcbbbbbbbbbbbbbbbbbbbbbbbbbb_bbbbbbbbaba_b^bY_`aa^bPb`bbbbHYGYZTbb^_ab[^baT",
-     1),
-    ("s1_2 990:2:4:11272:9538#1/1 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
-     "GCACACACCGCCCGTCACACCATCCGAGTTGGAGGTACCCGAAGCCGGTAGTCTAACCGCAAGGAGGACGCTGTCG",
-     "b_bbbbbbbbbbbbbbbbbbbbbbbbbbabaa^a`[bbbb`bbbbTbbabb]b][_a`a]acaaacbaca_a^`aa",
-     2),
-    ("s4_3 990:2:4:11272:9538#1/1 orig_bc=AAAAAAAAAAAT new_bc=AAAAAAAAAAAT bc_diffs=0",
-     "GGCTACCTTGTTACGACTTCACCCTCCTCACTAAACGTACCTTCGACAGCGTCCTCCTTGCGGTTAGACTACCGGC",
-     "bb^bbbbbbbbbbbbbbbbbbbbbbbabbbb``bbb`__bbbbbbIWRXX`R``\`\Y\^__ba^a[Saaa_]O]O",
-     3),
-    ("s1_4 990:2:4:11272:7447#1/1 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
-     "GCACACACCGCCCGTCACACCATCCGAGTTGGGGGTACCCGAAGCCGG",
-     "b`bbbbbbbbbbbbbbb`^bbbbbYbbbbb\___`_bbab^aaaU^\`",
-     4),
-    ("s1_5 990:2:4:11272:7447#1/1 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
-     "GGATACCTTGTTACGACTTCACCCTCCTCACTCATCGTACCCTCGACA",
-     "b`bbbbbbbbbbbbbbb`^bbbbbYbbbbb\___`_bbab^aaaU^\`",
-     5),
-    ("s2_6 990:2:4:11272:19991#1/1 orig_bc=AAAAAAAAAAAC new_bc=AAAAAAAAAAAC bc_diffs=0",
-     "GCACTCACCGCCCGTCACGCCACGGAAGCCGGCTGCACCTGAAGCCGG",
-     "bbbbbbbbbbbbbbbbbbbbbXbbb_bbbabbb`aZ[U]\OTYXV`Tb",
-     6),
-    ("s2_7 990:2:4:11272:19991#1/1 orig_bc=AAAAAAAAAAAC new_bc=AAAAAAAAAAAC bc_diffs=0",
-     "GGCTACCTTGTTACGACTTCGCCCCAGTCACCGACCACACCCTCGACGGCTGCCTCCGG",
-     "bbbbbbbbbbbbbbbbbbbba`bbbbbbbbbb`abb_aacbbbbb]___]\[\^^[aOc",
-     7),
-    ("s4_8 990:2:4:11272:5533#0/1 orig_bc=AAAAAAAAAAAT new_bc=AAAAAAAAAAAT bc_diffs=0",
-     "GGATACCTTGTTACGACTTCACCCCAATCATCGACCCCACCTTCGGCG",
-     "bbbbbbbbbbbbbbbbbbbbbXbbb_bbbabbb`aZ[U]\OTYXV`Tb", 8)]
-
-fastq1_expected_single_barcode = [
-    ("s1_0 990:2:4:11271:5323#1/1 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
-     "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC",
-     "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`",
-     0),
-    ("s1_1 990:2:4:11271:5323#1/1 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
-     "GGTTACCTTGTTACGACTTCACCCCAATCATCGGCCCCACCTTAGACAGCTGACTCCTAAAAGGTTATCTCACCGG",
-     "bbcbbbbbbbbbbbbbbbbbbbbbbbbbb_bbbbbbbbaba_b^bY_`aa^bPb`bbbbHYGYZTbb^_ab[^baT",
-     1),
-    ("s1_2 990:2:4:11272:9538#1/1 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
-     "GCACACACCGCCCGTCACACCATCCGAGTTGGAGGTACCCGAAGCCGGTAGTCTAACCGCAAGGAGGACGCTGTCG",
-     "b_bbbbbbbbbbbbbbbbbbbbbbbbbbabaa^a`[bbbb`bbbbTbbabb]b][_a`a]acaaacbaca_a^`aa",
-     2),
-    ("s1_3 990:2:4:11272:9538#1/1 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
-     "GGCTACCTTGTTACGACTTCACCCTCCTCACTAAACGTACCTTCGACAGCGTCCTCCTTGCGGTTAGACTACCGGC",
-     "bb^bbbbbbbbbbbbbbbbbbbbbbbabbbb``bbb`__bbbbbbIWRXX`R``\`\Y\^__ba^a[Saaa_]O]O",
-     3),
-    ("s1_4 990:2:4:11272:7447#1/1 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
-     "GCACACACCGCCCGTCACACCATCCGAGTTGGGGGTACCCGAAGCCGG",
-     "b`bbbbbbbbbbbbbbb`^bbbbbYbbbbb\___`_bbab^aaaU^\`",
-     4),
-    ("s1_5 990:2:4:11272:7447#1/1 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
-     "GGATACCTTGTTACGACTTCACCCTCCTCACTCATCGTACCCTCGACA",
-     "b`bbbbbbbbbbbbbbb`^bbbbbYbbbbb\___`_bbab^aaaU^\`",
-     5),
-    ("s1_6 990:2:4:11272:19991#1/1 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
-     "GCACTCACCGCCCGTCACGCCACGGAAGCCGGCTGCACCTGAAGCCGG",
-     "bbbbbbbbbbbbbbbbbbbbbXbbb_bbbabbb`aZ[U]\OTYXV`Tb",
-     6),
-    ("s1_7 990:2:4:11272:19991#1/1 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
-     "GGCTACCTTGTTACGACTTCGCCCCAGTCACCGACCACACCCTCGACGGCTGCCTCCGG",
-     "bbbbbbbbbbbbbbbbbbbba`bbbbbbbbbb`abb_aacbbbbb]___]\[\^^[aOc",
-     7),
-    ("s1_8 990:2:4:11272:5533#0/1 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
-     "GGATACCTTGTTACGACTTCACCCCAATCATCGACCCCACCTTCGGCG",
-     "bbbbbbbbbbbbbbbbbbbbbXbbb_bbbabbb`aZ[U]\OTYXV`Tb", 8)]
-
-fastq2_expected_default = [
-    ("s1_0 M00176:17:000000000-A0CNA:1:1:15487:1773 1:N:0:0 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
-     "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC",
-     "bbbbbbbbbbBBBBBBBBBBBBBBBY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`",
-     0),
-    ("s2_1 M00176:17:000000000-A0CNA:1:1:17088:1773 1:N:0:0 orig_bc=AAAAAAAAAAAC new_bc=AAAAAAAAAAAC bc_diffs=0",
-     "GGTTACCTTGTTACGACTTCACCCCAATCATCGGCCCCACCTTAGACAGCTGACTCCTAAAAGGTTATCTCACCGG",
-     "bbcbbbbbbbbbbbbbbbbbbbbbbbbbb_bbbbbbbbaba_b^bY_`aa^bPb`bbbbHYGYZTbb^_ab[^baT",
-     1),
-    ("s1_2 M00176:17:000000000-A0CNA:1:1:16738:1773 1:N:0:0 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
-     "GCACACACCGCCCGTCACACCATCCGAGTTGGAGGTACCCGAAGCCGGTAGTCTAACCGCAAGGAGGACGCTGTCG",
-     "b_bbbbbbbbbbbbbbbbbbbbbbbbbbabaa^a`[bbbb`bbbbTbbabb]b][_a`a]acaaacbaca_a^`aa",
-     2),
-    ("s4_3 M00176:17:000000000-A0CNA:1:1:12561:1773 1:N:0:0 orig_bc=AAAAAAAAAAAT new_bc=AAAAAAAAAAAT bc_diffs=0",
-     "GGCTACCTTGTTACGACTTCACCCTCCTCACTAAACGTACCTTCGACAGCGTCCTCCTTGCGGTTAGACTACCGGC",
-     "bb^bbbBBBBbbbbbbbbbbbbbbbbabbbb``bbb`__bbbbbbIWRXX`R``\`\Y\^__ba^a[Saaa_]O]O",
-     3),
-    ("s1_4 M00176:17:000000000-A0CNA:1:1:14596:1773 1:N:0:0 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
-     "GCACACACCGCCCGTCACACCATCCGAGTTGGGGGTACCCGAAGCCGG",
-     "b`bbbbbbbbbbbbbbb`^bbbbbYbbbbb\___`_bbab^aaaU^\`",
-     4),
-    ("s1_5 M00176:17:000000000-A0CNA:1:1:12515:1774 1:N:0:0 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
-     "GGATACCTTGTTACGACTTCACCCTCCTCACTCATCGTACCCTCGACA",
-     "b`bbbbbbbbbbbbbbb`^bbbbbYbbbbb\___`_bbab^aaaU^\`",
-     5),
-    ("s2_6 M00176:17:000000000-A0CNA:1:1:17491:1774 1:N:0:0 orig_bc=AAAAAAAAAAAC new_bc=AAAAAAAAAAAC bc_diffs=0",
-     "GCACTCACCGCCCGTCACGCCACGGAAGCCGGCTGCACCTGAAGCCGG",
-     "bbbbbbbbbbbbbbbbbbbbbXbbb_bbbabbb`aZ[U]\OTYXV`Tb",
-     6),
-    ("s2_7 M00176:17:000000000-A0CNA:1:1:16427:1774 1:N:0:0 orig_bc=AAAAAAAAAAAC new_bc=AAAAAAAAAAAC bc_diffs=0",
-     "GGCTACCTTGTTACGACTTCGCCCCAGTCACCGACCACACCCTCGACGGCTGCCTCCGG",
-     "bbbbbbbbbbbbbbbbbbbba`bbbbbbbbbb`abb_aacbbbbb]___]\[\^^[aOc",
-     7),
-    ("s4_8 M00176:17:000000000-A0CNA:1:1:18209:1775 1:N:0:0 orig_bc=AAAAAAAAAAAT new_bc=AAAAAAAAAAAT bc_diffs=0",
-     "GGATACCTTGTTACGACTTCACCCCAATCATCGACCCCACCTTCGGCG",
-     "bbbbbbbbbbbbbbbbbbbbbXbbb_bbbabbb`aZ[U]\OTYXV`Tb", 8)]
 
 if __name__ == '__main__':
     main()

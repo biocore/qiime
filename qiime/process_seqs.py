@@ -120,7 +120,6 @@ class IterAdapter(object):
     None
     >>> os.remove('test_seqs.fq')
     >>> os.remove('test_barcodes.fna')
-
     """
 
     def __init__(self, seq, barcode=None):
@@ -321,8 +320,6 @@ class SequenceWorkflow(Workflow):
             self.state[k] = None
         self.state.update(item)
 
-    ### Start Workflow methods
-
     @method(priority=200)
     @requires(state=has_sequence_qual)
     def wf_quality(self):
@@ -420,10 +417,6 @@ class SequenceWorkflow(Workflow):
         self._sequence_length_check()
         self._sequence_ambiguous_count()
 
-    ### End Workflow groups methods
-
-    ### Start quality methods
-
     @requires(option='phred_quality_threshold')
     @requires(option='max_bad_run_length')
     def _quality_max_bad_run_length(self):
@@ -463,9 +456,6 @@ class SequenceWorkflow(Workflow):
             self.failed = True
             self.stats['min_per_read_length_fraction'] += 1
 
-    ### End quality methods
-
-    ### Start demultiplex methods
     @requires(option='barcode_type', values='golay_12')
     def _demultiplex_golay12(self):
         """Correct and decode a Golay 12nt barcode"""
@@ -481,7 +471,7 @@ class SequenceWorkflow(Workflow):
         """Decode a variable length barcode"""
         raise NotImplementedError
 
-    def _demultiplex_encoded_barcode(self, method, bc_length):
+    def _demultiplex_encoded_barcode(self, decode_method, bc_length):
         """Correct and decode an encoded barcode"""
         if self.state['Barcode'] is not None:
             from_sequence = False
@@ -497,7 +487,7 @@ class SequenceWorkflow(Workflow):
             final_bc = putative_bc
             sample = self.barcodes[putative_bc]
         else:
-            corrected, num_errors = method(putative_bc)
+            corrected, num_errors = decode_method(putative_bc)
             final_bc = corrected
             self.state['Barcode errors'] = num_errors
             self.stats['barcode_corrected'] += 1
@@ -521,10 +511,6 @@ class SequenceWorkflow(Workflow):
         if self.state['Barcode errors'] > bc_errors:
             self.failed = True
             self.stats['exceed_barcode_error'] += 1
-
-    ### End demultiplex methods
-
-    ### Start primer methods
 
     @requires(option='instrument_type', values='454')
     def _primer_instrument_454(self):
@@ -570,10 +556,6 @@ class SequenceWorkflow(Workflow):
         self.state['Sequence'] = seq
         self.state['Qual'] = qual
 
-    # End primer methods
-
-    ### Start sequence methods
-
     @requires(option='min_seq_len')
     def _sequence_length_check(self):
         """Checks minimum sequence length"""
@@ -588,5 +570,3 @@ class SequenceWorkflow(Workflow):
         if count > self.options['ambiguous_count']:
             self.failed = True
             self.stats['ambiguous_count'] += 1
-
-    ### End sequence methods
