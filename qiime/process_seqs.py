@@ -150,15 +150,77 @@ class SequenceWorkflow(Workflow):
     Parameters
     ----------
     options : dict
-        Runtime options. See ``Options`` for more details
+        Runtime options. See Options for more details
     barcodes : dict
-        Mapping of barcode nucleotide sequence to a sample ID
+        Mapping of nucleotide barcode sequence to sample IDs
     primers : dict
-        Mapping of nucleotide sequence to enumerated possible primers
+        Mapping of nucleotide barcode sequences to possible primers
 
     Options
     -------
     ## DESCRIBE EACH OPTION THAT CAN AFFECT WHAT METHODS ARE EXECUTED
+
+    State
+    -----
+    The following keys are available in ``state``:
+
+    Forward primer : str or None
+        The forward primer if applicable and if found.
+    Reverse primer : str or None
+        The reverse primer if applicable and if found.
+    Sequence : str
+        The sequence, trimmed as defined by runtime options (e.g., barcode,
+        quality, etc).
+    Qual : np.array(int) or None
+        Quality scores, trimmed as defined by runtime options (e.g., barcode,
+        quality, etc) or None if quality scores are not associated with the
+        sequences.
+    Barcode: str or None
+        The corresponding barcode if available prior to processing as may be
+        done with index reads.
+    Barcode qual: np.array(int) or None
+        The corresponding barcode quality if available prior to processing as
+        may be done with index reads.
+    Sample: str or None
+        The sample the sequence is associated with if a sample was determined
+    Original barcode: str or None
+        The original barcode observed in the sequence if the barcode is part of
+        the sequence, the index read, or None if no barcodes are in the data.
+    Final barcode: str or None
+        The final barcode which maybe error corrected or None if barcodes are
+        not applicable.
+    Barcode errors: int or None
+        The number of observed errors in the barcode sequence or None if
+        barcodes are not applicable.
+
+    Stats
+    -----
+    The following counts are tracked during a run. Note, because the
+    SequenceWorkflow short circuits if a failure is observed during processing,
+    and the specific steps executed are dependent on the runtime options and
+    data, the stats may be dependent on runtime conditions. For instance, since
+    demultiplexing is performed prior to sequence quality checks, if a failure
+    occurs during demultiplexing then quality stats, such as min_seq_len, will
+    not get incremented for those sequences.
+
+    quality_max_bad_run_length
+        Number of sequences containing a run of poor quality bases
+    min_per_read_length_fraction
+        Number of sequences containing excessive poor quality bases
+    barcode_corrected
+        Number of sequences in which a barcode was corrected
+    unknown_barcode
+        Number of sequences in which an unknown barcode was observed
+    exceed_barcode_error
+        Number of barcodes with errors that exceeded tolerance
+    unknown_primer_barcode_pair
+        Number of unknown primer barcode pairs
+    exceeds_max_primer_mismatch
+        Number of primer mismatches exceeds tolerance
+    min_seq_len
+        Number of sequences whose length did not meet tolerance
+    ambiguous_count
+        Number of sequences that contained to many ambiguous characters
 
     Attributes
     ----------
@@ -168,7 +230,7 @@ class SequenceWorkflow(Workflow):
     barcodes
     primers
 
-   """
+    """
 
     def __init__(self, *args, **kwargs):
         if 'barcodes' not in kwargs:
@@ -188,7 +250,17 @@ class SequenceWorkflow(Workflow):
                  'Final barcode': None,
                  'Barcode errors': None}
 
-        kwargs['stats'] = Counter()
+        kwargs['stats'] = {
+            'quality_max_bad_run_length': 0,
+            'min_per_read_length_fraction': 0,
+            'barcode_corrected': 0,
+            'unknown_barcode': 0,
+            'exceed_barcode_error': 0,
+            'unknown_primer_barcode_pair': 0,
+            'exceeds_max_primer_mismatch': 0,
+            'min_seq_len': 0,
+            'ambiguous_count': 0}
+
         super(SequenceWorkflow, self).__init__(state, *args, **kwargs)
 
     def initialize_state(self, item):
@@ -210,21 +282,19 @@ class SequenceWorkflow(Workflow):
     def wf_quality(self):
         """Check sequence quality
 
+        Notes
+        -----
+
         Changes to `state`
-        ------------------
-        This workflow group may trim `state['Sequence']` and `state['Qual']` if
-        quality trimming is enabled.
+        ##################
+
+        * `Sequence` and `Qual` may be trimmed if quality trimming is enabled.
 
         Triggers for `failed`
-        ---------------------
-        - If to many nucleotides in `Sequence` are of poor quality.
+        #####################
 
-        Impacted `stats`
-        ----------------
-        quality_max_bad_run_length
-            Incremented if the read contained a run of poor quality bases
-        min_per_read_length_fraction
-            Incrememted if to many positions in `Sequence` are of poor quality
+        * If to many nucleotides in `Sequence` are of poor quality.
+
         """
         self._quality_max_bad_run_length()
         self._quality_min_per_read_length_fraction()
@@ -234,53 +304,57 @@ class SequenceWorkflow(Workflow):
     def wf_demultiplex(self):
         """Demultiplex a sequence
 
+        Notes
+        -----
+
         Changes to `state`
-        ------------------
-        Sample
-        Original barcode
-        Final barcode
-        Barcode errors
+        ##################
+
+        * `Sample` will be set if an associated sample could be determined.
+        * `Original barcode` will be set to the original barcode regardless of
+            if the barcode occurred within sequence or as an index.
+        * `Final barcode` will be set to the final barcode with correction if
+            applicable.
+        * `Barcode errors` will contain the number of observed barcode errors.
 
         Triggers for `failed`
-        ---------------------
-        - If a sequence could not be associated to a sample
-        - If the number of errors observed in the barcode exceed tolerance
+        #####################
 
-        Impacted `stats`
-        ----------------
-        barcode_corrected
-            Incremented if a barcode was corrected
-        unknown_barcode
-            Incremented if an unknown barcode was observed
-        exceed_barcode_error
-            Incremented if the number of observed barcode
-            errors exceeded tolerance
+        * If a `Sequence` could not be associated to a sample.
+        * If the number of errors observed in the `Original barcode` exceed
+            tolerance.
+
         """
         self._demultiplex_golay12()
         self._demultiplex_hamming8()
         self._demultiplex_other()
         self._demultiplex_max_barcode_error()
 
-    ### should this be wf_instrument for instriument specific checks?
+    # Should this be wf_instrument for instriument specific checks?
     @method(priority=100)
     @requires(option='check_primer', values=True)
     def wf_primer(self):
         """Perform primer validation
 
+        Notes
+        -----
+
         Changes to `state`
-        ------------------
-        Sequence
-        Qual
-        Forward primer
-        Reverse primer
+        ##################
+
+        * `Sequence` may be trimmed if a primer is found, and if the runtime
+            option `retain_primer` is `False`.
+        * `Qual` will be trimmed if `Sequence` is trimmed.
+        * `Forward primer` will be set if a forward primer is identified.
+        * `Reverse primer` will be set if a reverse primer is identified.
 
         Triggers for `failed`
-        ---------------------
-        - If the `primer` mapping does not contain primers associated with the
-            nucleotide barcode
-        Impacted `stats`
-        ----------------
-        unknown_primer_barcode_pair
+        #####################
+
+        * If the `primer` mapping does not contain primers associated with the
+            nucleotide barcode.
+        * If the number of primer mismatches exceeds tolerance.
+
         """
         self._primer_instrument_454()
 
@@ -294,11 +368,14 @@ class SequenceWorkflow(Workflow):
         Changes to `state`
         ------------------
 
+        No changes to state are made.
+
         Triggers for `failed`
         ---------------------
 
-        Impacted `stats`
-        ----------------
+        * If a sequence does not mean `min_seq_len`.
+        * If the number of ambiguous bases exceed `ambiguous_count`.
+
         """
         self._sequence_length_check()
         self._sequence_ambiguous_count()
@@ -337,7 +414,7 @@ class SequenceWorkflow(Workflow):
         if max_run_length > max_bad_run_length:
             self.state['Qual'] = self.state['Qual'][:max_run_start_idx+1]
             self.state['Sequence'] = self.state['Sequence'][:max_run_start_idx+1]
-            self.stats['_quality_max_bad_run_length'] += 1
+            self.stats['quality_max_bad_run_length'] += 1
 
     @requires(option='phred_quality_threshold')
     @requires(option='min_per_read_length_fraction')
