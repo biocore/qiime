@@ -2,13 +2,13 @@
 
 """Filter poor quality reads, trim barcodes/primers and assign to samples"""
 
-import numpy as np
 
 from collections import Counter
 from itertools import izip
 
-from skbio.factory.sequence import factory
+import numpy as np
 from skbio.core.workflow import Workflow, requires, method, not_none
+
 from qiime.hamming import decode_barcode_8 as decode_hamming_8
 from qiime.golay import decode as decode_golay_12
 
@@ -26,21 +26,6 @@ def has_sequence_qual(state):
 def has_barcode_qual(state):
     """Check if state has Barcode Qual"""
     return state['Barcode Qual'] is not None
-
-
-### notes on splitlib fastq options:
-# barcode_read_fps: via Command
-# store_qual_scores: via Command
-# sample_ids: via Command
-# store_demultiplexed_fastq: via Command
-# retain_unassigned_reads: via Command (Failed == False, Sample == None)
-# start_seq_id: via Command, but also hopefully deprecated in favor of
-#       HDF5 format
-# rev_comp_barcode: via Command and iterators? only if the barcodes are separate
-#       then it is possible to do at the iterator level...
-# rev_comp_mapping_barcodes: via Command
-# rev_comp: via Command and iterators
-# phred_offset: via Command and iterators
 
 
 class IterAdapter(object):
@@ -61,15 +46,15 @@ class IterAdapter(object):
 
     Examples
     --------
-    >>> from skbio.core.iterator import FastqIterator
+    >>> out = open("test_barcodes.fna", 'w')
     >>> out.write(">s1\nAT\n>s2\nGC\n")
     >>> out.close()
     >>> out = open('test_seqs.fq', 'w')
     >>> out.write("@s1\nAAAT\n+\nghgh\n@s2\nTTGG\n+\nfggh\n")
     >>> outgz.close()
 
-    >>> from qiime.process_seqs import Seqs
-    >>> it = Seqs(seq='test_seqs.fq', barcode='test_barcodes.fna')
+    >>> from qiime.process_seqs import IterAdapter
+    >>> it = IterAdapter(seq='test_seqs.fq', barcode='test_barcodes.fna')
     >>> for rec in it:
         ...     print rec['SequenceID']
         ...     print rec['Sequence']
@@ -94,7 +79,7 @@ class IterAdapter(object):
 
     """
 
-    def __init__(self, seq, barcode=None):
+    def __init__(self, seq, barcode=None, **kwargs):
         self.seq = seq
         self.barcode = barcode
 
@@ -141,6 +126,8 @@ class IterAdapter(object):
             return base_pre180
         else:
             return base_post180
+
+
 class SequenceWorkflow(Workflow):
     """Implement the sequence processing workflow
 
@@ -186,24 +173,23 @@ class SequenceWorkflow(Workflow):
     def __init__(self, *args, **kwargs):
         if 'barcodes' not in kwargs:
             kwargs['barcodes'] = {}
+
         if 'primers' not in kwargs:
             kwargs['primers'] = {}
 
-        kwargs['state'] = {'Forward primer': None,
-                           'Reverse primer': None,
-                           'Sequence': None,
-                           'Qual': None,
-                           'Barcode': None,
-                           'Barcode Qual': None,
-                           'Sample': None,
-                           'Original barcode': None,
-                           'Corrected barcode': None,
-                           'Final barcode': None,
-                           'Corrected barcode errors': None}
+        state = {'Forward primer': None,
+                 'Reverse primer': None,
+                 'Sequence': None,
+                 'Qual': None,
+                 'Barcode': None,
+                 'Barcode Qual': None,
+                 'Sample': None,
+                 'Original barcode': None,
+                 'Final barcode': None,
+                 'Barcode errors': None}
 
         kwargs['stats'] = Counter()
-
-        super(SequenceWorkflow, self).__init__(self, *args, **kwargs)
+        super(SequenceWorkflow, self).__init__(state, *args, **kwargs)
 
     def initialize_state(self, item):
         """Reset `state` and update with the current `item`

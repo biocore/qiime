@@ -3,11 +3,12 @@
 from unittest import TestCase, main
 
 import numpy as np
+import numpy.testing as npt
 
 from future.builtins import zip
+from skbio import FastqIterator
+from skbio import parse_fastq
 
-from skbio.core.iterator import FastqIterator
-from skbio.parse.sequences import parse_fastq
 from qiime.process_seqs import IterAdapter, SequenceWorkflow, count_mismatches
 from qiime.util import MetadataMap
 
@@ -31,11 +32,11 @@ class IterAdapterTests(TestCase):
         seq_raw = fastq1.splitlines()
         bc_raw = barcode_fastq1.splitlines()
 
-        seq = FastqIterator([seq_raw])
-        barcode = FastqIterator([bc_raw])
+        seq = FastqIterator([seq_raw], phred_offset=64)
+        barcode = FastqIterator([bc_raw], phred_offset=64)
         it = IterAdapter(seq=seq, barcode=barcode)
 
-        for rec, s, b in zip(it, parse_fastq(seq_raw), parse_fastq(bc_raw)):
+        for rec, s, b in zip(it, parse_fastq(seq_raw, phred_offset=64), parse_fastq(bc_raw, phred_offset=64)):
             self.assertEqual(rec['SequenceID'], s[0])
             self.assertEqual(rec['Sequence'], s[1])
             np.testing.assert_equal(rec['Qual'], s[2])
@@ -56,77 +57,90 @@ class ProcessSeqsWorkflowTests(TestCase):
         self.fastq2_expected_default = fastq2_expected_default
         self.fastq1_expected_single_barcode = fastq1_expected_single_barcode
         self.mapping = mapping
+        self.primers = \
+                {v['BarcodeSequence']: v['LinkerPrimerSequence'].split(',')
+                 for v in mapping._metadata.values()}
+        self.barcodes = {v['BarcodeSequence']: k
+                         for k, v in mapping._metadata.items()}
 
     def _make_workflow_obj(self, options):
         """Helper method for creating workflows"""
-        return SequenceWorkflow(Options=options, Mapping=self.mapping)
+        return SequenceWorkflow(options=options, mapping=self.mapping,
+                                primers=self.primers, barcodes=self.barcodes)
 
     def test_workflow_construction(self):
         """Make sure we can construct using our helper method"""
         x = self._make_workflow_obj({'foo':'bar'})
 
-    def test_wf_init(self):
+    def test_initialize_state(self):
         """Check the initialization method"""
         wf_obj = self._make_workflow_obj({'foo':'bar'})
-        wf_obj.FinalState['Sequence'] = 'w00t'
-        wf_obj.wf_init({'Sequence':'foo'})
-        self.assertEqual(set(wf_obj.FinalState.values()), set([None, 'foo']))
+        wf_obj.state['Sequence'] = 'w00t'
+        wf_obj.initialize_state({'Sequence':'foo'})
+        self.assertEqual(set(wf_obj.state.values()), set([None, 'foo']))
 
     def test_quality_max_bad_run_length(self):
         """Verify max bad run length quality trimming"""
-        wf_obj = self._make_workflow_obj({'phred_quality_threshold':5,
-                                          'max_bad_run_length':3})
-        item1 = {'Sequence':'AATTGGCC',
-                 'Qual':array([6, 6, 6, 6, 6, 6, 6, 6])}
+        wf_obj = self._make_workflow_obj({'phred_quality_threshold': 5,
+                                          'max_bad_run_length': 3})
+        item1 = {'Sequence': 'AATTGGCC',
+                 'Qual': np.array([6, 6, 6, 6, 6, 6, 6, 6])}
         exp1 = item1.copy()
 
-        item2 = {'Sequence':'AATTGGCC',
-                 'Qual':array([6, 6, 6, 1, 1, 6, 6, 6])}
+        item2 = {'Sequence': 'AATTGGCC',
+                 'Qual': np.array([6, 6, 6, 1, 1, 6, 6, 6])}
         exp2 = item2.copy()
 
-        item3 = {'Sequence':'AATTGGCC',
-                 'Qual':array([6, 6, 1, 1, 1, 1, 6, 6])}
-        exp3 = {'Sequence':'AA', 'Qual':array([6, 6])}
+        item3 = {'Sequence': 'AATTGGCC',
+                 'Qual': np.array([6, 6, 1, 1, 1, 1, 6, 6])}
+        exp3 = {'Sequence': 'AA', 'Qual': np.array([6, 6])}
 
-        wf_obj._quality_max_bad_run_length(item1)
-        wf_obj._quality_max_bad_run_length(item2)
-        wf_obj._quality_max_bad_run_length(item3)
+        wf_obj.state = item1
+        wf_obj._quality_max_bad_run_length()
+        wf_obj.state = item2
+        wf_obj._quality_max_bad_run_length()
+        wf_obj.state = item3
+        wf_obj._quality_max_bad_run_length()
 
-        self.assertEqual(item1, exp1)
-        self.assertEqual(item2, exp2)
-        self.assertEqual(item3, exp3)
+        npt.assert_equal(item1, exp1)
+        npt.assert_equal(item2, exp2)
+        npt.assert_equal(item3, exp3)
 
     def test_quality_min_per_read_length_fraction(self):
         """Verify minimum quality per read length"""
-        wf_obj = self._make_workflow_obj({'phred_quality_threshold':5,
-                                          'min_per_read_length_fraction':0.6})
-        item1 = {'Sequence':'AATTGGCC',
-                 'Qual':array([6, 6, 6, 6, 6, 6, 6, 6])}
+        wf_obj = self._make_workflow_obj({'phred_quality_threshold': 5,
+                                          'min_per_read_length_fraction': 0.6})
+        item1 = {'Sequence': 'AATTGGCC',
+                 'Qual': np.array([6, 6, 6, 6, 6, 6, 6, 6])}
         exp1 = item1.copy()
 
-        item2 = {'Sequence':'AATTGGCC',
-                 'Qual':array([6, 1, 6, 1, 1, 6, 6, 6])}
+        item2 = {'Sequence': 'AATTGGCC',
+                 'Qual': np.array([6, 1, 6, 1, 1, 6, 6, 6])}
         exp2 = item2.copy()
 
-        item3 = {'Sequence':'AATTGGCC',
-                 'Qual':array([6, 6, 1, 1, 1, 1, 6, 6])}
-        exp3 = {'Sequence':'AATTGGCC', 'Qual':array([6, 6, 1, 1, 1, 1, 6, 6])}
+        item3 = {'Sequence': 'AATTGGCC',
+                 'Qual': np.array([6, 6, 1, 1, 1, 1, 6, 6])}
+        exp3 = {'Sequence': 'AATTGGCC',
+                'Qual': np.array([6, 6, 1, 1, 1, 1, 6, 6])}
 
-        wf_obj.Failed = False # note, normally handled by Workflow.__call__
-        wf_obj._quality_min_per_read_length_fraction(item1)
-        self.assertFalse(wf_obj.Failed)
+        wf_obj.state = item1
+        wf_obj.failed = False
+        wf_obj._quality_min_per_read_length_fraction()
+        self.assertFalse(wf_obj.failed)
 
-        wf_obj.Failed = False # note, normally handled by Workflow.__call__
-        wf_obj._quality_min_per_read_length_fraction(item2)
-        self.assertFalse(wf_obj.Failed)
+        wf_obj.state = item2
+        wf_obj.failed = False
+        wf_obj._quality_min_per_read_length_fraction()
+        self.assertFalse(wf_obj.failed)
 
-        wf_obj.Failed = False # note, normally handled by Workflow.__call__
-        wf_obj._quality_min_per_read_length_fraction(item3)
-        self.assertTrue(wf_obj.Failed)
+        wf_obj.state = item3
+        wf_obj.failed = False
+        wf_obj._quality_min_per_read_length_fraction()
+        self.assertTrue(wf_obj.failed)
 
-        self.assertEqual(item1, exp1)
-        self.assertEqual(item2, exp2)
-        self.assertEqual(item3, exp3)
+        npt.assert_equal(item1, exp1)
+        npt.assert_equal(item2, exp2)
+        npt.assert_equal(item3, exp3)
 
     def test_demultiplex_golay12(self):
         # this is a wrapper, tested in test_deultiplex_encoded_barcode
@@ -138,68 +152,72 @@ class ProcessSeqsWorkflowTests(TestCase):
 
     def test_demultiplex_encoded_barcode(self):
         """Verify decoding barcodes"""
-        wf_obj = self._make_workflow_obj({})
+        wf_obj = self._make_workflow_obj({'demultiplex': True,
+                                          'barcode_type': 'golay_12'})
 
         needs_a_fix = {'Barcode':'GGAGACAAGGGT', 'Sequence':'AATTGGCC'}
         exact = {'Barcode':'GGAGACAAGGGA', 'Sequence':'AATTGGCC'}
         from_sequence = {'Barcode':None, 'Sequence':'GGAGACAAGGGAAATTAATT'}
         unknown_barcode = {'Barcode':'ACACCTGGTGAT', 'Sequence':'AATTGGCC'}
 
-        wf_obj.wf_init(needs_a_fix)
-        wf_obj.Failed = False # note, normally handled by Workflow.__call__
-        wf_obj._demultiplex_encoded_barcode(needs_a_fix)
-        self.assertEqual(wf_obj.FinalState['Original barcode'], 'GGAGACAAGGGT')
-        self.assertEqual(wf_obj.FinalState['Corrected barcode errors'], 1)
-        self.assertEqual(wf_obj.FinalState['Corrected barcode'], 'GGAGACAAGGGA')
-        self.assertEqual(wf_obj.FinalState['Sample'], 's5')
-        self.assertFalse(wf_obj.Failed)
+        wf_obj.initialize_state(needs_a_fix)
+        wf_obj.failed = False
+        wf_obj.wf_demultiplex()
 
-        wf_obj.wf_init(exact)
-        wf_obj.Failed = False # note, normally handled by Workflow.__call__
-        wf_obj._demultiplex_encoded_barcode(exact)
-        self.assertEqual(wf_obj.FinalState['Original barcode'], 'GGAGACAAGGGA')
-        self.assertEqual(wf_obj.FinalState['Corrected barcode errors'], 0)
-        self.assertEqual(wf_obj.FinalState['Corrected barcode'], None)
-        self.assertEqual(wf_obj.FinalState['Sample'], 's5')
-        self.assertFalse(wf_obj.Failed)
+        self.assertEqual(wf_obj.state['Original barcode'], 'GGAGACAAGGGT')
+        self.assertEqual(wf_obj.state['Barcode errors'], 1)
+        self.assertEqual(wf_obj.state['Final barcode'], 'GGAGACAAGGGA')
+        self.assertEqual(wf_obj.state['Sample'], 's5')
+        self.assertFalse(wf_obj.failed)
 
-        wf_obj.wf_init(from_sequence)
-        wf_obj.Failed = False # note, normally handled by Workflow.__call__
-        wf_obj._demultiplex_encoded_barcode(from_sequence)
-        self.assertEqual(wf_obj.FinalState['Original barcode'], 'GGAGACAAGGGA')
-        self.assertEqual(wf_obj.FinalState['Corrected barcode errors'], 0)
-        self.assertEqual(wf_obj.FinalState['Corrected barcode'], None)
-        self.assertEqual(wf_obj.FinalState['Sample'], 's5')
-        self.assertFalse(wf_obj.Failed)
+        wf_obj.initialize_state(exact)
+        wf_obj.failed = False
+        wf_obj.wf_demultiplex()
 
-        wf_obj.wf_init(unknown_barcode)
-        wf_obj.Failed = False # note, normally handled by Workflow.__call__
-        wf_obj._demultiplex_encoded_barcode(unknown_barcode)
-        self.assertEqual(wf_obj.FinalState['Original barcode'], 'ACACCTGGTGAT')
-        self.assertEqual(wf_obj.FinalState['Corrected barcode errors'], 0)
-        self.assertEqual(wf_obj.FinalState['Corrected barcode'], 'ACACCTGGTGAT')
-        self.assertEqual(wf_obj.FinalState['Sample'], None)
-        self.assertTrue(wf_obj.Failed)
+        self.assertEqual(wf_obj.state['Original barcode'], 'GGAGACAAGGGA')
+        self.assertEqual(wf_obj.state['Barcode errors'], 0)
+        self.assertEqual(wf_obj.state['Final barcode'], 'GGAGACAAGGGA')
+        self.assertEqual(wf_obj.state['Sample'], 's5')
+        self.assertFalse(wf_obj.failed)
+
+        wf_obj.initialize_state(from_sequence)
+        wf_obj.failed = False
+        wf_obj.wf_demultiplex()
+
+        self.assertEqual(wf_obj.state['Original barcode'], 'GGAGACAAGGGA')
+        self.assertEqual(wf_obj.state['Barcode errors'], 0)
+        self.assertEqual(wf_obj.state['Final barcode'], 'GGAGACAAGGGA')
+        self.assertEqual(wf_obj.state['Sample'], 's5')
+        self.assertFalse(wf_obj.failed)
+
+        wf_obj.initialize_state(unknown_barcode)
+        wf_obj.failed = False
+        wf_obj.wf_demultiplex()
+
+        self.assertEqual(wf_obj.state['Original barcode'], 'ACACCTGGTGAT')
+        self.assertEqual(wf_obj.state['Barcode errors'], 0)
+        self.assertEqual(wf_obj.state['Final barcode'], 'ACACCTGGTGAT')
+        self.assertEqual(wf_obj.state['Sample'], None)
+        self.assertTrue(wf_obj.failed)
 
     def test_demultiplex_max_barcode_error(self):
         """Verify failing max_barcode_error checking"""
-        wf_obj = self._make_workflow_obj({'max_barcode_error':0})
+        wf_obj = self._make_workflow_obj({'demultiplex': True,
+                                          'barcode_type': 'golay_12',
+                                          'max_barcode_error':0})
 
         needs_a_fix = {'Barcode':'GGAGACAAGGGT', 'Sequence':'AATTGGCC'}
         exact = {'Barcode':'GGAGACAAGGGA', 'Sequence':'AATTGGCC'}
 
-        wf_obj.wf_init(exact)
-        wf_obj._demultiplex_encoded_barcode(exact)
-        wf_obj._demultiplex_max_barcode_error(exact)
-        self.assertFalse(wf_obj.Failed)
+        wf_obj.failed = False
+        wf_obj.initialize_state(exact)
+        wf_obj.wf_demultiplex()
+        self.assertFalse(wf_obj.failed)
 
-        wf_obj.wf_init(needs_a_fix)
-        wf_obj.Failed = False # note, normally handled by Workflow.__call__
-        wf_obj._demultiplex_encoded_barcode(needs_a_fix)
-        self.assertFalse(wf_obj.Failed)
-        wf_obj.Failed = False # note, normally handled by Workflow.__call__
-        wf_obj._demultiplex_max_barcode_error(needs_a_fix)
-        self.assertTrue(wf_obj.Failed)
+        wf_obj.initialize_state(needs_a_fix)
+        wf_obj.failed = False
+        wf_obj.wf_demultiplex()
+        self.assertTrue(wf_obj.failed)
 
     def test_primer_instrument_454(self):
         # individual tests for each method call by this function
@@ -207,111 +225,96 @@ class ProcessSeqsWorkflowTests(TestCase):
 
     def test_primer_check_forward(self):
         """Pull the forward primer as expected"""
+        # primer details sourced from self.mapping
+
         wf_obj = self._make_workflow_obj({'max_primer_mismatch':2,
                                           'retain_primer':False})
-        item1 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'AATTGGCC',
-                 'Qual':array([1,2,3,4,5,6,7,8])}
-        item2 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'AATTGCCC',
-                 'Qual':array([1,2,3,4,5,6,7,8])}
-        item3 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'GGTTGCCC',
-                 'Qual':array([1,2,3,4,5,6,7,8])}
-        exp_item1 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'CC',
-                 'Qual':array([7,8])}
-        exp_item2 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'CC',
-                 'Qual':array([7,8])}
-        exp_item3 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'GGTTGCCC',
-                 'Qual':array([1,2,3,4,5,6,7,8])}
+        item1 = {'Final barcode':'AAAAAAAAAAAA', 'Sequence':'AATTGGCC',
+                 'Qual':np.array([1,2,3,4,5,6,7,8])}
+        item2 = {'Final barcode':'AAAAAAAAAAAA', 'Sequence':'AATTGCCC',
+                 'Qual':np.array([1,2,3,4,5,6,7,8])}
+        item3 = {'Final barcode':'AAAAAAAAAAAA', 'Sequence':'GGTTGCCC',
+                 'Qual':np.array([1,2,3,4,5,6,7,8])}
 
-        # item is modified in place in these operations as retain_primer is False
-        wf_obj.wf_init(item1)
-        wf_obj.Failed = False # note, normally handled by Workflow.__call__
-        wf_obj.FinalState['Final barcode'] = 'AAAAAAAAAAAA'
-        wf_obj._primer_check_forward(item1)
-        self.assertEqual(item1, exp_item1)
-        self.assertEqual(wf_obj.FinalState['Sequence'], 'CC')
-        self.assertEqual(wf_obj.FinalState['Qual'], array([7,8]))
-        self.assertEqual(wf_obj.FinalState['Forward primer'], 'AATTGG')
-        self.assertFalse(wf_obj.Failed)
+        wf_obj.initialize_state(item1)
+        wf_obj.failed = False
+        wf_obj._primer_check_forward()
 
-        wf_obj.wf_init(item2)
-        wf_obj.Failed = False # note, normally handled by Workflow.__call__
-        wf_obj.FinalState['Final barcode'] = 'AAAAAAAAAAAA'
-        wf_obj._primer_check_forward(item2)
-        self.assertEqual(item2, exp_item2)
-        self.assertEqual(wf_obj.FinalState['Sequence'], 'CC')
-        self.assertEqual(wf_obj.FinalState['Qual'], array([7,8]))
-        self.assertEqual(wf_obj.FinalState['Forward primer'], 'AATTGC')
-        self.assertFalse(wf_obj.Failed)
+        self.assertEqual(wf_obj.state['Sequence'], 'CC')
+        npt.assert_equal(wf_obj.state['Qual'], np.array([7,8]))
+        self.assertEqual(wf_obj.state['Forward primer'], 'AATTGG')
+        self.assertFalse(wf_obj.failed)
 
-        wf_obj.wf_init(item3)
-        wf_obj.Failed = False # note, normally handled by Workflow.__call__
-        wf_obj.FinalState['Final barcode'] = 'AAAAAAAAAAAA'
-        wf_obj._primer_check_forward(item3)
-        self.assertEqual(item3, exp_item3)
-        self.assertEqual(wf_obj.FinalState['Sequence'], 'GGTTGCCC')
-        self.assertEqual(wf_obj.FinalState['Qual'], None)
-        self.assertEqual(wf_obj.FinalState['Forward primer'], None)
-        self.assertTrue(wf_obj.Failed)
+        wf_obj.initialize_state(item2)
+        wf_obj.failed = False
+        wf_obj._primer_check_forward()
+
+        self.assertEqual(wf_obj.state['Sequence'], 'CC')
+        npt.assert_equal(wf_obj.state['Qual'], np.array([7,8]))
+        self.assertEqual(wf_obj.state['Forward primer'], 'AATTGC')
+        self.assertFalse(wf_obj.failed)
+
+        wf_obj.initialize_state(item3)
+        wf_obj.failed = False
+        wf_obj._primer_check_forward()
+
+        self.assertEqual(wf_obj.state['Sequence'], 'GGTTGCCC')
+        npt.assert_equal(wf_obj.state['Qual'], np.array([1,2,3,4,5,6,7,8]))
+        self.assertEqual(wf_obj.state['Forward primer'], None)
+        self.assertTrue(wf_obj.failed)
 
         # item is not modified in place as retain priemr is True
         wf_obj = self._make_workflow_obj({'max_primer_mismatch':2,
                                           'retain_primer':True})
-        item1 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'AATTGGCC',
-                 'Qual':array([1,2,3,4,5,6,7,8])}
-        item2 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'AATTGCCC',
-                 'Qual':array([1,2,3,4,5,6,7,8])}
-        item3 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'GGTTGCCC',
-                 'Qual':array([1,2,3,4,5,6,7,8])}
-        exp_item1 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'AATTGGCC',
-                 'Qual':array([1,2,3,4,5,6,7,8])}
-        exp_item2 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'AATTGCCC',
-                 'Qual':array([1,2,3,4,5,6,7,8])}
-        exp_item3 = {'Barcode':'AAAAAAAAAAAA', 'Sequence':'GGTTGCCC',
-                 'Qual':array([1,2,3,4,5,6,7,8])}
+        item1 = {'Final barcode':'AAAAAAAAAAAA', 'Sequence':'AATTGGCC',
+                 'Qual':np.array([1,2,3,4,5,6,7,8])}
+        item2 = {'Final barcode':'AAAAAAAAAAAA', 'Sequence':'AATTGCCC',
+                 'Qual':np.array([1,2,3,4,5,6,7,8])}
+        item3 = {'Final barcode':'AAAAAAAAAAAA', 'Sequence':'GGTTGCCC',
+                 'Qual':np.array([1,2,3,4,5,6,7,8])}
 
-        wf_obj.wf_init(item1)
-        wf_obj.Failed = False # note, normally handled by Workflow.__call__
-        wf_obj.FinalState['Final barcode'] = 'AAAAAAAAAAAA'
-        wf_obj._primer_check_forward(item1)
-        self.assertEqual(item1, exp_item1)
-        self.assertEqual(wf_obj.FinalState['Sequence'], 'AATTGGCC')
-        self.assertEqual(wf_obj.FinalState['Qual'], array([1,2,3,4,5,6,7,8]))
-        self.assertEqual(wf_obj.FinalState['Forward primer'], 'AATTGG')
-        self.assertFalse(wf_obj.Failed)
+        wf_obj.initialize_state(item1)
+        wf_obj.failed = False
+        wf_obj._primer_check_forward()
 
-        wf_obj.wf_init(item2)
-        wf_obj.Failed = False # note, normally handled by Workflow.__call__
-        wf_obj.FinalState['Final barcode'] = 'AAAAAAAAAAAA'
-        wf_obj._primer_check_forward(item2)
-        self.assertEqual(item2, exp_item2)
-        self.assertEqual(wf_obj.FinalState['Sequence'], 'AATTGCCC')
-        self.assertEqual(wf_obj.FinalState['Qual'], array([1,2,3,4,5,6,7,8]))
-        self.assertEqual(wf_obj.FinalState['Forward primer'], 'AATTGC')
-        self.assertFalse(wf_obj.Failed)
+        self.assertEqual(wf_obj.state['Sequence'], 'AATTGGCC')
+        npt.assert_equal(wf_obj.state['Qual'], np.array([1,2,3,4,5,6,7,8]))
+        self.assertEqual(wf_obj.state['Forward primer'], 'AATTGG')
+        self.assertFalse(wf_obj.failed)
 
-        wf_obj.wf_init(item3)
-        wf_obj.Failed = False # note, normally handled by Workflow.__call__
-        wf_obj.FinalState['Final barcode'] = 'AAAAAAAAAAAA'
-        wf_obj._primer_check_forward(item3)
-        self.assertEqual(item3, exp_item3)
-        self.assertEqual(wf_obj.FinalState['Sequence'], 'GGTTGCCC')
-        self.assertEqual(wf_obj.FinalState['Qual'], None)
-        self.assertEqual(wf_obj.FinalState['Forward primer'], None)
-        self.assertTrue(wf_obj.Failed)
+        wf_obj.initialize_state(item2)
+        wf_obj.failed = False
+        wf_obj._primer_check_forward()
+
+        self.assertEqual(wf_obj.state['Sequence'], 'AATTGCCC')
+        npt.assert_equal(wf_obj.state['Qual'], np.array([1,2,3,4,5,6,7,8]))
+        self.assertEqual(wf_obj.state['Forward primer'], 'AATTGC')
+        self.assertFalse(wf_obj.failed)
+
+        wf_obj.initialize_state(item3)
+        wf_obj.failed = False
+        wf_obj._primer_check_forward()
+
+        self.assertEqual(wf_obj.state['Sequence'], 'GGTTGCCC')
+        npt.assert_equal(wf_obj.state['Qual'], np.array([1,2,3,4,5,6,7,8]))
+        self.assertEqual(wf_obj.state['Forward primer'], None)
+        self.assertTrue(wf_obj.failed)
 
     def test_sequence_length_check(self):
         """Check the length of the sequence"""
-        wf_obj = self._make_workflow_obj({'min_seq_len':5})
+        wf_obj = self._make_workflow_obj(options={'min_seq_len':5})
         item1 = {'Sequence':'AATTGGCC'}
         item2 = {'Sequence':'AATT'}
 
-        wf_obj.Failed = False # note, normally handled by Workflow.__call__
-        wf_obj._sequence_length_check(item1)
-        self.assertFalse(wf_obj.Failed)
+        wf_obj.state = item1
+        wf_obj.failed = False # note, normally handled by Workflow.__call__
+        wf_obj._sequence_length_check()
+        self.assertFalse(wf_obj.failed)
 
-        wf_obj.Failed = False # note, normally handled by Workflow.__call__
-        wf_obj._sequence_length_check(item2)
-        self.assertTrue(wf_obj.Failed)
+        wf_obj.state = item2
+        wf_obj.failed = False # note, normally handled by Workflow.__call__
+        wf_obj._sequence_length_check()
+        self.assertTrue(wf_obj.failed)
 
     def test_sequence_ambiguous_count(self):
         wf_obj = self._make_workflow_obj({'ambiguous_count':2})
@@ -319,17 +322,21 @@ class ProcessSeqsWorkflowTests(TestCase):
         item2 = {'Sequence':'AANNNTT'}
         item3 = {'Sequence':'AANTT'}
 
-        wf_obj.Failed = False # note, normally handled by Workflow.__call__
-        wf_obj._sequence_ambiguous_count(item1)
-        self.assertFalse(wf_obj.Failed)
+        wf_obj.state = item1
+        wf_obj.failed = False
+        wf_obj._sequence_ambiguous_count()
+        self.assertFalse(wf_obj.failed)
 
-        wf_obj.Failed = False # note, normally handled by Workflow.__call__
-        wf_obj._sequence_ambiguous_count(item2)
-        self.assertTrue(wf_obj.Failed)
+        wf_obj.state = item2
+        wf_obj.failed = False
+        wf_obj._sequence_ambiguous_count()
+        self.assertTrue(wf_obj.failed)
 
-        wf_obj.Failed = False # note, normally handled by Workflow.__call__
-        wf_obj._sequence_ambiguous_count(item3)
-        self.assertFalse(wf_obj.Failed)
+        wf_obj.state = item3
+        wf_obj.failed = False
+        wf_obj._sequence_ambiguous_count()
+        self.assertFalse(wf_obj.failed)
+
 
 fasta1_simple = """>a
 abcde
