@@ -58,11 +58,6 @@ def has_sequence_qual(state):
     return state['Qual'] is not None
 
 
-def has_barcode_qual(state):
-    """Check if state has Barcode Qual"""
-    return state['Barcode Qual'] is not None
-
-
 class IterAdapter(object):
     """Sequence iterator adapter
 
