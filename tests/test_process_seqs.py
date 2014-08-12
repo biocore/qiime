@@ -127,13 +127,13 @@ class ProcessSeqsWorkflowTests(TestCase):
         exp1 = item1.copy()
 
         item2 = {'Sequence': 'AATTGGCC',
-                 'Qual': np.array([6, 1, 6, 1, 1, 6, 6, 6])}
+                 'Qual': np.array([6, 1, 6, 1, 6, 6, 1, 6])}
         exp2 = item2.copy()
 
         item3 = {'Sequence': 'AATTGGCC',
-                 'Qual': np.array([6, 6, 1, 1, 1, 1, 6, 6])}
+                 'Qual': np.array([1, 1, 1, 6, 6, 6, 6, 6])}
         exp3 = {'Sequence': 'AATTGGCC',
-                'Qual': np.array([6, 6, 1, 1, 1, 1, 6, 6])}
+                'Qual': np.array([1, 1, 1, 6, 6, 6, 6, 6])}
 
         wf_obj.state = item1
         wf_obj.failed = False
@@ -143,12 +143,12 @@ class ProcessSeqsWorkflowTests(TestCase):
         wf_obj.state = item2
         wf_obj.failed = False
         wf_obj._quality_min_per_read_length_fraction()
-        self.assertFalse(wf_obj.failed)
+        self.assertTrue(wf_obj.failed)
 
         wf_obj.state = item3
         wf_obj.failed = False
         wf_obj._quality_min_per_read_length_fraction()
-        self.assertTrue(wf_obj.failed)
+        self.assertFalse(wf_obj.failed)
 
         npt.assert_equal(item1, exp1)
         npt.assert_equal(item2, exp2)
@@ -346,7 +346,7 @@ class ProcessSeqsWorkflowTests(TestCase):
         self.assertTrue(wf_obj.failed)
 
     def test_sequence_ambiguous_count(self):
-        wf_obj = self._make_workflow_obj({'ambiguous_count': 2})
+        wf_obj = self._make_workflow_obj({'max_ambig_count': 2})
         item1 = {'Sequence': 'AATTGGCC'}
         item2 = {'Sequence': 'AANNNTT'}
         item3 = {'Sequence': 'AANTT'}

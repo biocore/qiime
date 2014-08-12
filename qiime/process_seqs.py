@@ -198,7 +198,32 @@ class SequenceWorkflow(Workflow):
 
     Options
     -------
-    ## DESCRIBE EACH OPTION THAT CAN AFFECT WHAT METHODS ARE EXECUTED
+    All options are considered optional.
+
+    demultiplex : bool
+        Whether to attempt demultiplex or not.
+    check_primer : bool
+        Whether to attempt a primer check or not
+    phred_quality_threshold : int
+        Minimum PHRED quality score
+    instrument_type : {454}
+        Instrument specific checks
+    max_bad_run_length : int
+        Maximum number of low quality base calls allowed before truncation
+    min_per_read_length_fraction : float
+        Minimum fraction of consecutive high quality base calls to include
+    barcode_type : {golay_12, hamming_8}
+        The type of barcode used
+    max_barcode_error : int
+        The maximum number of allowed errors within a barcode
+    retain_primer : bool
+        Whether to remove or keep the primer in the sequence
+    max_primer_mismatch : int
+        Maximum number of mismatches allowed in the primer
+    min_seq_len : int
+        Minimum sequence length
+    max_ambig_count : int
+        Maximum number of ambiguous bases allowed
 
     State
     -----
@@ -259,7 +284,7 @@ class SequenceWorkflow(Workflow):
         Number of primer mismatches exceeds tolerance
     min_seq_len
         Number of sequences whose length did not meet tolerance
-    ambiguous_count
+    max_ambig_count
         Number of sequences that contained to many ambiguous characters
 
     Attributes
@@ -299,7 +324,7 @@ class SequenceWorkflow(Workflow):
             'unknown_primer_barcode_pair': 0,
             'exceeds_max_primer_mismatch': 0,
             'min_seq_len': 0,
-            'ambiguous_count': 0}
+            'max_ambig_count': 0}
 
         super(SequenceWorkflow, self).__init__(state, *args, **kwargs)
 
@@ -406,7 +431,7 @@ class SequenceWorkflow(Workflow):
         Triggers for `failed`
         #####################
         * If a sequence does not mean `min_seq_len`.
-        * If the number of ambiguous bases exceed `ambiguous_count`.
+        * If the number of ambiguous bases exceed `max_ambig_count`.
 
         """
         self._sequence_length_check()
@@ -440,14 +465,22 @@ class SequenceWorkflow(Workflow):
     @requires(option='phred_quality_threshold')
     @requires(option='min_per_read_length_fraction')
     def _quality_min_per_read_length_fraction(self):
-        """Fail a sequence if a percentage of bad quality calls exist"""
+        """Fail a sequence if it lacks a long high quality run"""
+        min_high_qual_read_frac = self.options['min_per_read_length_fraction']
         phred_quality_threshold = self.options['phred_quality_threshold']
-        bad_bases = self.state['Qual'] < phred_quality_threshold
-        bad_bases_count = bad_bases.sum(dtype=float)
 
-        threshold = 1 - self.options['min_per_read_length_fraction']
+        # cythonizable
+        good_quality = self.state['Qual'] >= phred_quality_threshold
+        good_start, good_stop, good_length = runs_of_ones(good_quality)
 
-        if (bad_bases_count / len(self.state['Sequence'])) > threshold:
+        if good_length.size:
+            best_idx = np.argmax(good_length)
+            best_len = good_length[best_idx]
+        else:
+            best_idx = None
+            best_len = -1
+
+        if best_len < (min_high_qual_read_frac * len(self.state['Sequence'])):
             self.failed = True
             self.stats['min_per_read_length_fraction'] += 1
 
@@ -558,10 +591,10 @@ class SequenceWorkflow(Workflow):
             self.failed = True
             self.stats['min_seq_len'] += 1
 
-    @requires(option='ambiguous_count')
+    @requires(option='max_ambig_count')
     def _sequence_ambiguous_count(self):
         """Fail if the number of N characters is greater than threshold"""
         count = self.state['Sequence'].count('N')
-        if count > self.options['ambiguous_count']:
+        if count > self.options['max_ambig_count']:
             self.failed = True
-            self.stats['ambiguous_count'] += 1
+            self.stats['max_ambig_count'] += 1
