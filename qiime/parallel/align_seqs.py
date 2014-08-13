@@ -18,7 +18,9 @@ from brokit.formatdb import build_blast_db_from_fasta_path
 from qiime.align_seqs import compute_min_alignment_length
 from qiime.parallel.wrapper import ParallelWrapper
 from qiime.parallel.util import (input_fasta_splitter, merge_files_from_dirs,
-                                 concatenate_files, command_wrapper)
+                                 concatenate_files, command_wrapper,
+                                 fasta_splitter_handler,
+                                 blast_db_builder_handler)
 from qiime.parallel.context import context
 from qiime.workflow.util import generate_log_fp, WorkflowLogger
 
@@ -81,8 +83,8 @@ class ParallelAlignSeqsPyNast(ParallelWrapper):
         output_dirs = []
         node_names = []
         keys = ["SPLIT_FASTA", "BUILD_BLAST_DB"]
-        funcs = {"SPLIT_FASTA": lambda idx, results: results[idx],
-                 "BUILD_BLAST_DB": lambda idx, results: results[0]}
+        funcs = {"SPLIT_FASTA": fasta_splitter_handler,
+                 "BUILD_BLAST_DB": blast_db_builder_handler}
         for i in range(jobs_to_start):
             # out_dir = mkdtemp(prefix="align_seqs_%d" % i, dir=wor)
             out_dir = join(working_dir, "align_seqs_%d" % i)

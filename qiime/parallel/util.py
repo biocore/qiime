@@ -20,6 +20,22 @@ qiime_config = load_qiime_config()
 class ComputeError(Exception):
     pass
 
+# --------- Util functions for command wrapper --------- #
+
+# The functions on this section are tailored to be used in the command
+# wrapper 'funcs' parameter. The signature of all these functions should be
+# the same: func(idx, results) in which idx is the job index and results
+# is the value that will be held in the dep_results object in the command
+# wrapper
+
+# Handler function for the fasta splitter node
+fasta_splitter_handler = lambda idx, results: results[idx]
+
+# Handler function for the blast db builder node
+blast_db_builder_handler = lambda idx, results: results[0]
+
+# ------- End util functions for command wrapper ------- #
+
 
 def command_wrapper(cmd, idx, keys, funcs, dep_results=None):
     """Wraps the command to be executed so it can use the results produced by
