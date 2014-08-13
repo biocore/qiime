@@ -19,10 +19,12 @@ from .cli import qiime_cli
               help='Reverse complement sequences on output')
 @click.option('--start-seq-id', type=int, default=0,
               help='The starting unique ID for sequences')
+@click.option('--to-fastq', is_flag=True,
+              help='Write out in fastq')
 # Iterator options
 @click.option('--rev-comp-barcodes/--no-rev-comp-barcodes', default=False,
               help='Reverse complement barcode reads')
-@click.option('--phred-offset', type=click.Choice(['33', '64']),
+@click.option('--phred-offset', default='33', type=click.Choice(['33', '64']),
               help='The ASCII offset used to decode PHRED scores')
 # Runtime options
 @click.option('--phred-quality-threshold', '-q', default=3, type=int,
@@ -47,11 +49,14 @@ def slib(ctx, **kwargs):
     """Quality filter and demultiplex sequences"""
     from skbio import DNA
     from skbio.parse.sequences.factory import load
+    from skbio.format.sequences.fastq import format_fastq_record
 
     from qiime.parse import parse_mapping_file_to_dict
     from qiime.process_seqs import SequenceWorkflow, IterAdapter
 
     # qiime_config is available under ctx.obj['qiime_config']
+
+    phred_offset = int(kwargs.pop('phred_offset'))
 
     # reverse complement for reversing mapping barcodes
     def rc(seq):
@@ -71,21 +76,28 @@ def slib(ctx, **kwargs):
         bc_diff = "bc_diffs=%d" % (state['Barcode errors'] or 0)
         return " ".join([seq_id, ori_id, ori_bc, new_bc, bc_diff])
 
-    # should be sourced from skbio
-    def format_fasta(id_, seq):
-        return ">%s\n%s\n" % (id_, seq)
+    # should be sourced from skbio but there doesn't appear to be a method that
+    # takes a single seq and ID
+    def format_fasta(id_, item):
+        return ">%s\n%s\n" % (id_, item['Sequence'])
 
-    # not defining fastq as the method should be sourced from skbio
-    # particularly dealing with qual
+    def make_format_fastq(offset):
+        def f(id_, state):
+            seq = state['Sequence']
+            qual = state['Qual']
+            return format_fastq_record(id_, seq, qual, offset)
+        return f
+    format_fastq = make_format_fastq(phred_offset)
 
     # setup sequence iterator
-    seqs = load(kwargs.pop('sequence_read_fp'))
+    seqs = load(kwargs.pop('sequence_read_fp'), phred_offset=phred_offset)
 
     # setup barcode iterator
     barcode_read_fp = kwargs.pop('barcode_read_fp')
     if barcode_read_fp:
         transform = rc_it if kwargs.pop('rev_comp_barcodes') else None
-        barcodes = load(barcode_read_fp, transform=transform)
+        barcodes = load(barcode_read_fp, transform=transform,
+                        phred_offset=phred_offset)
     else:
         barcodes = None
 
@@ -104,8 +116,11 @@ def slib(ctx, **kwargs):
     if not os.path.exists(output_dir):
         os.mkdir(output_dir)
 
-    success_fp = os.path.join(output_dir, 'seqs.fna')
-    fail_fp = os.path.join(output_dir, 'unassigned.fna')
+    to_fastq = kwargs.pop('to_fastq')
+    ext = 'fq' if to_fastq else 'fna'
+    formatter = format_fastq if to_fastq else format_fasta
+    success_fp = os.path.join(output_dir, 'seqs.%s' % ext)
+    fail_fp = os.path.join(output_dir, 'unassigned.%s' % ext)
 
     if os.path.exists(success_fp):
         raise IOError("%s already exists!" % success_fp)
@@ -125,5 +140,5 @@ def slib(ctx, **kwargs):
     with open(success_fp, 'w') as success, open(fail_fp, 'w') as failed:
         for idx, item in enumerate(wf(iter_, fail_callback=lambda x: x.state)):
             id_ = format_id(seq_id + idx, item)
-            formatted = format_fasta(id_, item['Sequence'])
+            formatted = formatter(id_, item)
             failed.write(formatted) if wf.failed else success.write(formatted)
