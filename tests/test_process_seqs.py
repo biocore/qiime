@@ -410,6 +410,11 @@ class ProcessSeqsWorkflowTests(TestCase):
             for k in exp:
                 npt.assert_equal(obs[k], exp[k])
 
+        self.assertEqual(wf_obj.stats['sample_counts'],
+                         {'s1': 5, 's2': 3, 's4': 4})
+        self.assertEqual(wf_obj.stats['sequence_count'], 12)
+        self.assertEqual(wf_obj.stats['sequence_lengths'], {76: 12})
+
 
 mapping = MetadataMap(
     {'s1': {'BarcodeSequence': 'AAAAAAAAAAAA',
