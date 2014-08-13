@@ -11,7 +11,7 @@ from .cli import qiime_cli
               type=click.Path(exists=True), help='Input sequence reads')
 @click.option('--output-dir', '-o', type=click.Path(exists=False),
               required=True)
-@click.option('--mapping_fp', '-m', required=True,
+@click.option('--mapping-fp', '-m', required=True,
               type=click.File('U'), help='Mapping file')
 @click.option('--barcode-read-fp', '-b', multiple=True, required=False,
               type=click.Path(exists=True), help='Barcode read files')
@@ -29,8 +29,9 @@ from .cli import qiime_cli
 # Runtime options
 @click.option('--phred-quality-threshold', '-q', default=3, type=int,
               help='Minimum PHRED quality score')
-@click.option('--barcode-type', help='The type of barcode used', default=None,
-              type=click.Choice(['golay_12', 'hamming_8', 'not-barcoded']))
+@click.option('--barcode-type', help='The type of barcode used',
+              default='golay_12', type=click.Choice(['golay_12', 'hamming_8',
+                                                     'not-barcoded']))
 @click.option('--max-barcode-error', default=1.5, type=float,
               help='The maximum number of barcode errors allowed')
 @click.option('--retain-primer/--no-retain-primer', default=False,
@@ -46,7 +47,25 @@ from .cli import qiime_cli
               default=False, help='Reverse complement the mapping barcodes')
 @click.pass_context
 def slib(ctx, **kwargs):
-    """Quality filter and demultiplex sequences"""
+    """Quality filter and demultiplex sequences
+
+    Examples
+    --------
+
+    Demultiplex and quality filter (at Phred >= Q20) one lane of Illumina fastq
+    data and write results to ./slout_q20:
+
+    $ qiime slib -i $PWD/lane1_read1.fastq.gz -b $PWD/lane1_barcode.fastq.gz \
+            -m $PWD/map.txt -o slout_q20 --rev-comp-mapping-barcodes -q 20
+
+    Demultiplex and quality filter (at Phred >= Q20) two lanes of Illumina
+    fastq data and write results to ./slout_q20:
+
+    $ qiime slib -i $PWD/lane1_read1.fastq.gz -i $PWD/lane2_read1.fastq.gz \
+            -b $PWD/lane1_barcode.fastq.gz -b $PWD/lane2_barcode.fastq.gz \
+            -m $PWD/map.txt -o slout_q20 --rev-comp-mapping-barcodes -q 20
+    """
+    print kwargs
     from skbio import DNA
     from skbio.parse.sequences.factory import load
     from skbio.format.sequences.fastq import format_fastq_record
