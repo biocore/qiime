@@ -17,33 +17,10 @@ from tempfile import mkdtemp
 from qiime.workflow.util import generate_log_fp, WorkflowLogger
 from qiime.parallel.wrapper import ParallelWrapper
 from qiime.parallel.util import (input_fasta_splitter, merge_files_from_dirs,
-                                 concatenate_files)
+                                 concatenate_files, command_wrapper,
+                                 fasta_splitter_handler)
 from qiime.parallel.context import context
 from qiime.parallel.pick_otus import merge_otu_maps
-
-
-def command_wrapper(cmd, idx, dep_results=None):
-    """Wraps the command to be executed so it can use the results produced by
-    the jobs in which the command depends on
-
-    Parameters
-    ----------
-    cmd : str
-        Command to execute
-    idx : int
-        The fasta fp index that this job has to execute
-    dep_results : dict of {node_name: tuple}
-        The results in which cmd depends on
-    """
-    from qiime.parallel.context import system_call
-    if "SPLIT_FASTA" not in dep_results:
-        raise ValueError("Wrong job graph workflow. Node 'SPLIT_FASTA' "
-                         "not listed as dependency of current node")
-    fasta_fps = dep_results["SPLIT_FASTA"]
-
-    cmd = cmd % fasta_fps[idx]
-
-    return system_call(cmd)
 
 
 def generate_biom_table(biom_fp, observation_map_fp, observation_metadata_fp):
@@ -97,6 +74,8 @@ class ParallelDatabaseMapper(ParallelWrapper):
 
         out_dirs = []
         nodes = []
+        keys = ["SPLIT_FASTA"]
+        funcs = {"SPLIT_FASTA": fasta_splitter_handler}
         mapper_specific_param_str = self._get_specific_params_str(params)
         for i in range(jobs_to_start):
             node = "PDM_%d" % i
@@ -105,7 +84,9 @@ class ParallelDatabaseMapper(ParallelWrapper):
             out_dirs.append(out_dir)
             cmd = ("map_reads_to_reference.py -i %s -r {0} -o {1} {2}".format(
                 refseqs_fp, out_dir, mapper_specific_param_str))
-            self._job_graph.add_node(node, job=(command_wrapper, cmd, i),
+            self._job_graph.add_node(node,
+                                     job=(command_wrapper, cmd, i, keys,
+                                          funcs),
                                      requires_deps=True)
             # Make sure that any of the workers are executed until the
             # SPLIT_FASTA node is executed
