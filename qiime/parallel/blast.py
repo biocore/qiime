@@ -19,34 +19,9 @@ from qiime.util import load_qiime_config
 from qiime.workflow.util import generate_log_fp, WorkflowLogger
 from qiime.parallel.context import context
 from qiime.parallel.wrapper import ParallelWrapper
-from qiime.parallel.util import input_fasta_splitter, concatenate_files
-
-
-def command_wrapper(cmd, idx, dep_results=None):
-    """Wraps the command to be executed so it can use the results produced by
-    the jobs in which the command depends on
-
-    Parameters
-    ----------
-    cmd : str
-        Command to execute
-    idx : int
-        The fasta fp index that this job has to execute
-    dep_results : dict of {node_name: tuple}
-        The results in which cmd depends on
-    """
-    from qiime.parallel.context import system_call
-    if "SPLIT_FASTA" not in dep_results:
-        raise ValueError("Wrong job graph workflow. Node 'SPLIT_FASTA' "
-                         "not listed as dependency of current node")
-    fasta_fps = dep_results["SPLIT_FASTA"]
-
-    if "BUILD_BLAST_DB" not in dep_results:
-        raise ValueError("Wrong job graph workflow. Node 'BUILD_BLAST_DB' "
-                         "not listed as dependency of current node")
-    blast_db, db_files_to_remove = dep_results["BUILD_BLAST_DB"]
-    cmd = cmd % (fasta_fps[idx], blast_db)
-    return system_call(cmd)
+from qiime.parallel.util import (input_fasta_splitter, concatenate_files,
+                                 command_wrapper, fasta_splitter_handler,
+                                 blast_db_builder_handler)
 
 
 class ParallelBlaster(ParallelWrapper):
@@ -100,6 +75,9 @@ class ParallelBlaster(ParallelWrapper):
 
         node_names = []
         temp_outs = []
+        keys = ["SPLIT_FASTA", "BUILD_BLAST_DB"]
+        funcs = {"SPLIT_FASTA": fasta_splitter_handler,
+                 "BUILD_BLAST_DB": blast_db_builder_handler}
         for i in range(jobs_to_start):
             node_name = "BLAST_%s" % i
             node_names.append(node_name)
@@ -109,7 +87,9 @@ class ParallelBlaster(ParallelWrapper):
                    % (blastall_fp, params['e_value'], complexity_str,
                       params['word_size'], params['num_hits'], "-i %s -d %s",
                       outfile))
-            self._job_graph.add_node(node_name, job=(command_wrapper, cmd, i),
+            self._job_graph.add_node(node_name,
+                                     job=(command_wrapper, cmd, i, keys,
+                                          funcs),
                                      requires_deps=True)
             for job in dep_jobs:
                 self._job_graph.add_edge(job, node_name)
