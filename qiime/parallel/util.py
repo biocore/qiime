@@ -30,18 +30,34 @@ def command_wrapper(cmd, idx, keys, funcs, dep_results=None):
     cmd : str
         Command to execute
     idx : int
-        The fasta fp index that this job has to execute
+        The job index
+    keys : list
+        Ordered list of keys in `funcs` and `dep_results`. The order on this
+        list is used to perform the string formatting on cmd
+    funcs : dict of {str: function}
+        Dictionary keyed by node name in which the values are the functions
+        to execute over the matching dep_results value to get the value to
+        perform the string formatting on cmd. The signature of the functions
+        has to be f(idx, object) in which idx is the job index and object
+        is the value held in `dep_results`
     dep_results : dict of {node_name: object}
         The results in which cmd depends on
+
+    Raises
+    ------
+    RuntimeError
+        If dep_results is None
+    KeyError
+        If not all `keys` are found in dep_results
     """
     from qiime.parallel.context import system_call
     if not dep_results:
         raise RuntimeError("The command wrapper has not received any "
                            "dep_results")
     if not set(keys).issubset(dep_results.keys()):
-        raise ValueError("Wrong job graph workflow. Nodes %s "
-                         "not listed as dependency of current node"
-                         % set(keys).difference(dep_results.keys()))
+        raise KeyError("Wrong job graph workflow. Nodes %s "
+                       "not listed as dependency of current node"
+                       % set(keys).difference(dep_results.keys()))
 
     results = tuple(funcs[k](idx, dep_results[k]) for k in keys)
     cmd = cmd % (results)
