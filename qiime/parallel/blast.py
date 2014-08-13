@@ -82,18 +82,13 @@ class ParallelBlaster(ParallelWrapper):
             # Build the blast database from the refseqs_path -- all procs
             # will then access one db rather than create one per proc
             refseqs_path = abspath(params['refseqs_path'])
-            self._job_graph.add_node("BUILD_BLAST_DB",
-                                     job=(build_blast_db_from_fasta_path,
-                                          refseqs_path, False, working_dir,
-                                          False),
-                                     requires_deps=False)
+            job = (build_blast_db_from_fasta_path, refseqs_path, False,
+                   working_dir, False)
         else:
-            func = lambda: (params['blast_db'], None)
-            self._job_graph.add_node("BUILD_BLAST_DB", job=(func, ),
-                                     requires_deps=False)
-            # blast_db, db_files_to_remove = build_blast_db_from_fasta_path(
-            #     refseqs_path, False, working_dir, False)
-            # params['blast_db'] = blast_db
+            job = (lambda: (params['blast_db'], None), )
+
+        self._job_graph.add_node("BUILD_BLAST_DB", job=job,
+                                 requires_deps=False)
         dep_jobs.append("BUILD_BLAST_DB")
 
         # Split the input fasta file
