@@ -58,6 +58,10 @@ def has_sequence_qual(state):
     return state['Qual'] is not None
 
 
+def has_barcode(state):
+    return state['Barcode'] is not None
+
+
 class IterAdapter(object):
     """Sequence iterator adapter
 
@@ -286,6 +290,8 @@ class SequenceWorkflow(Workflow):
         Number of sequences whose length did not meet tolerance
     max_ambig_count
         Number of sequences that contained to many ambiguous characters
+    index_ambig_count
+        The number of index reads that have ambiguous bases
 
     Attributes
     ----------
@@ -324,6 +330,7 @@ class SequenceWorkflow(Workflow):
             'unknown_primer_barcode_pair': 0,
             'exceeds_max_primer_mismatch': 0,
             'min_seq_len': 0,
+            'index_ambig_count': 0,
             'max_ambig_count': 0}
 
         super(SequenceWorkflow, self).__init__(state, *args, **kwargs)
@@ -356,9 +363,11 @@ class SequenceWorkflow(Workflow):
         Triggers for `failed`
         #####################
         * If to many nucleotides in `Sequence` are of poor quality.
+        * If the index barcode contains ambiguity
         """
         self._quality_max_bad_run_length()
         self._quality_min_per_read_length_fraction()
+        self._quality_index_ambiguity()
 
     @method(priority=150)
     @requires(option='demultiplex', values=True)
@@ -483,6 +492,14 @@ class SequenceWorkflow(Workflow):
         if best_len < (min_high_qual_read_frac * len(self.state['Sequence'])):
             self.failed = True
             self.stats['min_per_read_length_fraction'] += 1
+
+    @requires(state=has_barcode)
+    def _quality_index_ambiguity(self):
+        barcode_characters = set(self.state['Barcode'])
+        valid_characters = set(['A', 'T', 'G', 'C', 'a', 't', 'g', 'c'])
+        if not barcode_characters.issubset(valid_characters):
+            self.failed = True
+            self.stats['index_ambig_count'] += 1
 
     @requires(option='barcode_type', values='golay_12')
     def _demultiplex_golay12(self):

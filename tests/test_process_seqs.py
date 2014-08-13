@@ -366,6 +366,34 @@ class ProcessSeqsWorkflowTests(TestCase):
         wf_obj._sequence_ambiguous_count()
         self.assertFalse(wf_obj.failed)
 
+    def test_quality_index_ambiguity(self):
+        wf_obj = self._make_workflow_obj({})
+
+        item1 = {'Barcode': 'AATATATATATACA'}
+        item2 = {'Barcode': 'AATARATATATACA'}
+        item3 = {'Barcode': 'AATAATATATNCA'}
+        item4 = {'Barcode': 'ATAtagcta'}
+
+        wf_obj.state = item1
+        wf_obj.failed = False
+        wf_obj._quality_index_ambiguity()
+        self.assertFalse(wf_obj.failed)
+
+        wf_obj.state = item2
+        wf_obj.failed = False
+        wf_obj._quality_index_ambiguity()
+        self.assertTrue(wf_obj.failed)
+
+        wf_obj.state = item3
+        wf_obj.failed = False
+        wf_obj._quality_index_ambiguity()
+        self.assertTrue(wf_obj.failed)
+
+        wf_obj.state = item4
+        wf_obj.failed = False
+        wf_obj._quality_index_ambiguity()
+        self.assertFalse(wf_obj.failed)
+
     def test_full_process_simple(self):
         """Just demux"""
         wf_obj = self._make_workflow_obj({'demultiplex': True,
