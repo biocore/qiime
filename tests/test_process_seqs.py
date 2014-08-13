@@ -406,13 +406,18 @@ class ProcessSeqsWorkflowTests(TestCase):
         barcode = FastqIterator([bc_raw], phred_offset=64)
         it = IterAdapter(seq=seq, barcode=barcode)
 
-        for obs, exp in zip(wf_obj(it), fastq1_expected):
+        def failcb(obj):
+            return obj.state
+
+        for obs, exp in zip(wf_obj(it, fail_callback=failcb), fastq1_expected):
             for k in exp:
                 npt.assert_equal(obs[k], exp[k])
 
+        self.assertEqual(wf_obj.stats['exceed_barcode_error'], 0)
+        self.assertEqual(wf_obj.stats['unknown_barcode'], 1)
         self.assertEqual(wf_obj.stats['sample_counts'],
                          {'s1': 5, 's2': 3, 's4': 4})
-        self.assertEqual(wf_obj.stats['sequence_count'], 12)
+        self.assertEqual(wf_obj.stats['sequence_count'], 13)
         self.assertEqual(wf_obj.stats['sequence_lengths'], {76: 12})
 
 
@@ -447,11 +452,20 @@ fastq1_expected = [
                        34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34,
                        34, 31, 34, 34, 34, 34, 34, 34, 34, 34, 33, 34, 33, 31,
                        34, 30, 34, 25, 31, 32, 33, 33, 30, 34, 16, 34, 32, 34,
-                       34, 34, 34,  8, 25,  7, 25, 26, 20, 34, 34, 30, 31, 33,
+                       34, 34, 34, 8, 25, 7, 25, 26, 20, 34, 34, 30, 31, 33,
                        34, 27, 30, 34, 33, 20], dtype=np.int8),
      'Sequence': ('GGTTACCTTGTTACGACTTCACCCCAATCATCGGCCCCACCTTAGACAGCTGACTCCTA'
                   'AAAGGTTATCTCACCGG'),
      'SequenceID': '990:2:4:11271:5323#1/1'},
+
+    {'Barcode errors': 3,
+     'Final barcode': 'TTCCTTATATAC',
+     'Original barcode': 'TTTTTTATATAT',
+     'Qual': np.array([34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34,
+                       34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34, 34],
+                      dtype=np.int8),
+     'Sequence':'AATGAGAGTGATGAGTGATGATGATGA',
+     'SequenceID': 'this_has_a_bad_barcode'},
 
     {'Barcode errors': 0,
      'Final barcode': 'AAAAAAAAAAAA',
@@ -588,6 +602,10 @@ bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`
 GGTTACCTTGTTACGACTTCACCCCAATCATCGGCCCCACCTTAGACAGCTGACTCCTAAAAGGTTATCTCACCGG
 +
 bbcbbbbbbbbbbbbbbbbbbbbbbbbbb_bbbbbbbbaba_b^bY_`aa^bPb`bbbbHYGYZTbb^_ab[^baT
+@this_has_a_bad_barcode
+AATGAGAGTGATGAGTGATGATGATGA
++
+bbbbbbbbbbbbbbbbbbbbbbbbbbb
 @990:2:4:11272:9538#1/1
 GCACACACCGCCCGTCACACCATCCGAGTTGGAGGTACCCGAAGCCGGTAGTCTAACCGCAAGGAGGACGCTGTCG
 +
@@ -638,6 +656,10 @@ bbbbbbbbbbbb
 AAAAAAAAAAAC
 +
 bbcbbbbbbbbb
+@this_has_a_bad_barcode
+TTTTTTATATAT
++
+bbbbbbbbbbbb
 @990:2:4:11272:9538#1/2
 AAAAAAAAAAAA
 +

@@ -2,6 +2,8 @@
 
 """Filter poor quality reads, trim barcodes/primers and assign to samples"""
 
+from collections import Counter
+
 import numpy as np
 from future.builtins import zip
 from skbio.core.workflow import Workflow, requires, method, not_none
@@ -272,25 +274,35 @@ class SequenceWorkflow(Workflow):
     occurs during quality checks then barcode stats, such as
     exceed_barcode_error, will not be reflective of those sequences.
 
-    quality_max_bad_run_length
+    sequence_lengths : Counter
+        A `Counter` that contains a count of the number of times a sequence
+        length was observed. This count is incremented at the end of processing
+        and if the sequence did not fail processing.
+    sample_counts : Counter
+        A `Counter` that contains the observed samples and the number of
+        sequences per sample. This count is incremented at the end of
+        processing and if the sequence did not fail processing.
+    sequence_count : int
+        Total number of sequences processed regardless of success or failure.
+    quality_max_bad_run_length : int
         Number of sequences containing a run of poor quality bases
-    min_per_read_length_fraction
+    min_per_read_length_fraction : int
         Number of sequences containing excessive poor quality bases
-    barcode_corrected
+    barcode_corrected : int
         Number of sequences in which a barcode was corrected
-    unknown_barcode
+    unknown_barcode : int
         Number of sequences in which an unknown barcode was observed
-    exceed_barcode_error
+    exceed_barcode_error : int
         Number of barcodes with errors that exceeded tolerance
-    unknown_primer_barcode_pair
+    unknown_primer_barcode_pair : int
         Number of unknown primer barcode pairs
-    exceeds_max_primer_mismatch
+    exceeds_max_primer_mismatch : int
         Number of primer mismatches exceeds tolerance
-    min_seq_len
+    min_seq_len : int
         Number of sequences whose length did not meet tolerance
-    max_ambig_count
+    max_ambig_count : int
         Number of sequences that contained to many ambiguous characters
-    index_ambig_count
+    index_ambig_count : int
         The number of index reads that have ambiguous bases
 
     Attributes
@@ -322,6 +334,9 @@ class SequenceWorkflow(Workflow):
                  'Barcode errors': None}
 
         kwargs['stats'] = {
+            'sequence_lengths': Counter(),
+            'sample_counts': Counter(),
+            'sequence_count': 0,
             'quality_max_bad_run_length': 0,
             'min_per_read_length_fraction': 0,
             'barcode_corrected': 0,
@@ -346,6 +361,7 @@ class SequenceWorkflow(Workflow):
         for k in self.state:
             self.state[k] = None
         self.state.update(item)
+        self.stats['sequence_count'] += 1
 
     @method(priority=200)
     @requires(state=has_sequence_qual)
@@ -445,6 +461,18 @@ class SequenceWorkflow(Workflow):
         """
         self._sequence_length_check()
         self._sequence_ambiguous_count()
+
+    @method()
+    def wf_success_stats(self):
+        """Increment stats contingent on a successful sequence
+
+        Notes
+        -----
+        Only makes updates to `stats` and cannot change state or trigger
+        `failed`.
+        """
+        self.stats['sequence_lengths'][len(self.state['Sequence'])] += 1
+        self.stats['sample_counts'][self.state['Sample']] += 1
 
     @requires(option='phred_quality_threshold')
     @requires(option='max_bad_run_length')
