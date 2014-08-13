@@ -164,8 +164,7 @@ class ProcessSeqsWorkflowTests(TestCase):
 
     def test_demultiplex_encoded_barcode(self):
         """Verify decoding barcodes"""
-        wf_obj = self._make_workflow_obj({'demultiplex': True,
-                                          'barcode_type': 'golay_12'})
+        wf_obj = self._make_workflow_obj({'barcode_type': 'golay_12'})
 
         needs_a_fix = {'Barcode': 'GGAGACAAGGGT', 'Sequence': 'AATTGGCC'}
         exact = {'Barcode': 'GGAGACAAGGGA', 'Sequence': 'AATTGGCC'}
@@ -214,8 +213,7 @@ class ProcessSeqsWorkflowTests(TestCase):
 
     def test_demultiplex_max_barcode_error(self):
         """Verify failing max_barcode_error checking"""
-        wf_obj = self._make_workflow_obj({'demultiplex': True,
-                                          'barcode_type': 'golay_12',
+        wf_obj = self._make_workflow_obj({'barcode_type': 'golay_12',
                                           'max_barcode_error': 0})
 
         needs_a_fix = {'Barcode': 'GGAGACAAGGGT', 'Sequence': 'AATTGGCC'}
@@ -396,8 +394,7 @@ class ProcessSeqsWorkflowTests(TestCase):
 
     def test_full_process_simple(self):
         """Just demux"""
-        wf_obj = self._make_workflow_obj({'demultiplex': True,
-                                          'barcode_type': 'golay_12'})
+        wf_obj = self._make_workflow_obj({'barcode_type': 'golay_12'})
 
         seq_raw = fastq1.splitlines()
         bc_raw = barcode_fastq1.splitlines()

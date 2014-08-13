@@ -206,8 +206,6 @@ class SequenceWorkflow(Workflow):
     -------
     All options are considered optional.
 
-    demultiplex : bool
-        Whether to attempt demultiplex or not.
     check_primer : bool
         Whether to attempt a primer check or not
     phred_quality_threshold : int
@@ -386,7 +384,7 @@ class SequenceWorkflow(Workflow):
         self._quality_index_ambiguity()
 
     @method(priority=150)
-    @requires(option='demultiplex', values=True)
+    @requires(option='barcode_type', values=['golay_12', 'hamming_8'])
     def wf_demultiplex(self):
         """Demultiplex a sequence
 
