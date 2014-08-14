@@ -17,7 +17,7 @@ from os.path import basename, exists, join
 from tempfile import NamedTemporaryFile, mkstemp, mkdtemp
 from unittest import TestCase, main
 
-from skbio.app.util import ApplicationError
+from burrito.util import ApplicationError
 from skbio.util.misc import remove_files, create_dir
 from skbio.core.alignment import SequenceCollection
 from skbio.core.sequence import DNA

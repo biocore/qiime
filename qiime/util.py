@@ -46,8 +46,8 @@ from cogent.parse.tree import DndParser
 from cogent.cluster.procrustes import procrustes
 
 from skbio.util.misc import remove_files, create_dir
-from skbio.app.util import ApplicationError, CommandLineApplication, FilePath
-from skbio.app.util import which
+from burrito.util import ApplicationError, CommandLineApplication, FilePath
+from burrito.util import which
 from skbio.core.sequence import DNASequence
 from skbio.parse.sequences import parse_fasta
 

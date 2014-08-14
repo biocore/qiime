@@ -122,8 +122,8 @@ def run_pick_de_novo_otus(input_fp,
         except KeyError:
             pass
 
-        if 'uclust_otu_id_prefix' not in d:
-            d['uclust_otu_id_prefix'] = 'DeNovoOTU'
+        if 'denovo_otu_id_prefix' not in d:
+            d['denovo_otu_id_prefix'] = 'DeNovoOTU'
         params_str = ' %s' % get_params_str(d)
 
         failures_list_fp = '%s/%s_failures.txt' % \

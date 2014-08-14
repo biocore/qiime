@@ -18,7 +18,7 @@ from itertools import chain
 
 from skbio.parse.sequences import parse_fasta
 from brokit.denoiser import lazy_parse_sff_handle
-from skbio.app.util import ApplicationNotFoundError, ApplicationError
+from burrito.util import ApplicationNotFoundError, ApplicationError
 
 from qiime.util import load_qiime_config
 from qiime.denoiser.flowgram_clustering import denoise_seqs

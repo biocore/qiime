@@ -17,8 +17,8 @@ from subprocess import Popen, PIPE, STDOUT
 from tempfile import mkstemp
 
 from skbio.util.misc import create_dir
-from skbio.app.util import ApplicationNotFoundError
-from skbio.app.util import which
+from burrito.util import ApplicationNotFoundError
+from burrito.util import which
 
 
 # qsub template

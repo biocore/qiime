@@ -93,13 +93,13 @@ script_info['optional_options'] = [
         '--suppress_uclust_stable_sort', default=False, action='store_true',
         help="Don't pass --stable-sort to uclust [default: %default]"),
     make_option('-d', '--save_uc_files', default=True, action='store_false',
-                help="Enable preservation of intermediate uclust (.uc) files "
-                     "that are used to generate clusters via uclust. "
-                     "[default: %default]"),
-    make_option('--uclust_otu_id_prefix', default=None,
-                help="OTU identifier prefix (string) for the de novo uclust"
-                     " OTU picker [default: %default, OTU ids are ascending"
-                     " integers]"),
+                help=("Enable preservation of intermediate uclust (.uc) files "
+                      "that are used to generate clusters via uclust. "
+                      "[default: %default]")),
+    make_option('--denovo_otu_id_prefix', default=None,
+                help=("OTU identifier prefix (string) for the de novo uclust"
+                      " OTU picker [default: %default, OTU ids are ascending"
+                      " integers]")),
 
     options_lookup['jobs_to_start'],
     options_lookup['retain_temp_files'],

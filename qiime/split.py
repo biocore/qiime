@@ -12,10 +12,12 @@ __email__ = "gregcaporaso@gmail.com"
 
 from skbio.parse.sequences import parse_fasta
 from skbio.util.misc import create_dir
+from biom.table import TableException
+from biom.err import errstate
+
 from qiime.parse import parse_mapping_file
 from qiime.filter import filter_mapping_file, sample_ids_from_metadata_description
 from qiime.format import format_mapping_file
-from biom.table import TableException
 
 
 class OTUTableSplitError(ValueError):
@@ -73,32 +75,34 @@ def split_mapping_file_on_field(mapping_f,
 
 
 def split_otu_table_on_sample_metadata(otu_table, mapping_f, mapping_field):
-    """ split otu table into sub otu tables where each represent samples corresponding to only a certain value in mapping_field
+    """ split otu table into sub otu tables where each represent samples
+    corresponding to only a certain value in mapping_field
     """
-    mapping_f = list(mapping_f)
-    mapping_values = get_mapping_values(mapping_f, mapping_field)
-    tables = 0
+    with errstate(empty='raise'):
+        mapping_f = list(mapping_f)
+        mapping_values = get_mapping_values(mapping_f, mapping_field)
+        tables = 0
 
-    for v in mapping_values:
-        v_fp_str = v.replace(' ', '_')
-        sample_ids_to_keep = sample_ids_from_metadata_description(
-            mapping_f, valid_states_str="%s:%s" % (mapping_field, v))
+        for v in mapping_values:
+            v_fp_str = v.replace(' ', '_')
+            sample_ids_to_keep = sample_ids_from_metadata_description(
+                mapping_f, valid_states_str="%s:%s" % (mapping_field, v))
 
-        try:
-            # filtering cannot be inplace otherwise we lose data
-            filtered_otu_table = otu_table.filter(
-                lambda values, id_, metadata: id_ in sample_ids_to_keep,
-                axis='sample', inplace=False)
-            tables += 1
-        except TableException:
-            # all samples are filtered out, so no otu table to write
-            continue
-        yield v_fp_str, filtered_otu_table
+            try:
+                # filtering cannot be inplace otherwise we lose data
+                filtered_otu_table = otu_table.filter(
+                    lambda values, id_, metadata: id_ in sample_ids_to_keep,
+                    axis='sample', inplace=False)
+                tables += 1
+            except TableException:
+                # all samples are filtered out, so no otu table to write
+                continue
+            yield v_fp_str, filtered_otu_table
 
-    if not tables:
-        raise OTUTableSplitError("Could not split OTU tables! There are no "
-                                 "matches between the sample identifiers in "
-                                 "the OTU table and the mapping file.")
+        if not tables:
+            raise OTUTableSplitError(
+                "Could not split OTU tables! There are no matches between the "
+                "sample identifiers in the OTU table and the mapping file.")
 
 
 def split_fasta(infile, seqs_per_file, outfile_prefix, working_dir=''):

@@ -25,10 +25,10 @@ import pickle
 from tempfile import mkstemp
 
 from skbio.core.sequence import BiologicalSequence
-from skbio.app.util import ApplicationNotFoundError, ApplicationError
+from burrito.util import ApplicationNotFoundError, ApplicationError
 from skbio.util.misc import create_dir
 from brokit.denoiser import lazy_parse_sff_handle
-from skbio.app.util import which
+from burrito.util import which
 
 from qiime.util import get_qiime_project_dir, FileFormatError
 

@@ -148,11 +148,8 @@ def pick_denovo_otus(input_fp,
         del d['otu_picking_method']
     except KeyError:
         pass
-                
-    if otu_picking_method == "sumaclust":
-        d['sumaclust_otu_id_prefix'] = '%s.ReferenceOTU' % new_ref_set_id
-    else:
-        d['uclust_otu_id_prefix'] = '%s.ReferenceOTU' % new_ref_set_id
+
+    d['denovo_otu_id_prefix'] = '%s.ReferenceOTU' % new_ref_set_id
     
     params_str = ' %s' % get_params_str(d)
     # Build the OTU picking command
@@ -765,6 +762,14 @@ def pick_subsampled_open_reference_otus(input_fp,
     step3_dir = '%s/step3_otus/' % output_dir
     step3_otu_map_fp = '%s/failures_otus.txt' % step3_dir
     step3_failures_list_fp = '%s/failures_failures.txt' % step3_dir
+
+    # remove the indexed reference database from the dictionary of
+    # parameters as it must be forced to build a new database
+    # using the step2_repset_fasta_fp
+    if reference_otu_picking_method == 'sortmerna':
+        if 'sortmerna_db' in params['pick_otus']:
+            del params['pick_otus']['sortmerna_db']
+
     step3_cmd = pick_reference_otus(
         step1_failures_fasta_fp,
         step3_dir,
