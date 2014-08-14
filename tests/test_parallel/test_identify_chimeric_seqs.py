@@ -68,9 +68,9 @@ class BaseChimericSeqIdentifierTests(TestCase):
     def tearDown(self):
         """ """
         disable_timeout()
-        # for d in self.dirs_to_remove:
-        #     if exists(d):
-        #         rmtree(d)
+        for d in self.dirs_to_remove:
+            if exists(d):
+                rmtree(d)
 
 
 class ChimericSeqIdentifierBlastTests(BaseChimericSeqIdentifierTests):
