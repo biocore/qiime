@@ -21,11 +21,12 @@ from skbio.util.misc import remove_files
 from qiime.util import get_qiime_temp_dir, load_qiime_config
 from qiime.test import initiate_timeout, disable_timeout
 from qiime.parse import fields_to_dict
-from qiime.parallel.identify_chimeric_seqs import \
-    ParallelChimericSequenceIdentifier
+from qiime.parallel.identify_chimeric_seqs import (
+    ParallelChimericSeqIdentifierBlast,
+    ParallelChimericSeqIdentifierChimSlayer)
 
 
-class ParallelChimericSequenceIdentifierTests(TestCase):
+class BaseChimericSeqIdentifierTests(TestCase):
 
     def setUp(self):
         """ """
@@ -67,10 +68,12 @@ class ParallelChimericSequenceIdentifierTests(TestCase):
     def tearDown(self):
         """ """
         disable_timeout()
-        for d in self.dirs_to_remove:
-            if exists(d):
-                rmtree(d)
+        # for d in self.dirs_to_remove:
+        #     if exists(d):
+        #         rmtree(d)
 
+
+class ChimericSeqIdentifierBlastTests(BaseChimericSeqIdentifierTests):
     def test_parallel_chimeric_sequence_identifier_blast_fragments(self):
         """Test ParallelChimericSequenceIdentifier using blast_fragments."""
         params = {
@@ -83,7 +86,7 @@ class ParallelChimericSequenceIdentifierTests(TestCase):
             'min_div_ratio': None,
         }
 
-        app = ParallelChimericSequenceIdentifier()
+        app = ParallelChimericSeqIdentifierBlast()
         app(self.in_seqs_f.name,
             self.test_out,
             params)
@@ -95,6 +98,8 @@ class ParallelChimericSequenceIdentifierTests(TestCase):
             results = [line for line in f]
         self.assertEqual(results, [])
 
+
+class ChimericSeqIdentifierChimSlayerTests(BaseChimericSeqIdentifierTests):
     def test_parallel_chimeric_sequence_identifier_chimera_slayer(self):
         """Test ParallelChimericSequenceIdentifier using ChimeraSlayer."""
         qiime_config = load_qiime_config()
@@ -109,7 +114,7 @@ class ParallelChimericSequenceIdentifierTests(TestCase):
             'min_div_ratio': None,
         }
 
-        app = ParallelChimericSequenceIdentifier()
+        app = ParallelChimericSeqIdentifierChimSlayer()
         app(self.in_seqs_aligned_f.name,
             self.test_out,
             params)
