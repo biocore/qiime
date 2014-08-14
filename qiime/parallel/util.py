@@ -81,6 +81,7 @@ def command_wrapper(cmd, idx, keys, funcs, dep_results=None):
 
 
 def concatenate_files(output_fp, temp_out_fps):
+    """"""
     with open(output_fp, 'w') as out_f:
         for tmp_fp in temp_out_fps:
             with open(tmp_fp, 'U') as in_f:

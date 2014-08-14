@@ -21,39 +21,10 @@ from skbio.parse.sequences import parse_fasta
 from qiime.parallel.context import context
 from qiime.parallel.wrapper import ParallelWrapper
 from qiime.parallel.util import (input_fasta_splitter, merge_files_from_dirs,
-                                 concatenate_files, BufferedWriter)
+                                 concatenate_files, BufferedWriter,
+                                 command_wrapper, fasta_splitter_handler,
+                                 blast_db_builder_handler)
 from qiime.workflow.util import generate_log_fp, WorkflowLogger
-
-
-def command_wrapper(cmd, idx, needs_blast, dep_results=None):
-    """Wraps the command to be executed so it can use the results produced by
-    the jobs in which the command depends on
-
-    Parameters
-    ----------
-    cmd : str
-        Command to execute
-    idx : int
-        The fasta fp index that this job has to execute
-    dep_results : dict of {node_name: tuple}
-        The results in which cmd depends on
-    """
-    from qiime.parallel.context import system_call
-    if "SPLIT_FASTA" not in dep_results:
-        raise ValueError("Wrong job graph workflow. Node 'SPLIT_FASTA' "
-                         "not listed as dependency of current node")
-    fasta_fps = dep_results["SPLIT_FASTA"]
-
-    if needs_blast:
-        if "BUILD_BLAST_DB" not in dep_results:
-            raise ValueError("Wrong job graph workflow. Node 'BUILD_BLAST_DB' "
-                             "not listed as dependency of current node")
-        blast_db, db_files_to_remove = dep_results["BUILD_BLAST_DB"]
-        cmd = cmd % (fasta_fps[idx], blast_db)
-    else:
-        cmd = cmd % fasta_fps[idx]
-
-    return system_call(cmd)
 
 
 def merge_otu_maps(output_fp, otu_maps):
@@ -74,8 +45,7 @@ def merge_otu_maps(output_fp, otu_maps):
 
     with open(output_fp, 'w') as outf:
         for otu_id, seq_ids in unique_otu_map.items():
-            outf.write('\t'.join([otu_id] + seq_ids))
-            outf.write('\n')
+            outf.write("%s\n" % '\t'.join([otu_id] + seq_ids))
 
 
 class ParallelPickOtus(ParallelWrapper):
@@ -102,15 +72,15 @@ class ParallelPickOtus(ParallelWrapper):
         # back the list of node names that the PPOTU_X jobs should wait for,
         # and a boolean to know if the command wrapper should look for the
         # blast db or not
-        dep_job_names, needs_blast = self._picker_specific_nodes(params,
-                                                                 working_dir)
+        dep_job_names, funcs = self._picker_specific_nodes(params, working_dir)
 
         # Split the input fasta file'
         self._job_graph.add_node("SPLIT_FASTA",
                                  job=(input_fasta_splitter, input_fp,
                                       working_dir, jobs_to_start),
                                  requires_deps=False)
-        dep_job_names.append("SPLIT_FASTA")
+        dep_job_names.insert(0, "SPLIT_FASTA")
+        funcs["SPLIT_FASTA"] = fasta_splitter_handler
 
         # Build the commands
         output_dirs = []
@@ -125,7 +95,7 @@ class ParallelPickOtus(ParallelWrapper):
                    % ("-i %s", out_dir, picker_specific_param_str))
             self._job_graph.add_node(node_name,
                                      job=(command_wrapper, cmd, i,
-                                          needs_blast),
+                                          dep_job_names, funcs),
                                      requires_deps=True)
             for node in dep_job_names:
                 self._job_graph.add_edge(node, node_name)
@@ -159,7 +129,7 @@ class ParallelPickOtus(ParallelWrapper):
 
 class ParallelPickOtusUclustRef(ParallelPickOtus):
     def _picker_specific_nodes(self, params, working_dir):
-        return [], False
+        return [], {}
 
     def _get_specific_params_str(self, params):
         enable_rev_strand_match_str = (
@@ -182,7 +152,7 @@ class ParallelPickOtusUclustRef(ParallelPickOtus):
 
 class ParallelPickOtusUsearch61Ref(ParallelPickOtus):
     def _picker_specific_nodes(self, params, working_dir):
-        return [], False
+        return [], {}
 
     def _get_specific_params_str(self, params):
         # Generate the parameters to pass to pick_otus.py. This must exclude
@@ -216,7 +186,7 @@ class ParallelPickOtusBlast(ParallelPickOtus):
                                           params['refseqs_fp'], False,
                                           working_dir, False),
                                      requires_deps=False)
-        return [node], True
+        return [node], {node: blast_db_builder_handler}
 
     def _get_specific_params_str(self, params):
         return (
