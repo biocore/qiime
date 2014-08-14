@@ -14,8 +14,9 @@ from os.path import split, splitext
 from qiime.util import (make_option, parse_command_line_parameters,
                         load_qiime_config, get_options_lookup)
 
-from qiime.parallel.identify_chimeric_seqs import \
-    ParallelChimericSequenceIdentifier
+from qiime.parallel.identify_chimeric_seqs import (
+    ParallelChimericSeqIdentifierBlast,
+    ParallelChimericSeqIdentifierChimSlayer)
 
 qiime_config = load_qiime_config()
 options_lookup = get_options_lookup()
@@ -172,21 +173,26 @@ def main():
             option_parser.error(
                 'Invalid number of fragments (-n %d) Must be >= 2.'
                 % opts.num_fragments)
+
+        parallel_runner = ParallelChimericSeqIdentifierBlast(
+            retain_temp_files=opts.retain_temp_files,
+            block=not opts.suppress_blocking)
+
     elif opts.chimera_detection_method == 'ChimeraSlayer':
         if not opts.aligned_reference_seqs_fp:
             option_parser.error(
                 "Must provide --aligned_reference_seqs_fp when using "
                 "method ChimeraSlayer")
 
+        parallel_runner = ParallelChimericSeqIdentifierChimSlayer(
+            retain_temp_files=opts.retain_temp_files,
+            block=not opts.suppress_blocking)
+
     # Set the output_dir if not set.
     output_dir = opts.output_dir
     if not output_dir:
         input_basename = splitext(split(opts.input_fasta_fp)[1])[0]
         output_dir = '%s_chimeric_output' % input_basename
-
-    parallel_runner = ParallelChimericSequenceIdentifier(
-        retain_temp_files=opts.retain_temp_files,
-        block=not opts.suppress_blocking)
 
     parallel_runner(opts.input_fasta_fp,
                     output_dir,
