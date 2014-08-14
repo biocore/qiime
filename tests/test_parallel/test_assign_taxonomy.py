@@ -74,7 +74,7 @@ class ParallelRdpTaxonomyAssignerTests(TestCase):
                 "RDP_JAR_PATH does not point to version 2.2 of the "
                 "RDP Classifier.")
 
-        initiate_timeout(90)
+        initiate_timeout(110)
 
     def tearDown(self):
         """ """
