@@ -261,7 +261,7 @@ setup(name='qiime',
                         'biom-format == 2.1', 'emperor == 0.9.3-dev',
                         'scikit-bio == 0.1.4', 'brokit == 0.0.0-dev',
                         'pandas >= 0.13.1', 'future', 'h5py>=2.2.0',
-                        'burrito'],
+                        'burrito', 'click >= 3.0'],
       dependency_links=[
           'https://github.com/biocore/brokit/archive/master.zip#egg=brokit-0.0.0-dev',
           'https://github.com/biocore/biom-format/archive/master.zip#egg=biom-format-2.0.1-dev',
