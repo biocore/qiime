@@ -65,7 +65,6 @@ def slib(ctx, **kwargs):
             -b $PWD/lane1_barcode.fastq.gz -b $PWD/lane2_barcode.fastq.gz \
             -m $PWD/map.txt -o slout_q20 --rev-comp-mapping-barcodes -q 20
     """
-    print kwargs
     from skbio import DNA
     from skbio.parse.sequences.factory import load
     from skbio.format.sequences.fastq import format_fastq_record
