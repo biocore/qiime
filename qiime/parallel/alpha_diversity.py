@@ -10,7 +10,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
-from os.path import join, abspath, exists, split
+from os.path import join, abspath, exists, basename
 from os import makedirs
 
 from qiime.parallel.wrapper import ParallelWrapper
@@ -32,7 +32,7 @@ class ParallelAlphaDiversity(ParallelWrapper):
         self._logger = WorkflowLogger()
 
         for i, input_fp in enumerate(input_fps):
-            _, input_fn = split(input_fp)
+            input_fn = basename(input_fp)
             output_fn = '%d_alpha_%s' % (i, input_fn)
             output_fn = output_fn.replace('.biom', '.txt')
             output_fp = join(output_dir, output_fn)
