@@ -147,14 +147,23 @@ class ParallelChimericSeqIdentifierChimSlayer(ParallelChimericSeqIdentifier):
         # index file exists. If not, it tries to create it. This can lead
         # to race conditions if several parallel jobs try to create it at
         # the same time
-        self._job_graph.add_node("MAKE_CIDX", job=(make_cidx_file,
-                                                   aln_ref_seqs_fp),
+        cidx_node = "MAKE_CIDX"
+        self._job_graph.add_node(cidx_node,
+                                 job=(make_cidx_file, aln_ref_seqs_fp),
                                  requires_deps=False)
         self._filepaths_to_remove.append("%s.cidx" % aln_ref_seqs_fp)
         params['aligned_reference_seqs_fp'] = aln_ref_seqs_fp
         params['reference_seqs_fp'] = ref_seqs_fp
 
-        return ["MAKE_CIDX"], [], {}
+        # We create the blast database so no race condition occur
+        blast_node = "BUILD_BLAST_DB"
+        self._job_graph.add_node(blast_node,
+                                 job=(build_blast_db_from_fasta_path,
+                                      params['reference_seqs_fp'], False,
+                                      working_dir, False),
+                                 requires_deps=False)
+
+        return [cidx_node, blast_node], [], {}
 
     def _get_specific_params_str(self, params):
         min_div_ratio_str = ("--min_div_ratio %s" % params['min_div_ratio']
