@@ -28,6 +28,23 @@ from qiime.workflow.util import generate_log_fp, WorkflowLogger
 class ParallelAlignSeqsPyNast(ParallelWrapper):
     def _construct_job_graph(self, input_fp, output_dir, params,
                              jobs_to_start=None):
+        """Creates the job workflow graph to align sequences in parallel using
+        the PyNast algorithm.
+
+        Parameters
+        ----------
+        input_fp : str
+            Path to the input fasta file
+        output_dir : str
+            Path to the output directory. It will be created if it does
+            not exists
+        params : dict
+            Parameters to use when calling align_seqs.py, in the form of
+            {param_name: value}
+        jobs_to_start : int, optional
+            Number of jobs to start. Default: None - start as many jobs as
+            workers in the cluster
+        """
         # Do the parameter parsing
         input_fp = abspath(input_fp)
         output_dir = abspath(output_dir)
@@ -86,7 +103,6 @@ class ParallelAlignSeqsPyNast(ParallelWrapper):
         funcs = {"SPLIT_FASTA": fasta_splitter_handler,
                  "BUILD_BLAST_DB": blast_db_builder_handler}
         for i in range(jobs_to_start):
-            # out_dir = mkdtemp(prefix="align_seqs_%d" % i, dir=wor)
             out_dir = join(working_dir, "align_seqs_%d" % i)
             cmd = ("align_seqs.py -p %1.2f -e %d -m pynast -t %s -a %s "
                    "-o %s %s"
@@ -109,6 +125,7 @@ class ParallelAlignSeqsPyNast(ParallelWrapper):
         aligned_fp = join(output_dir, "%s_aligned.fasta" % prefix)
         failures_fp = join(output_dir, "%s_failures.fasta" % prefix)
         log_fp = join(output_dir, "%s_log.txt" % prefix)
+
         # Merge the results by concatenating the output files
         self._job_graph.add_node("CONCAT_ALIGNED",
                                  job=(merge_files_from_dirs, aligned_fp,
@@ -125,6 +142,7 @@ class ParallelAlignSeqsPyNast(ParallelWrapper):
                                       output_dirs, "*_log.txt",
                                       concatenate_files),
                                  requires_deps=False)
+
         # Make sure that the concatenate jobs are executed after the worker
         # nodes are finished
         for node in node_names:
