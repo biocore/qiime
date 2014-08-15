@@ -134,7 +134,7 @@ def input_fasta_splitter(input_fp, output_dir, num):
     # Importing here so it becomes available on the workers
     from os.path import exists, basename, splitext, join
     from os import makedirs
-    from skbio.parse.sequences import load
+    from skbio.parse.sequences import load, FastaIterator
 
     if not exists(output_dir):
         makedirs(output_dir)
@@ -147,7 +147,7 @@ def input_fasta_splitter(input_fp, output_dir, num):
     open_files = [open(fp, 'w') for fp in fasta_fps]
 
     # Write the chunks
-    for i, rec in enumerate(load([input_fp])):
+    for i, rec in enumerate(load([input_fp], constructor=FastaIterator)):
         open_files[i % num].write('>%s\n%s\n' % (rec['SequenceID'],
                                                  rec['Sequence']))
 
