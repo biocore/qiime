@@ -54,7 +54,7 @@ class ParallelAlignSeqsTests(TestCase):
         inseqs1_f.close()
         self.files_to_remove.append(self.inseqs1_fp)
 
-        initiate_timeout(60)
+        initiate_timeout(90)
 
     def tearDown(self):
         """ """
