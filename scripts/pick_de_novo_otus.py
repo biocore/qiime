@@ -57,8 +57,28 @@ script_info['script_usage'].append(
      "%prog -i $PWD/seqs.fna -o $PWD/sumaclust_otus/ -p "
      "$PWD/sumaclust_params.txt"))
 
+script_info['script_usage'].append(
+    ("Swarm example",
+     "The following command will start an analysis on seqs.fna (-i), "
+     "which is a post-split_libraries fasta file. The sequence identifiers "
+     "in this file should be of the form <sample_id>_<unique_seq_id>. The "
+     "following steps, corresponding to the preliminary data preparation, "
+     "are applied: Pick de novo OTUs at 97%; pick a representative sequence "
+     "for each OTU (the OTU centroid sequence); align the representative set "
+     "with PyNAST; assign taxonomy with the RDP consensus taxonomy "
+     "assigner; filter the alignment prior to tree building - remove "
+     "positions which are all gaps, and specified as 0 in the lanemask; "
+     "build a phylogenetic tree with FastTree; build an OTU table. All "
+     "output files will be written to the directory specified by -o, and "
+     "subdirectories as appropriate. ALWAYS SPECIFY ABSOLUTE FILE PATHS "
+     "(absolute path represented here as $PWD, but will generally look "
+     "something like /home/ubuntu/my_analysis/). ",
+     "%prog -i $PWD/seqs.fna -o $PWD/swarm_otus/ -p "
+     "$PWD/swarm_params.txt"))
+
 script_info['script_usage_output_to_remove'] = ['$PWD/uclust_otus/',
-                                                '$PWD/sumaclust_otus/']
+                                                '$PWD/sumaclust_otus/',
+                                                '$PWD/swarm_otus/']
 
 script_info[
     'output_description'] = """This script will produce an OTU mapping file (pick_otus.py), a representative set of sequences (FASTA file from pick_rep_set.py), a sequence alignment file (FASTA file from align_seqs.py), taxonomy assignment file (from assign_taxonomy.py), a filtered sequence alignment (from filter_alignment.py), a phylogenetic tree (Newick file from make_phylogeny.py) and a biom-formatted OTU table (from make_otu_table.py)."""
