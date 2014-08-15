@@ -19,6 +19,20 @@ from qiime.workflow.util import WorkflowLogger
 
 class ParallelAlphaDiversity(ParallelWrapper):
     def _construct_job_graph(self, input_fps, output_dir, params):
+        """Creates the job workflow graph to execute alpha_diversity.py over
+        a list of input files.
+
+        Parameters
+        ----------
+        input_fps : list of str
+            List of paths to the input biom tables
+        output_dir : str
+            Path to the output directory. It will be created if it does not
+            exists
+        params : dict
+            Parameters to use when calling alpha_diversity.py, in the form of
+            {param_name: value}
+        """
         # Do the parameter parsing
         tree_str = '-t %s' % params['tree_path'] if params['tree_path'] else ''
         metrics = params['metrics']
