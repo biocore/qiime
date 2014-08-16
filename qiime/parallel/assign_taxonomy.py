@@ -27,6 +27,22 @@ from qiime.workflow.util import generate_log_fp, WorkflowLogger
 class ParallelTaxonomyAssigner(ParallelWrapper):
     def _construct_job_graph(self, input_fp, output_dir, params,
                              jobs_to_start=None):
+        """Creates the job workflow graph to assign taxonomy in parallel
+
+        Parameters
+        ----------
+        input_fp : str
+            Path to the input fasta file
+        output_dir : str
+            Path to the output directory. It will be created if it does
+            not exists
+        params : dict
+            Parameters to use when calling assign_taxonomy.py, in the form of
+            {param_name: value}
+        jobs_to_start : int, optional
+            Number of jobs to start. Default: None - start as many jobs as
+            workers in the cluster
+        """
         # Create the output directory if it does not exists
         output_dir = abspath(output_dir)
         if not exists(output_dir):
@@ -97,6 +113,13 @@ class ParallelTaxonomyAssigner(ParallelWrapper):
             self._job_graph.add_edge(node, "CONCAT_TAX_ASSIGN")
             self._job_graph.add_edge(node, "CONCAT_LOG")
 
+    def _tax_specific_nodes(self, params, working_dir):
+        return [], {}
+
+    def _get_specific_params_str(self, params):
+        raise NotImplementedError(
+            "This method should be overwritten by the subclass!")
+
 
 class ParallelBlastTaxonomyAssigner(ParallelTaxonomyAssigner):
     def _tax_specific_nodes(self, params, working_dir):
@@ -113,18 +136,12 @@ class ParallelBlastTaxonomyAssigner(ParallelTaxonomyAssigner):
 
 
 class ParallelRdpTaxonomyAssigner(ParallelTaxonomyAssigner):
-    def _tax_specific_nodes(self, params, working_dir):
-        return [], {}
-
     def _get_specific_params_str(self, params):
         return ("-m rdp -c %1.2f --rdp_max_memory %d"
                 % (params['confidence'], params['rdp_max_memory']))
 
 
 class ParallelUclustConsensusTaxonomyAssigner(ParallelTaxonomyAssigner):
-    def _tax_specific_nodes(self, params, working_dir):
-        return [], {}
-
     def _get_specific_params_str(self, params):
         return ("-m uclust --uclust_min_consensus_fraction %f "
                 "--uclust_similarity %f --uclust_max_accepts %d -t %s -r %s"
