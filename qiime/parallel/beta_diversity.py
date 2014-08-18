@@ -21,39 +21,46 @@ from qiime.parallel.wrapper import ParallelWrapper
 from qiime.parallel.util import merge_files_from_dirs
 from qiime.parallel.context import context
 from qiime.workflow.util import generate_log_fp, WorkflowLogger
-from qiime.format import format_distance_matrix
 
 
 def merge_distance_matrix(output_fp, component_files):
-    """Merges the distance matrix stored in multiple components on files"""
-    data = {}
+    """Merges the distance matrix stored in multiple components on files
+
+    Parameters
+    ----------
+    output_fp : str
+        Path to the output distance matrix
+    component_files : list of str
+        Paths to the component files
+
+    Raises
+    ------
+    ValueError
+        If the result of merging the different component files does not
+        look like a distance matrix
+    """
+    import pandas as pd
+    from qiime.format import format_distance_matrix
+
+    # Initialize the result dataframe
+    res = pd.DataFrame()
     # Iterate over component files
     for comp_file in component_files:
-        # Create a blank list to store the columns ids
-        col_ids = []
-        with open(comp_file, 'U') as comp_f:
-            # Iterate over lines
-            for line in comp_f:
-                # Split on tabs removing leading and trailing whitespace
-                fields = line.strip().split()
-                if fields:
-                    # If no column ids seen yet, these are them
-                    if not col_ids:
-                        col_ids = fields
-                    # Otherwise this is a data row so add it to data
-                    else:
-                        sid = fields[0]
-                        data[sid] = dict(zip(col_ids, fields[1:]))
-    # Grab the col/row ids as a lit so it's ordered
-    labels = data.keys()
-    # Create an empty list to build the dm
-    dm = []
-    # construct the dm one row at a time
-    for l1 in labels:
-        dm.append([data[l1][l2] for l2 in labels])
-    # Store the distance matrix string
-    with open(output_fp, 'w') as out_f:
-        out_f.write(format_distance_matrix(labels, dm))
+        # Update the result dataframe with the current comp_file
+        res = res.append(pd.DataFrame.from_csv(comp_file, sep='\t'))
+
+    # Check that we have a complete distance matrix
+    if set(res.columns) != set(res.index):
+        raise ValueError("Cannot build the distance matrix. Column ids and "
+                         "row ids are not the same: %s != %s"
+                         % (res.columns.tolist(), res.index.tolist()))
+
+    # Make sure that rows and cols ids are in the same order
+    res = res.ix[res.columns, res.columns]
+
+    # Store the distance matrix
+    with open(output_fp, 'w') as f:
+        f.write(format_distance_matrix(res.columns, res.as_matrix()))
 
 
 class ParallelBetaDiversitySingle(ParallelWrapper):
