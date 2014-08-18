@@ -63,25 +63,34 @@ def merge_distance_matrix(output_fp, component_files):
         f.write(format_distance_matrix(res.columns, res.as_matrix()))
 
 
+def get_sample_id_groups(biom_fp, num_groups):
+    """Groups the sample ids on biom_fp in num_groups groups
+
+    Parameters
+    ----------
+    biom_fp : str
+        Path to the biom table
+    num_groups : int
+        Number of groups to generate
+
+    Returns
+    -------
+    list of lists
+        The list of sample id groups
+    """
+    # Get the sample ids
+    sample_ids = list(load_table(biom_fp).ids())
+    # Compute the number of ids that has to be in each group
+    k = int(len(sample_ids)/num_groups)
+    # Group sample ids
+    sample_id_groups = [sample_ids[idx:(idx+k)]
+                        for idx in range(0, (num_groups - 1) * k, k)]
+    sample_id_groups.append(sample_ids[(num_groups - 1) * k:])
+
+    return sample_id_groups
+
+
 class ParallelBetaDiversitySingle(ParallelWrapper):
-    def _get_sample_id_groups(self, biom_fp, num_groups):
-        """Groups the sample ids on biom_fp in num_groups groups"""
-        # Get the sample ids
-        sample_ids = list(load_table(biom_fp).ids())
-        # Compute the number of ids that has to be in each group
-        ids_per_group = int(len(sample_ids)/num_groups)
-        # Group sample ids
-        sample_id_groups = []
-        start = 0
-        end = ids_per_group
-        for i in range(num_groups-1):
-            sample_id_groups.append(sample_ids[start:end])
-            start = end
-            end += ids_per_group
-        sample_id_groups.append(sample_ids[start:])
-
-        return sample_id_groups
-
     def _construct_job_graph(self, input_fp, output_dir, params,
                              jobs_to_start=None):
         input_fp = abspath(input_fp)
@@ -111,7 +120,7 @@ class ParallelBetaDiversitySingle(ParallelWrapper):
         metrics = params['metrics'].split(',')
 
         # Determine how many samples will be computed by each command
-        sample_id_groups = self._get_sample_id_groups(input_fp, jobs_to_start)
+        sample_id_groups = get_sample_id_groups(input_fp, jobs_to_start)
 
         # Construct the commands
         output_dirs = []

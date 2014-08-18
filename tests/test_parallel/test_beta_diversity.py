@@ -26,7 +26,8 @@ from qiime.util import get_qiime_temp_dir
 from qiime.test import initiate_timeout, disable_timeout
 from qiime.parallel.beta_diversity import (ParallelBetaDiversitySingle,
                                            ParallelBetaDiversityMultiple,
-                                           merge_distance_matrix)
+                                           merge_distance_matrix,
+                                           get_sample_id_groups)
 
 
 class ParallelBetaDiversityUtilTests(TestCase):
@@ -52,6 +53,13 @@ class ParallelBetaDiversityUtilTests(TestCase):
         with open(self.comp3, 'w') as f:
             f.write(COMP3)
 
+        fd, self.biom_fp = mkstemp(dir=tmp_dir, prefix='table_',
+                                   suffix='.biom')
+        close(fd)
+        self.files_to_remove.append(self.biom_fp)
+        with open(self.biom_fp, 'w') as f:
+            f.write(input1)
+
         fd, self.out_fp = mkstemp(dir=tmp_dir, prefix='merged_', suffix='.txt')
         close(fd)
         self.files_to_remove.append(self.out_fp)
@@ -66,6 +74,15 @@ class ParallelBetaDiversityUtilTests(TestCase):
         with open(self.out_fp, 'U') as f:
             obs = parse_distmat_to_dict(f)
         exp = parse_distmat_to_dict(DIST_MAT.splitlines())
+        self.assertEqual(obs, exp)
+
+    def test_get_sample_id_groups(self):
+        """Correctly divides the sample ids"""
+        obs = get_sample_id_groups(self.biom_fp, 4)
+        exp = [['PC.636', 'PC.481'],
+               ['PC.354', 'PC.635'],
+               ['PC.593', 'PC.356'],
+               ['PC.355', 'PC.607', 'PC.634']]
         self.assertEqual(obs, exp)
 
 
