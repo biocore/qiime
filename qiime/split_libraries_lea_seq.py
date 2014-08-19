@@ -91,7 +91,7 @@ def get_LEA_seq_consensus_seqs(fwd_read_f, rev_read_f,
                                min_difference_in_bcs,
                                fwd_length, rev_length,
                                min_reads_per_random_bc,
-                               min_difference_in_clusters,
+                               min_difference_clusters,
                                barcode_column,
                                reverse_primer_column):
     """
@@ -133,7 +133,7 @@ def get_LEA_seq_consensus_seqs(fwd_read_f, rev_read_f,
                                                      min_difference_in_bcs,
                                                      min_reads_per_random_bc,
                                                      output_dir,
-                                                     min_difference_in_clusters,
+                                                     min_difference_clusters,
                                                      max_cluster_ratio)
 
     log_out = format_lea_seq_log(input_seqs_count,
@@ -149,7 +149,10 @@ def get_LEA_seq_consensus_seqs(fwd_read_f, rev_read_f,
 def get_cluster_ratio(fasta_seqs, min_difference_in_clusters):
     """
     Uses uclust to calculate cluster ratio
-    cluster_ratio=num_of_seq_in_cluster_with_max_seq/num_of_seq_in cluster_with_second_higest_seq
+    cluster_ratio =
+    num_of_seq_in_cluster_with_max_seq
+    divided by
+    num_of_seq_in cluster_with_second_higest_seq
     """
     cluster_percent_id = min_difference_in_clusters
     temp_dir = get_qiime_temp_dir()
@@ -271,8 +274,8 @@ def get_consensus(fasta_seqs, min_consensus):
         for (counter, (b, n)) in enumerate(sorted_bases):
             if max_freq == n:
                 try:
-                    if count_of_seq_with_max_count[counter][
-                            b] > count_of_seq_with_max_count[counter][max_base]:
+                    if (count_of_seq_with_max_count[counter][b] >
+                            count_of_seq_with_max_count[counter][max_base]):
                         max_base = b
                 except KeyError:
                     pass
@@ -359,9 +362,9 @@ def check_barcodes(bc_to_sid, barcode_len, barcode_type):
     """
     barcode_len_in_map = len(bc_to_sid.keys()[0])
     if barcode_len_in_map != barcode_len:
-        raise BarcodeLenMismatchError("Barcodes in mapping file are of length %d, but "
-                                      "expected barcodes of length %d." %
-                                      (barcode_len_in_map, barcode_len))
+        raise BarcodeLenMismatchError("Barcodes in mapping file are of length"
+                                      " %d, but expected length is %d."
+                                      % (barcode_len_in_map, barcode_len))
 
     if barcode_type == 'golay_12':
         invalid_golay_barcodes = get_invalid_golay_barcodes(bc_to_sid.keys())
@@ -414,7 +417,8 @@ def get_consensus_seqs_lookup(random_bc_lookup,
                 fwd_fasta_tempfile = open(fwd_fasta_tempfile_name, 'w')
                 rev_fasta_tempfile = open(rev_fasta_tempfile_name, 'w')
                 max_freq = 0
-                for seq_index, fwd_rev in enumerate(random_bc_lookup[sample_id][random_bc]):
+                for seq_index, fwd_rev in enumerate(
+                        random_bc_lookup[sample_id][random_bc]):
                     fwd_seq, rev_seq = fwd_rev
                     fwd_line = ">" + str(seq_index) + random_bc + "|" + str(
                         random_bc_lookup[sample_id][random_bc][fwd_rev]) +\
@@ -439,7 +443,8 @@ def get_consensus_seqs_lookup(random_bc_lookup,
                     min_difference_in_clusters)
                 if fwd_cluster_ratio == 0 or rev_cluster_ratio == 0:
                     consensus_seq = "No consensus"
-                elif fwd_cluster_ratio < max_cluster_ratio and rev_cluster_ratio < max_cluster_ratio:
+                elif (fwd_cluster_ratio < max_cluster_ratio
+                        and rev_cluster_ratio < max_cluster_ratio):
                     consensus_seq = majority_seq
                 else:
                     fwd_fasta_tempfile = open(fwd_fasta_tempfile_name, 'r')

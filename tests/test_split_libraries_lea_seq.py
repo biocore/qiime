@@ -195,8 +195,10 @@ Total number seqs written: 6"""
                                       barcode_type,
                                       barcode_column,
                                       reverse_primer_column)
-        expected = {'CCGGCAG': 'Sample1'}, {
-            'CCGGCAG': {'AGAGTTTGATCCTGGCTCAG': 20}}, {'CCGGCAG': ['GGGCCGTGTCTCAGT']}
+        bc_to_sid = ({'CCGGCAG': 'Sample1'},)
+        bc_to_fwd_primers = ({'CCGGCAG': {'AGAGTTTGATCCTGGCTCAG': 20}},)
+        bc_to_rev_primers = ({'CCGGCAG': ['GGGCCGTGTCTCAGT']},)
+        expected = bc_to_sid + bc_to_fwd_primers + bc_to_rev_primers
         self.assertEqual(actual, expected)
 
     def test_check_barcodes(self):
@@ -260,21 +262,22 @@ Total number seqs written: 6"""
         random_bc_lookup = function_call_fwd_rev_read[0]
         random_bc_reads = function_call_fwd_rev_read[1]
         random_bcs = function_call_fwd_rev_read[2]
-        min_difference_in_bcs = self.min_difference_in_bcs
-        min_difference_in_clusters = self.min_difference_in_clusters
-        min_reads_per_random_bc = self.min_reads_per_random_bc
+        min_difference_bcs = self.min_difference_in_bcs
+        min_diff_clusters = self.min_difference_in_clusters
+        min_reads_rand_bc = self.min_reads_per_random_bc
         max_cluster_ratio = self.max_cluster_ratio
         output_dir = self.temp_dir
 
-        function_call_get_consensus = get_consensus_seqs_lookup(random_bc_lookup,
-                                                                random_bc_reads,
-                                                                random_bcs,
-                                                                min_difference_in_bcs,
-                                                                min_reads_per_random_bc,
-                                                                output_dir,
-                                                                min_difference_in_clusters,
-                                                                max_cluster_ratio)
-        actual = function_call_get_consensus['Sample1']['AGCTACGAGCTATTGC']
+        fn_call_get_consensus = get_consensus_seqs_lookup(random_bc_lookup,
+                                                          random_bc_reads,
+                                                          random_bcs,
+                                                          min_difference_bcs,
+                                                          min_reads_rand_bc,
+                                                          output_dir,
+                                                          min_diff_clusters,
+                                                          max_cluster_ratio)
+
+        actual = fn_call_get_consensus['Sample1']['AGCTACGAGCTATTGC']
         expected = 'AAAAAAAAAAAAAAAAAAA^AAAAAAAAAAAAAAAAAA'
         self.assertEqual(actual, expected)
 
