@@ -14,10 +14,9 @@ __email__ = "antgonza@gmail.com"
 from qiime.util import (parse_command_line_parameters,
                         get_options_lookup,
                         make_option,
-                        get_rdp_jarpath,
                         load_qiime_config,
                         remove_files)
-from os import system, remove, path, mkdir, close
+from os import mkdir, close
 from os.path import split, splitext, isfile
 from tempfile import mkstemp
 from qiime.assign_taxonomy import (
@@ -241,7 +240,8 @@ def main():
             option_parser.error('Option --similarity must be between (0,1].')
         # coverage must be between (0.1]
         if not 0 < sortmerna_coverage <= 1:
-            option_parser.error('Option --sortmerna_coverage must be between (0,1].')
+            option_parser.error('Option --sortmerna_coverage must be '
+                                'between (0,1].')
         # check ID to taxonomy filepath
         if not opts.id_to_taxonomy_fp:
             option_parser.error('Option --id_to_taxonomy_fp is required when '
@@ -253,17 +253,18 @@ def main():
         # check indexed database, if provided (not mandatory)
         elif sortmerna_db:
             if isfile(sortmerna_db + '.stats') is False:
-                option_parser.error('%s does not exist, make sure you have indexed '
-                                    'the database using indexdb_rna' % (sortmerna_db + '.stats'))
+                option_parser.error('%s does not exist, make sure you have '
+                                    'indexed the database using indexdb_rna' %
+                                    (sortmerna_db + '.stats'))
 
     if assignment_method == 'blast':
         if not opts.id_to_taxonomy_fp:
             option_parser.error('Option --id_to_taxonomy_fp is required when '
                                 'assigning with blast.')
         if not (opts.reference_seqs_fp or opts.blast_db):
-            option_parser.error('Either a blast db (via -b) or a collection of '
-                                'reference sequences (via -r) must be passed to '
-                                'assign taxonomy using blast.')
+            option_parser.error('Either a blast db (via -b) or a collection '
+                                'of reference sequences (via -r) must be '
+                                'passed to assign taxonomy using blast.')
 
     if assignment_method == 'rdp':
         try:
@@ -361,8 +362,8 @@ def main():
         params['sortmerna_db'] = sortmerna_db
         params['min_consensus_fraction'] = opts.min_consensus_fraction
         params['min_percent_id'] = float(similarity*100.0)
-        params['min_percent_cov'] = float(sortmerna_coverage*100.0) 
-        params['best_N_alignments'] = opts.sortmerna_best_N_alignments 
+        params['min_percent_cov'] = float(sortmerna_coverage*100.0)
+        params['best_N_alignments'] = opts.sortmerna_best_N_alignments
         params['e_value'] = opts.sortmerna_e_value
         params['threads'] = opts.sortmerna_threads
 
@@ -399,7 +400,7 @@ def main():
     else:
         taxon_assigner(input_sequences_filepath,
                        result_path=temp_result_path,
-                       log_path=log_path)       
+                       log_path=log_path)
 
         # This is an ugly hack, and needs to be pushed upstream to
         # the taxon assigners (except for sortmerna, which already outputs
@@ -410,7 +411,7 @@ def main():
         # input taxonomy maps, should only contain the sequence identifier.
         # This modifies those entries to contain only the sequence identifer,
         # discarding any comment information. The formatting of these result
-        # files needs to be centralized, and at that stage this processing 
+        # files needs to be centralized, and at that stage this processing
         # should happen there rather than here.
         result_f = open(result_path, 'w')
         for line in open(temp_result_path, 'U'):

@@ -19,15 +19,12 @@ from os import remove
 from os.path import abspath, dirname
 from itertools import count
 from string import strip
-from shutil import copy as copy_file
 from tempfile import NamedTemporaryFile, mkdtemp
 from cStringIO import StringIO
 from collections import Counter, defaultdict
 from shutil import rmtree
 
-from burrito.util import ApplicationNotFoundError
 from skbio.parse.sequences import parse_fasta
-from skbio.util.misc import remove_files
 
 from brokit.blast import blast_seqs, Blastall, BlastResult
 from brokit.formatdb import build_blast_db_from_fasta_path
@@ -136,7 +133,7 @@ class SortMeRNATaxonAssigner(TaxonAssigner):
                 "SortMeRNA: fast and accurate filtering of ribosomal RNAs "
                 "in\n"
                 "metatranscriptomic data, Bioinformatics (2012) 28(24)\n"
-    )
+                )
     _tracked_properties = ['Application', 'Citation']
 
     def __init__(self, params):
@@ -184,15 +181,16 @@ class SortMeRNATaxonAssigner(TaxonAssigner):
         HALT_EXEC : bool, debugging parameter
             If passed, will exit just before the sortmerna command in issued
             and will print out the command that would have been called
-            to stdout. 
+            to stdout.
 
         Returns
         -------
         None if result_path = None
         dict if result_path != None
 
-            The results will be written to result_path as tab-separated lines of:
-            query_id <tab> tax <tab> consensus fraction <tab> n
+            The results will be written to result_path as tab-separated
+            lines of:
+                query_id <tab> tax <tab> consensus fraction <tab> n
 
             The values represent:
             tax: the consensus taxonomy assignment
@@ -201,8 +199,8 @@ class SortMeRNATaxonAssigner(TaxonAssigner):
             included in tax (e.g., if the assignment goes to genus level,
             this will be the fraction of assignments that had the consensus
             genus assignment)
-            n: the number of assignments that were considered when constructing
-            the consensus
+            n: the number of assignments that were considered when
+            constructing the consensus
         """
         # Check input reference sequence and taxonomy are provided
         if self.Params['reference_sequences_fp'] is None:
@@ -219,8 +217,9 @@ class SortMeRNATaxonAssigner(TaxonAssigner):
         if not self.Params['sortmerna_db']:
             output_dir = mkdtemp()
             self.sortmerna_db, files_to_remove = \
-                build_database_sortmerna(abspath(self.Params['reference_sequences_fp']),
-                                         output_dir=output_dir)
+                build_database_sortmerna(abspath(self.Params[
+                    'reference_sequences_fp']),
+                    output_dir=output_dir)
             self.dirs_to_remove.append(output_dir)
 
         # Indexed database provided
@@ -251,7 +250,8 @@ class SortMeRNATaxonAssigner(TaxonAssigner):
 
         blast_tabular_fp = app_result['BlastAlignments'].name
         query_to_assignments = self._blast_to_tax_assignments(blast_tabular_fp)
-        result = self._tax_assignments_to_consensus_assignments(query_to_assignments)
+        result = self._tax_assignments_to_consensus_assignments(
+            query_to_assignments)
 
         # Write results to file
         if result_path is not None:
@@ -259,8 +259,8 @@ class SortMeRNATaxonAssigner(TaxonAssigner):
                 of.write('#OTU ID\ttaxonomy\tconfidence\tnum hits\n')
                 for seq_id, (assignment, consensus_fraction, n) in result.items():
                     assignment_str = ';'.join(assignment)
-                    of.write('%s\t%s\t%1.2f\t%d\n' %
-                         (seq_id, assignment_str, consensus_fraction, n))
+                    of.write('%s\t%s\t%1.2f\t%d\n' % (
+                        seq_id, assignment_str, consensus_fraction, n))
             result = None
             logger.info('Result path: %s' % result_path)
         else:
@@ -296,17 +296,17 @@ class SortMeRNATaxonAssigner(TaxonAssigner):
             Three types of alignments are possible,
 
             1. The Null alignment (E-value threshold failed):
-            not16S.1_130 *   0   0   0   0   0   0   0   0   0   0   *   0
+            not16S.1_130\t*\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t*\t0
 
             2. All alignments for a query pass the E-value threshold
             but fail the %id threshold (3rd column is %id):
-            f1_4866 426848  85.4    121 15  3   1   121 520 641 4.79e-32    131 72M1D7M1I13M1D28M31S    79.6    
-            f1_4866 342684  84  91  9   6   1   91  522 612 2.8e-19 89  55M1D4M1I12M1D3M1D4M1I1M1I9M61S 59.9
+            f1_4866\t426848\t85.4\t121\t15\t3\t1\t121\t520\t641\t4.79e-32\t131\t72M1D7M1I13M1D28M31S\t79.6
+            f1_4866\t342684\t84\t91\t9\t6\t1\t91\t522\t612\t2.8e-19\t89\t55M1D4M1I12M1D3M1D4M1I1M1I9M61S\t59.9
 
             3. Some/all alignments for a query pass both E-value and %id
             thresholds:
-            f2_1271 295053  100 128 0   0   1   128 520 647 1.15e-59    223 128M    100 
-            f2_1271 42684   84.8    124 17  2   1   124 527 650 2.63e-32    132 101M1D6M1I16M4S 96.9
+            f2_1271\t295053\t100\t128\t0\t0\t1\t128\t520\t647\t1.15e-59\t223\t128M\t100
+            f2_1271\t42684\t84.8\t124\t17\t2\t1\t124\t527\t650\t2.63e-32\t132\t101M1D6M1I16M4S\t96.9
 
             Parameters
             ----------
@@ -333,22 +333,24 @@ class SortMeRNATaxonAssigner(TaxonAssigner):
                     result[query_id].append([])
                 # sequence was aligned, passing %id threshold
                 elif percent_id >= min_percent_id:
-                    # if exists, remove the empty alignment (failing %id threshold)
-                    # for this sequence (Blast tabular output will list all
-                    # alignments passing E-value threshold, not necessarily the %id
-                    # threshold). It should happen rarely that an alignment passing
-                    # the %id threshold comes after an alignment that failed the
-                    # threshold, but it can happen (Blast alignments are often
-                    # ordered from highest %id to lowest), though as sortmerna uses
+                    # if exists, remove the empty alignment (failing %id
+                    # threshold) for this sequence (Blast tabular output
+                    # will list all alignments passing E-value threshold,
+                    # not necessarily the %id threshold). It should happen
+                    # rarely that an alignment passing the %id threshold
+                    # comes after an alignment that failed the threshold,
+                    # but it can happen (Blast alignments are often ordered
+                    # from highest %id to lowest), though as sortmerna uses
                     # a heuristic, this isn't always guaranteed.
                     if [] in result[query_id]:
                         result[query_id].remove([])
                     # add alignment passing %id threshold
-                    subject_tax = self.id_to_taxonomy_map[subject_id].strip().split(';')
+                    subject_tax = self.id_to_taxonomy_map[
+                        subject_id].strip().split(';')
                     result[query_id].append(subject_tax)
                 # sequence was aligned, however failing %id threshold
-                # if no alignment results have been recorded for this sequence
-                # up to now, add an empty list
+                # if no alignment results have been recorded for this
+                # sequence up to now, add an empty list
                 elif not result[query_id]:
                     result[query_id].append([])
 
@@ -357,7 +359,7 @@ class SortMeRNATaxonAssigner(TaxonAssigner):
     def _tax_assignments_to_consensus_assignments(self,
                                                   query_to_assignments):
         """ For each query id and list of assignments,
-            call _get_consensus_assigment to compute the 
+            call _get_consensus_assigment to compute the
             consensus assignment.
 
             Parameters
@@ -372,7 +374,7 @@ class SortMeRNATaxonAssigner(TaxonAssigner):
             query_to_assignments: dict
                 The keys in the dict correspond to query IDs and
                 the values carry a single consensus taxonomy
-                assignment.                
+                assignment.
         """
         for query_id, assignments in query_to_assignments.iteritems():
             consensus_assignment = self._get_consensus_assignment(assignments)
@@ -407,15 +409,15 @@ class SortMeRNATaxonAssigner(TaxonAssigner):
             # count the different taxonomic assignments at the current level.
             # the counts are computed based on the current level and all higher
             # levels to reflect that, for example, 'p__A; c__B; o__C' and
-            # 'p__X; c__Y; o__C' represent different taxa at the o__ level (since
-            # they are different at the p__ and c__ levels).
+            # 'p__X; c__Y; o__C' represent different taxa at the o__
+            # level (since they are different at the p__ and c__ levels).
             current_level_assignments = \
                 Counter([tuple(e[:level + 1]) for e in assignments])
             # identify the most common taxonomic assignment, and compute the
-            # fraction of assignments that contained it. it's safe to compute the
-            # fraction using num_assignments because the deepest level we'll
-            # ever look at here is num_levels (see above comment on how that
-            # is decided).
+            # fraction of assignments that contained it. it's safe to compute
+            # the fraction using num_assignments because the deepest level
+            # we'll ever look at here is num_levels (see above comment on
+            # how that is decided).
             tax, max_count = current_level_assignments.most_common(1)[0]
             max_consensus_fraction = max_count / num_input_assignments
             # check whether the most common taxonomic assignment is observed
