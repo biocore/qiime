@@ -203,7 +203,7 @@ script_info['optional_options'] = [
     make_option('--min_consensus_fraction', type='float',
                 help=('Minimum fraction of database hits that must have a '
                       'specific taxonomic assignment to assign that taxonomy '
-                      'to a query, only used for sortmern and uclust methods '
+                      'to a query, only used for sortmerna and uclust methods '
                       '[default: %default]'), default=0.51),
     make_option('--similarity', type='float',
                 help=('Minimum percent similarity (expressed as a fraction '
