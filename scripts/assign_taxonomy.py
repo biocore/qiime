@@ -18,7 +18,7 @@ from qiime.util import (parse_command_line_parameters,
                         load_qiime_config,
                         remove_files)
 from os import system, remove, path, mkdir, close
-from os.path import split, splitext
+from os.path import split, splitext, isfile
 from tempfile import mkstemp
 from qiime.assign_taxonomy import (
     BlastTaxonAssigner, MothurTaxonAssigner, RdpTaxonAssigner,

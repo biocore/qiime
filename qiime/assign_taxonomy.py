@@ -204,6 +204,11 @@ class SortMeRNATaxonAssigner(TaxonAssigner):
             n: the number of assignments that were considered when constructing
             the consensus
         """
+        # Check input reference sequence and taxonomy are provided
+        if self.Params['reference_sequences_fp'] is None:
+            raise ValueError("Filepath for reference sequences is mandatory.")
+        if self.Params['id_to_taxonomy_fp'] is None:
+            raise ValueError("Filepath for id to taxonomy map is mandatory.")
 
         # initialize the logger
         logger = self._get_logger(log_path)
@@ -284,7 +289,36 @@ class SortMeRNATaxonAssigner(TaxonAssigner):
 
     def _blast_to_tax_assignments(self,
                                   blast_output_fp):
-        """
+        """ Parse SortMeRNA's Blast-like tabular format for query
+            IDs and the references they map to, use the reference IDs
+            to find the associated taxonomies in the id_to_taxonomy_map.
+
+            Three types of alignments are possible,
+
+            1. The Null alignment (E-value threshold failed):
+            not16S.1_130 *   0   0   0   0   0   0   0   0   0   0   *   0
+
+            2. All alignments for a query pass the E-value threshold
+            but fail the %id threshold (3rd column is %id):
+            f1_4866 426848  85.4    121 15  3   1   121 520 641 4.79e-32    131 72M1D7M1I13M1D28M31S    79.6    
+            f1_4866 342684  84  91  9   6   1   91  522 612 2.8e-19 89  55M1D4M1I12M1D3M1D4M1I1M1I9M61S 59.9
+
+            3. Some/all alignments for a query pass both E-value and %id
+            thresholds:
+            f2_1271 295053  100 128 0   0   1   128 520 647 1.15e-59    223 128M    100 
+            f2_1271 42684   84.8    124 17  2   1   124 527 650 2.63e-32    132 101M1D6M1I16M4S 96.9
+
+            Parameters
+            ----------
+            blast_output_fp : str
+                Filepath to Blast-like tabular alignments.
+
+            Returns
+            -------
+            result : dict of list of lists
+                The keys in the dict correspond to query IDs and
+                the values are a list of lists holding associated
+                taxonomies.
         """
         min_percent_id = self.Params['min_percent_id']
         result = defaultdict(list)
@@ -308,7 +342,7 @@ class SortMeRNATaxonAssigner(TaxonAssigner):
                     # ordered from highest %id to lowest), though as sortmerna uses
                     # a heuristic, this isn't always guaranteed.
                     if [] in result[query_id]:
-                        result.remove([])
+                        result[query_id].remove([])
                     # add alignment passing %id threshold
                     subject_tax = self.id_to_taxonomy_map[subject_id].strip().split(';')
                     result[query_id].append(subject_tax)
@@ -322,7 +356,23 @@ class SortMeRNATaxonAssigner(TaxonAssigner):
 
     def _tax_assignments_to_consensus_assignments(self,
                                                   query_to_assignments):
-        """
+        """ For each query id and list of assignments,
+            call _get_consensus_assigment to compute the 
+            consensus assignment.
+
+            Parameters
+            ----------
+            query_to_assignments : dict of list of lists
+                The keys in the dict correspond to query IDs and
+                the values are a list of lists holding associated
+                taxonomies.
+
+            Returns
+            -------
+            query_to_assignments: dict
+                The keys in the dict correspond to query IDs and
+                the values carry a single consensus taxonomy
+                assignment.                
         """
         for query_id, assignments in query_to_assignments.iteritems():
             consensus_assignment = self._get_consensus_assignment(assignments)
@@ -332,7 +382,7 @@ class SortMeRNATaxonAssigner(TaxonAssigner):
 
     def _get_consensus_assignment(self,
                                   assignments):
-        """ compute the consensus assignment from a list of assignments
+        """ Compute the consensus assignment from a list of assignments.
 
             This code was pulled almost exactly from QIIME's
              UclustConsensusTaxonAssigner._get_consensus_assignment method.

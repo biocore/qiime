@@ -747,7 +747,7 @@ class SortMeRNATaxonAssignerTests(TestCase):
         remove_files(self.files_to_remove)
         rmtree(self.output_dir)
 
-    def test_init(self):
+    def test_init_(self):
         """SortMeRNATaxonAssigner __init__ should store name, params
         """
         p = SortMeRNATaxonAssigner({})
@@ -765,6 +765,48 @@ class SortMeRNATaxonAssignerTests(TestCase):
                           'threads': 1,
                           'unassignable_label': 'Unassigned'}
         self.assertEqual(p.Params, default_params)
+
+    def test_SortMeRNATaxonAssigner_call_raise_value_error(self):
+        """SortMeRNATaxonAssigner __call__ should raise
+           ValueError if the filepaths for the reference
+           sequences or id to taxonomy map aren't provided
+        """
+        p = SortMeRNATaxonAssigner({
+            'reference_sequences_fp': None,
+            'id_to_taxonomy_fp': self.id_to_taxonomy_fp})
+
+        self.assertRaises(ValueError,
+                          p,
+                          seq_path=self.input_seqs_fp)
+
+        q = SortMeRNATaxonAssigner({
+            'reference_sequences_fp': self.reference_seqs_fp,
+            'id_to_taxonomy_fp': None})
+
+        self.assertRaises(ValueError,
+                          q,
+                          seq_path=self.input_seqs_fp) 
+
+    def test_SortMeRNATaxonAssigner_call_(self):
+        """SortMeRNATaxonAssigner __call__ should return
+           a dict of query ids to taxonomic assignments
+        """
+        expected = {
+            's3': (['Archaea', 'Crenarchaeota', 'uncultured', 'uncultured'], 1.0, 2),
+            's2': (['Archaea', 'Euryarchaeota', 'Methanomicrobiales', 'Methanomicrobium et rel.'], 1.0, 1),
+            's1': (['Archaea', 'Euryarchaeota', 'Halobacteriales', 'uncultured'], 1.0, 1),
+            's6': (['Unassigned'], 1.0, 1),
+            's5': (['Archaea', 'Crenarchaeota', 'uncultured', 'uncultured'], 1.0, 2),
+            's4': (['Archaea', 'Euryarchaeota', 'Methanobacteriales', 'Methanobacterium'], 1.0, 1)
+        }
+
+        p = SortMeRNATaxonAssigner({
+            'reference_sequences_fp': self.reference_seqs_fp,
+            'id_to_taxonomy_fp': self.id_to_taxonomy_fp})
+
+        actual = p(self.input_seqs_fp)
+
+        self.assertEqual(actual, expected)      
 
     def test_parse_id_to_taxonomy_file(self):
         """SortMeRNATaxonAssigner parsing taxonomy files functions
@@ -839,27 +881,6 @@ class SortMeRNATaxonAssignerTests(TestCase):
         result = p._tax_assignments_to_consensus_assignments(query_to_assignments)
 
         self.assertEqual(expected_result, result)
-
-    def test_call_default(self):
-        """SortMeRNATaxonAssigner's  __call__() indexes reference database
-           and returns result as dict
-        """
-        expected = {
-            's3': (['Archaea', 'Crenarchaeota', 'uncultured', 'uncultured'], 1.0, 2),
-            's2': (['Archaea', 'Euryarchaeota', 'Methanomicrobiales', 'Methanomicrobium et rel.'], 1.0, 1),
-            's1': (['Archaea', 'Euryarchaeota', 'Halobacteriales', 'uncultured'], 1.0, 1),
-            's6': (['Unassigned'], 1.0, 1),
-            's5': (['Archaea', 'Crenarchaeota', 'uncultured', 'uncultured'], 1.0, 2),
-            's4': (['Archaea', 'Euryarchaeota', 'Methanobacteriales', 'Methanobacterium'], 1.0, 1)
-        }
-
-        p = SortMeRNATaxonAssigner({
-            'reference_sequences_fp': self.reference_seqs_fp,
-            'id_to_taxonomy_fp': self.id_to_taxonomy_fp})
-
-        actual = p(self.input_seqs_fp)
-
-        self.assertEqual(actual, expected)
 
     def test_call_pass_database(self):
         """SortMeRNATaxonAssigner's __call__() uses a prebuilt database and
