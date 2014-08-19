@@ -204,8 +204,6 @@ def get_cluster_ratio(fasta_seqs, min_difference_in_clusters):
     num_of_seq_in_cluster_with_max_seq
     divided by
     num_of_seq_in cluster_with_second_higest_seq
-=======
-    cluster_ratio=num_of_seq_in_cluster_with_max_seq/num_of_seq_in cluster_with_second_higest_seq
     Parameters
     ----------
     fasta_seqs: list
