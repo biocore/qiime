@@ -18,13 +18,12 @@ from skbio.parse.sequences import parse_fasta, parse_fastq
 from qiime.util import get_qiime_temp_dir, qiime_system_call
 from brokit.uclust import get_clusters_from_fasta_filepath
 from skbio.app.util import ApplicationError
-from tempfile import mkstemp
-from itertools import izip
 from os import close, path, mkdir, rmdir
 from skbio.util.misc import remove_files
 from skbio.core.sequence import DNASequence
 import re
-
+from tempfile import mkstemp
+from itertools import izip
 
 class PairedEndParseError(Exception):
     pass
@@ -52,9 +51,19 @@ class BarcodeLenMismatchError(Exception):
 
 def extract_primer(seq, possible_primers, min_idx=None, max_idx=None):
     """
-    Extracts primers from sequence, given possible primers
-    returns before_primer, primer, sequence without primer
-
+    Given possible primers, extracts primers from
+    sequence from min_idx to max_idx
+    Parameters
+    ----------
+    seq: string
+    possible_primers: list
+    min_idx: int, optional
+    max_idx: int, optional
+    Returns
+    ----------
+    before_primer: string
+    primer: string
+    after_primer: string
     """
 
     primer_idx = None   # index of primer in sequence
@@ -69,7 +78,6 @@ def extract_primer(seq, possible_primers, min_idx=None, max_idx=None):
               (max_idx is not None and primer_idx > max_idx):
                 primer_idx = None
                 primer = None
-                continue
             else:
                 break
 
@@ -98,6 +106,48 @@ def get_LEA_seq_consensus_seqs(fwd_read_f, rev_read_f,
     Reads mapping file, input file, and other command line arguments
     fills dictionary called consensus_seq_lookup which will contain:
     sample ID -> random barcode -> consensus_seq
+    Parameters
+    ----------
+    fwd_read_f: file
+        forward read fastq file
+    rev_read_f: file
+        reverse read fastq file
+    map_f: file
+        metadata mapping file
+    output_dir: dirpath
+        output directory path
+    barcode_type: string
+        barcode type, can be either integer or golay_12
+    barcode_len: int
+        barcode length
+    barcode_correction_fn: function
+        applicable only for gloay_12 barcodes
+    max_barcode_errors: int
+        maximum allowable errors in barcodes, applicable for golay_12
+    min_consensus: float
+        minimum score allowable at any position in sequence
+    max_cluster_ratio: float
+        cluster_ratio below which you need to find the consensus sequence
+    min_difference_in_bcs: float
+        threshold for selecting unique barcodes
+    fwd_length: int
+        standard length, used for truncating of the forward sequence
+    rev_length: int
+        standard length, used for truncating of the reverse sequence
+    min_reads_per_random_bc:
+        minimum number of reads per random bc, for it not to be discarded
+    min_difference_in_clusters: float
+        percent identity threshold for cluster formation
+    barcode_column: string
+        header of barcode column
+    reverse_primer_column: string
+        header of the reverse primer column
+    Returns
+    ----------
+    consensus_seq_lookup: defaultdict
+        contains consensus sequence for each sample id and random barcode
+    log_out: string
+        to be printed in log file
     """
 
     (bc_to_sid,
@@ -149,10 +199,25 @@ def get_LEA_seq_consensus_seqs(fwd_read_f, rev_read_f,
 def get_cluster_ratio(fasta_seqs, min_difference_in_clusters):
     """
     Uses uclust to calculate cluster ratio
+<<<<<<< HEAD
     cluster_ratio =
     num_of_seq_in_cluster_with_max_seq
     divided by
     num_of_seq_in cluster_with_second_higest_seq
+=======
+    cluster_ratio=num_of_seq_in_cluster_with_max_seq/num_of_seq_in cluster_with_second_higest_seq
+    Parameters
+    ----------
+    fasta_seqs: list
+        list of fasta sequences
+    min_difference_in_clusters: float
+        percent identity threshold for cluster formation
+    Returns
+    ----------
+    cluster_ratio: float
+        cluster ratio of the sequences using uclust
+        cluster_ratio=num_of_seq_in_cluster_with_max_seq/num_of_seq_in cluster_with_second_higest_seq
+>>>>>>> FETCH_HEAD
     """
     cluster_percent_id = min_difference_in_clusters
     temp_dir = get_qiime_temp_dir()
@@ -160,18 +225,18 @@ def get_cluster_ratio(fasta_seqs, min_difference_in_clusters):
     close(fd_uc)
     fd_fas, fasta_tempfile_name = mkstemp(dir=temp_dir, suffix='.uc')
     close(fd_fas)
-    fasta_tempfile = open(fasta_tempfile_name, 'w')
-    fasta_tempfile.write(fasta_seqs)
+    with open(fasta_tempfile_name, 'w') as fasta_tempfile:
+        fasta_tempfile.write(fasta_seqs)
     fasta_tempfile.close()
-    count_lookup = {}
     count = 0
-    command = "uclust --usersort --input " + fasta_tempfile_name +\
-              " --uc " + uclust_tempfile_name + " --id 0.98"
+    command = "uclust --usersort --input {} --uc {} --id 0.98".format(fasta_tempfile_name, uclust_tempfile_name)
     # In the function, I am calling uclust a large number of times.
     # Initially I was using brokit.get_clusters_from_fasta_filepath
     # but due to issue (biocore/brokit#31), I have temporarily
     # reverted to qiime_system_call.
 
+    count_lookup = {}
+    
     qiime_system_call(command)
     uclust_tempfile = open(uclust_tempfile_name, 'r')
     for line in uclust_tempfile:
@@ -214,6 +279,14 @@ def get_consensus(fasta_seqs, min_consensus):
     ....
 
     number = number of times this seq has appeared with this random_barcode
+    Parameters
+    ----------
+    fasta_seqs: list
+    min_consensus: float
+    Returns
+    ----------
+    consensus_seq: string
+        consensus sequence for the given list of sequences
     """
     seqs = list()
     counts = list()
@@ -222,8 +295,8 @@ def get_consensus(fasta_seqs, min_consensus):
     fd_fas, fasta_tempfile_name = mkstemp(dir=temp_dir, suffix='.fas')
     close(fd_fas)
 
-    fasta_tempfile = open(fasta_tempfile_name, 'w')
-    fasta_tempfile.write(fasta_seqs)
+    with open(fasta_tempfile_name, 'w') as fasta_tempfile:
+        fasta_tempfile.write(fasta_seqs)
     fasta_tempfile.close()
 
     fasta_tempfile = open(fasta_tempfile_name, 'r')
@@ -233,16 +306,14 @@ def get_consensus(fasta_seqs, min_consensus):
         seqs.append(seq)
     fasta_tempfile.close()
 
-    files_to_be_removed = list()
-    files_to_be_removed.append(fasta_tempfile_name)
-    remove_files(files_to_be_removed)
+    remove_files([fasta_tempfile_name])
 
     length = len(seqs[0])
     number_of_seqs = len(seqs)
 
     for seq_index in range(number_of_seqs):
         if len(seqs[seq_index]) != length:
-            raise SeqLengthMismatchError
+            raise SeqLengthMismatchError()
 
     freq_this_pos_this_base = dict()
     count_of_seq_with_max_count = dict()
@@ -250,19 +321,16 @@ def get_consensus(fasta_seqs, min_consensus):
     for x in range(length):
         freq_this_pos_this_base[x] = dict()
         count_of_seq_with_max_count[x] = dict()
-    for x in range(length):
+
         for y in DNASequence.iupac_characters():
             freq_this_pos_this_base[x][y] = 0
             count_of_seq_with_max_count[x][y] = 0
 
-    for base_index in range(length):
         for this_seq_count, seq in enumerate(seqs):
-            freq_this_pos_this_base[base_index][
-                seq[base_index]] += counts[this_seq_count]
-            if counts[this_seq_count] > count_of_seq_with_max_count[
-                    base_index][seq[base_index]]:
-                count_of_seq_with_max_count[base_index][
-                    seq[base_index]] = counts[this_seq_count]
+            freq_this_pos_this_base[x][
+                seq[x]] += counts[this_seq_count]
+            if counts[this_seq_count] > count_of_seq_with_max_count[x][seq[x]]:
+                count_of_seq_with_max_count[x][seq[x]] = counts[this_seq_count]
 
     consensus = list()
     for index in range(length):
@@ -280,34 +348,39 @@ def get_consensus(fasta_seqs, min_consensus):
                 except KeyError:
                     pass
 
-        score = float(10 * float(max_freq) / number_of_seqs)
+        score = 10.0 * max_freq / number_of_seqs
         if score < min_consensus:
-            raise LowConsensusScoreError
+            raise LowConsensusScoreError()
         consensus.append(max_base)
 
     consensus_seq = ''.join(map(str, consensus))
     return consensus_seq
 
 
-def select_unique_rand_bcs(rand_bcs, min_difference_in_bcs):
+def select_unique_rand_bcs(rand_bcs, unique_threshold):
     """
     Attempts to select true barcodes from set of barcodes
     i.e. removes barcodes that might be artifacts
     due to sequencing errors.
     Uses uclust to remove barcodes that are similar thatn
     threshold.
-    returns: a set containing random unique random barcodes.
+    Parameters
+    ----------
+    rand_bcs: list
+    unique_threshold: float
+    Returns
+    ----------
+    unique_rand_bcs: set
+        set of unique random barcodes.
     """
-    unique_threshold = min_difference_in_bcs
     temp_dir = get_qiime_temp_dir()
     fasta_fd, fasta_tempfile_name = mkstemp(
         dir=temp_dir, prefix='tmp', suffix='.fas')
     rand_bcs = set(rand_bcs)
-    fasta_tempfile = open(fasta_tempfile_name, "w")
-    p_line = ""
-    for rand_bc in rand_bcs:
-        p_line = p_line + ">" + rand_bc + "\n" + rand_bc + "\n"
-    fasta_tempfile.write(p_line)
+    
+    with open(fasta_tempfile_name, 'w') as fasta_tempfile:
+        for rand_bc in rand_bcs:
+            fasta_tempfile.write(">{}\n{}\n".format(rand_bc, rand_bc))
     fasta_tempfile.close()
 
     _, _, unique_rand_bcs = get_clusters_from_fasta_filepath(
@@ -318,10 +391,7 @@ def select_unique_rand_bcs(rand_bcs, min_difference_in_bcs):
         output_dir=temp_dir)
 
     unique_rand_bcs = set(unique_rand_bcs)
-
-    files_to_be_removed = list()
-    files_to_be_removed.append(fasta_tempfile_name)
-    remove_files(files_to_be_removed)
+    remove_files([fasta_tempfile_name])
     return unique_rand_bcs
 
 
@@ -331,27 +401,22 @@ def format_lea_seq_log(input_seqs_count,
                        primer_mismatch_count,
                        seq_too_short_count,
                        total_seqs_kept):
-    """ Format the split libraries LEA-Seq log """
-    log_out = ["Quality filter results"]
-    log_out.append(
-        "Total number of input sequences: %d" %
-        input_seqs_count)
-    log_out.append(
-        "Barcode not in mapping file: %d" %
-        barcode_not_in_map_count)
-    log_out.append(
-        "Sequence shorter than threshold: %d" %
-        seq_too_short_count)
-    log_out.append(
-        "Barcode errors exceeds limit: %d" %
-        barcode_errors_exceed_max_count)
-    log_out.append(
-        "Primer mismatch count: %d" %
-        primer_mismatch_count)
-    log_out.append("")
-
-    log_out.append('\nTotal number seqs written: %d' % total_seqs_kept)
-    return '\n'.join(log_out)
+    """ Format the split libraries LEA-Seq log 
+    Parameters
+    ----------
+    input_seqs_count: int
+    barcode_errors_exceed_max_count: int
+    barcode_not_in_map_count: int
+    primer_mismatch_count: int
+    seq_too_short_count: int
+    total_seqs_kept: int
+    Returns
+    ----------
+    log_out: string
+        to be printed in log file
+    """
+    log_out = "Quality filter results\nTotal number of input sequences: {}\nBarcode not in mapping file: {}\nSequence shorter than threshold: {}\nBarcode errors exceeds limit: {}\nPrimer mismatch count: {}\n\nTotal number seqs written: {}".format(input_seqs_count, barcode_not_in_map_count, seq_too_short_count, barcode_errors_exceed_max_count, primer_mismatch_count, total_seqs_kept)
+    return (log_out)
 
 
 def check_barcodes(bc_to_sid, barcode_len, barcode_type):
@@ -359,6 +424,14 @@ def check_barcodes(bc_to_sid, barcode_len, barcode_type):
     Make sure that barcodes (which are guaranteed to be of
     the same length at this point) are the correct length
     that the user specified.
+    Parameters
+    ----------
+    bc_to_sid: dict
+    barcode_len: int
+    barcode_type: string
+    Returns
+    ----------
+    Nothing
     """
     barcode_len_in_map = len(bc_to_sid.keys()[0])
     if barcode_len_in_map != barcode_len:
@@ -374,7 +447,7 @@ def check_barcodes(bc_to_sid, barcode_len, barcode_type):
                 "Some or all barcodes in the mapping file are "
                 "not valid golay codes. Do they need to be "
                 "reverse complemented? If these are not golay "
-                "barcodes pass --barcode_type 12 to disable "
+                "barcodes either pass --barcode_type 12 to disable "
                 "barcode error correction, or pass "
                 "--barcode_type  # if the barcodes are not 12 "
                 "base pairs, where   #  is the size of the "
@@ -391,10 +464,31 @@ def get_consensus_seqs_lookup(random_bc_lookup,
                               min_difference_in_clusters,
                               max_cluster_ratio):
     """
-    Generate LEA-seq consensus sequence
-    returns defaultdict called consensus_seq_lookup
-    which will contain:
-    sample ID -> random barcode -> consensus_seq
+    Generates LEA-seq consensus sequence
+    For each sample id, for each random barcode, consensus sequence is created
+    according to the LEA seq algorithm.
+    Parameters
+    ----------
+    random_bc_lookup: defaultdict
+        contains sample ID -> random barcode -> list of seqs
+    random_bc_reads: defaultdict
+        contains sample ID -> random barcode -> number of reads
+    random_bcs: list
+        list of random barcodes
+    min_difference_in_bcs: float
+        threshold for selecting unique barcodes
+    min_reads_per_random_bc:
+        minimum number of reads per random bc, for it not to be discarded
+    output_dir: dirpath
+        output directory path
+    min_difference_in_clusters: float
+        percent identity threshold for cluster formation
+    max_cluster_ratio: float
+        cluster_ratio below which you need to find the consensus sequence
+    Returns
+    ----------
+    consensus_seq_lookup: defaultdict
+    contains sample ID -> random barcode -> consensus_seq
     """
 
     consensus_seq_lookup = defaultdict(lambda:
@@ -420,12 +514,8 @@ def get_consensus_seqs_lookup(random_bc_lookup,
                 for seq_index, fwd_rev in enumerate(
                         random_bc_lookup[sample_id][random_bc]):
                     fwd_seq, rev_seq = fwd_rev
-                    fwd_line = ">" + str(seq_index) + random_bc + "|" + str(
-                        random_bc_lookup[sample_id][random_bc][fwd_rev]) +\
-                        "\n" + fwd_seq + "\n"
-                    rev_line = ">" + str(seq_index) + random_bc + "|" + str(
-                        random_bc_lookup[sample_id][random_bc][fwd_rev]) +\
-                        "\n" + rev_seq + "\n"
+                    fwd_line = ">{}{}|{}\n{}\n".format(seq_index, random_bc, random_bc_lookup[sample_id][random_bc][fwd_rev], fwd_seq)
+                    rev_line = ">{}{}|{}\n{}\n".format(seq_index, random_bc, random_bc_lookup[sample_id][random_bc][fwd_rev], rev_seq)
                     fwd_fasta_tempfile.write(fwd_line)
                     rev_fasta_tempfile.write(rev_line)
                     if random_bc_lookup[sample_id][
@@ -477,7 +567,41 @@ def read_fwd_rev_read(fwd_read_f,
                       max_barcode_errors,
                       fwd_length,
                       rev_length):
-
+    """
+    Reads fwd and rev read fastq files
+    Parameters
+    ----------
+    fwd_read_f: file
+        forward read fastq file
+    rev_read_f: file
+        reverse read fastq file
+    bc_to_sid: dict
+    barcode_len: int
+        barcode length
+    barcode_correction_fn: function
+        applicable only for gloay_12 barcodes
+    bc_to_fwd_primers: dict
+    bc_to_rev_primers: dict 
+    max_barcode_errors: int
+        maximum allowable errors in barcodes, applicable for golay_12
+    fwd_length: int
+        standard length, used for truncating of the forward sequence
+    rev_length: int
+        standard length, used for truncating of the reverse sequence
+    Returns
+    ----------
+    random_bc_lookup: defaultdict
+        contains sample ID -> random barcode -> list of seqs
+    random_bc_reads: defaultdict
+        contains sample ID -> random barcode -> number of reads
+    random_bcs: list
+    barcode_errors_exceed_max_count: int
+    barcode_not_in_map_count: int
+    primer_mismatch_count: int
+    seq_too_short_count: int
+    input_seqs_count: int
+    total_seqs_kept: int
+    """
     random_bc_lookup = defaultdict(lambda:
                                    defaultdict(lambda:
                                                defaultdict(int)))
@@ -595,7 +719,25 @@ def process_mapping_file(map_f,
                          REVERSE_PRIMER_COLUMN):
     """Ensures that sample IDs and barcodes are unique, that barcodes are
     all the same length, and that primers are present. Ensures barcodes
-    and primers only contain valid characters."""
+    and primers only contain valid characters.
+    Parameters
+    ----------
+    map_f: file
+        metadata mapping file
+    barcode_type: string
+        barcode type, can be either integer or golay_12
+    barcode_len: int
+        barcode length
+    barcode_column: string
+        header of barcode column
+    reverse_primer_column: string
+        header of the reverse primer column
+    Returns
+    ----------
+    bc_to_sid: dict
+    bc_to_fwd_primers: dict
+    bc_to_rev_primers: dict
+    """
 
     _, _, bc_to_sid, _, _, bc_to_fwd_primers, _ = check_map(map_f, False)
     map_f.seek(0)

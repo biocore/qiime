@@ -40,7 +40,7 @@ error-corrected consensus sequence for the initial template molecule.
 """
 script_info['script_usage'] = []
 script_info['script_usage'].append((
-    """Example: Specify forward read and reverse read \
+    """General Example: Specify forward read and reverse read \
 fasta files, use the metadata mapping file map.txt,\
 and output the data to output_dir""",
     """output_dir""",
@@ -178,6 +178,7 @@ def main():
 
     fwd_read_f = open(sequence_read_fps[0], 'U')
     rev_read_f = open(sequence_read_fps[1], 'U')
+
     map_f = open(mapping_fp, 'U')
 
     (consensus_seq_lookup,
@@ -203,12 +204,8 @@ def main():
         for bc_index, rand_bc in enumerate(consensus_seq_lookup[sample_id]):
             consensus_seq = consensus_seq_lookup[sample_id][rand_bc]
             fwd_consensus, rev_consensus = consensus_seq.split('^')
-            fwd_consensus_outfile.write(">" + sample_id + "_" +
-                                        str(bc_index) +
-                                        "\n" + fwd_consensus + "\n")
-            rev_consensus_outfile.write(">" + sample_id + "_" +
-                                        str(bc_index) +
-                                        "\n" + rev_consensus + "\n")
+            fwd_consensus_outfile.write(">{}_{}\n{}\n".format(sample_id, bc_index, fwd_consensus))
+            rev_consensus_outfile.write(">{}_{}\n{}\n".format(sample_id, bc_index, rev_consensus))
 
     log_file.write(log_out)
     log_file.close()
@@ -217,6 +214,7 @@ def main():
     rev_read_f.close()
     fwd_consensus_outfile.close()
     rev_consensus_outfile.close()
-
+    map_f.close()
+    
 if __name__ == "__main__":
     main()
