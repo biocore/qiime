@@ -24,7 +24,7 @@ from qiime.filter import (filter_mapping_file,
 from qiime.format import format_mapping_file
 
 
-def make_field_value_set(headers, field, mdata):
+def make_field_value_list(headers, field, mdata):
     '''Return sorted list of unique values field takes in mdata.
 
     Parameters
@@ -34,24 +34,24 @@ def make_field_value_set(headers, field, mdata):
         from parse_mapping_file.
     field : str
         Header of interest in headers.
-    mdata : 2d-array
-        Data from mapping file cast as array of strings. Usually derived from
-        parse_mapping_file.
+    mdata : np.array
+        2-d array, containing data from mapping file cast as array of strings.
+        Usually derived from parse_mapping_file.
 
     Returns
     -------
-    sorted list
-        Unique values.
+    list
+        Sorted list of unique values found in mapping field.
 
     Notes
     -----
     Function returns a sorted list rather than set because it keeps the order in
-    memory the ame allowing test code to work more easily. Performance cost is 
+    memory the same allowing test code to work more easily. Performance cost is 
     tiny.
 
     Examples
     --------
-    >>> from qiime.split import make_field_value_set
+    >>> from qiime.split import make_field_value_list
     >>> from numpy import array
     >>> headers = ['color', 'temp', 'size']
     >>> mdata = array([['s0', 'blue', 'hot', '13'],
@@ -60,7 +60,7 @@ def make_field_value_set(headers, field, mdata):
                        ['s3', 'cyan', 'hot', '1'],
                        ['s4', 'blue', '0', '0']], 
                       dtype='|S5')
-    >>> make_field_value_set(headers, 'color', mdata)
+    >>> make_field_value_list(headers, 'color', mdata)
     ['blue', 'cyan', 'green']
     '''
     return sorted(set(mdata[:, headers.index(field)]))
@@ -73,11 +73,11 @@ def make_field_set_iterable(headers, fields, mdata):
     headers : list
         Strings that are the header fields in a mapping file. Usually derived
         from parse_mapping_file.
-    fields : list of strs
-        Headers of interest in headers.
-    mdata : 2d-array
-        Data from mapping file cast as array of strings. Usually derived from
-        parse_mapping_file.
+    fields : list
+        List of strings, headers of interest in headers.
+    mdata : np.array
+        2-d array, containing data from mapping file cast as array of strings.
+        Usually derived from parse_mapping_file.
 
     Returns
     -------
@@ -107,7 +107,7 @@ def make_field_set_iterable(headers, fields, mdata):
      ('green', 'cold'),
      ('green', 'hot')]
     '''
-    return product(*[make_field_value_set(headers, f, mdata) for f in fields])
+    return product(*[make_field_value_list(headers, f, mdata) for f in fields])
 
 def make_non_empty_sample_lists(fields, headers, mdata):
     '''Return non-empty sample lists for corresponding field value sets.
@@ -117,19 +117,19 @@ def make_non_empty_sample_lists(fields, headers, mdata):
     headers : list
         Strings that are the header fields in a mapping file. Usually derived
         from parse_mapping_file.
-    fields : list of strs
-        Headers of interest in headers.
-    mdata : 2d-array
-        Data from mapping file cast as array of strings. Usually derived from
-        parse_mapping_file.
+    fields : list
+        List of strings, headers of interest in headers.
+    mdata : np.array
+        2-d array, containing data from mapping file cast as array of strings.
+        Usually derived from parse_mapping_file.
 
     Returns
     -------
-    sample_groups : list of arrays
+    sample_groups : list
         A list of arrays where each array contains the samples that had fields
         equal to the given values in value_groups. Empty arrays are not
         returned.
-    value_groups : list of tuples
+    value_groups : list
         A list of tuples representing the values that the fields of interest
         took for the corresponding sample group in sample_groups.
 
@@ -172,11 +172,11 @@ def make_non_empty_sample_lists(fields, headers, mdata):
     sample_groups = []
     value_groups = []
     for value_set in fsi:
-        rows = (metadata == value_set).all(1).nonzero()[0]
+        rows, = (metadata == value_set).all(1).nonzero()
         if rows.size > 0:
             sample_groups.append(samples[rows])
             value_groups.append(value_set)
-        else:  # this group had no samples so we don't include it
+        else:
             pass
 
     return sample_groups, value_groups
@@ -186,15 +186,17 @@ def subset_mapping_data(mdata, samples_of_interest):
 
     Parameters
     ----------
-    mdata : 2d-array
-        Data from mapping file cast as array of strings. Usually derived from
-        parse_mapping_file.
-    samples_of_interest : list of samples
-        A strict subset of the samples found in the first column of mdata.
+    mdata : np.array
+        2-d array, containing data from mapping file cast as array of strings.
+        Usually derived from parse_mapping_file.
+    samples_of_interest : list
+        A list of strings that are a strict subset of the samples found in the
+        first column of mdata.
 
     Returns
     -------
     subset of mdata
+    
     Examples
     --------
     >>> from qiime.split import subset_mapping_data

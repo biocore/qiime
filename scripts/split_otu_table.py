@@ -101,16 +101,6 @@ script_info['optional_options'] = [\
                 default=False, help='Do not write out split mapping files.')
     ]
 
-# this is known issue, see https://github.com/qiime/qiime/issues/417
-# and https://github.com/qiime/qiime/issues/941
-# make_option('-c','--column_rename_ids',type='string',help='Mapping column used as sample id in the output files.' +
-#                ' Has to be unique in the splited samples. This option can be helpful to create otu tables' +
-#                ' and mapping files for Procustes analysis.', default=None),
-# make_option('--include_repeat_cols',action='store_true', help='By default the new mapping files' +
-#                ' will not have the columns that have the same information, to include them use this' +
-#                ' option. This can be helpful to create mapping files for Procrustes analysis.',
-#                default=False)
-
 script_info['version'] = __version__
 
 

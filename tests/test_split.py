@@ -26,7 +26,7 @@ from qiime.util import get_qiime_temp_dir, remove_files
 from itertools import product
 from numpy import array, arange
 from qiime.parse import parse_mapping_file
-from qiime.split import (make_field_value_set, make_field_set_iterable,
+from qiime.split import (make_field_value_list, make_field_set_iterable,
                          make_non_empty_sample_lists, subset_mapping_data)
 
 from numpy.testing import assert_array_equal
@@ -68,22 +68,22 @@ class SplitTests(TestCase):
         self.mdata = array(mdata)
         self.mheaders = mheaders
 
-    def test_make_field_value_set(self):
+    def test_make_field_value_list(self):
         """Test that field values are correctly returned."""
         field = 'color'
-        obs = make_field_value_set(self.mheaders, field, self.mdata)
+        obs = make_field_value_list(self.mheaders, field, self.mdata)
         exp = ['blue', 'cyan', 'green']
         self.assertEqual(obs, exp)
         field = 'temp'
-        obs = make_field_value_set(self.mheaders, field, self.mdata)
+        obs = make_field_value_list(self.mheaders, field, self.mdata)
         exp = ['0', 'cold', 'hot']
         self.assertEqual(obs, exp)
         field = 'size'
-        obs = make_field_value_set(self.mheaders, field, self.mdata)
+        obs = make_field_value_list(self.mheaders, field, self.mdata)
         exp = ['0', '1', '12', '13']
         self.assertEqual(obs, exp)
         field = 'SampleID'
-        obs = make_field_value_set(self.mheaders, field, self.mdata)
+        obs = make_field_value_list(self.mheaders, field, self.mdata)
         exp = ['s0', 's1', 's2', 's3', 's4']
         self.assertEqual(obs, exp)
 
