@@ -15,12 +15,8 @@ from itertools import product
 
 from skbio.parse.sequences import parse_fasta
 from skbio.util.misc import create_dir
-from biom.table import TableException
-from biom.err import errstate
 
 from qiime.parse import parse_mapping_file
-from qiime.filter import (filter_mapping_file,
-                          sample_ids_from_metadata_description)
 from qiime.format import format_mapping_file
 
 
