@@ -237,14 +237,14 @@ def main():
     if assignment_method == 'sortmerna':
         # similarity must be between (0,1]
         if not 0 < similarity <= 1:
-            option_parser.error('Option --similarity must be between (0,1].')
+            option_parser.error('--similarity must be between (0,1].')
         # coverage must be between (0.1]
         if not 0 < sortmerna_coverage <= 1:
-            option_parser.error('Option --sortmerna_coverage must be '
+            option_parser.error('--sortmerna_coverage must be '
                                 'between (0,1].')
         # check ID to taxonomy filepath
         if not opts.id_to_taxonomy_fp:
-            option_parser.error('Option --id_to_taxonomy_fp is required when '
+            option_parser.error('--id_to_taxonomy_fp is required when '
                                 'assigning with sortmerna.')
         # check reference sequences filepath
         if not opts.reference_seqs_fp:
@@ -259,7 +259,7 @@ def main():
 
     if assignment_method == 'blast':
         if not opts.id_to_taxonomy_fp:
-            option_parser.error('Option --id_to_taxonomy_fp is required when '
+            option_parser.error('--id_to_taxonomy_fp is required when '
                                 'assigning with blast.')
         if not (opts.reference_seqs_fp or opts.blast_db):
             option_parser.error('Either a blast db (via -b) or a collection '
@@ -288,10 +288,10 @@ def main():
 
     if assignment_method == 'uclust':
         if opts.id_to_taxonomy_fp is None:
-            option_parser.error('Option --id_to_taxonomy_fp is required when '
+            option_parser.error('--id_to_taxonomy_fp is required when '
                                 'assigning with uclust.')
         if opts.reference_seqs_fp is None:
-            option_parser.error('Option --reference_seqs_fp is required when '
+            option_parser.error('--reference_seqs_fp is required when '
                                 'assigning with uclust.')
 
     if assignment_method == 'rtax':

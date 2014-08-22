@@ -117,6 +117,75 @@ class TaxonAssigner(FunctionWithParams):
                 result[identifier] = taxonomy
         return result
 
+    def _get_consensus_assignment(self, assignments):
+        """ compute the consensus assignment from a list of assignments
+            (method applied to SortMeRNATaxonAssigner and UclustConsensusTaxonAssigner)
+        """
+        num_input_assignments = len(assignments)
+        consensus_assignment = []
+
+        # if the assignments don't all have the same number
+        # of levels, the resulting assignment will have a max number
+        # of levels equal to the number of levels in the assignment
+        # with the fewest number of levels. this is to avoid
+        # a case where, for example, there are n assignments, one of
+        # which has 7 levels, and the other n-1 assignments have 6 levels.
+        # A 7th level in the result would be misleading because it
+        # would appear to the user as though it was the consensus
+        # across all n assignments.
+        num_levels = min([len(a) for a in assignments])
+
+        # iterate over the assignment levels
+        for level in range(num_levels):
+            # count the different taxonomic assignments at the current level.
+            # the counts are computed based on the current level and all higher
+            # levels to reflect that, for example, 'p__A; c__B; o__C' and
+            # 'p__X; c__Y; o__C' represent different taxa at the o__ level (since
+            # they are different at the p__ and c__ levels).
+            current_level_assignments = \
+                Counter([tuple(e[:level + 1]) for e in assignments])
+            # identify the most common taxonomic assignment, and compute the
+            # fraction of assignments that contained it. it's safe to compute the
+            # fraction using num_assignments because the deepest level we'll
+            # ever look at here is num_levels (see above comment on how that
+            # is decided).
+            tax, max_count = current_level_assignments.most_common(1)[0]
+            max_consensus_fraction = max_count / num_input_assignments
+            # check whether the most common taxonomic assignment is observed
+            # in at least min_consensus_fraction of the sequences
+            if max_consensus_fraction >= self.Params['min_consensus_fraction']:
+                # if so, append the current level only (e.g., 'o__C' if tax is
+                # 'p__A; c__B; o__C', and continue on to the next level
+                consensus_assignment.append((tax[-1], max_consensus_fraction))
+            else:
+                # if not, there is no assignment at this level, and we're
+                # done iterating over levels
+                break
+
+        # construct the results
+        # determine the number of levels in the consensus assignment
+        consensus_assignment_depth = len(consensus_assignment)
+        if consensus_assignment_depth > 0:
+            # if it's greater than 0, generate a list of the
+            # taxa assignments at each level
+            assignment_result = [a[0] for a in consensus_assignment]
+            # and assign the consensus_fraction_result as the
+            # consensus fraction at the deepest level
+            consensus_fraction_result = \
+                consensus_assignment[consensus_assignment_depth - 1][1]
+        else:
+            # if there are zero assignments, indicate that the taxa is
+            # unknown
+            assignment_result = [self.Params['unassignable_label']]
+            # and assign the consensus_fraction_result to 1.0 (this is
+            # somewhat arbitrary, but could be interpreted as all of the
+            # assignments suggest an unknown taxonomy)
+            consensus_fraction_result = 1.0
+
+        return (
+            assignment_result, consensus_fraction_result, num_input_assignments
+        )
+
 
 class SortMeRNATaxonAssigner(TaxonAssigner):
     """ Assign taxonomy using SortMeRNA
@@ -185,9 +254,11 @@ class SortMeRNATaxonAssigner(TaxonAssigner):
 
         Returns
         -------
-        None if result_path = None
-        dict if result_path != None
+        dict if result_path=None
+            The results will be stored in a dict:
+                dict{query_id:[tax, consensus fraction, n]}
 
+        None if result_path
             The results will be written to result_path as tab-separated
             lines of:
                 query_id <tab> tax <tab> consensus fraction <tab> n
@@ -381,79 +452,6 @@ class SortMeRNATaxonAssigner(TaxonAssigner):
             query_to_assignments[query_id] = consensus_assignment
 
         return query_to_assignments
-
-    def _get_consensus_assignment(self,
-                                  assignments):
-        """ Compute the consensus assignment from a list of assignments.
-
-            This code was pulled almost exactly from QIIME's
-             UclustConsensusTaxonAssigner._get_consensus_assignment method.
-        """
-        min_consensus_fraction = self.Params['min_consensus_fraction']
-        num_input_assignments = len(assignments)
-        consensus_assignment = []
-
-        # if the assignments don't all have the same number
-        # of levels, the resulting assignment will have a max number
-        # of levels equal to the number of levels in the assignment
-        # with the fewest number of levels. this is to avoid
-        # a case where, for example, there are n assignments, one of
-        # which has 7 levels, and the other n-1 assignments have 6 levels.
-        # A 7th level in the result would be misleading because it
-        # would appear to the user as though it was the consensus
-        # across all n assignments.
-        num_levels = min([len(a) for a in assignments])
-
-        # iterate over the assignment levels
-        for level in range(num_levels):
-            # count the different taxonomic assignments at the current level.
-            # the counts are computed based on the current level and all higher
-            # levels to reflect that, for example, 'p__A; c__B; o__C' and
-            # 'p__X; c__Y; o__C' represent different taxa at the o__
-            # level (since they are different at the p__ and c__ levels).
-            current_level_assignments = \
-                Counter([tuple(e[:level + 1]) for e in assignments])
-            # identify the most common taxonomic assignment, and compute the
-            # fraction of assignments that contained it. it's safe to compute
-            # the fraction using num_assignments because the deepest level
-            # we'll ever look at here is num_levels (see above comment on
-            # how that is decided).
-            tax, max_count = current_level_assignments.most_common(1)[0]
-            max_consensus_fraction = max_count / num_input_assignments
-            # check whether the most common taxonomic assignment is observed
-            # in at least min_consensus_fraction of the sequences
-            if max_consensus_fraction >= min_consensus_fraction:
-                # if so, append the current level only (e.g., 'o__C' if tax is
-                # 'p__A; c__B; o__C', and continue on to the next level
-                consensus_assignment.append((tax[-1], max_consensus_fraction))
-            else:
-                # if not, there is no assignment at this level, and we're
-                # done iterating over levels
-                break
-
-        # construct the results
-        # determine the number of levels in the consensus assignment
-        consensus_assignment_depth = len(consensus_assignment)
-        if consensus_assignment_depth > 0:
-            # if it's greater than 0, generate a list of the
-            # taxa assignments at each level
-            assignment_result = [a[0] for a in consensus_assignment]
-            # and assign the consensus_fraction_result as the
-            # consensus fraction at the deepest level
-            consensus_fraction_result = \
-                consensus_assignment[consensus_assignment_depth - 1][1]
-        else:
-            # if there are zero assignments, indicate that the taxa is
-            # unknown
-            assignment_result = [self.Params['unassignable_label']]
-            # and assign the consensus_fraction_result to 1.0 (this is
-            # somewhat arbitrary, but could be interpreted as all of the
-            # assignments suggest an unknown taxonomy)
-            consensus_fraction_result = 1.0
-
-        return (
-            assignment_result, consensus_fraction_result, num_input_assignments
-        )
 
 
 class BlastTaxonAssigner(TaxonAssigner):
@@ -1249,74 +1247,6 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
         logger.addHandler(handler)
         logger.setLevel(logging.INFO)
         return logger
-
-    def _get_consensus_assignment(self, assignments):
-        """ compute the consensus assignment from a list of assignments
-        """
-        num_input_assignments = len(assignments)
-        consensus_assignment = []
-
-        # if the assignments don't all have the same number
-        # of levels, the resulting assignment will have a max number
-        # of levels equal to the number of levels in the assignment
-        # with the fewest number of levels. this is to avoid
-        # a case where, for example, there are n assignments, one of
-        # which has 7 levels, and the other n-1 assignments have 6 levels.
-        # A 7th level in the result would be misleading because it
-        # would appear to the user as though it was the consensus
-        # across all n assignments.
-        num_levels = min([len(a) for a in assignments])
-
-        # iterate over the assignment levels
-        for level in range(num_levels):
-            # count the different taxonomic assignments at the current level.
-            # the counts are computed based on the current level and all higher
-            # levels to reflect that, for example, 'p__A; c__B; o__C' and
-            # 'p__X; c__Y; o__C' represent different taxa at the o__ level (since
-            # they are different at the p__ and c__ levels).
-            current_level_assignments = \
-                Counter([tuple(e[:level + 1]) for e in assignments])
-            # identify the most common taxonomic assignment, and compute the
-            # fraction of assignments that contained it. it's safe to compute the
-            # fraction using num_assignments because the deepest level we'll
-            # ever look at here is num_levels (see above comment on how that
-            # is decided).
-            tax, max_count = current_level_assignments.most_common(1)[0]
-            max_consensus_fraction = max_count / num_input_assignments
-            # check whether the most common taxonomic assignment is observed
-            # in at least min_consensus_fraction of the sequences
-            if max_consensus_fraction >= self.Params['min_consensus_fraction']:
-                # if so, append the current level only (e.g., 'o__C' if tax is
-                # 'p__A; c__B; o__C', and continue on to the next level
-                consensus_assignment.append((tax[-1], max_consensus_fraction))
-            else:
-                # if not, there is no assignment at this level, and we're
-                # done iterating over levels
-                break
-
-        # construct the results
-        # determine the number of levels in the consensus assignment
-        consensus_assignment_depth = len(consensus_assignment)
-        if consensus_assignment_depth > 0:
-            # if it's greater than 0, generate a list of the
-            # taxa assignments at each level
-            assignment_result = [a[0] for a in consensus_assignment]
-            # and assign the consensus_fraction_result as the
-            # consensus fraction at the deepest level
-            consensus_fraction_result = \
-                consensus_assignment[consensus_assignment_depth - 1][1]
-        else:
-            # if there are zero assignments, indicate that the taxa is
-            # unknown
-            assignment_result = [self.Params['unassignable_label']]
-            # and assign the consensus_fraction_result to 1.0 (this is
-            # somewhat arbitrary, but could be interpreted as all of the
-            # assignments suggest an unknown taxonomy)
-            consensus_fraction_result = 1.0
-
-        return (
-            assignment_result, consensus_fraction_result, num_input_assignments
-        )
 
     def _uc_to_assignments(self, uc):
         """ return dict mapping query id to all taxonomy assignments
