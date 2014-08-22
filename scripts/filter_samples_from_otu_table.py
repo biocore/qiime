@@ -57,7 +57,7 @@ script_info['optional_options'] = [
                 help='path to write filtered mapping file [default: filtered mapping file is not written]'),
     make_option('--sample_id_fp',
                 type='existing_filepath',
-                help='path to file listing sample ids to keep [default: %default]'),
+                help='Path to file listing sample ids to keep. Valid formats for the file are: 1) any white space, newline, or tab delimited list of samples, 2) a mapping file with samples in the first column [default: %default]'),
     make_option('-s',
                 '--valid_states', type='string',
                 help="string describing valid states (e.g. 'Treatment:Fasting') [default: %default]"),
@@ -110,8 +110,10 @@ def main():
         sample_ids_to_keep = otu_table.ids()
 
     if sample_id_fp is not None:
-        sample_id_f_ids = set([l.strip().split()[0]
-                              for l in open(sample_id_fp, 'U') if not l.startswith('#')])
+        o = open(sample_id_fp, 'U')
+        sample_id_f_ids = set([l.strip().split()[0] for l in o if not
+                               l.startswith('#')])
+        o.close()
         sample_ids_to_keep = set(sample_ids_to_keep) & sample_id_f_ids
 
     filtered_otu_table = filter_samples_from_otu_table(otu_table,

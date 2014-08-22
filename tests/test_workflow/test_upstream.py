@@ -48,10 +48,6 @@ class UpstreamWorkflowTests(TestCase):
 
         self.qiime_config = load_qiime_config()
         self.params = parse_qiime_parameters([])
-        self.params_sortmerna = parse_qiime_parameters(
-            ['pick_otus:otu_picking_method\tsortmerna'])
-        self.params_sumaclust = parse_qiime_parameters(
-            ['pick_otus:otu_picking_method\tsumaclust'])
 
         initiate_timeout(60)
 
@@ -164,14 +160,19 @@ class UpstreamWorkflowTests(TestCase):
         self.assertTrue(getsize(log_fp) > 0)
 
     def test_run_pick_closed_reference_otus_sortmerna(self):
-        """run_pick_closed_reference_otus generates expected results"""
+        """run_pick_closed_reference_otus generates expected results
+           using sortmerna
+        """
+
+        self.params['pick_otus']['otu_picking_method'] = "sortmerna"
+
         run_pick_closed_reference_otus(
             self.test_data['seqs'][0],
             self.test_data['refseqs'][0],
             self.test_out,
             self.test_data['refseqs_tax'][0],
             call_commands_serially,
-            self.params_sortmerna,
+            self.params,
             self.qiime_config,
             parallel=False,
             status_update_callback=no_status_updates)
@@ -215,20 +216,21 @@ class UpstreamWorkflowTests(TestCase):
         """run_pick_de_novo_otus using sumaclust generates expected 
            results with rdp tax assignment
         """
-        self.params_sumaclust['assign_taxonomy'] = \
+        self.params['assign_taxonomy'] = \
             {'id_to_taxonomy_fp': self.test_data['refseqs_tax'][0],
              'reference_seqs_fp': self.test_data['refseqs'][0],
              'assignment_method': 'rdp'}
-        self.params_sumaclust['align_seqs'] = \
+        self.params['align_seqs'] = \
             {'template_fp': self.test_data['refseqs_aligned'][0]}
-        self.params_sumaclust['filter_alignment'] = \
+        self.params['filter_alignment'] = \
             {'lane_mask_fp': self.test_data['refseqs_aligned_lanemask'][0]}
+        self.params['pick_otus']['otu_picking_method'] = "sumaclust"
 
         actual_tree_fp, actual_otu_table_fp = run_pick_de_novo_otus(
             self.test_data['seqs'][0],
             self.test_out,
             call_commands_serially,
-            self.params_sumaclust,
+            self.params,
             self.qiime_config,
             parallel=False,
             status_update_callback=no_status_updates)
@@ -257,6 +259,193 @@ class UpstreamWorkflowTests(TestCase):
         num_otus = len(otu_map_lines)
         otu_map_otu_ids = [o.split()[0] for o in otu_map_lines]
         self.assertEqual(num_otus, 13)
+
+        # all otus get taxonomy assignments
+        taxonomy_assignment_lines = list(open(taxonomy_assignments_fp))
+        self.assertEqual(len(taxonomy_assignment_lines), num_otus)
+
+        # number of seqs which aligned + num of seqs which failed to
+        # align sum to the number of OTUs
+        self.assertEqual(
+         count_seqs(alignment_fp)[0] + count_seqs(failures_fp)[0], num_otus)
+
+        # number of tips in the tree equals the number of sequences that
+        # aligned
+        with open(tree_fp) as f:
+            tree = TreeNode.from_newick(f)
+        self.assertEqual(len(list(tree.tips())), count_seqs(alignment_fp)[0])
+
+        # parse the otu table
+        otu_table = load_table(otu_table_fp)
+        expected_sample_ids = [
+            'f1',
+            'f2',
+            'f3',
+            'f4',
+            'p1',
+            'p2',
+            't1',
+            't2',
+            'not16S.1']
+        # sample IDs are as expected
+        self.assertItemsEqual(otu_table.ids(), expected_sample_ids)
+        # otu ids are as expected
+        self.assertItemsEqual(otu_table.ids(axis='observation'),
+                              otu_map_otu_ids)
+        # number of sequences in the full otu table equals the number of
+        # input sequences
+        number_seqs_in_otu_table = sum([v.sum()
+                                       for v in otu_table.iter_data()])
+        self.assertEqual(number_seqs_in_otu_table,
+                         count_seqs(self.test_data['seqs'][0])[0])
+
+        # Check that the log file is created and has size > 0
+        log_fp = glob(join(self.test_out, 'log*.txt'))[0]
+        self.assertTrue(getsize(log_fp) > 0)
+
+    def test_run_pick_de_novo_otus_swarm_rdp_tax_assign(self):
+        """run_pick_de_novo_otus using swarm (default parameters)
+           generates expected results with rdp tax assignment
+        """
+
+        self.params['assign_taxonomy'] = \
+            {'id_to_taxonomy_fp': self.test_data['refseqs_tax'][0],
+             'reference_seqs_fp': self.test_data['refseqs'][0],
+             'assignment_method': 'rdp'}
+        self.params['align_seqs'] = \
+            {'template_fp': self.test_data['refseqs_aligned'][0]}
+        self.params['filter_alignment'] = \
+            {'lane_mask_fp': self.test_data['refseqs_aligned_lanemask'][0]}
+        self.params['pick_otus']['otu_picking_method'] = "swarm"
+
+        actual_tree_fp, actual_otu_table_fp = run_pick_de_novo_otus(
+            self.test_data['seqs'][0],
+            self.test_out,
+            call_commands_serially,
+            self.params,
+            self.qiime_config,
+            parallel=False,
+            status_update_callback=no_status_updates)
+
+        input_file_basename = splitext(split(self.test_data['seqs'][0])[1])[0]
+        otu_map_fp = join(self.test_out, 'swarm_picked_otus',
+                          '%s_otus.txt' % input_file_basename)
+        alignment_fp = join(self.test_out,
+                            'pynast_aligned_seqs', '%s_rep_set_aligned.fasta' %
+                            input_file_basename)
+        failures_fp = join(self.test_out,
+                           'pynast_aligned_seqs', '%s_rep_set_failures.fasta' %
+                           input_file_basename)
+        taxonomy_assignments_fp = join(self.test_out,
+                                       'rdp_assigned_taxonomy', '%s_rep_set_tax_assignments.txt' %
+                                       input_file_basename)
+        otu_table_fp = join(self.test_out, 'otu_table.biom')
+        tree_fp = join(self.test_out, 'rep_set.tre')
+
+        self.assertEqual(actual_tree_fp, tree_fp)
+        self.assertEqual(actual_otu_table_fp, otu_table_fp)
+
+        # Number of OTUs falls within a range that was manually
+        # confirmed.
+        otu_map_lines = list(open(otu_map_fp))
+        num_otus = len(otu_map_lines)
+        otu_map_otu_ids = [o.split()[0] for o in otu_map_lines]
+        self.assertEqual(num_otus, 38)
+
+        # all otus get taxonomy assignments
+        taxonomy_assignment_lines = list(open(taxonomy_assignments_fp))
+        self.assertEqual(len(taxonomy_assignment_lines), num_otus)
+
+        # number of seqs which aligned + num of seqs which failed to
+        # align sum to the number of OTUs
+        self.assertEqual(
+         count_seqs(alignment_fp)[0] + count_seqs(failures_fp)[0], num_otus)
+
+        # number of tips in the tree equals the number of sequences that
+        # aligned
+        with open(tree_fp) as f:
+            tree = TreeNode.from_newick(f)
+        self.assertEqual(len(list(tree.tips())), count_seqs(alignment_fp)[0])
+
+        # parse the otu table
+        otu_table = load_table(otu_table_fp)
+        expected_sample_ids = [
+            'f1',
+            'f2',
+            'f3',
+            'f4',
+            'p1',
+            'p2',
+            't1',
+            't2',
+            'not16S.1']
+        # sample IDs are as expected
+        self.assertItemsEqual(otu_table.ids(), expected_sample_ids)
+        # otu ids are as expected
+        self.assertItemsEqual(otu_table.ids(axis='observation'),
+                              otu_map_otu_ids)
+        # number of sequences in the full otu table equals the number of
+        # input sequences
+        number_seqs_in_otu_table = sum([v.sum()
+                                       for v in otu_table.iter_data()])
+        self.assertEqual(number_seqs_in_otu_table,
+                         count_seqs(self.test_data['seqs'][0])[0])
+
+        # Check that the log file is created and has size > 0
+        log_fp = glob(join(self.test_out, 'log*.txt'))[0]
+        self.assertTrue(getsize(log_fp) > 0)
+
+    def test_run_pick_de_novo_otus_swarm_rdp_tax_assign_modify_resolution(self):
+        """run_pick_de_novo_otus using swarm (d=4 which approximates 97%% id) 
+           generates expected results with rdp tax assignment
+        """
+
+        self.params['assign_taxonomy'] = \
+            {'id_to_taxonomy_fp': self.test_data['refseqs_tax'][0],
+             'reference_seqs_fp': self.test_data['refseqs'][0],
+             'assignment_method': 'rdp'}
+        self.params['align_seqs'] = \
+            {'template_fp': self.test_data['refseqs_aligned'][0]}
+        self.params['filter_alignment'] = \
+            {'lane_mask_fp': self.test_data['refseqs_aligned_lanemask'][0]}
+        self.params['pick_otus']['otu_picking_method'] = "swarm"
+        # Swarm resolution = 4 is about 97% similarity for the
+        # sequences clustered in this test
+        self.params['pick_otus']['swarm_resolution'] = "4"
+
+        actual_tree_fp, actual_otu_table_fp = run_pick_de_novo_otus(
+            self.test_data['seqs'][0],
+            self.test_out,
+            call_commands_serially,
+            self.params,
+            self.qiime_config,
+            parallel=False,
+            status_update_callback=no_status_updates)
+
+        input_file_basename = splitext(split(self.test_data['seqs'][0])[1])[0]
+        otu_map_fp = join(self.test_out, 'swarm_picked_otus',
+                          '%s_otus.txt' % input_file_basename)
+        alignment_fp = join(self.test_out,
+                            'pynast_aligned_seqs', '%s_rep_set_aligned.fasta' %
+                            input_file_basename)
+        failures_fp = join(self.test_out,
+                           'pynast_aligned_seqs', '%s_rep_set_failures.fasta' %
+                           input_file_basename)
+        taxonomy_assignments_fp = join(self.test_out,
+                                       'rdp_assigned_taxonomy', '%s_rep_set_tax_assignments.txt' %
+                                       input_file_basename)
+        otu_table_fp = join(self.test_out, 'otu_table.biom')
+        tree_fp = join(self.test_out, 'rep_set.tre')
+
+        self.assertEqual(actual_tree_fp, tree_fp)
+        self.assertEqual(actual_otu_table_fp, otu_table_fp)
+
+        # Number of OTUs falls within a range that was manually
+        # confirmed.
+        otu_map_lines = list(open(otu_map_fp))
+        num_otus = len(otu_map_lines)
+        otu_map_otu_ids = [o.split()[0] for o in otu_map_lines]
+        self.assertEqual(num_otus, 23)
 
         # all otus get taxonomy assignments
         taxonomy_assignment_lines = list(open(taxonomy_assignments_fp))
