@@ -31,7 +31,23 @@ from qiime.workflow.util import generate_log_fp, WorkflowLogger
 class ParallelChimericSeqIdentifier(ParallelWrapper):
     def _construct_job_graph(self, input_fp, output_dir, params,
                              jobs_to_start=None):
-        """Builds the job workflow graph"""
+        """Creates the job workflow graph to identify chimeric sequences
+        in parallel.
+
+        Parameters
+        ----------
+        input_fp : str
+            Path to the input fasta file
+        output_dir : str
+            Path to the output directory. It will be created if it does
+            not exists
+        params : dict
+            Parameters to use when calling identify_chimeric_seqs.py, in the
+            form of {param_name: value}
+        jobs_to_start : int, optional
+            Number of jobs to start. Default: None - start as many jobs as
+            workers in the cluster
+        """
         # Do the parameter parsing
         input_fp = abspath(input_fp)
         output_dir = abspath(output_dir)
@@ -95,9 +111,72 @@ class ParallelChimericSeqIdentifier(ParallelWrapper):
         for node in ics_nodes:
             self._job_graph.add_edge(node, "CONCAT")
 
+    def _csi_specific_nodes(self, params, working_dir):
+        """Adds nodes specific to the tool used to the workflow graph
+
+        Parameters
+        ----------
+        params : dict
+            Parameters to use when calling identify_chimeric_seqs.py, in the
+            form of {param_name: value}
+        working_dir : str
+            Path to the temporary directory
+
+        Returns
+        -------
+        tuple of list, list, dict of {node_name: func}
+            The first list is the name of the nodes created. The second list is
+            the name of the nodes that each of the working nodes should wait
+            for. The dict contains the function to execute on command wrapper
+            for the nodes in the second list.
+
+        Raises
+        ------
+        NotImplementedError
+            If called from the base class
+        """
+        raise NotImplementedError("This method should be overwritten in the "
+                                  "subclasses")
+
+    def _get_specific_params_str(self, params):
+        """Builds the parameters string to identify_chimeric_seqs.py specific
+        to the tool used
+
+        Parameters
+        ----------
+        params : dict
+            Parameters to use when calling identify_chimeric_seqs.py, in the
+            form of {param_name: value}
+
+        Raises
+        ------
+        NotImplementedError
+            If called from the base class
+        """
+        raise NotImplementedError("This method should be overwritten in the "
+                                  "subclasses")
+
 
 class ParallelChimericSeqIdentifierBlast(ParallelChimericSeqIdentifier):
     def _csi_specific_nodes(self, params, working_dir):
+        """Adds nodes specific to Blast to the workflow graph
+
+        Parameters
+        ----------
+        params : dict
+            Parameters to use when calling identify_chimeric_seqs.py, in the
+            form of {param_name: value}
+        working_dir : str
+            Path to the temporary directory
+
+        Returns
+        -------
+        tuple of list, list, dict of {node_name: func}
+            The first list is the name of the nodes created. The second list is
+            the name of the nodes that each of the working nodes should wait
+            for. The dict contains the function to execute on command wrapper
+            for the nodes in the second list.
+        """
         node = "BUILD_BLAST_DB"
         # Build the blast database
         self._job_graph.add_node(node,
@@ -108,6 +187,20 @@ class ParallelChimericSeqIdentifierBlast(ParallelChimericSeqIdentifier):
         return [node], [node], {node: blast_db_builder_handler}
 
     def _get_specific_params_str(self, params):
+        """Builds the parameters string to identify_chimeric_seqs.py specific
+        to Blast
+
+        Parameters
+        ----------
+        params : dict
+            Parameters to use when calling identify_chimeric_seqs.py, in the
+            form of {param_name: value}
+
+        Returns
+        ------
+        str
+            The parameters string for blast
+        """
         return ("-t {0} -m blast_fragments -n {1} -d {2} -e {3} -b %s".format(
             params['id_to_taxonomy_fp'], params['num_fragments'],
             params['taxonomy_depth'], params['max_e_value']))
@@ -115,6 +208,24 @@ class ParallelChimericSeqIdentifierBlast(ParallelChimericSeqIdentifier):
 
 class ParallelChimericSeqIdentifierChimSlayer(ParallelChimericSeqIdentifier):
     def _csi_specific_nodes(self, params, working_dir):
+        """Adds nodes specific to ChimeraSlayer to the workflow graph
+
+        Parameters
+        ----------
+        params : dict
+            Parameters to use when calling identify_chimeric_seqs.py, in the
+            form of {param_name: value}
+        working_dir : str
+            Path to the temporary directory
+
+        Returns
+        -------
+        tuple of list, list, dict of {node_name: func}
+            The first list is the name of the nodes created. The second list is
+            the name of the nodes that each of the working nodes should wait
+            for. The dict contains the function to execute on command wrapper
+            for the nodes in the second list.
+        """
         # In the ChimeraSlayer method, we have to perform numerous
         # steps prior to the actual execution of the jobs.
         # We first need to copy the reference files to the working
@@ -166,6 +277,20 @@ class ParallelChimericSeqIdentifierChimSlayer(ParallelChimericSeqIdentifier):
         return [cidx_node, blast_node], [], {}
 
     def _get_specific_params_str(self, params):
+        """Builds the parameters string to identify_chimeric_seqs.py specific
+        to ChimeraSlayer
+
+        Parameters
+        ----------
+        params : dict
+            Parameters to use when calling identify_chimeric_seqs.py, in the
+            form of {param_name: value}
+
+        Returns
+        ------
+        str
+            The parameters string for ChimeraSlayer
+        """
         min_div_ratio_str = ("--min_div_ratio %s" % params['min_div_ratio']
                              if params['min_div_ratio'] else "")
         return (" -m ChimeraSlayer -a %s -r %s %s"
