@@ -94,6 +94,23 @@ def get_sample_id_groups(biom_fp, num_groups):
 class ParallelBetaDiversitySingle(ParallelWrapper):
     def _construct_job_graph(self, input_fp, output_dir, params,
                              jobs_to_start=None):
+        """Creates the job workflow graph to run beta diversity in parallel
+        over a single input OTU table.
+
+        Parameters
+        ----------
+        input_fp : str
+            Path to the input BIOM table
+        output_dir : str
+            Path to the output directory. It will be created if it does not
+            exists
+        params : dict
+            Parameters to use when calling beta_diversity.py, in the form of
+            {param_name: value}
+        jobs_to_start : int, optional
+            Number of jobs to start. Default: None - start as many jobs as
+            workers in the cluster
+        """
         input_fp = abspath(input_fp)
         output_dir = abspath(output_dir)
 
@@ -159,6 +176,20 @@ class ParallelBetaDiversitySingle(ParallelWrapper):
 
 class ParallelBetaDiversityMultiple(ParallelWrapper):
     def _construct_job_graph(self, input_fps, output_dir, params):
+        """Creates the job workflow graph to run beta diversity in parallel
+        over multiple input OTU table.
+
+        Parameters
+        ----------
+        input_fps : list of str
+            Paths to the input BIOM tables
+        output_dir : str
+            Path to the output directory. It will be created if it does not
+            exists
+        params : dict
+            Parameters to use when calling beta_diversity.py, in the form of
+            {param_name: value}
+        """
         output_dir = abspath(output_dir)
         # Create the output directory
         if not exists(output_dir):
