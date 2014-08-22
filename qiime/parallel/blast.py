@@ -27,6 +27,22 @@ from qiime.parallel.util import (input_fasta_splitter, concatenate_files,
 class ParallelBlaster(ParallelWrapper):
     def _construct_job_graph(self, input_fp, output_dir, params,
                              jobs_to_start=None):
+        """Creates the job workflow grapth to run Blast on parallel
+
+        Parameters
+        ----------
+        input_fp : str
+            Path to the input fasta file
+        output_dir : str
+            Path to the output directory. It will be created if it does
+            not exists
+        params : dict
+            Parameters to use when calling blastall, in the form of
+            {param_name: value}
+        jobs_to_start : int, optional
+            Number of jobs to start. Default: None - start as many jobs as
+            workers in the cluster
+        """
         # Do the parameter parsing
         input_fp = abspath(input_fp)
         output_dir = abspath(output_dir)
