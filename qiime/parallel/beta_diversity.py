@@ -14,6 +14,7 @@ from os.path import join, splitext, abspath, exists, basename
 from os import makedirs
 from tempfile import mkdtemp
 from shutil import move
+from itertools import product
 
 from biom import load_table
 
@@ -152,8 +153,7 @@ class ParallelBetaDiversitySingle(ParallelWrapper):
                                      requires_deps=False)
         # Make sure that the merge nodes are executed after all the worker
         # nodes are done
-        for merge_node in merge_nodes:
-            for worker_node in node_names:
+        for merge_node, worker_node in product(merge_nodes, node_names):
                 self._job_graph.add_edge(worker_node, merge_node)
 
 
