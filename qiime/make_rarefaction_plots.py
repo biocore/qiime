@@ -898,7 +898,7 @@ def make_html(rarefaction_legend_mat, rarefaction_data_mat, xaxisvals,
         # file
         if generate_per_sample_plots:
             html_output = HTML % ('\n'.join(plots_html),
-                                  "img.setAttribute('src',all_plots[\"plot/html_plots/\"+Sel	Object.value+array[i]+'_ave'+imagetype])",
+                                  "img.setAttribute('src',all_plots[\"plot/html_plots/\"+SelObject.value+array[i]+'_ave'+imagetype])",
                                   "img.setAttribute('src',all_plots[\"plot/html_plots/\"+metric+array[i]+'_ave'+imagetype])",
                                   "img.setAttribute('src',all_plots[\"plot/html_plots/\"+arguments[0]+'_raw'+imagetype])",
                                   '.' + imagetype,
