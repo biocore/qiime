@@ -315,8 +315,8 @@ class UclustConsensusTaxonAssignerTests(TestCase):
         actual = t._uc_to_assignments(self.uc1_lines)
         self.assertEqual(actual, expected)
 
-    def test_uc_to_assignment(self):
-        """_uc_to_assignment functions as expected"""
+    def test_tax_assignments_to_consensus_assignments(self):
+        """_tax_assignments_to_consensus_assignments functions as expected"""
         expected = {'q1': (['A', 'B', 'C'], 1.0, 2),
                     'q2': (['A', 'H', 'I', 'J'], 2. / 3., 3),
                     'q3': (['Unassigned'], 1.0, 1),
@@ -326,7 +326,8 @@ class UclustConsensusTaxonAssignerTests(TestCase):
         params = {'id_to_taxonomy_fp': self.id_to_tax1_fp,
                   'reference_sequences_fp': self.refseqs1_fp}
         t = UclustConsensusTaxonAssigner(params)
-        actual = t._uc_to_assignment(self.uc1_lines)
+        results = t._uc_to_assignments(self.uc1_lines)
+        actual = t._tax_assignments_to_consensus_assignments(results)
         self.assertEqual(actual, expected)
 
         # change label for unassignable
@@ -340,7 +341,8 @@ class UclustConsensusTaxonAssignerTests(TestCase):
                   'reference_sequences_fp': self.refseqs1_fp,
                   'unassignable_label': 'x'}
         t = UclustConsensusTaxonAssigner(params)
-        actual = t._uc_to_assignment(self.uc1_lines)
+        results = t._uc_to_assignments(self.uc1_lines)
+        actual = t._tax_assignments_to_consensus_assignments(results)
         self.assertEqual(actual, expected)
 
 

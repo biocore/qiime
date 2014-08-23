@@ -117,6 +117,32 @@ class TaxonAssigner(FunctionWithParams):
                 result[identifier] = taxonomy
         return result
 
+    def _tax_assignments_to_consensus_assignments(self,
+                                                  query_to_assignments):
+        """ For each query id and list of assignments,
+            call _get_consensus_assigment to compute the
+            consensus assignment.
+
+            Parameters
+            ----------
+            query_to_assignments : dict of list of lists
+                The keys in the dict correspond to query IDs and
+                the values are a list of lists holding associated
+                taxonomies.
+
+            Returns
+            -------
+            query_to_assignments: dict
+                The keys in the dict correspond to query IDs and
+                the values carry a single consensus taxonomy
+                assignment.
+        """
+        for query_id, assignments in query_to_assignments.iteritems():
+            consensus_assignment = self._get_consensus_assignment(assignments)
+            query_to_assignments[query_id] = consensus_assignment
+
+        return query_to_assignments
+
     def _get_consensus_assignment(self, assignments):
         """ compute the consensus assignment from a list of assignments
             (method applied to SortMeRNATaxonAssigner and UclustConsensusTaxonAssigner)
@@ -426,32 +452,6 @@ class SortMeRNATaxonAssigner(TaxonAssigner):
                     result[query_id].append([])
 
         return result
-
-    def _tax_assignments_to_consensus_assignments(self,
-                                                  query_to_assignments):
-        """ For each query id and list of assignments,
-            call _get_consensus_assigment to compute the
-            consensus assignment.
-
-            Parameters
-            ----------
-            query_to_assignments : dict of list of lists
-                The keys in the dict correspond to query IDs and
-                the values are a list of lists holding associated
-                taxonomies.
-
-            Returns
-            -------
-            query_to_assignments: dict
-                The keys in the dict correspond to query IDs and
-                the values carry a single consensus taxonomy
-                assignment.
-        """
-        for query_id, assignments in query_to_assignments.iteritems():
-            consensus_assignment = self._get_consensus_assignment(assignments)
-            query_to_assignments[query_id] = consensus_assignment
-
-        return query_to_assignments
 
 
 class BlastTaxonAssigner(TaxonAssigner):
@@ -1204,12 +1204,15 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
 
         app_result = app({'--input': seq_path,
                           '--uc': uc_path})
-        result = self._uc_to_assignment(app_result['ClusterFile'])
+        # get map of query id to all assignments
+        result = self._uc_to_assignments(app_result['ClusterFile'])
+        # get consensus assignment
+        query_to_assignments = self._tax_assignments_to_consensus_assignments(result)
         if result_path is not None:
             # if the user provided a result_path, write the
             # results to file
             of = open(result_path, 'w')
-            for seq_id, (assignment, consensus_fraction, n) in result.items():
+            for seq_id, (assignment, consensus_fraction, n) in query_to_assignments.iteritems():
                 assignment_str = ';'.join(assignment)
                 of.write('%s\t%s\t%1.2f\t%d\n' %
                          (seq_id, assignment_str, consensus_fraction, n))
@@ -1266,14 +1269,4 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
                 fields = line.split('\t')
                 query_id = fields[8].split()[0]
                 results[query_id].append([])
-        return results
-
-    def _uc_to_assignment(self, uc):
-        """ return dict mapping query id to consensus assignment
-        """
-        # get map of query id to all assignments
-        results = self._uc_to_assignments(uc)
-        # for each query id, compute the consensus taxonomy assignment
-        for query_id, all_assignments in results.items():
-            results[query_id] = self._get_consensus_assignment(all_assignments)
         return results
