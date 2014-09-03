@@ -113,8 +113,8 @@ class ParallelUclustConsensusTaxonomyAssigner(ParallelTaxonomyAssigner):
 
         uclust_params = ' '.join(
             ['-m uclust',
-             '--uclust_min_consensus_fraction %f' % params['uclust_min_consensus_fraction'],
-             '--uclust_similarity %f' % params['uclust_similarity'],
+             '--min_consensus_fraction %f' % params['min_consensus_fraction'],
+             '--similarity %f' % params['similarity'],
              '--uclust_max_accepts %d' % params['uclust_max_accepts'],
              '-t %s' % params['id_to_taxonomy_fp'],
              '-r %s' % params['reference_seqs_fp']])

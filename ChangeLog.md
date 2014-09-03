@@ -30,6 +30,10 @@ QIIME 1.8.0-dev (changes since 1.8.0 go here)
 * numpy version requirement has been updated to 1.7.1 or later.
 * Updated to use [burrito](https://github.com/biocore/burrito) instead of scikit-bio for imports from the application controller framework, as the former is replacing the latter.
 * QIIME now depends on BIOM format 2.1.
+* the parameters --uclust_min_consensus_fraction and --uclust_similarity in assign_taxonomy scripts have been changed to --min_consensus_fraction and --similarity since both of these parameters apply to the SortMeRNA taxon assigner as well.
+
+
+
 
 
 QIIME 1.8.0 (11 Dec 2013)
