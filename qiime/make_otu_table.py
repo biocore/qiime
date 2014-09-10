@@ -61,7 +61,7 @@ def make_otu_table(otu_map_f, otu_to_taxonomy=None, delim='_', table_id=None,
         Defaults to ``None``. If present, these OTUs will not be added to the
         OTU table from the OTU map
     sample_metadata : iterable of dicts, optional
-        Defaults to ``None``. This option is not currently supported.
+        Defaults to ``None``.
     """
     data, sample_ids, otu_ids = parse_otu_map(
         otu_map_f, delim=delim, otu_ids_to_exclude=otu_ids_to_exclude)
@@ -73,9 +73,9 @@ def make_otu_table(otu_map_f, otu_to_taxonomy=None, delim='_', table_id=None,
     else:
         otu_metadata = None
 
-    if sample_metadata is not None:
-        raise NotImplementedError("Passing of sample metadata to "
-                                  "make_otu_table is not currently supported.")
+#    if sample_metadata is not None:
+#        raise NotImplementedError("Passing of sample metadata to "
+#                                  "make_otu_table is not currently supported.")
     try:
         return Table(data, otu_ids, sample_ids,
                      observation_metadata=otu_metadata, 
