@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 # File created on 09 Feb 2010
 from __future__ import division
@@ -23,6 +24,7 @@ from qiime.filter import (get_seq_ids_from_seq_id_file,
 from qiime.util import (parse_command_line_parameters, get_options_lookup,
                         make_option, write_biom_table)
 from qiime.parse import parse_taxonomy
+from qiime.parse import parse_mapping_file
 from qiime.make_otu_table import make_otu_table
 
 options_lookup = get_options_lookup()
@@ -60,6 +62,8 @@ script_info['optional_options'] = [
     make_option(
         '-t', '--taxonomy', type='existing_filepath', dest='taxonomy_fname',
         help='Path to taxonomy assignment, containing the assignments of taxons to sequences (i.e., resulting txt file from assign_taxonomy.py) [default: %default]'),
+    make_option('-m', '--mapping_fp', type='existing_filepath',
+                help='path to the mapping file'),
     make_option('-e', '--exclude_otus_fp', type='existing_filepath',
                 help=("path to a file listing OTU identifiers that should not be included in the "
                       "OTU table (e.g., the output of identify_chimeric_seqs.py) or a fasta "
@@ -67,6 +71,19 @@ script_info['optional_options'] = [
 ]
 
 script_info['version'] = __version__
+
+
+def assemble_sample_metadata(mapping_data, mapping_header, mapping_comments):
+    
+    sample_metadata = []
+    
+    for line in mapping_data:
+        md = {}
+        for i, column in enumerate(line):
+            md[mapping_header[i]]=column
+        sample_metadata.append(md)
+
+    return sample_metadata
 
 
 def main():
@@ -88,9 +105,16 @@ def main():
         else:
             ids_to_exclude = \
                 get_seq_ids_from_seq_id_file(open(exclude_otus_fp, 'U'))
+
+    sample_metadata = None
+    if opts.mapping_fp is not None:
+        mapping_data, mapping_header, mapping_comments = parse_mapping_file(open(opts.mapping_fp, 'U'))
+        sample_metadata = assemble_sample_metadata(mapping_data, mapping_header, mapping_comments)
+                
     biom_otu_table = make_otu_table(open(opts.otu_map_fp, 'U'),
                                     otu_to_taxonomy=otu_to_taxonomy,
-                                    otu_ids_to_exclude=ids_to_exclude)
+                                    otu_ids_to_exclude=ids_to_exclude,
+                                    sample_metadata=sample_metadata)
 
     write_biom_table(biom_otu_table, opts.output_biom_fp)
 
