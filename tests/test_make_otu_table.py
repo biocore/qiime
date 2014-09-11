@@ -11,6 +11,7 @@ __email__ = "gregcaporaso@gmail.com"
 
 import json
 from unittest import TestCase, main
+from StringIO import StringIO
 
 from biom.table import Table
 from biom.parse import parse_biom_table
@@ -18,6 +19,7 @@ import numpy as np
 
 from qiime.make_otu_table import (libs_from_seqids, seqids_from_otu_to_seqid,
                                   make_otu_table)
+from qiime.parse import parse_mapping_file, mapping_file_to_dict
 
 class TopLevelTests(TestCase):
 
@@ -78,6 +80,51 @@ z	DEF_3	XYZ_1""".split('\n')
 
         self.assertEqual(obs, exp)
 
+    def test_make_otu_table_with_sample_metadata(self):
+        # Want to make sure that the order of the sample IDs in the OTU
+        # map and the order of the IDs in the mapping file do not matter
+        otu_map_lines = """0	ABC_0	DEF_1
+1	ABC_1
+x	GHI_2	GHI_3	GHI_77
+z	DEF_3	XYZ_1""".split('\n')
+        mapping_f = StringIO(MAPPING_FILE)
+        sample_ids = ['ABC', 'DEF', 'GHI', 'XYZ']
+        data = [[1, 1, 0, 0], [1, 0, 0, 0], [0, 0, 3, 0], [0, 1, 0, 1]]
+
+        map_data, map_header, map_comments = parse_mapping_file(mapping_f)
+        sample_metadata = mapping_file_to_dict(map_data, map_header)
+
+        sample_md = [sample_metadata[sample_id] for sample_id in sample_ids]
+
+        obs = make_otu_table(otu_map_lines, sample_metadata=sample_metadata)
+        exp = Table(data, ['0', '1', 'x', 'z'], sample_ids,
+                    sample_metadata=sample_md, input_is_dense=True)
+
+        self.assertEqual(obs, exp)
+
+        # Test with a mapping file that is missing a sample's metadata,
+        # make sure it raises the KeyError
+        mapping_f = StringIO(MAPPING_FILE_MISSING_SAMPLE)
+        map_data, map_header, map_comments = parse_mapping_file(mapping_f)
+        sample_metadata = mapping_file_to_dict(map_data, map_header)
+
+        with self.assertRaises(KeyError):
+            obs = make_otu_table(otu_map_lines,
+                                 sample_metadata=sample_metadata)
+
+
+MAPPING_FILE = """#SampleID	BarcodeSequence	LinkerPrimerSequence	Description
+ABC	ATGC	AAAAAA	First Sample
+XYZ	TGCA	AAAAAA	Fourth Sample
+GHI	CATG	AAAAAA	Third Sample
+DEF	GCAT	AAAAAA	Second Sample
+"""
+
+MAPPING_FILE_MISSING_SAMPLE = """#SampleID	BarcodeSequence	LinkerPrimerSequence	Description
+ABC	ATGC	AAAAAA	First Sample
+XYZ	TGCA	AAAAAA	Fourth Sample
+DEF	GCAT	AAAAAA	Second Sample
+"""
 
 if __name__ == '__main__':
     main()

@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python
 # File created on 09 Feb 2010
 from __future__ import division
@@ -24,8 +23,8 @@ from qiime.filter import (get_seq_ids_from_seq_id_file,
                           get_seq_ids_from_fasta_file)
 from qiime.util import (parse_command_line_parameters, get_options_lookup,
                         make_option, write_biom_table)
-from qiime.parse import parse_taxonomy
-from qiime.parse import parse_mapping_file, mapping_file_to_dict
+from qiime.parse import (parse_taxonomy, parse_mapping_file,
+                         mapping_file_to_dict)
 from qiime.make_otu_table import make_otu_table
 
 options_lookup = get_options_lookup()
@@ -63,8 +62,7 @@ script_info['optional_options'] = [
     make_option(
         '-t', '--taxonomy', type='existing_filepath', dest='taxonomy_fname',
         help='Path to taxonomy assignment, containing the assignments of taxons to sequences (i.e., resulting txt file from assign_taxonomy.py) [default: %default]'),
-    make_option('-m', '--mapping_fp', type='existing_filepath',
-                help='path to the mapping file'),
+    options_lookup['mapping_fp'],
     make_option('-e', '--exclude_otus_fp', type='existing_filepath',
                 help=("path to a file listing OTU identifiers that should not be included in the "
                       "OTU table (e.g., the output of identify_chimeric_seqs.py) or a fasta "
@@ -100,13 +98,14 @@ def main():
             mapping_data, mapping_header, mapping_comments = \
                 parse_mapping_file(map_f)
 
-            mapping_dict = mapping_file_to_dict(mapping_data, mapping_header)
+        sample_metadata = mapping_file_to_dict(mapping_data,
+                                               mapping_header)
 
     with open(opts.otu_map_fp, 'U') as otu_map_f:
         biom_otu_table = make_otu_table(otu_map_f,
                                         otu_to_taxonomy=otu_to_taxonomy,
                                         otu_ids_to_exclude=ids_to_exclude,
-                                        sample_metadata=mapping_dict)
+                                        sample_metadata=sample_metadata)
 
     write_biom_table(biom_otu_table, opts.output_biom_fp)
 
