@@ -50,6 +50,11 @@ script_info['script_usage'].append(
      """Make an OTU table, excluding the sequences listed in chimeric_seqs.txt""",
      "%prog -i otu_map.txt -o otu_table_non_chimeric.biom -e chimeric_seqs.txt"))
 
+script_info['script_usage'].append(
+    ("Make OTU table, passing a mapping file with sample metadata",
+     """Make an OTU table from an OTU map (i.e., result from pick_otus.py). Write the output file to otu_table.biom.""",
+     """%prog -i otu_map.txt -t tax_assignments.txt -o otu_table.biom -m mapping_file.txt"""))
+
 script_info[
     'output_description'] = """The output of make_otu_table.py is a biom file, where the columns correspond to Samples and rows correspond to OTUs and the number of times a sample appears in a particular OTU."""
 
