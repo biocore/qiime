@@ -2,7 +2,8 @@
 # make_otu_table: makes sample x OTU table
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Rob Knight", "Justin Kuczynski", "Adam Robbins-Pianka"]
+__credits__ = ["Rob Knight", "Justin Kuczynski", "Adam Robbins-Pianka",
+               "Sami Pietila"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -60,8 +61,9 @@ def make_otu_table(otu_map_f, otu_to_taxonomy=None, delim='_', table_id=None,
     otu_ids_to_exclude : iterable, optional
         Defaults to ``None``. If present, these OTUs will not be added to the
         OTU table from the OTU map
-    sample_metadata : iterable of dicts, optional
-        Defaults to ``None``.
+    sample_metadata : dict of dicts, optional
+        Defaults to ``None``. If supplied, keys in the outer dict should be
+        sample IDs, and keys in the inner dicts should be column names.
     """
     data, sample_ids, otu_ids = parse_otu_map(
         otu_map_f, delim=delim, otu_ids_to_exclude=otu_ids_to_exclude)
@@ -73,9 +75,17 @@ def make_otu_table(otu_map_f, otu_to_taxonomy=None, delim='_', table_id=None,
     else:
         otu_metadata = None
 
-#    if sample_metadata is not None:
-#        raise NotImplementedError("Passing of sample metadata to "
-#                                  "make_otu_table is not currently supported.")
+    # if sample_metadata is supplied, put in index-order with the OTU map's
+    # sample_ids, and do not include samples that were in the mapping file
+    # but NOT in the OTU map
+    if sample_metadata is not None:
+        try:
+            sample_metadata = [sample_metadata[sample_id]
+                               for sample_id in sample_ids]
+        except KeyError:
+            raise KeyError("Sample IDs found in OTU map without sample "
+                           "metadata")
+
     try:
         return Table(data, otu_ids, sample_ids,
                      observation_metadata=otu_metadata, 
