@@ -11,6 +11,9 @@ def start_cluster(profile, n):
     n : int
         The number of engines to start
 
+    Notes
+    -----
+    This method produces a daemon
     """
     c = IPClusterStart(profile=profile, log_level=0, daemonize=True)
     c.n = n

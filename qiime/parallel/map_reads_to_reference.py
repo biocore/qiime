@@ -13,6 +13,7 @@ __email__ = "gregcaporaso@gmail.com"
 from os.path import abspath, exists, join
 from os import makedirs
 from tempfile import mkdtemp
+from itertools import product
 
 from qiime.workflow.util import generate_log_fp, WorkflowLogger
 from qiime.parallel.wrapper import ParallelWrapper
@@ -24,6 +25,13 @@ from qiime.parallel.pick_otus import merge_otu_maps
 
 
 def generate_biom_table(biom_fp, observation_map_fp, observation_metadata_fp):
+    """Generates a biom table from the Database Mapper results
+
+    Parameters
+    ----------
+    biom_fp : str
+        The output biom 
+    """
     # Importing here so the become available on the workers
     from qiime.make_otu_table import make_otu_table
     from qiime.parse import parse_observation_metadata
@@ -106,9 +114,8 @@ class ParallelDatabaseMapper(ParallelWrapper):
         merge_nodes.append("MERGE_OBS_MAPS")
 
         # Make sure that the merge commands are executed after the workers
-        for node in nodes:
-            for m_node in merge_nodes:
-                self._job_graph.add_edge(node, m_node)
+        for node, m_node in product(nodes, merge_nodes):
+            self._job_graph.add_edge(node, m_node)
 
         # Create the final biom table
         biom_fp = join(output_dir, 'observation_table.biom')
