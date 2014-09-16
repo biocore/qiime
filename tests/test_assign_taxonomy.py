@@ -15,7 +15,7 @@ __email__ = "gregcaporaso@gmail.com"
 
 from cStringIO import StringIO
 from os import remove, system, path, getenv, close
-from os.path import exists
+from os.path import exists, abspath, join
 from glob import glob
 from tempfile import NamedTemporaryFile, mkdtemp, mkstemp
 from shutil import copy as copy_file, rmtree
@@ -30,6 +30,7 @@ from skbio.core.sequence import DNA
 
 from brokit.rdp_classifier import train_rdp_classifier
 from brokit.formatdb import build_blast_db_from_fasta_path
+from brokit.sortmerna_v2 import (build_database_sortmerna, sortmerna_map)
 
 from qiime.util import get_qiime_temp_dir
 from qiime.test import initiate_timeout, disable_timeout
@@ -37,7 +38,7 @@ from qiime.test import initiate_timeout, disable_timeout
 from qiime.assign_taxonomy import (
     TaxonAssigner, BlastTaxonAssigner, RdpTaxonAssigner, RtaxTaxonAssigner,
     RdpTrainingSet, RdpTree, _QIIME_RDP_TAXON_TAG, validate_rdp_version,
-    MothurTaxonAssigner, UclustConsensusTaxonAssigner)
+    MothurTaxonAssigner, UclustConsensusTaxonAssigner, SortMeRNATaxonAssigner)
 from sys import stderr
 
 
@@ -314,8 +315,8 @@ class UclustConsensusTaxonAssignerTests(TestCase):
         actual = t._uc_to_assignments(self.uc1_lines)
         self.assertEqual(actual, expected)
 
-    def test_uc_to_assignment(self):
-        """_uc_to_assignment functions as expected"""
+    def test_tax_assignments_to_consensus_assignments(self):
+        """_tax_assignments_to_consensus_assignments functions as expected"""
         expected = {'q1': (['A', 'B', 'C'], 1.0, 2),
                     'q2': (['A', 'H', 'I', 'J'], 2. / 3., 3),
                     'q3': (['Unassigned'], 1.0, 1),
@@ -325,7 +326,8 @@ class UclustConsensusTaxonAssignerTests(TestCase):
         params = {'id_to_taxonomy_fp': self.id_to_tax1_fp,
                   'reference_sequences_fp': self.refseqs1_fp}
         t = UclustConsensusTaxonAssigner(params)
-        actual = t._uc_to_assignment(self.uc1_lines)
+        results = t._uc_to_assignments(self.uc1_lines)
+        actual = t._tax_assignments_to_consensus_assignments(results)
         self.assertEqual(actual, expected)
 
         # change label for unassignable
@@ -339,7 +341,8 @@ class UclustConsensusTaxonAssignerTests(TestCase):
                   'reference_sequences_fp': self.refseqs1_fp,
                   'unassignable_label': 'x'}
         t = UclustConsensusTaxonAssigner(params)
-        actual = t._uc_to_assignment(self.uc1_lines)
+        results = t._uc_to_assignments(self.uc1_lines)
+        actual = t._tax_assignments_to_consensus_assignments(results)
         self.assertEqual(actual, expected)
 
 
@@ -703,6 +706,295 @@ class BlastTaxonAssignerTests(TestCase):
         # the equal unordered lists of lines is present in actual and expected
 
         self.assertItemsEqual(log_file_str.split('\n'), log_file_exp)
+
+
+class SortMeRNATaxonAssignerTests(TestCase):
+    """Tests of the SortMeRNATaxonAssigner class"""
+
+    def setUp(self):
+        fd, self.id_to_taxonomy_fp = mkstemp(
+            prefix='SortMeRNATaxonAssigner_', suffix='.txt')
+        close(fd)
+        with open(self.id_to_taxonomy_fp, 'w') as f:
+            f.write(id_to_taxonomy_string)
+
+        fd, self.input_seqs_fp = mkstemp(
+            prefix='SortMeRNATaxonAssigner_', suffix='.fasta')
+        close(fd)
+        with open(self.input_seqs_fp, 'w') as f:
+            f.write(test_seq_coll.to_fasta())
+
+        fd, self.reference_seqs_fp = mkstemp(
+            prefix='SortMeRNATaxonAssigner_', suffix='.fasta')
+        close(fd)
+        self.test_seqs = [(e.id, str(e)) for e in test_seq_coll]
+        with open(self.reference_seqs_fp, 'w') as f:
+            f.write(test_refseq_coll.to_fasta())
+
+        fd, self.blast_tabular_fp = mkstemp(
+            prefix='SortMeRNATaxonAssigner_', suffix='.blast')
+        close(fd)
+        with open(self.blast_tabular_fp, 'w') as f:
+            f.write(blast_tabular_fp)
+
+        self.output_dir = mkdtemp()
+
+        self.files_to_remove =\
+            [self.id_to_taxonomy_fp,
+             self.input_seqs_fp,
+             self.reference_seqs_fp,
+             self.blast_tabular_fp]
+
+    def tearDown(self):
+        remove_files(self.files_to_remove)
+        rmtree(self.output_dir)
+
+    def test_init_(self):
+        """SortMeRNATaxonAssigner __init__ should store name, params
+        """
+        p = SortMeRNATaxonAssigner({})
+        self.assertEqual(p.Name, 'SortMeRNATaxonAssigner')
+
+        # default parameters correctly initialized
+        default_params = {'id_to_taxonomy_fp': None,
+                          'reference_sequences_fp': None,
+                          'sortmerna_db': None,
+                          'min_consensus_fraction': 0.51,
+                          'min_percent_id': 90.0,
+                          'min_percent_cov': 90.0,
+                          'best_N_alignments': 10,
+                          'e_value': 1,
+                          'threads': 1,
+                          'unassignable_label': 'Unassigned'}
+        self.assertEqual(p.Params, default_params)
+
+    def test_SortMeRNATaxonAssigner_call_raise_value_error(self):
+        """SortMeRNATaxonAssigner __call__ should raise
+           ValueError if the filepaths for the reference
+           sequences or id to taxonomy map aren't provided
+        """
+        p = SortMeRNATaxonAssigner({
+            'reference_sequences_fp': None,
+            'id_to_taxonomy_fp': self.id_to_taxonomy_fp})
+
+        self.assertRaises(ValueError,
+                          p,
+                          seq_path=self.input_seqs_fp)
+
+        q = SortMeRNATaxonAssigner({
+            'reference_sequences_fp': self.reference_seqs_fp,
+            'id_to_taxonomy_fp': None})
+
+        self.assertRaises(ValueError,
+                          q,
+                          seq_path=self.input_seqs_fp) 
+
+    def test_SortMeRNATaxonAssigner_call_(self):
+        """SortMeRNATaxonAssigner __call__ should return
+           a dict of query ids to taxonomic assignments
+        """
+        expected = {
+            's3': (['Archaea', 'Crenarchaeota', 'uncultured', 'uncultured'], 1.0, 2),
+            's2': (['Archaea', 'Euryarchaeota', 'Methanomicrobiales', 'Methanomicrobium et rel.'], 1.0, 1),
+            's1': (['Archaea', 'Euryarchaeota', 'Halobacteriales', 'uncultured'], 1.0, 1),
+            's6': (['Unassigned'], 1.0, 1),
+            's5': (['Archaea', 'Crenarchaeota', 'uncultured', 'uncultured'], 1.0, 2),
+            's4': (['Archaea', 'Euryarchaeota', 'Methanobacteriales', 'Methanobacterium'], 1.0, 1)
+        }
+
+        p = SortMeRNATaxonAssigner({
+            'reference_sequences_fp': self.reference_seqs_fp,
+            'id_to_taxonomy_fp': self.id_to_taxonomy_fp})
+
+        actual = p(self.input_seqs_fp)
+
+        self.assertEqual(actual, expected)      
+
+    def test_parse_id_to_taxonomy_file(self):
+        """SortMeRNATaxonAssigner parsing taxonomy files functions
+           as expected
+        """
+        with open(self.id_to_taxonomy_fp, 'U') as f:
+            lines = f.readlines()
+
+        p = SortMeRNATaxonAssigner({})
+        expected = {
+            "AY800210": "Archaea;Euryarchaeota;Halobacteriales;uncultured",
+            "EU883771":
+            "Archaea;Euryarchaeota;Methanomicrobiales;Methanomicrobium et rel.",
+            "EF503699": "Archaea;Crenarchaeota;uncultured;uncultured",
+            "DQ260310":
+            "Archaea;Euryarchaeota;Methanobacteriales;Methanobacterium",
+            "EF503697": "Archaea;Crenarchaeota;uncultured;uncultured"}
+
+        self.assertEqual(p._parse_id_to_taxonomy_file(lines), expected)
+
+    def test_blast_to_tax_assignments(self):
+        """SortMeRNATaxonAssigner's _blast_to_tax_assignments() returns
+           a dict of query ids and corresponding lists of taxonomies
+        """
+        p = SortMeRNATaxonAssigner({})
+
+        expected_assignments = {
+            's3': [['Archaea', 'Crenarchaeota', 'uncultured', 'uncultured'],
+                   ['Archaea', 'Crenarchaeota', 'uncultured', 'uncultured']],
+            's2': [['Archaea', 'Euryarchaeota', 'Methanomicrobiales', 'Methanomicrobium et rel.']],
+            's1': [['Archaea', 'Euryarchaeota', 'Halobacteriales', 'uncultured']], 
+            's6': [[]],
+            's5': [['Archaea', 'Crenarchaeota', 'uncultured', 'uncultured'],
+                   ['Archaea', 'Crenarchaeota', 'uncultured', 'uncultured']],
+            's4': [['Archaea', 'Euryarchaeota', 'Methanobacteriales', 'Methanobacterium']]
+        }
+
+        with open(self.id_to_taxonomy_fp, 'U') as id_to_taxonomy_f:
+            p.id_to_taxonomy_map =\
+                p._parse_id_to_taxonomy_file(id_to_taxonomy_f)
+
+        actual_assignments = p._blast_to_tax_assignments(self.blast_tabular_fp)
+
+        self.assertEqual(actual_assignments, expected_assignments)
+
+    def test_tax_assignments_to_consensus_assignments(self):
+        """SortMeRNATaxonAssigner's _tax_assignments_to_consensus_assignments
+           returns the consensus taxonomic assignment per query
+        """
+        p = SortMeRNATaxonAssigner({})
+
+        query_to_assignments = {
+            's3': [['Archaea', 'Crenarchaeota', 'uncultured', 'uncultured'],
+                   ['Archaea', 'Crenarchaeota', 'uncultured', 'uncultured']],
+            's2': [['Archaea', 'Euryarchaeota', 'Methanomicrobiales', 'Methanomicrobium et rel.']],
+            's1': [['Archaea', 'Euryarchaeota', 'Halobacteriales', 'uncultured']], 
+            's6': [[]],
+            's5': [['Archaea', 'Crenarchaeota', 'uncultured', 'uncultured'],
+                   ['Archaea', 'Crenarchaeota', 'uncultured', 'uncultured']],
+            's4': [['Archaea', 'Euryarchaeota', 'Methanobacteriales', 'Methanobacterium']]
+        }
+
+        expected_result = {
+            's3': (['Archaea', 'Crenarchaeota', 'uncultured', 'uncultured'], 1.0, 2),
+            's2': (['Archaea', 'Euryarchaeota', 'Methanomicrobiales', 'Methanomicrobium et rel.'], 1.0, 1),
+            's1': (['Archaea', 'Euryarchaeota', 'Halobacteriales', 'uncultured'], 1.0, 1),
+            's6': (['Unassigned'], 1.0, 1),
+            's5': (['Archaea', 'Crenarchaeota', 'uncultured', 'uncultured'], 1.0, 2),
+            's4': (['Archaea', 'Euryarchaeota', 'Methanobacteriales', 'Methanobacterium'], 1.0, 1)
+        }
+
+        result = p._tax_assignments_to_consensus_assignments(query_to_assignments)
+
+        self.assertEqual(expected_result, result)
+
+    def test_call_pass_database(self):
+        """SortMeRNATaxonAssigner's __call__() uses a prebuilt database and
+           returns result as dict
+        """
+        expected = {
+            's3': (['Archaea', 'Crenarchaeota', 'uncultured', 'uncultured'], 1.0, 2),
+            's2': (['Archaea', 'Euryarchaeota', 'Methanomicrobiales', 'Methanomicrobium et rel.'], 1.0, 1),
+            's1': (['Archaea', 'Euryarchaeota', 'Halobacteriales', 'uncultured'], 1.0, 1),
+            's6': (['Unassigned'], 1.0, 1),
+            's5': (['Archaea', 'Crenarchaeota', 'uncultured', 'uncultured'], 1.0, 2),
+            's4': (['Archaea', 'Euryarchaeota', 'Methanobacteriales', 'Methanobacterium'], 1.0, 1)
+        }
+
+        # Build SortMeRNA database
+        self.sortmerna_db, files_to_remove = \
+            build_database_sortmerna(self.reference_seqs_fp,
+                                     output_dir=self.output_dir)
+
+        p = SortMeRNATaxonAssigner({
+            'reference_sequences_fp': self.reference_seqs_fp,
+            'id_to_taxonomy_fp': self.id_to_taxonomy_fp,
+            'sortmerna_db': self.sortmerna_db})
+
+        actual = p(self.input_seqs_fp)
+
+        self.assertEqual(actual, expected)
+
+    def test_call_output_to_file(self):
+        """SortMeRNATaxonAssigner's __call__() return result in a file
+        """
+        expected = {
+            '#OTU ID': ['taxonomy', 'confidence', 'num hits'],
+            's3': ['Archaea;Crenarchaeota;uncultured;uncultured', '1.00', '2'],
+            's2': ['Archaea;Euryarchaeota;Methanomicrobiales;Methanomicrobium et rel.', '1.00', '1'],
+            's1': ['Archaea;Euryarchaeota;Halobacteriales;uncultured', '1.00', '1'],
+            's6': ['Unassigned', '1.00', '1'],
+            's5': ['Archaea;Crenarchaeota;uncultured;uncultured', '1.00', '2'],
+            's4': ['Archaea;Euryarchaeota;Methanobacteriales;Methanobacterium', '1.00', '1']
+        }
+
+        p = SortMeRNATaxonAssigner({
+            'reference_sequences_fp': self.reference_seqs_fp,
+            'id_to_taxonomy_fp': self.id_to_taxonomy_fp})
+
+        result_path = join(self.output_dir, "sortmerna_tax_assignments.txt")
+        result = p(self.input_seqs_fp, result_path=result_path)
+
+        self.assertEqual(None, result)
+
+        with open(result_path, 'U') as result_fp:
+            rows = (line.strip().split('\t') for line in result_fp)
+            actual = {r[0]:r[1:] for r in rows}
+
+        self.assertEqual(actual, expected)
+
+    def test_call_log_path(self):
+        """SortMeRNATaxonAssigner's __call__() returns log in file
+        """
+
+        p = SortMeRNATaxonAssigner({
+            'reference_sequences_fp': self.reference_seqs_fp,
+            'id_to_taxonomy_fp': self.id_to_taxonomy_fp})
+
+        log_path = join(self.output_dir, "sortmerna_tax_assignments.log")
+
+        result = p(self.input_seqs_fp, log_path=log_path)
+
+        with open(log_path, 'U') as log_path_fp:
+            log_file_str = log_path_fp.read()
+
+        log_file_exp = [
+            'SortMeRNATaxonAssigner parameters:',
+            'Application:SortMeRNA',
+            'Citation:SortMeRNA is hosted at:',
+            'http://bioinfo.lifl.fr/RNA/sortmerna',
+            'https://github.com/biocore/sortmerna',
+            '',
+            'The following paper should be cited if this resource is used:',
+            '',
+            'Kopylova, E., Noe L. and Touzet, H.,',
+            'SortMeRNA: fast and accurate filtering of ribosomal RNAs in',
+            'metatranscriptomic data, Bioinformatics (2012) 28(24)',
+            '',
+            'best_N_alignments:%s' % str(p.Params['best_N_alignments']),
+            'e_value:1',
+            'id_to_taxonomy_fp:%s' % str(p.Params['id_to_taxonomy_fp']),
+            'min_consensus_fraction:%s' % str(p.Params['min_consensus_fraction']),
+            'min_percent_cov:%s' % str(p.Params['min_percent_cov']),
+            'min_percent_id:%s' % str(p.Params['min_percent_id']),
+            'reference_sequences_fp:%s' % str(p.Params['reference_sequences_fp']),
+            'sortmerna_db:None',
+            'threads:%s' % str(p.Params['threads']),
+            'unassignable_label:%s' % str(p.Params['unassignable_label']),
+            'Result path: None, returned as dict.',
+            ''
+        ]
+
+        self.assertItemsEqual(log_file_str.split('\n'), log_file_exp)
+
+# SortMeRNA's Blast tabular output
+blast_tabular_fp = """s1\tAY800210\t100\t902\t0\t0\t1\t902\t1\t902\t0\t1567\t902M\t100
+s1\tEU883771\t73\t825\t167\t61\t78\t902\t1\t802\t4.52e-127\t444\t77S48M1D4M1I27M1I3M2D5M1I23M3D35M1I152M1D10M1D4M1I7M1D1M1D5M1D3M1I65M1D58M1D5M1I30M1D42M1I4M1D48M3I1M6I3M6I2M1I3M1I2M4I2M9I89M1I4M1D13M1D3M1I23M2D2M2I57M\t91.5    
+s2\tEU883771\t100\t908\t0\t0\t1\t908\t1\t908\t0\t1577\t908M\t100 
+s2\tAY800210\t72.7\t794\t167\t61\t1\t794\t78\t894\t6.84e-123\t430\t48M1I4M1D27M1D3M2I5M1D23M3I35M1D152M1I10M1I4M1D7M1I1M1I5M1I3M1D65M1I58M1I5M1D30M1I42M1D4M1I48M3D1M6D3M6D2M1D3M1D2M4D2M9D89M1D4M1I13M1I3M1D23M2I2M2D49M114S\t87.4    
+s3\tEF503699\t100\t900\t0\t0\t1\t900\t1\t900\t0\t1563\t900M\t100 
+s3\tEF503697\t91\t848\t49\t30\t12\t859\t10\t883\t0\t1140\t11S34M1D40M1D562M1I7M1D37M1D20M1D3M1I3M1D7M1D3M1D12M1D11M2D10M1D4M1D11M1D5M1D4M1D4M1D11M2D7M1D6M1D5M1D9M1D5M3D14M2D12M41S\t94.2    
+s4\tDQ260310\t100\t900\t0\t0\t1\t900\t1\t900\t0\t1563\t900M\t100 
+s5\tEF503697\t100\t900\t0\t0\t1\t900\t1\t900\t0\t1563\t900M\t100 
+s5\tEF503699\t91\t874\t49\t30\t10\t883\t12\t859\t0\t1140\t9S34M1I40M1I562M1D7M1I37M1I20M1I3M1D3M1I7M1I3M1I12M1I11M2I10M1I4M1I11M1I5M1I4M1I4M1I11M2I7M1I6M1I5M1I9M1I5M3I14M2I12M17S\t97.1    
+s6\t*\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t*\t0
+"""
 
 
 class RtaxTaxonAssignerTests(TestCase):

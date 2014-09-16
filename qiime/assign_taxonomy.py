@@ -16,19 +16,21 @@ import logging
 import os
 import re
 from os import remove
+from os.path import abspath, dirname
 from itertools import count
 from string import strip
-from shutil import copy as copy_file
-from tempfile import NamedTemporaryFile
+from tempfile import NamedTemporaryFile, mkdtemp
 from cStringIO import StringIO
 from collections import Counter, defaultdict
+from shutil import rmtree
 
-from burrito.util import ApplicationNotFoundError
 from skbio.parse.sequences import parse_fasta
 
 from brokit.blast import blast_seqs, Blastall, BlastResult
 from brokit.formatdb import build_blast_db_from_fasta_path
 from brokit.uclust import Uclust
+from brokit.sortmerna_v2 import (build_database_sortmerna,
+                                 sortmerna_map)
 from brokit import rdp_classifier
 from brokit import mothur
 from brokit import rtax
@@ -113,6 +115,342 @@ class TaxonAssigner(FunctionWithParams):
             if line:
                 identifier, taxonomy = map(strip, line.split('\t'))
                 result[identifier] = taxonomy
+        return result
+
+    def _tax_assignments_to_consensus_assignments(self,
+                                                  query_to_assignments):
+        """ For each query id and list of assignments,
+            call _get_consensus_assigment to compute the
+            consensus assignment.
+
+            Parameters
+            ----------
+            query_to_assignments : dict of list of lists
+                The keys in the dict correspond to query IDs and
+                the values are a list of lists holding associated
+                taxonomies.
+
+            Returns
+            -------
+            query_to_assignments: dict
+                The keys in the dict correspond to query IDs and
+                the values carry a single consensus taxonomy
+                assignment.
+        """
+        for query_id, assignments in query_to_assignments.iteritems():
+            consensus_assignment = self._get_consensus_assignment(assignments)
+            query_to_assignments[query_id] = consensus_assignment
+
+        return query_to_assignments
+
+    def _get_consensus_assignment(self, assignments):
+        """ compute the consensus assignment from a list of assignments
+            (method applied to SortMeRNATaxonAssigner and UclustConsensusTaxonAssigner)
+        """
+        num_input_assignments = len(assignments)
+        consensus_assignment = []
+
+        # if the assignments don't all have the same number
+        # of levels, the resulting assignment will have a max number
+        # of levels equal to the number of levels in the assignment
+        # with the fewest number of levels. this is to avoid
+        # a case where, for example, there are n assignments, one of
+        # which has 7 levels, and the other n-1 assignments have 6 levels.
+        # A 7th level in the result would be misleading because it
+        # would appear to the user as though it was the consensus
+        # across all n assignments.
+        num_levels = min([len(a) for a in assignments])
+
+        # iterate over the assignment levels
+        for level in range(num_levels):
+            # count the different taxonomic assignments at the current level.
+            # the counts are computed based on the current level and all higher
+            # levels to reflect that, for example, 'p__A; c__B; o__C' and
+            # 'p__X; c__Y; o__C' represent different taxa at the o__ level (since
+            # they are different at the p__ and c__ levels).
+            current_level_assignments = \
+                Counter([tuple(e[:level + 1]) for e in assignments])
+            # identify the most common taxonomic assignment, and compute the
+            # fraction of assignments that contained it. it's safe to compute the
+            # fraction using num_assignments because the deepest level we'll
+            # ever look at here is num_levels (see above comment on how that
+            # is decided).
+            tax, max_count = current_level_assignments.most_common(1)[0]
+            max_consensus_fraction = max_count / num_input_assignments
+            # check whether the most common taxonomic assignment is observed
+            # in at least min_consensus_fraction of the sequences
+            if max_consensus_fraction >= self.Params['min_consensus_fraction']:
+                # if so, append the current level only (e.g., 'o__C' if tax is
+                # 'p__A; c__B; o__C', and continue on to the next level
+                consensus_assignment.append((tax[-1], max_consensus_fraction))
+            else:
+                # if not, there is no assignment at this level, and we're
+                # done iterating over levels
+                break
+
+        # construct the results
+        # determine the number of levels in the consensus assignment
+        consensus_assignment_depth = len(consensus_assignment)
+        if consensus_assignment_depth > 0:
+            # if it's greater than 0, generate a list of the
+            # taxa assignments at each level
+            assignment_result = [a[0] for a in consensus_assignment]
+            # and assign the consensus_fraction_result as the
+            # consensus fraction at the deepest level
+            consensus_fraction_result = \
+                consensus_assignment[consensus_assignment_depth - 1][1]
+        else:
+            # if there are zero assignments, indicate that the taxa is
+            # unknown
+            assignment_result = [self.Params['unassignable_label']]
+            # and assign the consensus_fraction_result to 1.0 (this is
+            # somewhat arbitrary, but could be interpreted as all of the
+            # assignments suggest an unknown taxonomy)
+            consensus_fraction_result = 1.0
+
+        return (
+            assignment_result, consensus_fraction_result, num_input_assignments
+        )
+
+
+class SortMeRNATaxonAssigner(TaxonAssigner):
+    """ Assign taxonomy using SortMeRNA
+    """
+
+    Name = 'SortMeRNATaxonAssigner'
+    Application = "SortMeRNA"
+    Citation = ("SortMeRNA is hosted at:\n"
+                "http://bioinfo.lifl.fr/RNA/sortmerna\n"
+                "https://github.com/biocore/sortmerna\n\n"
+                "The following paper should be cited if this resource is "
+                "used:\n\n"
+                "Kopylova, E., Noe L. and Touzet, H.,\n"
+                "SortMeRNA: fast and accurate filtering of ribosomal RNAs "
+                "in\n"
+                "metatranscriptomic data, Bioinformatics (2012) 28(24)\n"
+                )
+    _tracked_properties = ['Application', 'Citation']
+
+    def __init__(self, params):
+        _params = {
+            # id to taxonomy filepath
+            'id_to_taxonomy_fp': None,
+            # reference sequences filepath
+            'reference_sequences_fp': None,
+            # reference sequences indexed database
+            'sortmerna_db': None,
+            # Fraction of sequence hits that a taxonomy assignment
+            # must show up in to be considered the consensus assignment
+            'min_consensus_fraction': 0.51,
+            # minimum identity to consider a hit
+            'min_percent_id': 90.0,
+            # minimum query coverage to consider a hit
+            'min_percent_cov': 90.0,
+            # output 10 best alignments
+            'best_N_alignments': 10,
+            # E-value
+            'e_value': 1,
+            # threads
+            'threads': 1,
+            # label to apply for queries that cannot be assigned
+            'unassignable_label': 'Unassigned'
+        }
+        _params.update(params)
+        super(SortMeRNATaxonAssigner, self).__init__(_params)
+
+    def __call__(self,
+                 seq_path,
+                 result_path=None,
+                 log_path=None,
+                 HALT_EXEC=False):
+        """Returns mapping of each seq to (taxonomy, consensus fraction, n).
+
+        Parameters
+        ----------
+        seq_path : str, mandatory
+            The filepath to input sequences.
+        result_path : str, optional
+            The filepath to store resulting alignments.
+        log_path : str, optional
+            The filepath to store logging information.
+        HALT_EXEC : bool, debugging parameter
+            If passed, will exit just before the sortmerna command in issued
+            and will print out the command that would have been called
+            to stdout.
+
+        Returns
+        -------
+        dict if result_path=None
+            The results will be stored in a dict:
+                dict{query_id:[tax, consensus fraction, n]}
+
+        None if result_path
+            The results will be written to result_path as tab-separated
+            lines of:
+                query_id <tab> tax <tab> consensus fraction <tab> n
+
+            The values represent:
+            tax: the consensus taxonomy assignment
+            consensus fraction: the fraction of the assignments for the
+            query that contained the lowest level tax assignment that is
+            included in tax (e.g., if the assignment goes to genus level,
+            this will be the fraction of assignments that had the consensus
+            genus assignment)
+            n: the number of assignments that were considered when
+            constructing the consensus
+        """
+        # Check input reference sequence and taxonomy are provided
+        if self.Params['reference_sequences_fp'] is None:
+            raise ValueError("Filepath for reference sequences is mandatory.")
+        if self.Params['id_to_taxonomy_fp'] is None:
+            raise ValueError("Filepath for id to taxonomy map is mandatory.")
+
+        # initialize the logger
+        logger = self._get_logger(log_path)
+        logger.info(str(self))
+        self.dirs_to_remove = []
+
+        # Indexed database not provided, build it
+        if not self.Params['sortmerna_db']:
+            output_dir = mkdtemp()
+            self.sortmerna_db, files_to_remove = \
+                build_database_sortmerna(abspath(self.Params[
+                    'reference_sequences_fp']),
+                    output_dir=output_dir)
+            self.dirs_to_remove.append(output_dir)
+
+        # Indexed database provided
+        else:
+            self.sortmerna_db = self.Params['sortmerna_db']
+
+        # Set SortMeRNA's output directory
+        if result_path is None:
+            output_dir = mkdtemp()
+            self.dirs_to_remove.append(output_dir)
+        else:
+            output_dir = dirname(abspath(result_path))
+
+        # Call sortmerna mapper
+        app_result =\
+            sortmerna_map(seq_path=seq_path,
+                          output_dir=output_dir,
+                          sortmerna_db=self.sortmerna_db,
+                          refseqs_fp=self.Params['reference_sequences_fp'],
+                          e_value=self.Params['e_value'],
+                          threads=self.Params['threads'],
+                          best=self.Params['best_N_alignments'],
+                          HALT_EXEC=False)
+
+        with open(self.Params['id_to_taxonomy_fp'], "U") as id_to_taxonomy_f:
+            self.id_to_taxonomy_map =\
+                self._parse_id_to_taxonomy_file(id_to_taxonomy_f)
+
+        blast_tabular_fp = app_result['BlastAlignments'].name
+        query_to_assignments = self._blast_to_tax_assignments(blast_tabular_fp)
+        result = self._tax_assignments_to_consensus_assignments(
+            query_to_assignments)
+
+        # Write results to file
+        if result_path is not None:
+            with open(result_path, 'w') as of:
+                of.write('#OTU ID\ttaxonomy\tconfidence\tnum hits\n')
+                for seq_id, (assignment, consensus_fraction, n) in result.items():
+                    assignment_str = ';'.join(assignment)
+                    of.write('%s\t%s\t%1.2f\t%d\n' % (
+                        seq_id, assignment_str, consensus_fraction, n))
+            result = None
+            logger.info('Result path: %s' % result_path)
+        else:
+            # If no result_path was provided, the result dict is
+            # returned as-is.
+            logger.info('Result path: None, returned as dict.')
+
+        # clean up
+        map(rmtree, self.dirs_to_remove)
+
+        return result
+
+    def _get_logger(self, log_path=None):
+        if log_path is not None:
+            handler = logging.FileHandler(log_path, mode='w')
+        else:
+            class NullHandler(logging.Handler):
+
+                def emit(self, record):
+                    pass
+            handler = NullHandler()
+        logger = logging.getLogger("SortMeRNATaxonAssigner logger")
+        logger.addHandler(handler)
+        logger.setLevel(logging.INFO)
+        return logger
+
+    def _blast_to_tax_assignments(self,
+                                  blast_output_fp):
+        """ Parse SortMeRNA's Blast-like tabular format for query
+            IDs and the references they map to, use the reference IDs
+            to find the associated taxonomies in the id_to_taxonomy_map.
+
+            Three types of alignments are possible,
+
+            1. The Null alignment (E-value threshold failed):
+            not16S.1_130\t*\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t*\t0
+
+            2. All alignments for a query pass the E-value threshold
+            but fail the %id threshold (3rd column is %id):
+            f1_4866\t426848\t85.4\t121\t15\t3\t1\t121\t520\t641\t4.79e-32\t131\t72M1D7M1I13M1D28M31S\t79.6
+            f1_4866\t342684\t84\t91\t9\t6\t1\t91\t522\t612\t2.8e-19\t89\t55M1D4M1I12M1D3M1D4M1I1M1I9M61S\t59.9
+
+            3. Some/all alignments for a query pass both E-value and %id
+            thresholds:
+            f2_1271\t295053\t100\t128\t0\t0\t1\t128\t520\t647\t1.15e-59\t223\t128M\t100
+            f2_1271\t42684\t84.8\t124\t17\t2\t1\t124\t527\t650\t2.63e-32\t132\t101M1D6M1I16M4S\t96.9
+
+            Parameters
+            ----------
+            blast_output_fp : str
+                Filepath to Blast-like tabular alignments.
+
+            Returns
+            -------
+            result : dict of list of lists
+                The keys in the dict correspond to query IDs and
+                the values are a list of lists holding associated
+                taxonomies.
+        """
+        min_percent_id = self.Params['min_percent_id']
+        result = defaultdict(list)
+        with open(blast_output_fp, "U") as blast_output:
+            for line in blast_output:
+                fields = line.split('\t')
+                query_id = fields[0]
+                subject_id = fields[1]
+                percent_id = float(fields[2])
+                # sequence was not aligned
+                if subject_id == "*":
+                    result[query_id].append([])
+                # sequence was aligned, passing %id threshold
+                elif percent_id >= min_percent_id:
+                    # if exists, remove the empty alignment (failing %id
+                    # threshold) for this sequence (Blast tabular output
+                    # will list all alignments passing E-value threshold,
+                    # not necessarily the %id threshold). It should happen
+                    # rarely that an alignment passing the %id threshold
+                    # comes after an alignment that failed the threshold,
+                    # but it can happen (Blast alignments are often ordered
+                    # from highest %id to lowest), though as sortmerna uses
+                    # a heuristic, this isn't always guaranteed.
+                    if [] in result[query_id]:
+                        result[query_id].remove([])
+                    # add alignment passing %id threshold
+                    subject_tax = self.id_to_taxonomy_map[
+                        subject_id].strip().split(';')
+                    result[query_id].append(subject_tax)
+                # sequence was aligned, however failing %id threshold
+                # if no alignment results have been recorded for this
+                # sequence up to now, add an empty list
+                elif not result[query_id]:
+                    result[query_id].append([])
+
         return result
 
 
@@ -866,12 +1204,15 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
 
         app_result = app({'--input': seq_path,
                           '--uc': uc_path})
-        result = self._uc_to_assignment(app_result['ClusterFile'])
+        # get map of query id to all assignments
+        result = self._uc_to_assignments(app_result['ClusterFile'])
+        # get consensus assignment
+        query_to_assignments = self._tax_assignments_to_consensus_assignments(result)
         if result_path is not None:
             # if the user provided a result_path, write the
             # results to file
             of = open(result_path, 'w')
-            for seq_id, (assignment, consensus_fraction, n) in result.items():
+            for seq_id, (assignment, consensus_fraction, n) in query_to_assignments.iteritems():
                 assignment_str = ';'.join(assignment)
                 of.write('%s\t%s\t%1.2f\t%d\n' %
                          (seq_id, assignment_str, consensus_fraction, n))
@@ -910,74 +1251,6 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
         logger.setLevel(logging.INFO)
         return logger
 
-    def _get_consensus_assignment(self, assignments):
-        """ compute the consensus assignment from a list of assignments
-        """
-        num_input_assignments = len(assignments)
-        consensus_assignment = []
-
-        # if the assignments don't all have the same number
-        # of levels, the resulting assignment will have a max number
-        # of levels equal to the number of levels in the assignment
-        # with the fewest number of levels. this is to avoid
-        # a case where, for example, there are n assignments, one of
-        # which has 7 levels, and the other n-1 assignments have 6 levels.
-        # A 7th level in the result would be misleading because it
-        # would appear to the user as though it was the consensus
-        # across all n assignments.
-        num_levels = min([len(a) for a in assignments])
-
-        # iterate over the assignment levels
-        for level in range(num_levels):
-            # count the different taxonomic assignments at the current level.
-            # the counts are computed based on the current level and all higher
-            # levels to reflect that, for example, 'p__A; c__B; o__C' and
-            # 'p__X; c__Y; o__C' represent different taxa at the o__ level (since
-            # they are different at the p__ and c__ levels).
-            current_level_assignments = \
-                Counter([tuple(e[:level + 1]) for e in assignments])
-            # identify the most common taxonomic assignment, and compute the
-            # fraction of assignments that contained it. it's safe to compute the
-            # fraction using num_assignments because the deepest level we'll
-            # ever look at here is num_levels (see above comment on how that
-            # is decided).
-            tax, max_count = current_level_assignments.most_common(1)[0]
-            max_consensus_fraction = max_count / num_input_assignments
-            # check whether the most common taxonomic assignment is observed
-            # in at least min_consensus_fraction of the sequences
-            if max_consensus_fraction >= self.Params['min_consensus_fraction']:
-                # if so, append the current level only (e.g., 'o__C' if tax is
-                # 'p__A; c__B; o__C', and continue on to the next level
-                consensus_assignment.append((tax[-1], max_consensus_fraction))
-            else:
-                # if not, there is no assignment at this level, and we're
-                # done iterating over levels
-                break
-
-        # construct the results
-        # determine the number of levels in the consensus assignment
-        consensus_assignment_depth = len(consensus_assignment)
-        if consensus_assignment_depth > 0:
-            # if it's greater than 0, generate a list of the
-            # taxa assignments at each level
-            assignment_result = [a[0] for a in consensus_assignment]
-            # and assign the consensus_fraction_result as the
-            # consensus fraction at the deepest level
-            consensus_fraction_result = \
-                consensus_assignment[consensus_assignment_depth - 1][1]
-        else:
-            # if there are zero assignments, indicate that the taxa is
-            # unknown
-            assignment_result = [self.Params['unassignable_label']]
-            # and assign the consensus_fraction_result to 1.0 (this is
-            # somewhat arbitrary, but could be interpreted as all of the
-            # assignments suggest an unknown taxonomy)
-            consensus_fraction_result = 1.0
-
-        return (
-            assignment_result, consensus_fraction_result, num_input_assignments
-        )
-
     def _uc_to_assignments(self, uc):
         """ return dict mapping query id to all taxonomy assignments
         """
@@ -996,14 +1269,4 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
                 fields = line.split('\t')
                 query_id = fields[8].split()[0]
                 results[query_id].append([])
-        return results
-
-    def _uc_to_assignment(self, uc):
-        """ return dict mapping query id to consensus assignment
-        """
-        # get map of query id to all assignments
-        results = self._uc_to_assignments(uc)
-        # for each query id, compute the consensus taxonomy assignment
-        for query_id, all_assignments in results.items():
-            results[query_id] = self._get_consensus_assignment(all_assignments)
         return results

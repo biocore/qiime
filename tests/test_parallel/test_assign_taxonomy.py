@@ -234,8 +234,8 @@ class ParallelUclustConsensusTaxonomyAssignerTests(TestCase):
         """ parallel_uclust_taxonomy_assigner functions as expected """
         params = {'id_to_taxonomy_fp': self.id_to_taxonomy_file.name,
                   'reference_seqs_fp': self.reference_seqs_file.name,
-                  'uclust_min_consensus_fraction': 0.51,
-                  'uclust_similarity': 0.90,
+                  'min_consensus_fraction': 0.51,
+                  'similarity': 0.90,
                   'uclust_max_accepts': 3
                   }
 
