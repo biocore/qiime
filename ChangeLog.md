@@ -1,5 +1,8 @@
 QIIME 1.8.0-dev (changes since 1.8.0 go here)
 =============================================
+* split_otu_table.py now allows multiple fields to be passed to split a biom table, and 
+optionally a mapping file. Check out the new documentation for the naming conventions
+(which have changed slightly) and an example.
 * QIIME is now even easier to install! Removed ``qiime_scripts_dir``, ``python_exe_fp``, ``working_dir``, and ``cloud_environment`` from the QIIME config file. If these values are present in your QIIME config file, they will be flagged as unrecognized by ``print_qiime_config.py -t`` and will be ignored by QIIME. QIIME will now use the ``python`` executable and QIIME scripts that are found in your ``PATH`` environment variable, and ``temp_dir`` will be used in place of ``working_dir`` (this value was used by some parts of parallel QIIME previously).
 * Removed ``-Y``/``--python_exe_fp`` and ``-N`` options from ``parallel_merge_otu_tables.py`` script as these are not available in any of the other parallel QIIME scripts and we do not have good reason to support them (see QIIME 1.6.0 release notes below for more details).
 * SciPy >= 0.13.0, pyqi 0.3.1, and scikit-bio 0.1.1-dev (latest development version) are now required dependencies for a QIIME base install.
