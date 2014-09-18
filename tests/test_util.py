@@ -257,8 +257,10 @@ o4	seq6	seq7""".split('\n')
         temp_output_dir = mkdtemp()
         self.dirs_to_remove.append(temp_output_dir)
 
+        infile = StringIO(fasta2)
         split_fasta_on_sample_ids_to_files(
-            parse_fasta(self.fasta2),
+            infile,
+            'fasta',
             output_dir=temp_output_dir,
             per_sample_buffer_size=2)
         self.files_to_remove.extend(glob('%s/*fasta' % temp_output_dir))
