@@ -38,9 +38,11 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
                         idealfourths, isarray, matrix_IQR, degap_fasta_aln,
                         write_degapped_fasta_to_file, compare_otu_maps, get_diff_for_otu_maps,
                         convert_otu_table_relative, write_seqs_to_fasta,
-                        split_fasta_on_sample_ids, split_fasta_on_sample_ids_to_dict,
-                        split_fasta_on_sample_ids_to_files, median_absolute_deviation,
-                        guess_even_sampling_depth, compute_days_since_epoch,
+                        write_seqs_to_fastq, split_fasta_on_sample_ids,
+                        split_fasta_on_sample_ids_to_dict,
+                        split_sequence_file_on_sample_ids_to_files,
+                        median_absolute_deviation, guess_even_sampling_depth,
+                        compute_days_since_epoch,
                         get_interesting_mapping_fields, inflate_denoiser_output,
                         flowgram_id_to_seq_id_map, count_seqs, count_seqs_from_file,
                         count_seqs_in_filepaths,
@@ -171,6 +173,54 @@ class TopLevelTests(TestCase):
         write_seqs_to_fasta(output_fp, seqs, 'a')
         self.assertEqual(open(output_fp).read(), exp2)
 
+    def test_write_seqs_to_fastq(self):
+        """ write_seqs_to_fasta functions as expected """
+        fd, output_fp = mkstemp(
+            prefix="qiime_util_write_seqs_to_fastq_test",
+            suffix='.fastq')
+        close(fd)
+        fd, output_fp_no_qual_labels = mkstemp(
+            prefix="qiime_util_write_seqs_to_fastq_test_no_qual_labels",
+            suffix='.fastq')
+        close(fd)
+        self.files_to_remove.append(output_fp)
+        self.files_to_remove.append(output_fp_no_qual_labels)
+
+        seqs = [('s1', 'ACCGGTTGG', 's1', '#########'),
+                ('s2', 'CCTTGG', 's2', 'AAAAAA'),
+                ('S4 some comment string', 'A', 'S4 some comment string', 'B')]
+
+        exp = ("@s1\nACCGGTTGG\n+s1\n#########\n"
+               "@s2\nCCTTGG\n+s2\nAAAAAA\n"
+               "@S4 some comment string\nA\n+S4 some comment string\nB\n")
+        exp_no_qual_labels = ("@s1\nACCGGTTGG\n+\n#########\n"
+                              "@s2\nCCTTGG\n+\nAAAAAA\n"
+                              "@S4 some comment string\nA\n+\nB\n")
+
+        # works in write mode
+        write_seqs_to_fastq(output_fp, seqs, 'w', True)
+        self.assertEqual(open(output_fp).read(), exp)
+        write_seqs_to_fastq(output_fp_no_qual_labels, seqs, 'w', False)
+        self.assertEqual(open(output_fp_no_qual_labels).read(),
+                         exp_no_qual_labels)
+
+        # calling again in write mode overwrites original file
+        write_seqs_to_fastq(output_fp, seqs, 'w', True)
+        self.assertEqual(open(output_fp).read(), exp)
+        write_seqs_to_fastq(output_fp_no_qual_labels, seqs, 'w', False)
+        self.assertEqual(open(output_fp_no_qual_labels).read(),
+                         exp_no_qual_labels)
+
+        # works in append mode
+        exp2 = exp + exp
+        exp2_no_qual_labels = exp_no_qual_labels + exp_no_qual_labels
+
+        write_seqs_to_fastq(output_fp, seqs, 'a', True)
+        self.assertEqual(open(output_fp).read(), exp2)
+        write_seqs_to_fastq(output_fp_no_qual_labels, seqs, 'a', False)
+        self.assertEqual(open(output_fp_no_qual_labels).read(),
+                         exp2_no_qual_labels)
+
     def test_summarize_otu_sizes_from_otu_map(self):
         """ summarize_otu_sizes_from_otu_map functions as expected """
         otu_map_f = """O1	seq1
@@ -202,14 +252,16 @@ o4	seq6	seq7""".split('\n')
                     's3': [('s3_25', 'AAACCC')]}
         self.assertEqual(actual, expected)
 
-    def test_split_fasta_on_sample_ids_to_files(self):
-        """ split_fasta_on_sample_ids_to_files functions as expected
+    def test_split_sequence_file_on_sample_ids_to_files(self):
+        """ split_sequence_file_on_sample_ids_to_files functions as expected
         """
         temp_output_dir = mkdtemp()
         self.dirs_to_remove.append(temp_output_dir)
 
-        split_fasta_on_sample_ids_to_files(
-            parse_fasta(self.fasta2),
+        infile = StringIO(fasta2)
+        split_sequence_file_on_sample_ids_to_files(
+            infile,
+            'fasta',
             output_dir=temp_output_dir,
             per_sample_buffer_size=2)
         self.files_to_remove.extend(glob('%s/*fasta' % temp_output_dir))
