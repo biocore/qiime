@@ -34,6 +34,7 @@ optionally a mapping file. Check out the new documentation for the naming conven
 * Updated to use [burrito](https://github.com/biocore/burrito) instead of scikit-bio for imports from the application controller framework, as the former is replacing the latter.
 * QIIME now depends on BIOM format 2.1.
 * the parameters --uclust_min_consensus_fraction and --uclust_similarity in assign_taxonomy scripts have been changed to --min_consensus_fraction and --similarity since both of these parameters apply to the SortMeRNA taxon assigner as well.
+* Renamed split_fasta_on_sample_ids_to_files to split_sequence_file_on_sample_ids_to_files, which now supports splitting FASTQ files, as well. Added a parameter, file_type, which is used to specify the type of the input file
 
 
 
