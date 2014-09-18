@@ -40,8 +40,9 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
                         convert_otu_table_relative, write_seqs_to_fasta,
                         write_seqs_to_fastq, split_fasta_on_sample_ids,
                         split_fasta_on_sample_ids_to_dict,
-                        split_fasta_on_sample_ids_to_files, median_absolute_deviation,
-                        guess_even_sampling_depth, compute_days_since_epoch,
+                        split_sequence_file_on_sample_ids_to_files,
+                        median_absolute_deviation, guess_even_sampling_depth,
+                        compute_days_since_epoch,
                         get_interesting_mapping_fields, inflate_denoiser_output,
                         flowgram_id_to_seq_id_map, count_seqs, count_seqs_from_file,
                         count_seqs_in_filepaths,
@@ -251,14 +252,14 @@ o4	seq6	seq7""".split('\n')
                     's3': [('s3_25', 'AAACCC')]}
         self.assertEqual(actual, expected)
 
-    def test_split_fasta_on_sample_ids_to_files(self):
-        """ split_fasta_on_sample_ids_to_files functions as expected
+    def test_split_sequence_file_on_sample_ids_to_files(self):
+        """ split_sequence_file_on_sample_ids_to_files functions as expected
         """
         temp_output_dir = mkdtemp()
         self.dirs_to_remove.append(temp_output_dir)
 
         infile = StringIO(fasta2)
-        split_fasta_on_sample_ids_to_files(
+        split_sequence_file_on_sample_ids_to_files(
             infile,
             'fasta',
             output_dir=temp_output_dir,
