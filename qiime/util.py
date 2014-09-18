@@ -479,10 +479,11 @@ def write_seqs_to_fasta(fp, seqs, write_mode='w'):
         seqs: list of (seq_id,seq) tuples, as obtained from
          parse_fasta
     """
-    f = open(fp, write_mode)
-    for s in seqs:
-        f.write('>%s\n%s\n' % (s))
-    f.close()
+    with open(fp, write_mode) as f:
+        for s in seqs:
+            f.write('>%s\n%s\n' % (s))
+
+
 
 
 def get_generated_by_for_biom_tables():
