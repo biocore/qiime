@@ -11,7 +11,7 @@
 # nfolds: nfolds
 # params: list of additional parameters
 # importances: importances of features as predictors
-"rf.cross.validation" <- function(x, y, nfolds=10, verbose=verbose, ...){
+"rf.cross.validation" <- function(x, y, nfolds=10, verbose=FALSE, ...){
     if(nfolds==-1) nfolds <- length(y)
     folds <- balanced.folds(y,nfolds=nfolds)
     result <- list()
@@ -102,6 +102,7 @@
 "save.rf.results.summary" <- function(result, opts, filename='summary.txt', outdir='.'){
     err <- mean(result$errs)
     err.sd <- sd(result$errs)
+    sink('log.txt');print(names(result));sink(NULL)
     baseline.err <- 1-max(table(y))/length(y)
     filepath <- sprintf('%s/%s',outdir,filename)
     sink(filepath)
