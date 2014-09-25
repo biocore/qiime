@@ -102,9 +102,9 @@ class TopLevelTests(TestCase):
 
     def tearDown(self):
         remove_files(self.files_to_remove)
-        for dir in self.dirs_to_remove:
-            if exists(dir):
-                rmdir(dir)
+        for d in self.dirs_to_remove:
+            if exists(d):
+                rmtree(d)
 
     def test_write_biom_table(self):
         """HDF5-format BIOM file can be written"""
