@@ -46,6 +46,7 @@ from cogent.parse.tree import DndParser
 from cogent.cluster.procrustes import procrustes
 
 from skbio.util.misc import remove_files, create_dir
+from skbio.format.sequences import format_fastq_record
 from burrito.util import ApplicationError, CommandLineApplication, FilePath
 from burrito.util import which
 from skbio.core.sequence import DNASequence
@@ -485,25 +486,14 @@ def write_seqs_to_fasta(fp, seqs, write_mode='w'):
             f.write('>%s\n%s\n' % (s))
 
 
-def write_seqs_to_fastq(fp, seqs, write_mode='w', write_qual_id=False):
+def write_seqs_to_fastq(fp, seqs, write_mode='w'):
     """Write seqs to fp with specified write mode ('a' or 'w')
 
         seqs: list of (seq_id,seq,qual_id,qual) tuples
     """
-    def format_with_qual_id(seq_id, seq, qual_id, qual):
-        template = '@%s\n%s\n+%s\n%s\n'
-        return template % (seq_id, seq, qual_id, qual)
-
-    def format_without_qual_id(seq_id, seq, qual_id, qual):
-        template = '@%s\n%s\n+\n%s\n'
-        return template % (seq_id, seq, qual)
-
-    formatter = format_with_qual_id if write_qual_id else \
-        format_without_qual_id
-
     with open(fp, write_mode) as f:
         for s in seqs:
-            f.write(formatter(*s))
+            f.write(format_fastq_record(s[0], s[1], s[3]))
 
 
 def get_generated_by_for_biom_tables():
