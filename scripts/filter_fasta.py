@@ -19,7 +19,6 @@ from qiime.filter import (filter_fasta, filter_fastq,
                           get_seqs_to_keep_lookup_from_fasta_file,
                           sample_ids_from_metadata_description,
                           get_seqs_to_keep_lookup_from_biom)
-from skbio.parse.sequences import parse_fasta
 
 options_lookup = get_options_lookup()
 
@@ -95,13 +94,6 @@ def get_seqs_to_keep_lookup_from_otu_map(seqs_to_keep_f):
     return {}.fromkeys(seqs_to_keep)
 
 
-def get_seqs_to_keep_lookup_from_prefix(fasta_f, prefix):
-    seqs_to_keep = [seq_id
-                    for seq_id, seq in parse_fasta(fasta_f)
-                    if seq_id.startswith(prefix)]
-    return {}.fromkeys(seqs_to_keep)
-
-
 def get_seqs_to_keep_lookup_from_sample_ids(sample_ids):
     sample_ids = set(sample_ids)
     return sample_ids
@@ -142,9 +134,8 @@ def main():
             get_seqs_to_keep_lookup_from_fasta_file(
                 open(opts.subject_fasta_fp, 'U'))
     elif opts.seq_id_prefix:
-        seqs_to_keep_lookup =\
-            get_seqs_to_keep_lookup_from_prefix(
-                open(opts.input_fasta_fp), opts.seq_id_prefix)
+        seqs_to_keep_lookup = None
+        seqid_f = lambda x: x.startswith(opts.seq_id_prefix)
     elif opts.mapping_fp and opts.valid_states:
         seqs_to_keep_lookup =\
             get_seqs_to_keep_lookup_from_mapping_file(
