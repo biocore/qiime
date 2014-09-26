@@ -102,17 +102,13 @@ def get_seqs_to_keep_lookup_from_prefix(fasta_f, prefix):
     return {}.fromkeys(seqs_to_keep)
 
 
-def get_seqs_to_keep_lookup_from_sample_ids(fasta_f, sample_ids):
+def get_seqs_to_keep_lookup_from_sample_ids(sample_ids):
     sample_ids = set(sample_ids)
-    seqs_to_keep = set()
-    for seq_id, seq in parse_fasta(fasta_f):
-        if seq_id.split('_')[0] in sample_ids:
-            seqs_to_keep.add(seq_id)
-    return {}.fromkeys(seqs_to_keep)
+    return sample_ids
 
 
 def get_seqs_to_keep_lookup_from_mapping_file(mapping_f, valid_states):
-    sample_ids = set(sample_ids_from_metadata_description(mapping_f, 
+    sample_ids = set(sample_ids_from_metadata_description(mapping_f,
                                                           valid_states))
     return sample_ids
 
@@ -161,8 +157,9 @@ def main():
     elif opts.sample_id_fp:
         sample_ids = set([e.strip().split()[0]
                          for e in open(opts.sample_id_fp, 'U')])
-        seqs_to_keep_lookup = get_seqs_to_keep_lookup_from_sample_ids(
-            open(opts.input_fasta_fp), sample_ids)
+        seqs_to_keep_lookup = \
+                get_seqs_to_keep_lookup_from_sample_ids(sample_ids)
+        seqid_f = lambda x: x.split()[0].rsplit('_')[0] in seqs_to_keep_lookup
     else:
         option_parser.error(error_msg)
 
