@@ -111,17 +111,10 @@ def get_seqs_to_keep_lookup_from_sample_ids(fasta_f, sample_ids):
     return {}.fromkeys(seqs_to_keep)
 
 
-def get_seqs_to_keep_lookup_from_mapping_file(
-        fasta_f, mapping_f, valid_states):
-    sample_ids = {}.fromkeys(
-        sample_ids_from_metadata_description(mapping_f, valid_states))
-    seqs_to_keep = []
-    for seq_id, seq in parse_fasta(fasta_f):
-        if seq_id.split('_')[0] in sample_ids:
-            seqs_to_keep.append(seq_id)
-        else:
-            continue
-    return {}.fromkeys(seqs_to_keep)
+def get_seqs_to_keep_lookup_from_mapping_file(mapping_f, valid_states):
+    sample_ids = set(sample_ids_from_metadata_description(mapping_f, 
+                                                          valid_states))
+    return sample_ids
 
 
 def main():
@@ -139,6 +132,7 @@ def main():
                            opts.mapping_fp and opts.valid_states])):
         option_parser.error(error_msg)
 
+    seqid_f = None
     if opts.otu_map:
         seqs_to_keep_lookup =\
             get_seqs_to_keep_lookup_from_otu_map(
@@ -158,9 +152,9 @@ def main():
     elif opts.mapping_fp and opts.valid_states:
         seqs_to_keep_lookup =\
             get_seqs_to_keep_lookup_from_mapping_file(
-                open(opts.input_fasta_fp, 'U'),
                 open(opts.mapping_fp, 'U'),
                 opts.valid_states)
+        seqid_f = lambda x: x.split()[0].rsplit('_')[0] in seqs_to_keep_lookup
     elif opts.biom_fp:
         seqs_to_keep_lookup = \
             get_seqs_to_keep_lookup_from_biom(opts.biom_fp)
@@ -182,7 +176,8 @@ def main():
     filter_fp_f(input_fasta_f,
                 output_fasta_f,
                 seqs_to_keep_lookup,
-                negate)
+                negate,
+                seqid_f=seqid_f)
 
 if __name__ == "__main__":
     main()
