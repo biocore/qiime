@@ -247,7 +247,6 @@ B
                      actual,
                      seqs_to_keep,
                      negate=False)
-        print actual.s
         self.assertEqual(actual.s, filter_fastq_expected1)
 
         actual = fake_output_f()
