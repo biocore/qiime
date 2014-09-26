@@ -1,0 +1,9 @@
+#!/usr/bin/env python
+
+from qiime.cli import qiime_cli
+from qiime.click_commands import slib
+from qiime.util import load_qiime_config
+
+
+if __name__ == '__main__':
+    qiime_cli(obj={'qiime_config': load_qiime_config()})
