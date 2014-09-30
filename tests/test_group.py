@@ -17,16 +17,19 @@ from biom.parse import parse_biom_table
 from biom.exception import UnknownIDError
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
+from StringIO import StringIO
 
 from qiime.parse import (parse_mapping_file, parse_distmat,
-                         group_by_field, parse_coords,
-                         parse_mapping_file_to_dict)
+                          group_by_field, parse_coords,
+                          parse_mapping_file_to_dict)
 from qiime.group import (get_grouped_distances, get_all_grouped_distances,
-                         get_field_state_comparisons, _get_indices, _get_groupings, _validate_input,
-                         get_adjacent_distances, get_ordered_coordinates,
-                         extract_per_individual_states_from_sample_metadata,
-                         extract_per_individual_state_metadatum_from_sample_metadata,
-                         extract_per_individual_state_metadata_from_sample_metadata_and_biom)
+                          get_field_state_comparisons, _get_indices,
+                          _get_groupings, _validate_input,
+                          get_adjacent_distances, get_ordered_coordinates,
+                          extract_per_individual_states_from_sample_metadata,
+                          extract_per_individual_state_metadatum_from_sample_metadata,
+                          extract_per_individual_state_metadata_from_sample_metadata_and_biom,
+                          group_by_sample_metadata)
 
 
 class GroupTests(TestCase):
@@ -125,6 +128,8 @@ class GroupTests(TestCase):
                 individual_states_and_responses_map_f2.split('\n'))[0]
         self.paired_difference_biom1 = \
             parse_biom_table(paired_difference_biom_f1.split('\n'))
+
+        self.group_by_sample_metadata_map_f1 = group_by_sample_metadata_map_f1
 
     def test_get_grouped_distances_within(self):
         """get_grouped_distances() should return a list of within distance
@@ -718,6 +723,20 @@ class GroupTests(TestCase):
             individual_identifier_category="PersonalID",
             observation_ids=['o1', 'bad.obs.id'])
 
+    def test_group_by_sample_metadata(self):
+        in_f = StringIO(self.group_by_sample_metadata_map_f1)
+
+        actual = group_by_sample_metadata(in_f, ['subject', 'replicate'])
+        group_ids_to_sids = {0: ('f1', 'f2'), 1: ('f5', 'f6', 'p1'),
+                             2: ('not16S.1', ), 3: ('f3', 'f4'),
+                             4: ('p2', 't1', 't2')}
+        sid_to_group_id = {'p2': 4, 'f1': 0, 'f2': 0, 'p1': 1, 'f4': 3,
+                           'f5': 1, 'f6': 1, 't2': 4, 'not16S.1': 2, 't1': 4,
+                           'f3': 3}
+        expected = (group_ids_to_sids, sid_to_group_id)
+        self.assertEqual(actual, expected)
+
+
 individual_states_and_responses_map_f1 = """#SampleID	PersonalID	Response	TreatmentState	StreptococcusAbundance	VeillonellaAbundance
 001A	001	Improved	Pre	57.4	6.9
 001B	001	Improved	Post	26	9.3
@@ -739,6 +758,19 @@ individual_states_and_responses_map_f2 = """#SampleID	PersonalID	Response	Treatm
 001C	001	Improved	PostPost	22	10.1
 """
 
+group_by_sample_metadata_map_f1 = """#SampleID	BarcodeSequence	LinkerPrimerSequence	SampleType	year	month	day	subject	replicate	days_since_epoch	Description
+f1	ACACTGTTCATG	GTGCCAGCMGCCGCGGTAA	feces	2008	10	22	1	1	14174	fecal1
+f2	ACCAGACGATGC	GTGCCAGCMGCCGCGGTAA	feces	2008	10	23	1	1	14175	fecal2
+f3	ACCAGACGATGC	GTGCCAGCMGCCGCGGTAA	feces	2008	10	23	2	1	14175	identical sequences to fecal2
+f4	ACCAGACGATGC	GTGCCAGCMGCCGCGGTAA	feces	2008	10	23	2	1	14175	all sequences identical, map to GG 295053 at 97 percent id
+f5	ACCAGACGATGC	GTGCCAGCMGCCGCGGTAA	feces	2008	10	23	1	2	14175	derived from f3 with some changes to sequences to add one new otu
+f6	ACCAGACGATGC	GTGCCAGCMGCCGCGGTAA	feces	2008	10	23	1	2	14175	derived from f4 with some changes to sequences to add one new otu
+p1	AACGCACGCTAG	GTGCCAGCMGCCGCGGTAA	L_palm	2008	10	21	1	2	14173	palm1, contains one randomly generated sequence
+p2	ACACTGTTCATG	GTGCCAGCMGCCGCGGTAA	L_palm	2008	10	22	2	2	14174	palm2
+t1	AGTGAGAGAAGC	GTGCCAGCMGCCGCGGTAA	Tongue	2008	10	21	2	2	14173	tongue1, contains one randomly generated sequence
+t2	ATACTATTGCGC	GTGCCAGCMGCCGCGGTAA	Tongue	2008	10	22	2	2	14174	tongue2
+not16S.1	ATACTATTGCGC	GTGCCAGCMGCCGCGGTAA	Other	2008	10	22	1	3	14174	randomly generated sequence plus some variants, these should not map to 16S
+"""
 
 if __name__ == '__main__':
     main()

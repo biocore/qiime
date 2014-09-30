@@ -12,6 +12,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 
+import pandas as pd
 from collections import defaultdict
 from numpy import array
 from qiime.stats import is_symmetric_and_hollow
@@ -282,6 +283,23 @@ def get_adjacent_distances(dist_matrix_header,
             (filtered_sids[i], filtered_sids[i + 1]))
     return distance_results, header_results
 
+
+def group_by_sample_metadata(mapping_f, mapping_headers):
+    """
+    """
+    sample_md = pd.read_csv(mapping_f, sep='\t')
+    grouped = sample_md.groupby(['subject', 'replicate'])
+    collapsed_md = grouped.agg({'#SampleID':lambda x: tuple(x)})
+    collapsed_md = collapsed_md.reset_index()
+    sample_id_groups = collapsed_md['#SampleID']
+
+    sid_to_group_id = {}
+    group_ids_to_sids = {}
+    for group_id, sample_ids in sample_id_groups.iteritems():
+        group_ids_to_sids[group_id] = sample_ids
+        for sample_id in sample_ids:
+            sid_to_group_id[sample_id] = group_id
+    return group_ids_to_sids, sid_to_group_id
 
 def _validate_input(dist_matrix_header, dist_matrix, mapping_header, mapping,
                     field):
