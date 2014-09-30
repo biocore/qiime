@@ -288,7 +288,7 @@ def group_by_sample_metadata(mapping_f, mapping_headers):
     """
     """
     sample_md = pd.read_csv(mapping_f, sep='\t')
-    grouped = sample_md.groupby(['subject', 'replicate'])
+    grouped = sample_md.groupby(mapping_headers)
     collapsed_md = grouped.agg({'#SampleID':lambda x: tuple(x)})
     collapsed_md = collapsed_md.reset_index()
     sample_id_groups = collapsed_md['#SampleID']
