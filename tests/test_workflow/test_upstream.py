@@ -44,7 +44,7 @@ class UpstreamWorkflowTests(TestCase):
         self.test_out = mkdtemp(dir=tmp_dir,
                                 prefix='core_qiime_analyses_test_',
                                 suffix='')
-        self.dirs_to_remove.append("self.test_out")
+        self.dirs_to_remove.append(self.test_out)
 
         self.qiime_config = load_qiime_config()
         self.params = parse_qiime_parameters([])
