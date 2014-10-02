@@ -44,7 +44,7 @@ class UpstreamWorkflowTests(TestCase):
         self.test_out = mkdtemp(dir=tmp_dir,
                                 prefix='core_qiime_analyses_test_',
                                 suffix='')
-        self.dirs_to_remove.append(self.test_out)
+        self.dirs_to_remove.append("self.test_out")
 
         self.qiime_config = load_qiime_config()
         self.params = parse_qiime_parameters([])
@@ -154,6 +154,59 @@ class UpstreamWorkflowTests(TestCase):
 
         # One tax assignment per otu
         self.assertEqual(len(otu_table.metadata(axis='observation')), 3)
+
+        # Check that the log file is created and has size > 0
+        log_fp = glob(join(self.test_out, 'log*.txt'))[0]
+        self.assertTrue(getsize(log_fp) > 0)
+
+    def test_run_pick_closed_reference_otus_usearch(self):
+        """run_pick_closed_reference_otus generates expected results
+            using usearch_ref"""
+
+        self.params['pick_otus']['otu_picking_method'] = "usearch_ref"
+        self.params['pick_otus']['suppress_reference_chimera_detection'] = ""
+
+        run_pick_closed_reference_otus(
+            self.test_data['seqs'][0],
+            self.test_data['refseqs'][0],
+            self.test_out,
+            self.test_data['refseqs_tax'][0],
+            call_commands_serially,
+            self.params,
+            self.qiime_config,
+            parallel=False,
+            status_update_callback=no_status_updates)
+
+        input_file_basename = splitext(split(self.test_data['seqs'][0])[1])[0]
+        otu_map_fp = join(self.test_out, 'usearch_ref_picked_otus',
+                          '%s_otus.txt' % input_file_basename)
+        otu_table_fp = join(self.test_out, 'otu_table.biom')
+        otu_table = load_table(otu_table_fp)
+        expected_sample_ids = ['f1', 'f2', 'f3', 'f4', 'p1', 'p2', 't1', 't2']
+        self.assertItemsEqual(otu_table.ids(), expected_sample_ids)
+
+        # Number of OTUs matches manually confirmed result
+        otu_map_lines = list(open(otu_map_fp))
+        num_otus = len(otu_map_lines)
+        otu_map_otu_ids = [o.split()[0] for o in otu_map_lines]
+        self.assertEqual(num_otus, 2)
+
+        # parse the otu table
+        otu_table = load_table(otu_table_fp)
+        expected_sample_ids = ['f1', 'f2', 'f3', 'f4', 'p1', 'p2', 't1', 't2']
+        # sample IDs are as expected
+        self.assertItemsEqual(otu_table.ids(), expected_sample_ids)
+        # otu ids are as expected
+        self.assertItemsEqual(otu_table.ids(axis='observation'),
+                              otu_map_otu_ids)
+
+        # expected number of sequences in OTU table
+        number_seqs_in_otu_table = sum([v.sum()
+                                       for v in otu_table.iter_data()])
+        self.assertEqual(number_seqs_in_otu_table, 116)
+
+        # One tax assignment per otu
+        self.assertEqual(len(otu_table.metadata(axis='observation')), 2)
 
         # Check that the log file is created and has size > 0
         log_fp = glob(join(self.test_out, 'log*.txt'))[0]
