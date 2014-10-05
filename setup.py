@@ -260,7 +260,7 @@ setup(name='qiime',
                         'pynast == 1.2.2', 'qcli', 'gdata',
                         'biom-format == 2.1', 'emperor == 0.9.3-dev',
                         'scikit-bio == 0.1.4', 'brokit == 0.0.0-dev',
-                        'pandas >= 0.13.1', 'future', 'h5py>=2.2.0',
+                        'pandas >= 0.13.1', 'future <= 0.13.1', 'h5py>=2.2.0',
                         'burrito'],
       dependency_links=[
           'https://github.com/biocore/brokit/archive/master.zip#egg=brokit-0.0.0-dev',
