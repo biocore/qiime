@@ -35,7 +35,7 @@ except ImportError as e:
 try:
     from tempfile import mkdtemp
     from skbio.util.misc import remove_files
-    from skbio.app.util import ApplicationNotFoundError, ApplicationError
+    from burrito.util import ApplicationNotFoundError, ApplicationError
 except ImportError as e:
     raise ImportError("%s\n%s" % (e, core_dependency_missing_msg))
 
@@ -73,7 +73,7 @@ except ImportError as e:
 
 try:
     from skbio import __version__ as skbio_lib_version
-    from skbio.app.util import which
+    from burrito.util import which
 except ImportError as e:
     raise ImportError("%s\n%s" % (e, core_dependency_missing_msg))
 
@@ -298,21 +298,18 @@ class QIIMEDependencyBase(QIIMEConfig):
 
     def test_numpy_supported_version(self):
         """numpy version is supported """
-        min_acceptable_version = (1, 5, 1)
-        max_acceptable_version = (1, 7, 1)
+        min_acceptable_version = (1, 7, 1)
         try:
             from numpy import __version__ as numpy_lib_version
             version = tuple(map(int, numpy_lib_version.split('.')))
-            pass_test = (version >= min_acceptable_version and
-                         version <= max_acceptable_version)
+            pass_test = (version >= min_acceptable_version)
             version_string = str(numpy_lib_version)
         except ImportError:
             pass_test = False
             version_string = "Not installed"
         self.assertTrue(pass_test,
-                        "Unsupported numpy version. Must be >= %s and <= %s , but running %s."
+                        "Unsupported numpy version. Must be >= %s, but running %s."
                         % ('.'.join(map(str, min_acceptable_version)),
-                           '.'.join(map(str, max_acceptable_version)),
                             version_string))
 
     def test_scipy_supported_version(self):

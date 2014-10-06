@@ -5,7 +5,7 @@ import shutil
 from tempfile import mkdtemp
 from unittest import TestCase, main
 
-from skbio.app.util import ApplicationNotFoundError
+from burrito.util import ApplicationNotFoundError
 from qiime.process_sff import (
     make_flow_txt, make_fna, make_qual, prep_sffs_in_dir, convert_Ti_to_FLX,
     adjust_sff_cycles, check_sffinfo)

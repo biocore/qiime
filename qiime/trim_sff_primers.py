@@ -22,9 +22,9 @@ from subprocess import check_call
 from sys import stderr
 from tempfile import mkstemp, TemporaryFile
 
-from skbio.app.util import ApplicationNotFoundError
+from burrito.util import ApplicationNotFoundError
 from cogent.parse.binary_sff import parse_binary_sff, write_binary_sff
-from skbio.app.util import which
+from burrito.util import which
 
 from qiime.parse import parse_mapping_file
 

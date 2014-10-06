@@ -21,7 +21,7 @@ script_info = {}
 script_info['brief_description'] = "Add alpha diversity data to a metadata " +\
     "mapping file"
 script_info['script_description'] = "Add alpha diversity data to a mapping " +\
-    "file for use with other QIIME scripts, i. e. make_emperor.py. The " +\
+    "file for use with other QIIME scripts, i. e. make_emperor. The " +\
     "resulting mapping file will contain three new columns per metric in the " +\
     "alpha diversity data; the first column being the raw value, the second " +\
     "being a normalized raw value and the third one a label classifying " +\

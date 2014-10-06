@@ -20,6 +20,7 @@ import os.path
 import numpy
 from numpy import inf
 from skbio.math.subsample import subsample
+from biom.err import errstate
 
 from qiime.util import FunctionWithParams, write_biom_table
 from qiime.filter import (filter_samples_from_otu_table,
@@ -169,20 +170,21 @@ def get_rare_data(otu_table,
     - otu_table (input and out) is otus(rows) by samples (cols)
     - no otus are removed, even if they are absent in the rarefied table"""
 
-    if not include_small_samples:
-        otu_table = filter_samples_from_otu_table(
-            otu_table,
-            otu_table.ids(),
-            seqs_per_sample,
-            inf)
+    with errstate(empty='raise'):
+        if not include_small_samples:
+            otu_table = filter_samples_from_otu_table(
+                otu_table,
+                otu_table.ids(),
+                seqs_per_sample,
+                inf)
 
-    # subsample samples that have too many sequences
-    def func(x, s_id, s_md):
-        if x.sum() < seqs_per_sample:
-            return x
-        else:
-            return subsample_f(x.astype(int), seqs_per_sample)
+        # subsample samples that have too many sequences
+        def func(x, s_id, s_md):
+            if x.sum() < seqs_per_sample:
+                return x
+            else:
+                return subsample_f(x.astype(int), seqs_per_sample)
 
-    subsampled_otu_table = otu_table.transform(func, axis='sample')
+        subsampled_otu_table = otu_table.transform(func, axis='sample')
 
-    return subsampled_otu_table
+        return subsampled_otu_table

@@ -53,9 +53,11 @@ Quality filtering pipeline with usearch 5.X is described as usearch_qf "usearch 
 
 9.  usearch61_ref (Edgar, RC 2010, version v6.1.544), as usearch61, but takes a reference database to use as seeds.  New clusters can be toggled on or off.
 
-11. sumaclust (Mercier, C. et al, 2014, version 1.0), creates \"seeds\" of sequences which generate clusters based on similarity threshold.
+10. sumaclust (Mercier, C. et al., 2014, version 1.0), creates \"seeds\" of sequences which generate clusters based on similarity threshold.
 
-10. sortmerna_v2 (Kopylova, E. et al., 2012), takes a reference database to use as seeds. 
+11. sortmerna_v2 (Kopylova, E. et al., 2012), takes a reference database to use as seeds. 
+
+12. swarm (Mahe, F. et al., 2014), creates \"seeds\" of sequences which generate clusters based on a resolution threshold.
 
 
 Chimera checking with usearch 6.X is implemented in identify_chimeric_seqs.py.  Chimera checking should be done first with usearch 6.X, and the filtered resulting fasta file can then be clustered.
@@ -88,7 +90,7 @@ script_info['script_usage'].append(
 script_info['script_usage'].append(
     ("""Uclust Reference-based OTU picking example""",
      """uclust_ref can be passed via -m to pick OTUs against a reference set where sequences within the similarity threshold to a reference sequence will cluster to an OTU defined by that reference sequence, and sequences outside of the similarity threshold to a reference sequence will form new clusters. OTU identifiers will be set to reference sequence identifiers when sequences cluster to reference sequences, and 'qiime_otu_<integer>' for new OTUs. Creation of new clusters can be suppressed by passing -C, in which case sequences outside of the similarity threshold to any reference sequence will be listed as failures in the log file, and not included in any OTU.""",
-     """%prog -i seqs.fna -r refseqs.fasta -m uclust_ref --uclust_otu_id_prefix qiime_otu_"""))
+     """%prog -i seqs.fna -r refseqs.fasta -m uclust_ref --denovo_otu_id_prefix qiime_otu_"""))
 
 script_info['script_usage'].append(
     ("""Example (cdhit method):""",
@@ -146,6 +148,15 @@ script_info['script_usage'].append(
     ("""usearch example where reference-based chimera detection is disabled, and minimum cluster size filter is reduced from default (4) to 2:""",
      """""",
      """%prog -i seqs.fna -m usearch --word_length 64 --suppress_reference_chimera_detection --minsize 2 -o usearch_qf_results_no_ref_chim_detection/"""))
+
+script_info['script_usage'].append(
+    ("Use de novo OTU-picker Swarm: ",
+     "Using the seqs.fna file generated from split_libraries.py and "
+     "outputting the results to the directory \"$PWD/picked_otus_swarm/\", "
+     "while using default parameters (resolution = 1) ",
+     "%prog -i $PWD/seqs.fna -m swarm -o $PWD/picked_otus_swarm"))
+
+script_info['script_usage_output_to_remove'] = ['$PWD/picked_otus_swarm/']
 
 script_info['output_description'] = """The output consists of two files (i.e. seqs_otus.txt and seqs_otus.log). The .txt file is composed of tab-delimited lines, where the first field on each line corresponds to an (arbitrary) cluster identifier, and the remaining fields correspond to sequence identifiers assigned to that cluster. Sequence identifiers correspond to those provided in the input FASTA file.  Usearch (i.e. usearch quality filter) can additionally have log files for each intermediate call to usearch.
 
@@ -215,7 +226,8 @@ script_info['optional_options'] = [
 
     make_option('--sortmerna_coverage', type='float', default=0.97,
                 help='Mininum percent query coverage (of an alignment) '
-                     'to consider a hit [default: %default]'),
+                     'to consider a hit, expressed as a fraction between 0 '
+                     'and 1 [default: %default]'),
 
     make_option('--sortmerna_tabular', default=False, action='store_true',
                 help='Output alignments in the Blast tabular format '
@@ -224,22 +236,19 @@ script_info['optional_options'] = [
                      '[default: %default]'),
 
     make_option('--sortmerna_best_N_alignments', type='int', default=1,
-                help='If --sortmerna_tabular is set, this option '
-                     'will output the best N alignments per read '
-                     '[default: %default]'),
+                help='Must be set together with --sortmerna_tabular. '
+                     'This option specifies how many alignments per read '
+                     'will be written [default: %default]'),
 
     make_option('--sortmerna_max_pos', type='int', default=10000,
                 help='The maximum number of positions per seed to store '
                      ' in the indexed database [default: %default]'),
 
-    make_option('--sortmerna_otu_id_prefix', type='string', default="QiimeOTU",
-                help='Prefix to closed-reference SortMeRNA clusters'
-                     '[default: %default]'),
-
     # end SortMeRNA specific parameters
     make_option('--min_aligned_percent',
                 help='Minimum percent of query sequence that can be aligned '
-                     'to consider a hit (BLAST OTU picker only) '
+                     'to consider a hit, expressed as a fraction between 0 '
+                     'and 1 (BLAST OTU picker only) '
                      '[default: %default]',
                 default=0.50, type='float'),
 
@@ -257,10 +266,21 @@ script_info['optional_options'] = [
                 help='Reference sequence length if the shortest '
                      '[default: %default]'),
 
-    make_option('--sumaclust_otu_id_prefix', default="denovo", type='string',
+    make_option('--denovo_otu_id_prefix', default="denovo", type='string',
                 help='OTU identifier prefix (string) for the de novo '
-                     'SumaClust OTU picker [default: %default, OTU ids '
-                     'are ascending integers]'),
+                     'OTU pickers (sumaclust, swarm and uclust) '
+                     '[default: %default, OTU ids are ascending'
+                     'integers]'),
+
+    # Swarm specific parameters
+    make_option('--swarm_resolution', default=1, type='int',
+                help='Maximum number of differences allowed between '
+                     'two amplicons, meaning that two amplicons will '
+                     'be grouped if they have integer (or less) '
+                     'differences (see Swarm manual at '
+                     'https://github.com/torognes/swarm for more details). '
+                     '[default: %default]'),
+    # end Swarm specific parameters
 
     make_option('-q', '--trie_reverse_seqs', action='store_true',
                 default=False,
@@ -348,12 +368,6 @@ script_info['optional_options'] = [
                 "value can be supplied to override this setting. "
                 "[default: %default]"),
 
-    make_option('--uclust_otu_id_prefix', default="denovo", type='string',
-                help="OTU identifier prefix (string) for the de novo uclust"
-                      " OTU picker and for new clusters when uclust_ref is used "
-                      "without -C [default: %default, OTU ids are ascending"
-                      " integers]"),
-
     make_option('--suppress_uclust_stable_sort', default=False,
                 action='store_true', help="Don't pass --stable-sort to "
                                            "uclust [default: %default]"),
@@ -371,7 +385,8 @@ script_info['optional_options'] = [
 
     make_option('-j', '--percent_id_err', default=0.97,
                 help="Percent identity threshold for cluster error detection "
-                      "with usearch. [default: %default]", type='float'),
+                      "with usearch, expressed as a fraction between 0 and "
+                      "1. [default: %default]", type='float'),
 
     make_option('-g', '--minsize', default=4, help="Minimum cluster size "
                                                     "for size filtering with usearch. [default: %default]",
@@ -460,7 +475,7 @@ script_info['optional_options'] = [
 
     make_option('--threads', default=1, help=
                 "Specify number of threads (1 thread per core) to be used for usearch61, "
-                "sortmerna and sumaclust commands that utilize multithreading. "
+                "sortmerna, sumaclust and swarm commands that utilize multithreading. "
                 "[default: %default]")
 ]
 
@@ -499,6 +514,7 @@ def main():
     chimeras_retention = opts.non_chimeras_retention
     verbose = opts.verbose
     threads = opts.threads
+    denovo_otu_id_prefix = opts.denovo_otu_id_prefix
 
     # sortmerna specific parameters
     sortmerna_db = opts.sortmerna_db
@@ -507,7 +523,9 @@ def main():
     sortmerna_tabular = opts.sortmerna_tabular
     sortmerna_best_N_alignments = opts.sortmerna_best_N_alignments
     sortmerna_max_pos = opts.sortmerna_max_pos
-    sortmerna_otu_id_prefix = opts.sortmerna_otu_id_prefix
+
+    # swarm specific parameters
+    swarm_resolution = opts.swarm_resolution
 
     # usearch specific parameters
     percent_id_err = opts.percent_id_err
@@ -532,7 +550,6 @@ def main():
     # sumaclust specific parameters
     sumaclust_exact = opts.sumaclust_exact
     sumaclust_l = opts.sumaclust_l
-    sumaclust_otu_id_prefix = opts.sumaclust_otu_id_prefix
 
     # Set default values according to clustering method
     if word_length != "default":
@@ -675,11 +692,24 @@ def main():
         if sortmerna_e_value < 0:
             option_parser.error('--sortmerna_coverage must be positive.')
 
-        # check that if sortmerna_best_N_alignments is set then so is sortmerna_tabular
-        if sortmerna_best_N_alignments != None:
-            if sortmerna_tabular is False:
-                option_parser.error('must enable --sortmerna_tabular with '
-                                    '--sortmerna_best_N_alignments.')
+        # check sortmerna_best_N_alignments is an integer
+        try:
+            sortmerna_best_N_alignments = int(sortmerna_best_N_alignments)
+        except ValueError:
+            option_parser.error('--sortmerna_best_N_alignments must '
+                                'be an integer value.')
+        if sortmerna_best_N_alignments < 0:
+            option_parser.error('--sortmerna_best_N_alignments must '
+                                'be a positive value.')
+
+        # sortmerna_tabular must be set if sortmerna_best_N_alignments > 1;
+        # sortmerna_best_N_alignments = 1 will always be passed to sortmerna,
+        # with or without sortmerna_tabular, as at least 1 best match is 
+        # required to build an OTU map
+        elif sortmerna_best_N_alignments > 1 and \
+             sortmerna_tabular is False:
+             option_parser.error('--sortmerna_tabular must be set together '
+                                 'with --sortmerna_best_N_alignments.')
 
         # check FASTA reference file or the indexed database (with the FASTA reference file) were provided
         if refseqs_fp is None:
@@ -689,10 +719,11 @@ def main():
                 option_parser.error('%s does not exist, make sure you have indexed '
                                     'the database using indexdb_rna' % (sortmerna_db + '.stats'))
 
-        # set default cluster identifier for SortMeRNA
-        if sortmerna_otu_id_prefix is None:
-            sortmerna_otu_id_prefix = "QiimeOTU"
-        
+    if otu_picking_method == 'swarm':
+        # check resolution is a positive integer
+        if swarm_resolution < 1:
+            option_parser.error('--swarm_resolution=INT must '
+                                'be a positive integer value.')                   
 
     # End input validation
 
@@ -743,7 +774,7 @@ def main():
                   'max_rejects': max_rejects,
                   'stepwords': stepwords,
                   'word_length': word_length,
-                  'new_cluster_identifier': opts.uclust_otu_id_prefix,
+                  'new_cluster_identifier': opts.denovo_otu_id_prefix,
                   'stable_sort': uclust_stable_sort,
                   'save_uc_files': save_uc_files,
                   'output_dir': output_dir,
@@ -808,7 +839,7 @@ def main():
 
     # usearch 6.1 (de novo OTU picking only)
     elif otu_picking_method == 'usearch61':
-        otu_prefix = opts.uclust_otu_id_prefix or 'denovo'
+        otu_prefix = opts.denovo_otu_id_prefix or 'denovo'
         params = {
             'percent_id': similarity,
             'wordlength': word_length,
@@ -833,7 +864,7 @@ def main():
 
     # usearch 6.1 reference OTU picking
     elif otu_picking_method == 'usearch61_ref':
-        otu_prefix = opts.uclust_otu_id_prefix or 'denovo'
+        otu_prefix = opts.denovo_otu_id_prefix or 'denovo'
         params = {
             'percent_id': similarity,
             'wordlength': word_length,
@@ -872,7 +903,7 @@ def main():
                   'max_rejects': max_rejects,
                   'stepwords': stepwords,
                   'word_length': word_length,
-                  'new_cluster_identifier': opts.uclust_otu_id_prefix,
+                  'new_cluster_identifier': opts.denovo_otu_id_prefix,
                   'stable_sort': uclust_stable_sort,
                   'save_uc_files': save_uc_files,
                   'output_dir': output_dir,
@@ -926,8 +957,7 @@ def main():
                   'best': sortmerna_best_N_alignments,
                   'max_pos': sortmerna_max_pos,
                   'prefilter_identical_sequences':
-                  prefilter_identical_sequences,
-                  'otu_id_prefix': sortmerna_otu_id_prefix}
+                  prefilter_identical_sequences}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,
                    result_path=result_path, log_path=log_path,
@@ -942,7 +972,16 @@ def main():
                   'l': sumaclust_l,
                   'prefilter_identical_sequences':
                   prefilter_identical_sequences,
-                  'sumaclust_otu_id_prefix': sumaclust_otu_id_prefix}
+                  'denovo_otu_id_prefix': denovo_otu_id_prefix}
+        otu_picker = otu_picker_constructor(params)
+        otu_picker(input_seqs_filepath,
+                   result_path=result_path, log_path=log_path)
+
+    # swarm
+    elif otu_picking_method == 'swarm':
+        params = {'resolution': swarm_resolution,
+                  'threads': threads,
+                  'denovo_otu_id_prefix': denovo_otu_id_prefix}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,
                    result_path=result_path, log_path=log_path)

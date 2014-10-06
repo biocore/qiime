@@ -31,13 +31,14 @@ from brokit.formatdb import build_blast_db_from_fasta_path
 from brokit.sortmerna_v2 import build_database_sortmerna
 
 from qiime.util import load_qiime_config
+from qiime.parse import fields_to_dict
 from qiime.pick_otus import (CdHitOtuPicker, OtuPicker,
                              MothurOtuPicker, PrefixSuffixOtuPicker, TrieOtuPicker, BlastOtuPicker,
                              expand_otu_map_seq_ids, map_otu_map_files, UclustOtuPicker,
                              UclustReferenceOtuPicker, expand_failures, UsearchOtuPicker,
                              UsearchReferenceOtuPicker, get_blast_hits, BlastxOtuPicker,
                              Usearch610DeNovoOtuPicker, Usearch61ReferenceOtuPicker,
-                             SumaClustOtuPicker, SortmernaV2OtuPicker)
+                             SumaClustOtuPicker, SortmernaV2OtuPicker, SwarmOtuPicker)
 
 
 class OtuPickerTests(TestCase):
@@ -85,7 +86,6 @@ class SortmernaV2OtuPickerTests(TestCase):
         self.read_seqs_fp = sortmerna_read_seqs_fp
         self.otumap_fp = sortmerna_otumap_fp
         self.failures_fp = sortmerna_failures_fp
-        self.otumap_no_otu_id_prefix_fp = sortmerna_otumap_no_otu_id_prefix_fp
 
         # create temporary file with reference sequences defined
         # in reference_seqs_fp
@@ -115,15 +115,6 @@ class SortmernaV2OtuPickerTests(TestCase):
         with open(self.file_otumap_fp, 'w') as tmp:
             tmp.write(self.otumap_fp)
 
-        # create temporary file with the OTU map (97% id)
-        # and no OTU id prefix
-        f, self.file_otumap_no_otu_id_prefix_fp = mkstemp(
-            prefix='temp_otumap_2', suffix='.txt')
-        close(f)
-
-        with open(self.file_otumap_no_otu_id_prefix_fp, 'w') as tmp:
-            tmp.write(self.otumap_no_otu_id_prefix_fp)
-
         # create a temporary file with failures
         f, self.file_failures_fp = mkstemp(prefix='temp_failures_',
                                            suffix='.txt')
@@ -141,7 +132,6 @@ class SortmernaV2OtuPickerTests(TestCase):
                                 self.file_read_seqs_fp,
                                 self.file_otumap_fp,
                                 self.file_failures_fp,
-                                self.file_otumap_no_otu_id_prefix_fp,
                                 self.result_path,
                                 self.log_path,
                                 self.failure_path]
@@ -265,36 +255,6 @@ class SortmernaV2OtuPickerTests(TestCase):
 
         # clusters OTU map is correct
         self.assertTrue(cmp(self.file_otumap_fp, self.result_path))
-
-    def test_call_no_otu_id_prefix(self):
-        """ clusters seqs within 97% identity with default parameters,
-            no OTU id prefix
-        """
-
-        app = SortmernaV2OtuPicker(
-            params={'max_e_value': 1,
-                    'similarity': 0.97,
-                    'coverage': 0.97,
-                    'threads': 1,
-                    'blast': False,
-                    'best': 1,
-                    'max_pos': 250,
-                    'prefilter_identical_sequences': True,
-                    'otu_id_prefix': None})
-
-        clusters = app(
-            seq_path=self.file_read_seqs_fp,
-            result_path=self.result_path,
-            log_path=self.log_path,
-            sortmerna_db=None,
-            refseqs_fp=self.file_reference_seq_fp,
-            failure_path=self.failure_path)
-
-        self.check_output(clusters)
-
-        # clusters OTU map is correct
-        self.assertTrue(cmp(self.file_otumap_no_otu_id_prefix_fp,
-                            self.result_path))
 
 
 class MothurOtuPickerTests(TestCase):
@@ -423,7 +383,7 @@ class SumaClustOtuPickerTests(TestCase):
                     'l': True,
                     'prefilter_identical_sequences':
                     True,
-                    'sumaclust_otu_id_prefix':
+                    'denovo_otu_id_prefix':
                     'DenovoOTU'})
 
         clusters = app(seq_path=self.file_read_seqs,
@@ -446,7 +406,7 @@ class SumaClustOtuPickerTests(TestCase):
                     'l': True,
                     'prefilter_identical_sequences':
                     False,
-                    'sumaclust_otu_id_prefix':
+                    'denovo_otu_id_prefix':
                     'DenovoOTU'})
 
         clusters = app(seq_path=self.file_read_seqs,
@@ -469,13 +429,139 @@ class SumaClustOtuPickerTests(TestCase):
                     'l': True,
                     'prefilter_identical_sequences':
                     True,
-                    'sumaclust_otu_id_prefix': None})
+                    'denovo_otu_id_prefix': None})
 
         clusters = app(seq_path=self.file_read_seqs,
                        result_path=self.result_path,
                        log_path=self.log_path)
 
         self.check_clusters(clusters)
+
+class SwarmOtuPickerTests(TestCase):
+    """ Tests of the Swarm de novo OTU picker """
+
+    def setUp(self):
+        self.output_dir = mkdtemp()
+        # use same reads for clustering as for SumaClust
+        self.read_seqs = sumaclust_reads_seqs
+
+        # create temporary file with read sequences defined in read_seqs
+        f, self.file_read_seqs = mkstemp(prefix='temp_reads_',
+                                         suffix='.fasta')
+        close(f)
+
+        # write read sequences to tmp file
+        with open(self.file_read_seqs, 'w') as tmp:
+            tmp.write(self.read_seqs)
+
+        self.result_path = '%s/%s_otus.txt' % (self.output_dir, 'temp_reads')
+        self.log_path = '%s/%s_otus.log' % (self.output_dir, 'temp_reads')
+
+        # list of files to remove
+        self.files_to_remove = [self.file_read_seqs,
+                                self.result_path,
+                                self.log_path]
+
+    def tearDown(self):
+        remove_files(self.files_to_remove)
+        rmtree(self.output_dir)
+
+    def check_clusters(self,
+                       otu_map=None):
+
+        actual_clusters = list(otu_map.values())
+        actual_clusters.sort()
+
+        # Check the returned clusters list of lists is as expected
+        expected_clusters = [['s1_844', 's1_1886', 's1_5347', 's1_5737',
+                              's1_7014', 's1_7881', 's1_7040', 's1_6200',
+                              's1_1271', 's1_8615'],
+                             ['s1_8977', 's1_10439', 's1_12366', 's1_15985',
+                              's1_21935', 's1_11650', 's1_11001', 's1_8592',
+                              's1_14735', 's1_4677'],
+                             ['s1_630', 's1_4572', 's1_5748', 's1_13961',
+                              's1_2369', 's1_3750', 's1_7634', 's1_8623',
+                              's1_8744', 's1_6846']]
+        expected_clusters.sort()
+
+        # Should be 3 clusters
+        self.assertEqual(len(actual_clusters), 3)
+
+        # List of actual clusters matches list of expected clusters
+        for actual_cluster, expected_cluster in zip(actual_clusters,
+                                                    expected_clusters):
+            actual_cluster.sort()
+            expected_cluster.sort()
+            self.assertEqual(actual_cluster, expected_cluster)
+
+    def test_call_default_params(self):
+        """ Swarm should return an OTU map
+            with content identical to the expected OTU map,
+            sequences are de-replicated prior to
+            clustering
+        """
+
+        app = SwarmOtuPicker(
+            params={'resolution': 1,
+                    'threads': 1,
+                    'prefilter_identical_sequences':
+                    True,
+                    'denovo_otu_id_prefix':
+                    'denovo'})
+
+        clusters = app(seq_path=self.file_read_seqs,
+                       result_path=self.result_path,
+                       log_path=self.log_path)
+
+        # resulting clusters are written to result_path
+        self.assertTrue(clusters is None)
+
+        otu_map = fields_to_dict(open(self.result_path))
+
+        # Check denovo0, denovo1 and denovo2 are the
+        # cluster names
+        self.assertTrue('denovo0' in otu_map,
+                        'de novo OTU (denovo0) is not in the final OTU map.')
+        self.assertTrue('denovo1' in otu_map,
+                        'de novo OTU (denovo1) is not in the final OTU map.')
+        self.assertTrue('denovo2' in otu_map,
+                        'de novo OTU (denovo2) is not in the final OTU map.')
+
+        self.check_clusters(otu_map)
+
+    def test_no_otu_id_prefix(self):
+        """ Swarm should return an OTU map
+            with content identical to the expected OTU map,
+            sequences are de-replicated prior to
+            clustering
+        """
+
+        app = SwarmOtuPicker(
+            params={'resolution': 1,
+                    'threads': 1,
+                    'prefilter_identical_sequences':
+                    True,
+                    'denovo_otu_id_prefix': None})
+
+        clusters = app(seq_path=self.file_read_seqs,
+                       result_path=self.result_path,
+                       log_path=self.log_path)
+
+        # resulting clusters are written to result_path
+        self.assertTrue(clusters is None)
+
+        otu_map = fields_to_dict(open(self.result_path))
+
+        # Check 0, 1 and 2 are the
+        # cluster names
+        self.assertTrue('0' in otu_map,
+                        'de novo OTU (0) is not in the final OTU map.')
+        self.assertTrue('1' in otu_map,
+                        'de novo OTU (1) is not in the final OTU map.')
+        self.assertTrue('2' in otu_map,
+                        'de novo OTU (2) is not in the final OTU map.')
+
+        self.check_clusters(otu_map)
 
 
 class BlastxOtuPickerTests(TestCase):
@@ -4865,10 +4951,7 @@ GGGAT
 """
 
 # resulting OTU map for sortmerna_read_seqs_fp vs. sortmerna_reference_seqs_fp
-sortmerna_otumap_fp = """RefOTU0\tHMPMockV1.2.Staggered2.673827_47\tHMPMockV1.2.Staggered2.673827_115\tHMPMockV1.2.Staggered2.673827_122\tHMPMockV1.2.Staggered2.673827_161\tHMPMockV1.2.Staggered2.673827_180\tHMPMockV1.2.Staggered2.673827_203\tHMPMockV1.2.Staggered2.673827_207\tHMPMockV1.2.Staggered2.673827_215\tHMPMockV1.2.Staggered2.673827_218\tHMPMockV1.2.Staggered2.673827_220\n"""
-
-# resulting OTU map for sortmerna with no OTU id prefix
-sortmerna_otumap_no_otu_id_prefix_fp = """0\tHMPMockV1.2.Staggered2.673827_47\tHMPMockV1.2.Staggered2.673827_115\tHMPMockV1.2.Staggered2.673827_122\tHMPMockV1.2.Staggered2.673827_161\tHMPMockV1.2.Staggered2.673827_180\tHMPMockV1.2.Staggered2.673827_203\tHMPMockV1.2.Staggered2.673827_207\tHMPMockV1.2.Staggered2.673827_215\tHMPMockV1.2.Staggered2.673827_218\tHMPMockV1.2.Staggered2.673827_220\n"""
+sortmerna_otumap_fp = """295053\tHMPMockV1.2.Staggered2.673827_47\tHMPMockV1.2.Staggered2.673827_115\tHMPMockV1.2.Staggered2.673827_122\tHMPMockV1.2.Staggered2.673827_161\tHMPMockV1.2.Staggered2.673827_180\tHMPMockV1.2.Staggered2.673827_203\tHMPMockV1.2.Staggered2.673827_207\tHMPMockV1.2.Staggered2.673827_215\tHMPMockV1.2.Staggered2.673827_218\tHMPMockV1.2.Staggered2.673827_220\n"""
 
 # failures file (all random reads in sortmerna_read_seqs_fp)
 sortmerna_failures_fp = """HMPMockV1.2.Staggered2.673827_0

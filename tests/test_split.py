@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Will Van Treuren"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -20,72 +20,148 @@ from skbio.core.sequence import DNA
 from skbio.core.alignment import SequenceCollection
 from skbio.parse.sequences import parse_fasta
 
-from qiime.split import (split_mapping_file_on_field,
-                         split_otu_table_on_sample_metadata,
-                         split_fasta, OTUTableSplitError)
+from qiime.split import split_fasta
 from qiime.util import get_qiime_temp_dir, remove_files
+
+from itertools import product
+from numpy import array, arange
+from qiime.parse import parse_mapping_file
+from qiime.split import (make_field_value_list, make_field_set_iterable,
+                         make_non_empty_sample_lists, subset_mapping_data)
+
+from numpy.testing import assert_array_equal
+
+
+# create test table without metadata
+_feature_ids = ['f%s' % i for i in range(10)]
+_sample_ids = ['s%s' % i for i in range(5)]
+_feature_vals = arange(50).reshape(10, 5)
+TEST_TABLE1 = Table(_feature_vals, _feature_ids, _sample_ids)
+
+# create test table with metadata 
+_feature_ids = ['f%s' % i for i in range(3)]
+_sample_ids = ['s%s' % i for i in range(5)]
+_feature_vals = arange(15).reshape(3, 5)
+observ_metadata = [{'taxonomy': ['Bacteria', 'A']},
+                   {'taxonomy': ['Bacteria', 'B']},
+                   {'taxonomy': ['Bacteria', 'C']}]
+TEST_TABLE2 = Table(_feature_vals, _feature_ids, _sample_ids, observ_metadata)
+
+# create a test mapping file
+TEST_MF = '''#SampleID	color	temp	size
+#USELESS COMMENTS
+s0	blue	hot	13
+s1	blue	cold	1
+s2	green	cold	12
+s3	cyan	hot	1
+s4	blue	0	0'''
 
 
 class SplitTests(TestCase):
-
-    """ Tests of the split module """
+    """Test biom table splitting functions."""
 
     def setUp(self):
-        """ """
-        self.mapping_f1 = mapping_f1.split('\n')
-        self.mapping_f2 = mapping_f2.split('\n')
-        self.mapping_f3 = mapping_f3.split('\n')
-        self.mapping_exp = list(mapping_exp)
-        self.otu_table_f1 = parse_biom_table(otu_table_f1)
+        """Load data created on the fly with the biom.table.Table."""
+        self.bt1 = TEST_TABLE1
+        self.bt2 = TEST_TABLE2
+        mdata, mheaders, _ = parse_mapping_file(TEST_MF.split('\n'))
+        self.mdata = array(mdata)
+        self.mheaders = mheaders
 
-    def test_split_mapping_file_on_field(self):
-        """ split_mapping_file_on_field functions as expected with valid input
-        """
-        actual = sorted(
-            split_mapping_file_on_field(
-                self.mapping_f1,
-                'Treatment'))
-        self.mapping_exp.sort()
-        self.assertEqual(actual, self.mapping_exp)
+    def test_make_field_value_list(self):
+        """Test that field values are correctly returned."""
+        field = 'color'
+        obs = make_field_value_list(self.mheaders, field, self.mdata)
+        exp = ['blue', 'cyan', 'green']
+        self.assertEqual(obs, exp)
+        field = 'temp'
+        obs = make_field_value_list(self.mheaders, field, self.mdata)
+        exp = ['0', 'cold', 'hot']
+        self.assertEqual(obs, exp)
+        field = 'size'
+        obs = make_field_value_list(self.mheaders, field, self.mdata)
+        exp = ['0', '1', '12', '13']
+        self.assertEqual(obs, exp)
+        field = 'SampleID'
+        obs = make_field_value_list(self.mheaders, field, self.mdata)
+        exp = ['s0', 's1', 's2', 's3', 's4']
+        self.assertEqual(obs, exp)
 
-    def test_split_otu_table_on_sample_metadata(self):
-        """ split_otu_table_on_sample_metadata functions as expected with valid input """
+    def test_make_field_set_iterable(self):
+        """Test that iteration order for field_setiterable is correct."""
+        fields = ['color', 'temp']
+        obs = list(make_field_set_iterable(self.mheaders, fields, self.mdata))
+        exp = [('blue', '0'), ('blue', 'cold'), ('blue', 'hot'),
+               ('cyan', '0'), ('cyan', 'cold'), ('cyan', 'hot'),
+               ('green', '0'), ('green', 'cold'), ('green', 'hot')]
+        self.assertEqual(obs, exp)
+        fields = ['temp', 'color']
+        obs = list(make_field_set_iterable(self.mheaders, fields, self.mdata))
+        exp = [('0', 'blue'), ('0', 'cyan'), ('0', 'green'),
+               ('cold', 'blue'), ('cold', 'cyan'), ('cold', 'green'),
+               ('hot', 'blue'), ('hot', 'cyan'), ('hot', 'green')]
+        self.assertEqual(obs, exp)
+        fields = ['color', 'temp', 'SampleID']
+        obs = list(make_field_set_iterable(self.mheaders, fields, self.mdata))
+        exp = list(product(['blue', 'cyan', 'green'], ['0', 'cold', 'hot'],
+                           ['s0', 's1', 's2', 's3', 's4']))
+        self.assertEqual(obs, exp)
 
-        actual = list(split_otu_table_on_sample_metadata(self.otu_table_f1,
-                                                         self.mapping_f1,
-                                                         "Treatment"))
+    def test_make_non_empty_sample_lists(self):
+        """Test that sample lists are created correctly."""
+        fields = ['color', 'temp']
+        obs_sgs, obs_vgs = make_non_empty_sample_lists(fields, self.mheaders,
+                                                       self.mdata)
+        exp_sgs = [array(['s4'], dtype='|S5'),
+                   array(['s1'], dtype='|S5'),
+                   array(['s0'], dtype='|S5'),
+                   array(['s3'], dtype='|S5'),
+                   array(['s2'], dtype='|S5')]
+        exp_vgs = [('blue', '0'),
+                   ('blue', 'cold'),
+                   ('blue', 'hot'),
+                   ('cyan', 'hot'),
+                   ('green', 'cold')]
+        for i,j in zip(obs_sgs, exp_sgs):
+            assert_array_equal(i, j)
+        for i,j in zip(obs_vgs, exp_vgs):
+            assert_array_equal(i, j)
+        fields = ['color']
+        obs_sgs, obs_vgs = make_non_empty_sample_lists(fields, self.mheaders,
+                                                       self.mdata)
+        exp_sgs = [array(['s0', 's1', 's4'], dtype='|S5'),
+                   array(['s3'], dtype='|S5'),
+                   array(['s2'], dtype='|S5')]
+        exp_vgs = [('blue',), ('cyan',), ('green',)]
+        for i,j in zip(obs_sgs, exp_sgs):
+            assert_array_equal(i, j)
+        for i,j in zip(obs_vgs, exp_vgs):
+            assert_array_equal(i, j)
 
-        actual = [(id_, e) for id_, e in actual]
-        exp = [(id_, parse_biom_table(e)) for id_, e in otu_table_exp1]
+    def test_subset_mapping_data(self):
+        """Test that mapping data is subset correctly."""
+        samples_of_interest = ['s0', 's1', 's2']
+        obs = subset_mapping_data(self.mdata, samples_of_interest)
+        exp = array([['s0', 'blue', 'hot', '13'],
+                     ['s1', 'blue', 'cold', '1'],
+                     ['s2', 'green', 'cold', '12']],
+                    dtype='|S5')
+        assert_array_equal(obs, exp)
+        samples_of_interest = ['s1', 's2', 's0'] #order change won't affect out
+        obs = subset_mapping_data(self.mdata, samples_of_interest)
+        assert_array_equal(obs, exp)
+        samples_of_interest = ['s4', 's0'] #order change won't affect out
+        obs = subset_mapping_data(self.mdata, samples_of_interest)
+        exp = array([['s0', 'blue', 'hot', '13'],
+                     ['s4', 'blue', '0', '0']],
+                    dtype='|S5')
+        assert_array_equal(obs, exp)
 
-        actual.sort()
-        exp.sort()
 
-        for a, e in zip(actual, exp):
-            self.assertTrue(a == e)
+class SplitTestsFasta(TestCase):
 
-    def test_split_otu_table_on_sample_metadata_exceptions(self):
+    """ Tests of the fasta splitting capabilities of the split module """
 
-        # mapping file 3 has no sample identifiers matching the OTU table
-        with self.assertRaises(OTUTableSplitError):
-            a = list(split_otu_table_on_sample_metadata(self.otu_table_f1,
-                                                        self.mapping_f3,
-                                                        "Treatment"))
-
-    def test_split_otu_table_on_sample_metadata_extra_mapping_entries(self):
-        """ split_otu_table_on_sample_metadata functions as expected with extra mapping data """
-        actual = list(split_otu_table_on_sample_metadata(self.otu_table_f1,
-                                                         self.mapping_f2,
-                                                         "Treatment"))
-
-        actual = [(id_, e) for id_, e in actual]
-        exp = [(id_, parse_biom_table(e)) for id_, e in otu_table_exp1]
-
-        actual.sort()
-        exp.sort()
-
-        for a, e in zip(actual, exp):
-            self.assertTrue(a == e)
 
     def test_split_fasta_equal_num_seqs_per_file(self):
         """split_fasta funcs as expected when equal num seqs go to each file
@@ -168,194 +244,5 @@ class SplitTests(TestCase):
                 SequenceCollection.from_fasta_records(parse_fasta(actual_seqs), DNA))
 
 
-mapping_f1 = """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment	DOB	Description
-#Example mapping file for the QIIME analysis package.  These 9 samples are from a study of the effects of exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).
-PC.354	AGCACGAGCCTA	YATGCTGCCTCCCGTAGGAGT	Co_ntrol	20061218	Control_mouse_I.D._354
-PC.355	AACTCGTCGATG	YATGCTGCCTCCCGTAGGAGT	Control	20061218	Control_mouse_I.D._355
-PC.356	ACAGACCACTCA	YATGCTGCCTCCCGTAGGAGT	Co_ntrol	20061126	Control_mouse_I.D._356
-PC.481	ACCAGCGACTAG	YATGCTGCCTCCCGTAGGAGT	Control	20070314	Control_mouse_I.D._481
-PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._593
-PC.607	AACTGTGCGTAC	YATGCTGCCTCCCGTAGGAGT	Fast	20071112	Fasting_mouse_I.D._607
-PC.634	ACAGAGTCGGCT	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	Fasting_mouse_I.D._634
-PC.635	ACCGCAGAGTCA	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	Fasting_mouse_I.D._635
-PC.636	ACGGTGAGTGTC	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	Fasting_mouse_I.D._636
-"""
-
-mapping_f2 = """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment	DOB	Description
-#Example mapping file for the QIIME analysis package.  These 9 samples are from a study of the effects of exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).
-PC.354	AGCACGAGCCTA	YATGCTGCCTCCCGTAGGAGT	Co_ntrol	20061218	Control_mouse_I.D._354
-PC.355	AACTCGTCGATG	YATGCTGCCTCCCGTAGGAGT	Control	20061218	Control_mouse_I.D._355
-PC.356	ACAGACCACTCA	YATGCTGCCTCCCGTAGGAGT	Co_ntrol	20061126	Control_mouse_I.D._356
-PC.481	ACCAGCGACTAG	YATGCTGCCTCCCGTAGGAGT	Control	20070314	Control_mouse_I.D._481
-PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._593
-PC.607	AACTGTGCGTAC	YATGCTGCCTCCCGTAGGAGT	Fast	20071112	Fasting_mouse_I.D._607
-PC.634	ACAGAGTCGGCT	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	Fasting_mouse_I.D._634
-PC.635	ACCGCAGAGTCA	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	Fasting_mouse_I.D._635
-PC.636	ACGGTGAGTGTC	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	Fasting_mouse_I.D._636
-Fake.sample	ACGGTGAGTGTC	YATGCTGCCTCCCGTAGGAGT	Other	20080116	Fasting_mouse_I.D._636
-"""
-
-mapping_f3 = """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment	DOB	Description
-#Example mapping file for the QIIME analysis package.  These 9 samples are from a study of the effects of exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).
-354	AGCACGAGCCTA	YATGCTGCCTCCCGTAGGAGT	Co_ntrol	20061218	Control_mouse_I.D._354
-355	AACTCGTCGATG	YATGCTGCCTCCCGTAGGAGT	Control	20061218	Control_mouse_I.D._355
-356	ACAGACCACTCA	YATGCTGCCTCCCGTAGGAGT	Co_ntrol	20061126	Control_mouse_I.D._356
-481	ACCAGCGACTAG	YATGCTGCCTCCCGTAGGAGT	Control	20070314	Control_mouse_I.D._481
-593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._593
-607	AACTGTGCGTAC	YATGCTGCCTCCCGTAGGAGT	Fast	20071112	Fasting_mouse_I.D._607
-634	ACAGAGTCGGCT	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	Fasting_mouse_I.D._634
-635	ACCGCAGAGTCA	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	Fasting_mouse_I.D._635
-636	ACGGTGAGTGTC	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	Fasting_mouse_I.D._636
-sample	ACGGTGAGTGTC	YATGCTGCCTCCCGTAGGAGT	Other	20080116	Fasting_mouse_I.D._636
-"""
-
-mapping_exp = [("Co_ntrol", """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment	DOB	Description
-PC.354	AGCACGAGCCTA	YATGCTGCCTCCCGTAGGAGT	Co_ntrol	20061218	Control_mouse_I.D._354
-PC.356	ACAGACCACTCA	YATGCTGCCTCCCGTAGGAGT	Co_ntrol	20061126	Control_mouse_I.D._356"""),
-
-               ("Control", """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment	DOB	Description
-PC.355	AACTCGTCGATG	YATGCTGCCTCCCGTAGGAGT	Control	20061218	Control_mouse_I.D._355
-PC.481	ACCAGCGACTAG	YATGCTGCCTCCCGTAGGAGT	Control	20070314	Control_mouse_I.D._481
-PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._593"""),
-
-               ("Fast", """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment	DOB	Description
-PC.607	AACTGTGCGTAC	YATGCTGCCTCCCGTAGGAGT	Fast	20071112	Fasting_mouse_I.D._607
-PC.634	ACAGAGTCGGCT	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	Fasting_mouse_I.D._634
-PC.635	ACCGCAGAGTCA	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	Fasting_mouse_I.D._635
-PC.636	ACGGTGAGTGTC	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	Fasting_mouse_I.D._636""")]
-
-otu_table_f1 = """{
-    "id":null,
-    "format": "Biological Observation Matrix v0.9",
-    "format_url": "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
-    "type": "OTU table",
-    "generated_by": "QIIME",
-    "date": "2011-12-19T19:00:00",
-    "rows":[
-            {"id":"GG_OTU_1", "metadata":null},
-            {"id":"GG_OTU_2", "metadata":null},
-            {"id":"GG_OTU_3", "metadata":null},
-            {"id":"GG_OTU_4", "metadata":null},
-            {"id":"GG_OTU_5", "metadata":null}
-        ],
-    "columns": [
-            {"id":"PC.354", "metadata":null},
-            {"id":"PC.355", "metadata":null},
-            {"id":"PC.481", "metadata":null},
-            {"id":"PC.607", "metadata":null},
-            {"id":"PC.635", "metadata":null},
-            {"id":"PC.356", "metadata":null},
-            {"id":"PC.636", "metadata":null}
-        ],
-    "matrix_type": "sparse",
-    "matrix_element_type": "int",
-    "shape": [5, 7],
-    "data":[[0,2,1],
-            [1,0,5],
-            [1,1,1],
-            [1,3,2],
-            [1,4,3],
-            [1,5,1],
-            [2,2,1],
-            [2,3,4],
-            [2,4,2],
-            [3,0,2],
-            [3,1,1],
-            [3,2,1],
-            [3,5,1],
-            [4,1,1],
-            [4,2,1],
-            [4,6,42]
-           ]
-}"""
-
-otu_table_exp1 = [("Co_ntrol", """{
-    "id":null,
-    "format": "Biological Observation Matrix v0.9",
-    "format_url": "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
-    "type": "OTU table",
-    "generated_by": "QIIME",
-    "date": "2011-12-19T19:00:00",
-    "rows":[
-            {"id":"GG_OTU_1", "metadata":null},
-            {"id":"GG_OTU_2", "metadata":null},
-            {"id":"GG_OTU_3", "metadata":null},
-            {"id":"GG_OTU_4", "metadata":null},
-            {"id":"GG_OTU_5", "metadata":null}
-        ],
-    "columns": [
-            {"id":"PC.354", "metadata":null},
-            {"id":"PC.356", "metadata":null}
-        ],
-    "matrix_type": "sparse",
-    "matrix_element_type": "float",
-    "shape": [5, 2],
-    "data":[
-            [1,0,5.0],
-            [1,1,1.0],
-            [3,0,2.0],
-            [3,1,1.0]
-           ]
-}"""),
-                  ("Control", """{
-    "id":null,
-    "format": "Biological Observation Matrix v0.9",
-    "format_url": "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
-    "type": "OTU table",
-    "generated_by": "QIIME",
-    "date": "2011-12-19T19:00:00",
-    "rows":[
-            {"id":"GG_OTU_1", "metadata":null},
-            {"id":"GG_OTU_2", "metadata":null},
-            {"id":"GG_OTU_3", "metadata":null},
-            {"id":"GG_OTU_4", "metadata":null},
-            {"id":"GG_OTU_5", "metadata":null}
-        ],
-    "columns": [
-            {"id":"PC.355", "metadata":null},
-            {"id":"PC.481", "metadata":null}
-        ],
-    "matrix_type": "sparse",
-    "matrix_element_type": "float",
-    "shape": [5, 2],
-    "data":[[0,1,1.0],
-            [1,0,1.0],
-            [2,1,1.0],
-            [3,0,1.0],
-            [3,1,1.0],
-            [4,0,1.0],
-            [4,1,1.0]
-           ]
-}
-"""),
-                  ("Fast", """{
-    "id":null,
-    "format": "Biological Observation Matrix v0.9",
-    "format_url": "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
-    "type": "OTU table",
-    "generated_by": "QIIME",
-    "date": "2011-12-19T19:00:00",
-    "rows":[
-            {"id":"GG_OTU_1", "metadata":null},
-            {"id":"GG_OTU_2", "metadata":null},
-            {"id":"GG_OTU_3", "metadata":null},
-            {"id":"GG_OTU_4", "metadata":null},
-            {"id":"GG_OTU_5", "metadata":null}
-        ],
-    "columns": [
-            {"id":"PC.607", "metadata":null},
-            {"id":"PC.635", "metadata":null},
-            {"id":"PC.636", "metadata":null}
-        ],
-    "matrix_type": "sparse",
-    "matrix_element_type": "float",
-    "shape": [5, 3],
-    "data":[[1,0,2.0],
-            [1,1,3.0],
-            [2,0,4.0],
-            [2,1,2.0],
-            [4,2,42]
-           ]
-}""")]
 if __name__ == "__main__":
     main()

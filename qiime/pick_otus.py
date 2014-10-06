@@ -17,7 +17,7 @@ grouping those sequences by similarity.
 
 from copy import copy
 from itertools import ifilter
-from os.path import splitext, split, abspath, join
+from os.path import splitext, split, abspath, join, dirname
 from os import makedirs, close, rename
 from itertools import imap
 from tempfile import mkstemp
@@ -45,6 +45,7 @@ from brokit.usearch import (usearch_qf,
                             usearch61_denovo_cluster,
                             usearch61_ref_cluster)
 from brokit.sumaclust_v1 import sumaclust_denovo_cluster
+from brokit.swarm_v127 import swarm_denovo_cluster
 
 
 class OtuPicker(FunctionWithParams):
@@ -243,7 +244,7 @@ class SortmernaV2OtuPicker(OtuPicker):
                 self._apply_identical_sequences_prefilter(seq_path)
 
         # Call sortmerna for reference clustering
-        clusters, failures, smr_files_to_remove =\
+        cluster_map, failures, smr_files_to_remove =\
             sortmerna_ref_cluster(seq_path=seq_path,
                                   sortmerna_db=self.sortmerna_db,
                                   refseqs_fp=refseqs_fp,
@@ -260,11 +261,14 @@ class SortmernaV2OtuPicker(OtuPicker):
         self.files_to_remove.extend(smr_files_to_remove)
         remove_files(self.files_to_remove, error_on_missing=False)
 
+        # Expand identical sequences to create full OTU map
         if prefilter_identical_sequences:
-            # Expand identical sequences to create full OTU map
+            cluster_names = cluster_map.keys()
+            clusters = [cluster_map[c] for c in cluster_names]
             clusters =\
                 self._map_filtered_clusters_to_full_clusters(
                     clusters, exact_match_id_map)
+            cluster_map = dict(zip(cluster_names, clusters))
 
             # Expand failures
             temp_failures = []
@@ -272,7 +276,7 @@ class SortmernaV2OtuPicker(OtuPicker):
                 temp_failures.extend(exact_match_id_map[fa])
             failures = temp_failures
 
-        self.log_lines.append('Num OTUs: %d' % len(clusters))
+        self.log_lines.append('Num OTUs: %d' % len(cluster_map))
         self.log_lines.append('Num failures: %d' % len(failures))
 
         # Write failures to file
@@ -282,14 +286,6 @@ class SortmernaV2OtuPicker(OtuPicker):
             failure_file.write('\n')
             failure_file.close()
 
-        # Add prefix ID to closed-reference OTUs
-        otu_id_prefix = self.Params['otu_id_prefix']
-        if otu_id_prefix is None:
-            clusters = dict(enumerate(clusters))
-        else:
-            clusters = dict(('%s%d' % (otu_id_prefix, i), c)
-                            for i, c in enumerate(clusters))
-
         # Write OTU map
         if result_path:
             # If the user provided a result_path, write the
@@ -297,7 +293,7 @@ class SortmernaV2OtuPicker(OtuPicker):
             # cluster (this will over-write the default SortMeRNA
             # OTU map with the extended OTU map)
             of = open(result_path, 'w')
-            for cluster_id, cluster in clusters.items():
+            for cluster_id, cluster in cluster_map.items():
                 of.write('%s\t%s\n' % (cluster_id, '\t'.join(cluster)))
             of.close()
             result = None
@@ -306,7 +302,7 @@ class SortmernaV2OtuPicker(OtuPicker):
             # if the user did not provide a result_path, store
             # the clusters in a dict of {otu_id:[seq_ids]}, where
             # otu_id is arbitrary
-            result = clusters
+            result = cluster_map
             self.log_lines.append('Result path: None, returned as dict.')            
 
         # Log the run
@@ -710,7 +706,7 @@ class SumaClustOtuPicker(OtuPicker):
         self.log_lines.append('Num OTUs: %d' % len(clusters))
 
         # Add prefix ID to de novo OTUs
-        otu_id_prefix = self.Params['sumaclust_otu_id_prefix']
+        otu_id_prefix = self.Params['denovo_otu_id_prefix']
         if otu_id_prefix is None:
             clusters = dict(enumerate(clusters))
         else:
@@ -722,6 +718,75 @@ class SumaClustOtuPicker(OtuPicker):
             # results to file with one tab-separated line per
             # cluster (this will over-write the default SumaClust
             # OTU map with the extended OTU map)
+            of = open(result_path, 'w')
+            for cluster_id, cluster in clusters.items():
+                of.write('%s\t%s\n' % (cluster_id, '\t'.join(cluster)))
+            of.close()
+            result = None
+            self.log_lines.append('Result path: %s\n' % result_path)
+        else:
+            # if the user did not provide a result_path, store
+            # the clusters in a dict of {otu_id:[seq_ids]}, where
+            # otu_id is arbitrary
+            result = clusters
+            self.log_lines.append('Result path: None, returned as dict.')
+
+        # Log the run
+        if log_path:
+            log_file = open(log_path, 'w')
+            self.log_lines.insert(0, str(self))
+            log_file.write('\n'.join(self.log_lines))
+            log_file.close()
+
+        return result
+
+
+class SwarmOtuPicker(OtuPicker):
+
+    """ Swarm is a de novo OTU picker, an exact clustering method based
+        on a single-linkage algorithm. It is open source and supports
+        SSE2 multithreading.
+
+        Clusters are created by their local clustering threshold 'd',
+        which is computed as the number of nucleotide differences
+        (substitution, insertion or deletion) between two amplicons
+        in the optimal pairwise global alignment.
+
+        This class is compatible with Swarm v.1.2.7
+    """
+
+    def __init__(self, params):
+        """ Return a new SwarmOtuPicker object with specified params.
+            The defaults are set in the Swarm API
+        """
+
+        OtuPicker.__init__(self, params)
+
+    def __call__(self, seq_path=None, result_path=None, log_path=None):
+
+        self.log_lines = []
+
+        # Run Swarm, return a list of lists (clusters)
+        clusters = swarm_denovo_cluster(
+            seq_path=seq_path,
+            d=self.Params['resolution'],
+            threads=self.Params['threads'],
+            HALT_EXEC=False)
+
+        self.log_lines.append('Num OTUs: %d' % len(clusters))
+
+        # Add prefix ID to de novo OTUs
+        otu_id_prefix = self.Params['denovo_otu_id_prefix']
+        if otu_id_prefix is None:
+            clusters = dict(enumerate(clusters))
+        else:
+            clusters = dict(('%s%d' % (otu_id_prefix, i), c)
+                            for i, c in enumerate(clusters))
+
+        if result_path:
+            # If the user provided a result_path, write the
+            # results to file with one tab-separated line per
+            # cluster
             of = open(result_path, 'w')
             for cluster_id, cluster in clusters.items():
                 of.write('%s\t%s\n' % (cluster_id, '\t'.join(cluster)))
@@ -2068,7 +2133,8 @@ otu_picking_method_constructors = {
     'usearch61': Usearch610DeNovoOtuPicker,
     'usearch61_ref': Usearch61ReferenceOtuPicker,
     'sumaclust': SumaClustOtuPicker,
-    'sortmerna': SortmernaV2OtuPicker
+    'sortmerna': SortmernaV2OtuPicker,
+    'swarm': SwarmOtuPicker
 }
 
 otu_picking_method_choices = otu_picking_method_constructors.keys()

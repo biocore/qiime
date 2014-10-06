@@ -25,7 +25,8 @@ two dozen different diversity metrics. The full list of available metrics is
 available by passing the -s option to this script.
 
 Documentation of the metrics can be found at
-http://scikit-bio.org/math.diversity.alpha.html. Every metric has different
+http://scikit-bio.org/docs/latest/generated/skbio.diversity.alpha.html#module-\
+skbio.diversity.alpha. Every metric has different
 strengths and limitations - technical discussion of each metric is readily
 available online and in ecology textbooks, but is beyond the scope of this
 document.
@@ -102,8 +103,8 @@ def main():
     if opts.show_metrics:
         print("Known metrics are: %s\n"
               % (', '.join(list_known_metrics()),))
-        print("For more information, see "
-              "http://scikit-bio.org/math.diversity.alpha.html")
+        print("For more information, see http://scikit-bio.org/docs/latest/ge"
+              "nerated/skbio.diversity.alpha.html#module-skbio.diversity.alpha")
         exit(0)
     almost_required_options = ['input_path', 'output_path', 'metrics']
     for option in almost_required_options:

@@ -38,9 +38,11 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
                         idealfourths, isarray, matrix_IQR, degap_fasta_aln,
                         write_degapped_fasta_to_file, compare_otu_maps, get_diff_for_otu_maps,
                         convert_otu_table_relative, write_seqs_to_fasta,
-                        split_fasta_on_sample_ids, split_fasta_on_sample_ids_to_dict,
-                        split_fasta_on_sample_ids_to_files, median_absolute_deviation,
-                        guess_even_sampling_depth, compute_days_since_epoch,
+                        write_seqs_to_fastq, split_fasta_on_sample_ids,
+                        split_fasta_on_sample_ids_to_dict,
+                        split_sequence_file_on_sample_ids_to_files,
+                        median_absolute_deviation, guess_even_sampling_depth,
+                        compute_days_since_epoch,
                         get_interesting_mapping_fields, inflate_denoiser_output,
                         flowgram_id_to_seq_id_map, count_seqs, count_seqs_from_file,
                         count_seqs_in_filepaths,
@@ -100,9 +102,9 @@ class TopLevelTests(TestCase):
 
     def tearDown(self):
         remove_files(self.files_to_remove)
-        for dir in self.dirs_to_remove:
-            if exists(dir):
-                rmdir(dir)
+        for d in self.dirs_to_remove:
+            if exists(d):
+                rmtree(d)
 
     def test_write_biom_table(self):
         """HDF5-format BIOM file can be written"""
@@ -171,6 +173,40 @@ class TopLevelTests(TestCase):
         write_seqs_to_fasta(output_fp, seqs, 'a')
         self.assertEqual(open(output_fp).read(), exp2)
 
+    def test_write_seqs_to_fastq(self):
+        """ write_seqs_to_fasta functions as expected """
+        fd, output_fp_no_qual_labels = mkstemp(
+            prefix="qiime_util_write_seqs_to_fastq_test_no_qual_labels",
+            suffix='.fastq')
+        close(fd)
+        self.files_to_remove.append(output_fp_no_qual_labels)
+
+        seqs = [('s1', 'ACCGGTTGG', 's1', array([35]*9, dtype='int8')),
+                ('s2', 'CCTTGG', 's2', array([65]*6, dtype='int8')),
+                ('S4 some comment string', 'A', 'S4 some comment string',
+                 array([66], dtype='int8'))]
+
+        exp_no_qual_labels = ("@s1\nACCGGTTGG\n+\nDDDDDDDDD\n"
+                              "@s2\nCCTTGG\n+\nbbbbbb\n"
+                              "@S4 some comment string\nA\n+\nc\n")
+
+        # works in write mode
+        write_seqs_to_fastq(output_fp_no_qual_labels, seqs, 'w')
+        self.assertEqual(open(output_fp_no_qual_labels).read(),
+                         exp_no_qual_labels)
+
+        # calling again in write mode overwrites original file
+        write_seqs_to_fastq(output_fp_no_qual_labels, seqs, 'w')
+        self.assertEqual(open(output_fp_no_qual_labels).read(),
+                         exp_no_qual_labels)
+
+        # works in append mode
+        exp2_no_qual_labels = exp_no_qual_labels + exp_no_qual_labels
+
+        write_seqs_to_fastq(output_fp_no_qual_labels, seqs, 'a')
+        self.assertEqual(open(output_fp_no_qual_labels).read(),
+                         exp2_no_qual_labels)
+
     def test_summarize_otu_sizes_from_otu_map(self):
         """ summarize_otu_sizes_from_otu_map functions as expected """
         otu_map_f = """O1	seq1
@@ -202,17 +238,35 @@ o4	seq6	seq7""".split('\n')
                     's3': [('s3_25', 'AAACCC')]}
         self.assertEqual(actual, expected)
 
-    def test_split_fasta_on_sample_ids_to_files(self):
-        """ split_fasta_on_sample_ids_to_files functions as expected
+    def test_split_sequence_file_on_sample_ids_to_files(self):
+        """ split_sequence_file_on_sample_ids_to_files functions as expected
         """
         temp_output_dir = mkdtemp()
+        temp_output_dir_fastq = mkdtemp()
         self.dirs_to_remove.append(temp_output_dir)
+        self.dirs_to_remove.append(temp_output_dir_fastq)
 
-        split_fasta_on_sample_ids_to_files(
-            parse_fasta(self.fasta2),
+        infile = StringIO(fasta2)
+        infile_fastq = StringIO(demux_fastq)
+
+        split_sequence_file_on_sample_ids_to_files(
+            infile,
+            'fasta',
             output_dir=temp_output_dir,
             per_sample_buffer_size=2)
+        split_sequence_file_on_sample_ids_to_files(
+            infile_fastq,
+            'fastq',
+            output_dir=temp_output_dir_fastq,
+            per_sample_buffer_size=3)
+
         self.files_to_remove.extend(glob('%s/*fasta' % temp_output_dir))
+        self.files_to_remove.extend(glob('%s/*fastq' % temp_output_dir_fastq))
+
+        # confirm number of files is as expected
+        self.assertEqual(len(glob('%s/*' % temp_output_dir)), 3)
+        # confirm number of files is as expected
+        self.assertEqual(len(glob('%s/*' % temp_output_dir_fastq)), 2)
 
         # confirm that all files are as expected
         self.assertEqual(open('%s/Samp1.fasta' % temp_output_dir).read(),
@@ -221,8 +275,12 @@ o4	seq6	seq7""".split('\n')
                          ">s2_a_50\nGGGCCC\n")
         self.assertEqual(open('%s/s3.fasta' % temp_output_dir).read(),
                          ">s3_25\nAAACCC\n")
-        # confirm number of files is as expected
-        self.assertEqual(len(glob('%s/*' % temp_output_dir)), 3)
+
+        self.assertEqual(open('%s/samp1.fastq' % temp_output_dir_fastq).read(),
+                         "@samp1_1\nGACGAGTCAGTCA\n+\nAAAAAAAAAAAAA\n"
+                         "@samp1_2\nGTCTGACAGTTGA\n+\nAAAAAAAAAAAAA\n")
+        self.assertEqual(open('%s/samp2.fastq' % temp_output_dir_fastq).read(),
+                         "@samp2_1\nTTTGGTCCGATGA\n+\nAAAAAAAAAAAAA\n")
 
     def test_convert_otu_table_relative(self):
         """should convert a parsed otu table into relative abundances"""
@@ -1492,6 +1550,19 @@ Z2\t42\t10
 A\t4\t400000
 1\t4\t5.7
 NotInOtuTable\t9\t5.7"""
+
+demux_fastq = """@samp1_1
+GACGAGTCAGTCA
++
+AAAAAAAAAAAAA
+@samp1_2
+GTCTGACAGTTGA
++
+AAAAAAAAAAAAA
+@samp2_1
+TTTGGTCCGATGA
++
+AAAAAAAAAAAAA"""
 
 fastq_barcodes = ["@HWUSI-EAS552R_0357:8:1:10040:6364#0/1",
                   "GACGAGTCAGTCA",

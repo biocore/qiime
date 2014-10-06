@@ -1,5 +1,8 @@
 QIIME 1.8.0-dev (changes since 1.8.0 go here)
 =============================================
+* split_otu_table.py now allows multiple fields to be passed to split a biom table, and 
+optionally a mapping file. Check out the new documentation for the naming conventions
+(which have changed slightly) and an example.
 * QIIME is now even easier to install! Removed ``qiime_scripts_dir``, ``python_exe_fp``, ``working_dir``, and ``cloud_environment`` from the QIIME config file. If these values are present in your QIIME config file, they will be flagged as unrecognized by ``print_qiime_config.py -t`` and will be ignored by QIIME. QIIME will now use the ``python`` executable and QIIME scripts that are found in your ``PATH`` environment variable, and ``temp_dir`` will be used in place of ``working_dir`` (this value was used by some parts of parallel QIIME previously).
 * Removed ``-Y``/``--python_exe_fp`` and ``-N`` options from ``parallel_merge_otu_tables.py`` script as these are not available in any of the other parallel QIIME scripts and we do not have good reason to support them (see QIIME 1.6.0 release notes below for more details).
 * SciPy >= 0.13.0, pyqi 0.3.1, and scikit-bio 0.1.1-dev (latest development version) are now required dependencies for a QIIME base install.
@@ -23,6 +26,19 @@ QIIME 1.8.0-dev (changes since 1.8.0 go here)
 * Changed default parameters for uclust-based OTU picking: ``max_accepts`` is now 1 (was 8), ``max_rejects`` is now 8 (was 500), ``stepwords`` is now 8 (was 20), and ``word_length`` is now 8 (was 12). These changes greatly reduce runtime, with minimal effect on the results. See Rideout et al., 2014 ([PeerJ pre-print](https://peerj.com/preprints/411/)) for more details.
 * Disabled the prefilter by default in ``pick_open_reference_otus.py``. This change greatly reduces runtime, with minimal effect on the results. See Rideout et al., 2014 ([PeerJ pre-print](https://peerj.com/preprints/411/)) for more details.
 * ``merge_mapping_files.py`` can now take an argument to convert the header names to upper case, so it will merge for example a category named `treatment` and another one named `TREATMENT` from two different mapping files.
+* The script ``make_distance_histograms.py`` has been removed.
+* Beta support has been added for performing subsampled open reference OTU picking using SortMeRNA ([Bioinformatics](http://www.ncbi.nlm.nih.gov/pubmed/23071270)(for the closed-reference steps) and SumaClust ([In Preparation](http://metabarcoding.org/sumatra)) (for the open reference steps). This can be accessed with 'pick_open_reference_otus.py -m sortmerna_sumaclust'.
+* Beta support has been added for performing closed-reference OTU picking using SortMeRNA ([Bioinformatics](http://www.ncbi.nlm.nih.gov/pubmed/23071270). This can be accessed with 'pick_closed_reference_otus.py -p params.txt' where params.txt includes the line "pick_otus:otu_picking_method sortmerna".
+* Beta support has been added for performing de novo OTU picking using SumaClust ([In Preparation](http://metabarcoding.org/sumatra)). This can be accessed with 'pick_de_novo_otus.py -p params.txt' where params.txt includes the line "pick_otus:otu_picking_method sumaclust".
+* numpy version requirement has been updated to 1.7.1 or later.
+* Updated to use [burrito](https://github.com/biocore/burrito) instead of scikit-bio for imports from the application controller framework, as the former is replacing the latter.
+* QIIME now depends on BIOM format 2.1.
+* the parameters --uclust_min_consensus_fraction and --uclust_similarity in assign_taxonomy scripts have been changed to --min_consensus_fraction and --similarity since both of these parameters apply to the SortMeRNA taxon assigner as well.
+* Renamed split_fasta_on_sample_ids_to_files to split_sequence_file_on_sample_ids_to_files, which now supports splitting FASTQ files, as well. Added a parameter, file_type, which is used to specify the type of the input file
+
+
+
+
 
 QIIME 1.8.0 (11 Dec 2013)
 =========================
