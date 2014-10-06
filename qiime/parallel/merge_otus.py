@@ -17,6 +17,15 @@ from qiime.workflow.util import generate_log_fp, WorkflowLogger
 
 class ParallelMergeOtus(ParallelWrapper):
     def _construct_job_graph(self, input_fps, output_dir):
+        """Creates the job workflow graph to merge OTU tables in parallel
+
+        Parameters
+        ----------
+        input_fps : list of str
+            List of paths to the OTU tables to be merged
+        output_dir : str
+            Path to the output directory
+        """
         # Create the output directory
         output_dir = abspath(output_dir)
         if not exists(output_dir):
@@ -46,7 +55,22 @@ class ParallelMergeOtus(ParallelWrapper):
         self._job_graph.add_edge(node, "RENAME")
 
     def _mergetree(self, left, right, working_dir):
-        """Reconstruct a tree from merge order"""
+        """Reconstruct a tree from merge order
+
+        Parameters
+        ----------
+        left : str
+            Node name of the left child
+        right : str
+            Node name of the right child
+        working_dir : str
+            Path to the working directory
+
+        Returns
+        -------
+        str
+            Name of the current node
+        """
         # internal node
         nodename = str(self._internal_count)
         self._internal_count += 1
@@ -64,7 +88,20 @@ class ParallelMergeOtus(ParallelWrapper):
         return nodename
 
     def _mergeorder(self, items, working_dir):
-        """Code adapted from http://en.literateprograms.org/Merge_sort_(Python)
+        """Performs merge sort on the otu tables listed on items
+        Code adapted from http://en.literateprograms.org/Merge_sort_(Python)
+
+        Parameters
+        ----------
+        items : list of str
+            Paths to the otu tables to be merged
+        working_dir : str
+            Path to the directory where intermediate results should be stored
+
+        Returns
+        -------
+        str
+            Name of the current node
         """
         if len(items) == 1:
             output_fp = abspath(items[0])
