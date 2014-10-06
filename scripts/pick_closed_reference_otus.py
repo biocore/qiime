@@ -52,6 +52,15 @@ script_info['script_usage'].append(
 
 script_info['script_usage'].append(
     ("",
+     "Pick OTUs using usearch_ref, assign taxonomy, and create an OTU table "
+     "against a reference set of OTUs using usearch_ref. ALWAYS SPECIFY ABSOLUTE "
+     "FILE PATHS (absolute path represented here as $PWD, but will generally look "
+     "something like /home/ubuntu/my_analysis/).",
+     "%prog -i $PWD/seqs.fna -r $PWD/refseqs.fna -o $PWD/otus_usearch_ref/ "
+     "-p $PWD/usearch5.2_params.txt -t $PWD/taxa.txt"))
+
+script_info['script_usage'].append(
+    ("",
      "Pick OTUs, assign taxonomy, and create an OTU table against a "
      "reference set of OTUs using sortmerna. ALWAYS SPECIFY ABSOLUTE "
      "FILE PATHS (absolute path represented here as $PWD, but will "
@@ -64,7 +73,8 @@ script_info[
     '$PWD/otus/',
     '$PWD/otus_w_tax/',
     '$PWD/otus_usearch/',
-    '$PWD/otus_sortmerna/']
+    '$PWD/otus_sortmerna/',
+    '$PWD/otus_usearch_ref/']
 
 script_info['output_description'] = ""
 
