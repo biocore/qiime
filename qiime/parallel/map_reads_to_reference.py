@@ -30,7 +30,11 @@ def generate_biom_table(biom_fp, observation_map_fp, observation_metadata_fp):
     Parameters
     ----------
     biom_fp : str
-        The output biom 
+        The output biom table
+    observation_map_fp : str
+        The path to the observation map file
+    observation_metadata_fp : str
+        The path to the observation metadata file
     """
     # Importing here so the become available on the workers
     from qiime.make_otu_table import make_otu_table
@@ -55,6 +59,23 @@ def generate_biom_table(biom_fp, observation_map_fp, observation_metadata_fp):
 class ParallelDatabaseMapper(ParallelWrapper):
     def _construct_job_graph(self, input_fp, output_dir, params,
                              jobs_to_start=None):
+        """Creates the job workflow graph to map reads to a reference database
+        in parallel.
+
+        Parameters
+        ----------
+        input_fp : str
+            Path to the input fasta file
+        output_dir : str
+            Path to the output directory. It will be created if it does
+            not exists
+        params : dict
+            Parameters to use when calling map_reads_to_reference.py, in the
+            form of {param_name: value}
+        jobs_to_start : int, optional
+            Number of jobs to start. Default: None = start as many jobs as
+            workers in the cluster
+        """
         # Create the output directory if it does not exists
         output_dir = abspath(output_dir)
         if not exists(output_dir):
@@ -129,9 +150,71 @@ class ParallelDatabaseMapper(ParallelWrapper):
         # observation maps have been merged
         self._job_graph.add_edge("MERGE_OBS_MAPS", "MAKE_TABLE")
 
+    def _get_specific_params_str(self, params):
+        """Builds the parameter string for identify_chimeric_seqs.py specific
+        to the tool to be used
+
+        Parameters
+        ----------
+        params : dict
+            Parameters to use when calling identify_chimeric_seqs.py, in the
+            form of {param_name: value}
+
+        Returns
+        -------
+        str
+            A string with all the parameters to pass to
+            identify_chimeric_seqs.py
+
+        Raises
+        ------
+        NotImplementedError
+            If called from the base class
+        """
+        raise NotImplementedError("This method should be overwritten in the "
+                                  "subclasses")
+
+    def _get_specific_merge_nodes(self, work_dirs, output_dir):
+        """Adds the needed merge nodes to the workflow graph specific to
+        the tool to be used
+
+        Parameters
+        ----------
+        work_dirs : list of str
+            Paths to the directories where the worker nodes will store the
+            intermediate results
+
+        Returns
+        -------
+        list of str
+            The list of node names added to the workflow graph
+
+        Raises
+        ------
+        NotImplementedError
+            If called from the base class
+        """
+        raise NotImplementedError("This method should be overwritten in the "
+                                  "subclasses")
+
 
 class ParallelDatabaseMapperUsearch(ParallelDatabaseMapper):
     def _get_specific_params_str(self, params):
+        """Builds the parameter string for identify_chimeric_seqs.py to use
+        with usearch
+
+        Parameters
+        ----------
+        params : dict
+            Parameters to use when calling identify_chimeric_seqs.py, in the
+            form of {param_name: value}
+
+        Returns
+        -------
+        str
+            A string with all the parameters to pass to
+            identify_chimeric_seqs.py
+        """
         return (
             "-m usearch --min_percent_id %s --max_accepts %d --max_rejects %d "
             "--queryalnfract %f --targetalnfract %f --evalue %e"
@@ -140,6 +223,20 @@ class ParallelDatabaseMapperUsearch(ParallelDatabaseMapper):
                params['targetalnfract'], params['evalue']))
 
     def _get_specific_merge_nodes(self, work_dirs, output_dir):
+        """Adds the needed merge nodes to the workflow graph specific to
+        usearch
+
+        Parameters
+        ----------
+        work_dirs : list of str
+            Paths to the directories where the worker nodes will store the
+            intermediate results
+
+        Returns
+        -------
+        list of str
+            The list of node names added to the workflow graph
+        """
         out_uc_fp = join(output_dir, 'out.uc')
         self._job_graph.add_node("MERGE_UCS",
                                  job=(merge_files_from_dirs, out_uc_fp,
@@ -155,10 +252,38 @@ class ParallelDatabaseMapperUsearch(ParallelDatabaseMapper):
 
 class ParallelDatabaseMapperBlat(ParallelDatabaseMapper):
     def _get_specific_params_str(self, params):
+        """Builds the parameter string for identify_chimeric_seqs.py to use
+        with blat
+
+        Parameters
+        ----------
+        params : dict
+            Parameters to use when calling identify_chimeric_seqs.py, in the
+            form of {param_name: value}
+
+        Returns
+        -------
+        str
+            A string with all the parameters to pass to
+            identify_chimeric_seqs.py
+        """
         return ("-m blat --min_percent_id %s --evalue %e"
                 % (params['min_percent_id'], params['evalue']))
 
     def _get_specific_merge_nodes(self, work_dirs, output_dir):
+        """Adds the needed merge nodes to the workflow graph specific to blat
+
+        Parameters
+        ----------
+        work_dirs : list of str
+            Paths to the directories where the worker nodes will store the
+            intermediate results
+
+        Returns
+        -------
+        list of str
+            The list of node names added to the workflow graph
+        """
         out_log_fp = join(output_dir, 'observation_table.log')
         self._job_graph.add_node("MERGE_LOGS",
                                  job=(merge_files_from_dirs, out_log_fp,
@@ -174,11 +299,40 @@ class ParallelDatabaseMapperBlat(ParallelDatabaseMapper):
 
 class ParallelDatabaseMapperBwaShort(ParallelDatabaseMapper):
     def _get_specific_params_str(self, params):
+        """Builds the parameter string for identify_chimeric_seqs.py to use
+        with bwa-short
+
+        Parameters
+        ----------
+        params : dict
+            Parameters to use when calling identify_chimeric_seqs.py, in the
+            form of {param_name: value}
+
+        Returns
+        -------
+        str
+            A string with all the parameters to pass to
+            identify_chimeric_seqs.py
+        """
         max_diff_str = ("--max_diff %s" % params['max_diff']
                         if params['max_diff'] is not None else "")
         return ("-m bwa-short %s " % max_diff_str)
 
     def _get_specific_merge_nodes(self, work_dirs, output_dir):
+        """Adds the needed merge nodes to the workflow graph specific to
+        bwa-short
+
+        Parameters
+        ----------
+        work_dirs : list of str
+            Paths to the directories where the worker nodes will store the
+            intermediate results
+
+        Returns
+        -------
+        list of str
+            The list of node names added to the workflow graph
+        """
         out_log_fp = join(output_dir, 'observation_table.log')
         self._job_graph.add_node("MERGE_LOGS",
                                  job=(merge_files_from_dirs, out_log_fp,
