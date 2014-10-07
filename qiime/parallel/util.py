@@ -22,7 +22,7 @@ class ComputeError(Exception):
 
 # --------- Util functions for command wrapper --------- #
 
-# The functions on this section are tailored to be used in the command
+# The functions in this section are tailored to be used in the command
 # wrapper 'funcs' parameter. The signature of all these functions should be
 # the same: func(idx, results) in which idx is the job index and results
 # is the value that will be held in the dep_results object in the command
@@ -38,8 +38,7 @@ blast_db_builder_handler = lambda idx, results: results[0]
 
 
 def command_wrapper(cmd, idx, keys, funcs, dep_results=None):
-    """Wraps the command to be executed so it can use the results produced by
-    the jobs in which the command depends on
+    """Wraps the command to be executed to use the dependency node results
 
     Parameters
     ----------
@@ -70,10 +69,10 @@ def command_wrapper(cmd, idx, keys, funcs, dep_results=None):
     if not dep_results:
         raise RuntimeError("The command wrapper has not received any "
                            "dep_results")
-    if not set(keys).issubset(dep_results.keys()):
+    if not set(keys).issubset(dep_results):
         raise KeyError("Wrong job graph workflow. Nodes %s "
                        "not listed as dependency of current node"
-                       % set(keys).difference(dep_results.keys()))
+                       % set(keys).difference(dep_results))
 
     results = tuple(funcs[k](idx, dep_results[k]) for k in keys)
     cmd = cmd % (results)
@@ -81,12 +80,19 @@ def command_wrapper(cmd, idx, keys, funcs, dep_results=None):
 
 
 def concatenate_files(output_fp, temp_out_fps):
-    """"""
+    """Concatenate the contents of the files listed in temp_out_fps
+
+    Parameters
+    ----------
+    output_fp : str
+        Path to the output file
+    temp_out_fps : list of str
+        Pats to the files to be concatenated
+    """
+    import fileinput
     with open(output_fp, 'w') as out_f:
-        for tmp_fp in temp_out_fps:
-            with open(tmp_fp, 'U') as in_f:
-                for line in in_f:
-                    out_f.write('%s\n' % line.strip('\n'))
+        for line in fileinput.input(temp_out_fps):
+            out_f.write('%s\n' % line.strip('\n'))
 
 
 def merge_files_from_dirs(output_fp, output_dirs, format_str, merge_func):
@@ -147,7 +153,7 @@ def input_fasta_splitter(input_fp, output_dir, num):
     open_files = [open(fp, 'w') for fp in fasta_fps]
 
     # Write the chunks
-    for i, rec in enumerate(load([input_fp], constructor=FastaIterator)):
+    for i, rec in enumerate(load([input_fp])):
         open_files[i % num].write('>%s\n%s\n' % (rec['SequenceID'],
                                                  rec['Sequence']))
 
