@@ -38,21 +38,12 @@ def merge_otu_maps(output_fp, otu_maps):
         Path to the output otu map
     """
     from collections import defaultdict
-    # unique_otu_map = {}
     unique_otu_map = defaultdict(list)
     for fp in otu_maps:
         with open(fp, 'U') as otu_map:
             for line in otu_map:
                 fields = line.strip().split()
                 unique_otu_map[fields[0]].extend(fields[1:])
-                # try:
-                #     # current otu_id already exists, so append this set
-                #     # of seq_ids
-                #     unique_otu_map[fields[0]].extend(fields[1:])
-                # except KeyError:
-                #     # Current otu_id has not been seen yet, so create it with
-                #     # current set of otus
-                #     unique_otu_map[fields[0]] = fields[1:]
 
     with open(output_fp, 'w') as outf:
         for otu_id, seq_ids in unique_otu_map.items():
