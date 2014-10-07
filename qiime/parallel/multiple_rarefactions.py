@@ -20,7 +20,19 @@ from qiime.workflow.util import WorkflowLogger
 class ParallelMultipleRarefactions(ParallelWrapper):
 
     def _construct_job_graph(self, input_fp, output_dir, params):
-        """Constructs the workflow graph and the jobs to execute"""
+        """Creates the job workflow graph to execute multiple rarefactions on
+        parallel
+
+        Parameters
+        ----------
+        input_fp : str
+            Path to the input OTU table
+        output_dir : str
+            Path to the output directory
+        params : dict
+            Parameters to use when calling single_rarefaction.py, in the
+            form of {param_name: value}
+        """
         # Do the parameter parsing
         min_seqs = params['min']
         max_seqs = params['max']
