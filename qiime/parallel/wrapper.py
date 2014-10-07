@@ -18,25 +18,35 @@ from qiime.parallel.context import context
 
 
 class ParallelWrapper(object):
-    """Base class for any parallel code"""
+    """Base class for any parallel code
+
+    Attributes
+    ----------
+    _retain_temp_files : boolean
+        True to retain the temporary files.
+    _block : boolean
+        True to block the main thread until the job is done. False, it submits
+        the waiter as another job
+    _job_graph : networkx.DiGraph
+        Holds the job workflow. Defined in each subclass in the
+        `_construct_job_graph` method. Each node of the job should have two
+        properties: (1) "job", a tuple with the actual job to execute in the
+        node; (2) "requires_deps", a boolean indicating if a dictionary with
+        the results of the previous jobs (keyed by node name) is passed to
+        the job using the kwargs argument with name 'dep_results'
+    _logger : WorkflowLogger
+        Logger object. Defined in each subclass in the `_construct_job_graph`
+        method.
+    _filepaths_to_remove : list of str
+        Temporary file paths. Used for clean up
+    _dirpaths_to_remove : list of str
+        Temporary directory paths. Used for clean up
+    """
     def __init__(self, retain_temp_files=False, block=True):
-        # Set if we have to delete the temporary files or keep them
         self._retain_temp_files = retain_temp_files
-        # Set if we have to wait until the job is done or we can submit
-        # the waiter as another job
         self._block = block
-        # self._job_graph: A networkx DAG holding the job workflow. Should be
-        # defined when calling the subclass' _construct_job_graph method. Each
-        # node should have two properties:
-        #     - "job": a tuple with the actual job to execute in the node
-        #     - "requires_deps": a boolean indicating if a dictionary with the
-        #       results of the previous jobs (keyed by node name) is passed to
-        #       the job using the kwargs argument with name 'dep_results'
         self._job_graph = nx.DiGraph()
-        # self._logger: A WorkflowLogger object. Should be defined when
-        # calling the subclass' _construct_job_graph method
         self._logger = None
-        # Clean up variables
         self._filepaths_to_remove = []
         self._dirpaths_to_remove = []
 
@@ -52,8 +62,7 @@ class ParallelWrapper(object):
                                   "subclass")
 
     def _validate_execution_order(self, results):
-        """Makes sure that the execution order represented in _job_graph has
-        been respected
+        """Checks the execution order represented in _job_graph
 
         Parameters
         ----------
