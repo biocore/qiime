@@ -143,10 +143,10 @@ class ParallelRdpTaxonomyAssigner(ParallelTaxonomyAssigner):
 
 class ParallelUclustConsensusTaxonomyAssigner(ParallelTaxonomyAssigner):
     def _get_specific_params_str(self, params):
-        return ("-m uclust --uclust_min_consensus_fraction %f "
-                "--uclust_similarity %f --uclust_max_accepts %d -t %s -r %s"
-                % (params['uclust_min_consensus_fraction'],
-                   params['uclust_similarity'],
+        return ("-m uclust --min_consensus_fraction %f "
+                "--similarity %f --uclust_max_accepts %d -t %s -r %s"
+                % (params['min_consensus_fraction'],
+                   params['similarity'],
                    params['uclust_max_accepts'],
                    params['id_to_taxonomy_fp'],
                    params['reference_seqs_fp']))

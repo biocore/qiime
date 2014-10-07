@@ -1,5 +1,8 @@
 QIIME 1.8.0-dev (changes since 1.8.0 go here)
 =============================================
+* split_otu_table.py now allows multiple fields to be passed to split a biom table, and 
+optionally a mapping file. Check out the new documentation for the naming conventions
+(which have changed slightly) and an example.
 * QIIME is now even easier to install! Removed ``qiime_scripts_dir``, ``python_exe_fp``, ``working_dir``, and ``cloud_environment`` from the QIIME config file. If these values are present in your QIIME config file, they will be flagged as unrecognized by ``print_qiime_config.py -t`` and will be ignored by QIIME. QIIME will now use the ``python`` executable and QIIME scripts that are found in your ``PATH`` environment variable, and ``temp_dir`` will be used in place of ``working_dir`` (this value was used by some parts of parallel QIIME previously).
 * Removed ``-Y``/``--python_exe_fp`` and ``-N`` options from ``parallel_merge_otu_tables.py`` script as these are not available in any of the other parallel QIIME scripts and we do not have good reason to support them (see QIIME 1.6.0 release notes below for more details).
 * SciPy >= 0.13.0, pyqi 0.3.1, and scikit-bio 0.1.1-dev (latest development version) are now required dependencies for a QIIME base install.
@@ -30,6 +33,11 @@ QIIME 1.8.0-dev (changes since 1.8.0 go here)
 * numpy version requirement has been updated to 1.7.1 or later.
 * Updated to use [burrito](https://github.com/biocore/burrito) instead of scikit-bio for imports from the application controller framework, as the former is replacing the latter.
 * QIIME now depends on BIOM format 2.1.
+* the parameters --uclust_min_consensus_fraction and --uclust_similarity in assign_taxonomy scripts have been changed to --min_consensus_fraction and --similarity since both of these parameters apply to the SortMeRNA taxon assigner as well.
+* Renamed split_fasta_on_sample_ids_to_files to split_sequence_file_on_sample_ids_to_files, which now supports splitting FASTQ files, as well. Added a parameter, file_type, which is used to specify the type of the input file
+
+
+
 
 
 QIIME 1.8.0 (11 Dec 2013)

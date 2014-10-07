@@ -60,11 +60,11 @@ script_info['optional_options'] = [
     make_option('-r', '--reference_seqs_fp', action='store',
                 help='Ref seqs to search against. [default: %default]',
                 default=default_reference_seqs_fp, type='existing_filepath'),
-    make_option('--uclust_min_consensus_fraction', type='float',
+    make_option('--min_consensus_fraction', type='float',
                 help=('Minimum fraction of database hits that must have a '
                       'specific taxonomic assignment to assign that taxonomy '
                       'to a query [default: %default]'), default=0.51),
-    make_option('--uclust_similarity', type='float',
+    make_option('--similarity', type='float',
                 help=('Minimum percent similarity to consider a database '
                       'match a hit, expressed as a fraction between 0 and 1 '
                       '[default: %default]'), default=0.90),

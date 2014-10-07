@@ -14,7 +14,7 @@ from burrito.util import (which, CommandLineApplication, ResultPath,
 from skbio.parse.sequences import parse_fasta
 
 from qiime.util import (FunctionWithParams, write_degapped_fasta_to_file,
-                        split_fasta_on_sample_ids_to_files)
+                        split_sequence_file_on_sample_ids_to_files)
 from qiime.assign_taxonomy import BlastTaxonAssigner
 
 from brokit.formatdb import build_blast_db_from_fasta_path
@@ -738,11 +738,12 @@ def usearch61_chimera_check(input_seqs_fp,
     if split_by_sampleid:
         if verbose:
             print "Splitting fasta according to SampleID..."
-        full_seqs = open(input_seqs_fp, "U")
-        sep_fastas =\
-            split_fasta_on_sample_ids_to_files(parse_fasta(full_seqs),
-                                               output_dir)
-        full_seqs.close()
+
+        with open(input_seqs_fp, 'U') as full_seqs:
+            sep_fastas =split_sequence_file_on_sample_ids_to_files(
+                full_seqs,
+                'fasta',
+                output_dir)
 
         if suppress_usearch61_intermediates:
             files_to_remove += sep_fastas

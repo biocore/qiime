@@ -12,8 +12,6 @@ __email__ = "gregcaporaso@gmail.com"
 
 
 from qiime.util import make_option
-from skbio.parse.sequences import parse_fasta
-from skbio.parse.sequences import parse_fastq
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.parse import fields_to_dict
 from qiime.filter import (filter_fasta, filter_fastq,
@@ -21,6 +19,7 @@ from qiime.filter import (filter_fasta, filter_fastq,
                           get_seqs_to_keep_lookup_from_fasta_file,
                           sample_ids_from_metadata_description,
                           get_seqs_to_keep_lookup_from_biom)
+from skbio.parse.sequences import parse_fasta
 
 options_lookup = get_options_lookup()
 
@@ -86,21 +85,6 @@ script_info['optional_options'] = [
                 help='description of sample ids to retain (for use with --mapping_fp) [default: %default]')
 ]
 script_info['version'] = __version__
-
-
-def filter_fasta_fp(input_seqs_fp, output_seqs_fp, seqs_to_keep, negate=False):
-    """Filter a fasta file to include only sequences listed in seqs_to_keep """
-    input_seqs = parse_fasta(open(input_seqs_fp, 'U'))
-    output_f = open(output_seqs_fp, 'w')
-    return filter_fasta(input_seqs, output_f, seqs_to_keep, negate)
-
-
-def filter_fastq_fp(input_seqs_fp, output_seqs_fp, seqs_to_keep, negate=False):
-    """Filter a fastq file to include only sequences listed in seqs_to_keep """
-    input_seqs = parse_fastq(open(input_seqs_fp, 'U'), strict=False)
-    output_f = open(output_seqs_fp, 'w')
-    return filter_fastq(input_seqs, output_f, seqs_to_keep, negate)
-
 
 def get_seqs_to_keep_lookup_from_otu_map(seqs_to_keep_f):
     """Generate a lookup dictionary from an OTU map"""
@@ -189,12 +173,14 @@ def main():
         option_parser.error(error_msg)
 
     if opts.input_fasta_fp.endswith('.fastq'):
-        filter_fp_f = filter_fastq_fp
+        filter_fp_f = filter_fastq
     else:
-        filter_fp_f = filter_fasta_fp
+        filter_fp_f = filter_fasta
 
-    filter_fp_f(opts.input_fasta_fp,
-                opts.output_fasta_fp,
+    input_fasta_f = open(opts.input_fasta_fp, 'U')
+    output_fasta_f = open(opts.output_fasta_fp, 'w')
+    filter_fp_f(input_fasta_f,
+                output_fasta_f,
                 seqs_to_keep_lookup,
                 negate)
 
