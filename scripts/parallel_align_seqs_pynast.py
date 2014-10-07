@@ -91,7 +91,7 @@ def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     # create dict of command-line options
-    params = eval(str(opts))
+    params = opts.__dict__
 
     parallel_runner = ParallelAlignSeqsPyNast(
         retain_temp_files=opts.retain_temp_files,
