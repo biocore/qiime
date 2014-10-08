@@ -284,18 +284,44 @@ def get_adjacent_distances(dist_matrix_header,
     return distance_results, header_results
 
 
-def group_by_sample_metadata(mapping_f, mapping_headers,
-                             index_field="#SampleID"):
-    """
+def group_by_sample_metadata(mapping_f, collapse_fields,
+                             sample_id_field="#SampleID"):
+    """Group sample identifiers by one or more metadata fields
+
+    Parameters
+    ----------
+    mapping_f : file handle or filepath
+        The sample metadata mapping file.
+    collapse_fields : iterable
+        The fields to combine when collapsing samples. For each sample in the
+        mapping_f, the ordered values from these columns will be tuplized as
+        used as the group identfier. Samples whose tuplized values in these
+        fields are identical will be grouped.
+    sample_id_field : str, optional
+        The sample id field in the mapping_f.
+
+    Returns
+    -------
+    dict
+        Mapping of group id to set of input sample ids in that group.
+    dict
+        Mapping of input sample id to new group id.
+
+    Raises
+    ------
+    KeyError
+        If sample_id_field or any of the collapse fields are not column headers
+        in mapping_f.
+
     """
     sample_md = pd.read_csv(mapping_f, sep='\t')
     grouped = sample_md.groupby(mapping_headers)
-    collapsed_md = grouped.agg({index_field:lambda x: tuple(x)})
+    collapsed_md = grouped.agg({sample_id_field:lambda x: tuple(x)})
 
     new_index_to_group = {}
     old_index_to_new_index = {}
     for i in collapsed_md.index:
-        old_indices = collapsed_md[index_field][i]
+        old_indices = collapsed_md[sample_id_field][i]
 
         # this is a little ugly, but we need to handle single and multi-index
         # values here, and we always want to result to be a tuple
