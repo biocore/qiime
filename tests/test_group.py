@@ -727,23 +727,32 @@ class GroupTests(TestCase):
         in_f = StringIO(self.group_by_sample_metadata_map_f1)
 
         actual = group_by_sample_metadata(in_f, ['replicate-group', 'subject'])
-        expected = {(1, 1): set(('f1', 'f2')), (2, 1): set(('f5', 'f6', 'p1')),
-                    (3, 1): set(('not16S.1', )), (1, 2): set(('f3', 'f4')),
-                    (2, 2): set(('p2', 't1', 't2'))}
-        self.assertEqual(actual, expected)
+        expected1 = {(1, 1): set(('f1', 'f2')), (2, 1): set(('f5', 'f6', 'p1')),
+                     (3, 1): set(('not16S.1', )), (1, 2): set(('f3', 'f4')),
+                     (2, 2): set(('p2', 't1', 't2'))}
+        expected2 = {'f1': (1, 1), 'f2': (1, 1), 'f5': (2, 1), 'f6': (2, 1),
+                     'p1': (2, 1), 'not16S.1': (3, 1), 'f3': (1, 2),
+                     'f4': (1, 2), 'p2': (2, 2), 't1': (2, 2), 't2': (2, 2)}
+        self.assertEqual(actual, (expected1, expected2))
 
         in_f = StringIO(self.group_by_sample_metadata_map_f1)
         actual = group_by_sample_metadata(in_f, ['replicate-group'])
-        expected = {(1, ): set(('f1', 'f2', 'f3', 'f4')),
-                    (2, ): set(('f5', 'f6', 'p1', 'p2', 't1', 't2')),
-                    (3, ): set(('not16S.1', ))}
-        self.assertEqual(actual, expected)
+        expected1 = {(1, ): set(('f1', 'f2', 'f3', 'f4')),
+                     (2, ): set(('f5', 'f6', 'p1', 'p2', 't1', 't2')),
+                     (3, ): set(('not16S.1', ))}
+        expected2 = {'f1': (1, ), 'f2': (1, ), 'f5': (2, ), 'f6': (2, ),
+                     'p1': (2, ), 'not16S.1': (3, ), 'f3': (1, ),
+                     'f4': (1, ), 'p2': (2, ), 't1': (2, ), 't2': (2, )}
+        self.assertEqual(actual, (expected1, expected2))
 
         in_f = StringIO(self.group_by_sample_metadata_map_f1)
         actual = group_by_sample_metadata(in_f, ['subject'])
-        expected = {(1, ): set(('f1', 'f2', 'f5', 'f6', 'p1', 'not16S.1')),
-                    (2, ): set(('f3', 'f4', 'p2', 't1', 't2'))}
-        self.assertEqual(actual, expected)
+        expected1 = {(1, ): set(('f1', 'f2', 'f5', 'f6', 'p1', 'not16S.1')),
+                     (2, ): set(('f3', 'f4', 'p2', 't1', 't2'))}
+        expected2 = {'f1': (1, ), 'f2': (1, ), 'f5': (1, ), 'f6': (1, ),
+                     'p1': (1, ), 'not16S.1': (1, ), 'f3': (2, ),
+                     'f4': (2, ), 'p2': (2, ), 't1': (2, ), 't2': (2, )}
+        self.assertEqual(actual, (expected1, expected2))
 
 
 individual_states_and_responses_map_f1 = """#SampleID	PersonalID	Response	TreatmentState	StreptococcusAbundance	VeillonellaAbundance

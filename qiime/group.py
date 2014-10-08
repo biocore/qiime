@@ -292,20 +292,23 @@ def group_by_sample_metadata(mapping_f, mapping_headers,
     grouped = sample_md.groupby(mapping_headers)
     collapsed_md = grouped.agg({index_field:lambda x: tuple(x)})
 
-    result = {}
+    new_index_to_group = {}
+    old_index_to_new_index = {}
     for i in collapsed_md.index:
-        value = collapsed_md[index_field][i]
+        old_indices = collapsed_md[index_field][i]
 
         # this is a little ugly, but we need to handle single and multi-index
         # values here, and we always want to result to be a tuple
         if isinstance(i, tuple):
-            key = i
+            new_index = i
         else:
-            key = (i, )
+            new_index = (i, )
 
-        result[key] = set(value)
+        new_index_to_group[new_index] = set(old_indices)
+        for old_index in old_indices:
+            old_index_to_new_index[old_index] = new_index
 
-    return result
+    return new_index_to_group, old_index_to_new_index
 
 def _validate_input(dist_matrix_header, dist_matrix, mapping_header, mapping,
                     field):
