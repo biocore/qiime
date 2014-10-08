@@ -315,7 +315,7 @@ def group_by_sample_metadata(mapping_f, collapse_fields,
 
     """
     sample_md = pd.read_csv(mapping_f, sep='\t')
-    grouped = sample_md.groupby(mapping_headers)
+    grouped = sample_md.groupby(collapse_fields)
     collapsed_md = grouped.agg({sample_id_field:lambda x: tuple(x)})
 
     new_index_to_group = {}
