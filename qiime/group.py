@@ -296,17 +296,14 @@ def group_by_sample_metadata(mapping_f, mapping_headers,
     for i in collapsed_md.index:
         value = collapsed_md[index_field][i]
 
-        if isinstance(value, tuple):
-            value = set(value)
-        else:
-            value = set((value, ))
-
+        # this is a little ugly, but we need to handle single and multi-index
+        # values here, and we always want to result to be a tuple
         if isinstance(i, tuple):
             key = i
         else:
             key = (i, )
 
-        result[key] = value
+        result[key] = set(value)
 
     return result
 
