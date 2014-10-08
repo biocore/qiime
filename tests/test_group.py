@@ -726,7 +726,7 @@ class GroupTests(TestCase):
     def test_group_by_sample_metadata(self):
         in_f = StringIO(self.group_by_sample_metadata_map_f1)
 
-        actual = group_by_sample_metadata(in_f, ['subject', 'replicate-group'])
+        actual = group_by_sample_metadata(in_f, ['replicate-group', 'subject'])
         expected = {(1, 1): set(('f1', 'f2')), (2, 1): set(('f5', 'f6', 'p1')),
                     (3, 1): set(('not16S.1', )), (1, 2): set(('f3', 'f4')),
                     (2, 2): set(('p2', 't1', 't2'))}
@@ -734,15 +734,15 @@ class GroupTests(TestCase):
 
         in_f = StringIO(self.group_by_sample_metadata_map_f1)
         actual = group_by_sample_metadata(in_f, ['replicate-group'])
-        expected = {(1): set(('f1', 'f2', 'f3', 'f4')),
-                    (2): set(('f5', 'f6', 'p1', 'p2', 't1', 't2')),
-                    (3): set(('not16S.1'))}
+        expected = {(1, ): set(('f1', 'f2', 'f3', 'f4')),
+                    (2, ): set(('f5', 'f6', 'p1', 'p2', 't1', 't2')),
+                    (3, ): set(('not16S.1', ))}
         self.assertEqual(actual, expected)
 
         in_f = StringIO(self.group_by_sample_metadata_map_f1)
         actual = group_by_sample_metadata(in_f, ['subject'])
-        expected = {(1): set(('f1', 'f2', 'f5', 'f6', 'p1', 'not16S.1')),
-                    (2): set(('f3', 'f4', 'p2', 't1', 't2'))}
+        expected = {(1, ): set(('f1', 'f2', 'f5', 'f6', 'p1', 'not16S.1')),
+                    (2, ): set(('f3', 'f4', 'p2', 't1', 't2'))}
         self.assertEqual(actual, expected)
 
 

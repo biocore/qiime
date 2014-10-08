@@ -284,22 +284,31 @@ def get_adjacent_distances(dist_matrix_header,
     return distance_results, header_results
 
 
-def group_by_sample_metadata(mapping_f, mapping_headers):
+def group_by_sample_metadata(mapping_f, mapping_headers,
+                             index_field="#SampleID"):
     """
     """
     sample_md = pd.read_csv(mapping_f, sep='\t')
     grouped = sample_md.groupby(mapping_headers)
-    collapsed_md = grouped.agg({'#SampleID':lambda x: tuple(x)})
-    collapsed_md = collapsed_md.reset_index()
-    sample_id_groups = collapsed_md['#SampleID']
+    collapsed_md = grouped.agg({index_field:lambda x: tuple(x)})
 
-    sid_to_group_id = {}
-    group_ids_to_sids = {}
-    for group_id, sample_ids in sample_id_groups.iteritems():
-        group_ids_to_sids[group_id] = sample_ids
-        for sample_id in sample_ids:
-            sid_to_group_id[sample_id] = group_id
-    return group_ids_to_sids, sid_to_group_id
+    result = {}
+    for i in collapsed_md.index:
+        value = collapsed_md[index_field][i]
+
+        if isinstance(value, tuple):
+            value = set(value)
+        else:
+            value = set((value, ))
+
+        if isinstance(i, tuple):
+            key = i
+        else:
+            key = (i, )
+
+        result[key] = value
+
+    return result
 
 def _validate_input(dist_matrix_header, dist_matrix, mapping_header, mapping,
                     field):
