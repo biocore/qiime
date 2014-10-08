@@ -754,6 +754,15 @@ class GroupTests(TestCase):
                      'f4': (2, ), 'p2': (2, ), 't1': (2, ), 't2': (2, )}
         self.assertEqual(actual, (expected1, expected2))
 
+        in_f = StringIO(self.group_by_sample_metadata_map_f1)
+        self.assertRaises(KeyError, group_by_sample_metadata, in_f,
+                          ['not-a-header'])
+        in_f = StringIO(self.group_by_sample_metadata_map_f1)
+        self.assertRaises(KeyError, group_by_sample_metadata, in_f,
+                          ['subject'], 'not-a-header')
+
+
+
 
 individual_states_and_responses_map_f1 = """#SampleID	PersonalID	Response	TreatmentState	StreptococcusAbundance	VeillonellaAbundance
 001A	001	Improved	Pre	57.4	6.9
