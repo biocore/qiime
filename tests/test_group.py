@@ -726,14 +726,23 @@ class GroupTests(TestCase):
     def test_group_by_sample_metadata(self):
         in_f = StringIO(self.group_by_sample_metadata_map_f1)
 
-        actual = group_by_sample_metadata(in_f, ['subject', 'replicate'])
-        group_ids_to_sids = {0: ('f1', 'f2'), 1: ('f5', 'f6', 'p1'),
-                             2: ('not16S.1', ), 3: ('f3', 'f4'),
-                             4: ('p2', 't1', 't2')}
-        sid_to_group_id = {'p2': 4, 'f1': 0, 'f2': 0, 'p1': 1, 'f4': 3,
-                           'f5': 1, 'f6': 1, 't2': 4, 'not16S.1': 2, 't1': 4,
-                           'f3': 3}
-        expected = (group_ids_to_sids, sid_to_group_id)
+        actual = group_by_sample_metadata(in_f, ['subject', 'replicate-group'])
+        expected = {(1, 1): set(('f1', 'f2')), (2, 1): set(('f5', 'f6', 'p1')),
+                    (3, 1): set(('not16S.1', )), (1, 2): set(('f3', 'f4')),
+                    (2, 2): set(('p2', 't1', 't2'))}
+        self.assertEqual(actual, expected)
+
+        in_f = StringIO(self.group_by_sample_metadata_map_f1)
+        actual = group_by_sample_metadata(in_f, ['replicate-group'])
+        expected = {(1): set(('f1', 'f2', 'f3', 'f4')),
+                    (2): set(('f5', 'f6', 'p1', 'p2', 't1', 't2')),
+                    (3): set(('not16S.1'))}
+        self.assertEqual(actual, expected)
+
+        in_f = StringIO(self.group_by_sample_metadata_map_f1)
+        actual = group_by_sample_metadata(in_f, ['subject'])
+        expected = {(1): set(('f1', 'f2', 'f5', 'f6', 'p1', 'not16S.1')),
+                    (2): set(('f3', 'f4', 'p2', 't1', 't2'))}
         self.assertEqual(actual, expected)
 
 
@@ -758,7 +767,7 @@ individual_states_and_responses_map_f2 = """#SampleID	PersonalID	Response	Treatm
 001C	001	Improved	PostPost	22	10.1
 """
 
-group_by_sample_metadata_map_f1 = """#SampleID	BarcodeSequence	LinkerPrimerSequence	SampleType	year	month	day	subject	replicate	days_since_epoch	Description
+group_by_sample_metadata_map_f1 = """#SampleID	BarcodeSequence	LinkerPrimerSequence	SampleType	year	month	day	subject	replicate-group	days_since_epoch	Description
 f1	ACACTGTTCATG	GTGCCAGCMGCCGCGGTAA	feces	2008	10	22	1	1	14174	fecal1
 f2	ACCAGACGATGC	GTGCCAGCMGCCGCGGTAA	feces	2008	10	23	1	1	14175	fecal2
 f3	ACCAGACGATGC	GTGCCAGCMGCCGCGGTAA	feces	2008	10	23	2	1	14175	identical sequences to fecal2
