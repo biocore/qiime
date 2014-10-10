@@ -325,20 +325,29 @@ def _filter_sample_ids_from_category_state_coverage(metadata_map,
     return set(samp_ids_to_keep), num_subjects_kept, set(states_kept)
 
 
-def filter_fasta(input_seqs_f, output_seqs_f, seqs_to_keep, negate=False):
+def filter_fasta(input_seqs_f, output_seqs_f, seqs_to_keep, negate=False,
+                 seqid_f=None):
     """ Write filtered input_seqs to output_seqs_f which contains only seqs_to_keep
 
         input_seqs can be the output of parse_fasta or parse_fastq
     """
-    seqs_to_keep_lookup = {}.fromkeys([seq_id.split()[0]
-                                       for seq_id in seqs_to_keep])
-    # Define a function based on the value of negate
-    if not negate:
-        def keep_seq(seq_id):
-            return seq_id.split()[0] in seqs_to_keep_lookup
+    if seqid_f is None:
+        seqs_to_keep_lookup = {}.fromkeys([seq_id.split()[0]
+                                           for seq_id in seqs_to_keep])
+
+        # Define a function based on the value of negate
+        if not negate:
+            def keep_seq(seq_id):
+                return seq_id.split()[0] in seqs_to_keep_lookup
+        else:
+            def keep_seq(seq_id):
+                return seq_id.split()[0] not in seqs_to_keep_lookup
+
     else:
-        def keep_seq(seq_id):
-            return seq_id.split()[0] not in seqs_to_keep_lookup
+        if not negate:
+            keep_seq = seqid_f
+        else:
+            keep_seq = lambda x: not seqid_f(x)
 
     for seq_id, seq in parse_fasta(input_seqs_f):
         if keep_seq(seq_id):
@@ -346,20 +355,28 @@ def filter_fasta(input_seqs_f, output_seqs_f, seqs_to_keep, negate=False):
     output_seqs_f.close()
 
 
-def filter_fastq(input_seqs_f, output_seqs_f, seqs_to_keep, negate=False):
+def filter_fastq(input_seqs_f, output_seqs_f, seqs_to_keep, negate=False,
+                 seqid_f=None):
     """ Write filtered input_seqs to output_seqs_f which contains only seqs_to_keep
 
         input_seqs can be the output of parse_fasta or parse_fastq
     """
-    seqs_to_keep_lookup = {}.fromkeys([seq_id.split()[0]
-                                       for seq_id in seqs_to_keep])
-    # Define a function based on the value of negate
-    if not negate:
-        def keep_seq(seq_id):
-            return seq_id.split()[0] in seqs_to_keep_lookup
+    if seqid_f is None:
+        seqs_to_keep_lookup = {}.fromkeys([seq_id.split()[0]
+                                           for seq_id in seqs_to_keep])
+        # Define a function based on the value of negate
+        if not negate:
+            def keep_seq(seq_id):
+                return seq_id.split()[0] in seqs_to_keep_lookup
+        else:
+            def keep_seq(seq_id):
+                return seq_id.split()[0] not in seqs_to_keep_lookup
+
     else:
-        def keep_seq(seq_id):
-            return seq_id.split()[0] not in seqs_to_keep_lookup
+        if not negate:
+            keep_seq = seqid_f
+        else:
+            keep_seq = lambda x: not seqid_f(x)
 
     for seq_id, seq, qual in parse_fastq(input_seqs_f):
         if keep_seq(seq_id):
