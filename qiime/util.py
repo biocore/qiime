@@ -727,6 +727,10 @@ def get_options_lookup():
                     help='Number of seconds to sleep between checks for run ' +
                     ' completion when polling runs [default: %default]',
                     default=qiime_config['seconds_to_sleep'] or 60)
+    result['suppress_blocking'] =\
+        make_option('--suppress_blocking', action='store_true',
+                    help='Do not block the command prompt while the command is'
+                         ' running')
 
     return result
 

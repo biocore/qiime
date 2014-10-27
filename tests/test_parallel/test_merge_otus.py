@@ -1,119 +1,409 @@
 #!/usr/bin/env python
 
-from unittest import TestCase, main
-from qiime.parallel.merge_otus import mergetree, mergeorder, \
-    initial_nodes_to_merge, initial_has_dependencies, job_complete, \
-    torque_job, local_job, start_job, JobError, reset_internal_count
-import os
-
 __author__ = "Daniel McDonald"
 __copyright__ = "Copyright 2013, The QIIME Project"
-__credits__ = ["Daniel McDonald", "Jai Ram Rideout"]
+__credits__ = ["Daniel McDonald", "Jai Ram Rideout",
+               "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Daniel McDonald"
 __email__ = "mcdonadt@colorado.edu"
 
+from unittest import TestCase, main
+from os import close
+from os.path import exists, join
+from shutil import rmtree
+from tempfile import mkdtemp, mkstemp
+
+from biom.parse import parse_biom_table
+from biom.util import biom_open
+from skbio.util.misc import remove_files
+
+from qiime.util import get_qiime_temp_dir
+from qiime.test import initiate_timeout, disable_timeout
+from qiime.parallel.merge_otus import ParallelMergeOtus
+
 
 class MergeTests(TestCase):
 
     def setUp(self):
-        reset_internal_count()
+        self._files_to_remove = []
+        self._dirs_to_remove = []
 
-    def test_mergetree(self):
-        """construct a merge subtreetree with various properties set"""
-        exp = "(A,B)0;"
-        obs = mergetree(['A.biom'], ['B.biom'], 'foo')
-        self.assertEqual(obs.getNewick(escape_name=False), exp)
+        tmp_dir = get_qiime_temp_dir()
+        self.test_out = mkdtemp(dir=tmp_dir,
+                                prefix='qiime_parallel_tests_',
+                                suffix='')
+        self._dirs_to_remove.append(self.test_out)
 
-        self.assertEqual(obs.Children[0].Name, 'A')
-        self.assertEqual(obs.Children[0].FilePath, 'A.biom')
-        self.assertEqual(obs.Children[0].Processed, False)
-        self.assertEqual(obs.Children[0].PollPath, None)
-        self.assertEqual(obs.Children[0].FullCommand, None)
+        fd, self.t1_fp = mkstemp(dir=self.test_out, prefix='t1_',
+                                 suffix='.biom')
+        close(fd)
+        with open(self.t1_fp, 'w') as f:
+            f.write(t1)
+        self._files_to_remove.append(self.t1_fp)
 
-        self.assertEqual(obs.Children[1].Name, 'B')
-        self.assertEqual(obs.Children[1].FilePath, 'B.biom')
-        self.assertEqual(obs.Children[1].Processed, False)
-        self.assertEqual(obs.Children[1].PollPath, None)
-        self.assertEqual(obs.Children[1].FullCommand, None)
+        fd, self.t2_fp = mkstemp(dir=self.test_out, prefix='t2_',
+                                 suffix='.biom')
+        close(fd)
+        with open(self.t2_fp, 'w') as f:
+            f.write(t2)
+        self._files_to_remove.append(self.t2_fp)
 
-        self.assertEqual(obs.Name, '0')
-        self.assertEqual(obs.FilePath, 'foo/0.biom')
-        self.assertEqual(obs.Processed, False)
-        self.assertEqual(obs.PollPath, 'foo/0.biom.poll')
-        self.assertEqual(obs.FullCommand, None)
+        fd, self.t3_fp = mkstemp(dir=self.test_out, prefix='t3_',
+                                 suffix='.biom')
+        close(fd)
+        with open(self.t3_fp, 'w') as f:
+            f.write(t3)
+        self._files_to_remove.append(self.t3_fp)
 
-    def test_mergeorder(self):
-        """recursively build and join all the subtrees"""
-        exp = "((A,B)0,(C,(D,E)1)2)3;"
-        obs = mergeorder(['A', 'B', 'C', 'D', 'E'], 'foo')
-        self.assertEqual(obs.getNewick(escape_name=False), exp)
+        fd, self.t4_fp = mkstemp(dir=self.test_out, prefix='t4_',
+                                 suffix='.biom')
+        close(fd)
+        with open(self.t4_fp, 'w') as f:
+            f.write(t4)
+        self._files_to_remove.append(self.t4_fp)
 
-    def test_initial_nodes_to_merge(self):
-        """determine the first nodes to merge"""
-        t = mergeorder(['A', 'B', 'C', 'D', 'E'], 'foo')
-        exp = set([t.Children[0], t.Children[1].Children[1]])
-        obs = initial_nodes_to_merge(t)
-        self.assertEqual(obs, exp)
+        fd, exp_even_fp = mkstemp(dir=self.test_out, prefix='exp_even_',
+                                  suffix='.biom')
+        close(fd)
+        with open(exp_even_fp, 'w') as f:
+            f.write(exp_even)
+        self._files_to_remove.append(exp_even_fp)
+        with biom_open(exp_even_fp) as f:
+            self.exp_even = parse_biom_table(f)
 
-    def test_initial_has_dependencies(self):
-        """determine initial has_dependencies"""
-        t = mergeorder(['A', 'B', 'C', 'D', 'E'], 'foo')
-        exp = [t, t.Children[1]]
-        obs = initial_has_dependencies(t, initial_nodes_to_merge(t))
-        self.assertEqual(obs, exp)
+        fd, exp_odd_fp = mkstemp(dir=self.test_out, prefix='exp_odd_',
+                                 suffix='.biom')
+        close(fd)
+        with open(exp_odd_fp, 'w') as f:
+            f.write(exp_odd)
+        self._files_to_remove.append(exp_odd_fp)
+        with biom_open(exp_odd_fp) as f:
+            self.exp_odd = parse_biom_table(f)
 
-    def test_job_complete(self):
-        """check if a job is complete"""
-        t = mergeorder(['A', 'B', 'C', 'D', 'E'], 'foo')
-        self.assertFalse(job_complete(t))
-        self.assertFalse(job_complete(t.Children[0]))
-        self.assertFalse(job_complete(t.Children[1].Children[1]))
+        initiate_timeout(60)
 
-        self.assertRaises(JobError, job_complete, t.Children[0].Children[0])
+    def tearDown(self):
+        disable_timeout()
+        remove_files(self._files_to_remove)
+        # remove directories last, so we don't get errors trying to remove
+        # files which may be in the directories
+        for d in self._dirs_to_remove:
+            if exists(d):
+                rmtree(d)
 
-        f = 'test_parallel_merge_otus_JOB_COMPLETE_TEST.poll'
-        self.assertFalse(os.path.exists(f))
+    def test_parallel_merge_otus_even(self):
+        infiles = [self.t1_fp, self.t2_fp, self.t3_fp, self.t4_fp]
+        app = ParallelMergeOtus()
+        app(infiles, self.test_out)
 
-        testf = open(f, 'w')
-        testf.write('0\n')
-        testf.close()
-        t.PollPath = f
-        t.StartTime = 10
+        # Confirm that the output OTU table have been merged correctly
+        merged_fp = join(self.test_out, "merged.biom")
+        self.assertTrue(exists(merged_fp))
+        with biom_open(merged_fp) as f:
+            obs = parse_biom_table(f)
+        self.assertEqual(obs, self.exp_even)
 
-        self.assertTrue(job_complete(t))
-        self.assertNotEqual(t.EndTime, None)
-        self.assertNotEqual(t.TotalTime, None)
+    def test_parallel_merge_otus_odd(self):
+        infiles = [self.t1_fp, self.t2_fp, self.t3_fp]
+        app = ParallelMergeOtus()
+        app(infiles, self.test_out)
 
-        testf = open(f, 'w')
-        testf.write('1\n')
-        testf.close()
+        # Confirm that the output OTU table have been merged correctly
+        merged_fp = join(self.test_out, "merged.biom")
+        self.assertTrue(exists(merged_fp))
+        with biom_open(merged_fp) as f:
+            obs = parse_biom_table(f)
+        self.assertEqual(obs, self.exp_odd)
 
-        self.assertRaises(JobError, job_complete, t)
-        t.Processed = False
-        self.assertRaises(JobError, job_complete, t)
+t1 = """{
+    "id":null,
+    "format": "Biological Observation Matrix 1.0.0-dev",
+    "format_url": "http://biom-format.org",
+    "type": "OTU table",
+    "generated_by": "QIIME revision XYZ",
+    "date": "2011-12-19T19:00:00",
+    "rows":[
+            {"id":"GG_OTU_1", "metadata":null},
+            {"id":"GG_OTU_2", "metadata":null},
+            {"id":"GG_OTU_3", "metadata":null},
+            {"id":"GG_OTU_4", "metadata":null},
+            {"id":"GG_OTU_5", "metadata":null}
+        ],
+    "columns": [
+            {"id":"Sample1", "metadata":null},
+            {"id":"Sample2", "metadata":null},
+            {"id":"Sample3", "metadata":null},
+            {"id":"Sample4", "metadata":null},
+            {"id":"Sample5", "metadata":null},
+            {"id":"Sample6", "metadata":null}
+        ],
+    "matrix_type": "sparse",
+    "matrix_element_type": "int",
+    "shape": [5, 6],
+    "data":[[0,2,1],
+            [1,0,5],
+            [1,1,1],
+            [1,3,2],
+            [1,4,3],
+            [1,5,1],
+            [2,2,1],
+            [2,3,4],
+            [2,5,2],
+            [3,0,2],
+            [3,1,1],
+            [3,2,1],
+            [3,5,1],
+            [4,1,1],
+            [4,2,1]
+           ]
+}"""
 
-        os.remove(f)
+t2 = """{
+     "id":null,
+     "format": "Biological Observation Matrix 1.0.0-dev",
+     "format_url": "http://biom-format.org",
+     "type": "OTU table",
+     "generated_by": "QIIME revision XYZ",
+     "date": "2011-12-19T19:00:00",
+     "rows":[
+        {"id":"GG_OTU_1", "metadata":{"taxonomy":["k__Bacteria", "p__Proteobac\
+teria", "c__Gammaproteobacteria", "o__Enterobacteriales", "f__Enterobacteriace\
+ae", "g__Escherichia", "s__"]}},
+        {"id":"GG_OTU_20", "metadata":{"taxonomy":["k__Bacteria", "p__Cyanobac\
+teria", "c__Nostocophycideae", "o__Nostocales", "f__Nostocaceae", "g__Dolichos\
+permum", "s__"]}},
+        {"id":"GG_OTU_3", "metadata":{"taxonomy":["k__Archaea", "p__Euryarchae\
+ota", "c__Methanomicrobia", "o__Methanosarcinales", "f__Methanosarcinaceae", "\
+g__Methanosarcina", "s__"]}},
+        {"id":"GG_OTU_44", "metadata":{"taxonomy":["k__Bacteria", "p__Firmicut\
+es", "c__Clostridia", "o__Halanaerobiales", "f__Halanaerobiaceae", "g__Halanae\
+robium", "s__Halanaerobiumsaccharolyticum"]}},
+        {"id":"GG_OTU_5", "metadata":{"taxonomy":["k__Bacteria", "p__Proteobac\
+teria", "c__Gammaproteobacteria", "o__Enterobacteriales", "f__Enterobacteriace\
+ae", "g__Escherichia", "s__"]}}
+        ],
+     "columns":[
+        {"id":"Sample1", "metadata":{
+                                "BarcodeSequence":"CGCTTATCGAGA",
+                                "LinkerPrimerSequence":"CATGCTGCCTCCCGTAGGAGT",
+                                "BODY_SITE":"gut",
+                                "Description":"human gut"}},
+        {"id":"Sample2", "metadata":{
+                                "BarcodeSequence":"CATACCAGTAGC",
+                                "LinkerPrimerSequence":"CATGCTGCCTCCCGTAGGAGT",
+                                "BODY_SITE":"gut",
+                                "Description":"human gut"}},
+        {"id":"Sample3", "metadata":{
+                                "BarcodeSequence":"CTCTCTACCTGT",
+                                "LinkerPrimerSequence":"CATGCTGCCTCCCGTAGGAGT",
+                                "BODY_SITE":"gut",
+                                "Description":"human gut"}},
+        {"id":"Sample4", "metadata":{
+                                "BarcodeSequence":"CTCTCGGCCTGT",
+                                "LinkerPrimerSequence":"CATGCTGCCTCCCGTAGGAGT",
+                                "BODY_SITE":"skin",
+                                "Description":"human skin"}},
+        {"id":"Sample5", "metadata":{
+                                "BarcodeSequence":"CTCTCTACCAAT",
+                                "LinkerPrimerSequence":"CATGCTGCCTCCCGTAGGAGT",
+                                "BODY_SITE":"skin",
+                                "Description":"human skin"}},
+        {"id":"Sample6", "metadata":{
+                                "BarcodeSequence":"CTAACTACCAAT",
+                                "LinkerPrimerSequence":"CATGCTGCCTCCCGTAGGAGT",
+                                "BODY_SITE":"skin",
+                                "Description":"human skin"}}
+                ],
+     "matrix_type": "dense",
+     "matrix_element_type": "int",
+     "shape": [5,6],
+     "data":  [[0,0,1,0,0,0],
+               [5,1,0,2,3,1],
+               [0,0,1,4,2,0],
+               [2,1,1,0,0,1],
+               [0,1,1,0,0,0]]
+}"""
 
-    def test_torque_job(self):
-        """wrap a torque job"""
-        exp = 'echo "abc; echo $? > xyz" | qsub -k oe -N MOTU -q queue'
-        obs = torque_job('abc', 'xyz', '123', 'queue')
-        self.assertEqual(obs, exp)
+t3 = """{
+        "id":null,
+        "format": "Biological Observation Matrix 1.0.0-dev",
+        "format_url": "http://biom-format.org",
+        "type": "OTU table",
+        "generated_by": "QIIME revision XYZ",
+        "date": "2011-12-19T19:00:00",
+        "rows":[
+                {"id":"GG_OTU_1", "metadata":null},
+                {"id":"GG_OTU_2", "metadata":null},
+                {"id":"GG_OTU_3", "metadata":null},
+                {"id":"GG_OTU_4", "metadata":null},
+                {"id":"GG_OTU_5", "metadata":null}
+            ],
+        "columns": [
+                {"id":"Sample1", "metadata":null},
+                {"id":"Sample2", "metadata":null},
+                {"id":"Sample3", "metadata":null},
+                {"id":"Sample4", "metadata":null},
+                {"id":"Sample5", "metadata":null},
+                {"id":"Sample6", "metadata":null}
+            ],
+        "matrix_type": "sparse",
+        "matrix_element_type": "int",
+        "shape": [5, 6],
+        "data":[[0,2,1],
+                [1,0,5],
+                [1,1,1],
+                [1,3,2],
+                [1,4,3],
+                [1,5,1],
+                [2,2,1],
+                [2,3,4],
+                [2,5,2],
+                [3,0,2],
+                [3,1,1],
+                [3,2,1],
+                [3,5,1],
+                [4,1,1],
+                [4,2,1]
+               ]
+}"""
 
-    def test_start_job(self):
-        """start a job"""
-        exp = 'echo "y -i A.biom,B.biom -o foo/0.biom; echo $? > foo/0.biom.poll" | qsub -k oe -N MOTU -q ignored'
-        t = mergeorder(['A.biom', 'B.biom', 'C', 'D', 'E'], 'foo')
-        start_job(t.Children[0], 'y', 'ignored', torque_job, False)
-        self.assertEqual(t.Children[0].FullCommand, exp)
+t4 = """{
+     "id":null,
+     "format": "Biological Observation Matrix 1.0.0-dev",
+     "format_url": "http://biom-format.org",
+     "type": "OTU table",
+     "generated_by": "QIIME revision XYZ",
+     "date": "2011-12-19T19:00:00",
+     "rows":[
+        {"id":"GG_OTU_1", "metadata":{"taxonomy":["k__Bacteria", "p__Proteobac\
+teria", "c__Gammaproteobacteria", "o__Enterobacteriales", "f__Enterobacteriace\
+ae", "g__Escherichia", "s__"]}},
+        {"id":"GG_OTU_20", "metadata":{"taxonomy":["k__Bacteria", "p__Cyanobac\
+teria", "c__Nostocophycideae", "o__Nostocales", "f__Nostocaceae", "g__Dolichos\
+permum", "s__"]}},
+        {"id":"GG_OTU_3", "metadata":{"taxonomy":["k__Archaea", "p__Euryarchae\
+ota", "c__Methanomicrobia", "o__Methanosarcinales", "f__Methanosarcinaceae", "\
+g__Methanosarcina", "s__"]}},
+        {"id":"GG_OTU_44", "metadata":{"taxonomy":["k__Bacteria", "p__Firmicut\
+es", "c__Clostridia", "o__Halanaerobiales", "f__Halanaerobiaceae", "g__Halanae\
+robium", "s__Halanaerobiumsaccharolyticum"]}},
+        {"id":"GG_OTU_5", "metadata":{"taxonomy":["k__Bacteria", "p__Proteobac\
+teria", "c__Gammaproteobacteria", "o__Enterobacteriales", "f__Enterobacteriace\
+ae", "g__Escherichia", "s__"]}}
+        ],
+     "columns":[
+        {"id":"Sample1", "metadata":{
+                                "BarcodeSequence":"CGCTTATCGAGA",
+                                "LinkerPrimerSequence":"CATGCTGCCTCCCGTAGGAGT",
+                                "BODY_SITE":"gut",
+                                "Description":"human gut"}},
+        {"id":"Sample2", "metadata":{
+                                "BarcodeSequence":"CATACCAGTAGC",
+                                "LinkerPrimerSequence":"CATGCTGCCTCCCGTAGGAGT",
+                                "BODY_SITE":"gut",
+                                "Description":"human gut"}},
+        {"id":"Sample3", "metadata":{
+                                "BarcodeSequence":"CTCTCTACCTGT",
+                                "LinkerPrimerSequence":"CATGCTGCCTCCCGTAGGAGT",
+                                "BODY_SITE":"gut",
+                                "Description":"human gut"}},
+        {"id":"Sample4", "metadata":{
+                                "BarcodeSequence":"CTCTCGGCCTGT",
+                                "LinkerPrimerSequence":"CATGCTGCCTCCCGTAGGAGT",
+                                "BODY_SITE":"skin",
+                                "Description":"human skin"}},
+        {"id":"Sample5", "metadata":{
+                                "BarcodeSequence":"CTCTCTACCAAT",
+                                "LinkerPrimerSequence":"CATGCTGCCTCCCGTAGGAGT",
+                                "BODY_SITE":"skin",
+                                "Description":"human skin"}},
+        {"id":"Sample6", "metadata":{
+                                "BarcodeSequence":"CTAACTACCAAT",
+                                "LinkerPrimerSequence":"CATGCTGCCTCCCGTAGGAGT",
+                                "BODY_SITE":"skin",
+                                "Description":"human skin"}}
+                ],
+     "matrix_type": "dense",
+     "matrix_element_type": "int",
+     "shape": [5,6],
+     "data":  [[0,0,1,0,0,0],
+               [5,1,0,2,3,1],
+               [0,0,1,4,2,0],
+               [2,1,1,0,0,1],
+               [0,1,1,0,0,0]]
+}"""
 
-    def test_local_job(self):
-        """fire off a local job"""
-        exp = "abc; echo $? > xyz"
-        obs = local_job('abc', 'xyz', 'notused', 'notused')
-        self.assertEqual(obs, exp)
+exp_even = """{"id": "No Table ID","format": "Biological Observation Matrix 1.\
+0.0","format_url": "http://biom-format.org","matrix_type": "sparse","generated\
+_by": "BIOM-Format 2.0.1-dev","date": "2014-07-22T12:11:47.418442","type": nul\
+l,"matrix_element_type": "float","shape": [7, 6],"data": [[0,2,4.0],[1,\
+0,10.0],[1,1,2.0],[1,3,4.0],[1,4,6.0],[1,5,2.0],[2,2,4.0],[2,3,16.0],[2,4,4.0]\
+,[2,5,4.0],[3,0,4.0],[3,1,2.0],[3,2,2.0],[3,5,2.0],[4,1,4.0],[4,2,4.0],[5,0,10\
+.0],[5,1,2.0],[5,3,4.0],[5,4,6.0],[5,5,2.0],[6,0,4.0],[6,1,2.0],[6,2,2.0],[6,5\
+,2.0]],"rows": [{"id": "GG_OTU_1", "metadata": {"taxonomy": ["k__Bacteria", "p\
+__Proteobacteria", "c__Gammaproteobacteria", "o__Enterobacteriales", "f__Enter\
+obacteriaceae", "g__Escherichia", "s__"]}},{"id": "GG_OTU_2", "metadata": {"ta\
+xonomy": null}},{"id": "GG_OTU_3", "metadata": {"taxonomy": ["k__Archaea", "p_\
+_Euryarchaeota", "c__Methanomicrobia", "o__Methanosarcinales", "f__Methanosarc\
+inaceae", "g__Methanosarcina", "s__"]}},{"id": "GG_OTU_4", "metadata": {"taxon\
+omy": null}},{"id": "GG_OTU_5", "metadata": {"taxonomy": ["k__Bacteria", "p__P\
+roteobacteria", "c__Gammaproteobacteria", "o__Enterobacteriales", "f__Enteroba\
+cteriaceae", "g__Escherichia", "s__"]}},{"id": "GG_OTU_20", "metadata": {"taxo\
+nomy": ["k__Bacteria", "p__Cyanobacteria", "c__Nostocophycideae", "o__Nostocal\
+es", "f__Nostocaceae", "g__Dolichospermum", "s__"]}},{"id": "GG_OTU_44", "meta\
+data": {"taxonomy": ["k__Bacteria", "p__Firmicutes", "c__Clostridia", "o__Hala\
+naerobiales", "f__Halanaerobiaceae", "g__Halanaerobium", "s__Halanaerobiumsacc\
+harolyticum"]}}],"columns": [{"id": "Sample1", "metadata": {"LinkerPrimerSeque\
+nce": "CATGCTGCCTCCCGTAGGAGT", "BarcodeSequence": "CGCTTATCGAGA", "Description\
+": "human gut", "BODY_SITE": "gut"}},{"id": "Sample2", "metadata": {"LinkerPri\
+merSequence": "CATGCTGCCTCCCGTAGGAGT", "BarcodeSequence": "CATACCAGTAGC", "Des\
+cription": "human gut", "BODY_SITE": "gut"}},{"id": "Sample3", "metadata": {"L\
+inkerPrimerSequence": "CATGCTGCCTCCCGTAGGAGT", "BarcodeSequence": "CTCTCTACCTG\
+T", "Description": "human gut", "BODY_SITE": "gut"}},{"id": "Sample4", "metada\
+ta": {"LinkerPrimerSequence": "CATGCTGCCTCCCGTAGGAGT", "BarcodeSequence": "CTC\
+TCGGCCTGT", "Description": "human skin", "BODY_SITE": "skin"}},{"id": "Sample5\
+", "metadata": {"LinkerPrimerSequence": "CATGCTGCCTCCCGTAGGAGT", "BarcodeSeque\
+nce": "CTCTCTACCAAT", "Description": "human skin", "BODY_SITE": "skin"}},{"id"\
+: "Sample6", "metadata": {"LinkerPrimerSequence": "CATGCTGCCTCCCGTAGGAGT", "Ba\
+rcodeSequence": "CTAACTACCAAT", "Description": "human skin", "BODY_SITE": "ski\
+n"}}]}"""
+
+exp_odd = """{"id": "No Table ID","format": "Biological Observation Matrix 1.0\
+.0","format_url": "http://biom-format.org","matrix_type": "sparse","generated_\
+by": "BIOM-Format 2.0.1-dev","date": "2014-07-22T12:22:36.723558","type": null\
+,"matrix_element_type": "float","shape": [7, 6],"data": [[0,2,3.0],[1,0\
+,10.0],[1,1,2.0],[1,3,4.0],[1,4,6.0],[1,5,2.0],[2,2,3.0],[2,3,12.0],[2,4,2.0],\
+[2,5,4.0],[3,0,4.0],[3,1,2.0],[3,2,2.0],[3,5,2.0],[4,1,3.0],[4,2,3.0],[5,0,5.0\
+],[5,1,1.0],[5,3,2.0],[5,4,3.0],[5,5,1.0],[6,0,2.0],[6,1,1.0],[6,2,1.0],[6,5,1\
+.0]],"rows": [{"id": "GG_OTU_1", "metadata": {"taxonomy": ["k__Bacteria", "p__\
+Proteobacteria", "c__Gammaproteobacteria", "o__Enterobacteriales", "f__Enterob\
+acteriaceae", "g__Escherichia", "s__"]}},{"id": "GG_OTU_2", "metadata": {"taxo\
+nomy": null}},{"id": "GG_OTU_3", "metadata": {"taxonomy": ["k__Archaea", "p__E\
+uryarchaeota", "c__Methanomicrobia", "o__Methanosarcinales", "f__Methanosarcin\
+aceae", "g__Methanosarcina", "s__"]}},{"id": "GG_OTU_4", "metadata": {"taxonom\
+y": null}},{"id": "GG_OTU_5", "metadata": {"taxonomy": ["k__Bacteria", "p__Pro\
+teobacteria", "c__Gammaproteobacteria", "o__Enterobacteriales", "f__Enterobact\
+eriaceae", "g__Escherichia", "s__"]}},{"id": "GG_OTU_20", "metadata": {"taxono\
+my": ["k__Bacteria", "p__Cyanobacteria", "c__Nostocophycideae", "o__Nostocales\
+", "f__Nostocaceae", "g__Dolichospermum", "s__"]}},{"id": "GG_OTU_44", "metada\
+ta": {"taxonomy": ["k__Bacteria", "p__Firmicutes", "c__Clostridia", "o__Halana\
+erobiales", "f__Halanaerobiaceae", "g__Halanaerobium", "s__Halanaerobiumsaccha\
+rolyticum"]}}],"columns": [{"id": "Sample1", "metadata": {"LinkerPrimerSequenc\
+e": "CATGCTGCCTCCCGTAGGAGT", "BarcodeSequence": "CGCTTATCGAGA", "Description":\
+ "human gut", "BODY_SITE": "gut"}},{"id": "Sample2", "metadata": {"LinkerPrime\
+rSequence": "CATGCTGCCTCCCGTAGGAGT", "BarcodeSequence": "CATACCAGTAGC", "Descr\
+iption": "human gut", "BODY_SITE": "gut"}},{"id": "Sample3", "metadata": {"Lin\
+kerPrimerSequence": "CATGCTGCCTCCCGTAGGAGT", "BarcodeSequence": "CTCTCTACCTGT"\
+, "Description": "human gut", "BODY_SITE": "gut"}},{"id": "Sample4", "metadata\
+": {"LinkerPrimerSequence": "CATGCTGCCTCCCGTAGGAGT", "BarcodeSequence": "CTCTC\
+GGCCTGT", "Description": "human skin", "BODY_SITE": "skin"}},{"id": "Sample5",\
+ "metadata": {"LinkerPrimerSequence": "CATGCTGCCTCCCGTAGGAGT", "BarcodeSequenc\
+e": "CTCTCTACCAAT", "Description": "human skin", "BODY_SITE": "skin"}},{"id": \
+"Sample6", "metadata": {"LinkerPrimerSequence": "CATGCTGCCTCCCGTAGGAGT", "Barc\
+odeSequence": "CTAACTACCAAT", "Description": "human skin", "BODY_SITE": "skin"\
+}}]}"""
 
 if __name__ == '__main__':
     main()

@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -19,7 +19,7 @@ from tempfile import mkstemp, mkdtemp
 from skbio.util.misc import remove_files
 from unittest import TestCase, main
 from qiime.parallel.alpha_diversity import ParallelAlphaDiversity
-from qiime.util import get_qiime_temp_dir, count_seqs_in_filepaths
+from qiime.util import get_qiime_temp_dir
 from qiime.test import initiate_timeout, disable_timeout
 
 
@@ -39,8 +39,8 @@ class ParallelAlphaDiversityTests(TestCase):
         self.rt_fps = []
         for rt in [rt1, rt2, rt3, rt4]:
             fd, rt_fp = mkstemp(dir=self.test_out,
-                               prefix='qiime_rt',
-                               suffix='.biom')
+                                prefix='qiime_rt',
+                                suffix='.biom')
             close(fd)
             rt_f = open(rt_fp, 'w')
             rt_f.write(rt)
@@ -49,8 +49,8 @@ class ParallelAlphaDiversityTests(TestCase):
             self.files_to_remove.append(rt_fp)
 
         fd, self.tree_fp = mkstemp(dir=self.test_out,
-                                  prefix='qiime',
-                                  suffix='.tre')
+                                   prefix='qiime',
+                                   suffix='.tre')
         close(fd)
         tree_f = open(self.tree_fp, 'w')
         tree_f.write(tree)
@@ -77,12 +77,7 @@ class ParallelAlphaDiversityTests(TestCase):
                   'jobs_to_start': 2
                   }
         app = ParallelAlphaDiversity()
-        r = app(self.rt_fps,
-                self.test_out,
-                params,
-                job_prefix='ATEST',
-                poll_directly=True,
-                suppress_submit_jobs=False)
+        app(self.rt_fps, self.test_out, params)
         # confirm that the total number of output sequences equals the total
         # number of input sequences
         output_fps = glob(join(self.test_out, '*txt'))
@@ -96,12 +91,7 @@ class ParallelAlphaDiversityTests(TestCase):
                   'jobs_to_start': 2
                   }
         app = ParallelAlphaDiversity()
-        r = app(self.rt_fps,
-                self.test_out,
-                params,
-                job_prefix='ATEST',
-                poll_directly=True,
-                suppress_submit_jobs=False)
+        app(self.rt_fps, self.test_out, params)
         # confirm that the total number of output sequences equals the total
         # number of input sequences
         output_fps = glob(join(self.test_out, '*txt'))

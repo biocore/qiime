@@ -1,21 +1,27 @@
 #!/usr/bin/env python
 """Run all tests.
 """
-from os import walk, environ
+from os import walk, environ, getcwd, chdir
 from subprocess import Popen, PIPE, STDOUT
 from os.path import join, abspath, dirname, exists, split
 from glob import glob
 import re
 from sys import exit
+from time import sleep
+
+from qiime.parallel.util import ComputeError
+from qiime.parallel.manager import stop_cluster
 from qiime.util import (parse_command_line_parameters, get_options_lookup,
-                        load_qiime_config, qiime_system_call, get_qiime_scripts_dir,
-                        make_option, get_qiime_project_dir)
+                        load_qiime_config, qiime_system_call,
+                        get_qiime_scripts_dir, make_option,
+                        get_qiime_project_dir)
 from qiime.test import run_script_usage_tests
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project"  # consider project name
 __credits__ = ["Rob Knight", "Greg Caporaso", "Jai Ram Rideout",
-               "Yoshiki Vazquez Baeza"]  # remember to add yourself if you make changes
+               "Yoshiki Vazquez Baeza", "Jose Antonio Navas Molina"]
+# remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -39,7 +45,8 @@ script_info['optional_options'] = [
                 help='suppress script usage tests [default: %default]',
                 default=False),
     make_option('--unittest_glob',
-                help='wildcard pattern to match tests to run [default: run all]',
+                help='wildcard pattern to match tests to run [default: '
+                     'run all]',
                 default=None),
     make_option('--script_usage_tests',
                 help='comma-separated list of tests to run [default: run all]',
@@ -66,6 +73,21 @@ def main():
     python_name = 'python'
     bad_tests = []
     missing_application_tests = []
+
+    # Check if there is any IPython cluster already running
+    shutdown_ipython = False
+    try:
+        from qiime.parallel.context import context
+    except (ComputeError, ValueError):
+        # Nope, no IPython cluster running, start one
+        print ("\nIPython parallel cluster not found, starting one with 4 "
+               "workers using the default profile... ")
+        cwd = getcwd()
+        Popen(["parallel.py", "start", "--profile", "default", "-n", "4"])
+        shutdown_ipython = True
+        # It takes some time to register the workers
+        sleep(10)
+        print ("Ok\n")
 
     # Run through all of QIIME's unit tests, and keep track of any files which
     # fail unit tests.
@@ -114,28 +136,38 @@ def main():
                 force_overwrite=True,
                 timeout=240)
 
+    # If we started the ipython cluster, we should stop it
+    if shutdown_ipython:
+        print ("\nShutting down IPython parallel cluster... ")
+        chdir(cwd)  # create an issue for this
+        stop_cluster('default')
+        print ("Ok\n")
+
     print "==============\nResult summary\n=============="
 
     if not opts.suppress_unit_tests:
         print "\nUnit test result summary\n------------------------\n"
         if bad_tests:
-            print "\nFailed the following unit tests.\n%s" % '\n'.join(bad_tests)
+            print ("\nFailed the following unit tests.\n%s"
+                   % '\n'.join(bad_tests))
 
         if missing_application_tests:
-            print "\nFailed the following unit tests, in part or whole due " +\
-                "to missing external applications.\nDepending on the QIIME features " +\
-                "you plan to use, this may not be critical.\n%s"\
-                % '\n'.join(missing_application_tests)
+            print ("\nFailed the following unit tests, in part or whole due "
+                   "to missing external applications.\nDepending on the QIIME "
+                   "features you plan to use, this may not be critical.\n%s"
+                   % '\n'.join(missing_application_tests))
 
         if not (missing_application_tests or bad_tests):
             print "\nAll unit tests passed.\n\n"
 
     if not opts.suppress_script_usage_tests:
         if qiime_test_data_dir_exists:
-            print "\nScript usage test result summary\n--------------------------------\n"
+            print ("\nScript usage test result summary\n"
+                   "--------------------------------\n")
             print script_usage_result_summary
         else:
-            print "\nCould not run script usage tests because the directory %s does not exist." % qiime_test_data_dir
+            print ("\nCould not run script usage tests because the directory "
+                   "%s does not exist." % qiime_test_data_dir)
         print ""
 
     # If script usage tests weren't suppressed, the qiime_test_data dir must
@@ -151,6 +183,7 @@ def main():
     if (len(bad_tests) == 0 and len(missing_application_tests) == 0 and
             script_usage_tests_success):
         return_code = 0
+
     return return_code
 
 

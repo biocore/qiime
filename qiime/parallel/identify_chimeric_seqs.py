@@ -3,208 +3,297 @@ from __future__ import division
 
 __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2012, The QIIME project"
-__credits__ = ["Jai Ram Rideout"]
+__credits__ = ["Jai Ram Rideout", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 
-from os.path import split
-from shutil import copy
+from os.path import abspath, basename, join, exists
+from os import makedirs
+from shutil import copyfile
+from tempfile import mkdtemp
 
+import networkx as nx
 from brokit.formatdb import build_blast_db_from_fasta_path
-
 from skbio.parse.sequences import parse_fasta
 
 from qiime.identify_chimeric_seqs import make_cidx_file
-from qiime.parse import parse_tmp_to_final_filepath_map_file
 from qiime.util import write_degapped_fasta_to_file
-from qiime.parallel.util import ParallelWrapper
+from qiime.parallel.wrapper import ParallelWrapper
+from qiime.parallel.util import (input_fasta_splitter, concatenate_files,
+                                 command_wrapper, fasta_splitter_handler,
+                                 blast_db_builder_handler)
+from qiime.parallel.context import context, system_call
+from qiime.workflow.util import generate_log_fp, WorkflowLogger
 
 
-class ParallelChimericSequenceIdentifier(ParallelWrapper):
-    _script_name = 'identify_chimeric_seqs.py'
-    _input_splitter = ParallelWrapper._split_fasta
-    _job_prefix = 'CHIM'
-    _process_run_results_f = \
-        'qiime.parallel.identify_chimeric_seqs.basic_process_run_results_f'
+class ParallelChimericSeqIdentifier(ParallelWrapper):
+    def _construct_job_graph(self, input_fp, output_dir, params,
+                             jobs_to_start=None):
+        """Creates the job workflow graph to identify chimeric sequences
+        in parallel.
 
-    def _precommand_initiation(self, input_fp, output_dir, working_dir,
-                               params):
-        if params['chimera_detection_method'] == 'blast_fragments':
-            blast_db, db_files_to_remove = \
-                build_blast_db_from_fasta_path(params['reference_seqs_fp'],
-                                               output_dir=working_dir)
-            self.files_to_remove += db_files_to_remove
-            params['blast_db'] = blast_db
-        elif params['chimera_detection_method'] == 'ChimeraSlayer':
-            # copy the reference files to working dir
-            # ChimeraSlayer creates an index file of the ref and
-            # will crash without write permission in the ref seqs dir
-            aligned_reference_seqs_fp = params['aligned_reference_seqs_fp']
-            _, new_ref_filename = split(aligned_reference_seqs_fp)
-            copy(aligned_reference_seqs_fp, working_dir)
-            aligned_reference_seqs_fp = working_dir + "/" + new_ref_filename
-
-            self.files_to_remove.append(aligned_reference_seqs_fp)
-            params['aligned_reference_seqs_fp'] = aligned_reference_seqs_fp
-
-            # if given, also copy the unaligned ref db
-            reference_seqs_fp = params['reference_seqs_fp']
-            if reference_seqs_fp:
-                _, new_ref_filename = split(reference_seqs_fp)
-                copy(reference_seqs_fp, working_dir)
-                reference_seqs_fp = working_dir + "/" + new_ref_filename
-            else:
-                # otherwise create it
-                reference_seqs_fp = write_degapped_fasta_to_file(
-                    parse_fasta(open(aligned_reference_seqs_fp)),
-                    tmp_dir=working_dir)
-            # delete it afterwards
-            self.files_to_remove.append(reference_seqs_fp)
-            params['reference_seqs_fp'] = reference_seqs_fp
-
-            # build blast db of reference, otherwise ChimeraSlayer will do it
-            # and parallel jobs clash
-            _, db_files_to_remove = \
-                build_blast_db_from_fasta_path(reference_seqs_fp)
-            self.files_to_remove += db_files_to_remove
-
-            # make the index file globally
-            # Reason: ChimeraSlayer first checks to see if the index file is
-            # there. If not it tries to create it. This can lead to race
-            # condition if several parallel jobs try to create it at the same
-            # time.
-            make_cidx_file(aligned_reference_seqs_fp)
-            self.files_to_remove.append(aligned_reference_seqs_fp + ".cidx")
-        else:
-            raise ValueError("Unrecognized chimera detection method '%s'." %
-                             params['chimera_detection_method'])
-
-    def _get_job_commands(self, fasta_fps, output_dir, params, job_prefix,
-                          working_dir, command_prefix='/bin/bash; ',
-                          command_suffix='; exit'):
-        """Generate identify_chimeric_seqs.py commands which should be run."""
-        # Create basenames for each of the output files. These will be filled
-        # in to create the full list of files created by all of the runs.
-        out_filenames = [job_prefix + '.%d_chimeric.txt']
-
-        # Create lists to store the results.
-        commands = []
-        result_filepaths = []
-
-        # Iterate over the input files.
-        for i, fasta_fp in enumerate(fasta_fps):
-            # Each run ends with moving the output file from the tmp dir to
-            # the output_dir. Build the command to perform the move here.
-            rename_command, current_result_filepaths = \
-                self._get_rename_command([fn % i for fn in out_filenames],
-                                         working_dir, output_dir)
-            result_filepaths += current_result_filepaths
-
-            optional_options = ""
-            if params['chimera_detection_method'] == 'blast_fragments':
-                command = \
-                    '%s %s -i %s -t %s -m blast_fragments -o %s -n %s -d %s -e %s -b %s %s %s' % \
-                    (command_prefix,
-                     self._script_name,
-                     fasta_fp,
-                     params['id_to_taxonomy_fp'],
-                     working_dir + "/" + out_filenames[0] % i,
-                     params['num_fragments'],
-                     params['taxonomy_depth'],
-                     params['max_e_value'],
-                     params['blast_db'],
-                     rename_command,
-                     command_suffix)
-            elif params['chimera_detection_method'] == 'ChimeraSlayer':
-                optional_options = ""
-                if params['min_div_ratio']:
-                    optional_options += " --min_div_ratio %s" % \
-                                        params['min_div_ratio']
-                if params['reference_seqs_fp']:
-                    optional_options += " -r %s" % params['reference_seqs_fp']
-
-                command = \
-                    '%s %s -i %s -a %s -m ChimeraSlayer -o %s %s %s %s' % \
-                    (command_prefix,
-                     self._script_name,
-                     fasta_fp,
-                     params['aligned_reference_seqs_fp'],
-                     working_dir + "/" + out_filenames[0] % i,
-                     optional_options,
-                     rename_command,
-                     command_suffix)
-            else:
-                raise NotImplementedError
-            commands.append(command)
-        return commands, result_filepaths
-
-    def _get_poller_command(self,
-                            expected_files_filepath,
-                            merge_map_filepath,
-                            deletion_list_filepath,
-                            command_prefix='/bin/bash; ',
-                            command_suffix='; exit'):
-        """Generate command to initiate a poller to monitior/process completed runs
+        Parameters
+        ----------
+        input_fp : str
+            Path to the input fasta file
+        output_dir : str
+            Path to the output directory. It will be created if it does
+            not exists
+        params : dict
+            Parameters to use when calling identify_chimeric_seqs.py, in the
+            form of {param_name: value}
+        jobs_to_start : int, optional
+            Number of jobs to start. Default: None - start as many jobs as
+            workers in the cluster
         """
-        result = '%s poller.py -f %s -p %s -m %s -d %s -t %d %s' % \
-            (command_prefix,
-             expected_files_filepath,
-             self._process_run_results_f,
-             merge_map_filepath,
-             deletion_list_filepath,
-             self._seconds_to_sleep,
-             command_suffix)
-        return result, []
+        # Do the parameter parsing
+        input_fp = abspath(input_fp)
+        output_dir = abspath(output_dir)
+        method = params['chimera_detection_method']
 
-    def _write_merge_map_file(self, input_file_basename, job_result_filepaths,
-                              params, output_dir, merge_map_filepath,
-                              failures=False):
-        f = open(merge_map_filepath, 'w')
-        out_filepaths = [params['output_fp']]
+        # If the number of jobs to start is not provided, we default to the
+        # number of workers
+        if jobs_to_start is None:
+            jobs_to_start = context.get_number_of_workers()
 
-        chims_fps = []
-        logs_fps = []  # logs_fp currently not used
+        # Create the output directory
+        if not exists(output_dir):
+            makedirs(output_dir)
 
-        for fp in job_result_filepaths:
-            if fp.endswith('_chimeric.txt'):
-                chims_fps.append(fp)
-            else:
-                log_fps.append(fp)
+        # Generate the log
+        self._logger = WorkflowLogger(generate_log_fp(output_dir))
 
-        for in_files, out_file in zip([chims_fps], out_filepaths):
-            f.write('\t'.join(in_files + [out_file]))
-            f.write('\n')
-        f.close()
+        # Get a folder to store the temporary files
+        working_dir = mkdtemp(prefix='ICS_', dir=output_dir)
+        self._dirpaths_to_remove.append(working_dir)
+
+        dep_job_names, keys, funcs = self._csi_specific_nodes(params,
+                                                              working_dir)
+
+        # Split the input_fp in multiple files
+        self._job_graph.add_node("SPLIT_FASTA",
+                                 job=(input_fasta_splitter, input_fp,
+                                      working_dir, jobs_to_start),
+                                 requires_deps=False)
+        dep_job_names.append("SPLIT_FASTA")
+        keys.insert(0, "SPLIT_FASTA")
+        funcs["SPLIT_FASTA"] = fasta_splitter_handler
+
+        # Create the commands
+        temp_out_fps = []
+        ics_nodes = []
+        method_parms = self._get_specific_params_str(params)
+        for i in range(jobs_to_start):
+            temp_out_fp = join(working_dir, "chimeric_seqs_%d.txt" % i)
+            temp_out_fps.append(temp_out_fp)
+            node_name = "ICS_%d" % i
+            ics_nodes.append(node_name)
+            cmd = ("identify_chimeric_seqs.py -o %s %s %s"
+                   % (temp_out_fp, "-i %s", method_parms))
+            self._job_graph.add_node(node_name,
+                                     job=(command_wrapper, cmd, i, keys,
+                                          funcs),
+                                     requires_deps=True)
+            # Adding the dependency edges to the graph
+            for dep_node_name in dep_job_names:
+                self._job_graph.add_edge(dep_node_name, node_name)
+
+        # Adding temp_out_fps to the clean_up variable
+        self._filepaths_to_remove.extend(temp_out_fps)
+        # Merge the results by concatenating the output files
+        output_fp = join(output_dir, "chimeric_seqs.txt")
+        self._job_graph.add_node("CONCAT", job=(concatenate_files,
+                                                output_fp, temp_out_fps),
+                                 requires_deps=False)
+        # Make sure that the "CONCAT" node is the latest executed node
+        for node in ics_nodes:
+            self._job_graph.add_edge(node, "CONCAT")
+
+    def _csi_specific_nodes(self, params, working_dir):
+        """Adds nodes specific to the tool used to the workflow graph
+
+        Parameters
+        ----------
+        params : dict
+            Parameters to use when calling identify_chimeric_seqs.py, in the
+            form of {param_name: value}
+        working_dir : str
+            Path to the temporary directory
+
+        Returns
+        -------
+        tuple of list, list, dict of {node_name: func}
+            The first list is the name of the nodes created. The second list is
+            the name of the nodes that each of the working nodes should wait
+            for. The dict contains the function to execute on command wrapper
+            for the nodes in the second list.
+
+        Raises
+        ------
+        NotImplementedError
+            If called from the base class
+        """
+        raise NotImplementedError("This method should be overwritten in the "
+                                  "subclasses")
+
+    def _get_specific_params_str(self, params):
+        """Builds the parameters string to identify_chimeric_seqs.py specific
+        to the tool used
+
+        Parameters
+        ----------
+        params : dict
+            Parameters to use when calling identify_chimeric_seqs.py, in the
+            form of {param_name: value}
+
+        Raises
+        ------
+        NotImplementedError
+            If called from the base class
+        """
+        raise NotImplementedError("This method should be overwritten in the "
+                                  "subclasses")
 
 
-def basic_process_run_results_f(f):
-    """ Copy each list of infiles to each outfile and delete infiles
+class ParallelChimericSeqIdentifierBlast(ParallelChimericSeqIdentifier):
+    def _csi_specific_nodes(self, params, working_dir):
+        """Adds nodes specific to Blast to the workflow graph
 
-        f: file containing one set of mapping instructions per line
+        Parameters
+        ----------
+        params : dict
+            Parameters to use when calling identify_chimeric_seqs.py, in the
+            form of {param_name: value}
+        working_dir : str
+            Path to the temporary directory
 
-        example f:
-         f1.txt f2.txt f3.txt f_combined.txt
-         f1.log f2.log f3.log f_combined.log
+        Returns
+        -------
+        tuple of list, list, dict of {node_name: func}
+            The first list is the name of the nodes created. The second list is
+            the name of the nodes that each of the working nodes should wait
+            for. The dict contains the function to execute on command wrapper
+            for the nodes in the second list.
+        """
+        node = "BUILD_BLAST_DB"
+        # Build the blast database
+        self._job_graph.add_node(node,
+                                 job=(build_blast_db_from_fasta_path,
+                                      params['reference_seqs_fp'], False,
+                                      working_dir, False),
+                                 requires_deps=False)
+        return [node], [node], {node: blast_db_builder_handler}
 
-        If f contained the two lines above, this function would
-         concatenate f1.txt, f2.txt, and f3.txt into f_combined.txt
-         and f1.log, f2.log, and f3.log into f_combined.log
-    """
-    infiles_lists, out_filepaths = parse_tmp_to_final_filepath_map_file(f)
-    for infiles_list, out_filepath in zip(infiles_lists, out_filepaths):
-        try:
-            of = open(out_filepath, 'w')
-        except IOError:
-            raise IOError("Poller can't open final output file: %s" % out_filepath +
-                          "\nLeaving individual jobs output.\n Do you have write access?")
+    def _get_specific_params_str(self, params):
+        """Builds the parameters string to identify_chimeric_seqs.py specific
+        to Blast
 
-        for fp in infiles_list:
-            for line in open(fp):
-                of.write('%s\n' % line.strip('\n'))
-        of.close()
-    # It is a good idea to have your clean_up_callback return True.
-    # That way, if you get mixed up and pass it as check_run_complete_callback,
-    # you'll get an error right away rather than going into an infinite loop
-    return True
+        Parameters
+        ----------
+        params : dict
+            Parameters to use when calling identify_chimeric_seqs.py, in the
+            form of {param_name: value}
+
+        Returns
+        ------
+        str
+            The parameters string for blast
+        """
+        return ("-t {0} -m blast_fragments -n {1} -d {2} -e {3} -b %s".format(
+            params['id_to_taxonomy_fp'], params['num_fragments'],
+            params['taxonomy_depth'], params['max_e_value']))
+
+
+class ParallelChimericSeqIdentifierChimSlayer(ParallelChimericSeqIdentifier):
+    def _csi_specific_nodes(self, params, working_dir):
+        """Adds nodes specific to ChimeraSlayer to the workflow graph
+
+        Parameters
+        ----------
+        params : dict
+            Parameters to use when calling identify_chimeric_seqs.py, in the
+            form of {param_name: value}
+        working_dir : str
+            Path to the temporary directory
+
+        Returns
+        -------
+        tuple of list, list, dict of {node_name: func}
+            The first list is the name of the nodes created. The second list is
+            the name of the nodes that each of the working nodes should wait
+            for. The dict contains the function to execute on command wrapper
+            for the nodes in the second list.
+        """
+        # In the ChimeraSlayer method, we have to perform numerous
+        # steps prior to the actual execution of the jobs.
+        # We first need to copy the reference files to the working
+        # directory because ChimeraSlayer creates an index file of the
+        # reference and it will crash without write permission in the
+        # directory in which the reference sequences file is
+        aln_ref_seqs_fp = abspath(params['aligned_reference_seqs_fp'])
+        dest_aln_ref_seqs_fp = join(working_dir, basename(aln_ref_seqs_fp))
+        copyfile(aln_ref_seqs_fp, dest_aln_ref_seqs_fp)
+        aln_ref_seqs_fp = dest_aln_ref_seqs_fp
+        # Adding the copy to the clean up variable
+        self._filepaths_to_remove.append(aln_ref_seqs_fp)
+        ref_seqs_fp = params['reference_seqs_fp']
+
+        if ref_seqs_fp:
+            ref_seqs_fp = abspath(ref_seqs_fp)
+            # Copy the unaligned reference database
+            dest_ref_seqs_fp = join(working_dir, basename(ref_seqs_fp))
+            copyfile(ref_seqs_fp, dest_ref_seqs_fp)
+            ref_seqs_fp = dest_ref_seqs_fp
+        else:
+            # The unaligned reference database does not exists, create it
+            with open(aln_ref_seqs_fp, 'U') as f:
+                ref_seqs_fp = write_degapped_fasta_to_file(
+                    parse_fasta(f), tmp_dir=working_dir)
+        # Add the copied/new ref_seqs_fp to the clean up variable
+        self._filepaths_to_remove.append(ref_seqs_fp)
+
+        # Make the index file. ChimeraSlayer first checks to see if the
+        # index file exists. If not, it tries to create it. This can lead
+        # to race conditions if several parallel jobs try to create it at
+        # the same time
+        cidx_node = "MAKE_CIDX"
+        self._job_graph.add_node(cidx_node,
+                                 job=(make_cidx_file, aln_ref_seqs_fp),
+                                 requires_deps=False)
+        self._filepaths_to_remove.append("%s.cidx" % aln_ref_seqs_fp)
+        params['aligned_reference_seqs_fp'] = aln_ref_seqs_fp
+        params['reference_seqs_fp'] = ref_seqs_fp
+
+        # We create the blast database so no race condition occur
+        blast_node = "BUILD_BLAST_DB"
+        self._job_graph.add_node(blast_node,
+                                 job=(build_blast_db_from_fasta_path,
+                                      params['reference_seqs_fp'], False,
+                                      working_dir, False),
+                                 requires_deps=False)
+
+        return [cidx_node, blast_node], [], {}
+
+    def _get_specific_params_str(self, params):
+        """Builds the parameters string to identify_chimeric_seqs.py specific
+        to ChimeraSlayer
+
+        Parameters
+        ----------
+        params : dict
+            Parameters to use when calling identify_chimeric_seqs.py, in the
+            form of {param_name: value}
+
+        Returns
+        ------
+        str
+            The parameters string for ChimeraSlayer
+        """
+        min_div_ratio_str = ("--min_div_ratio %s" % params['min_div_ratio']
+                             if params['min_div_ratio'] else "")
+        return (" -m ChimeraSlayer -a %s -r %s %s"
+                % (params['aligned_reference_seqs_fp'],
+                   params['reference_seqs_fp'],
+                   min_div_ratio_str))

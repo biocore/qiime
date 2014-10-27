@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -37,8 +37,8 @@ class ParallelAlignSeqsTests(TestCase):
         self.dirs_to_remove.append(self.test_out)
 
         fd, self.template_fp = mkstemp(dir=self.test_out,
-                                      prefix='qiime_template',
-                                      suffix='.fasta')
+                                       prefix='qiime_template',
+                                       suffix='.fasta')
         close(fd)
         template_f = open(self.template_fp, 'w')
         template_f.write(pynast_test1_template_fasta)
@@ -46,15 +46,15 @@ class ParallelAlignSeqsTests(TestCase):
         self.files_to_remove.append(self.template_fp)
 
         fd, self.inseqs1_fp = mkstemp(dir=self.test_out,
-                                     prefix='qiime_inseqs',
-                                     suffix='.fasta')
+                                      prefix='qiime_inseqs',
+                                      suffix='.fasta')
         close(fd)
         inseqs1_f = open(self.inseqs1_fp, 'w')
         inseqs1_f.write(inseqs1)
         inseqs1_f.close()
         self.files_to_remove.append(self.inseqs1_fp)
 
-        initiate_timeout(60)
+        initiate_timeout(90)
 
     def tearDown(self):
         """ """
@@ -81,12 +81,9 @@ class ParallelAlignSeqsPyNastTests(ParallelAlignSeqsTests):
         }
 
         app = ParallelAlignSeqsPyNast()
-        r = app(self.inseqs1_fp,
-                self.test_out,
-                params,
-                job_prefix='PTEST',
-                poll_directly=True,
-                suppress_submit_jobs=False)
+        app(self.inseqs1_fp,
+            self.test_out,
+            params)
         # confirm that the total number of output sequences equals the total
         # number of input sequences
         num_input_seqs = count_seqs_in_filepaths([self.inseqs1_fp])[1]

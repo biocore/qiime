@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso", "Jai Ram Rideout"]
+__credits__ = ["Greg Caporaso", "Jai Ram Rideout", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -110,7 +110,7 @@ def pick_reference_otus(input_fp,
         params_str += ' %s' % get_params_str(params_copy['pick_otus'])
         otu_picking_script = 'parallel_pick_otus_%s.py' % otu_picking_method
         # Build the OTU picking command
-        pick_otus_cmd = '%s -i %s -o %s -r %s -T %s' %\
+        pick_otus_cmd = '%s -i %s -o %s -r %s %s' %\
             (otu_picking_script,
              input_fp,
              output_dir,
@@ -211,7 +211,7 @@ def assign_tax(repset_fasta_fp,
 
         # Build the parallel taxonomy assignment command
         assign_taxonomy_cmd = \
-            'parallel_assign_taxonomy_%s.py -i %s -o %s -T %s' %\
+            'parallel_assign_taxonomy_%s.py -i %s -o %s %s' %\
             (assignment_method, repset_fasta_fp,
              assign_taxonomy_dir, params_str)
     else:
@@ -284,7 +284,7 @@ def align_and_tree(repset_fasta_fp,
             pass
 
         # Build the parallel pynast alignment command
-        align_seqs_cmd = 'parallel_align_seqs_pynast.py -i %s -o %s -T %s' %\
+        align_seqs_cmd = 'parallel_align_seqs_pynast.py -i %s -o %s %s' %\
             (repset_fasta_fp, pynast_dir, params_str)
     else:
         try:

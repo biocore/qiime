@@ -4,68 +4,53 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
-from os.path import join, split
-from qiime.parallel.util import ParallelWrapper
+from os.path import join, abspath, exists, basename
+from os import makedirs
+
+from qiime.parallel.wrapper import ParallelWrapper
+from qiime.workflow.util import WorkflowLogger
 
 
 class ParallelAlphaDiversity(ParallelWrapper):
-    _script_name = "alpha_diversity.py"
-    _job_prefix = 'ALDIV'
-    _input_splitter = ParallelWrapper._input_existing_filepaths
+    def _construct_job_graph(self, input_fps, output_dir, params):
+        """Creates the job workflow graph to execute alpha_diversity.py over
+        a list of input files.
 
-    def _identify_files_to_remove(self, job_result_filepaths, params):
-        """ The output of the individual jobs are the files we want to keep
+        Parameters
+        ----------
+        input_fps : list of str
+            List of paths to the input biom tables
+        output_dir : str
+            Path to the output directory. It will be created if it does not
+            exists
+        params : dict
+            Parameters to use when calling alpha_diversity.py, in the form of
+            {param_name: value}
         """
-        return []
+        # Do the parameter parsing
+        tree_str = '-t %s' % params['tree_path'] if params['tree_path'] else ''
+        metrics = params['metrics']
+        output_dir = abspath(output_dir)
 
-    def _get_job_commands(self,
-                          input_fps,
-                          output_dir,
-                          params,
-                          job_prefix,
-                          working_dir,
-                          command_prefix='/bin/bash; ',
-                          command_suffix='; exit'):
-        """Generate alpha diversity commands to be submitted to cluster
-        """
-        commands = []
-        result_filepaths = []
+        # Create the output directory
+        if not exists(output_dir):
+            makedirs(output_dir)
 
-        if params['tree_path']:
-            tree_str = '-t %s' % params['tree_path']
-        else:
-            tree_str = ''
+        # Create the log file
+        self._logger = WorkflowLogger()
 
-        for input_fp in input_fps:
-            input_path, input_fn = split(input_fp)
-            output_fn = 'alpha_%s' % input_fn
+        for i, input_fp in enumerate(input_fps):
+            input_fn = basename(input_fp)
+            output_fn = '%d_alpha_%s' % (i, input_fn)
             output_fn = output_fn.replace('.biom', '.txt')
-            temp_fp = join(working_dir, output_fn)
-            rename_command, current_result_filepaths =\
-                self._get_rename_command([output_fn], working_dir, output_dir)
-            result_filepaths += current_result_filepaths
-
-            command = '%s %s -i %s -o %s %s -m %s %s %s' %\
-                (command_prefix,
-                 self._script_name,
-                 input_fp,
-                 temp_fp,
-                 tree_str,
-                 params['metrics'],
-                 rename_command,
-                 command_suffix)
-
-            commands.append(command)
-
-        commands = self._merge_to_n_commands(commands,
-                                             params['jobs_to_start'],
-                                             command_prefix=command_prefix,
-                                             command_suffix=command_suffix)
-
-        return commands, result_filepaths
+            output_fp = join(output_dir, output_fn)
+            cmd = ("alpha_diversity.py -i %s -o %s %s -m %s"
+                   % (input_fp, output_fp, tree_str, metrics))
+            self._job_graph.add_node("%d" % i, job=(cmd, ),
+                                     requires_deps=False)

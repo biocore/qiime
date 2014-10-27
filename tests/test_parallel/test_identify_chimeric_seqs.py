@@ -3,7 +3,7 @@ from __future__ import division
 
 __author__ = "Jai Ram Rideout"
 __copyright__ = "Copyright 2012, The QIIME project"
-__credits__ = ["Jai Ram Rideout"]
+__credits__ = ["Jai Ram Rideout", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Jai Ram Rideout"
@@ -11,9 +11,9 @@ __email__ = "jai.rideout@gmail.com"
 
 from shutil import rmtree
 from glob import glob
-from os import getenv
+from os import getenv, remove, close
 from os.path import basename, exists, join
-from tempfile import NamedTemporaryFile, mkdtemp
+from tempfile import NamedTemporaryFile, mkdtemp, mkstemp
 from unittest import TestCase, main
 
 from skbio.util.misc import remove_files
@@ -21,19 +21,22 @@ from skbio.util.misc import remove_files
 from qiime.util import get_qiime_temp_dir, load_qiime_config
 from qiime.test import initiate_timeout, disable_timeout
 from qiime.parse import fields_to_dict
-from qiime.parallel.identify_chimeric_seqs import ParallelChimericSequenceIdentifier
+from qiime.parallel.identify_chimeric_seqs import (
+    ParallelChimericSeqIdentifierBlast,
+    ParallelChimericSeqIdentifierChimSlayer)
 
 
-class ParallelChimericSequenceIdentifierTests(TestCase):
+class BaseChimericSeqIdentifierTests(TestCase):
 
     def setUp(self):
         """ """
         self.dirs_to_remove = []
 
         tmp_dir = get_qiime_temp_dir()
-        self.test_out = mkdtemp(dir=tmp_dir,
-                                prefix='qiime_parallel_chimeric_sequence_identifier_tests_',
-                                suffix='')
+        self.test_out = mkdtemp(
+            dir=tmp_dir,
+            prefix='qiime_parallel_chimeric_sequence_identifier_tests_',
+            suffix='')
         self.dirs_to_remove.append(self.test_out)
 
         self.in_seqs_f = NamedTemporaryFile(
@@ -69,6 +72,8 @@ class ParallelChimericSequenceIdentifierTests(TestCase):
             if exists(d):
                 rmtree(d)
 
+
+class ChimericSeqIdentifierBlastTests(BaseChimericSeqIdentifierTests):
     def test_parallel_chimeric_sequence_identifier_blast_fragments(self):
         """Test ParallelChimericSequenceIdentifier using blast_fragments."""
         params = {
@@ -79,48 +84,46 @@ class ParallelChimericSequenceIdentifierTests(TestCase):
             'taxonomy_depth': 4,
             'max_e_value': 1e-30,
             'min_div_ratio': None,
-            'output_fp': self.test_out + '/blast_fragments_out.txt'
         }
 
-        app = ParallelChimericSequenceIdentifier()
-        r = app(self.in_seqs_f.name,
-                self.test_out,
-                params,
-                job_prefix='CHIMTEST',
-                poll_directly=True,
-                suppress_submit_jobs=False)
+        app = ParallelChimericSeqIdentifierBlast()
+        app(self.in_seqs_f.name,
+            self.test_out,
+            params)
 
         # We should get an empty file.
-        results = [line for line in open(join(self.test_out,
-                   'blast_fragments_out.txt'), 'U')]
+        outfile = join(self.test_out, "chimeric_seqs.txt")
+        self.assertTrue(exists(outfile))
+        with open(outfile, 'U') as f:
+            results = [line for line in f]
         self.assertEqual(results, [])
 
+
+class ChimericSeqIdentifierChimSlayerTests(BaseChimericSeqIdentifierTests):
     def test_parallel_chimeric_sequence_identifier_chimera_slayer(self):
         """Test ParallelChimericSequenceIdentifier using ChimeraSlayer."""
         qiime_config = load_qiime_config()
         params = {
             'reference_seqs_fp': None,
-            'aligned_reference_seqs_fp': qiime_config[
-                'pynast_template_alignment_fp'],
+            'aligned_reference_seqs_fp':
+                qiime_config['pynast_template_alignment_fp'],
             'chimera_detection_method': 'ChimeraSlayer',
             'num_fragments': 3,
             'taxonomy_depth': 4,
             'max_e_value': 1e-30,
             'min_div_ratio': None,
-            'output_fp': self.test_out + '/ChimeraSlayer_out.txt'
         }
 
-        app = ParallelChimericSequenceIdentifier()
-        r = app(self.in_seqs_aligned_f.name,
-                self.test_out,
-                params,
-                job_prefix='CHIMTEST',
-                poll_directly=True,
-                suppress_submit_jobs=False)
+        app = ParallelChimericSeqIdentifierChimSlayer()
+        app(self.in_seqs_aligned_f.name,
+            self.test_out,
+            params)
 
         # Basic sanity check: we should get two lines (i.e. two chimeras).
-        results = [line for line in open(join(self.test_out,
-                   'ChimeraSlayer_out.txt'), 'U')]
+        outfile = join(self.test_out, "chimeric_seqs.txt")
+        self.assertTrue(exists(outfile))
+        with open(outfile, 'U') as f:
+            results = [line for line in f]
         self.assertEqual(len(results), 2)
 
 # This test data is taken from qiime_test_data.

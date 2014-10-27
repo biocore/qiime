@@ -4,379 +4,357 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso", "Jens Reeder", "Jai Ram Rideout"]
+__credits__ = ["Greg Caporaso", "Jens Reeder", "Jai Ram Rideout",
+               "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
-from math import ceil
-from os.path import basename, join
-from re import compile
+from os.path import basename, join, abspath, exists, splitext
+from os import makedirs
+from tempfile import mkdtemp
 
 from brokit.formatdb import build_blast_db_from_fasta_path
-
 from skbio.parse.sequences import parse_fasta
 
-from qiime.parallel.util import ParallelWrapper, BufferedWriter
-from qiime.parallel.poller import basic_process_run_results_f
+from qiime.parallel.context import context
+from qiime.parallel.wrapper import ParallelWrapper
+from qiime.parallel.util import (input_fasta_splitter, merge_files_from_dirs,
+                                 concatenate_files, BufferedWriter,
+                                 command_wrapper, fasta_splitter_handler,
+                                 blast_db_builder_handler)
+from qiime.workflow.util import generate_log_fp, WorkflowLogger
+
+
+def merge_otu_maps(output_fp, otu_maps):
+    """Merges all the OTU maps listed on otu_maps
+
+    Parameters
+    ----------
+    otu_maps : list of str
+        Paths to the otu map files
+    output_fp : str
+        Path to the output otu map
+    """
+    from collections import defaultdict
+    unique_otu_map = defaultdict(list)
+    for fp in otu_maps:
+        with open(fp, 'U') as otu_map:
+            for line in otu_map:
+                fields = line.strip().split()
+                unique_otu_map[fields[0]].extend(fields[1:])
+
+    with open(output_fp, 'w') as outf:
+        for otu_id, seq_ids in unique_otu_map.items():
+            outf.write("%s\n" % '\t'.join([otu_id] + seq_ids))
 
 
 class ParallelPickOtus(ParallelWrapper):
-    _script_name = "pick_otus.py"
-    _job_prefix = 'POTU'
-    _input_splitter = ParallelWrapper._split_fasta
-    _process_run_results_f =\
-        'qiime.parallel.pick_otus.parallel_pick_otus_process_run_results_f'
+    def _construct_job_graph(self, input_fp, output_dir, params,
+                             jobs_to_start=None):
+        """Creates the job workflow graph to pick otus in parallel.
 
-    def _get_poller_command(self,
-                            expected_files_filepath,
-                            merge_map_filepath,
-                            deletion_list_filepath,
-                            command_prefix='/bin/bash; ',
-                            command_suffix='; exit'):
-        """Generate command to initiate a poller to monitior/process completed runs
+        Parameters
+        ----------
+        input_fp : str
+            Path to the input fasta file
+        output_dir : str
+            Path to the output directory. It will be created if it does
+            not exists
+        params : dict
+            Parameters to use when calling pick_otus.py, in the
+            form of {param_name: value}
+        jobs_to_start : int, optional
+            Number of jobs to start. Default: None = start as many jobs as
+            workers in the cluster
         """
+        # Create the output directory if it does not exists
+        output_dir = abspath(output_dir)
+        if not exists(output_dir):
+            makedirs(output_dir)
 
-        result = '%s poller.py -f %s -p %s -m %s -d %s -t %d %s' % \
-            (command_prefix,
-             expected_files_filepath,
-             self._process_run_results_f,
-             merge_map_filepath,
-             deletion_list_filepath,
-             self._seconds_to_sleep,
-             command_suffix)
+        # Generate the log file
+        self._logger = WorkflowLogger(generate_log_fp(output_dir))
 
-        return result, []
+        # If the number of jobs to start is not provided, we default to the
+        # number of workers
+        if jobs_to_start is None:
+            jobs_to_start = context.get_number_of_workers()
 
-    def _write_merge_map_file(self,
-                              input_file_basename,
-                              job_result_filepaths,
-                              params,
-                              output_dir,
-                              merge_map_filepath):
+        # Get a folder to store the temporary files
+        working_dir = mkdtemp(prefix='otu_picker_', dir=output_dir)
+        self._dirpaths_to_remove.append(working_dir)
+
+        # Perform any work that the specific OTU picker needs to do and get
+        # back the list of node names that the PPOTU_X jobs should wait for,
+        # and a boolean to know if the command wrapper should look for the
+        # blast db or not
+        dep_job_names, funcs = self._picker_specific_nodes(params, working_dir)
+
+        # Split the input fasta file'
+        self._job_graph.add_node("SPLIT_FASTA",
+                                 job=(input_fasta_splitter, input_fp,
+                                      working_dir, jobs_to_start),
+                                 requires_deps=False)
+        dep_job_names.insert(0, "SPLIT_FASTA")
+        funcs["SPLIT_FASTA"] = fasta_splitter_handler
+
+        # Build the commands
+        output_dirs = []
+        node_names = []
+        picker_specific_param_str = self._get_specific_params_str(params)
+        for i in range(jobs_to_start):
+            node_name = "PPOTU_%s" % i
+            node_names.append(node_name)
+            out_dir = join(working_dir, node_name)
+            output_dirs.append(out_dir)
+            cmd = ("pick_otus.py %s -o %s %s"
+                   % ("-i %s", out_dir, picker_specific_param_str))
+            self._job_graph.add_node(node_name,
+                                     job=(command_wrapper, cmd, i,
+                                          dep_job_names, funcs),
+                                     requires_deps=True)
+            for node in dep_job_names:
+                self._job_graph.add_edge(node, node_name)
+
+        # Generate the paths to the output files
+        prefix = splitext(basename(input_fp))[0]
+        out_log = join(output_dir, "%s_otus.log" % prefix)
+        out_otus = join(output_dir, "%s_otus.txt" % prefix)
+        out_failures = join(output_dir, "%s_failures.txt" % prefix)
+        self._job_graph.add_node("MERGE_LOGS",
+                                 job=(merge_files_from_dirs, out_log,
+                                      output_dirs, "*_otus.log",
+                                      concatenate_files),
+                                 requires_deps=False)
+        self._job_graph.add_node("MERGE_FAILURES",
+                                 job=(merge_files_from_dirs, out_failures,
+                                      output_dirs, "*_failures.txt",
+                                      concatenate_files),
+                                 requires_deps=False)
+        self._job_graph.add_node("MERGE_OTU_MAPS",
+                                 job=(merge_files_from_dirs, out_otus,
+                                      output_dirs, "*_otus.txt",
+                                      merge_otu_maps),
+                                 requires_deps=False)
+        # Make sure that the merge nodes are executed after the worker nodes
+        for node in node_names:
+            self._job_graph.add_edge(node, "MERGE_LOGS")
+            self._job_graph.add_edge(node, "MERGE_FAILURES")
+            self._job_graph.add_edge(node, "MERGE_OTU_MAPS")
+
+    def _picker_specific_nodes(self, params, working_dir):
+        """Adds the nodes to the job workflow graph specific to the tool to be
+        used.
+
+        Parameters
+        ----------
+        params : dict
+            Parameters to use when calling pick_otus.py, in the
+            form of {param_name: value}
+        working_dir : str
+            Path to the working directory
+
+        Returns
+        -------
+        tuple of (list of str, dict of {str: func})
+            The list contains the name of all the nodes added to the job graph.
+            The dict contains the handler function needed to process the
+            result of each node added (if needed).
+
+        Raises
+        ------
+        NotImplementedError
+            If called from the base class
         """
+        raise NotImplementedError("This method should be overwritten in the "
+                                  "subclasses")
+
+    def _get_specific_params_str(self, params):
+        """Builds the parameter string for pick_otus.py specific to the tool
+        to be used
+
+        Parameters
+        ----------
+        params : dict
+            Parameters to use when calling pick_otus.py, in the
+            form of {param_name: value}
+
+        Returns
+        -------
+        str
+            A string with all the parameters to pass to pick_otus.py
+
+        Raises
+        ------
+        NotImplementedError
+            If called from the base class
         """
-        f = open(merge_map_filepath, 'w')
-
-        otus_fps = []
-        log_fps = []
-        failures_fps = []
-
-        # determine if the otu picking method generates
-        # failures files
-        failures = False
-        for fp in job_result_filepaths:
-            if fp.endswith('_failures.txt'):
-                failures = True
-                break
-
-        if not failures:
-            out_filepaths = [
-                '%s/%s_otus.txt' % (output_dir, input_file_basename),
-                '%s/%s_otus.log' % (output_dir, input_file_basename)]
-            in_filepaths = [otus_fps, log_fps]
-        else:
-            out_filepaths = [
-                '%s/%s_otus.txt' % (output_dir, input_file_basename),
-                '%s/%s_otus.log' % (output_dir, input_file_basename),
-                '%s/%s_failures.txt' % (output_dir, input_file_basename)]
-            in_filepaths = [otus_fps, log_fps, failures_fps]
-
-        for fp in job_result_filepaths:
-            if fp.endswith('_otus.txt'):
-                otus_fps.append(fp)
-            elif fp.endswith('_otus.log'):
-                log_fps.append(fp)
-            elif fp.endswith('_failures.txt'):
-                failures_fps.append(fp)
-            else:
-                pass
-
-        for in_files, out_file in\
-                zip(in_filepaths, out_filepaths):
-            f.write('\t'.join(in_files + [out_file]))
-            f.write('\n')
-        f.close()
+        raise NotImplementedError("This method should be overwritten in the "
+                                  "subclasses")
 
 
 class ParallelPickOtusUclustRef(ParallelPickOtus):
+    def _picker_specific_nodes(self, params, working_dir):
+        """Adds the nodes to the job workflow graph specific to uclust ref.
 
-    def _identify_files_to_remove(self, job_result_filepaths, params):
-        """ Select the files to remove: by default remove all files
+        Parameters
+        ----------
+        params : dict
+            Parameters to use when calling pick_otus.py, in the
+            form of {param_name: value}
+        working_dir : str
+            Path to the working directory
+
+        Returns
+        -------
+        tuple of (list of str, dict of {str: func})
+            The list contains the name of all the nodes added to the job graph.
+            The dict contains the handler function needed to process the
+            result of each node added (if needed).
         """
-        if params['save_uc_files']:
-            # keep any .uc files that get created
-            result =\
-                [fp for fp in job_result_filepaths if not fp.endswith('.uc')]
-        else:
-            result = [job_result_filepaths]
+        return [], {}
 
-        return result
+    def _get_specific_params_str(self, params):
+        """Builds the parameter string for pick_otus.py specific to uclust ref
 
-    def _get_job_commands(self,
-                          fasta_fps,
-                          output_dir,
-                          params,
-                          job_prefix,
-                          working_dir,
-                          command_prefix='/bin/bash; ',
-                          command_suffix='; exit'):
-        """Generate pick_otus commands which should be run
+        Parameters
+        ----------
+        params : dict
+            Parameters to use when calling pick_otus.py, in the
+            form of {param_name: value}
+
+        Returns
+        -------
+        str
+            A string with all the parameters to pass to pick_otus.py
         """
-        # Create basenames for each of the output files. These will be filled
-        # in to create the full list of files created by all of the runs.
-        out_filenames = [job_prefix + '.%d_otus.log',
-                         job_prefix + '.%d_otus.txt',
-                         job_prefix + '.%s_failures.txt']
+        enable_rev_strand_match_str = (
+            '-z' if params['enable_rev_strand_match'] else '')
+        optimal_uclust_str = '-A' if params['optimal_uclust'] else ''
+        exact_uclust_str = '-E' if params['exact_uclust'] else ''
+        stable_sort_str = (
+            '' if params['stable_sort'] else '--suppress_uclust_stable_sort')
+        save_uc_files_str = '' if params['save_uc_files'] else '-d'
 
-        # Create lists to store the results
-        commands = []
-        result_filepaths = []
-
-        if params['enable_rev_strand_match']:
-            enable_rev_strand_match_str = '-z'
-        else:
-            enable_rev_strand_match_str = ''
-
-        if params['optimal_uclust']:
-            optimal_uclust_str = '-A'
-        else:
-            optimal_uclust_str = ''
-
-        if params['exact_uclust']:
-            exact_uclust_str = '-E'
-        else:
-            exact_uclust_str = ''
-
-        if params['stable_sort']:
-            stable_sort_str = ''
-        else:
-            stable_sort_str = '--suppress_uclust_stable_sort'
-
-        if params['save_uc_files']:
-            save_uc_files_str = ''
-            out_filenames += [job_prefix + '.%d_clusters.uc']
-        else:
-            save_uc_files_str = '-d'
-
-        # Iterate over the input files
-        for i, fasta_fp in enumerate(fasta_fps):
-            # Each run ends with moving the output file from the tmp dir to
-            # the output_dir. Build the command to perform the move here.
-            rename_command, current_result_filepaths = self._get_rename_command(
-                [fn % i for fn in out_filenames],
-                working_dir,
-                output_dir)
-            result_filepaths += current_result_filepaths
-
-            command = \
-                '%s %s -i %s -r %s -m uclust_ref --suppress_new_clusters -o %s -s %s %s %s %s --max_accepts %s --max_rejects %s --stepwords %d --w %d %s %s %s %s' %\
-                (command_prefix,
-                 self._script_name,
-                 fasta_fp,
-                 params['refseqs_fp'],
-                 working_dir,
-                 params['similarity'],
-                 enable_rev_strand_match_str,
-                 optimal_uclust_str,
-                 exact_uclust_str,
-                 params['max_accepts'],
-                 params['max_rejects'],
-                 params['stepwords'],
-                 params['word_length'],
-                 stable_sort_str,
-                 save_uc_files_str,
-                 rename_command,
-                 command_suffix)
-
-            commands.append(command)
-
-        return commands, result_filepaths
+        return (
+            "-r %s -m uclust_ref --suppress_new_clusters -s %s %s %s %s "
+            "--max_accepts %s --max_rejects %s --stepwords %d --w %d %s %s"
+            % (params['refseqs_fp'], params['similarity'],
+               enable_rev_strand_match_str, optimal_uclust_str,
+               exact_uclust_str, params['max_accepts'], params['max_rejects'],
+               params['stepwords'], params['word_length'], stable_sort_str,
+               save_uc_files_str))
 
 
 class ParallelPickOtusUsearch61Ref(ParallelPickOtus):
+    def _picker_specific_nodes(self, params, working_dir):
+        """Adds the nodes to the job workflow graph specific to usearch61 ref.
 
-    def _get_job_commands(self,
-                          fasta_fps,
-                          output_dir,
-                          params,
-                          job_prefix,
-                          working_dir,
-                          command_prefix='/bin/bash; ',
-                          command_suffix='; exit'):
-        """Generate pick_otus commands which should be run
+        Parameters
+        ----------
+        params : dict
+            Parameters to use when calling pick_otus.py, in the
+            form of {param_name: value}
+        working_dir : str
+            Path to the working directory
+
+        Returns
+        -------
+        tuple of (list of str, dict of {str: func})
+            The list contains the name of all the nodes added to the job graph.
+            The dict contains the handler function needed to process the
+            result of each node added (if needed).
         """
-        # Create basenames for each of the output files. These will be filled
-        # in to create the full list of files created by all of the runs.
-        out_filenames = [job_prefix + '.%d_otus.log',
-                         job_prefix + '.%d_otus.txt',
-                         job_prefix + '.%s_failures.txt']
+        return [], {}
 
-        # Create lists to store the results
-        commands = []
-        result_filepaths = []
+    def _get_specific_params_str(self, params):
+        """Builds the parameter string for pick_otus.py specific to usearch61
+        ref
 
+        Parameters
+        ----------
+        params : dict
+            Parameters to use when calling pick_otus.py, in the
+            form of {param_name: value}
+
+        Returns
+        -------
+        str
+            A string with all the parameters to pass to pick_otus.py
+        """
         # Generate the parameters to pass to pick_otus.py. This must exclude
         # parameters that get passed only to the parallel version
         # (e.g jobs_to_start) and values that get overwritten (e.g.,
         # input_fasta_fp)
         param_fields = []
-        ignored_params = set(["input_fasta_fp", "output_dir", "jobs_to_start",
-                              "retain_temp_files", "suppress_submit_jobs", "poll_directly",
-                              "cluster_jobs_fp", "suppress_polling", "job_prefix",
-                              "seconds_to_sleep"])
+        ignored_params = {"input_fasta_fp", "output_dir", "jobs_to_start",
+                          "retain_temp_files", "suppress_submit_jobs",
+                          "poll_directly", "cluster_jobs_fp",
+                          "suppress_polling", "job_prefix", "seconds_to_sleep"}
         for name, value in params.items():
-            if name in ignored_params or value == False:
+            if name in ignored_params or value is False:
                 pass
-            elif value == 'True':
+            elif value is True:
                 param_fields.append('--%s' % name)
             else:
                 param_fields.append('--%s %s' % (name, value))
-        params_str = ' '.join(param_fields)
-
-        # Iterate over the input files
-        for i, fasta_fp in enumerate(fasta_fps):
-            # Each run ends with moving the output file from the tmp dir to
-            # the output_dir. Build the command to perform the move here.
-            iteration_working_dir = join(working_dir, str(i))
-            rename_command, current_result_filepaths = self._get_rename_command(
-                [fn % i for fn in out_filenames],
-                iteration_working_dir,
-                output_dir)
-            result_filepaths += current_result_filepaths
-
-            command = \
-                '%s %s -i %s -m usearch61_ref --suppress_new_clusters -o %s %s %s %s' %\
-                (command_prefix,
-                 self._script_name,
-                 fasta_fp,
-                 iteration_working_dir,
-                 params_str,
-                 rename_command,
-                 command_suffix)
-            commands.append(command)
-
-        return commands, result_filepaths
+        return ("-m usearch61_ref --suppress_new_clusters %s"
+                % ' '.join(param_fields))
 
 
 class ParallelPickOtusBlast(ParallelPickOtus):
+    def _picker_specific_nodes(self, params, working_dir):
+        """Adds the nodes to the job workflow graph specific to blast.
 
-    def _precommand_initiation(
-            self, input_fp, output_dir, working_dir, params):
-        if not params['blast_db']:
-            # Build the blast database from the reference_seqs_fp -- all procs
-            # will then access one db rather than create one per proc
-            blast_db, db_files_to_remove = \
-                build_blast_db_from_fasta_path(params['refseqs_fp'])
-            self.files_to_remove += db_files_to_remove
-            params['blast_db'] = blast_db
+        Parameters
+        ----------
+        params : dict
+            Parameters to use when calling pick_otus.py, in the
+            form of {param_name: value}
+        working_dir : str
+            Path to the working directory
 
-    def _get_job_commands(self,
-                          fasta_fps,
-                          output_dir,
-                          params,
-                          job_prefix,
-                          working_dir,
-                          command_prefix='/bin/bash; ',
-                          command_suffix='; exit'):
-        """Generate pick_otus commands which should be submitted to cluster
+        Returns
+        -------
+        tuple of (list of str, dict of {str: func})
+            The list contains the name of all the nodes added to the job graph.
+            The dict contains the handler function needed to process the
+            result of each node added (if needed).
         """
-        # Create basenames for each of the output files. These will be filled
-        # in to create the full list of files created by all of the runs.
-        out_filenames = [job_prefix + '.%d_otus.log',
-                         job_prefix + '.%d_otus.txt']
+        node = "BUILD_BLAST_DB"
+        if not params['blast_db']:
+            # Build the blast database from the refseqs_fp -- all procs
+            # will then access one db rather than create one per proc
+            self._job_graph.add_node("BUILD_BLAST_DB",
+                                     job=(build_blast_db_from_fasta_path,
+                                          params['refseqs_fp'], False,
+                                          working_dir, False),
+                                     requires_deps=False)
+        return [node], {node: blast_db_builder_handler}
 
-        # Create lists to store the results
-        commands = []
-        result_filepaths = []
+    def _get_specific_params_str(self, params):
+        """Builds the parameter string for pick_otus.py specific to blast
 
-        # Iterate over the input files
-        for i, fasta_fp in enumerate(fasta_fps):
-            # Each run ends with moving the output file from the tmp dir to
-            # the output_dir. Build the command to perform the move here.
-            rename_command, current_result_filepaths = self._get_rename_command(
-                [fn % i for fn in out_filenames], working_dir, output_dir)
-            result_filepaths += current_result_filepaths
+        Parameters
+        ----------
+        params : dict
+            Parameters to use when calling pick_otus.py, in the
+            form of {param_name: value}
 
-            command = \
-                '%s %s -i %s -b %s -m blast -o %s -e %s -s %s --min_aligned_percent %s %s %s' %\
-                (command_prefix,
-                 self._script_name,
-                 fasta_fp,
-                 params['blast_db'],
-                 working_dir,
-                 params['max_e_value'],
-                 params['similarity'],
-                 params['min_aligned_percent'],
-                 rename_command,
-                 command_suffix)
-
-            commands.append(command)
-
-        return commands, result_filepaths
+        Returns
+        -------
+        str
+            A string with all the parameters to pass to pick_otus.py
+        """
+        return (
+            "-m blast -e %s -s %s --min_aligned_percent %s %s"
+            % (params['max_e_value'], params['similarity'],
+               params['min_aligned_percent'], "-b %s"))
 
 
-def parallel_pick_otus_process_run_results_f(f):
-    """ Copy each list of infiles to each outfile and delete infiles
-
-        f: file containing one set of mapping instructions per line
-
-        example f:
-         f1.txt f2.txt f3.txt f_combined.txt
-         f1.log f2.log f3.log f_combined.log
-         f1_failures.txt f2_failures.txt f3_failures.txt f_failires.txt
-
-        If f contained the two lines above, this function would
-         concatenate f1.txt, f2.txt, and f3.txt into f_combined.txt
-         and f1.log, f2.log, and f3.log into f_combined.log
-    """
-    lines = list(f)
-    # handle catting of log files and failure files
-    basic_process_run_results_f([lines[1]])
-    try:
-        basic_process_run_results_f([lines[2]])
-        basic_process_run_results_f([lines[3]])
-    except IndexError:
-        # no failures files or blast6 were generated (BLAST
-        # doesn't create these)
-        pass
-    # handle merging of otu maps
-    fields = lines[0].strip().split()
-    infiles_list = fields[:-1]
-    out_filepath = fields[-1]
-    try:
-        of = open(out_filepath, 'w')
-    except IOError:
-        raise IOError("Poller can't open final output file: %s" % out_filepath +
-                      "\nLeaving individual jobs output.\n Do you have write access?")
-
-    unique_otu_map = {}
-    for fp in infiles_list:
-        for line in open(fp):
-            fields = line.strip().split()
-            try:
-                # current otu_id already exists, so append this
-                # set of seq_ids
-                unique_otu_map[fields[0]] += fields[1:]
-            except KeyError:
-                # current otu_id has not been seen yet, so
-                # create it with the current set of otus
-                unique_otu_map[fields[0]] = fields[1:]
-
-    for otu_id, seq_ids in unique_otu_map.items():
-        of.write('\t'.join([otu_id] + seq_ids))
-        of.write('\n')
-    of.close()
-
-    # It is a good idea to have your clean_up_callback return True.
-    # That way, if you get mixed up and pass it as check_run_complete_callback,
-    # you'll get an error right away rather than going into an infinite loop
-    return True
-
-
-class ParallelPickOtusTrie(ParallelPickOtus):
-
+class ParallelPickOtusTrie(ParallelWrapper):
     """Picking Otus using a trie the parallel way
 
     We parallelize the Trie OTU picker using this scheme:
@@ -385,219 +363,134 @@ class ParallelPickOtusTrie(ParallelPickOtus):
     2. Run trie otupicker an each bucket separately, distribute over cluster
     3. Combine mappings of 2, Since each bucket is independent fro the rest,
        a simple cat with incrementing OTU ids should do it.
+
+    Since the parallel trie scheme is different from the other pick otu
+    algorithms, we are not extending the ParallelPickOtus class
     """
-    _process_run_results_f =\
-        'qiime.parallel.pick_otus.parallel_pick_otus_trie_process_run_results_f'
+    def _construct_job_graph(self, input_fp, output_dir, params):
+        """Creates the job workflow graph to pick otus in parallel using the
+        trie algorithm.
 
-    def _call_initialization(self,
-                             input_fp,
-                             output_dir,
-                             params,
-                             job_prefix,
-                             poll_directly,
-                             suppress_submit_jobs):
-        """ Called as the first step in __call__.
+        Parameters
+        ----------
+        input_fp : str
+            Path to the input fasta file
+        output_dir : str
+            Path to the output directory. It will be created if it does
+            not exists
+        params : dict
+            Parameters to use when calling pick_otus.py, in the
+            form of {param_name: value}
         """
-        self.prefix_counts = {}
+        # Create the output directory if it does not exists
+        output_dir = abspath(output_dir)
+        if not exists(output_dir):
+            makedirs(output_dir)
 
-    def _split_along_prefix(self,
-                            input_fp,
-                            params,
-                            jobs_to_start,
-                            job_prefix,
-                            output_dir):
-        """ Split input sequences into sets with identical prefix"""
-        out_files = []
-        buffered_handles = {}
+        # Generate the log file
+        self._logger = WorkflowLogger(generate_log_fp(output_dir))
+
+        # Get a folder to store the temporary files
+        working_dir = mkdtemp(prefix='otu_picker_', dir=output_dir)
+        self._dirpaths_to_remove.append(working_dir)
+
+        # Split the input fasta file. We cannot add the job to the job graph
+        # because the number of jobs will be defined by the number of files
+        # that the input file is split
         prefix_length = params['prefix_length'] or 1
-        for seq_id, seq in parse_fasta(open(input_fp)):
+        fasta_fps = trie_input_splitter(input_fp, working_dir, prefix_length)
 
-            if(len(seq) < prefix_length):
-                raise ValueError("Prefix length must be equal or longer than sequence.\n"
-                                 + " Found seq %s with length %d" % (seq_id, len(seq)))
+        # Build the commands
+        output_dirs = []
+        node_names = []
+        for i, fasta_fp in enumerate(fasta_fps):
+            node_name = "PPOTU_%s" % i
+            node_names.append(node_name)
+            out_dir = join(working_dir, node_name)
+            output_dirs.append(out_dir)
+            cmd = ("pick_otus.py -i %s -o %s -m trie"
+                   % (fasta_fp, out_dir))
+            self._job_graph.add_node(node_name, job=(cmd,),
+                                     requires_deps=False)
+
+        # Generate the paths to the output files
+        prefix = splitext(basename(input_fp))[0]
+        out_log = join(output_dir, "%s_otus.log" % prefix)
+        out_otus = join(output_dir, "%s_otus.txt" % prefix)
+        self._job_graph.add_node("MERGE_LOGS",
+                                 job=(merge_files_from_dirs, out_log,
+                                      output_dirs, "*_otus.log",
+                                      concatenate_files),
+                                 requires_deps=False)
+        self._job_graph.add_node("MERGE_OTU_MAPS",
+                                 job=(merge_files_from_dirs, out_otus,
+                                      output_dirs, "*_otus.txt",
+                                      merge_otu_maps_trie),
+                                 requires_deps=False)
+        # Make sure that the merge nodes are executed after the worker nodes
+        for node in node_names:
+            self._job_graph.add_edge(node, "MERGE_LOGS")
+            self._job_graph.add_edge(node, "MERGE_OTU_MAPS")
+
+
+def trie_input_splitter(fasta_fp, output_dir, prefix_length):
+    """Split input sequences into sets with identical prefix
+
+    Parameters
+    ----------
+    fasta_fp : str
+        Path to the input fasta file
+    output_dir : str
+        Path to the output directory
+    prefix_length : int
+        The length of the prefix
+
+    Returns
+    -------
+    list of str
+        Paths to the output files
+    """
+    out_files = []
+    buffered_handles = {}
+    with open(fasta_fp, 'U') as f:
+        for seq_id, seq in parse_fasta(f):
+            if len(seq) < prefix_length:
+                raise ValueError("Prefix length must be equal or shorter than "
+                                 "than sequence.\n Found seq %s with length "
+                                 "%d" % (seq_id, len(seq)))
             prefix = seq[:prefix_length]
 
-            if (prefix not in buffered_handles):
-                # never seen this prefix before
-                out_fp = "%s/%s%s" % (output_dir, job_prefix, prefix)
+            if prefix not in buffered_handles:
+                # Never seen this prefix before
+                out_fp = join(output_dir, prefix)
                 buffered_handles[prefix] = BufferedWriter(out_fp)
                 out_files.append(out_fp)
-                self.prefix_counts[prefix] = 0
 
-            self.prefix_counts[prefix] += 1
             buffered_handles[prefix].write('>%s\n%s\n' % (seq_id, seq))
 
-        # make sure all buffers are closed and flushed
-        for buf_fh in buffered_handles.itervalues():
-            buf_fh.close()
+    # make sure all buffers are closed and flushed
+    for buf_fh in buffered_handles.itervalues():
+        buf_fh.close()
 
-        remove_files = True
-        return out_files, remove_files
-
-    _input_splitter = _split_along_prefix
-
-    def _get_job_commands(self,
-                          fasta_fps,
-                          output_dir,
-                          params,
-                          job_prefix,
-                          working_dir,
-                          command_prefix='/bin/bash; ',
-                          command_suffix='; exit'):
-        """Generate pick_otus commands which should be run
-        """
-        # Create basenames for each of the output files. These will be filled
-        # in to create the full list of files created by all of the runs.
-        out_filenames = ['%s_otus.log',
-                         '%s_otus.txt']
-
-        # Create lists to store the results
-        commands = {}
-        result_filepaths = []
-
-        # Iterate over the input files
-        for i, fasta_fp in enumerate(fasta_fps):
-            # Each run ends with moving the output file from the tmp dir to
-            # the output_dir. Build the command to perform the move here.
-            rename_command, current_result_filepaths = self._get_rename_command(
-                [fn % basename(fasta_fp) for fn in out_filenames],
-                working_dir,
-                output_dir)
-            result_filepaths += current_result_filepaths
-
-            command = \
-                '%s -i %s -m trie -o %s %s' %\
-                (self._script_name,
-                 fasta_fp,
-                 working_dir,
-                 rename_command)
-
-            re = compile("POTU_\w+_(\w+)")
-            prefix = (re.search(fasta_fp)).group(1)
-            commands[prefix] = command
-
-        commands = self._merge_to_n_commands(commands,
-                                             params['jobs_to_start'],
-                                             command_prefix=command_prefix,
-                                             command_suffix=command_suffix)
-        return commands, result_filepaths
-
-    def _merge_to_n_commands(self,
-                             commands,
-                             n,
-                             delimiter=' ; ',
-                             command_prefix=None,
-                             command_suffix=None):
-        """ merge a list of commands into n commands
-
-        Uses the size of each jobs to estimate an even distribution
-        of commands ofver the n jobs.
-
-        commands: dict of commands keyed by prefix
-
-        n: number of jobs
-        """
-        if n < 1:
-            raise ValueError("number of commands (n) must be an integer >= 1")
-
-        # Distribute jobs according to their load
-        grouped_prefixe, levels = greedy_partition(self.prefix_counts, n)
-
-        # TODO: remove after profiling or maybe move to log file
-#       print levels
-#       print ("Maximal theoretical speed up: %f" % (sum(levels)/max(levels)))
-
-        result = []
-        # begin iterating through the commands
-        current_cmds = []
-
-        for bucket in grouped_prefixe:
-            for prefix in bucket:
-                command = commands[prefix]
-
-                subcommands = [c.strip() for c in command.split(';')]
-                current_cmds.append(delimiter.join(subcommands))
-
-            result.append(delimiter.join(current_cmds))
-            current_cmds = []
-
-        for i, r in enumerate(result):
-            r = '%s %s %s' % (command_prefix, r, command_suffix)
-            result[i] = r.strip()
-
-        return result
+    return out_files
 
 
-def parallel_pick_otus_trie_process_run_results_f(f):
-    """ Copy each list of infiles to each outfile and delete infiles
+def merge_otu_maps_trie(output_fp, otu_maps):
+    """Merge the OTU maps of the parallel trie approach
 
-        f: file containing one set of mapping instructions per line
-
-        example f:
-         f1.txt f2.txt f3.txt f_combined.txt
-         f1.log f2.log f3.log f_combined.log
-         f1_failures.txt f2_failures.txt f3_failures.txt f_failires.txt
-
-         If f contained the two lines above, this function would
-         concatenate f1.txt, f2.txt, and f3.txt into f_combined.txt
-         and f1.log, f2.log, and f3.log into f_combined.log
-
-         Note: this is mostly copied from
-               parallel_pick_otus_process_run_results_f
-               The only difference is the way how otu_maps are combined.
-               Since each otu_map for the parallel trie otu pickers yields disjoint
-               sets, we have to make the otu_ids disjoint as well.
+    Parameters
+    ----------
+    output_fp : str
+        Path to the output otu map
+    otu_maps : list of str
+        Paths to the otu maps
     """
-    lines = list(f)
-    # handle catting of log files and failure files
-    basic_process_run_results_f([lines[1]])
-    try:
-        basic_process_run_results_f([lines[2]])
-        basic_process_run_results_f([lines[3]])
-    except IndexError:
-        # no failures files or blast6 were generated (BLAST
-        # doesn't create these)
-        pass
-    # handle merging of otu maps
-    fields = lines[0].strip().split()
-    infiles_list = fields[:-1]
-    out_filepath = fields[-1]
-    try:
-        of = open(out_filepath, 'w')
-    except IOError:
-        raise IOError("Poller can't open final output file: %s" % out_filepath +
-                      "\nLeaving individual jobs output.\n Do you have write access?")
-
-    unique_otu_map = {}
     otu_id = 0
-    for fp in infiles_list:
-        for line in open(fp):
-            fields = line.strip().split()
-            of.write('\t'.join(["%d" % otu_id] + fields[1:]))
-            of.write('\n')
-            otu_id += 1
-    of.close()
-
-    # It is a good idea to have your clean_up_callback return True.
-    # That way, if you get mixed up and pass it as check_run_complete_callback,
-    # you'll get an error right away rather than going into an infinite loop
-    return True
-
-
-def greedy_partition(counts, n):
-    """Distribute k counts evenly across n buckets,
-
-    counts: dict of key, counts pairs
-    n: number of buckets that the counts should be distributed over
-    """
-
-    buckets = [[] for i in range(n)]
-    fill_levels = [0 for i in range(n)]
-
-    for key in sorted(counts, reverse=True,
-                      key=lambda c: counts[c]):
-        smallest = fill_levels.index(min(fill_levels))
-        buckets[smallest].append(key)
-        fill_levels[smallest] += counts[key]
-
-    return buckets, fill_levels
+    with open(output_fp, 'w') as outf:
+        for fp in otu_maps:
+            with open(fp, 'U') as otu_map:
+                for line in otu_map:
+                    fields = line.strip().split()
+                    outf.write('\t'.join(["%d" % otu_id] + fields[1:]))
+                    outf.write('\n')
+                    otu_id += 1

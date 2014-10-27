@@ -5,7 +5,7 @@ from __future__ import division
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Greg Caporaso", "Kyle Bittinger", "Justin Kuczynski",
-               "Jai Ram Rideout"]
+               "Jai Ram Rideout", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -97,10 +97,10 @@ def run_pick_de_novo_otus(input_fp,
         params_str += ' %s' % get_params_str(d)
         otu_picking_script = 'parallel_pick_otus_%s.py' % otu_picking_method
         # Build the OTU picking command
-        pick_otus_cmd = '%s -i %s -o %s -T %s' % (otu_picking_script,
-                                                  input_fp,
-                                                  pick_otu_dir,
-                                                  params_str)
+        pick_otus_cmd = '%s -i %s -o %s %s' % (otu_picking_script,
+                                               input_fp,
+                                               pick_otu_dir,
+                                               params_str)
     else:
         try:
             params_str = get_params_str(params['pick_otus'])
@@ -201,7 +201,7 @@ def run_pick_de_novo_otus(input_fp,
 
         # Build the parallel taxonomy assignment command
         assign_taxonomy_cmd = \
-            'parallel_assign_taxonomy_%s.py -i %s -o %s -T %s' %\
+            'parallel_assign_taxonomy_%s.py -i %s -o %s %s' %\
             (assignment_method, rep_set_fp, assign_taxonomy_dir, params_str)
     else:
         try:
@@ -264,7 +264,7 @@ def run_pick_de_novo_otus(input_fp,
         params_str += ' %s' % get_params_str(d)
 
         # Build the parallel pynast alignment command
-        align_seqs_cmd = 'parallel_align_seqs_pynast.py -i %s -o %s -T %s' %\
+        align_seqs_cmd = 'parallel_align_seqs_pynast.py -i %s -o %s %s' %\
             (rep_set_fp, pynast_dir, params_str)
     else:
         try:
@@ -383,7 +383,7 @@ def run_pick_closed_reference_otus(
             pass
         otu_picking_script = 'parallel_pick_otus_%s.py' % otu_picking_method
         # Build the OTU picking command
-        pick_otus_cmd = '%s -i %s -o %s -r %s -T %s' %\
+        pick_otus_cmd = '%s -i %s -o %s -r %s %s' %\
             (otu_picking_script,
              input_fp,
              pick_otu_dir,

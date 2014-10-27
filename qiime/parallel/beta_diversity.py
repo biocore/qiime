@@ -4,272 +4,229 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
-from os.path import join, split, splitext
-from skbio.util.misc import create_dir
+from os.path import join, splitext, abspath, exists, basename
+from os import makedirs
+from tempfile import mkdtemp
+from shutil import move
+from itertools import product
+
 from biom import load_table
 
-from qiime.parallel.util import ParallelWrapper
-from qiime.format import format_distance_matrix
+from qiime.parallel.wrapper import ParallelWrapper
+from qiime.parallel.util import merge_files_from_dirs
+from qiime.parallel.context import context
+from qiime.workflow.util import generate_log_fp, WorkflowLogger
 
 
-class ParallelBetaDiversity(ParallelWrapper):
-    _script_name = "beta_diversity.py"
-    _input_splitter = ParallelWrapper._input_existing_filepaths
-    _job_prefix = 'BDIV'
+def merge_distance_matrix(output_fp, component_files):
+    """Merges the distance matrix stored in multiple components on files
 
-    def _identify_files_to_remove(self, job_result_filepaths, params):
-        """ The output of the individual jobs are the files we want to keep
+    Parameters
+    ----------
+    output_fp : str
+        Path to the output distance matrix
+    component_files : list of str
+        Paths to the component files
+
+    Raises
+    ------
+    ValueError
+        If the result of merging the different component files does not
+        look like a distance matrix
+    """
+    import pandas as pd
+    from qiime.format import format_distance_matrix
+
+    # Initialize the result dataframe
+    res = pd.DataFrame()
+    # Iterate over component files
+    for comp_file in component_files:
+        # Update the result dataframe with the current comp_file
+        res = res.append(pd.DataFrame.from_csv(comp_file, sep='\t'))
+
+    # Check that we have a complete distance matrix
+    if set(res.columns) != set(res.index):
+        raise ValueError("Cannot build the distance matrix. Column ids and "
+                         "row ids are not the same: %s != %s"
+                         % (res.columns.tolist(), res.index.tolist()))
+
+    # Make sure that rows and cols ids are in the same order
+    res = res.ix[res.columns, res.columns]
+
+    # Store the distance matrix
+    with open(output_fp, 'w') as f:
+        f.write(format_distance_matrix(res.columns, res.as_matrix()))
+
+
+def get_sample_id_groups(biom_fp, num_groups):
+    """Groups the sample ids on biom_fp in num_groups groups
+
+    Parameters
+    ----------
+    biom_fp : str
+        Path to the biom table
+    num_groups : int
+        Number of groups to generate
+
+    Returns
+    -------
+    list of lists
+        The list of sample id groups
+    """
+    # Get the sample ids
+    sample_ids = list(load_table(biom_fp).ids())
+    # Compute the number of ids that has to be in each group
+    k = int(len(sample_ids)/num_groups)
+    # Group sample ids
+    sample_id_groups = [sample_ids[idx:(idx+k)]
+                        for idx in range(0, (num_groups - 1) * k, k)]
+    sample_id_groups.append(sample_ids[(num_groups - 1) * k:])
+
+    return sample_id_groups
+
+
+class ParallelBetaDiversitySingle(ParallelWrapper):
+    def _construct_job_graph(self, input_fp, output_dir, params,
+                             jobs_to_start=None):
+        """Creates the job workflow graph to run beta diversity in parallel
+        over a single input OTU table.
+
+        Parameters
+        ----------
+        input_fp : str
+            Path to the input BIOM table
+        output_dir : str
+            Path to the output directory. It will be created if it does not
+            exists
+        params : dict
+            Parameters to use when calling beta_diversity.py, in the form of
+            {param_name: value}
+        jobs_to_start : int, optional
+            Number of jobs to start. Default: None - start as many jobs as
+            workers in the cluster
         """
-        return []
+        input_fp = abspath(input_fp)
+        output_dir = abspath(output_dir)
 
-    def _commands_to_shell_script(self, commands, fp, shebang='#!/bin/bash'):
-        f = open(fp, 'w')
-        f.write(shebang)
-        f.write('\n')
-        f.write('\n'.join(commands))
-        f.write('\n')
-        f.close()
+        # Create the output directory
+        if not exists(output_dir):
+            makedirs(output_dir)
 
+        # If the number of jobs to start is not provided, we default to the
+        # number of workers
+        if jobs_to_start is None:
+            jobs_to_start = context.get_number_of_workers()
 
-class ParallelBetaDiversitySingle(ParallelBetaDiversity):
+        # Create a working directory
+        working_dir = mkdtemp(prefix='beta_div_', dir=output_dir)
+        self._dirpaths_to_remove.append(working_dir)
 
-    def _identify_files_to_remove(self, job_result_filepaths, params):
-        """ The output of the individual jobs are the files we want to keep
-        """
-        return job_result_filepaths
+        # Generate the log file
+        self._logger = WorkflowLogger(
+            generate_log_fp(output_dir, basefile_name="parallel_log"))
 
-    def _write_merge_map_file(self,
-                              input_file_basename,
-                              job_result_filepaths,
-                              params,
-                              output_dir,
-                              merge_map_filepath):
+        # Parse parameters
+        full_tree_str = '-f' if params['full_tree'] else ''
+        tree_str = ('-t %s' % abspath(params['tree_path'])
+                    if params['tree_path'] else '')
+        metrics = params['metrics'].split(',')
 
-        merge_map_f = open(merge_map_filepath, 'w')
+        # Determine how many samples will be computed by each command
+        sample_id_groups = get_sample_id_groups(input_fp, jobs_to_start)
 
-        for metric in params['metrics'].split(','):
-            fps_to_merge = [
-                fp for fp in job_result_filepaths if '/%s_' %
-                metric in fp]
-            output_fp = join(
-                output_dir, '%s_%s.txt' %
-                (metric, input_file_basename))
-            merge_map_f.write(
-                '%s\t%s\n' %
-                ('\t'.join(fps_to_merge), output_fp))
-
-        merge_map_f.close()
-
-    def _get_job_commands(self,
-                          input_fp,
-                          output_dir,
-                          params,
-                          job_prefix,
-                          working_dir,
-                          command_prefix='/bin/bash; ',
-                          command_suffix='; exit'):
-        """Generate beta diversity to split single OTU table to multiple jobs
-
-        full_tree=True is faster: beta_diversity.py -f will make things
-        go faster, but be sure you already have the correct minimal tree.
-        """
-        commands = []
-        result_filepaths = []
-
-        sids = load_table(input_fp).ids()
-
-        if params['full_tree']:
-            full_tree_str = '-f'
-        else:
-            full_tree_str = ''
-
-        if params['tree_path']:
-            tree_str = '-t %s' % params['tree_path']
-        else:
-            tree_str = ''
-
-        metrics = params['metrics']
-
-        # this is a little bit of an abuse of _merge_to_n_commands, so may
-        # be worth generalizing that method - this determines the correct
-        # number of samples to process in each command
-        sample_id_groups = self._merge_to_n_commands(sids,
-                                                     params['jobs_to_start'],
-                                                     delimiter=',',
-                                                     command_prefix='',
-                                                     command_suffix='')
-
+        # Construct the commands
+        output_dirs = []
+        node_names = []
         for i, sample_id_group in enumerate(sample_id_groups):
-            working_dir_i = join(working_dir, str(i))
-            create_dir(working_dir_i)
-            output_dir_i = join(output_dir, str(i))
-            create_dir(output_dir_i)
-            result_filepaths.append(output_dir_i)
-            input_dir, input_fn = split(input_fp)
-            input_basename, input_ext = splitext(input_fn)
-            sample_id_desc = sample_id_group.replace(',', '_')
-            output_fns = ['%s_%s.txt' % (metric, input_basename)
-                          for metric in metrics.split(',')]
-            rename_command, current_result_filepaths = self._get_rename_command(
-                output_fns, working_dir_i, output_dir_i)
+            node_name = "BDIV_%d" % i
+            node_names.append(node_name)
+            out_dir = join(working_dir, node_name)
+            output_dirs.append(out_dir)
 
-            result_filepaths += current_result_filepaths
+            cmd = str("beta_diversity.py -i %s -o %s %s -m %s %s -r %s"
+                      % (input_fp, out_dir, tree_str, params['metrics'],
+                         full_tree_str, ",".join(sample_id_group)))
+            self._job_graph.add_node(node_name, job=(cmd, ),
+                                     requires_deps=False)
 
-            bdiv_command = '%s -i %s -o %s %s -m %s %s -r %s' %\
-                (self._script_name,
-                 input_fp,
-                 working_dir_i,
-                 tree_str,
-                 params['metrics'],
-                 full_tree_str,
-                 sample_id_group)
+        # Merge the results
+        merge_nodes = []
+        prefix = splitext(basename(input_fp))[0]
+        for metric in metrics:
+            merge_node = "MERGE_%s" % metric
+            merge_nodes.append(merge_node)
+            output_fp = join(output_dir, "%s_%s.txt" % (metric, prefix))
+            format_str = "%s_*.txt" % metric
+            self._job_graph.add_node(merge_node,
+                                     job=(merge_files_from_dirs,
+                                          output_fp, output_dirs, format_str,
+                                          merge_distance_matrix),
+                                     requires_deps=False)
+        # Make sure that the merge nodes are executed after all the worker
+        # nodes are done
+        for merge_node, worker_node in product(merge_nodes, node_names):
+                self._job_graph.add_edge(worker_node, merge_node)
 
-            shell_script_fp = '%s/%s%d.sh' % (working_dir_i, job_prefix, i)
-            shell_script_commands = [bdiv_command] + rename_command.split(';')
-            self._commands_to_shell_script(shell_script_commands,
-                                           shell_script_fp)
-            commands.append('bash %s' % shell_script_fp)
 
-        commands = self._merge_to_n_commands(commands,
-                                             params['jobs_to_start'],
-                                             command_prefix=command_prefix,
-                                             command_suffix=command_suffix)
+class ParallelBetaDiversityMultiple(ParallelWrapper):
+    def _construct_job_graph(self, input_fps, output_dir, params):
+        """Creates the job workflow graph to run beta diversity in parallel
+        over multiple input OTU table.
 
-        return commands, result_filepaths
-
-    def _get_poller_command(self,
-                            expected_files_filepath,
-                            merge_map_filepath,
-                            deletion_list_filepath,
-                            command_prefix='/bin/bash; ',
-                            command_suffix='; exit'):
-        """Generate command to initiate a poller to monitior/process completed runs
+        Parameters
+        ----------
+        input_fps : list of str
+            Paths to the input BIOM tables
+        output_dir : str
+            Path to the output directory. It will be created if it does not
+            exists
+        params : dict
+            Parameters to use when calling beta_diversity.py, in the form of
+            {param_name: value}
         """
-        result = '%s poller.py -f %s -m %s -d %s -t %d -p %s %s' % \
-            (command_prefix,
-             expected_files_filepath,
-             merge_map_filepath,
-             deletion_list_filepath,
-             self._seconds_to_sleep,
-             'qiime.parallel.beta_diversity.parallel_beta_diversity_process_run_results_f',
-             command_suffix)
+        output_dir = abspath(output_dir)
+        # Create the output directory
+        if not exists(output_dir):
+            makedirs(output_dir)
 
-        return result, []
+        # create a working directory
+        working_dir = mkdtemp(prefix='beta_div_', dir=output_dir)
+        self._dirpaths_to_remove.append(working_dir)
 
+        # Generate the log file
+        self._logger = WorkflowLogger()
 
-class ParallelBetaDiversityMultiple(ParallelBetaDiversity):
+        # Parse parameters
+        full_tree_str = '-f' if params['full_tree'] else ''
+        tree_str = ('-t %s' % abspath(params['tree_path'])
+                    if params['tree_path'] else '')
+        metrics = params['metrics'].split(',')
 
-    def _get_job_commands(self,
-                          input_fps,
-                          output_dir,
-                          params,
-                          job_prefix,
-                          working_dir,
-                          command_prefix='/bin/bash; ',
-                          command_suffix='; exit'):
-        """Generate beta diversity to split multiple OTU tables to multiple jobs
-        """
-
-        if params['full_tree']:
-            full_tree_str = '-f'
-        else:
-            full_tree_str = ''
-
-        if params['tree_path']:
-            tree_str = '-t %s' % params['tree_path']
-        else:
-            tree_str = ''
-
-        commands = []
-        result_filepaths = []
-
-        metrics = params['metrics']
-
-        for input_fp in input_fps:
-            input_path, input_fn = split(input_fp)
-            input_basename, input_ext = splitext(input_fn)
-            output_fns = \
-                ['%s_%s.txt' % (metric, input_basename)
-                 for metric in metrics.split(',')]
-            rename_command, current_result_filepaths = self._get_rename_command(
-                output_fns, working_dir, output_dir)
-            result_filepaths += current_result_filepaths
-
-            command = '%s %s -i %s -o %s %s -m %s %s %s %s' %\
-                (command_prefix,
-                 self._script_name,
-                 input_fp,
-                 working_dir,
-                 tree_str,
-                 params['metrics'],
-                 full_tree_str,
-                 rename_command,
-                 command_suffix)
-
-            commands.append(command)
-
-        commands = self._merge_to_n_commands(commands,
-                                             params['jobs_to_start'],
-                                             command_prefix=command_prefix,
-                                             command_suffix=command_suffix)
-
-        return commands, result_filepaths
-
-
-def parallel_beta_diversity_process_run_results_f(f):
-    """ Handles re-assembling of a distance matrix from component vectors
-    """
-    # iterate over component, output fp lines
-    for line in f:
-        fields = line.strip().split('\t')
-        dm_components = fields[:-1]
-        output_fp = fields[-1]
-        # assemble the current dm
-        dm = assemble_distance_matrix(map(open, dm_components))
-        # and write it to file
-        output_f = open(output_fp, 'w')
-        output_f.write(dm)
-        output_f.close()
-
-    return True
-
-
-def assemble_distance_matrix(dm_components):
-    """ assemble distance matrix components into a complete dm string
-
-    """
-    print "I get called."
-    data = {}
-    # iterate over compenents
-    for c in dm_components:
-        # create a blank list to store the column ids
-        col_ids = []
-        # iterate over lines
-        for line in c:
-            # split on tabs remove leading and trailing whitespace
-            fields = line.strip().split()
-            if fields:
-                # if no column ids seen yet, these are them
-                if not col_ids:
-                    col_ids = fields
-                # otherwise this is a data row so add it to data
-                else:
-                    sid = fields[0]
-                    data[sid] = dict(zip(col_ids, fields[1:]))
-
-    # grab the col/row ids as a list so it's ordered
-    labels = data.keys()
-    # create an empty list to build the dm
-    dm = []
-    # construct the dm one row at a time
-    for l1 in labels:
-        dm.append([data[l1][l2] for l2 in labels])
-    # create the dm string and return it
-    dm = format_distance_matrix(labels, dm)
-    return dm
+        # Generate the comands
+        for i, input_fp in enumerate(input_fps):
+            prefix = splitext(basename(input_fp))[0]
+            node_name = "BDIV_%d" % i
+            out_dir = join(working_dir, node_name)
+            cmd = ("beta_diversity.py -i %s -o %s %s -m %s %s"
+                   % (input_fp, out_dir, tree_str, params['metrics'],
+                      full_tree_str))
+            self._job_graph.add_node(node_name, job=(cmd,),
+                                     requires_deps=False)
+            # Add nodes to move the output files to the correct location
+            for metric in metrics:
+                fn = "%s_%s.txt" % (metric, prefix)
+                cmd_fp = join(out_dir, fn)
+                output_fp = join(output_dir, fn)
+                move_node = "MOVE_%s_%s" % (node_name, metric)
+                self._job_graph.add_node(move_node,
+                                         job=(move, cmd_fp, output_fp),
+                                         requires_deps=False)
+                # Make sure that the move nodes are executed after the job is
+                # done
+                self._job_graph.add_edge(node_name, move_node)

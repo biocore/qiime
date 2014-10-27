@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso", "Jens Reeder"]
+__credits__ = ["Greg Caporaso", "Jens Reeder", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -21,7 +21,7 @@ from unittest import TestCase, main
 from qiime.parallel.pick_otus import (ParallelPickOtusUclustRef,
                                       ParallelPickOtusBlast,
                                       ParallelPickOtusTrie,
-                                      greedy_partition)
+                                      ParallelPickOtusUsearch61Ref)
 from qiime.util import get_qiime_temp_dir
 from qiime.test import initiate_timeout, disable_timeout
 from qiime.parse import parse_otu_map
@@ -41,8 +41,8 @@ class ParallelPickOtusTests(TestCase):
         self.dirs_to_remove.append(self.test_out)
 
         fd, self.refseqs1_fp = mkstemp(dir=self.test_out,
-                                      prefix='qiime_refseqs',
-                                      suffix='.fasta')
+                                       prefix='qiime_refseqs',
+                                       suffix='.fasta')
         close(fd)
         refseqs1_f = open(self.refseqs1_fp, 'w')
         refseqs1_f.write(refseqs1)
@@ -50,8 +50,8 @@ class ParallelPickOtusTests(TestCase):
         self.files_to_remove.append(self.refseqs1_fp)
 
         fd, self.inseqs1_fp = mkstemp(dir=self.test_out,
-                                     prefix='qiime_inseqs',
-                                     suffix='.fasta')
+                                      prefix='qiime_inseqs',
+                                      suffix='.fasta')
         close(fd)
         inseqs1_f = open(self.inseqs1_fp, 'w')
         inseqs1_f.write(inseqs1)
@@ -91,15 +91,31 @@ class ParallelPickOtusUclustRefTests(ParallelPickOtusTests):
                   }
 
         app = ParallelPickOtusUclustRef()
-        r = app(self.inseqs1_fp,
-                self.test_out,
-                params,
-                job_prefix='PTEST',
-                poll_directly=True,
-                suppress_submit_jobs=False)
+        app(self.inseqs1_fp, self.test_out, params)
         otu_map_fp = glob(join(self.test_out, '*otus.txt'))[0]
         otu_map = parse_otu_map(open(otu_map_fp, 'U'))
         # some basic sanity checks: at least one OTU per reference sequence
+        self.assertTrue(len(otu_map[0]) > 5)
+        self.assertEqual(set(otu_map[2]), set(['r1', 'r2', 'r3', 'r4', 'r5']))
+
+
+class ParallelPickOtusTestsUsearch61Ref(ParallelPickOtusTests):
+
+    def test_parallel_pick_otus_usearch61_ref(self):
+        """test_parallel_pick_otus_usearch61_ref functions as expected"""
+        params = {'refseqs_fp': self.refseqs1_fp,
+                  'similarity': 0.97,
+                  'max_accepts': 1,
+                  'max_rejects': 8,
+                  'stepwords': 8,
+                  'word_length': 8,
+                  'enable_rev_strand_match': True}
+        app = ParallelPickOtusUsearch61Ref()
+        app(self.inseqs1_fp, self.test_out, params)
+        otu_map_fp = glob(join(self.test_out, '*otus.txt'))[0]
+        with open(otu_map_fp, 'U') as f:
+            otu_map = parse_otu_map(f)
+        # Some basic sanity checks: at least one OTU per reference sequence
         self.assertTrue(len(otu_map[0]) > 5)
         self.assertEqual(set(otu_map[2]), set(['r1', 'r2', 'r3', 'r4', 'r5']))
 
@@ -117,12 +133,7 @@ class ParallelPickOtusBlastTests(ParallelPickOtusTests):
                   }
 
         app = ParallelPickOtusBlast()
-        r = app(self.inseqs1_fp,
-                self.test_out,
-                params,
-                job_prefix='BTEST',
-                poll_directly=True,
-                suppress_submit_jobs=False)
+        app(self.inseqs1_fp, self.test_out, params)
         otu_map_fp = glob(join(self.test_out, '*otus.txt'))[0]
         otu_map = parse_otu_map(open(otu_map_fp, 'U'))
         # some basic sanity checks: at least one OTU per reference sequence
@@ -147,7 +158,7 @@ class ParallelPickOtusTrieTests(ParallelPickOtusTests):
             ('s7', 'AAATAAAAA')
         ]
         fd, self.small_seq_path = mkstemp(prefix='TrieOtuPickerTest_',
-                                         suffix='.fasta')
+                                          suffix='.fasta')
         close(fd)
         self.files_to_remove = [self.small_seq_path]
         f = open(self.small_seq_path, 'w')
@@ -163,12 +174,7 @@ class ParallelPickOtusTrieTests(ParallelPickOtusTests):
         }
 
         app = ParallelPickOtusTrie()
-        r = app(self.small_seq_path,
-                self.test_out,
-                params,
-                job_prefix='POTU_TEST_',
-                poll_directly=True,
-                suppress_submit_jobs=False)
+        app(self.small_seq_path, self.test_out, params)
 
         otu_map_fp = glob(join(self.test_out, '*otus.txt'))[0]
         otu_map = parse_otu_map(open(otu_map_fp, 'U'))
@@ -195,40 +201,8 @@ class ParallelPickOtusTrieTests(ParallelPickOtusTests):
         }
 
         app = ParallelPickOtusTrie()
-        self.assertRaises(ValueError, app,
-                          self.small_seq_path,
-                          self.test_out,
-                          params,
-                          job_prefix='POTU_TEST_',
-                          poll_directly=True,
-                          suppress_submit_jobs=False)
-
-
-class ParallelPickOtusFunctionTests(TestCase):
-
-    def test_greedy_partition(self):
-        """greedy_partition works as expected"""
-
-        #(non) partition into one bucket
-        obs_part, obs_levels = greedy_partition({'1': 2,
-                                                 '2': 1,
-                                                 '3': 3}, 1)
-        self.assertEquals(obs_levels, [6])
-        self.assertEquals(obs_part, [['3', '1', '2']])
-
-        # two buckets
-        obs_part, obs_levels = greedy_partition({'1': 2,
-                                                 '2': 1,
-                                                 '3': 3}, 2)
-
-        self.assertEquals(obs_levels, [3, 3])
-        self.assertEquals(obs_part, [['3'], ['1', '2']])
-
-        # larger input
-        obs_part, obs_levels = greedy_partition({'1': 1, '2': 2, '3': 3,
-                                                 '4': 4, '5': 5, '6': 6}, 2)
-        self.assertEquals(obs_levels, [11, 10])
-        self.assertEquals(obs_part, [['6', '3', '2'], ['5', '4', '1']])
+        with self.assertRaises(ValueError):
+            app(self.small_seq_path, self.test_out, params)
 
 
 refseqs1 = """>r1

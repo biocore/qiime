@@ -6,7 +6,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Greg Caporaso", "Kyle Bittinger", "Justin Kuczynski",
                "Jesse Stombaugh", "Yoshiki Vazquez Baeza", "Jai Ram Rideout",
-               "Adam Robbins-Pianka"]
+               "Adam Robbins-Pianka", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -124,7 +124,7 @@ def run_beta_diversity_through_plots(otu_table_fp,
                 params_str += get_params_str(params['parallel'])
             except KeyError:
                 pass
-            beta_div_cmd = 'parallel_beta_diversity.py -i %s -o %s --metrics %s -T %s' %\
+            beta_div_cmd = 'parallel_beta_diversity.py -i %s -o %s --metrics %s %s' %\
                 (otu_table_fp, output_dir, beta_diversity_metric, params_str)
             commands.append(
                 [('Beta Diversity (%s)' % beta_diversity_metric, beta_div_cmd)])
@@ -244,7 +244,7 @@ def run_alpha_rarefaction(otu_table_fp,
         params_str += ' %s' % get_params_str(params['parallel'])
         # Build the rarefaction command
         rarefaction_cmd = \
-            'parallel_multiple_rarefactions.py -T -i %s -m %s -x %s -s %s -o %s %s' %\
+            'parallel_multiple_rarefactions.py -i %s -m %s -x %s -s %s -o %s %s' %\
             (otu_table_fp, min_rare_depth, max_rare_depth, step,
              rarefaction_dir, params_str)
     else:
@@ -268,7 +268,7 @@ def run_alpha_rarefaction(otu_table_fp,
         params_str += ' %s' % get_params_str(params['parallel'])
         # Build the alpha diversity command
         alpha_diversity_cmd = \
-            "parallel_alpha_diversity.py -T -i %s -o %s %s" %\
+            "parallel_alpha_diversity.py -i %s -o %s %s" %\
             (rarefaction_dir, alpha_diversity_dir, params_str)
     else:
         # Build the alpha diversity command
@@ -463,7 +463,7 @@ def run_jackknifed_beta_diversity(otu_table_fp,
             # Build the parallel beta diversity command (for rarefied OTU
             # tables)
             beta_div_rarefied_cmd = \
-                'parallel_beta_diversity.py -T -i %s -o %s %s' %\
+                'parallel_beta_diversity.py -i %s -o %s %s' %\
                 (rarefaction_dir, dm_dir, params_str)
         else:
             # Build the serial beta diversity command (for rarefied OTU tables)
