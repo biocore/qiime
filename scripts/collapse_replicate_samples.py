@@ -73,6 +73,18 @@ def collapse_to_random(t, axis):
     n = np.random.randint(length)
     return np.asarray([e[n] for e in t.iter_data(axis=axis, dense=True)])
 
+def mapping_lines_from_collapsed_df(collapsed_df):
+    lines = []
+    lines.append('\t'.join(['#SampleID', 'represented-sample-id'] +\
+                           list(collapsed_df.columns)[1:]))
+
+    for r in collapsed_df.iterrows():
+        new_idx = '.'.join(map(str, r[0]))
+        new_values = map(str,[e[0] for e in r[1]])
+        lines.append('\t'.join([new_idx] + new_values))
+    return lines
+
+
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
@@ -109,6 +121,10 @@ def main():
                             % (collapse_mode, ', '.join(collapse_modes)))
 
     write_biom_table(output_table, opts.output_biom_fp)
+    output_mapping_f = open(opts.output_mapping_fp, 'w')
+    output_map_lines = mapping_lines_from_collapsed_df(collapsed_metadata)
+    output_mapping_f.write('\n'.join(output_map_lines))
+    output_mapping_f.close()
 
 if __name__ == "__main__":
     main()
