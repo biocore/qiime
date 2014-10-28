@@ -18,7 +18,7 @@ from biom.exception import UnknownAxisError
 
 from qiime.util import (parse_command_line_parameters, make_option,
                          write_biom_table)
-from qiime.group import group_by_sample_metadata
+from qiime.group import group_by_sample_metadata, collapse_metadata
 
 
 collapse_modes = ['sum', 'mean', 'median', 'first', 'random']
@@ -27,7 +27,10 @@ script_info = {}
 script_info['brief_description'] = ""
 script_info['script_description'] = ""
 # Members of the tuple in script_usage are (title, description, example call)
-script_info['script_usage'] = [("","","")]
+script_info['script_usage'] = [
+    ("Collapse samples in biom table and mapping file",
+     "Collapse samples by taking the median value for each observation in each group, where group is defined by having the same values for both subject and replicate-group in the mapping file.",
+     "%prog -b table.biom -m map.txt --output_biom_fp collapsed.biom --output_mapping_fp collapsed_map.txt --collapse_mode median --collapse_fields replicate-group,subject")]
 script_info['output_description']= ""
 script_info['required_options'] = [
     # Example required option
@@ -72,6 +75,9 @@ def collapse_to_random(t, axis):
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
+
+    collapsed_metadata = collapse_metadata(open(opts.mapping_fp, 'U'),
+                                           opts.collapse_fields.split(','))
 
     new_index_to_group, old_index_to_new_index = \
         group_by_sample_metadata(open(opts.mapping_fp, 'U'),
