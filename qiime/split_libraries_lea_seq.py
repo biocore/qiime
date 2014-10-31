@@ -500,12 +500,20 @@ def get_consensus_seqs_lookup(random_bc_lookup,
 
     consensus_seq_lookup = defaultdict(lambda:
                                        defaultdict(str))
+    # defaultdict that stores LEA-seq consensus sequence
+    # For each sample id, for each random barcode, 
+    # consensus sequence is stored
+    
     random_bc_keep = {}
+    # to remove random bcs that are selected
+    # during the pruning step (select_unique_rand_bcs)
 
     for sample_id in random_bc_lookup:
         random_bc_keep[sample_id] = select_unique_rand_bcs(
             random_bcs[sample_id],
             min_difference_in_bcs)
+        # removes barcodes that might be artifacts
+        # due to sequencing error
         for random_bc in random_bc_lookup[sample_id]:
             if random_bc in random_bc_keep[sample_id] and random_bc_reads[
                     sample_id][random_bc] >= min_reads_per_random_bc:
@@ -515,6 +523,9 @@ def get_consensus_seqs_lookup(random_bc_lookup,
                     dir=output_dir, prefix='rev', suffix='.fas')
                 close(fwd_fd)
                 close(rev_fd)
+
+                # create fasta files for all fwd and rev seqs
+                # for that sample id and random bc.
                 fwd_fasta_tempfile = open(fwd_fasta_tempfile_name, 'w')
                 rev_fasta_tempfile = open(rev_fasta_tempfile_name, 'w')
                 max_freq = 0
@@ -536,6 +547,8 @@ def get_consensus_seqs_lookup(random_bc_lookup,
                         max_freq = random_bc_lookup[
                             sample_id][random_bc][fwd_rev]
                         majority_seq = fwd_seq + "^" + rev_seq
+                # select majority sequence for the sample_id,
+                # and for that particular random_bc                    
                 fwd_fasta_tempfile.close()
                 rev_fasta_tempfile.close()
                 fwd_cluster_ratio = get_cluster_ratio(
@@ -544,6 +557,11 @@ def get_consensus_seqs_lookup(random_bc_lookup,
                 rev_cluster_ratio = get_cluster_ratio(
                     rev_fasta_tempfile_name,
                     min_difference_in_clusters)
+                
+                # If the cluster ratio exists, and
+                # if is is below the threshold(max_cluster_ratio),
+                # set the consensus seq as the majority seq
+                # otherwise call get_consensus function
                 if fwd_cluster_ratio == 0 or rev_cluster_ratio == 0:
                     consensus_seq = "No consensus"
                 elif (fwd_cluster_ratio < max_cluster_ratio
