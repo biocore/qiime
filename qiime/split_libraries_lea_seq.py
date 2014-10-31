@@ -25,6 +25,7 @@ import re
 from tempfile import mkstemp
 from itertools import izip
 
+
 class PairedEndParseError(Exception):
     pass
 
@@ -199,7 +200,6 @@ def get_LEA_seq_consensus_seqs(fwd_read_f, rev_read_f,
 def get_cluster_ratio(fasta_seqs, min_difference_in_clusters):
     """
     Uses uclust to calculate cluster ratio
-<<<<<<< HEAD
     cluster_ratio =
     num_of_seq_in_cluster_with_max_seq
     divided by
@@ -214,8 +214,9 @@ def get_cluster_ratio(fasta_seqs, min_difference_in_clusters):
     ----------
     cluster_ratio: float
         cluster ratio of the sequences using uclust
-        cluster_ratio=num_of_seq_in_cluster_with_max_seq/num_of_seq_in cluster_with_second_higest_seq
->>>>>>> FETCH_HEAD
+        cluster_ratio =
+        num_of_seq_in_cluster_with_max_seq /
+        num_of_seq_in cluster_with_second_higest_seq
     """
     cluster_percent_id = min_difference_in_clusters
     temp_dir = get_qiime_temp_dir()
@@ -227,14 +228,15 @@ def get_cluster_ratio(fasta_seqs, min_difference_in_clusters):
         fasta_tempfile.write(fasta_seqs)
     fasta_tempfile.close()
     count = 0
-    command = "uclust --usersort --input {} --uc {} --id 0.98".format(fasta_tempfile_name, uclust_tempfile_name)
+    command = "uclust --usersort --input {} --uc {} --id 0.98".format(
+        fasta_tempfile_name, uclust_tempfile_name)
     # In the function, I am calling uclust a large number of times.
     # Initially I was using brokit.get_clusters_from_fasta_filepath
     # but due to issue (biocore/brokit#31), I have temporarily
     # reverted to qiime_system_call.
 
     count_lookup = {}
-    
+
     qiime_system_call(command)
     uclust_tempfile = open(uclust_tempfile_name, 'r')
     for line in uclust_tempfile:
@@ -375,7 +377,7 @@ def select_unique_rand_bcs(rand_bcs, unique_threshold):
     fasta_fd, fasta_tempfile_name = mkstemp(
         dir=temp_dir, prefix='tmp', suffix='.fas')
     rand_bcs = set(rand_bcs)
-    
+
     with open(fasta_tempfile_name, 'w') as fasta_tempfile:
         for rand_bc in rand_bcs:
             fasta_tempfile.write(">{}\n{}\n".format(rand_bc, rand_bc))
@@ -399,7 +401,7 @@ def format_lea_seq_log(input_seqs_count,
                        primer_mismatch_count,
                        seq_too_short_count,
                        total_seqs_kept):
-    """ Format the split libraries LEA-Seq log 
+    """ Format the split libraries LEA-Seq log
     Parameters
     ----------
     input_seqs_count: int
@@ -413,7 +415,18 @@ def format_lea_seq_log(input_seqs_count,
     log_out: string
         to be printed in log file
     """
-    log_out = "Quality filter results\nTotal number of input sequences: {}\nBarcode not in mapping file: {}\nSequence shorter than threshold: {}\nBarcode errors exceeds limit: {}\nPrimer mismatch count: {}\n\nTotal number seqs written: {}".format(input_seqs_count, barcode_not_in_map_count, seq_too_short_count, barcode_errors_exceed_max_count, primer_mismatch_count, total_seqs_kept)
+    log_out = """Quality filter results
+Total number of input sequences: {}
+Barcode not in mapping file: {}
+Sequence shorter than threshold: {}
+Barcode errors exceeds limit: {}
+Primer mismatch count: {}
+
+Total number seqs written: {}""".format(
+        input_seqs_count, barcode_not_in_map_count,
+        seq_too_short_count, barcode_errors_exceed_max_count,
+        primer_mismatch_count, total_seqs_kept)
+
     return (log_out)
 
 
@@ -512,8 +525,14 @@ def get_consensus_seqs_lookup(random_bc_lookup,
                 for seq_index, fwd_rev in enumerate(
                         random_bc_lookup[sample_id][random_bc]):
                     fwd_seq, rev_seq = fwd_rev
-                    fwd_line = ">{}{}|{}\n{}\n".format(seq_index, random_bc, random_bc_lookup[sample_id][random_bc][fwd_rev], fwd_seq)
-                    rev_line = ">{}{}|{}\n{}\n".format(seq_index, random_bc, random_bc_lookup[sample_id][random_bc][fwd_rev], rev_seq)
+                    fwd_line = ">{}{}|{}\n{}\n".format(
+                        seq_index, random_bc,
+                        random_bc_lookup[sample_id][random_bc][fwd_rev],
+                        fwd_seq)
+                    rev_line = ">{}{}|{}\n{}\n".format(
+                        seq_index, random_bc,
+                        random_bc_lookup[sample_id][random_bc][fwd_rev],
+                        rev_seq)
                     fwd_fasta_tempfile.write(fwd_line)
                     rev_fasta_tempfile.write(rev_line)
                     if random_bc_lookup[sample_id][
@@ -579,7 +598,7 @@ def read_fwd_rev_read(fwd_read_f,
     barcode_correction_fn: function
         applicable only for gloay_12 barcodes
     bc_to_fwd_primers: dict
-    bc_to_rev_primers: dict 
+    bc_to_rev_primers: dict
     max_barcode_errors: int
         maximum allowable errors in barcodes, applicable for golay_12
     fwd_length: int

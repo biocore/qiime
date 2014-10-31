@@ -204,8 +204,10 @@ def main():
         for bc_index, rand_bc in enumerate(consensus_seq_lookup[sample_id]):
             consensus_seq = consensus_seq_lookup[sample_id][rand_bc]
             fwd_consensus, rev_consensus = consensus_seq.split('^')
-            fwd_consensus_outfile.write(">{}_{}\n{}\n".format(sample_id, bc_index, fwd_consensus))
-            rev_consensus_outfile.write(">{}_{}\n{}\n".format(sample_id, bc_index, rev_consensus))
+            fwd_consensus_outfile.write(">{}_{}\n{}\n".format(
+                sample_id, bc_index, fwd_consensus))
+            rev_consensus_outfile.write(">{}_{}\n{}\n".format(
+                sample_id, bc_index, rev_consensus))
 
     log_file.write(log_out)
     log_file.close()
@@ -215,6 +217,6 @@ def main():
     fwd_consensus_outfile.close()
     rev_consensus_outfile.close()
     map_f.close()
-    
+
 if __name__ == "__main__":
     main()

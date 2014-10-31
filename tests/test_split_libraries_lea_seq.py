@@ -111,7 +111,8 @@ class WorkflowTests(TestCase):
         self.assertEqual(actual, expected)
 
     def test_extract_primers(self):
-        actual = extract_primer(self.fasta_seq_for_primer, self.possible_primers)
+        actual = extract_primer(
+            self.fasta_seq_for_primer, self.possible_primers)
         expected = ('A', 'ATGC', 'CCCC')
         self.assertEqual(actual, expected)
         with self.assertRaises(PrimerMismatchError):
@@ -134,7 +135,8 @@ class WorkflowTests(TestCase):
 
         function_call, _ = get_LEA_seq_consensus_seqs(self.fwd_read_data,
                                                       self.rev_read_data,
-                                                      self.mapping_fp, self.temp_dir,
+                                                      self.mapping_fp,
+                                                      self.temp_dir,
                                                       barcode_type,
                                                       barcode_len,
                                                       barcode_correction_fn,
@@ -209,20 +211,20 @@ Total number seqs written: 6"""
 
     def test_get_consensus_seqs_lookup(self):
 
-        function_call_fwd_rev_read = read_fwd_rev_read(self.fwd_read_data,
-                                                       self.rev_read_data,
-                                                       self.bc_to_sid,
-                                                       self.barcode_len,
-                                                       self.barcode_correction_fn,
-                                                       self.bc_to_fwd_primers,
-                                                       self.bc_to_rev_primers,
-                                                       self.max_barcode_errors,
-                                                       self.fwd_length,
-                                                       self.rev_length)
+        fn_call_fwd_rev_read = read_fwd_rev_read(self.fwd_read_data,
+                                                 self.rev_read_data,
+                                                 self.bc_to_sid,
+                                                 self.barcode_len,
+                                                 self.barcode_correction_fn,
+                                                 self.bc_to_fwd_primers,
+                                                 self.bc_to_rev_primers,
+                                                 self.max_barcode_errors,
+                                                 self.fwd_length,
+                                                 self.rev_length)
 
-        random_bc_lookup = function_call_fwd_rev_read[0]
-        random_bc_reads = function_call_fwd_rev_read[1]
-        random_bcs = function_call_fwd_rev_read[2]
+        random_bc_lookup = fn_call_fwd_rev_read[0]
+        random_bc_reads = fn_call_fwd_rev_read[1]
+        random_bcs = fn_call_fwd_rev_read[2]
         min_difference_bcs = self.min_difference_in_bcs
         min_diff_clusters = self.min_difference_in_clusters
         min_reads_rand_bc = self.min_reads_per_random_bc
