@@ -17,7 +17,7 @@ from unittest import TestCase, main
 
 from skbio.util import remove_files
 from skbio.parse.sequences import parse_fasta
-from skbio.core.alignment import SequenceCollection
+from skbio.alignment import SequenceCollection
 from skbio.sequence import DNA
 
 from qiime.pick_rep_set import (RepSetPicker, GenericRepSetPicker, first_id,

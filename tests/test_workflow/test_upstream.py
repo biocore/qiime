@@ -17,7 +17,7 @@ from unittest import TestCase, main
 
 from numpy.testing import assert_almost_equal
 from skbio.util import remove_files
-from skbio.core.tree import TreeNode
+from skbio.tree import TreeNode
 from biom import load_table
 
 from qiime.util import (load_qiime_config, get_qiime_temp_dir, count_seqs)

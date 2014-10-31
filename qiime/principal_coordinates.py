@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from skbio.core.distance import DistanceMatrix
+from skbio.stats.distance import DistanceMatrix
 from skbio.stats.ordination import PCoA
 
 __author__ = "Justin Kuzynski"

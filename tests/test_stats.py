@@ -57,7 +57,7 @@ from qiime.stats import (all_pairs_t_test, _perform_pairwise_tests,
                          cscore, williams_correction, t_one_observation,
                          normprob, tprob, fprob, chi2prob)
 
-from skbio.core.distance import (DissimilarityMatrix, DistanceMatrix)
+from skbio.stats.distance import (DissimilarityMatrix, DistanceMatrix)
 
 from qiime.util import MetadataMap, get_qiime_temp_dir
 

@@ -11,7 +11,7 @@ from itertools import izip
 from numpy import (nonzero, array, fromstring, repeat, bitwise_or,
     uint8, zeros, arange, finfo, mean, std)
 
-from skbio.core.alignment import Alignment
+from skbio.alignment import Alignment
 from skbio.sequence import DNA
 from skbio.parse.sequences import parse_fasta
 

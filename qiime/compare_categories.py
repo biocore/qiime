@@ -14,7 +14,7 @@ from os.path import join
 from types import ListType
 
 import pandas as pd
-from skbio.core.distance import DistanceMatrix
+from skbio.stats.distance import DistanceMatrix
 from skbio.stats.distance import ANOSIM, PERMANOVA, bioenv
 
 from qiime.parse import parse_mapping_file_to_dict

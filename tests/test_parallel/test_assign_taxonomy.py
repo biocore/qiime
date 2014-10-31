@@ -19,7 +19,7 @@ from unittest import TestCase, main
 
 from burrito.util import ApplicationError
 from skbio.util import remove_files, create_dir
-from skbio.core.alignment import SequenceCollection
+from skbio.alignment import SequenceCollection
 from skbio.sequence import DNA
 
 from qiime.parallel.assign_taxonomy import (ParallelBlastTaxonomyAssigner,

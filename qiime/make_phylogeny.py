@@ -19,7 +19,7 @@ added..
 """
 
 from skbio.parse.sequences import parse_fasta
-from skbio.core.alignment import Alignment
+from skbio.alignment import Alignment
 from skbio.sequence import DNA
 
 from qiime.util import FunctionWithParams

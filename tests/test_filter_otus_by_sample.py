@@ -16,7 +16,7 @@ from unittest import TestCase, main
 from os import remove
 import shutil
 
-from skbio.core.alignment import SequenceCollection
+from skbio.alignment import SequenceCollection
 from skbio.sequence import DNA
 from skbio.parse.sequences import parse_fasta
 

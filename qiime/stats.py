@@ -49,7 +49,7 @@ from numpy import (argsort, array, ceil, empty, fill_diagonal, finfo,
 
 from numpy.random import permutation, shuffle, randint
 from biom.table import Table
-from skbio.core.distance import DistanceMatrix
+from skbio.stats.distance import DistanceMatrix
 from skbio.util import create_dir
 
 from qiime.format import format_p_value_for_num_iters

@@ -25,9 +25,9 @@ from tempfile import mkstemp
 from brokit.mothur import parse_otu_list as mothur_parse
 
 from skbio.util import remove_files, flatten
-from skbio.core.tree import CompressedTrie, fasta_to_pairlist
+from skbio.tree import CompressedTrie, fasta_to_pairlist
 from skbio.parse.sequences import parse_fasta
-from skbio.core.alignment import SequenceCollection
+from skbio.alignment import SequenceCollection
 from skbio.sequence import DNA
 
 from qiime.util import FunctionWithParams, get_qiime_temp_dir

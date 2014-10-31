@@ -16,7 +16,7 @@ from tempfile import mkdtemp, NamedTemporaryFile
 from skbio.util import remove_files
 
 from unittest import TestCase, main
-from skbio.core.exception import DistanceMatrixError
+from skbio.stats.distance import DistanceMatrixError
 
 from qiime.compare_categories import compare_categories
 from qiime.util import get_qiime_temp_dir

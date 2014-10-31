@@ -16,9 +16,9 @@ warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
 from optparse import OptionParser
 from qiime.parse import parse_distmat
 from scipy.cluster.hierarchy import linkage
-from skbio.core.tree import TreeNode
-from skbio.core.distance import DistanceMatrix
-from skbio.core.tree import nj
+from skbio.tree import TreeNode
+from skbio.stats.distance import DistanceMatrix
+from skbio.tree import nj
 import os.path
 
 

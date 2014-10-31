@@ -13,7 +13,7 @@ __email__ = "jesse.stombaugh@colorado.edu"
 from string import strip
 import re
 
-from skbio.core.alignment import SequenceCollection
+from skbio.alignment import SequenceCollection
 from skbio.sequence import DNA
 
 def filter_otus(otus, prefs):
