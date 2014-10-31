@@ -9,12 +9,13 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Charudatta Navare"
 __email__ = "charudatta.navare@gmail.com"
 
-import tempfile
-import os
+
+from os import path
+
 from qiime.util import create_dir
-from qcli import parse_command_line_parameters, make_option
 from qiime.golay import decode_golay_12
 from qiime.split_libraries_lea_seq import get_LEA_seq_consensus_seqs
+from qcli import parse_command_line_parameters, make_option
 
 
 script_info = {}
@@ -143,9 +144,9 @@ def main():
     reverse_primer_column = opts.reverse_primer_column
 
     create_dir(output_dir)
-    fwd_consensus_outfile = open(os.path.join(output_dir, "fwd.fna"), "w")
-    rev_consensus_outfile = open(os.path.join(output_dir, "rev.fna"), "w")
-    log_file = open(os.path.join(output_dir, "log.txt"), "w")
+    fwd_consensus_outfile = open(path.join(output_dir, "fwd.fna"), "w")
+    rev_consensus_outfile = open(path.join(output_dir, "rev.fna"), "w")
+    log_file = open(path.join(output_dir, "log.txt"), "w")
 
     if barcode_type == 'golay_12':
         barcode_correction_fn = decode_golay_12

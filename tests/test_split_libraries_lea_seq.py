@@ -9,8 +9,10 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Charudatta Navare"
 __email__ = "charudatta.navare@gmail.com"
 
-import tempfile
+from tempfile import NamedTemporaryFile
 from unittest import TestCase, main
+
+from skbio.util.misc import remove_files
 from qiime.util import get_qiime_temp_dir
 from qiime.split_libraries_lea_seq import (get_cluster_ratio, get_consensus,
                                            get_LEA_seq_consensus_seqs,
@@ -26,8 +28,6 @@ from qiime.split_libraries_lea_seq import (get_cluster_ratio, get_consensus,
                                            SeqLengthMismatchError,
                                            LowConsensusScoreError,
                                            PrimerMismatchError)
-from skbio.util.misc import remove_files
-import os
 
 
 class WorkflowTests(TestCase):
@@ -49,7 +49,7 @@ class WorkflowTests(TestCase):
             fasta_seqs_for_consensus_unequal_length
         self.min_difference_in_clusters = min_difference_in_clusters
         self.temp_dir = get_qiime_temp_dir()
-        self.mapping_fp = tempfile.NamedTemporaryFile(
+        self.mapping_fp = NamedTemporaryFile(
             delete=False,
             mode='w',
             dir=self.temp_dir)

@@ -10,20 +10,21 @@ __maintainer__ = "Charudatta Navare"
 __email__ = "charudatta.navare@gmail.com"
 
 from collections import defaultdict
+from os import close, path, mkdir, rmdir
+from re import search
+from tempfile import mkstemp
+from itertools import izip
+
 from qiime.golay import get_invalid_golay_barcodes
 from qiime.parse import parse_mapping_file_to_dict
 from qiime.split_libraries import check_map, expand_degeneracies
 from qiime.split_libraries_fastq import correct_barcode
-from skbio.parse.sequences import parse_fasta, parse_fastq
 from qiime.util import get_qiime_temp_dir, qiime_system_call
-from brokit.uclust import get_clusters_from_fasta_filepath
 from skbio.app.util import ApplicationError
-from os import close, path, mkdir, rmdir
+from skbio.parse.sequences import parse_fasta, parse_fastq
 from skbio.util.misc import remove_files
 from skbio.core.sequence import DNASequence
-import re
-from tempfile import mkstemp
-from itertools import izip
+from brokit.uclust import get_clusters_from_fasta_filepath
 
 
 class PairedEndParseError(Exception):
@@ -235,19 +236,14 @@ def get_cluster_ratio(fasta_seqs, min_difference_in_clusters):
     # but due to issue (biocore/brokit#31), I have temporarily
     # reverted to qiime_system_call.
 
-    count_lookup = {}
+    count_lookup = defaultdict(int)
 
     qiime_system_call(command)
     uclust_tempfile = open(uclust_tempfile_name, 'r')
     for line in uclust_tempfile:
-        if re.search(r'^C', line):
+        if search(r'^C', line):
             pieces = line.split('\t')
-            try:
-                count_lookup[pieces[1]] += pieces[2]
-            except KeyError:
-                count_lookup[pieces[1]] = pieces[2]
-            except IndexError:
-                pass
+            count_lookup[pieces[1]] += int(pieces[2])
             count += 1
     uclust_tempfile.close()
     files_to_be_removed = list()
@@ -301,7 +297,7 @@ def get_consensus(fasta_seqs, min_consensus):
 
     fasta_tempfile = open(fasta_tempfile_name, 'r')
     for label, seq in parse_fasta(fasta_tempfile):
-        RE_output = re.search(r'\w+\|(\d+)', label)
+        RE_output = search(r'\w+\|(\d+)', label)
         counts.append(int(RE_output.group(1)))
         seqs.append(seq)
     fasta_tempfile.close()
