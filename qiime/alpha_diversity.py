@@ -37,7 +37,7 @@ import os.path
 import warnings
 warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
 
-import skbio.math.diversity.alpha as alph
+import skbio.diversity.alpha as alph
 from numpy import array, zeros
 
 from qiime.util import FunctionWithParams

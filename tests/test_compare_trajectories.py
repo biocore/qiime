@@ -17,7 +17,7 @@ import numpy as np
 import numpy.testing as npt
 import pandas as pd
 from skbio.stats.ordination import OrdinationResults
-from skbio.math.gradient import (GroupResults, CategoryResults,
+from skbio.stats.gradient import (GroupResults, CategoryResults,
                                  GradientANOVAResults)
 
 from qiime.compare_trajectories import run_trajectory_analysis

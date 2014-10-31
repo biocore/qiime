@@ -12,10 +12,10 @@ __email__ = "josenavasmolina@gmail.com"
 from future.builtins import zip
 
 import pandas as pd
-from skbio.math.gradient import (AverageGradientANOVA,
-                                 TrajectoryGradientANOVA,
-                                 FirstDifferenceGradientANOVA,
-                                 WindowDifferenceGradientANOVA)
+from skbio.stats.gradient import (AverageGradientANOVA,
+                                   TrajectoryGradientANOVA,
+                                   FirstDifferenceGradientANOVA,
+                                   WindowDifferenceGradientANOVA)
 
 
 TRAJECTORY_ALGORITHMS = ['avg', 'trajectory', 'diff', 'wdiff']
@@ -28,7 +28,7 @@ def run_trajectory_analysis(ord_res, metadata_map, trajectory_categories=None,
 
     Parameters
     ----------
-    ord_res : skbio.maths.stats.ordination.OrdinationResults
+    ord_res : skbio.stats.ordination.OrdinationResults
         The ordination results
     metadata_map : pandas.DataFrame
         The metadata map where index are samples ids and columns are the
@@ -54,7 +54,7 @@ def run_trajectory_analysis(ord_res, metadata_map, trajectory_categories=None,
 
     Returns
     -------
-    skbio.maths.gradient.GradientANOVAResults
+    skbio.stats.gradient.GradientANOVAResults
         The results of running the volatility analysis over the input data
 
     Raises
