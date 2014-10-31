@@ -501,9 +501,9 @@ def get_consensus_seqs_lookup(random_bc_lookup,
     consensus_seq_lookup = defaultdict(lambda:
                                        defaultdict(str))
     # defaultdict that stores LEA-seq consensus sequence
-    # For each sample id, for each random barcode, 
+    # For each sample id, for each random barcode,
     # consensus sequence is stored
-    
+
     random_bc_keep = {}
     # to remove random bcs that are selected
     # during the pruning step (select_unique_rand_bcs)
@@ -548,7 +548,8 @@ def get_consensus_seqs_lookup(random_bc_lookup,
                             sample_id][random_bc][fwd_rev]
                         majority_seq = fwd_seq + "^" + rev_seq
                 # select majority sequence for the sample_id,
-                # and for that particular random_bc                    
+                # and for that particular random_bc
+
                 fwd_fasta_tempfile.close()
                 rev_fasta_tempfile.close()
                 fwd_cluster_ratio = get_cluster_ratio(
@@ -557,7 +558,7 @@ def get_consensus_seqs_lookup(random_bc_lookup,
                 rev_cluster_ratio = get_cluster_ratio(
                     rev_fasta_tempfile_name,
                     min_difference_in_clusters)
-                
+
                 # If the cluster ratio exists, and
                 # if is is below the threshold(max_cluster_ratio),
                 # set the consensus seq as the majority seq
