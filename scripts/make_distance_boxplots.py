@@ -12,7 +12,7 @@ __email__ = "jai.rideout@gmail.com"
 from os.path import join
 from string import strip
 
-from skbio.util.misc import create_dir
+from skbio.util import create_dir
 
 from qiime.make_distance_boxplots import make_distance_boxplots, SORT_TYPES
 from qiime.stats import all_pairs_t_test, tail_types

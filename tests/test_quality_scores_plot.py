@@ -14,8 +14,8 @@ from shutil import rmtree
 
 from tempfile import mkdtemp, mkstemp
 from unittest import TestCase, main
-from skbio.util.misc import remove_files
-from skbio.util.misc import create_dir
+from skbio.util import remove_files
+from skbio.util import create_dir
 
 from qiime.quality_scores_plot import generate_histogram,\
     plot_qual_report, get_qual_stats, bin_qual_scores, write_qual_report

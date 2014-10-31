@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from skbio.core.distance import DistanceMatrix
-from skbio.math.stats.ordination import PCoA
+from skbio.stats.ordination import PCoA
 
 __author__ = "Justin Kuzynski"
 __copyright__ = "Copyright 2011, The QIIME Project"

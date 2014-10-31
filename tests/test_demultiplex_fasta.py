@@ -14,9 +14,9 @@ from os.path import exists, join
 from shutil import rmtree
 from tempfile import mkdtemp, mkstemp
 
-from skbio.util.misc import create_dir
+from skbio.util import create_dir
 from unittest import TestCase, main
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 
 from qiime.parse import parse_qual_score
 from qiime.demultiplex_fasta import (

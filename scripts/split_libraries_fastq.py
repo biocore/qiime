@@ -12,8 +12,8 @@ __email__ = "gregcaporaso@gmail.com"
 
 from os import rename
 
-from skbio.util.misc import safe_md5, create_dir
-from skbio.core.sequence import DNA
+from skbio.util import safe_md5, create_dir
+from skbio.sequence import DNA
 from skbio.format.sequences import format_fastq_record
 
 from qiime.util import parse_command_line_parameters, make_option, gzip_open

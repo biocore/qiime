@@ -16,7 +16,7 @@ from tempfile import mkdtemp
 from unittest import TestCase, main
 
 from numpy.testing import assert_almost_equal
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 from skbio.core.tree import TreeNode
 from biom import load_table
 

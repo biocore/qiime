@@ -11,7 +11,7 @@ __email__ = "jai.rideout@gmail.com"
 
 from os.path import join
 from string import strip
-from skbio.util.misc import create_dir
+from skbio.util import create_dir
 from skbio.draw.distributions import grouped_distributions
 from qiime.colors import data_colors, data_color_order
 from qiime.group import get_field_state_comparisons

@@ -18,7 +18,7 @@ from tempfile import mkdtemp
 from unittest import TestCase, main
 
 from skbio.core.tree import TreeNode
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 from biom import Table
 from biom.util import biom_open
 

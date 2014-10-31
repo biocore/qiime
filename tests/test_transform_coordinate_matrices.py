@@ -14,7 +14,7 @@ from numpy import array
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
 
-from skbio.math.stats.ordination import OrdinationResults
+from skbio.stats.ordination import OrdinationResults
 
 from qiime.parse import parse_coords
 from qiime.transform_coordinate_matrices import (map_sample_ids,

@@ -17,7 +17,7 @@ from re import compile, sub
 from os import walk
 from os.path import join, splitext, exists, isfile, abspath
 
-from skbio.core.sequence import BiologicalSequence
+from skbio.sequence import BiologicalSequence
 from biom.table import Table
 
 from qiime.util import get_qiime_library_version, load_qiime_config

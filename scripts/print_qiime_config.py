@@ -34,7 +34,7 @@ except ImportError as e:
 
 try:
     from tempfile import mkdtemp
-    from skbio.util.misc import remove_files
+    from skbio.util import remove_files
     from burrito.util import ApplicationNotFoundError, ApplicationError
 except ImportError as e:
     raise ImportError("%s\n%s" % (e, core_dependency_missing_msg))

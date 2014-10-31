@@ -54,7 +54,7 @@ from operator import itemgetter
 from copy import deepcopy
 from shutil import copyfile
 
-from skbio.core.sequence import DNASequence
+from skbio.sequence import DNASequence
 
 from qiime.util import get_qiime_project_dir, duplicates_indices
 from qiime.parse import parse_mapping_file

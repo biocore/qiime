@@ -16,7 +16,7 @@ from unittest import TestCase, main
 import numpy as np
 import numpy.testing as npt
 import pandas as pd
-from skbio.math.stats.ordination import OrdinationResults
+from skbio.stats.ordination import OrdinationResults
 from skbio.math.gradient import (GroupResults, CategoryResults,
                                  GradientANOVAResults)
 

@@ -16,9 +16,9 @@ from shutil import rmtree
 from tempfile import mkstemp, mkdtemp
 from unittest import TestCase, main
 
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 from skbio.core.alignment import SequenceCollection
-from skbio.core.sequence import DNA
+from skbio.sequence import DNA
 
 from brokit.formatdb import build_blast_db_from_fasta_file
 

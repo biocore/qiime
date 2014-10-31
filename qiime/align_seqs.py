@@ -40,7 +40,7 @@ from qiime.util import (FunctionWithParams,
                         get_qiime_temp_dir)
 
 from skbio.core.alignment import SequenceCollection, Alignment
-from skbio.core.sequence import DNASequence
+from skbio.sequence import DNASequence
 from skbio.parse.sequences import parse_fasta
 
 # Load PyNAST if it's available. If it's not, skip it if not but set up

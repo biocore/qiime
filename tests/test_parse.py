@@ -19,7 +19,7 @@ from numpy import array, nan
 from StringIO import StringIO
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 from skbio.core.exception import FileFormatError
 
 from qiime.parse import (group_by_field, group_by_fields,

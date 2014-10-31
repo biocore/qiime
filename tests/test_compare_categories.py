@@ -13,7 +13,7 @@ __email__ = "jai.rideout@gmail.com"
 from os.path import exists, join
 from shutil import rmtree
 from tempfile import mkdtemp, NamedTemporaryFile
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 
 from unittest import TestCase, main
 from skbio.core.exception import DistanceMatrixError

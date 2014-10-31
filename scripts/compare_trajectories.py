@@ -14,7 +14,7 @@ from os import mkdir
 from os.path import join, exists
 
 import pandas as pd
-from skbio.math.stats.ordination import OrdinationResults
+from skbio.stats.ordination import OrdinationResults
 
 from qiime.parse import parse_mapping_file_to_dict
 from qiime.util import parse_command_line_parameters, make_option

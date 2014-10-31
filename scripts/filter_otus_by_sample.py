@@ -15,7 +15,7 @@ __email__ = "jesse.stombaugh@colorado.edu"
 import os
 
 from skbio.core.alignment import SequenceCollection
-from skbio.core.sequence import DNA
+from skbio.sequence import DNA
 from skbio.parse.sequences import parse_fasta
 
 from qiime.util import make_option

@@ -15,7 +15,7 @@ from types import ListType
 
 import pandas as pd
 from skbio.core.distance import DistanceMatrix
-from skbio.math.stats.distance import ANOSIM, PERMANOVA, bioenv
+from skbio.stats.distance import ANOSIM, PERMANOVA, bioenv
 
 from qiime.parse import parse_mapping_file_to_dict
 from qiime.util import get_qiime_temp_dir, MetadataMap, RExecutor

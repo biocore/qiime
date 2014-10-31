@@ -18,7 +18,7 @@ from os.path import exists, join
 from string import digits
 from tempfile import mkdtemp
 
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 from unittest import TestCase, main
 from warnings import filterwarnings
 from numpy.testing import assert_almost_equal, assert_allclose
