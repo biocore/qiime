@@ -10,10 +10,12 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
-from numpy import array
-from unittest import TestCase, main
-from numpy.testing import assert_almost_equal
 
+from unittest import TestCase, main
+from StringIO import StringIO
+
+from numpy.testing import assert_almost_equal
+from numpy import array
 from skbio.stats.ordination import OrdinationResults
 
 from qiime.parse import parse_coords
@@ -32,16 +34,16 @@ class ProcrustesTests(TestCase):
 
     def setUp(self):
         """ """
-        self.pcoa1_f = pcoa1_f.split('\n')
+        self.pcoa1_f = StringIO(pcoa1_f)
         self.sample_ids1, self.coords1, self.eigvals1, self.pct_var1 =\
             parse_coords(self.pcoa1_f)
-        self.pcoa2_f = pcoa2_f.split('\n')
+        self.pcoa2_f = StringIO(pcoa2_f)
         self.sample_ids2, self.coords2, self.eigvals2, self.pct_var2 =\
             parse_coords(self.pcoa2_f)
-        self.pcoa3_f = pcoa3_f.split('\n')
+        self.pcoa3_f = StringIO(pcoa3_f)
         self.sample_ids3, self.coords3, self.eigvals3, self.pct_var3 =\
             parse_coords(self.pcoa3_f)
-        self.pcoa4_f = pcoa4_f.split('\n')
+        self.pcoa4_f = StringIO(pcoa4_f)
         self.sample_ids4, self.coords4, self.eigvals4, self.pct_var4 =\
             parse_coords(self.pcoa3_f)
 
