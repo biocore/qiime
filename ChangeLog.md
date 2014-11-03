@@ -1,43 +1,40 @@
 QIIME 1.8.0-dev (changes since 1.8.0 go here)
 =============================================
-* split_otu_table.py now allows multiple fields to be passed to split a biom table, and 
+* ``split_otu_table.py`` now allows multiple fields to be passed to split a biom table, and
 optionally a mapping file. Check out the new documentation for the naming conventions
 (which have changed slightly) and an example.
 * QIIME is now even easier to install! Removed ``qiime_scripts_dir``, ``python_exe_fp``, ``working_dir``, and ``cloud_environment`` from the QIIME config file. If these values are present in your QIIME config file, they will be flagged as unrecognized by ``print_qiime_config.py -t`` and will be ignored by QIIME. QIIME will now use the ``python`` executable and QIIME scripts that are found in your ``PATH`` environment variable, and ``temp_dir`` will be used in place of ``working_dir`` (this value was used by some parts of parallel QIIME previously).
 * Removed ``-Y``/``--python_exe_fp`` and ``-N`` options from ``parallel_merge_otu_tables.py`` script as these are not available in any of the other parallel QIIME scripts and we do not have good reason to support them (see QIIME 1.6.0 release notes below for more details).
-* SciPy >= 0.13.0, pyqi 0.3.1, and scikit-bio 0.1.1-dev (latest development version) are now required dependencies for a QIIME base install.
-* Added new options to make_otu_heatmap.py: --color_scheme, which allows users to choose from different color schemes [here](http://wiki.scipy.org/Cookbook/Matplotlib/Show_colormaps); --observation_metadata_category, which allows users to select a column other than taxonomy to use when labeling the rows; and --observation_metadata_level, which allows the user to specify which level in the hierarchical metadata category to use in creating the row labels.
-* -m/--mapping_fps is no longer required for split_libraries_fastq.py. The mapping file is not required when running with --barcode_type 'not-barcoded',but the mapping file would fail to validate when passing multiple sequence files and sample ids but a mapping file without barcodes (see #1400).
-* Added alphabetical sorting option (based on boxplot labels) to make_distance_boxplots.py. Sorting by boxplot median can now be performed by passing ``--sort median`` (this was previously invoked by passing ``--sort``). Sorting alphabetically can be performed by passing ``--sort alphabetical``.
-* Removed insert_seqs_into_tree.py. This code needs additional testing and documentation, and was not widely used. We plan to add this support back in the future, and progress on that can be followed on [#1499](https://github.com/biocore/qiime/issues/1499).
-* The alpha diversity measures available in QIIME (e.g., alpha_diversity.py) are now powered by [scikit-bio](http://scikit-bio.org/)! Click [here](http://scikit-bio.org/math.diversity.alpha.html) to view the documentation for these measures. Several changes were made to alpha_diversity.py:
+* SciPy >= 0.13.0, pyqi 0.3.1, and scikit-bio 0.2.1 are now required dependencies for a QIIME base install.
+* Added new options to ``make_otu_heatmap.py``: ``--color_scheme``, which allows users to choose from different color schemes [here](http://wiki.scipy.org/Cookbook/Matplotlib/Show_colormaps); ``--observation_metadata_category``, which allows users to select a column other than taxonomy to use when labeling the rows; and ``--observation_metadata_level``, which allows the user to specify which level in the hierarchical metadata category to use in creating the row labels.
+* ``-m/--mapping_fps`` is no longer required for split_libraries_fastq.py. The mapping file is not required when running with ``--barcode_type 'not-barcoded'``,but the mapping file would fail to validate when passing multiple sequence files and sample ids but a mapping file without barcodes (see #1400).
+* Added alphabetical sorting option (based on boxplot labels) to ``make_distance_boxplots.py``. Sorting by boxplot median can now be performed by passing ``--sort median`` (this was previously invoked by passing ``--sort``). Sorting alphabetically can be performed by passing ``--sort alphabetical``.
+* Removed ``insert_seqs_into_tree.py``. This code needs additional testing and documentation, and was not widely used. We plan to add this support back in the future, and progress on that can be followed on [#1499](https://github.com/biocore/qiime/issues/1499).
+* The alpha diversity measures available in QIIME (e.g., ``alpha_diversity.py``) are now powered by [scikit-bio](http://scikit-bio.org/)! Click [here](http://scikit-bio.org/docs/latest/generated/skbio.diversity.alpha.html) to view the documentation for these measures. Several changes were made to ``alpha_diversity.py``:
   - ``ACE`` is now ``ace``
   - ``chao1_confidence`` is now ``chao1_ci``
   - Added ``observed_otus``, which is equivalent to ``observed_species`` but is
     generally a more accurate name. ``observed_species`` is retained for
     backwards-compatibility.
-* Removed options ``-c``/``--ci_type``, ``-a``/``--alpha``, and ``-f``/``--f_ratio`` from conditional_uncovered_probability.py as these weren't being used by the script (i.e., supplying different values didn't change the computed CIs because the default were always used).
-* Removed tax2tree as a method in assign_taxonomy.py.
-* ANOSIM and PERMANOVA (available in compare_categories.py) are considerably faster than previous implementations and provide more useful information in the output file.
-* Added script compare_trajectories.py, which provides access to analysis of volatility using different algorithms.
-* Renamed compare_categories.py's BEST method to BIO-ENV to match the name used in R's vegan package (``vegan::bioenv``) and the name of the program in the original paper. Use ``compare_categories.py --method bioenv`` instead of ``compare_categories.py --method best``. The underlying implementation has also been rewritten and is considerably faster than before, and the output more closely matches the vegan package, as environmental variables are now scaled before computing Euclidean distances.
+* Removed options ``-c``/``--ci_type``, ``-a``/``--alpha``, and ``-f``/``--f_ratio`` from ``conditional_uncovered_probability.py`` as these weren't being used by the script (i.e., supplying different values didn't change the computed CIs because the default were always used).
+* Removed ``tax2tree`` as a method in ``assign_taxonomy.py``.
+* ANOSIM and PERMANOVA (available in ``compare_categories.py``) are considerably faster than previous implementations and provide more useful information in the output file.
+* Added script ``compare_trajectories.py``, which provides access to analysis of volatility using different algorithms.
+* Renamed ``compare_categories.py``'s BEST method to BIO-ENV to match the name used in R's vegan package (``vegan::bioenv``) and the name of the program in the original paper. Use ``compare_categories.py --method bioenv`` instead of ``compare_categories.py --method best``. The underlying implementation has also been rewritten and is considerably faster than before, and the output more closely matches the vegan package, as environmental variables are now scaled before computing Euclidean distances.
 * Add required dependency on HDF5 and h5py.
 * Scripts that write an OTU table, will write BIOM files in HDF5 format.
 * Changed default parameters for uclust-based OTU picking: ``max_accepts`` is now 1 (was 8), ``max_rejects`` is now 8 (was 500), ``stepwords`` is now 8 (was 20), and ``word_length`` is now 8 (was 12). These changes greatly reduce runtime, with minimal effect on the results. See Rideout et al., 2014 ([PeerJ pre-print](https://peerj.com/preprints/411/)) for more details.
 * Disabled the prefilter by default in ``pick_open_reference_otus.py``. This change greatly reduces runtime, with minimal effect on the results. See Rideout et al., 2014 ([PeerJ pre-print](https://peerj.com/preprints/411/)) for more details.
 * ``merge_mapping_files.py`` can now take an argument to convert the header names to upper case, so it will merge for example a category named `treatment` and another one named `TREATMENT` from two different mapping files.
-* The script ``make_distance_histograms.py`` has been removed.
-* Beta support has been added for performing subsampled open reference OTU picking using SortMeRNA ([Bioinformatics](http://www.ncbi.nlm.nih.gov/pubmed/23071270)(for the closed-reference steps) and SumaClust ([In Preparation](http://metabarcoding.org/sumatra)) (for the open reference steps). This can be accessed with 'pick_open_reference_otus.py -m sortmerna_sumaclust'.
-* Beta support has been added for performing closed-reference OTU picking using SortMeRNA ([Bioinformatics](http://www.ncbi.nlm.nih.gov/pubmed/23071270). This can be accessed with 'pick_closed_reference_otus.py -p params.txt' where params.txt includes the line "pick_otus:otu_picking_method sortmerna".
-* Beta support has been added for performing de novo OTU picking using SumaClust ([In Preparation](http://metabarcoding.org/sumatra)). This can be accessed with 'pick_de_novo_otus.py -p params.txt' where params.txt includes the line "pick_otus:otu_picking_method sumaclust".
+* The script ``make_distance_histograms.py`` has been removed. This functionality should be accessed through ``make_distance_boxplots.py``.
+* Beta support has been added for performing subsampled open reference OTU picking using SortMeRNA ([Bioinformatics](http://www.ncbi.nlm.nih.gov/pubmed/23071270)(for the closed-reference steps) and SumaClust ([In Preparation](http://metabarcoding.org/sumatra)) (for the open reference steps). This can be accessed with ``pick_open_reference_otus.py -m sortmerna_sumaclust``.
+* Beta support has been added for performing closed-reference OTU picking using SortMeRNA ([Bioinformatics](http://www.ncbi.nlm.nih.gov/pubmed/23071270). This can be accessed with ``pick_closed_reference_otus.py -p params.txt`` where params.txt includes the line ``pick_otus:otu_picking_method sortmerna``.
+* Beta support has been added for performing de novo OTU picking using SumaClust ([In Preparation](http://metabarcoding.org/sumatra)). This can be accessed with ``pick_de_novo_otus.py -p params.txt`` where params.txt includes the line ``pick_otus:otu_picking_method sumaclust``.
 * numpy version requirement has been updated to 1.7.1 or later.
 * Updated to use [burrito](https://github.com/biocore/burrito) instead of scikit-bio for imports from the application controller framework, as the former is replacing the latter.
-* QIIME now depends on BIOM format 2.1.
-* the parameters --uclust_min_consensus_fraction and --uclust_similarity in assign_taxonomy scripts have been changed to --min_consensus_fraction and --similarity since both of these parameters apply to the SortMeRNA taxon assigner as well.
-* Renamed split_fasta_on_sample_ids_to_files to split_sequence_file_on_sample_ids_to_files, which now supports splitting FASTQ files, as well. Added a parameter, file_type, which is used to specify the type of the input file
-
-
-
+* QIIME now depends on [biom-format](https://github.com/biocore/biom-format) 2.1.0.
+* the parameters ``--uclust_min_consensus_fraction`` and ``--uclust_similarity`` in assign taxonomy scripts have been changed to ``--min_consensus_fraction`` and ``--similarity`` since both of these parameters apply to the SortMeRNA taxon assigner as well.
+* Renamed ``split_fasta_on_sample_ids_to_files.py`` to      ``split_sequence_file_on_sample_ids_to_files.py``, which now supports splitting FASTQ files, as well. Added a parameter, ``file_type``, which is used to specify the type of the input file.
 
 
 QIIME 1.8.0 (11 Dec 2013)
