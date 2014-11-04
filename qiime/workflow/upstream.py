@@ -486,7 +486,8 @@ def run_pick_closed_reference_otus(
         params_str = ''
     # If assign_taxonomy is True, this will be the path to the taxonomic
     # assignment results. If assign_taxonomy is False this will be either
-    # the precomputed taxonomic assignments that the user passed in, or None.
+    # the precomputed taxonomic assignments that the user passed in,
+    # or None.
     if taxonomy_fp:
         taxonomy_str = '-t %s' % taxonomy_fp
     else:
