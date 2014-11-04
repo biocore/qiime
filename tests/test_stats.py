@@ -125,7 +125,7 @@ class TestHelper(TestCase):
                                 \t0.725100672826\t0.632524644216\
                                 \t0.727154987937\t0.699880573956\
                                 \t0.560605525642\t0.575788039321\t0.0"]
-        self.overview_dm = DistanceMatrix.from_file(self.overview_dm_str)
+        self.overview_dm = DistanceMatrix.read(self.overview_dm_str)
 
         # The overview tutorial's metadata mapping file.
         self.overview_map_str = ["#SampleID\tBarcodeSequence\tTreatment\tDOB",

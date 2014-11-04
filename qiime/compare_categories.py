@@ -60,7 +60,7 @@ def compare_categories(dm_fp, map_fp, method, categories, num_perms, out_dir):
                          "analyses). Please choose a different metadata "
                          "column to perform statistical tests on.")
 
-    dm = DistanceMatrix.from_file(dm_fp)
+    dm = DistanceMatrix.read(dm_fp)
 
     if method in ('anosim', 'permanova', 'bioenv'):
         with open(map_fp, 'U') as map_f:
