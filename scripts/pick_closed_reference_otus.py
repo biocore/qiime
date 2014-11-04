@@ -109,8 +109,8 @@ script_info['optional_options'] = [
     make_option('-s', '--assign_taxonomy', action='store_true',
                 default=False,
                 help='Assign taxonomy to each sequence using '
-                'assign_taxonomy.py (rather than complete original '
-                'strings from the taxonomy map) [default: %default]'),
+                'assign_taxonomy.py (this will override --taxonomy_fp, if provided). '
+                '[default: %default]'),
     make_option('-f', '--force', action='store_true',
                 dest='force', help='Force overwrite of existing output directory' +
                 ' (note: existing files in output_dir will not be removed)' +

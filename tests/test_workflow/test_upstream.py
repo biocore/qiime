@@ -265,8 +265,7 @@ class UpstreamWorkflowTests(TestCase):
         self.assertTrue(getsize(log_fp) > 0)
 
     def test_run_pick_closed_reference_otus_tax_assign(self):
-        """run_pick_closed_reference_otus using default picker
-           and assign taxonomy using default classifier
+        """run_pick_closed_reference_otus with tax assignment
         """
         self.params['assign_taxonomy']['id_to_taxonomy_fp'] = \
             self.test_data['refseqs_tax'][0]
@@ -333,8 +332,7 @@ class UpstreamWorkflowTests(TestCase):
         self.assertTrue(getsize(log_fp) > 0)
 
     def test_run_pick_closed_reference_otus_rdp_tax_assign(self):
-        """run_pick_closed_reference_otus using default picker
-           and assign taxonomy using RDP classifier
+        """run_pick_closed_reference_otus with RDP tax assignment
         """
         self.params['assign_taxonomy']['assignment_method'] = 'rdp'
         self.params['assign_taxonomy']['id_to_taxonomy_fp'] = \

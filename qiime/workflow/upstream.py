@@ -326,9 +326,11 @@ def run_pick_closed_reference_otus(
 
         The steps performed by this function are:
           1) Pick OTUs;
-          2) If --assign_taxonomy flag was set, choose representative set
-             for OTUs in 1) and assign taxonomy using a classifier
-          3) Build an OTU table with optional pre-defined (or ) taxonomy.
+          2) If assignment_taxonomy is True, choose representative sequence
+             for OTUs and assign taxonomy using a classifier.
+          3) Build an OTU table with optional predefined taxonomy
+             (if assign_taxonomy=False) or taxonomic assignments from step 2
+             (if assign_taxonomy=True).
 
     """
 
@@ -413,9 +415,8 @@ def run_pick_closed_reference_otus(
 
     commands.append([('Pick OTUs', pick_otus_cmd)])
 
-    # Assign taxonomy using a taxonomy classifier if such a method is
-    # passed in the parameters file, rather than using the original
-    # taxonomy strings
+    # Assign taxonomy using a taxonomy classifier, if request by the user.
+    # (Alternatively predefined taxonomic assignments will be used, if provided.)
     if assign_taxonomy:
         # Prep the representative set picking command
         rep_set_dir = '%s/rep_set/' % output_dir
@@ -483,6 +484,9 @@ def run_pick_closed_reference_otus(
         params_str = get_params_str(params['make_otu_table'])
     except KeyError:
         params_str = ''
+    # If assign_taxonomy is True, this will be the path to the taxonomic
+    # assignment results. If assign_taxonomy is False this will be either
+    # the precomputed taxonomic assignments that the user passed in, or None.
     if taxonomy_fp:
         taxonomy_str = '-t %s' % taxonomy_fp
     else:
