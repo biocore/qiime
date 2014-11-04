@@ -361,12 +361,12 @@ def parse_coords(lines):
     - list of percent variance explained
 
     For the file format check
-    skbio.stats.ordination.OrdinationResults.from_file
+    skbio.stats.ordination.OrdinationResults.read
 
     Strategy: read the file using skbio's parser and return the objects
               we want
     """
-    pcoa_results = OrdinationResults.from_file(lines)
+    pcoa_results = OrdinationResults.read(lines)
     return (pcoa_results.site_ids, pcoa_results.site, pcoa_results.eigvals,
             pcoa_results.proportion_explained)
 

@@ -126,7 +126,7 @@ if __name__ == '__main__':
 
     # Parse the ordination results
     with open(ord_fp, 'U') as f:
-        ord_res = OrdinationResults.from_file(f)
+        ord_res = OrdinationResults.read(f)
 
     # Parse the mapping file
     with open(mapping_fp, 'U') as f:

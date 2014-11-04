@@ -131,8 +131,8 @@ def get_procrustes_results(coords_f1, coords_f2, sample_id_map=None,
                            get_percent_variation_explained=get_mean_percent_variation):
     """ """
     # Parse the PCoA files
-    ord_res_1 = OrdinationResults.from_file(coords_f1)
-    ord_res_2 = OrdinationResults.from_file(coords_f2)
+    ord_res_1 = OrdinationResults.read(coords_f1)
+    ord_res_2 = OrdinationResults.read(coords_f2)
 
     sample_ids1 = ord_res_1.site_ids
     coords1 = ord_res_1.site
@@ -247,6 +247,16 @@ def procrustes_monte_carlo(coords_f1,
     trial_m_squareds = []
     count_better = 0
     for i in range(trials):
+        try:
+            coords_f1.seek(0)
+        except AttributeError:
+            # we likely have a list of lines
+            pass
+        try:
+            coords_f2.seek(0)
+        except AttributeError:
+            # we likely have a list of lines
+            pass
         # perform the procrustes analysis
         transformed_coords1, transformed_coords2, trial_m_squared, randomized_coords2 =\
             get_procrustes_results(
