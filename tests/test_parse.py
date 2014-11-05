@@ -531,7 +531,7 @@ node2\t0
                   "",
                   "Site constraints\t0\t0"]
 
-        obs = parse_coords(coords)
+        obs = parse_coords(StringIO("\n".join(coords)))
 
         exp = (['A', 'B', 'C'],
                array([[.11, .09, .23], [.03, .07, -.26], [.12, .06, -.32]]),
@@ -545,17 +545,17 @@ node2\t0
 
         # missing eigenvalues line
         with self.assertRaises(FileFormatError):
-            out = parse_coords(COORDS_NO_EIGENVALS.splitlines())
+            out = parse_coords(StringIO(COORDS_NO_EIGENVALS))
         # missing percentages explained line
         with self.assertRaises(FileFormatError):
-            out = parse_coords(COORDS_NO_PCNTS.splitlines())
+            out = parse_coords(StringIO(COORDS_NO_PCNTS))
         # missing vector number line
         with self.assertRaises(FileFormatError):
-            out = parse_coords(COORDS_NO_VECTORS.splitlines())
+            out = parse_coords(StringIO(COORDS_NO_VECTORS))
 
         # a whole different file (taxa summary)
         with self.assertRaises(FileFormatError):
-            out = parse_coords(taxa_summary1.splitlines())
+            out = parse_coords(StringIO(taxa_summary1))
 
     def test_parse_classic_otu_table_legacy(self):
         """parse_classic_otu_table functions as expected with legacy OTU table
