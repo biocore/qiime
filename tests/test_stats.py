@@ -17,20 +17,19 @@ from shutil import rmtree
 from os.path import exists, join
 from string import digits
 from tempfile import mkdtemp
-
-from skbio.util import remove_files
+from StringIO import StringIO
 from unittest import TestCase, main
 from warnings import filterwarnings
+from itertools import izip
+from types import StringType, ListType, FloatType, TupleType
+
+
+from skbio.util import remove_files
 from numpy.testing import assert_almost_equal, assert_allclose
 from numpy import (array, asarray, roll, median, nan, arange, matrix,
                    concatenate, nan, ndarray, number, ones,
                    reshape, testing, tril, var, log, fill_diagonal)
-
-
 from numpy.random import permutation, shuffle, seed
-
-from itertools import izip
-from types import StringType, ListType, FloatType, TupleType
 from biom import Table
 from biom.util import biom_open
 
@@ -125,7 +124,8 @@ class TestHelper(TestCase):
                                 \t0.725100672826\t0.632524644216\
                                 \t0.727154987937\t0.699880573956\
                                 \t0.560605525642\t0.575788039321\t0.0"]
-        self.overview_dm = DistanceMatrix.read(self.overview_dm_str)
+        self.overview_dm = DistanceMatrix.read(\
+            StringIO('\n'.join(self.overview_dm_str)))
 
         # The overview tutorial's metadata mapping file.
         self.overview_map_str = ["#SampleID\tBarcodeSequence\tTreatment\tDOB",
