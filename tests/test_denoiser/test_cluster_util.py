@@ -23,7 +23,7 @@ from unittest import TestCase, main
 from brokit.denoiser import Flowgram
 from skbio.parse.sequences import parse_fasta
 from burrito.util import ApplicationNotFoundError
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 
 from qiime.util import load_qiime_config
 from qiime.denoiser.cluster_utils import submit_jobs, setup_server,\

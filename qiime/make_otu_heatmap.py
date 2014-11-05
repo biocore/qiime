@@ -24,8 +24,8 @@ import matplotlib
 from matplotlib.pylab import *
 from qiime.beta_diversity import get_nonphylogenetic_metric
 from scipy.cluster.hierarchy import linkage
-from skbio.core.tree import TreeNode
-from skbio.core.distance import DistanceMatrix
+from skbio.tree import TreeNode
+from skbio.stats.distance import DistanceMatrix
 from qiime.parse import parse_newick, PhyloNode
 from qiime.filter import filter_samples_from_otu_table
 

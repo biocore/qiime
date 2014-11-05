@@ -20,7 +20,7 @@ from tempfile import NamedTemporaryFile, mkdtemp, mkstemp
 from unittest import TestCase, main
 from burrito.util import ApplicationError
 
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 from qiime.detrend import detrend_pcoa
 from numpy import array
 

@@ -13,7 +13,7 @@ from optparse import OptionParser
 from itertools import imap
 from re import compile, search
 
-from skbio.core.sequence import BiologicalSequence
+from skbio.sequence import BiologicalSequence
 from skbio.parse.sequences import parse_fasta
 
 from qiime.denoiser.utils import read_denoiser_mapping, sort_ids

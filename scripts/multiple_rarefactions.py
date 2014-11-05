@@ -13,7 +13,7 @@ __email__ = "justinak@gmail.com"
 import os.path
 from functools import partial
 
-from skbio.math.subsample import subsample
+from skbio.stats import subsample
 
 from qiime.util import parse_command_line_parameters, create_dir
 from qiime.util import make_option

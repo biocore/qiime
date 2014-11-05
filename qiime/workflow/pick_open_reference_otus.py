@@ -14,7 +14,7 @@ from os.path import split, splitext, getsize, exists, abspath, join
 from shutil import copy, rmtree
 from numpy import inf
 from copy import deepcopy
-from skbio.util.misc import create_dir, remove_files
+from skbio.util import create_dir, remove_files
 from skbio.parse.sequences import parse_fasta
 from biom import Table
 from biom.util import biom_open

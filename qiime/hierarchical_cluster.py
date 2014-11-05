@@ -16,9 +16,9 @@ warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
 from optparse import OptionParser
 from qiime.parse import parse_distmat
 from scipy.cluster.hierarchy import linkage
-from skbio.core.tree import TreeNode
-from skbio.core.distance import DistanceMatrix
-from skbio.core.tree import nj
+from skbio.tree import TreeNode
+from skbio.stats.distance import DistanceMatrix
+from skbio.tree import nj
 import os.path
 
 
@@ -36,7 +36,7 @@ def multiple_file_upgma(input_dir, output_dir):
 
 def single_file_upgma(input_file, output_file):
     # read in dist matrix
-    dist_mat = DistanceMatrix.from_file(input_file)
+    dist_mat = DistanceMatrix.read(input_file)
 
     # SciPy uses average as UPGMA:
     # http://docs.scipy.org/doc/scipy/reference/generated/
@@ -58,7 +58,7 @@ def single_file_upgma(input_file, output_file):
 
 
 def single_file_nj(input_file, output_file):
-    dm = DistanceMatrix.from_file(input_file)
+    dm = DistanceMatrix.read(input_file)
 
     tree = nj(dm)
 

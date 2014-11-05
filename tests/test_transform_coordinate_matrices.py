@@ -10,11 +10,13 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
-from numpy import array
-from unittest import TestCase, main
-from numpy.testing import assert_almost_equal
 
-from skbio.math.stats.ordination import OrdinationResults
+from unittest import TestCase, main
+from StringIO import StringIO
+
+from numpy.testing import assert_almost_equal
+from numpy import array
+from skbio.stats.ordination import OrdinationResults
 
 from qiime.parse import parse_coords
 from qiime.transform_coordinate_matrices import (map_sample_ids,
@@ -32,18 +34,18 @@ class ProcrustesTests(TestCase):
 
     def setUp(self):
         """ """
-        self.pcoa1_f = pcoa1_f.split('\n')
+        self.pcoa1_f = StringIO(pcoa1_f)
         self.sample_ids1, self.coords1, self.eigvals1, self.pct_var1 =\
             parse_coords(self.pcoa1_f)
-        self.pcoa2_f = pcoa2_f.split('\n')
+        self.pcoa2_f = StringIO(pcoa2_f)
         self.sample_ids2, self.coords2, self.eigvals2, self.pct_var2 =\
             parse_coords(self.pcoa2_f)
-        self.pcoa3_f = pcoa3_f.split('\n')
+        self.pcoa3_f = StringIO(pcoa3_f)
         self.sample_ids3, self.coords3, self.eigvals3, self.pct_var3 =\
             parse_coords(self.pcoa3_f)
-        self.pcoa4_f = pcoa4_f.split('\n')
+        self.pcoa4_f = StringIO(pcoa4_f)
         self.sample_ids4, self.coords4, self.eigvals4, self.pct_var4 =\
-            parse_coords(self.pcoa3_f)
+            parse_coords(self.pcoa4_f)
 
         self.sample_id_map1 = sample_id_map1
 
@@ -157,7 +159,7 @@ class ProcrustesTests(TestCase):
             'CC1A1': 'S2',
             'CC2A1': 'S3',
             'CP1A1': 'S4'}
-        actual = get_procrustes_results(self.pcoa1_f, self.pcoa1_f,
+        actual = get_procrustes_results(StringIO(pcoa1_f), StringIO(pcoa1_f),
                                         sample_id_map=sample_id_map,
                                         randomize=None, max_dimensions=None)
         # just some sanity checks as the individual componenets are
@@ -201,7 +203,8 @@ class ProcrustesTests(TestCase):
                          'ccc': 'S2',
                          'ddd': 'S3',
                          'eee': 'S4'}
-        actual = get_procrustes_results(self.pcoa3_f, self.pcoa4_f,
+        actual = get_procrustes_results(StringIO(pcoa3_f),
+                                        StringIO(pcoa4_f),
                                         sample_id_map=sample_id_map,
                                         randomize=None, max_dimensions=None)
         # Confirm that only the sample ids that are in both procrustes results
@@ -216,8 +219,9 @@ class ProcrustesTests(TestCase):
     def test_get_procrustes_results_no_sample_overlap(self):
         """ValueError raised on no overlapping sample ids"""
         self.assertRaises(
-            ValueError, get_procrustes_results, self.pcoa1_f, self.pcoa3_f,
-            sample_id_map=None, randomize=None, max_dimensions=None)
+            ValueError, get_procrustes_results, StringIO(pcoa1_f),
+            StringIO(pcoa3_f), sample_id_map=None, randomize=None,
+            max_dimensions=None)
 
     def test_procrustes_monte_carlo(self):
         """ sanity test of procrustes_monte_carlo wrapper function
@@ -240,8 +244,8 @@ class ProcrustesTests(TestCase):
                           [0.26535811, 0.09772598, 0.04339214, -0.21014987,
                            0.14089095, -0.10261849]])
 
-        actual = procrustes_monte_carlo(self.pcoa1_f,
-                                        self.pcoa2_f,
+        actual = procrustes_monte_carlo(StringIO(pcoa1_f),
+                                        StringIO(pcoa2_f),
                                         trials=100,
                                         shuffle_f=shuffle_f)
         # just some sanity checks as the individual componenets are

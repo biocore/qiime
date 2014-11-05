@@ -33,14 +33,14 @@ import brokit.mafft
 
 from cogent.parse.rfam import MinimalRfamParser, ChangedSequence
 from burrito.util import ApplicationNotFoundError
-from skbio.core.exception import RecordError
+from skbio.io import RecordError
 from skbio.parse.sequences import parse_fasta
 
 from qiime.util import (FunctionWithParams,
                         get_qiime_temp_dir)
 
-from skbio.core.alignment import SequenceCollection, Alignment
-from skbio.core.sequence import DNASequence
+from skbio.alignment import SequenceCollection, Alignment
+from skbio.sequence import DNASequence
 from skbio.parse.sequences import parse_fasta
 
 # Load PyNAST if it's available. If it's not, skip it if not but set up

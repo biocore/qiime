@@ -15,7 +15,7 @@ from collections import defaultdict
 from os.path import split, join
 
 from skbio.parse.sequences import parse_fasta
-from skbio.core.exception import RecordError
+from skbio.io import RecordError
 from cogent.parse.tree import DndParser
 from qiime.check_id_map import process_id_map
 from qiime.split_libraries import expand_degeneracies

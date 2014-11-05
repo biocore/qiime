@@ -16,8 +16,8 @@ from unittest import TestCase, main
 from os import remove
 import shutil
 
-from skbio.core.alignment import SequenceCollection
-from skbio.core.sequence import DNA
+from skbio.alignment import SequenceCollection
+from skbio.sequence import DNA
 from skbio.parse.sequences import parse_fasta
 
 from qiime.filter_otus_by_sample import (filter_otus, filter_aln_by_otus,

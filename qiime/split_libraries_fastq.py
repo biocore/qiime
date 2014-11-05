@@ -17,7 +17,7 @@ from os import makedirs
 from numpy import log10, arange, histogram
 
 from skbio.parse.sequences import parse_fastq
-from skbio.core.sequence import DNA
+from skbio.sequence import DNA
 
 from qiime.format import (format_histogram_one_count,
                           format_split_libraries_fastq_log)

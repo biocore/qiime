@@ -14,7 +14,7 @@ from os import mkdir
 from os.path import join, exists
 
 import pandas as pd
-from skbio.math.stats.ordination import OrdinationResults
+from skbio.stats.ordination import OrdinationResults
 
 from qiime.parse import parse_mapping_file_to_dict
 from qiime.util import parse_command_line_parameters, make_option
@@ -126,7 +126,7 @@ if __name__ == '__main__':
 
     # Parse the ordination results
     with open(ord_fp, 'U') as f:
-        ord_res = OrdinationResults.from_file(f)
+        ord_res = OrdinationResults.read(f)
 
     # Parse the mapping file
     with open(mapping_fp, 'U') as f:

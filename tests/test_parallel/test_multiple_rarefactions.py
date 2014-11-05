@@ -17,7 +17,7 @@ from os.path import exists, join
 from tempfile import mkdtemp, mkstemp
 from unittest import TestCase, main
 
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 from numpy.testing import assert_array_equal
 from biom import load_table
 
