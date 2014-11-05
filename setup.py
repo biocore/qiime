@@ -263,7 +263,7 @@ setup(name='qiime',
                         'pandas >= 0.13.1', 'future', 'six', 'h5py>=2.2.0',
                         'burrito'],
       dependency_links=[
-        'https://github.com/gregcaporaso/brokit/archive/issue-47.zip#egg=brokit-0.0.0-dev',
+        'https://github.com/biocore/brokit/archive/master.zip#egg=brokit-0.0.0-dev',
         'https://github.com/biocore/emperor/archive/master.zip#egg=emperor-0.9.4-dev'
       ],
       extras_require={'all': ['ipython', 'tornado', 'pyzmq', 'sphinx >= 0.3',
