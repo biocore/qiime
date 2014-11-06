@@ -11,7 +11,7 @@ __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 
 from os.path import exists
-from skbio.util.misc import create_dir
+from skbio.util import create_dir
 from qiime.compare_categories import compare_categories, methods
 from qiime.util import (parse_command_line_parameters, make_option,
                         get_options_lookup)

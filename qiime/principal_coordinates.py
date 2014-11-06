@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-from skbio.core.distance import DistanceMatrix
-from skbio.math.stats.ordination import PCoA
+from skbio.stats.distance import DistanceMatrix
+from skbio.stats.ordination import PCoA
 
 __author__ = "Justin Kuzynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
@@ -16,7 +16,7 @@ __email__ = "justinak@gmail.com"
 def pcoa(lines):
     """Run PCoA on the distance matrix present on lines"""
     # Parse the distance matrix
-    dist_mtx = DistanceMatrix.from_file(lines)
+    dist_mtx = DistanceMatrix.read(lines)
     # Create the PCoA object
     pcoa_obj = PCoA(dist_mtx)
     # Get the PCoA results and return them

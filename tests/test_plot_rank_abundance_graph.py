@@ -18,7 +18,7 @@ from matplotlib.axes import Subplot
 from tempfile import mkstemp, mkdtemp
 
 from unittest import TestCase, main
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 from qiime.plot_rank_abundance_graph import make_sorted_frequencies,\
     plot_rank_abundance_graph, plot_rank_abundance_graphs
 from qiime.util import create_dir

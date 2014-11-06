@@ -45,11 +45,11 @@ from biom.table import Table
 from cogent.parse.tree import DndParser
 from cogent.cluster.procrustes import procrustes
 
-from skbio.util.misc import remove_files, create_dir
+from skbio.util import remove_files, create_dir
 from skbio.format.sequences import format_fastq_record
 from burrito.util import ApplicationError, CommandLineApplication, FilePath
 from burrito.util import which
-from skbio.core.sequence import DNASequence
+from skbio.sequence import DNASequence
 from skbio.parse.sequences import parse_fasta
 from skbio.parse.sequences import FastaIterator, FastqIterator
 

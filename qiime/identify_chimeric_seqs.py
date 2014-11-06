@@ -6,7 +6,7 @@ from __future__ import division
 from os.path import split, basename, abspath, exists, join
 from subprocess import PIPE, Popen
 
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 
 from burrito.parameters import ValuedParameter
 from burrito.util import (which, CommandLineApplication, ResultPath,

@@ -18,7 +18,7 @@ from os.path import join, exists, getsize, dirname
 from tempfile import mkstemp, mkdtemp
 
 from unittest import TestCase, main
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 from qiime.util import (load_qiime_config,
                         count_seqs,
                         get_qiime_temp_dir)

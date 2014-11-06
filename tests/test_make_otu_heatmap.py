@@ -16,7 +16,7 @@ from tempfile import mkstemp
 from numpy import array, log10, asarray, float64, argwhere
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 from qiime.make_otu_heatmap import (extract_metadata_column,
                                     get_order_from_categories, get_order_from_tree, make_otu_labels,
                                     names_to_indices, get_log_transform, get_clusters,

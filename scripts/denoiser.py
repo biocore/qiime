@@ -16,7 +16,7 @@ from os import makedirs, remove
 from os.path import exists
 from tempfile import mkdtemp
 
-from skbio.util.misc import create_dir
+from skbio.util import create_dir
 from qiime.util import parse_command_line_parameters, get_options_lookup,\
     make_option
 

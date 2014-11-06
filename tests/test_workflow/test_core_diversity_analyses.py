@@ -16,7 +16,7 @@ from shutil import rmtree
 from os.path import exists
 from tempfile import mkdtemp
 
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 from unittest import TestCase, main
 from qiime.util import (get_qiime_temp_dir,
                         load_qiime_config)
@@ -59,7 +59,7 @@ class CoreDiversityAnalysesTests(TestCase):
 
         # Define number of seconds a test can run for before timing out
         # and failing
-        initiate_timeout(480)
+        initiate_timeout(600)
 
     def tearDown(self):
 
@@ -146,7 +146,7 @@ class CoreDiversityAnalysesTests(TestCase):
             output_dir=self.test_out,
             params=parse_qiime_parameters({}),
             qiime_config=self.qiime_config,
-            categories=['SampleType', 'days_since_epoch'],
+            categories=['SampleType'],
             tree_fp=self.test_data['tree'][0],
             parallel=True,
             status_update_callback=no_status_updates)
@@ -158,7 +158,7 @@ class CoreDiversityAnalysesTests(TestCase):
             '%s/taxa_plots' % self.test_out,
             '%s/bdiv_even20/unweighted_unifrac_dm.txt' % self.test_out,
             '%s/bdiv_even20/weighted_unifrac_pc.txt' % self.test_out,
-            '%s/arare_max20/compare_chao1/days_since_epoch_stats.txt' % self.test_out,
+            '%s/arare_max20/compare_chao1/SampleType_stats.txt' % self.test_out,
             '%s/arare_max20/compare_PD_whole_tree/SampleType_boxplots.pdf' % self.test_out,
             '%s/index.html' % self.test_out,
             '%s/table_mc%d.biom.gz' % (self.test_out, 20)

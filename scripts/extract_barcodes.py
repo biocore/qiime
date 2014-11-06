@@ -9,7 +9,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "William Walters"
 __email__ = "william.a.walters@gmail.com"
 
-from skbio.util.misc import create_dir
+from skbio.util import create_dir
 
 from qiime.util import (parse_command_line_parameters, get_options_lookup,
                         make_option, qiime_open)

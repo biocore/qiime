@@ -13,7 +13,7 @@ __email__ = "wdwvt1@gmail.com"
 
 from shutil import rmtree
 from os.path import exists, join
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 
 from qiime.util import get_qiime_temp_dir
 from unittest import TestCase, main

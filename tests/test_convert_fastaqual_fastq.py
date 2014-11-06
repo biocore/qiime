@@ -16,7 +16,7 @@ from os import chmod, close
 from tempfile import mkstemp, mkdtemp
 
 from unittest import TestCase, main
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 
 
 from qiime.convert_fastaqual_fastq import (convert_fastq, convert_fastaqual,
