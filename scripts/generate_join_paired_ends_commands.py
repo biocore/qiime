@@ -40,10 +40,10 @@ The output directory used for each call to join_paired_ends.py uses the base nam
 script_info['script_usage'] = []
 script_info['script_usage'].append(("""Example of an input folder of paired-up files (by filename, with the default _R1_ and _R2_ contained the forward and reverse reads filenames, respectively):""",
                                     """The input folder is named 'input_paired_files', the output directory is 'output_folder', and an optional parameter is added of '--pe_join_method SeqPrep'""",
-                                    """%prog -i input_paired_files/ -o output_folder/ -t commands.txt --type_of_input folder_of_files --optional_params '--pe_join_method SeqPrep'"""))
+                                    """%prog -i input_paired_files/ -o output_folder/ --type_of_input folder_of_files --optional_params '--pe_join_method SeqPrep'"""))
 script_info['script_usage'].append(("""Example of an input folder of folders (with the filenames having _forward_ and _reverse_ contained the forward and reverse read filenames, respectively):""",
                                     """The input folder is named 'input_folders', the output directory is 'output_folder', and an optional parameter is added of '--pe_join_method SeqPrep'. Additionally, the individual folder names are included in the output folder names, but not the filenames.""",
-                                    """%prog -i input_folders/ -o output_folder/ -t commands.txt --type_of_input folder_of_folders --optional_params '--pe_join_method SeqPrep' --read1_indicator '_forward_' --read2_indicator '_reverse_' --include_input_dir_path --remove_filepath_in_name"""))
+                                    """%prog -i input_folders/ -o output_folder/ --type_of_input folder_of_folders --optional_params '--pe_join_method SeqPrep' --read1_indicator '_forward_' --read2_indicator '_reverse_' --include_input_dir_path --remove_filepath_in_name"""))
 
 script_info['output_description']="""The commands will be executed by the script by default. The commands can be printed with the -w option, so one could write these directly to an output file by calling generate_join_paired_ends_commands.py X > Y where X are the input parameters, and Y is an output text file. A log file will also be generated."""
 script_info['required_options']= [\
