@@ -145,8 +145,9 @@ class CoreDiversityAnalysesTests(TestCase):
             20,
             output_dir=self.test_out,
             params=parse_qiime_parameters({}),
+            arare_num_steps=3,
             qiime_config=self.qiime_config,
-            categories=['SampleType'],
+            categories=['SampleType', 'days_since_epoch'],
             tree_fp=self.test_data['tree'][0],
             parallel=True,
             status_update_callback=no_status_updates)
@@ -158,7 +159,7 @@ class CoreDiversityAnalysesTests(TestCase):
             '%s/taxa_plots' % self.test_out,
             '%s/bdiv_even20/unweighted_unifrac_dm.txt' % self.test_out,
             '%s/bdiv_even20/weighted_unifrac_pc.txt' % self.test_out,
-            '%s/arare_max20/compare_chao1/SampleType_stats.txt' % self.test_out,
+            '%s/arare_max20/compare_chao1/days_since_epoch_stats.txt' % self.test_out,
             '%s/arare_max20/compare_PD_whole_tree/SampleType_boxplots.pdf' % self.test_out,
             '%s/index.html' % self.test_out,
             '%s/table_mc%d.biom.gz' % (self.test_out, 20)
