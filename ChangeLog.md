@@ -35,6 +35,8 @@ optionally a mapping file. Check out the new documentation for the naming conven
 * QIIME now depends on [biom-format](https://github.com/biocore/biom-format) 2.1.0.
 * the parameters ``--uclust_min_consensus_fraction`` and ``--uclust_similarity`` in assign taxonomy scripts have been changed to ``--min_consensus_fraction`` and ``--similarity`` since both of these parameters apply to the SortMeRNA taxon assigner as well.
 * Renamed ``split_fasta_on_sample_ids_to_files.py`` to      ``split_sequence_file_on_sample_ids_to_files.py``, which now supports splitting FASTQ files, as well. Added a parameter, ``file_type``, which is used to specify the type of the input file.
+* Added --assign_taxonomy option to pick_closed_reference_otus.py to allow taxonomy assignment using a classifier, rather than the default of using the taxonomic assignment of the cluster centroid.
+
 
 
 QIIME 1.8.0 (11 Dec 2013)
