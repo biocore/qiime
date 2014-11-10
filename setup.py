@@ -266,10 +266,7 @@ setup(name='qiime',
         'https://github.com/biocore/brokit/archive/master.zip#egg=brokit-0.0.0-dev',
         'https://github.com/biocore/emperor/archive/master.zip#egg=emperor-0.9.4-dev'
       ],
-      extras_require={'all': ['ipython', 'tornado', 'pyzmq', 'sphinx >= 0.3',
-                              # the following are optional for pycogent, should
-                              # remove when pycogent is no longer a dependency
-                              'MySQL-python', 'SQLAlchemy', 'mpi4py']}
+      extras_require={'all': ['ipython[all]', 'sphinx >= 0.3']}
       )
 
 if build_stack:
