@@ -14,8 +14,8 @@ from os.path import join
 from types import ListType
 
 import pandas as pd
-from skbio.core.distance import DistanceMatrix
-from skbio.math.stats.distance import ANOSIM, PERMANOVA, bioenv
+from skbio.stats.distance import DistanceMatrix
+from skbio.stats.distance import ANOSIM, PERMANOVA, bioenv
 
 from qiime.parse import parse_mapping_file_to_dict
 from qiime.util import get_qiime_temp_dir, MetadataMap, RExecutor
@@ -60,7 +60,7 @@ def compare_categories(dm_fp, map_fp, method, categories, num_perms, out_dir):
                          "analyses). Please choose a different metadata "
                          "column to perform statistical tests on.")
 
-    dm = DistanceMatrix.from_file(dm_fp)
+    dm = DistanceMatrix.read(dm_fp)
 
     if method in ('anosim', 'permanova', 'bioenv'):
         with open(map_fp, 'U') as map_f:

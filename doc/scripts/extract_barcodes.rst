@@ -16,14 +16,14 @@ A variety of data formats are possible, depending upon how one utilized sequenci
 
 .. note::
 
-	
+
 	**[REQUIRED]**
-		
+
 	-f, `-`-fastq1
 		Input fastq filepath. This file is considered read 1.
-	
+
 	**[OPTIONAL]**
-		
+
 	-r, `-`-fastq2
 		Input fastq filepath. This file is considered read 2. [default: None]
 	-o, `-`-output_dir
@@ -77,7 +77,7 @@ In the output directory, there will be fastq files (barcode file, and one or two
 
 ::
 
-	extract_barcodes.py -f inseqs_R1.fastq -r inseqs_R2.fastq -c barcode_paired_end --map_fp mapping_data.txt --attempt_read_orientation --bc1_len 6 --bc2_len 6 -o processed_seqs
+	extract_barcodes.py -f inseqs_R1.fastq -r inseqs_R2.fastq -c barcode_paired_end --map_fp mapping_data.txt --attempt_read_reorientation --bc1_len 6 --bc2_len 6 -o processed_seqs
 
 **Parse barcodes of 6 base pairs from the beginning, 8 base pairs at the end of a stitched read. Will create an output fastq file of the barcodes and an output fastq file of the stitched read supplied with the barcodes removed. The barcode at the beginning of the stitched read is written first, followed by the barcode at the end, unless reversed by the --switch_bc_order option is used:**
 
@@ -90,5 +90,3 @@ In the output directory, there will be fastq files (barcode file, and one or two
 ::
 
 	extract_barcodes.py -f inseqs_R1.fastq -c barcode_in_label --char_delineator '#' --bc1_len 12 -o processed_seqs
-
-

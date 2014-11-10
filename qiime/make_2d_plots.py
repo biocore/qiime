@@ -103,7 +103,7 @@ data_colors={'blue':'#0000FF','lime':'#00FF00','red':'#FF0000', \
 default_colors = ['blue', 'lime', 'red', 'aqua', 'fuchsia', 'yellow', 'green',
                   'maroon', 'teal', 'purple', 'olive', 'silver', 'gray']
 
-# This function used to live in make_3d_plots.py but in the Boulder sk-bio 
+# This function used to live in make_3d_plots.py but in the Boulder sk-bio
 # code sprint it got moved here to remove the 3D files.
 def get_coord(coord_fname, method="IQR"):
     """Opens and returns coords location matrix and metadata.
@@ -112,7 +112,7 @@ def get_coord(coord_fname, method="IQR"):
     """
     if not os.path.isdir(coord_fname):
         try:
-            coord_f = open(coord_fname, 'U').readlines()
+            coord_f = open(coord_fname, 'U')
         except (TypeError, IOError):
             raise MissingFileError('Coord file required for this analysis')
         coord_header, coords, eigvals, pct_var = parse_coords(coord_f)

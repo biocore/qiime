@@ -16,7 +16,7 @@ from os import close
 from os.path import exists, join
 from tempfile import mkstemp, mkdtemp
 
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 from unittest import TestCase, main
 from qiime.parallel.alpha_diversity import ParallelAlphaDiversity
 from qiime.util import get_qiime_temp_dir, count_seqs_in_filepaths

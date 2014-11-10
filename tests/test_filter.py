@@ -19,7 +19,7 @@ from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
 from cogent.parse.tree import DndParser
 from cogent.core.tree import PhyloNode
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 from biom.parse import parse_biom_table
 from qiime.parse import (parse_distmat, parse_mapping_file,
                          parse_metadata_state_descriptions)
@@ -247,7 +247,6 @@ B
                      actual,
                      seqs_to_keep,
                      negate=False)
-        print actual.s
         self.assertEqual(actual.s, filter_fastq_expected1)
 
         actual = fake_output_f()

@@ -24,9 +24,9 @@ from subprocess import Popen, PIPE, STDOUT
 import pickle
 from tempfile import mkstemp
 
-from skbio.core.sequence import BiologicalSequence
+from skbio.sequence import BiologicalSequence
 from burrito.util import ApplicationNotFoundError, ApplicationError
-from skbio.util.misc import create_dir
+from skbio.util import create_dir
 from brokit.denoiser import lazy_parse_sff_handle
 from burrito.util import which
 

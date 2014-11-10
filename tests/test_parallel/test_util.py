@@ -15,7 +15,7 @@ from os.path import exists
 from tempfile import mkstemp
 from unittest import TestCase, main
 
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 
 from qiime.util import get_qiime_temp_dir
 from qiime.parallel.util import (ParallelWrapper,

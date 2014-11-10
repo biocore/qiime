@@ -16,7 +16,7 @@ from os.path import basename, exists, join
 from tempfile import NamedTemporaryFile, mkdtemp
 from unittest import TestCase, main
 
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 
 from qiime.util import get_qiime_temp_dir, load_qiime_config
 from qiime.test import initiate_timeout, disable_timeout

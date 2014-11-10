@@ -17,20 +17,19 @@ from shutil import rmtree
 from os.path import exists, join
 from string import digits
 from tempfile import mkdtemp
-
-from skbio.util.misc import remove_files
+from StringIO import StringIO
 from unittest import TestCase, main
 from warnings import filterwarnings
+from itertools import izip
+from types import StringType, ListType, FloatType, TupleType
+
+
+from skbio.util import remove_files
 from numpy.testing import assert_almost_equal, assert_allclose
 from numpy import (array, asarray, roll, median, nan, arange, matrix,
                    concatenate, nan, ndarray, number, ones,
                    reshape, testing, tril, var, log, fill_diagonal)
-
-
 from numpy.random import permutation, shuffle, seed
-
-from itertools import izip
-from types import StringType, ListType, FloatType, TupleType
 from biom import Table
 from biom.util import biom_open
 
@@ -56,8 +55,9 @@ from qiime.stats import (all_pairs_t_test, _perform_pairwise_tests,
                          kendall_pval, assign_correlation_pval,
                          cscore, williams_correction, t_one_observation,
                          normprob, tprob, fprob, chi2prob)
+from qiime.parse import parse_mapping_file_to_dict
 
-from skbio.core.distance import (DissimilarityMatrix, DistanceMatrix)
+from skbio.stats.distance import (DissimilarityMatrix, DistanceMatrix)
 
 from qiime.util import MetadataMap, get_qiime_temp_dir
 
@@ -125,7 +125,8 @@ class TestHelper(TestCase):
                                 \t0.725100672826\t0.632524644216\
                                 \t0.727154987937\t0.699880573956\
                                 \t0.560605525642\t0.575788039321\t0.0"]
-        self.overview_dm = DistanceMatrix.from_file(self.overview_dm_str)
+        self.overview_dm = DistanceMatrix.read(\
+            StringIO('\n'.join(self.overview_dm_str)))
 
         # The overview tutorial's metadata mapping file.
         self.overview_map_str = ["#SampleID\tBarcodeSequence\tTreatment\tDOB",
@@ -1149,7 +1150,8 @@ class PairedDifferenceTests(TestHelper):
             ymax=1.0)
         biom_table_fp = join(self.test_out, 'differences.biom')
         self.assertTrue(exists(biom_table_fp))
-        self.assertTrue(exists(join(self.test_out, 'differences_sids.txt')))
+        sids_fp = join(self.test_out, 'differences_sids.txt')
+        self.assertTrue(exists(sids_fp))
         with biom_open(biom_table_fp) as biom_file:
             table = Table.from_hdf5(biom_file)
         self.assertItemsEqual(table.ids(), ['subject1', 'subject2'])
@@ -1175,6 +1177,19 @@ class PairedDifferenceTests(TestHelper):
                                             axis='observation'),
                               table.index('subject2', axis='sample'))],
                               -0.10, 2)
+        with open(sids_fp) as sids_file:
+            md, _ = parse_mapping_file_to_dict(sids_file)
+        self.assertEqual(set(md.keys()), set(('subject1', 'subject2')))
+        s1_data_actual = md['subject1']
+        s1_data_expected = {'Pre-firmicutes-abundance': 0.45,
+                            'Post-firmicutes-abundance': 0.55,
+                            'Pre-bacteroidetes-abundance': 0.28,
+                            'Post-bacteroidetes-abundance': 0.21}
+        s2_data_actual = md['subject2']
+        s2_data_expected = {'Pre-firmicutes-abundance': 0.11,
+                            'Post-firmicutes-abundance': 0.52,
+                            'Pre-bacteroidetes-abundance': 0.11,
+                            'Post-bacteroidetes-abundance': 0.01}
 
         # missing data should raise ValueError
         self.assertRaises(ValueError, paired_difference_analyses,

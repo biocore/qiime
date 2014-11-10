@@ -158,10 +158,8 @@ def main():
                 trial_output_dir = join(output_dir, 'trial_details_%d' % i + 2)
             else:
                 trial_output_dir = None
-            with open(reference_input_fp, 'U') as f:
-                coords_f1 = list(f)
-            with open(query_input_fp, 'U') as f:
-                coords_f2 = list(f)
+            coords_f1 = open(reference_input_fp, 'U')
+            coords_f2 = open(query_input_fp, 'U')
             actual_m_squared, trial_m_squareds, count_better, mc_p_value =\
                 procrustes_monte_carlo(coords_f1,
                                        coords_f2,

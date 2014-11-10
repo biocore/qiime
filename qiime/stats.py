@@ -28,7 +28,7 @@ from scipy.stats.distributions import (chi2, norm, f as fdist, t as tdist)
 
 from scipy.special import ndtri
 
-
+from collections import defaultdict
 from os.path import join
 from types import ListType
 from copy import deepcopy
@@ -49,8 +49,8 @@ from numpy import (argsort, array, ceil, empty, fill_diagonal, finfo,
 
 from numpy.random import permutation, shuffle, randint
 from biom.table import Table
-from skbio.core.distance import DistanceMatrix
-from skbio.util.misc import create_dir
+from skbio.stats.distance import DistanceMatrix
+from skbio.util import create_dir
 
 from qiime.format import format_p_value_for_num_iters
 from qiime.util import MetadataMap, write_biom_table
@@ -1015,6 +1015,7 @@ def paired_difference_analyses(personal_ids_to_state_values,
                   biom_sids_fp]
 
     num_successful_tests = 0
+    included_personal_ids = defaultdict(list)
     for category_number, analysis_category in enumerate(analysis_categories):
         personal_ids_to_state_metadatum = personal_ids_to_state_values[
             analysis_category]
@@ -1045,9 +1046,13 @@ def paired_difference_analyses(personal_ids_to_state_values,
             else:
                 # otherwise compute the difference between the ending
                 # and starting state
-                pre_values.append(data[0])
-                post_values.append(data[1])
-                difference = data[1] - data[0]
+                pre_value = data[0]
+                post_value = data[1]
+                included_personal_ids[personal_id].append(pre_value)
+                included_personal_ids[personal_id].append(post_value)
+                pre_values.append(pre_value)
+                post_values.append(post_value)
+                difference = post_value - pre_value
                 differences.append(difference)
                 # and plot the start and stop values as a line
                 axes.plot(x_values, data, line_color, linewidth=0.5)
@@ -1099,8 +1104,14 @@ def paired_difference_analyses(personal_ids_to_state_values,
                                input_is_dense=True)
     write_biom_table(biom_table, biom_table_fp)
     biom_sids_f = open(biom_sids_fp, 'w')
-    biom_sids_f.write('#SampleID\n')
-    biom_sids_f.write('\n'.join(personal_ids))
+    sid_headers = ['#SampleID']
+    for e in analysis_categories:
+        sid_headers.append('Pre-%s' % e)
+        sid_headers.append('Post-%s' % e)
+    biom_sids_f.write('%s\n' % ('\t'.join(sid_headers)))
+    for sid, data in included_personal_ids.iteritems():
+        data_str = '\t'.join(map(str,data))
+        biom_sids_f.write('%s\t%s\n' % (sid, data_str))
     biom_sids_f.close()
 
     # sort stats output by uncorrected p-value, compute corrected p-value,

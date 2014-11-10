@@ -17,12 +17,12 @@ from tempfile import mkdtemp, mkstemp
 
 from unittest import TestCase, main
 from qiime.util import create_dir
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 
 from qiime.truncate_reverse_primer import get_rev_primer_seqs,\
     get_output_filepaths, truncate_rev_primers, truncate_reverse_primer
 
-from skbio.core.exception import BiologicalSequenceError
+from skbio.sequence import BiologicalSequenceError
 
 class FakeOutFile(object):
 

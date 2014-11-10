@@ -12,7 +12,7 @@ __email__ = "justinak@gmail.com"
 
 import os
 
-from skbio.core.tree import TreeNode, majority_rule
+from skbio.tree import TreeNode, majority_rule
 
 from qiime.parse import parse_newick, parse_rarefaction_fname
 from qiime.util import (parse_command_line_parameters, get_options_lookup,
