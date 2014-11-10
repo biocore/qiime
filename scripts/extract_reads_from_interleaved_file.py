@@ -12,7 +12,7 @@ from qiime.util import (parse_command_line_parameters,
                         get_options_lookup,
                         make_option,
                         create_dir)
-from qiime.extract_reads_from_interleaved_file import extract_reads_from_interleaved
+from qiime.split_libraries_fastq import extract_reads_from_interleaved
 
 options_lookup = get_options_lookup()
 
@@ -35,11 +35,12 @@ script_info['required_options'] = [
                 help='Directory to store result files'),
 ]
 script_info['optional_options'] = [
-    make_option('--read_direction_identifiers', type="string",
-                help='This is the string identifying the forward and reverse reads. In '
-                'general, the format is 1:N:0 for read one (forward) and 2:N:0 for read '
-                'two (reverse). Each value should be passed by a comma separated value. '
-                '[default: %default].', default="1:N:0,2:N:0"),
+    make_option('--forward_read_identifier', type="string",
+                help='This is the string identifying the forward reads. '
+                '[default: %default].', default="1:N:0"),
+    make_option('--reverse_read_identifier', type="string",
+                help='This is the string identifying the reverse reads. '
+                '[default: %default].', default="2:N:0"),
 ]
 
 script_info['version'] = __version__
@@ -52,13 +53,16 @@ def main():
     # Create local copy of options
     input_fp = opts.input_fp
     output_dir = opts.output_dir
-    read_direction_identifiers = opts.read_direction_identifiers
+    forward_read_identifier = opts.forward_read_identifier
+    reverse_read_identifier = opts.reverse_read_identifier
+
 
     create_dir(output_dir, fail_on_exist=False)
 
     extract_reads_from_interleaved(
         input_fp,
-        read_direction_identifiers,
+        forward_read_identifier,
+        reverse_read_identifier,
         output_dir)
 
 

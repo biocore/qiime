@@ -9,7 +9,7 @@ Introduction
 
 The Joint Genome Institute (JGI) delivers a single fastq file to their users, which is not compatible with `split_libraries_fastq.py <../scripts/split_libraries_fastq.html>`_. To fix this issue, first we have to split this file into forward and reverse reads and then extract the barcode from the forward file.
 
-Processing a single fastq with reverse and forward reads
+Processing a single fastq with reverse and reverse reads
 --------------------------------------------------------
 
 The fastq created by JGI alternates the forward and reverse reads in a single file and has the barcode in the header of the file, for example::
