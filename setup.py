@@ -263,7 +263,6 @@ setup(name='qiime',
                         'burrito-fillings >= 0.1.0, < 0.2.0',
                         'pandas >= 0.13.1', 'burrito'],
       dependency_links=[
-        'https://github.com/biocore/burrito-fillings/archive/0.1.0.tar.gz#egg=burrito-fillings-0.1.0',
         'https://github.com/biocore/emperor/archive/master.zip#egg=emperor-0.9.4-dev'
       ],
       extras_require={'all': ['ipython[all]', 'sphinx >= 0.3']}
