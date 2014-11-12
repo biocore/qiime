@@ -53,8 +53,8 @@ from skbio.sequence import DNASequence
 from skbio.parse.sequences import parse_fasta
 from skbio.parse.sequences import FastaIterator, FastqIterator
 
-from brokit.blast import Blastall, BlastResult
-from brokit.formatdb import (build_blast_db_from_fasta_path,
+from bfillings.blast import Blastall, BlastResult
+from bfillings.formatdb import (build_blast_db_from_fasta_path,
                              build_blast_db_from_fasta_file)
 
 

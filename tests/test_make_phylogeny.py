@@ -15,7 +15,7 @@ from unittest import TestCase, main
 from os import remove, close
 from tempfile import mkstemp
 
-import brokit.fasttree
+import bfillings.fasttree
 
 from qiime.make_phylogeny import TreeBuilder, CogentTreeBuilder
 
@@ -66,7 +66,7 @@ class CogentTreeBuilderTests(SharedSetupTestCase):
     def test_call_correct_alignment(self):
         """CogentTreeBuilder: output expected alignment file
         """
-        p = CogentTreeBuilder({'Module': brokit.fasttree})
+        p = CogentTreeBuilder({'Module': bfillings.fasttree})
         fd, log_fp = mkstemp(prefix='CogentTreeBuilderTests_', suffix='.log')
         close(fd)
         self._paths_to_clean_up.append(log_fp)

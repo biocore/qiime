@@ -5,7 +5,7 @@ from time import time
 from os import getcwd, makedirs
 from os.path import join, split, abspath
 
-from brokit.formatdb import FormatDb
+from bfillings.formatdb import FormatDb
 from skbio.util import remove_files
 from burrito.parameters import FilePath
 

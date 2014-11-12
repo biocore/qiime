@@ -21,7 +21,7 @@ from numpy.testing import assert_almost_equal
 
 from skbio.sequence import BiologicalSequence
 from skbio.parse.sequences import parse_fasta
-from brokit.denoiser import Flowgram, FlowgramCollection
+from bfillings.denoiser import Flowgram, FlowgramCollection
 from burrito.util import ApplicationNotFoundError
 from skbio.util import remove_files, create_dir
 
