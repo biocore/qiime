@@ -219,5 +219,6 @@ def main():
     rev_consensus_outfile.close()
     map_f.close()
 
+
 if __name__ == "__main__":
     main()
