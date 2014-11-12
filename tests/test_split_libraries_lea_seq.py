@@ -12,7 +12,7 @@ __email__ = "charudatta.navare@gmail.com"
 from tempfile import NamedTemporaryFile
 from unittest import TestCase, main
 
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 from qiime.util import get_qiime_temp_dir
 from qiime.split_libraries_lea_seq import (get_cluster_ratio, get_consensus,
                                            get_LEA_seq_consensus_seqs,

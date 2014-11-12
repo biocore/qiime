@@ -20,10 +20,10 @@ from qiime.parse import parse_mapping_file_to_dict
 from qiime.split_libraries import check_map, expand_degeneracies
 from qiime.split_libraries_fastq import correct_barcode
 from qiime.util import get_qiime_temp_dir, qiime_system_call
-from skbio.app.util import ApplicationError
+from burrito.util import ApplicationError
 from skbio.parse.sequences import parse_fasta, parse_fastq
-from skbio.util.misc import remove_files
-from skbio.core.sequence import DNASequence
+from skbio.util import remove_files
+from skbio.sequence import DNASequence
 from brokit.uclust import get_clusters_from_fasta_filepath
 
 
