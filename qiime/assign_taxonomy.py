@@ -26,14 +26,14 @@ from shutil import rmtree
 
 from skbio.parse.sequences import parse_fasta
 
-from brokit.blast import blast_seqs, Blastall, BlastResult
-from brokit.formatdb import build_blast_db_from_fasta_path
-from brokit.uclust import Uclust
-from brokit.sortmerna_v2 import (build_database_sortmerna,
+from bfillings.blast import blast_seqs, Blastall, BlastResult
+from bfillings.formatdb import build_blast_db_from_fasta_path
+from bfillings.uclust import Uclust
+from bfillings.sortmerna_v2 import (build_database_sortmerna,
                                  sortmerna_map)
-from brokit import rdp_classifier
-from brokit import mothur
-from brokit import rtax
+from bfillings import rdp_classifier
+from bfillings import mothur
+from bfillings import rtax
 
 from qiime.util import FunctionWithParams, get_rdp_jarpath, get_qiime_temp_dir
 

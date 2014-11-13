@@ -259,11 +259,10 @@ setup(name='qiime',
                         'matplotlib >= 1.1.0, <= 1.3.1',
                         'pynast == 1.2.2', 'qcli', 'gdata',
                         'biom-format == 2.1', 'emperor == 0.9.4-dev',
-                        'scikit-bio == 0.2.1', 'brokit == 0.0.0-dev',
-                        'pandas >= 0.13.1', 'future', 'six', 'h5py>=2.2.0',
-                        'burrito'],
+                        'scikit-bio == 0.2.1', 'future', 'six', 'h5py>=2.2.0',
+                        'burrito-fillings >= 0.1.0, < 0.2.0',
+                        'pandas >= 0.13.1', 'burrito'],
       dependency_links=[
-        'https://github.com/biocore/brokit/archive/master.zip#egg=brokit-0.0.0-dev',
         'https://github.com/biocore/emperor/archive/master.zip#egg=emperor-0.9.4-dev'
       ],
       extras_require={'all': ['ipython[all]', 'sphinx >= 0.3']}

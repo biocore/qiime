@@ -18,7 +18,7 @@ from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
 
 from skbio.util import remove_files
-from brokit.denoiser import Flowgram, FlowgramCollection, get_header_info
+from bfillings.denoiser import Flowgram, FlowgramCollection, get_header_info
 from qiime.denoise_wrapper import fast_denoiser, extract_cluster_size
 
 

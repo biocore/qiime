@@ -28,9 +28,9 @@ from skbio.parse.sequences import parse_fasta
 from skbio.alignment import SequenceCollection
 from skbio.sequence import DNA
 
-from brokit.rdp_classifier import train_rdp_classifier
-from brokit.formatdb import build_blast_db_from_fasta_path
-from brokit.sortmerna_v2 import (build_database_sortmerna, sortmerna_map)
+from bfillings.rdp_classifier import train_rdp_classifier
+from bfillings.formatdb import build_blast_db_from_fasta_path
+from bfillings.sortmerna_v2 import (build_database_sortmerna, sortmerna_map)
 
 from qiime.util import get_qiime_temp_dir
 from qiime.test import initiate_timeout, disable_timeout

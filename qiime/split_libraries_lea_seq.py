@@ -24,7 +24,7 @@ from burrito.util import ApplicationError
 from skbio.parse.sequences import parse_fasta, parse_fastq
 from skbio.util import remove_files
 from skbio.sequence import DNASequence
-from brokit.uclust import get_clusters_from_fasta_filepath
+from bfillings.uclust import get_clusters_from_fasta_filepath
 
 
 class PairedEndParseError(Exception):
@@ -232,8 +232,8 @@ def get_cluster_ratio(fasta_seqs, min_difference_in_clusters):
     command = "uclust --usersort --input {} --uc {} --id 0.98".format(
         fasta_tempfile_name, uclust_tempfile_name)
     # In the function, I am calling uclust a large number of times.
-    # Initially I was using brokit.get_clusters_from_fasta_filepath
-    # but due to issue (biocore/brokit#31), I have temporarily
+    # Initially I was using bfillings.get_clusters_from_fasta_filepath
+    # but due to issue (biocore/bfillings#31), I have temporarily
     # reverted to qiime_system_call.
 
     count_lookup = defaultdict(int)

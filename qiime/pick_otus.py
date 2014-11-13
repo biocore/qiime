@@ -22,7 +22,7 @@ from os import makedirs, close, rename
 from itertools import imap
 from tempfile import mkstemp
 
-from brokit.mothur import parse_otu_list as mothur_parse
+from bfillings.mothur import parse_otu_list as mothur_parse
 
 from skbio.util import remove_files, flatten
 from skbio.tree import CompressedTrie, fasta_to_pairlist
@@ -34,18 +34,18 @@ from qiime.util import FunctionWithParams, get_qiime_temp_dir
 from qiime.sort import sort_fasta_by_abundance
 from qiime.parse import fields_to_dict
 
-from brokit.blast import blast_seqs, Blastall, BlastResult
-from brokit.formatdb import build_blast_db_from_fasta_path
-from brokit.mothur import Mothur
-from brokit.cd_hit import cdhit_clusters_from_seqs
-from brokit.uclust import get_clusters_from_fasta_filepath
-from brokit.sortmerna_v2 import (build_database_sortmerna,
+from bfillings.blast import blast_seqs, Blastall, BlastResult
+from bfillings.formatdb import build_blast_db_from_fasta_path
+from bfillings.mothur import Mothur
+from bfillings.cd_hit import cdhit_clusters_from_seqs
+from bfillings.uclust import get_clusters_from_fasta_filepath
+from bfillings.sortmerna_v2 import (build_database_sortmerna,
                                  sortmerna_ref_cluster)
-from brokit.usearch import (usearch_qf,
+from bfillings.usearch import (usearch_qf,
                             usearch61_denovo_cluster,
                             usearch61_ref_cluster)
-from brokit.sumaclust_v1 import sumaclust_denovo_cluster
-from brokit.swarm_v127 import swarm_denovo_cluster
+from bfillings.sumaclust_v1 import sumaclust_denovo_cluster
+from bfillings.swarm_v127 import swarm_denovo_cluster
 
 
 class OtuPicker(FunctionWithParams):
@@ -626,7 +626,7 @@ class SumaClustOtuPicker(OtuPicker):
 
     def __init__(self, params):
         """ Return a new SumaClustOtuPicker object with specified params.
-            The defaults are set in the SumaClust API (see brokit)
+            The defaults are set in the SumaClust API (see bfillings)
         """
 
         OtuPicker.__init__(self, params)

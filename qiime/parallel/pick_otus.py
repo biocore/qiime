@@ -14,7 +14,7 @@ from math import ceil
 from os.path import basename, join
 from re import compile
 
-from brokit.formatdb import build_blast_db_from_fasta_path
+from bfillings.formatdb import build_blast_db_from_fasta_path
 
 from skbio.parse.sequences import parse_fasta
 

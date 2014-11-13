@@ -17,8 +17,8 @@ from qiime.util import (FunctionWithParams, write_degapped_fasta_to_file,
                         split_sequence_file_on_sample_ids_to_files)
 from qiime.assign_taxonomy import BlastTaxonAssigner
 
-from brokit.formatdb import build_blast_db_from_fasta_path
-from brokit.usearch import (usearch61_smallmem_cluster,
+from bfillings.formatdb import build_blast_db_from_fasta_path
+from bfillings.usearch import (usearch61_smallmem_cluster,
                             usearch61_chimera_check_denovo,
                             parse_usearch61_clusters,
                             usearch61_chimera_check_ref)

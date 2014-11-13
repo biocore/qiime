@@ -24,7 +24,7 @@ from skbio.util import remove_files
 
 from cogent.cluster.procrustes import procrustes
 
-from brokit.formatdb import build_blast_db_from_fasta_file
+from bfillings.formatdb import build_blast_db_from_fasta_file
 
 from qiime.parse import (fields_to_dict, parse_distmat, parse_mapping_file,
                          parse_mapping_file_to_dict, parse_otu_table,

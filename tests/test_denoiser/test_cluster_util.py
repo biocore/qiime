@@ -20,7 +20,7 @@ from socket import error
 from tempfile import mkstemp, mkdtemp
 from unittest import TestCase, main
 
-from brokit.denoiser import Flowgram
+from bfillings.denoiser import Flowgram
 from skbio.parse.sequences import parse_fasta
 from burrito.util import ApplicationNotFoundError
 from skbio.util import remove_files

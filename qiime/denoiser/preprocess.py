@@ -19,7 +19,7 @@ from string import lowercase
 from tempfile import mkstemp
 
 from skbio.parse.sequences import parse_fasta
-from brokit.denoiser import (Flowgram, build_averaged_flowgram,
+from bfillings.denoiser import (Flowgram, build_averaged_flowgram,
                              lazy_parse_sff_handle, build_prefix_map)
 
 from qiime.util import load_qiime_config

@@ -15,7 +15,7 @@ from os import makedirs, system
 from os.path import exists, split, splitext, isfile
 from subprocess import check_call, CalledProcessError
 
-from brokit.formatdb import build_blast_db_from_fasta_path
+from bfillings.formatdb import build_blast_db_from_fasta_path
 
 from qiime.util import parse_command_line_parameters
 from qiime.util import make_option

@@ -22,7 +22,7 @@ from tempfile import mkstemp
 from numpy import array, arange, log, log10
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
-from brokit.blast import BlastResult
+from bfillings.blast import BlastResult
 from qiime.exclude_seqs_by_blast import blast_genome,\
     find_homologs,\
     sequences_to_file,\
