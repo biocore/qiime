@@ -133,6 +133,7 @@ def main():
     forward_reads_fp = opts.forward_reads_fp
     reverse_reads_fp = opts.reverse_reads_fp
     pe_join_method = opts.pe_join_method
+    qual_score_variant=opts.qual_score_variant
     output_dir = opts.output_dir
     # fastq-join only options:
     perc_max_diff = opts.perc_max_diff
@@ -174,7 +175,7 @@ def main():
     if opts.index_reads_fp:
         index_reads = opts.index_reads_fp
         assembly_fp = paths['Assembled']  # grab joined-pairs output path
-        write_synced_barcodes_fastq(assembly_fp, index_reads)
+        write_synced_barcodes_fastq(assembly_fp, index_reads, qual_score_variant=qual_score_variant)
 
 
 if __name__ == "__main__":
