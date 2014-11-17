@@ -1,6 +1,5 @@
 QIIME 1.8.0-dev (changes since 1.8.0 go here)
 =============================================
-* ``future``, ``six`` and ``h5py`` are no longer specified in ``setup.py``. Because these are not imported by QIIME itself (only its dependencies), it doesn't make sense to include them in QIIME's ``setup.py``. Instead, the packages that directly depend on these are now responsible for managing the dependency.
 * ``split_otu_table.py`` now allows multiple fields to be passed to split a biom table, and
 optionally a mapping file. Check out the new documentation for the naming conventions
 (which have changed slightly) and an example.
@@ -22,7 +21,6 @@ optionally a mapping file. Check out the new documentation for the naming conven
 * ANOSIM and PERMANOVA (available in ``compare_categories.py``) are considerably faster than previous implementations and provide more useful information in the output file.
 * Added script ``compare_trajectories.py``, which provides access to analysis of volatility using different algorithms.
 * Renamed ``compare_categories.py``'s BEST method to BIO-ENV to match the name used in R's vegan package (``vegan::bioenv``) and the name of the program in the original paper. Use ``compare_categories.py --method bioenv`` instead of ``compare_categories.py --method best``. The underlying implementation has also been rewritten and is considerably faster than before, and the output more closely matches the vegan package, as environmental variables are now scaled before computing Euclidean distances.
-* Add required dependency on HDF5 and h5py.
 * Scripts that write an OTU table, will write BIOM files in HDF5 format.
 * Changed default parameters for uclust-based OTU picking: ``max_accepts`` is now 1 (was 8), ``max_rejects`` is now 8 (was 500), ``stepwords`` is now 8 (was 20), and ``word_length`` is now 8 (was 12). These changes greatly reduce runtime, with minimal effect on the results. See Rideout et al., 2014 ([PeerJ pre-print](https://peerj.com/preprints/411/)) for more details.
 * Disabled the prefilter by default in ``pick_open_reference_otus.py``. This change greatly reduces runtime, with minimal effect on the results. See Rideout et al., 2014 ([PeerJ pre-print](https://peerj.com/preprints/411/)) for more details.
