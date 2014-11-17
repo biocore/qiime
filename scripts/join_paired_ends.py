@@ -9,8 +9,8 @@ __maintainer__ = "Mike Robeson"
 __email__ = "robesonms@ornl.gov"
 
 from qiime.join_paired_ends import (join_method_names,
-                                    join_method_constructors,
-                                    write_synced_barcodes_fastq)
+                                    join_method_constructors)
+from qiime.format import write_synced_barcodes_fastq
 from qiime.util import (parse_command_line_parameters, get_options_lookup,
                         make_option, load_qiime_config, create_dir)
 import os
