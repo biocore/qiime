@@ -1202,6 +1202,11 @@ class MothurTaxonAssignerTests(TestCase):
         f.write(rdp_id_to_taxonomy)
         f.close()
 
+        self.tax_spaces_fp = tfp('.txt')
+        f = open(self.tax_spaces_fp, "w")
+        f.write(rdp_id_to_taxonomy_spaces)
+        f.close()
+
         ref_fp = tfp('.fna')
         g = open(ref_fp, "w")
         g.write(rdp_reference_seqs)
@@ -1257,6 +1262,18 @@ class MothurTaxonAssignerTests(TestCase):
 
         e_lineage, e_conf = result['EF503697']
         self.assertTrue(len(e_lineage) < 3)
+
+    def test_assignment_spaces(self):
+        self.params['id_to_taxonomy_fp'] = self.tax_spaces_fp
+        assigner = MothurTaxonAssigner(self.params)
+        result = assigner(self.seq_fp1)
+
+        x_lineage, x_conf = result['X67228']
+        self.assertEqual(x_lineage, [
+            'Bacteria', 'Proteo bacteria', 'Alphaproteobacteria',
+            'Rhizobiales', 'Rhizobiaceae', 'Rhizobium',
+        ])
+        self.assertTrue(x_conf > 0.94)
 
     def test_unassignable(self):
         f = open(self.seq_fp1, "w")
@@ -1774,6 +1791,16 @@ xxxxxx	Bacteria;Proteobacteria;Gammaproteobacteria2;Pseudomonadales;Pseudomonada
 AB004748	Bacteria;Proteobacteria;Gammaproteobacteria;Enterobacteriales;Enterobacteriaceae;Enterobacter
 AB000278	Bacteria;Proteobacteria;Gammaproteobacteria;Vibrio>nales;Vibrionaceae;Photobacterium
 AB000390	Bacteria;Proteobacteria;Gammaproteobacteria;Vibrio>nales;Vibrionaceae;Vibrio
+"""
+
+rdp_id_to_taxonomy_spaces = \
+    """X67228	Bacteria; Proteo bacteria; Alphaproteobacteria; Rhizobiales; Rhizobiaceae; Rhizobium
+X73443	Bacteria; Firmicutes; Clostridia; Clostridiales; Clostridiaceae; Clostridium
+AB004750	Bacteria; Proteo bacteria; Gammaproteobacteria; Enterobacter iales; Enterobacteriaceae; Enterobacter
+xxxxxx	Bacteria; Proteo bacteria; Gammaproteobacteria; Pseudomonadales; Pseudomonadaceae; Pseudomonas
+AB004748	Bacteria; Proteo bacteria; Gammaproteobacteria; Enterobacter iales; Enterobacteriaceae; Enterobacter
+AB000278	Bacteria; Proteo bacteria; Gammaproteobacteria; Vibrionales; Vibrionaceae; Photobacterium
+AB000390	Bacteria; Proteo bacteria; Gammaproteobacteria; Vibrionales; Vibrionaceae; Vibrio
 """
 
 rdp_reference_seqs = \

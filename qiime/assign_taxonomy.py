@@ -690,18 +690,77 @@ class MothurTaxonAssigner(TaxonAssigner):
         _params.update(params)
         super(MothurTaxonAssigner, self).__init__(_params)
 
+    def _format_id_to_taxonomy(self, id_to_taxonomy_file):
+        """Reformat taxa to comply with Mothur formatting requirements.
+
+        Mothur requires lineages to be semicolon-separated with no space
+        following the semicolon.  (QIIME convention is to include a
+        space.)  Taxa may have no internal spaces.  Furthermore, each
+        lineage must end with a semi-colon.
+
+        Returns the re-formatted id-to-taxonomy file as an open file
+        object.
+        """
+        mothur_tax_file = NamedTemporaryFile(
+            prefix='MothurTaxonAssigner_',
+            suffix='.txt',
+            dir=get_qiime_temp_dir())
+        original_taxonomy = self._parse_id_to_taxonomy_file(id_to_taxonomy_file)
+        for seq_id, lineage in original_taxonomy.iteritems():
+            mothur_tax_file.write(seq_id)
+            mothur_tax_file.write('\t')
+            taxa = [t.strip() for t in lineage.split(';')]
+            for taxon in taxa:
+                mothur_tax_file.write(self._format_taxon(taxon))
+                mothur_tax_file.write(';')
+            mothur_tax_file.write('\n')
+        mothur_tax_file.seek(0)
+        return mothur_tax_file
+
+    def _unformat_result(self, result):
+        """Transform results to remove any changes introduced by formatting.
+        """
+        unformatted_result = {}
+        for seq_id in result.keys():
+            taxa, conf = result[seq_id]
+            unformatted_taxa = [self._unformat_taxon(t) for t in taxa]
+            unformatted_result[seq_id] = (unformatted_taxa, conf)
+        return unformatted_result
+
+    def _format_taxon(self, taxon):
+        """Format taxon for MOTHUR, removing internal spaces.
+
+        Original taxon names are saved to self._original_taxa for later lookup.
+        """
+        if not hasattr(self, "_original_taxa"):
+            self._original_taxa = {}
+        if ' ' in taxon:
+            mothur_taxon = taxon.replace(' ', '_')
+            self._original_taxa[mothur_taxon] = taxon
+            return mothur_taxon
+        else:
+            return taxon
+
+    def _unformat_taxon(self, taxon):
+        """Recover original taxon names that were altered due to formatting.
+        """
+        return self._original_taxa.get(taxon, taxon)
+
     def __call__(self, seq_path, result_path=None, log_path=None):
         seq_file = open(seq_path)
         percent_confidence = int(self.Params['Confidence'] * 100)
+        with open(self.Params['id_to_taxonomy_fp'], "U") as tax_file:
+            mothur_tax_file = self._format_id_to_taxonomy(tax_file)
         result = mothur.mothur_classify_file(
             query_file=seq_file,
             ref_fp=self.Params['reference_sequences_fp'],
-            tax_fp=self.Params['id_to_taxonomy_fp'],
+            tax_fp=mothur_tax_file.name,
             cutoff=percent_confidence,
             iters=self.Params['Iterations'],
             ksize=self.Params['KmerSize'],
             output_fp=result_path,
         )
+        result = self._unformat_result(result)
         if log_path:
             self.writeLog(log_path)
         return result
