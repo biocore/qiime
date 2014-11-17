@@ -9,7 +9,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Jose Antonio Navas Molina"
 __email__ = "josenavasmolina@gmail.com"
 
-from future.builtins import zip
+from itertools import izip
 
 import pandas as pd
 from skbio.stats.gradient import (AverageGradientANOVA,
@@ -62,8 +62,8 @@ def run_trajectory_analysis(ord_res, metadata_map, trajectory_categories=None,
     ValueError
         If `algorithm` is not a recognized.
     """
-    coords_dict = {sid: coord for sid, coord in zip(ord_res.site_ids,
-                                                    ord_res.site)}
+    coords_dict = {sid: coord for sid, coord in izip(ord_res.site_ids,
+                                                      ord_res.site)}
     coords = pd.DataFrame.from_dict(coords_dict, orient='index')
 
     if algorithm == 'avg':
