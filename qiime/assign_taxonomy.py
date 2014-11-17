@@ -758,9 +758,14 @@ class MothurTaxonAssigner(TaxonAssigner):
             cutoff=percent_confidence,
             iters=self.Params['Iterations'],
             ksize=self.Params['KmerSize'],
-            output_fp=result_path,
+            output_fp=None,
         )
         result = self._unformat_result(result)
+        if result_path is not None:
+            with open(result_path, "w") as f:
+                for seq_id, (lineage, conf) in result.iteritems():
+                    f.write("%s\t%s\t%s\n" % (seq_id, lineage, conf))
+            return None
         if log_path:
             self.writeLog(log_path)
         return result
