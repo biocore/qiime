@@ -749,7 +749,7 @@ y\t5\t6\tsample y""")
         observed_barcodes = open(filtered_bc_path, 'U').read()
         self.assertEqual(observed_barcodes, synced_barcodes)
 
-        os.remove(filtered_bc_path)
+        remove(filtered_bc_path)
 
     def test_out_of_order_barcodes(self):
         """write_synced_barcodes_fastq: should fail if barcodes out of order

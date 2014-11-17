@@ -18,8 +18,9 @@ from re import compile, sub
 from os import walk, path
 from os.path import join, splitext, exists, isfile, abspath
 
+from skbio.io import read
 from skbio.sequence import BiologicalSequence
-from skbio.parse.sequences import parse_fastq
+#from skbio.parse.sequences import parse_fastq
 from biom.table import Table
 
 from qiime.util import get_qiime_library_version, load_qiime_config, qiime_open
@@ -924,16 +925,19 @@ def write_synced_barcodes_fastq(joined_fp, index_fp):
     fbc_fh = open(filtered_bc_outfile_path, 'w')
 
     # Set up iterators
-    index_fastq_iter = parse_fastq(ih, strict=False)
-    joined_fastq_iter = parse_fastq(jh, strict=False)
+    #index_fastq_iter = parse_fastq(ih, strict=False)
+    #joined_fastq_iter = parse_fastq(jh, strict=False)
+    index_fastq_iter = read(ih, format='fastq', variant='illumina1.8')
+    joined_fastq_iter = read(jh, format='fastq', variant='illumina1.8')
+
     # Write barcodes / index reads that we observed within
     # the joined paired-ends. Warn if index and joined data
     # are not in order.
-    for joined_label, joined_seq, joined_qual in joined_fastq_iter:
-        index_label, index_seq, index_qual = index_fastq_iter.next()
-        while joined_label != index_label:
+    for joined in joined_fastq_iter:
+        index = index_fastq_iter.next()
+        while joined.id != index.id:
             try:
-                index_label, index_seq, index_qual = index_fastq_iter.next()
+                index = index_fastq_iter.next()
             except StopIteration:
                 raise StopIteration("\n\nReached end of index-reads file" +
                                     " before iterating through joined paired-end-reads file!" +
@@ -941,10 +945,10 @@ def write_synced_barcodes_fastq(joined_fp, index_fp):
                                     " assembly, your index and paired-end reads files must be in" +
                                     " the same order! Also, check that the index-reads and" +
                                     " paired-end reads have identical headers. The last joined" +
-                                    " paired-end ID processed was:\n\'%s\'\n" % (joined_label))
+                                    " paired-end ID processed was:\n\'%s\'\n" % (joined.id))
         else:
-            fastq_string = format_fastq_record(index_label, index_seq, index_qual)
-            fbc_fh.write(fastq_string)
+            #index_sc_rec = read(index, variant='illumina1.8')
+            index.write(fbc_fh, format='fastq', variant='illumina1.8')
 
     ih.close()
     jh.close()
