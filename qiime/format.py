@@ -898,15 +898,19 @@ def format_fastq_record(label,
     return "@%s\n%s\n+\n%s\n" % (label, seq, qual)
 
 
-def write_synced_barcodes_fastq(joined_fp, index_fp):
+def write_synced_barcodes_fastq(joined_fp, index_fp, qual_score_variant='illumina1.8'):
     """Writes new index file based on surviving assembled paired-ends.
        -joined_fp : file path to paired-end assembled fastq file
        -index_fp : file path to index / barcode reads fastq file
+       -qual_score_variant : format of fastq quality scores. Can be
+                            \'illumina1.3\' or \'illumina1.8\'
 
        This function iterates through the joined reads file and index file.
        Only those index-reads within the file at index_fp, that have headers
        matching those within the joined-pairs at joined_fp, are written
        to file.
+
+       Always forces output to be: illumina1.8
 
      WARNING: Assumes reads are in the same order in both files,
               except for cases in which the corresponding
@@ -925,10 +929,8 @@ def write_synced_barcodes_fastq(joined_fp, index_fp):
     fbc_fh = open(filtered_bc_outfile_path, 'w')
 
     # Set up iterators
-    #index_fastq_iter = parse_fastq(ih, strict=False)
-    #joined_fastq_iter = parse_fastq(jh, strict=False)
-    index_fastq_iter = read(ih, format='fastq', variant='illumina1.8')
-    joined_fastq_iter = read(jh, format='fastq', variant='illumina1.8')
+    index_fastq_iter = read(ih, format='fastq', variant=qual_score_variant)
+    joined_fastq_iter = read(jh, format='fastq', variant=qual_score_variant)
 
     # Write barcodes / index reads that we observed within
     # the joined paired-ends. Warn if index and joined data
@@ -947,7 +949,7 @@ def write_synced_barcodes_fastq(joined_fp, index_fp):
                                     " paired-end reads have identical headers. The last joined" +
                                     " paired-end ID processed was:\n\'%s\'\n" % (joined.id))
         else:
-            #index_sc_rec = read(index, variant='illumina1.8')
+            # force output to illumina1.8
             index.write(fbc_fh, format='fastq', variant='illumina1.8')
 
     ih.close()
