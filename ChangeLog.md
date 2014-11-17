@@ -1,6 +1,6 @@
 QIIME 1.8.0-dev (changes since 1.8.0 go here)
 =============================================
-* ``future``, ``six`` and ``h5py`` are no longer direct dependencies of QIIME (i.e., specified in ``setup.py``). Because these are not imported by QIIME, it doesn't make sense to include them here because the packages that directly depend on each of these should be responsible for managing the dependency.
+* ``future``, ``six`` and ``h5py`` are no longer direct dependencies of specified in ``setup.py``. Because these are not imported by QIIME itself (only its dependencies), it doesn't make sense to include them in QIIME's ``setup.py`` because the packages that directly depend on these should be responsible for managing the dependency.
 * ``split_otu_table.py`` now allows multiple fields to be passed to split a biom table, and
 optionally a mapping file. Check out the new documentation for the naming conventions
 (which have changed slightly) and an example.
