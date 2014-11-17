@@ -114,7 +114,13 @@ script_info['optional_options'] = [
                 help='Only applies to SeqPrep method, otherwise ignored.' +
                       ' Set if input reads are in phred+64 format. Output will '
                       'always be phred+33. [default: %default]',
-                default=False)]
+                default=False),
+    make_option('-q', '--qual_score_variant',
+                help=' Input format of fastq data. Can be: \'illumina1.3\' or'+
+                    ' \'illumina1.8\'.' +
+                      ' Output will always be \'illumina1.8\'. [default: %default] '+
+                      'For more info see: http://en.wikipedia.org/wiki/FASTQ_format',
+                default='illumina1.8')]
 
 script_info['version'] = __version__
 
