@@ -763,8 +763,9 @@ class MothurTaxonAssigner(TaxonAssigner):
         result = self._unformat_result(result)
         if result_path is not None:
             with open(result_path, "w") as f:
-                for seq_id, (lineage, conf) in result.iteritems():
-                    f.write("%s\t%s\t%s\n" % (seq_id, lineage, conf))
+                for seq_id, (taxa, conf) in result.iteritems():
+                    lineage = ';'.join(taxa)
+                    f.write("%s\t%s\t%.2f\n" % (seq_id, lineage, conf))
             return None
         if log_path:
             self.writeLog(log_path)

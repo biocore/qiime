@@ -1223,7 +1223,7 @@ class MothurTaxonAssignerTests(TestCase):
         }
 
         self._paths_to_clean_up = [
-            tax_fp, ref_fp, self.seq_fp1,
+            tax_fp, ref_fp, self.seq_fp1, self.tax_spaces_fp,
         ]
 
     def tearDown(self):
@@ -1246,7 +1246,7 @@ class MothurTaxonAssignerTests(TestCase):
             'Bacteria', 'Proteobacteria', 'Gammaproteobacteria',
             'Vibrionales', 'Vibrionaceae', 'Vibrio'
         ])
-        self.assertTrue(e_conf < 0.5)
+        self.assertTrue(e_conf < 0.7)
 
     def test_assignment_maximum_conf(self):
         self.params["Confidence"] = 0.95
@@ -1274,6 +1274,26 @@ class MothurTaxonAssignerTests(TestCase):
             'Rhizobiales', 'Rhizobiaceae', 'Rhizobium',
         ])
         self.assertTrue(x_conf > 0.94)
+
+    def test_assignment_to_file(self):
+        fd, output_fp = mkstemp(
+            prefix='MothurTaxonAssigner_',
+            suffix='.txt')
+        close(fd)
+        assigner = MothurTaxonAssigner(self.params)
+
+        result = assigner(self.seq_fp1, result_path=output_fp)
+        self.assertIsNone(result)
+
+        output_file = open(output_fp)
+        output_lines = list(output_file)
+        output_file.close()
+
+        output_lines.sort()
+        self.assertTrue(output_lines[0].startswith(
+            'EF503697\tBacteria;Proteobacteria'))
+        self.assertTrue(output_lines[1].startswith(
+            'X67228\tBacteria;Proteobacteria;Alphaproteobacteria'))
 
     def test_unassignable(self):
         f = open(self.seq_fp1, "w")
