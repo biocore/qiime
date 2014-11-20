@@ -20,7 +20,7 @@ from tempfile import NamedTemporaryFile, mkdtemp, mkstemp
 from unittest import TestCase, main
 from burrito.util import ApplicationError
 
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 from qiime.supervised_learning import (
     run_supervised_learning, pooled_standard_deviation,
     calc_baseline_error_to_observed_error)

@@ -16,7 +16,7 @@ from tempfile import mkdtemp
 from unittest import TestCase, main
 
 import numpy as np
-from skbio.util.misc import create_dir
+from skbio.util import create_dir
 from qiime.extract_barcodes import (extract_barcodes,
                                     process_barcode_single_end_data, process_barcode_paired_end_data,
                                     process_barcode_paired_stitched, process_barcode_in_label,

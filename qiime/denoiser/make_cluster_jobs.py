@@ -16,7 +16,7 @@ from os import remove, rename, rmdir, makedirs, close
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import mkstemp
 
-from skbio.util.misc import create_dir
+from skbio.util import create_dir
 from burrito.util import ApplicationNotFoundError
 from burrito.util import which
 

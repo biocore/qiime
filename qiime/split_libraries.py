@@ -49,8 +49,8 @@ from skbio.parse.sequences import parse_fasta
 from cogent import DNA as DNA_cogent, LoadSeqs
 
 from cogent.align.align import make_dna_scoring_dict, local_pairwise
-from skbio.util.misc import remove_files
-from skbio.core.sequence import DNASequence
+from skbio.util import remove_files
+from skbio.sequence import DNASequence
 
 from qiime.check_id_map import process_id_map
 from qiime.barcode import correct_barcode

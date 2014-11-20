@@ -21,7 +21,7 @@ from biom.table import Table
 from biom.util import biom_open
 import numpy as np
 import numpy.testing as npt
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 from cogent.core.tree import PhyloNode
 from cogent.maths.distance_transform import dist_chisq
 

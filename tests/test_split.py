@@ -16,8 +16,8 @@ from unittest import TestCase, main
 
 from biom.parse import parse_biom_table
 from biom.table import Table
-from skbio.core.sequence import DNA
-from skbio.core.alignment import SequenceCollection
+from skbio.sequence import DNA
+from skbio.alignment import SequenceCollection
 from skbio.parse.sequences import parse_fasta
 
 from qiime.split import split_fasta

@@ -18,13 +18,13 @@ from biom import example_table
 
 from numpy.testing import assert_almost_equal
 
-from skbio.core.sequence import DNASequence
+from skbio.sequence import DNASequence
 from skbio.parse.sequences import parse_fasta
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 
 from cogent.cluster.procrustes import procrustes
 
-from brokit.formatdb import build_blast_db_from_fasta_file
+from bfillings.formatdb import build_blast_db_from_fasta_file
 
 from qiime.parse import (fields_to_dict, parse_distmat, parse_mapping_file,
                          parse_mapping_file_to_dict, parse_otu_table,

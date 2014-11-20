@@ -22,12 +22,12 @@ from types import GeneratorType
 from numpy import concatenate, repeat, zeros, nan, asarray
 from numpy.random import permutation
 
-from skbio.math.stats.ordination import OrdinationResults
+from skbio.stats.ordination import OrdinationResults
 from skbio.parse.record_finder import LabeledRecordFinder
 from cogent.parse.tree import DndParser
 from skbio.parse.sequences import parse_fastq
 from skbio.parse.sequences.fasta import FastaFinder
-from skbio.core.sequence import DNA
+from skbio.sequence import DNA
 from cogent.core.tree import PhyloNode
 
 from qiime.quality import ascii_to_phred33, ascii_to_phred64
@@ -361,12 +361,12 @@ def parse_coords(lines):
     - list of percent variance explained
 
     For the file format check
-    skbio.math.stats.ordination.OrdinationResults.from_file
+    skbio.stats.ordination.OrdinationResults.read
 
     Strategy: read the file using skbio's parser and return the objects
               we want
     """
-    pcoa_results = OrdinationResults.from_file(lines)
+    pcoa_results = OrdinationResults.read(lines)
     return (pcoa_results.site_ids, pcoa_results.site, pcoa_results.eigvals,
             pcoa_results.proportion_explained)
 

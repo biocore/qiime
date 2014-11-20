@@ -25,10 +25,10 @@ from filecmp import cmp
 
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
-from skbio.core.sequence import DNA
-from skbio.util.misc import create_dir, remove_files
-from brokit.formatdb import build_blast_db_from_fasta_path
-from brokit.sortmerna_v2 import build_database_sortmerna
+from skbio.sequence import DNA
+from skbio.util import create_dir, remove_files
+from bfillings.formatdb import build_blast_db_from_fasta_path
+from bfillings.sortmerna_v2 import build_database_sortmerna
 
 from qiime.util import load_qiime_config
 from qiime.parse import fields_to_dict

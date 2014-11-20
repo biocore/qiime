@@ -12,7 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 
 from os.path import split, splitext
 from skbio.parse.sequences import parse_fasta
-from skbio.core.sequence import DNA
+from skbio.sequence import DNA
 
 usage_str = """usage: %prog [options] {-i INPUT_FASTA_FP}
 

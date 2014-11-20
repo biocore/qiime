@@ -18,7 +18,7 @@ from glob import glob
 from site import addsitedir
 from tempfile import NamedTemporaryFile
 from traceback import format_exc
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 from pyqi.util import pyqi_system_call
 from qcli.test import (TimeExceededError,
                        initiate_timeout,

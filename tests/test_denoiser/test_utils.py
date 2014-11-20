@@ -19,11 +19,11 @@ from tempfile import mkdtemp
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
 
-from skbio.core.sequence import BiologicalSequence
+from skbio.sequence import BiologicalSequence
 from skbio.parse.sequences import parse_fasta
-from brokit.denoiser import Flowgram, FlowgramCollection
+from bfillings.denoiser import Flowgram, FlowgramCollection
 from burrito.util import ApplicationNotFoundError
-from skbio.util.misc import remove_files, create_dir
+from skbio.util import remove_files, create_dir
 
 from qiime.util import get_qiime_project_dir
 from qiime.denoiser.utils import make_stats, get_representatives,\

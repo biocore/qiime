@@ -19,18 +19,18 @@ added..
 """
 
 from skbio.parse.sequences import parse_fasta
-from skbio.core.alignment import Alignment
-from skbio.core.sequence import DNA
+from skbio.alignment import Alignment
+from skbio.sequence import DNA
 
 from qiime.util import FunctionWithParams
 # app controllers that implement align_unaligned_seqs
-import brokit.muscle_v38
-import brokit.clustalw
-import brokit.mafft
-import brokit.raxml_v730
-import brokit.fasttree
-import brokit.fasttree_v1
-import brokit.clearcut
+import bfillings.muscle_v38
+import bfillings.clustalw
+import bfillings.mafft
+import bfillings.raxml_v730
+import bfillings.fasttree
+import bfillings.fasttree_v1
+import bfillings.clearcut
 
 
 class TreeBuilder(FunctionWithParams):
@@ -126,14 +126,14 @@ class CogentTreeBuilder(TreeBuilder):
                                            log_path=log_path, *args, **kwargs)
 
 tree_method_constructors = {}
-tree_module_names = {'muscle': brokit.muscle_v38,
-                     'clustalw': brokit.clustalw,
-                     #'mafft':brokit.mafft,
+tree_module_names = {'muscle': bfillings.muscle_v38,
+                     'clustalw': bfillings.clustalw,
+                     #'mafft':bfillings.mafft,
                      # current version of Mafft does not support tree building
-                     'fasttree': brokit.fasttree,
-                     'fasttree_v1': brokit.fasttree_v1,
-                     'raxml_v730': brokit.raxml_v730,
-                     'clearcut': brokit.clearcut
+                     'fasttree': bfillings.fasttree,
+                     'fasttree_v1': bfillings.fasttree_v1,
+                     'raxml_v730': bfillings.raxml_v730,
+                     'clearcut': bfillings.clearcut
                      }
 
 # def maxTipTipDistance(tree):

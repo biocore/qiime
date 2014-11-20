@@ -1,0 +1,5 @@
+#SampleID	BarcodeSequence	LinkerPrimerSequence	Description
+ABC	ATGC	AAAAAA	First Sample
+XYZ	TGCA	AAAAAA	Fourth Sample
+GHI	CATG	AAAAAA	Third Sample
+DEF	GCAT	AAAAAA	Second Sample

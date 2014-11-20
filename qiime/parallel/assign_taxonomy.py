@@ -9,7 +9,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 
-from brokit.formatdb import build_blast_db_from_fasta_path
+from bfillings.formatdb import build_blast_db_from_fasta_path
 
 from qiime.parallel.util import ParallelWrapper
 

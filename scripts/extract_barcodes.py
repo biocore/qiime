@@ -9,7 +9,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "William Walters"
 __email__ = "william.a.walters@gmail.com"
 
-from skbio.util.misc import create_dir
+from skbio.util import create_dir
 
 from qiime.util import (parse_command_line_parameters, get_options_lookup,
                         make_option, qiime_open)
@@ -38,7 +38,7 @@ script_info[
 
 script_info[
     'script_usage'].append(("Parse barcodes of 6 base pairs from the beginning of paired reads, attempt to orient reads based upon detection of forward and reverse primers in the mapping file. Will create an output fastq file of the barcodes and an output file of each of the reads supplied with the barcodes removed. The order of the barcodes written is determined by the order of the files passed (-f is written first, followed by -r)", "",
-                            "%prog -f inseqs_R1.fastq -r inseqs_R2.fastq -c barcode_paired_end --map_fp mapping_data.txt --attempt_read_orientation --bc1_len 6 --bc2_len 6 -o processed_seqs"))
+                            "%prog -f inseqs_R1.fastq -r inseqs_R2.fastq -c barcode_paired_end --map_fp mapping_data.txt --attempt_read_reorientation --bc1_len 6 --bc2_len 6 -o processed_seqs"))
 
 script_info[
     'script_usage'].append(("Parse barcodes of 6 base pairs from the beginning, 8 base pairs at the end of a stitched read. Will create an output fastq file of the barcodes and an output fastq file of the stitched read supplied with the barcodes removed. The barcode at the beginning of the stitched read is written first, followed by the barcode at the end, unless reversed by the --switch_bc_order option is used", "",

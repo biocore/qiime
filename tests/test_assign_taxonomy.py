@@ -23,14 +23,14 @@ from shutil import copy as copy_file, rmtree
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal, assert_allclose
 from burrito.util import ApplicationError
-from skbio.util.misc import remove_files, create_dir
+from skbio.util import remove_files, create_dir
 from skbio.parse.sequences import parse_fasta
-from skbio.core.alignment import SequenceCollection
-from skbio.core.sequence import DNA
+from skbio.alignment import SequenceCollection
+from skbio.sequence import DNA
 
-from brokit.rdp_classifier import train_rdp_classifier
-from brokit.formatdb import build_blast_db_from_fasta_path
-from brokit.sortmerna_v2 import (build_database_sortmerna, sortmerna_map)
+from bfillings.rdp_classifier import train_rdp_classifier
+from bfillings.formatdb import build_blast_db_from_fasta_path
+from bfillings.sortmerna_v2 import (build_database_sortmerna, sortmerna_map)
 
 from qiime.util import get_qiime_temp_dir
 from qiime.test import initiate_timeout, disable_timeout

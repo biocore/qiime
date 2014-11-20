@@ -17,8 +17,8 @@ from shutil import rmtree
 from tempfile import mkdtemp
 from unittest import TestCase, main
 
-from skbio.core.tree import TreeNode
-from skbio.util.misc import remove_files
+from skbio.tree import TreeNode
+from skbio.util import remove_files
 from biom import Table
 from biom.util import biom_open
 
@@ -31,7 +31,7 @@ from qiime.workflow.pick_open_reference_otus import (
     pick_subsampled_open_reference_otus,
     iterative_pick_subsampled_open_reference_otus,
     final_repset_from_iteration_repsets)
-from brokit.sortmerna_v2 import build_database_sortmerna
+from bfillings.sortmerna_v2 import build_database_sortmerna
 
 
 allowed_seconds_per_test = 120

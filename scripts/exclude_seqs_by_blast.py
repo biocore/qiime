@@ -5,8 +5,8 @@ from time import time
 from os import getcwd, makedirs
 from os.path import join, split, abspath
 
-from brokit.formatdb import FormatDb
-from skbio.util.misc import remove_files
+from bfillings.formatdb import FormatDb
+from skbio.util import remove_files
 from burrito.parameters import FilePath
 
 from qiime.util import get_qiime_temp_dir
