@@ -40,7 +40,7 @@ CSS = robjects.r('CSS')
 def normalize_CSS(input_path, out_path, output_CSS_stats):
     """performs metagenomeSeq's CSS normalization on a single raw abundance OTU matrix
     """
-    base_fname, ext = splitext(out_path)
+    base_fname, ext = splitext(input_path)
     json_infile = base_fname+'_json.biom'
     open(str(json_infile),'w').write(load_table(input_path).to_json('forR'))
 
