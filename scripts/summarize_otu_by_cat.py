@@ -41,6 +41,15 @@ script_info['script_usage'].append(("", " Combine two categories and collapse "
                                     "resulting OTU table to otu_table_by_sex_and_age.txt", "%prog -i "
                                     "otu_table.biom -m Fasting_Map.txt -c 'Treatment&&DOB' -o "
                                     "otu_table_by_sex_and_age.txt"))
+script_info['script_usage'].append(("Use normalization",
+                                    "Normalize, combine two categories and, "
+                                    " collapse otu_table.biom on the 'Sex' "
+                                    "and 'Age' columns in map.txt and write "
+                                    "the resulting OTU table to "
+                                    "otu_table_by_sex_and_age.txt", "%prog -i "
+                                    "otu_table.biom -m Fasting_Map.txt -c "
+                                    "'Treatment&&DOB' -n -o "
+                                    "normalized_otu_table_by_sex_and_age.txt"))
 
 script_info['output_description'] = """"""
 script_info['required_options'] = [
@@ -111,7 +120,7 @@ def main():
 
     # normalize the result if requested by the user
     if normalize:
-        result = result.norm_observation_by_sample()
+        result.norm(axis='observation', inplace=True)
 
     # write a new BIOM file
     write_biom_table(result, output_fp)
