@@ -21,7 +21,6 @@ __email__ = "sophie.sjw@gmail.com"
 script_info = {}
 script_info['brief_description'] = "OTU differential abundance between two sample categories"
 script_info['script_description'] = "OTU differential abundance testing is commonly used to identify OTUs that differ between two mapping file sample categories (i.e. L_palm and Tongue body sites)."
-# Members of the tuple in script_usage are (title, description, example call)
 script_info['script_usage'] = [("""OTU Differential Abundance Testing""","""For this script, the user supplies an input raw (NOT normalized) OTU matrix (usually always having different column sums), an output file, a mapping file, a category in the mapping file for which it is desired to test differential abundance, and the algorithm that the user want for differential abundance testing, as follows:""","""differential_abundance.py -i raw_OTU_table.biom -o DE_OTUs.txt -m mapping_fp.txt -a 'metagenomeSeq_fitZIG' -c 'BODY_SITE' -x 'Tongue' -y 'L_palm'""")]
 script_info['output_description']= "The resulting output OTU txt file contains a list of all the OTUs in the input matrix, along with their associated statistics and FDR p-values."
 script_info['required_options']=[\
