@@ -147,7 +147,11 @@ def run_group_significance_test(data_generator, test, test_choices, reps=1000):
             test_stat, pval = test_choices[test](row[0], row[1])
         else:
             # ANOVA, kruskal_wallis, g_fit will get caught here
-            test_stat, pval = test_choices[test](row)
+            try:
+                test_stat, pval = test_choices[test](row)
+            except:
+                test_stat = nan
+                pval = nan
         test_stats.append(test_stat)
         pvals.append(pval)
         means.append([i.mean() for i in row])
