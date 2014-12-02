@@ -1,7 +1,10 @@
+#!/usr/bin/env python
+
 """
 Parallel launching script for SortMeRNA v 2.0
 =============================================
 """
+
 from __future__ import division
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
