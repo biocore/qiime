@@ -149,7 +149,7 @@ class ParallelPickOtusSortMeRNA(ParallelPickOtus):
                 (command_prefix,
                  self._script_name,
                  fasta_fp,
-                 params['refseqs_fp']
+                 params['refseqs_fp'],
                  params['sortmerna_db'],
                  working_dir,
                  params['sortmerna_e_value'],
