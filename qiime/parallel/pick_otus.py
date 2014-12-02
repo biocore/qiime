@@ -13,8 +13,10 @@ __email__ = "gregcaporaso@gmail.com"
 from math import ceil
 from os.path import basename, join
 from re import compile
+from tempfile import mkdtemp
 
 from bfillings.formatdb import build_blast_db_from_fasta_path
+from brokit.sortmerna_v2 import build_database_sortmerna
 
 from skbio.parse.sequences import parse_fasta
 
@@ -98,6 +100,65 @@ class ParallelPickOtus(ParallelWrapper):
             f.write('\t'.join(in_files + [out_file]))
             f.write('\n')
         f.close()
+
+
+class ParallelPickOtusSortMeRNA(ParallelPickOtus):
+
+    def _precommand_initiation(
+            self, input_fp, output_dir, working_dir, params):
+        if not params['sortmerna_db']:
+            # Build the blast database from the reference_seqs_fp -- all procs
+            # will then access one db rather than create one per proc
+            sortmerna_db, db_files_to_remove = \
+                build_database_sortmerna(params['refseqs_fp'],
+                                         max_pos=params['max_pos'],
+                                         output_dir=mkdtemp())
+            self.files_to_remove += db_files_to_remove
+            params['sortmerna_db'] = sortmerna_db
+
+    def _get_job_commands(self,
+                          fasta_fps,
+                          output_dir,
+                          params,
+                          job_prefix,
+                          working_dir,
+                          command_prefix='/bin/bash; ',
+                          command_suffix='; exit'):
+        """Generate pick_otus commands which should be submitted to cluster
+        """
+        # Create basenames for each of the output files. These will be filled
+        # in to create the full list of files created by all of the runs.
+        out_filenames = [job_prefix + '.%d_otus.log',
+                         job_prefix + '.%d_otus.txt',
+                         job_prefix + '.%s_failures.txt']
+
+        # Create lists to store the results
+        commands = []
+        result_filepaths = []
+
+        # Iterate over the input files
+        for i, fasta_fp in enumerate(fasta_fps):
+            # Each run ends with moving the output file from the tmp dir to
+            # the output_dir. Build the command to perform the move here.
+            rename_command, current_result_filepaths = self._get_rename_command(
+                [fn % i for fn in out_filenames], working_dir, output_dir)
+            result_filepaths += current_result_filepaths
+
+            command = \
+                '%s %s -i %s --sortmerna_db %s -m sortmerna -o %s --sortmerna_e_value %s -s %s %s %s' %\
+                (command_prefix,
+                 self._script_name,
+                 fasta_fp,
+                 params['sortmerna_db'],
+                 working_dir,
+                 params['sortmerna_e_value'],
+                 params['similarity'],
+                 rename_command,
+                 command_suffix)
+
+            commands.append(command)
+
+        return commands, result_filepaths
 
 
 class ParallelPickOtusUclustRef(ParallelPickOtus):
