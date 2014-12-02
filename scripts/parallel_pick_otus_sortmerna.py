@@ -105,6 +105,10 @@ script_info['optional_options'] = [
                 help="Base name for all output files "
                       "[default: %default]"),
 
+    make_option('--sortmerna_store_logs', default=False, action='store_true',
+                help='Log files output by SortMeRNA will not be removed '
+                     '[default: %default]')
+
     options_lookup['jobs_to_start'],
     options_lookup['retain_temp_files'],
     options_lookup['suppress_submit_jobs'],

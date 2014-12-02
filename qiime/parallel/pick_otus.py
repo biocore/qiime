@@ -130,11 +130,14 @@ class ParallelPickOtusSortMeRNA(ParallelPickOtus):
         # in to create the full list of files created by all of the runs.
         out_filenames = [job_prefix + '.%d_otus.log',
                          job_prefix + '.%d_otus.txt',
-                         job_prefix + '.%s_failures.txt']
+                         job_prefix + '.%d_failures.txt']
 
         # Create lists to store the results
         commands = []
         result_filepaths = []
+
+        if params['sortmerna_store_logs']:
+            out_filenames += [job_prefix + '.%d_' + params['sortmerna_out'] + '.log']
 
         # Iterate over the input files
         for i, fasta_fp in enumerate(fasta_fps):
