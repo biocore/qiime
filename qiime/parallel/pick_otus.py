@@ -144,6 +144,8 @@ class ParallelPickOtusSortMeRNA(ParallelPickOtus):
                 [fn % i for fn in out_filenames], working_dir, output_dir)
             result_filepaths += current_result_filepaths
 
+            sortmerna_out_str = "%s_%s" % (job_prefix, params['sortmerna_out'])
+
             command = \
                 '%s %s -m sortmerna -i %s -r %s --sortmerna_db %s  -o %s --sortmerna_e_value %s -s %s --threads %s --sortmerna_out %s %s %s' %\
                 (command_prefix,
@@ -155,7 +157,7 @@ class ParallelPickOtusSortMeRNA(ParallelPickOtus):
                  params['sortmerna_e_value'],
                  params['similarity'],
                  params['threads'],
-                 params['sortmerna_out'],
+                 sortmerna_out_str,
                  rename_command,
                  command_suffix)
 
