@@ -145,14 +145,16 @@ class ParallelPickOtusSortMeRNA(ParallelPickOtus):
             result_filepaths += current_result_filepaths
 
             command = \
-                '%s %s -i %s --sortmerna_db %s -m sortmerna -o %s --sortmerna_e_value %s -s %s %s %s' %\
+                '%s %s -m sortmerna -i %s -r %s --sortmerna_db %s  -o %s --sortmerna_e_value %s -s %s --threads %s %s %s' %\
                 (command_prefix,
                  self._script_name,
                  fasta_fp,
+                 params['refseqs_fp']
                  params['sortmerna_db'],
                  working_dir,
                  params['sortmerna_e_value'],
                  params['similarity'],
+                 params['threads'],
                  rename_command,
                  command_suffix)
 
