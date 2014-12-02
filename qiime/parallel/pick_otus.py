@@ -16,7 +16,7 @@ from re import compile
 from tempfile import mkdtemp
 
 from bfillings.formatdb import build_blast_db_from_fasta_path
-from brokit.sortmerna_v2 import build_database_sortmerna
+from bfillings.sortmerna_v2 import build_database_sortmerna
 
 from skbio.parse.sequences import parse_fasta
 
