@@ -98,9 +98,12 @@ script_info['optional_options'] = [
                      ' in the indexed database [default: %default]'),
 
     make_option('--threads', default=1, help=
-                "Specify number of threads (1 thread per core) to be used for usearch61, "
-                "sortmerna, sumaclust and swarm commands that utilize multithreading. "
+                "Specify number of threads (1 thread per core)"
                 "[default: %default]"),
+
+    make_option('--sortmerna_out', type='string', default="sortmerna_otus",
+                help="Base name for all output files "
+                      "[default: %default]"),
 
     options_lookup['jobs_to_start'],
     options_lookup['retain_temp_files'],

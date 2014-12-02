@@ -368,7 +368,8 @@ def run_pick_closed_reference_otus(
     otu_fp = '%s/%s_otus.txt' % (pick_otu_dir, input_basename)
     if parallel and (otu_picking_method == 'blast' or
                      otu_picking_method == 'uclust_ref' or
-                     otu_picking_method == 'usearch61_ref'):
+                     otu_picking_method == 'usearch61_ref' or
+                     otu_picking_method == 'sortmerna'):
         # Grab the parallel-specific parameters
         try:
             params_str = get_params_str(params['parallel'])

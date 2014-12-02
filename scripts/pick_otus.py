@@ -244,7 +244,11 @@ script_info['optional_options'] = [
                 help='The maximum number of positions per seed to store '
                      ' in the indexed database [default: %default]'),
 
+    make_option('--sortmerna_out', type='string', default="sortmerna_otus",
+                help="Base name for all output files "
+                      "[default: %default]"),
     # end SortMeRNA specific parameters
+
     make_option('--min_aligned_percent',
                 help='Minimum percent of query sequence that can be aligned '
                      'to consider a hit, expressed as a fraction between 0 '
@@ -523,6 +527,7 @@ def main():
     sortmerna_tabular = opts.sortmerna_tabular
     sortmerna_best_N_alignments = opts.sortmerna_best_N_alignments
     sortmerna_max_pos = opts.sortmerna_max_pos
+    sortmerna_out = opts.sortmerna_out
 
     # swarm specific parameters
     swarm_resolution = opts.swarm_resolution
@@ -956,6 +961,7 @@ def main():
                   'blast': sortmerna_tabular,
                   'best': sortmerna_best_N_alignments,
                   'max_pos': sortmerna_max_pos,
+                  'aligned': sortmerna_out,
                   'prefilter_identical_sequences':
                   prefilter_identical_sequences}
         otu_picker = otu_picker_constructor(params)

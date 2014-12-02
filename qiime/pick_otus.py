@@ -255,6 +255,7 @@ class SortmernaV2OtuPicker(OtuPicker):
                                   coverage=self.Params['coverage'],
                                   threads=self.Params['threads'],
                                   best=self.Params['best'],
+                                  aligned=self.Params['aligned'],
                                   HALT_EXEC=False)
 
         # Remove temporary files
