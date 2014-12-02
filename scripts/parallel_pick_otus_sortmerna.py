@@ -2,21 +2,25 @@
 Parallel launching script for SortMeRNA v 2.0
 =============================================
 """
-
-# ----------------------------------------------------------------------------
-# Copyright (c) 2014--, brokit development team
-#
-# Distributed under the terms of the Modified BSD License.
-#
-# The full license is in the file COPYING.txt, distributed with this software.
-# ----------------------------------------------------------------------------
-
 from __future__ import division
+__license__ = "GPL"
+__version__ = "1.8.0-dev"
+__maintainer__ = "Jenya Kopylov"
+__email__ = "jenya.kopylov@gmail.com"
+
 from qiime.util import (parse_command_line_parameters,
                         get_options_lookup,
                         make_option)
 from qiime.parallel.pick_otus import ParallelPickOtusSortMeRNA
 
+
+# ----------------------------------------------------------------------------
+# Copyright (c) 2014--, The QIIME development team
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+# ----------------------------------------------------------------------------
 
 ############################
 # Script functionality
@@ -74,7 +78,7 @@ script_info['optional_options'] = [
                 help='Mininum percent query coverage (of an alignment) '
                      'to consider a hit, expressed as a fraction between 0 '
                      'and 1 [default: %default]'),
-    
+
     make_option('--sortmerna_tabular', default=False, action='store_true',
                 help='Output alignments in the Blast tabular format '
                      'with two additional columns including the CIGAR '
