@@ -13,7 +13,6 @@ __email__ = "gregcaporaso@gmail.com"
 from math import ceil
 from os.path import basename, join
 from re import compile
-from tempfile import mkdtemp
 
 from bfillings.formatdb import build_blast_db_from_fasta_path
 from bfillings.sortmerna_v2 import build_database_sortmerna
