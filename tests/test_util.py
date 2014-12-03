@@ -109,9 +109,25 @@ class TopLevelTests(TestCase):
     def test_write_biom_table(self):
         """HDF5-format BIOM file can be written"""
         fd, output_fp = mkstemp(prefix="test_biom_")
+        close(fd)
+
         self.files_to_remove.append(output_fp)
         write_biom_table(example_table, output_fp)
         self.assertTrue(exists(output_fp))
+
+    def test_write_biom_table_no_h5py(self):
+        fd, output_fp = mkstemp(prefix="test_biom_")
+        close(fd)
+
+        self.files_to_remove.append(output_fp)
+
+        write_biom_table(example_table, output_fp, write_hdf5=False)
+        self.assertTrue(exists(output_fp))
+
+        # verify it is indeed a JSON string
+        with open(output_fp, 'r') as f:
+            self.assertTrue(f.read(1) == '{')
+
 
     def test_expand_otu_ids(self):
         """expand otu ids functions as expected """
