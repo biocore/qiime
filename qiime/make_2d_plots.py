@@ -18,12 +18,11 @@ from matplotlib.pylab import *
 from matplotlib.cbook import iterable, is_string_like
 from matplotlib.patches import Ellipse
 from matplotlib.font_manager import FontProperties
-from commands import getoutput
 from string import strip
 from numpy import array, asarray, ndarray
 from time import strftime
 from random import choice
-from qiime.util import summarize_pcoas, isarray
+from qiime.util import summarize_pcoas, isarray, qiime_system_call
 from qiime.parse import group_by_field, group_by_fields, parse_coords
 from qiime.colors import data_color_order, data_colors, \
     get_group_colors, data_colors, iter_color_groups
@@ -186,7 +185,8 @@ def make_line_plot(
     if generate_eps:
         eps_img_name = str('scree_plot.eps')
         savefig(os.path.join(dir_path, eps_img_name), format='eps')
-        out = getoutput("gzip -f " + os.path.join(dir_path, eps_img_name))
+        out, err, retcode = qiime_system_call(
+            "gzip -f " + os.path.join(dir_path, eps_img_name))
         eps_link = DOWNLOAD_LINK % ((os.path.join(data_file_link, eps_img_name)
                                      + ".gz"), "Download Figure")
 
@@ -272,7 +272,8 @@ def make_interactive_scatter(plot_label, dir_path, data_file_link,
     if generate_eps:
         eps_img_name = str(x_label[0:3] + 'vs' + y_label[0:3] + 'plot.eps')
         savefig(os.path.join(dir_path, eps_img_name), format='eps')
-        out = getoutput("gzip -f " + os.path.join(dir_path, eps_img_name))
+        out, err, retcode = qiime_system_call(
+            "gzip -f " + os.path.join(dir_path, eps_img_name))
         eps_link = DOWNLOAD_LINK % ((os.path.join(data_file_link, eps_img_name)
                                      + ".gz"), "Download Figure")
 
