@@ -125,7 +125,7 @@ class ParallelPickOtusSortMeRNA(ParallelPickOtus):
             # will then access one db rather than create one per proc
             sortmerna_db, db_files_to_remove = \
                 build_database_sortmerna(params['refseqs_fp'],
-                                         max_pos=params['max_pos'],
+                                         max_pos=params['sortmerna_max_pos'],
                                          output_dir=get_qiime_temp_dir())
             self.files_to_remove += db_files_to_remove
             params['sortmerna_db'] = sortmerna_db

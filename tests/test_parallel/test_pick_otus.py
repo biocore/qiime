@@ -78,10 +78,12 @@ class ParallelPickOtusSortMeRNATests(ParallelPickOtusTests):
         """ parallel_pick_otus_sortmerna functions as expected """
 
         params = {'refseqs_fp': self.refseqs1_fp,
+                  'sortmerna_db': None,
                   'similarity': 0.97,
                   'sortmerna_e_value': 1,
                   'sortmerna_coverage': 0.97,
-                  'sortmerna_max_pos': 10000}
+                  'sortmerna_max_pos': 10000,
+                  'sortmerna_store_logs': False}
 
         app = ParallelPickOtusSortMeRNA()
         r = app(self.inseqs1_fp,
