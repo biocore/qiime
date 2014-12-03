@@ -149,7 +149,7 @@ def run_group_significance_test(data_generator, test, test_choices, reps=1000):
             # ANOVA, kruskal_wallis, g_fit will get caught here
             try:
                 test_stat, pval = test_choices[test](row)
-            except:
+            except (ValueError):
                 test_stat = nan
                 pval = nan
         test_stats.append(test_stat)
