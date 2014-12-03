@@ -42,14 +42,15 @@ script_info['script_usage'].append(("", " Combine two categories and collapse "
                                     "otu_table.biom -m Fasting_Map.txt -c 'Treatment&&DOB' -o "
                                     "otu_table_by_sex_and_age.txt"))
 script_info['script_usage'].append(("Use normalization",
-                                    "Normalize, combine two categories and, "
-                                    " collapse otu_table.biom on the 'Sex' "
-                                    "and 'Age' columns in map.txt and write "
-                                    "the resulting OTU table to "
-                                    "otu_table_by_sex_and_age.txt", "%prog -i "
-                                    "otu_table.biom -m Fasting_Map.txt -c "
-                                    "'Treatment&&DOB' -n -o "
-                                    "normalized_otu_table_by_sex_and_age.txt"))
+                                    "Normalize, combine two categories and"
+                                    " collapse otu_table.biom on the "
+                                    "'Treatment' and 'DOB' columns in "
+                                    "Fasting_Map.txt and write the resulting "
+                                    "OTU table to normalized_otu_table_by_treat"
+                                    "ment_and_dob.txt",
+                                    "%prog -i otu_table.biom -m Fasting_Map.txt"
+                                    " -c 'Treatment&&DOB' -n -o normalized_otu_"
+                                    "table_by_treatment_and_dob.txt"))
 
 script_info['output_description'] = """"""
 script_info['required_options'] = [
