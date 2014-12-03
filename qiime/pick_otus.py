@@ -40,7 +40,7 @@ from bfillings.mothur import Mothur
 from bfillings.cd_hit import cdhit_clusters_from_seqs
 from bfillings.uclust import get_clusters_from_fasta_filepath
 from bfillings.sortmerna_v2 import (build_database_sortmerna,
-                                 sortmerna_ref_cluster)
+                                    sortmerna_ref_cluster)
 from bfillings.usearch import (usearch_qf,
                             usearch61_denovo_cluster,
                             usearch61_ref_cluster)
