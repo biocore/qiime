@@ -197,7 +197,7 @@ class ParallelPickOtusSortMeRNATests(ParallelPickOtusTests):
         sortmerna_db, db_files_to_remove = build_database_sortmerna(
             self.refseqs1_fp,
             max_pos=10000,
-            output_dir=self.output_dir)
+            output_dir=self.test_out)
 
         # Files created by indexdb_rna to be deleted
         self.files_to_remove.extend(db_files_to_remove)
