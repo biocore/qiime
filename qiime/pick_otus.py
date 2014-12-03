@@ -304,7 +304,7 @@ class SortmernaV2OtuPicker(OtuPicker):
             # the clusters in a dict of {otu_id:[seq_ids]}, where
             # otu_id is arbitrary
             result = cluster_map
-            self.log_lines.append('Result path: None, returned as dict.')            
+            self.log_lines.append('Result path: None, returned as dict.')
 
         # Log the run
         if log_path:
