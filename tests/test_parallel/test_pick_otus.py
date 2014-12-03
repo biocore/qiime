@@ -27,6 +27,8 @@ from qiime.util import get_qiime_temp_dir
 from qiime.test import initiate_timeout, disable_timeout
 from qiime.parse import parse_otu_map
 
+from bfillings.sortmerna_v2 import build_database_sortmerna
+
 
 class ParallelPickOtusTests(TestCase):
 
@@ -70,35 +72,6 @@ class ParallelPickOtusTests(TestCase):
         for d in self.dirs_to_remove:
             if exists(d):
                 rmtree(d)
-
-
-class ParallelPickOtusSortMeRNATests(ParallelPickOtusTests):
-
-    def test_parallel_pick_otus_sortmerna(self):
-        """ parallel_pick_otus_sortmerna functions as expected """
-
-        params = {'refseqs_fp': self.refseqs1_fp,
-                  'sortmerna_db': None,
-                  'similarity': 0.97,
-                  'sortmerna_e_value': 1,
-                  'sortmerna_coverage': 0.97,
-                  'sortmerna_max_pos': 10000,
-                  'sortmerna_store_logs': False,
-                  'sortmerna_out': "sortmerna_results",
-                  'threads': 1}
-
-        app = ParallelPickOtusSortMeRNA()
-        r = app(self.inseqs1_fp,
-                self.test_out,
-                params,
-                job_prefix='PTEST',
-                poll_directly=True,
-                suppress_submit_jobs=False)
-        otu_map_fp = glob(join(self.test_out, '*otus.txt'))[0]
-        otu_map = parse_otu_map(open(otu_map_fp, 'U'))
-        # some basic sanity checks: at least one OTU per reference sequence
-        self.assertTrue(len(otu_map[0]) > 5)
-        self.assertEqual(set(otu_map[2]), set(['r1', 'r2', 'r3', 'r4', 'r5']))
 
 
 class ParallelPickOtusUclustRefTests(ParallelPickOtusTests):
@@ -151,6 +124,99 @@ class ParallelPickOtusBlastTests(ParallelPickOtusTests):
                 self.test_out,
                 params,
                 job_prefix='BTEST',
+                poll_directly=True,
+                suppress_submit_jobs=False)
+        otu_map_fp = glob(join(self.test_out, '*otus.txt'))[0]
+        otu_map = parse_otu_map(open(otu_map_fp, 'U'))
+        # some basic sanity checks: at least one OTU per reference sequence
+        self.assertTrue(len(otu_map[0]) > 5)
+        self.assertEqual(set(otu_map[2]), set(['r1', 'r2', 'r3', 'r4', 'r5']))
+
+
+class ParallelPickOtusSortMeRNATests(ParallelPickOtusTests):
+
+    def test_parallel_pick_otus_sortmerna_default(self):
+        """ parallel_pick_otus_sortmerna functions as expected
+            with default parameters """
+
+        params = {'refseqs_fp': self.refseqs1_fp,
+                  'sortmerna_db': None,
+                  'similarity': 0.97,
+                  'sortmerna_e_value': 1,
+                  'sortmerna_coverage': 0.97,
+                  'sortmerna_max_pos': 10000,
+                  'sortmerna_store_logs': False,
+                  'sortmerna_out': "sortmerna_results",
+                  'threads': 1}
+
+        app = ParallelPickOtusSortMeRNA()
+        r = app(self.inseqs1_fp,
+                self.test_out,
+                params,
+                job_prefix='STEST',
+                poll_directly=True,
+                suppress_submit_jobs=False)
+        otu_map_fp = glob(join(self.test_out, '*otus.txt'))[0]
+        otu_map = parse_otu_map(open(otu_map_fp, 'U'))
+        # some basic sanity checks: at least one OTU per reference sequence
+        self.assertTrue(len(otu_map[0]) > 5)
+        self.assertEqual(set(otu_map[2]), set(['r1', 'r2', 'r3', 'r4', 'r5']))
+
+    def test_parallel_pick_otus_sortmerna_logs(self):
+        """ parallel_pick_otus_sortmerna functions as expected
+            with default parameters except now storing logs """
+
+        params = {'refseqs_fp': self.refseqs1_fp,
+                  'sortmerna_db': None,
+                  'similarity': 0.97,
+                  'sortmerna_e_value': 1,
+                  'sortmerna_coverage': 0.97,
+                  'sortmerna_max_pos': 10000,
+                  'sortmerna_store_logs': True,
+                  'sortmerna_out': "sortmerna_results",
+                  'threads': 1}
+
+        app = ParallelPickOtusSortMeRNA()
+        r = app(self.inseqs1_fp,
+                self.test_out,
+                params,
+                job_prefix='STEST',
+                poll_directly=True,
+                suppress_submit_jobs=False)
+        otu_map_fp = glob(join(self.test_out, '*otus.txt'))[0]
+        otu_map = parse_otu_map(open(otu_map_fp, 'U'))
+        # some basic sanity checks: at least one OTU per reference sequence
+        self.assertTrue(len(otu_map[0]) > 5)
+        self.assertEqual(set(otu_map[2]), set(['r1', 'r2', 'r3', 'r4', 'r5']))
+
+    def test_parallel_pick_otus_sortmerna_index(self):
+        """ parallel_pick_otus_sortmerna functions as expected
+            with default parameters and pre-built database """
+
+        # build the index
+        sortmerna_db, db_files_to_remove = build_database_sortmerna(
+            abspath(self.refseqs1_fp),
+            max_pos=10000,
+            output_dir=self.output_dir)
+
+        # Files created by indexdb_rna to be deleted
+        self.files_to_remove.extend(db_files_to_remove)
+
+        params = {'refseqs_fp': self.refseqs1_fp,
+                  'sortmerna_db': sortmerna_db,
+                  'similarity': 0.97,
+                  'sortmerna_e_value': 1,
+                  'sortmerna_coverage': 0.97,
+                  'sortmerna_max_pos': 10000,
+                  'sortmerna_store_logs': False,
+                  'sortmerna_out': "sortmerna_results",
+                  'threads': 1}
+
+        app = ParallelPickOtusSortMeRNA()
+        r = app(self.inseqs1_fp,
+                self.test_out,
+                params,
+                job_prefix='STEST',
                 poll_directly=True,
                 suppress_submit_jobs=False)
         otu_map_fp = glob(join(self.test_out, '*otus.txt'))[0]

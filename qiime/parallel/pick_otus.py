@@ -115,7 +115,7 @@ class ParallelPickOtusSortMeRNA(ParallelPickOtus):
             result =\
                 [fp for fp in job_result_filepaths if not fp.endswith('sortmerna_results.log')]
         else:
-            result = [job_result_filepaths]
+            result = job_result_filepaths
 
         return result
 
