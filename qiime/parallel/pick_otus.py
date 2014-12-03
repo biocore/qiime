@@ -22,6 +22,7 @@ from skbio.parse.sequences import parse_fasta
 
 from qiime.parallel.util import ParallelWrapper, BufferedWriter
 from qiime.parallel.poller import basic_process_run_results_f
+from qiime.util import get_qiime_temp_dir
 
 
 class ParallelPickOtus(ParallelWrapper):
