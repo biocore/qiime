@@ -90,7 +90,7 @@ def pick_reference_otus(input_fp,
         else:
             params_copy['pick_otus'] = {'similarity': str(similarity_override)}
 
-    if parallel and otu_picking_method == 'uclust_ref':
+    if parallel and (otu_picking_method == 'uclust_ref' or otu_picking_method == "sortmerna"):
         # Grab the parallel-specific parameters
         try:
             params_str = get_params_str(params_copy['parallel'])
