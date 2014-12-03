@@ -523,7 +523,6 @@ def main():
     sortmerna_tabular = opts.sortmerna_tabular
     sortmerna_best_N_alignments = opts.sortmerna_best_N_alignments
     sortmerna_max_pos = opts.sortmerna_max_pos
-    sortmerna_out = opts.sortmerna_out
 
     # swarm specific parameters
     swarm_resolution = opts.swarm_resolution
