@@ -18,7 +18,8 @@ from tempfile import mkstemp, mkdtemp
 
 from skbio.util import remove_files
 from unittest import TestCase, main
-from qiime.parallel.pick_otus import (ParallelPickOtusUclustRef,
+from qiime.parallel.pick_otus import (ParallelPickOtusSortMeRNA,
+                                      ParallelPickOtusUclustRef,
                                       ParallelPickOtusBlast,
                                       ParallelPickOtusTrie,
                                       greedy_partition)
