@@ -778,14 +778,15 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
                 # Otherwise truncate to index of bad window
                 elif not discard_bad_windows and not passed_window_check:
                     sliding_window_failed += 1
-                    write_seq = write_seq[0:window_index]
-                    if qual_out:
-                        curr_qual = curr_qual[0:barcode_len +
-                                              primer_len + window_index]
-                    # Check for sequences that are too short after truncation
-                    if len(write_seq) + total_bc_primer_len < min_seq_len:
-                        write_seq = False
-                        below_seq_min_after_trunc += 1
+                    if write_seq:
+                        write_seq = write_seq[0:window_index]
+                        if qual_out:
+                            curr_qual = curr_qual[0:barcode_len +
+                                primer_len + window_index]
+                        #Check for sequences that are too short after truncation
+                        if len(write_seq) + total_bc_primer_len < min_seq_len:
+                            write_seq = False
+                            below_seq_min_after_trunc += 1
 
             if truncate_ambi_bases and write_seq:
                 write_seq_ambi_ix = True
