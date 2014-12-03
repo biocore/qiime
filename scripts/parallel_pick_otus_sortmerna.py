@@ -101,7 +101,7 @@ script_info['optional_options'] = [
                 "Specify number of threads (1 thread per core)"
                 "[default: %default]"),
 
-    make_option('--sortmerna_out', type='string', default="sortmerna_otus",
+    make_option('--sortmerna_out', type='string', default="sortmerna_results",
                 help="Base name for all output files "
                       "[default: %default]"),
 

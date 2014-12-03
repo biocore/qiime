@@ -244,7 +244,7 @@ script_info['optional_options'] = [
                 help='The maximum number of positions per seed to store '
                      ' in the indexed database [default: %default]'),
 
-    make_option('--sortmerna_out', type='string', default="sortmerna_otus",
+    make_option('--sortmerna_out', type='string', default="sortmerna_results",
                 help="Base name for all output files "
                       "[default: %default]"),
     # end SortMeRNA specific parameters

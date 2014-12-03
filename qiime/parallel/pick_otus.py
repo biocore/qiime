@@ -112,7 +112,7 @@ class ParallelPickOtusSortMeRNA(ParallelPickOtus):
             sortmerna_db, db_files_to_remove = \
                 build_database_sortmerna(params['refseqs_fp'],
                                          max_pos=params['max_pos'],
-                                         output_dir=mkdtemp())
+                                         output_dir=get_qiime_temp_dir())
             self.files_to_remove += db_files_to_remove
             params['sortmerna_db'] = sortmerna_db
 
