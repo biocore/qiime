@@ -83,7 +83,8 @@ class ParallelPickOtusSortMeRNATests(ParallelPickOtusTests):
                   'sortmerna_e_value': 1,
                   'sortmerna_coverage': 0.97,
                   'sortmerna_max_pos': 10000,
-                  'sortmerna_store_logs': False}
+                  'sortmerna_store_logs': False,
+                  'sortmerna_out': "sortmerna_results"}
 
         app = ParallelPickOtusSortMeRNA()
         r = app(self.inseqs1_fp,
