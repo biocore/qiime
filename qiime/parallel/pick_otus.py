@@ -104,6 +104,18 @@ class ParallelPickOtus(ParallelWrapper):
 
 class ParallelPickOtusSortMeRNA(ParallelPickOtus):
 
+    def _identify_files_to_remove(self, job_result_filepaths, params):
+        """ Select the files to remove: by default remove all files
+        """
+        if params['sortmerna_store_logs']:
+            # keep any sortmerna_results.logs files that get created
+            result =\
+                [fp for fp in job_result_filepaths if not fp.endswith('sortmerna_results.log')]
+        else:
+            result = [job_result_filepaths]
+
+        return result
+
     def _precommand_initiation(
             self, input_fp, output_dir, working_dir, params):
         if not params['sortmerna_db']:
