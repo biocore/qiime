@@ -121,7 +121,7 @@ def main():
 
     # normalize the result if requested by the user
     if normalize:
-        result.norm(axis='observation', inplace=True)
+        result.norm(axis='sample', inplace=True)
 
     # write a new BIOM file
     write_biom_table(result, output_fp)
