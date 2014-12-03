@@ -11,13 +11,14 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 from itertools import izip, cycle
-from os.path import split, splitext
+from os.path import split, splitext, join
 from os import makedirs
 
 from numpy import log10, arange, histogram
 
 from skbio.parse.sequences import parse_fastq
 from skbio.sequence import DNA
+from skbio.format.sequences import format_fastq_record
 
 from qiime.format import (format_histogram_one_count,
                           format_split_libraries_fastq_log)
@@ -25,6 +26,7 @@ from qiime.parse import is_casava_v180_or_later
 from qiime.hamming import decode_hamming_8
 from qiime.golay import decode_golay_12
 from qiime.quality import phred_to_ascii33, phred_to_ascii64
+from qiime.util import qiime_open
 
 
 class FastqParseError(Exception):
@@ -409,3 +411,33 @@ def make_histograms(lengths, binwidth=10):
     bins = arange(floor, ceil, binwidth)
     hist, bin_edges = histogram(lengths, bins)
     return hist, bin_edges
+
+
+def extract_reads_from_interleaved(
+        input_fp, forward_id, reverse_id, output_dir):
+    """Parses a single fastq file and creates two new files: forward and reverse, based on
+    the two values (comma separated) in read_direction_identifiers
+
+    input_fp: file path to input
+    read_direction_identifiers: comma separated values to identify forward and reverse reads
+    output_folder: file path to the output folder
+    """
+    forward_fp = join(output_dir, "forward_reads.fastq")
+    reverse_fp = join(output_dir, "reverse_reads.fastq")
+    ffp = open(forward_fp, 'w')
+    rfp = open(reverse_fp, 'w')
+
+    for label, seq, qual in parse_fastq(qiime_open(input_fp), strict=False):
+        fastq_string = format_fastq_record(label, seq, qual)
+        if forward_id in label:
+            ffp.write(fastq_string)
+        elif reverse_id in label and forward_id not in label:
+            rfp.write(fastq_string)
+        else:
+            ffp.close()
+            rfp.close()
+            raise ValueError("One of the input sequences doesn't have either identifier "
+                             "or it has both.\nLabel: %s\nForward: %s\n Reverse: %s" %
+                             (label, forward_id, reverse_id))
+    ffp.close()
+    rfp.close()
