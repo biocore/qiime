@@ -195,7 +195,7 @@ class ParallelPickOtusSortMeRNATests(ParallelPickOtusTests):
 
         # build the index
         sortmerna_db, db_files_to_remove = build_database_sortmerna(
-            abspath(self.refseqs1_fp),
+            self.refseqs1_fp,
             max_pos=10000,
             output_dir=self.output_dir)
 
