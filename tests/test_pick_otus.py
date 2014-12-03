@@ -175,7 +175,6 @@ class SortmernaV2OtuPickerTests(TestCase):
                     'best': 1,
                     'max_pos': 250,
                     'prefilter_identical_sequences': True,
-                    'aligned': 'sortmerna_results',
                     'otu_id_prefix': 'RefOTU'})
 
         clusters = app(
@@ -213,7 +212,6 @@ class SortmernaV2OtuPickerTests(TestCase):
                     'best': 1,
                     'max_pos': 250,
                     'prefilter_identical_sequences': True,
-                    'aligned': 'sortmerna_results',
                     'otu_id_prefix': 'RefOTU'})
 
         clusters = app(
@@ -243,7 +241,6 @@ class SortmernaV2OtuPickerTests(TestCase):
                     'best': 1,
                     'max_pos': 250,
                     'prefilter_identical_sequences': False,
-                    'aligned': 'sortmerna_results',
                     'otu_id_prefix': 'RefOTU'})
 
         clusters = app(

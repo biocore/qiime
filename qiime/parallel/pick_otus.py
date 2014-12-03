@@ -12,6 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 
 from math import ceil
 from os.path import basename, join
+from os import mkdir
 from re import compile
 
 from bfillings.formatdb import build_blast_db_from_fasta_path
@@ -150,31 +151,29 @@ class ParallelPickOtusSortMeRNA(ParallelPickOtus):
         commands = []
         result_filepaths = []
 
-        if params['sortmerna_store_logs']:
-            out_filenames += [job_prefix + '.%d_' + params['sortmerna_out'] + '.log']
-
         # Iterate over the input files
         for i, fasta_fp in enumerate(fasta_fps):
-            # Each run ends with moving the output file from the tmp dir to
-            # the output_dir. Build the command to perform the move here.
+            # temporary working directory for sortmerna per job                                                                                                                                                                                                                         
+            working_dir_t = join(working_dir, "%d" % i)
+            mkdir(working_dir_t)
+
+            # Each run ends with moving the output file from the tmp dir to                                                                                                                                                                                                              
+            # the output_dir. Build the command to perform the move here.                                                                                                                                                                                                                
             rename_command, current_result_filepaths = self._get_rename_command(
-                [fn % i for fn in out_filenames], working_dir, output_dir)
+                [fn % i for fn in out_filenames], working_dir_t, output_dir)
             result_filepaths += current_result_filepaths
 
-            sortmerna_out_str = "%s.%d_%s" % (job_prefix, i, params['sortmerna_out'])
-
             command = \
-                '%s %s -m sortmerna -i %s -r %s --sortmerna_db %s  -o %s --sortmerna_e_value %s -s %s --threads %s --sortmerna_out %s %s %s' %\
+                '%s %s -m sortmerna -i %s -r %s --sortmerna_db %s -o %s --sortmerna_e_value %s -s %s --threads %s %s %s' %\
                 (command_prefix,
                  self._script_name,
                  fasta_fp,
                  params['refseqs_fp'],
                  params['sortmerna_db'],
-                 working_dir,
+                 working_dir_t,
                  params['sortmerna_e_value'],
                  params['similarity'],
                  params['threads'],
-                 sortmerna_out_str,
                  rename_command,
                  command_suffix)
 

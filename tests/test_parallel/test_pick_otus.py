@@ -146,7 +146,6 @@ class ParallelPickOtusSortMeRNATests(ParallelPickOtusTests):
                   'sortmerna_coverage': 0.97,
                   'sortmerna_max_pos': 10000,
                   'sortmerna_store_logs': False,
-                  'sortmerna_out': "sortmerna_results",
                   'threads': 1}
 
         app = ParallelPickOtusSortMeRNA()
@@ -173,7 +172,6 @@ class ParallelPickOtusSortMeRNATests(ParallelPickOtusTests):
                   'sortmerna_coverage': 0.97,
                   'sortmerna_max_pos': 10000,
                   'sortmerna_store_logs': True,
-                  'sortmerna_out': "sortmerna_results",
                   'threads': 1}
 
         app = ParallelPickOtusSortMeRNA()
@@ -209,7 +207,6 @@ class ParallelPickOtusSortMeRNATests(ParallelPickOtusTests):
                   'sortmerna_coverage': 0.97,
                   'sortmerna_max_pos': 10000,
                   'sortmerna_store_logs': False,
-                  'sortmerna_out': "sortmerna_results",
                   'threads': 1}
 
         app = ParallelPickOtusSortMeRNA()
