@@ -71,6 +71,31 @@ class ParallelPickOtusTests(TestCase):
                 rmtree(d)
 
 
+class ParallelPickOtusSortMeRNATests(ParallelPickOtusTests):
+
+    def test_parallel_pick_otus_sortmerna(self):
+        """ parallel_pick_otus_sortmerna functions as expected """
+
+        params = {'refseqs_fp': self.refseqs1_fp,
+                  'similarity': 0.97,
+                  'sortmerna_e_value': 1,
+                  'sortmerna_coverage': 0.97,
+                  'sortmerna_max_pos': 10000}
+
+        app = ParallelPickOtusSortMeRNA()
+        r = app(self.inseqs1_fp,
+                self.test_out,
+                params,
+                job_prefix='PTEST',
+                poll_directly=True,
+                suppress_submit_jobs=False)
+        otu_map_fp = glob(join(self.test_out, '*otus.txt'))[0]
+        otu_map = parse_otu_map(open(otu_map_fp, 'U'))
+        # some basic sanity checks: at least one OTU per reference sequence
+        self.assertTrue(len(otu_map[0]) > 5)
+        self.assertEqual(set(otu_map[2]), set(['r1', 'r2', 'r3', 'r4', 'r5']))
+
+
 class ParallelPickOtusUclustRefTests(ParallelPickOtusTests):
 
     def test_parallel_pick_otus_uclust_ref(self):

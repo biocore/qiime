@@ -103,6 +103,8 @@ class ParallelPickOtus(ParallelWrapper):
 
 
 class ParallelPickOtusSortMeRNA(ParallelPickOtus):
+    """ Run pick_otus.py in parallel for SortMeRNA
+    """
 
     def _identify_files_to_remove(self, job_result_filepaths, params):
         """ Select the files to remove: by default remove all files
