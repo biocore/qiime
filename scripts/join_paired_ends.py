@@ -118,8 +118,9 @@ script_info['optional_options'] = [
     make_option('-q', '--qual_score_variant',
                 help=' Input format of fastq data. Can be: \'illumina1.3\' or'+
                     ' \'illumina1.8\'. Only used if using the \'-b\' option.' +
-                      ' Output will always be \'illumina1.8\'. [default: %default] '+
-                      'For more info see: http://en.wikipedia.org/wiki/FASTQ_format',
+                      ' Output will always be \'illumina1.8\'.' +
+                      '[default: %default]. For more info see: '+
+                      'http://scikit-bio.org/docs/latest/generated/skbio.io.fastq.html',
                 default='illumina1.8')]
 
 script_info['version'] = __version__

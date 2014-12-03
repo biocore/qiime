@@ -20,7 +20,8 @@ from tempfile import mkstemp
 from numpy import array, nan, array_equal
 from skbio.util import remove_files
 from unittest import TestCase, main
-from skbio.parse.sequences import parse_fasta
+from skbio.io import read
+#from skbio.parse.sequences import parse_fasta
 from qiime.util import  get_qiime_library_version
 from qiime.parse import fields_to_dict, parse_mapping_file
 from qiime.format import (format_distance_matrix, build_prefs_string,
@@ -478,7 +479,8 @@ y\t5\t6\tsample y""")
         fh = open(tmp_filename, "w")
         write_Fasta_from_name_seq_pairs(seqs, fh)
         fh.close()
-        actual_seqs = list(parse_fasta(open(tmp_filename, "U")))
+        #actual_seqs = list(parse_fasta(open(tmp_filename, "U")))
+        actual_seqs = [(rec.id, rec.sequence) for rec in (read(tmp_filename, format='fasta'))]
         remove(tmp_filename)
 
         self.assertEqual(actual_seqs, seqs)
