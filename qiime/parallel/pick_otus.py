@@ -22,7 +22,6 @@ from skbio.parse.sequences import parse_fasta
 
 from qiime.parallel.util import ParallelWrapper, BufferedWriter
 from qiime.parallel.poller import basic_process_run_results_f
-from qiime.util import get_qiime_temp_dir
 
 
 class ParallelPickOtus(ParallelWrapper):
@@ -115,7 +114,7 @@ class ParallelPickOtusSortMeRNA(ParallelPickOtus):
             sortmerna_db, db_files_to_remove = \
                 build_database_sortmerna(params['refseqs_fp'],
                                          max_pos=params['sortmerna_max_pos'],
-                                         output_dir=get_qiime_temp_dir())
+                                         output_dir=working_dir)
             self.files_to_remove += db_files_to_remove
             params['sortmerna_db'] = sortmerna_db
 
