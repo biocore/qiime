@@ -220,11 +220,10 @@ class SortmernaV2OtuPicker(OtuPicker):
 
         # Indexed database not provided, build it
         if not sortmerna_db:
-
             self.sortmerna_db, self.files_to_remove = \
                 build_database_sortmerna(abspath(refseqs_fp),
                                          max_pos=self.Params['max_pos'],
-                                         output_dir=get_qiime_temp_dir())
+                                         output_dir=dirname(result_path))
 
             self.log_lines.append('Reference seqs fp (to build '
                                   'sortmerna database): %s' %
