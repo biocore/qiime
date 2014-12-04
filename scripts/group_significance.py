@@ -249,7 +249,7 @@ script_info['required_options'] = [
     make_option('-c', '--category', type='string',
                 help='name of the category over which to run the analysis'),
     make_option('-o', '--output_fp', type='new_filepath',
-                help='path to the output file or directory')]
+                help='path to the output file')]
 
 script_info['optional_options'] = [
     make_option(

@@ -126,7 +126,9 @@ def compare_categories(dm_fp, map_fp, method, categories, num_perms, out_dir):
                 # The rest require groups of samples, so the category values
                 # cannot all be unique.
                 for category in categories:
-                    if md_map.hasUniqueCategoryValues(category):
+                    if (md_map.hasUniqueCategoryValues(category) and not
+                        (method == 'adonis' and
+                         md_map.isNumericCategory(category))):
                         raise ValueError("All values in category '%s' are "
                                          "unique. This statistical method "
                                          "cannot operate on a category with "

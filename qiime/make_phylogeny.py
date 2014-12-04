@@ -29,7 +29,6 @@ import bfillings.clustalw
 import bfillings.mafft
 import bfillings.raxml_v730
 import bfillings.fasttree
-import bfillings.fasttree_v1
 import bfillings.clearcut
 
 
@@ -131,7 +130,6 @@ tree_module_names = {'muscle': bfillings.muscle_v38,
                      #'mafft':bfillings.mafft,
                      # current version of Mafft does not support tree building
                      'fasttree': bfillings.fasttree,
-                     'fasttree_v1': bfillings.fasttree_v1,
                      'raxml_v730': bfillings.raxml_v730,
                      'clearcut': bfillings.clearcut
                      }
