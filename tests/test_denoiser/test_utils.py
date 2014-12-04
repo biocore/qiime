@@ -27,7 +27,7 @@ from skbio.util import remove_files, create_dir
 
 from qiime.util import get_qiime_project_dir
 from qiime.denoiser.utils import make_stats, get_representatives,\
-    squeeze_seq, wait_for_file, wait_for_cluster_ids, sort_ids,\
+    squeeze_seq, wait_for_file, sort_ids,\
     sort_seqs_by_clustersize, get_denoiser_data_dir,\
     init_flowgram_file, append_to_flowgram_file, store_mapping,\
     store_clusters, invert_mapping, read_denoiser_mapping,\
@@ -204,16 +204,6 @@ BABBA
         # but should raise on file not present
         self.assertRaises(RuntimeWarning, wait_for_file, "/foo/bar/baz",
                           test_mode=True)
-
-    # def test_wait_for_cluster_ids(self):
-    #    """wait_for_cluster_ids sleeps until jobs are finished."""
-    #
-    #   try:
-    #       wait_for_cluster_ids([])
-    #    except ApplicationNotFoundError:
-    #       self.fail("qstat not found. Can't run on cluster.")
-
-        # Can we test a real scenario with submitting a simple sleep script?
 
     def test_init_flowgram_file(self):
         """init_flowgram_file opens an file and writes header."""

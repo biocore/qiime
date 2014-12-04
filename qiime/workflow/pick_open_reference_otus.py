@@ -83,7 +83,7 @@ def pick_reference_otus(input_fp,
                             " passed on the command line or through the API.")
     if similarity_override is not None:
         logger.write(
-            'Overridding similiary with %1.3f.\n' %
+            'Similiarity of %1.3f being used for pre-filtering.\n' %
             similarity_override)
         if 'pick_otus' in params_copy:
             params_copy['pick_otus']['similarity'] = str(similarity_override)
@@ -150,7 +150,7 @@ def pick_denovo_otus(input_fp,
         pass
 
     d['denovo_otu_id_prefix'] = '%s.ReferenceOTU' % new_ref_set_id
-    
+
     params_str = ' %s' % get_params_str(d)
     # Build the OTU picking command
     result = 'pick_otus.py -i %s -o %s -m %s %s' %\
@@ -991,6 +991,11 @@ def pick_subsampled_open_reference_otus(input_fp,
                 parallel=parallel,
                 logger=logger,
                 status_update_callback=status_update_callback)
+
+            index_links.append(
+                    ('OTU taxonomic assignments',
+                    taxonomy_fp,
+                    _index_headers['taxa_assignments']))
 
             # Add taxa to otu table
             add_metadata_cmd = 'biom add-metadata -i %s --observation-metadata-fp %s -o %s --sc-separated taxonomy --observation-header OTUID,taxonomy' %\

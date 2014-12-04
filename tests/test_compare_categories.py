@@ -128,6 +128,18 @@ class CompareCategoriesTests(TestCase):
         results_f.close()
         self.assertTrue(len(results) > 0)
 
+    def test_compare_categories_adonis_unique_numeric(self):
+        """Test Adonis can run with unique numeric values."""
+        method = 'adonis'
+        compare_categories(self.dm1_fp, self.map1_fp, method,
+                           ['UniqueNumeric'], 999, self.test_dir)
+        results_fp = join(self.test_dir, '%s_results.txt' % method)
+        self.files_to_remove.append(results_fp)
+        results_f = open(results_fp, 'U')
+        results = results_f.readlines()
+        results_f.close()
+        self.assertTrue(len(results) > 0)
+
     def test_compare_categories_invalid_input(self):
         """Test compare_categories() on invalid input that should error out."""
         # Non-numeric categories with BIO-ENV and Moran's I.
@@ -232,18 +244,18 @@ PC.635\t0.690237118413\t0.720305073505\t0.689701276341\t0.650464714994\t0.734169
 PC.636\t0.740681707488\t0.680785600439\t0.725100672826\t0.632524644216\t0.727154987937\t0.699880573956\t0.560605525642\t0.575788039321\t0.0
 """
 
-map1_str = """#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tTreatment\tDOB\tUnique\tSingle\tDescription
+map1_str = """#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tTreatment\tDOB\tUniqueNumeric\tUnique\tSingle\tDescription
 #Example mapping file for the QIIME analysis package.  These 9 samples are from a study of the effects of exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).
-PC.354\tAGCACGAGCCTA\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\t1\t2\tControl_mouse_I.D._354
-PC.355\tAACTCGTCGATG\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\t2\t2\tControl_mouse_I.D._355
-PC.356\tACAGACCACTCA\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061126\t3\t2\tControl_mouse_I.D._356
-PC.481\tACCAGCGACTAG\tYATGCTGCCTCCCGTAGGAGT\tControl\t20070314\t4\t2\tControl_mouse_I.D._481
-PC.593\tAGCAGCACTTGT\tYATGCTGCCTCCCGTAGGAGT\tControl\t20071210\t5\t2\tControl_mouse_I.D._593
-PC.607\tAACTGTGCGTAC\tYATGCTGCCTCCCGTAGGAGT\tFast\t20071112\t6\t2\tFasting_mouse_I.D._607
-PC.634\tACAGAGTCGGCT\tYATGCTGCCTCCCGTAGGAGT\tFast\t20080116\t7\t2\tFasting_mouse_I.D._634
-PC.635\tACCGCAGAGTCA\tYATGCTGCCTCCCGTAGGAGT\tFast\t20080116\t8\t2\tFasting_mouse_I.D._635
-PC.636\tACGGTGAGTGTC\tYATGCTGCCTCCCGTAGGAGT\tFast\t20080116\t9\t2\tFasting_mouse_I.D._636
-random.sample\tACGGTGAGTGTC\tYATGCTGCCTCCCGTAGGAGT\tFast\t20080116\t9\t3\trandom.sample
+PC.354\tAGCACGAGCCTA\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\t1\tA\t2\tControl_mouse_I.D._354
+PC.355\tAACTCGTCGATG\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061218\t2\tB\t2\tControl_mouse_I.D._355
+PC.356\tACAGACCACTCA\tYATGCTGCCTCCCGTAGGAGT\tControl\t20061126\t3\tC\t2\tControl_mouse_I.D._356
+PC.481\tACCAGCGACTAG\tYATGCTGCCTCCCGTAGGAGT\tControl\t20070314\t4\tD\t2\tControl_mouse_I.D._481
+PC.593\tAGCAGCACTTGT\tYATGCTGCCTCCCGTAGGAGT\tControl\t20071210\t5\tE\t2\tControl_mouse_I.D._593
+PC.607\tAACTGTGCGTAC\tYATGCTGCCTCCCGTAGGAGT\tFast\t20071112\t6\tF\t2\tFasting_mouse_I.D._607
+PC.634\tACAGAGTCGGCT\tYATGCTGCCTCCCGTAGGAGT\tFast\t20080116\t7\tG\t2\tFasting_mouse_I.D._634
+PC.635\tACCGCAGAGTCA\tYATGCTGCCTCCCGTAGGAGT\tFast\t20080116\t8\tH\t2\tFasting_mouse_I.D._635
+PC.636\tACGGTGAGTGTC\tYATGCTGCCTCCCGTAGGAGT\tFast\t20080116\t9\tI\t2\tFasting_mouse_I.D._636
+random.sample\tACGGTGAGTGTC\tYATGCTGCCTCCCGTAGGAGT\tFast\t20080116\t9\tI\t3\trandom.sample
 """
 
 map2_str = """#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tNumCat\tDescription

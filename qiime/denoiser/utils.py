@@ -30,7 +30,7 @@ from skbio.util import create_dir
 from bfillings.denoiser import lazy_parse_sff_handle
 from burrito.util import which
 
-from qiime.util import get_qiime_project_dir, FileFormatError
+from qiime.util import (get_qiime_project_dir, FileFormatError)
 
 
 def write_sff_header(header, fh, num=None):
@@ -291,25 +291,6 @@ def wait_for_file(filename, interval=10, test_mode=False):
         if test_mode:
             raise RuntimeWarning
         sleep(interval)
-
-
-def wait_for_cluster_ids(ids, interval=10):
-    """Puts process to sleep until jobs with ids are done.
-
-    ids:  list of ids to wait for
-
-    interval: time to sleep in seconds
-
-    NOT USED ANYMORE
-    """
-    if which("qstat"):
-        for id in ids:
-            while(getoutput("qstat %s" % id).startswith("Job")):
-                sleep(interval)
-    else:
-        raise ApplicationNotFoundError("qstat not available. Is it installed?\n" +
-                                       "This test may fail if not run on a cluster.")
-
 
 def init_flowgram_file(filename=None, n=0, l=400, prefix="/tmp/"):
     """Opens a file in plain flowgram format and writes header information.
