@@ -37,7 +37,7 @@ from numpy import (array, zeros, shape, vstack, ndarray, asarray,
 from numpy.ma import MaskedArray
 from numpy.ma.extras import apply_along_axis
 
-from biom.util import compute_counts_per_sample_stats, biom_open
+from biom.util import compute_counts_per_sample_stats, biom_open, HAVE_H5PY
 from biom import load_table
 from biom.parse import parse_biom_table
 from biom.table import Table
@@ -506,22 +506,33 @@ def get_generated_by_for_biom_tables():
     return "QIIME " + get_qiime_library_version()
 
 
-def write_biom_table(biom_table, biom_table_fp, compress=True):
+def write_biom_table(biom_table, biom_table_fp, compress=True,
+                     write_hdf5=HAVE_H5PY):
     """Writes a BIOM table to the specified filepath
 
     Parameters
     ----------
     biom_table : biom.Table
         The table object to write out
-    biom_tabl_fp : str
+    biom_table_fp : str
         The path to the output file
     compress : bool, optional
         Defaults to ``True``. If True, built-in compression on the output HDF5
-        file will be enabled
+        file will be enabled. This option is only relevant if ``write_hdf5`` is
+        ``True``.
+    write_hdf5 : bool, optional
+        Defaults to ``True`` if H5PY is installed and to ``False`` if H5PY is
+        not installed. If ``True`` the output biom table will be written as an
+        HDF5 binary file, otherwise it will be a JSON string.
     """
-    with biom_open(biom_table_fp, 'w') as biom_file:
-        biom_table.to_hdf5(biom_file, get_generated_by_for_biom_tables(),
-                           compress)
+    generated_by = get_generated_by_for_biom_tables()
+
+    if write_hdf5:
+        with biom_open(biom_table_fp, 'w') as biom_file:
+            biom_table.to_hdf5(biom_file, generated_by, compress)
+    else:
+        with open(biom_table_fp, 'w') as biom_file:
+            biom_table.to_json(generated_by, biom_file)
 
 
 def split_sequence_file_on_sample_ids_to_files(seqs,
