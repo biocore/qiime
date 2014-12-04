@@ -119,10 +119,11 @@ script_info['optional_options'] = [
     make_option('--absolute_abundance', action="store_true",
                 help='Do not normalize samples to sum to 1.[default %default]',
                 default=False),
-    make_option('--color_scheme', default="jet",
+    make_option('--color_scheme', default="YlGn",
                 help="color scheme for figure. see "
-                     "http://wiki.scipy.org/Cookbook/Matplotlib/"
-                     "Show_colormaps for choices [default: %default]"),
+                     "http://matplotlib.org/examples/color/"
+                     "colormaps_reference.html for choices "
+                     "[default: %default]"),
     make_option('--obs_md_level', default=None, type="int",
                 help="the level of observation metadata to plot for "
                      "hierarchical metadata [default: lowest level]"),
