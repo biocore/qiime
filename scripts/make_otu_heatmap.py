@@ -10,7 +10,8 @@ __credits__ = [
     "Dan Knights",
     "Jose Carlos Clemente Litran",
     "Yoshiki Vazquez Baeza",
-    "Greg Caporaso"]
+    "Greg Caporaso",
+    "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Dan Knights"
