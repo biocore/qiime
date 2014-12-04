@@ -214,8 +214,6 @@ def main():
     y_samples, y_distmtx = parse_distmat(open(opts.input_path_y, 'U'))
 
     if opts.ignore_missing_samples:
-        print len(x_samples)
-        print len(y_samples)
         ignoring_from_x = list(set(x_samples) - set(y_samples))
         ignoring_from_y = list(set(y_samples) - set(x_samples))
 
@@ -255,13 +253,12 @@ def main():
             color=opts.line_color,
             alpha=opts.line_alpha)
     else:
-        # not all the categories that are going to be enumerated are found
-        # have to be found in the distance matrices i.e. the mapping file is a
-        # set that can contain more samples than the distance matrices
+        # not all the categories that are going to be enumerated are found in
+        # the distance matrices i.e. the mapping file is a superset that can
+        # contain more samples than the distance matrices
         used_categories = deepcopy(categories)
 
         for index, single_category in enumerate(categories):
-            print single_category
             good_sample_ids = sample_ids_from_metadata_description(
                 open(mapping_fp), '%s:%s' % (category, single_category))
 
