@@ -2,22 +2,21 @@
 
 """A simple slurm based cluster submission script."""
 
-__author__ = "Jens Reeder"
+__author__ = "Simon Jacobs"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jens Reeder", "Rob Knight", "Greg Caporaso", "Jai Ram Rideout", "Evan Bolyen", "Simon Jacobs"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
-__maintainer__ = "Greg Caporaso"
-__email__ = "gregcaporaso@gmail.com"
+__version__ = "1.9.0-dev"
+__maintainer__ = "Simon Jacobs"
+__email__ = "sdjacobs@uchicago.edu"
 
 from optparse import OptionParser
 from os.path import exists, normpath, sep
 from os import remove, rename, rmdir, makedirs, close
 from tempfile import mkstemp
-import subprocess
 
 from qiime.util import  make_option,\
-    parse_command_line_parameters, load_qiime_config
+    parse_command_line_parameters, load_qiime_config, qiime_system_call
 
 from qiime.denoiser.make_cluster_jobs import make_jobs, submit_jobs
 
@@ -106,6 +105,15 @@ def main():
     commands = list(open(args[0]))
     job_prefix = args[1]
 
+    if opts.mem_per_cpu:
+        mem_per_cpu = " --mem-per-cpu=" + opts.mem_per_cpu
+    else:
+        mem_per_cpu = ""
+
+    if opts.queue:
+        queue = " -p " + opts.queue
+    else:
+        queue = ""
 
     if (opts.make_jobs):
         filenames = make_jobs(
@@ -117,11 +125,11 @@ def main():
         exit("Should we ever get here???")
     if (opts.submit_jobs):
         for f in filenames:
-            subprocess.call("".join([
+            qiime_system_call("".join([
                     "sbatch",
-                    " -p ", opts.queue,
+                    queue,
                     " -J ", job_prefix,
-                    " --mem-per-cpu=", opts.mem_per_cpu,
+                    mem_per_cpu,
                     " -o ", normpath(opts.job_dir), sep, job_prefix, "_%j.out",
                     " ", f
                 ]), shell=True)
