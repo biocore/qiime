@@ -261,7 +261,7 @@ setup(name='qiime',
                         'pynast == 1.2.2', 'qcli', 'gdata',
                         'biom-format >= 2.1.1, < 2.2.0',
                         'emperor >= 0.9.5, < 1.0.0',
-                        'scikit-bio == 0.2.1',
+                        'scikit-bio >= 0.2.2, < 0.3.0',
                         'burrito-fillings >= 0.1.0, < 0.2.0',
                         'pandas >= 0.13.1', 'burrito  < 1.0.0'],
       extras_require={'all': ['ipython[all]', 'sphinx >= 0.3']}
