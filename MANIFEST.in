@@ -1,8 +1,6 @@
 include CONTRIBUTING.md
 include COPYING.txt
 include ChangeLog.md
-include INSTALL
-include README
 include README.md
 
 graft examples
