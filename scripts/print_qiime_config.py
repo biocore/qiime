@@ -97,13 +97,19 @@ try:
 except ImportError:
     burrito_lib_version = "Not installed."
 
+# current release of bfillings doesn't have __version__. if it gets added in
+# future releases, display that info, otherwise just indicate whether it's
+# installed or not
 try:
     import bfillings
+    bfillings_lib_version = bfillings.__version__
 except ImportError:
-    bfillings_installed = "Not installed."
-else:
-    bfillings_installed = "Installed."
+    bfillings_lib_version = "Not installed."
+except AttributeError:
+    bfillings_lib_version = "Installed."
 
+# gdata doesn't have __version__ and adding that is outside of our control.
+# just indicate whether it's installed or not
 try:
     import gdata
 except ImportError:
@@ -834,8 +840,8 @@ def main():
         ("PyNAST version", pynast_lib_version),
         ("Emperor version", emperor_lib_version),
         ("burrito version", burrito_lib_version),
-        ("burrito-fillings", bfillings_installed),
-        ("gdata", gdata_installed),
+        ("burrito-fillings version", bfillings_lib_version),
+        ("gdata", gdata_installed)
     ]
 
     if not qiime_base_install:
