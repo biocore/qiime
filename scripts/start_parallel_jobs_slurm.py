@@ -43,10 +43,12 @@ script_info['output_description'] = "No output is created."
 script_info['required_options'] = []
 script_info['optional_options'] = [
     make_option('-m', '--make_jobs', action='store_true',
-                help='make the job files [default: %default]'),
+                help='make the job files [default: %default]',
+                default=False),
 
     make_option('-s', '--submit_jobs', action='store_true',
-                help='submit the job files [default: %default]'),
+                help='submit the job files [default: %default]',
+                default=False),
 
     make_option('-q', '--queue',
                 help='name of queue to submit to [default: %default]',
