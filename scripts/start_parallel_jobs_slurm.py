@@ -39,6 +39,10 @@ script_info['script_usage'] = [
      "my_jobs/ directory.",
      "%prog -ms test_jobs.txt -j my_jobs/ RUNID")
 ]
+
+default_slurm_queue_desc = qiime_config['slurm_queue'] or "slurm's default"
+default_slurm_memory_desc = qiime_config['slurm_memory'] or "slurm's default"
+
 script_info['output_description'] = "No output is created."
 script_info['required_options'] = []
 script_info['optional_options'] = [
@@ -51,11 +55,13 @@ script_info['optional_options'] = [
                 default=False),
 
     make_option('-q', '--queue',
-                help='name of queue to submit to [default: %default]',
+                help=('name of queue to submit to '
+                      '[default: %s]' % default_slurm_queue_desc),
                 default=qiime_config['slurm_queue']),
 
     make_option('-K', '--mem-per-cpu',
-                help='amount of memory to request [default: %default]',
+                help=('megabytes of memory to request per '
+                      'CPU [default: %s]' % default_slurm_memory_desc),
                 default=qiime_config['slurm_memory']),
 
     make_option('-j', '--job_dir',
