@@ -78,6 +78,11 @@ except ImportError as e:
     raise ImportError("%s\n%s" % (e, core_dependency_missing_msg))
 
 try:
+    from pandas import __version__ as pandas_lib_version
+except ImportError:
+    pandas_lib_version = "Not installed."
+
+try:
     from matplotlib import __version__ as matplotlib_lib_version
 except ImportError:
     matplotlib_lib_version = "Not installed."
@@ -87,6 +92,24 @@ try:
 except ImportError:
     emperor_lib_version = "Not installed."
 
+try:
+    from burrito import __version__ as burrito_lib_version
+except ImportError:
+    burrito_lib_version = "Not installed."
+
+try:
+    import bfillings
+except ImportError:
+    bfillings_installed = "Not installed."
+else:
+    bfillings_installed = "Installed."
+
+try:
+    import gdata
+except ImportError:
+    gdata_installed = "Not installed."
+else:
+    gdata_installed = "Installed."
 
 pynast_lib_version = get_pynast_version()
 if pynast_lib_version is None:
@@ -798,17 +821,23 @@ def main():
         print "%*s:\t%s" % (max_len, v[0], v[1])
 
     version_info = [
+        ("QIIME library version", get_qiime_library_version()),
+        ("QIIME script version", __version__),
         ("NumPy version", numpy_lib_version),
         ("SciPy version", scipy_lib_version),
+        ("pandas version", pandas_lib_version),
         ("matplotlib version", matplotlib_lib_version),
         ("biom-format version", biom_lib_version),
         ("qcli version", qcli_lib_version),
         ("pyqi version", pyqi_lib_version),
         ("scikit-bio version", skbio_lib_version),
-        ("QIIME library version", get_qiime_library_version()),
-        ("QIIME script version", __version__),
-        ("PyNAST version (if installed)", pynast_lib_version),
-        ("Emperor version", emperor_lib_version)]
+        ("PyNAST version", pynast_lib_version),
+        ("Emperor version", emperor_lib_version),
+        ("burrito version", burrito_lib_version),
+        ("burrito-fillings", bfillings_installed),
+        ("gdata", gdata_installed),
+    ]
+
     if not qiime_base_install:
         version_info += [
             ("RDP Classifier version (if installed)", rdp_version),
