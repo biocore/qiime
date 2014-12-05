@@ -52,11 +52,11 @@ script_info['optional_options'] = [
 
     make_option('-q', '--queue',
                 help='name of queue to submit to [default: %default]',
-                default=qiime_config['slurm_queue']),
+                default=qiime_config['slurm_queue'] or "slurm default"),
 
     make_option('-K', '--mem-per-cpu',
-                help='amount of memory to request [default: %default]',
-                default=qiime_config['slurm_memory']),
+                help='megabytes of memory to request per CPU [default: %default]',
+                default=qiime_config['slurm_memory'] or "slurm default"),
 
     make_option('-j', '--job_dir',
                 help='directory to store the jobs [default: %default]',
