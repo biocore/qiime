@@ -49,7 +49,7 @@ from numpy import (argsort, array, ceil, empty, fill_diagonal, finfo,
 
 from numpy.random import permutation, shuffle, randint
 from biom.table import Table
-from skbio.stats.distance import DistanceMatrix, mantel as skbio_mantel
+from skbio.stats.distance import DistanceMatrix, mantel
 from skbio.util import create_dir
 
 from qiime.format import format_p_value_for_num_iters
@@ -327,7 +327,7 @@ class CorrelationStats(DistanceMatrixStats):
     """Base class for distance matrix correlation statistical methods.
 
     It is subclassed by correlation methods such as partial Mantel and Mantel
-    that compare two or more distance matrices.
+    correlogram that compare two or more distance matrices.
 
     A valid instance of CorrelationStats must have at least one distance
     matrix, and all distance matrices must have matching dimensions and sample
@@ -511,9 +511,9 @@ class MantelCorrelogram(CorrelationStats):
                 if not (class_num > ((num_classes // 2) - 1) and has_zero_sum):
                     # Compute the correlation coefficient without performing
                     # permutation tests in order to check its sign below.
-                    orig_stat, _, _ = skbio_mantel(model_matrix, eco_dm,
-                                             method='pearson', permutations=0,
-                                             strict=True)
+                    orig_stat, _, _ = mantel(
+                        model_matrix, eco_dm, method='pearson',
+                        permutations=0, strict=True)
 
                     # Negate the Mantel r statistic because we are using
                     # distance matrices, not similarity matrices (this is a
@@ -528,7 +528,7 @@ class MantelCorrelogram(CorrelationStats):
                     else:
                         tail_type = 'greater'
 
-                    _, p_val, _ = skbio_mantel(
+                    _, p_val, _ = mantel(
                         model_matrix, eco_dm, method='pearson',
                         permutations=num_perms, alternative=tail_type,
                         strict=True)
@@ -766,90 +766,6 @@ class MantelCorrelogram(CorrelationStats):
         ax.set_xlabel("Distance class index")
         ax.set_ylabel("Mantel correlation statistic")
         return fig
-
-
-class Mantel(CorrelationStats):
-
-    """Class for the Mantel matrix correlation statistical method.
-
-    This class provides the functionality to run a Mantel analysis on two
-    distance matrices. A Mantel test essentially computes the Pearson
-    correlation between the two distance matrices.
-    """
-
-    def __init__(self, dm1, dm2, tail_type='two sided'):
-        """Constructs a new Mantel instance.
-
-        Arguments:
-            dm1 - first DistanceMatrix object to be compared
-            dm2 - second DistanceMatrix object to be compared
-            tail_type - the type of Mantel test to perform (i.e. hypothesis
-                test). Can be "two sided", "less", or "greater"
-        """
-        super(Mantel, self).__init__([dm1, dm2], num_dms=2, min_dm_size=3)
-        self.TailType = tail_type
-
-    @property
-    def TailType(self):
-        """Returns the tail type being used for the Mantel test."""
-        return self._tail_type
-
-    @TailType.setter
-    def TailType(self, tail_type):
-        """Sets the tail type that will be used for the Mantel test.
-
-        Arguments:
-            tail_type - the tail type to use when calculating the p-value.
-                Valid types are 'two sided', 'less', or 'greater'.
-        """
-        if tail_type not in ("two sided", "greater", "less"):
-            raise ValueError("Unrecognized alternative hypothesis (tail "
-                             "type). Must be either 'two sided', 'greater', "
-                             "or 'less'.")
-        self._tail_type = tail_type
-
-    def __call__(self, num_perms=999):
-        """Runs a Mantel test over the current distance matrices.
-
-        Returns a dict containing the results. The following keys are set:
-            method_name - name of the statistical method
-            dm1 - the first DistanceMatrix instance that was used
-            dm2 - the second DistanceMatrix instance that was used
-            num_perms - the number of permutations used to compute the p-value
-            p_value - the p-value computed by the test
-            r_value - the Mantel r statistic computed by the test
-            perm_stats - a list of Mantel r statistics, one for each
-                permutation
-            tail_type - the type of Mantel test performed
-
-        Arguments:
-            num_perms - the number of times to permute the distance matrix
-                while calculating the p-value
-
-        Note: R's mantel function will always perform a one-sided test (type
-        'greater'), so the p-values may differ from R unless you explicitly
-        specify the tail type of 'greater'.
-        """
-        m1, m2 = self.DistanceMatrices
-        alt = self.TailType
-
-        # We suppress the symmetry and hollowness check since we are
-        # guaranteed to have DistanceMatrix instances (we don't need to check a
-        # second time here).
-        results = mantel_t(m1.data, m2.data, num_perms, alt=alt,
-                           suppress_symmetry_and_hollowness_check=True)
-
-        resultsDict = super(Mantel, self).__call__(num_perms)
-        resultsDict['method_name'] = "Mantel"
-        resultsDict['dm1'] = self.DistanceMatrices[0]
-        resultsDict['dm2'] = self.DistanceMatrices[1]
-        resultsDict['num_perms'] = num_perms
-        resultsDict['p_value'] = results[0]
-        resultsDict['r_value'] = results[1]
-        resultsDict['perm_stats'] = results[2]
-        resultsDict['tail_type'] = self.TailType
-
-        return resultsDict
 
 
 class PartialMantel(CorrelationStats):
@@ -2057,111 +1973,9 @@ def permute_2d(m, p):
     return m[p][:, p]
 
 
-def mantel(m1, m2, n):
-    """Compares two distance matrices. Reports P-value for correlation.
-
-    The p-value is based on a two-sided test.
-
-    WARNING: The two distance matrices must be symmetric, hollow distance
-    matrices, as only the lower triangle (excluding the diagonal) will be used
-    in the calculations (matching R's vegan::mantel function).
-
-    This function is retained for backwards-compatibility. Please use
-    mantel_t() for more control over how the test is performed.
-    """
-    return mantel_t(m1, m2, n)[0]
-
-
-def mantel_t(m1, m2, n, alt="two sided",
-             suppress_symmetry_and_hollowness_check=False):
-    """Runs a Mantel test on two distance matrices.
-
-    Returns the p-value, Mantel correlation statistic, and a list of Mantel
-    correlation statistics for each permutation test.
-
-    WARNING: The two distance matrices must be symmetric, hollow distance
-    matrices, as only the lower triangle (excluding the diagonal) will be used
-    in the calculations (matching R's vegan::mantel function).
-
-    Arguments:
-        m1  - the first distance matrix to use in the test (should be a numpy
-            array or convertible to a numpy array)
-        m2  - the second distance matrix to use in the test (should be a numpy
-            array or convertible to a numpy array)
-        n   - the number of permutations to test when calculating the p-value
-        alt - the type of alternative hypothesis to test (can be either
-            'two sided' for a two-sided test, 'greater' or 'less' for one-sided
-            tests)
-        suppress_symmetry_and_hollowness_check - by default, the input distance
-            matrices will be checked for symmetry and hollowness. It is
-            recommended to leave this check in place for safety, as the check
-            is fairly fast. However, if you *know* you have symmetric and
-            hollow distance matrices, you can disable this check for small
-            performance gains on extremely large distance matrices
-    """
-    # Perform some sanity checks on our input.
-    if alt not in ("two sided", "greater", "less"):
-        raise ValueError("Unrecognized alternative hypothesis. Must be either "
-                         "'two sided', 'greater', or 'less'.")
-    m1, m2 = asarray(m1), asarray(m2)
-    if m1.shape != m2.shape:
-        raise ValueError("Both distance matrices must be the same size.")
-    if n < 1:
-        raise ValueError("The number of permutations must be greater than or "
-                         "equal to one.")
-    if not suppress_symmetry_and_hollowness_check:
-        if not (is_symmetric_and_hollow(m1) and is_symmetric_and_hollow(m2)):
-            raise ValueError("Both distance matrices must be symmetric and "
-                             "hollow.")
-
-    # Get a flattened list of lower-triangular matrix elements (excluding the
-    # diagonal) in column-major order. Use these values to calculate the
-    # correlation statistic.
-    m1_flat, m2_flat = (_flatten_lower_triangle(m1),
-                        _flatten_lower_triangle(m2))
-    orig_stat = pearson(m1_flat, m2_flat)
-
-    # Run our permutation tests so we can calculate a p-value for the test.
-    size = len(m1)
-    better = 0
-    perm_stats = []
-    for i in range(n):
-        perm = permute_2d(m1, permutation(size))
-        perm_flat = _flatten_lower_triangle(perm)
-        r = pearson(perm_flat, m2_flat)
-
-        if alt == 'two sided':
-            if abs(r) >= abs(orig_stat):
-                better += 1
-        else:
-            if ((alt == 'greater' and r >= orig_stat) or
-                    (alt == 'less' and r <= orig_stat)):
-                better += 1
-        perm_stats.append(r)
-    return (better + 1) / (n + 1), orig_stat, perm_stats
-
-
 def is_symmetric_and_hollow(matrix):
     """Return True if matrix is symmetric and hollow, otherwise False."""
     return (matrix.T == matrix).all() and (trace(matrix) == 0)
-
-
-def _flatten_lower_triangle(matrix):
-    """Returns a list containing the flattened lower triangle of the matrix.
-
-    The returned list will contain the elements in column-major order. The
-    diagonal will be excluded.
-
-    Arguments:
-        matrix - numpy array containing the matrix data
-    """
-    matrix = asarray(matrix)
-    flattened = []
-    for col_num in range(matrix.shape[1]):
-        for row_num in range(matrix.shape[0]):
-            if col_num < row_num:
-                flattened.append(matrix[row_num][col_num])
-    return flattened
 
 
 def tail(prob, test):
