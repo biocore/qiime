@@ -1331,7 +1331,7 @@ def mc_t_two_sample(x_items, y_items, tails='two-sided', permutations=999,
             nonparametric p-value. Must be a number greater than or equal to 0.
             If 0, the nonparametric test will not be performed. In this case,
             the list of t statistics obtained from permutations will be empty,
-            and the nonparametric p-value will be None
+            and the nonparametric p-value will be NaN
         exp_diff - the expected difference in means (x_items - y_items)
     """
     if permutations < 0:
