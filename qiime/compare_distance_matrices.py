@@ -12,9 +12,9 @@ __email__ = "jai.rideout@gmail.com"
 
 from os import path
 
+from skbio.stats import p_value_to_str
 from skbio.stats.distance import DistanceMatrix, mantel
 
-from qiime.format import format_p_value_for_num_iters
 from qiime.util import make_compatible_distance_matrices
 from qiime.stats import MantelCorrelogram, PartialMantel
 
@@ -107,20 +107,16 @@ def run_mantel_test(method, fps, distmats, num_perms, tail_type, comment,
                 corr_coeff, p_value, n = mantel(dm1, dm2, method='pearson',
                                  permutations=num_perms, alternative=tail_type,
                                  strict=True)
-                p_str = format_p_value_for_num_iters(p_value, num_perms)
-                result += "%s\t%s\t%d\t%.5f\t%s\t%d\t%s\n" % (fp1, fp2, n,
-                                                              corr_coeff,
-                                                              p_str, num_perms,
-                                                              tail_type)
+                p_str = p_value_to_str(p_value, num_perms)
+                result += "%s\t%s\t%d\t%.5f\t%s\t%d\t%s\n" % (
+                    fp1, fp2, n, corr_coeff, p_str, num_perms, tail_type)
             elif method == 'partial_mantel':
                 cdm = DistanceMatrix(cdm_data, cdm_labels)
                 results = PartialMantel(dm1, dm2, cdm)(num_perms)
-                p_str = format_p_value_for_num_iters(results['mantel_p'],
-                                                     num_perms)
-                result += "%s\t%s\t%s\t%d\t%.5f\t%s\t%d\t%s\n" % (fp1, fp2,
-                                                                  control_dm_fp, len(
-                                                                      dm1_labels),
-                                                                  results['mantel_r'], p_str, num_perms, 'greater')
+                p_str = p_value_to_str(results['mantel_p'], num_perms)
+                result += "%s\t%s\t%s\t%d\t%.5f\t%s\t%d\t%s\n" % (
+                    fp1, fp2, control_dm_fp, len(dm1_labels),
+                    results['mantel_r'], p_str, num_perms, 'greater')
     return result
 
 
@@ -210,11 +206,10 @@ def run_mantel_correlogram(fps, distmats, num_perms, comment, alpha,
                 # on the sign of r.
                 p_str = None
                 if p is not None:
-                    p_str = format_p_value_for_num_iters(p, num_perms)
+                    p_str = p_value_to_str(p, num_perms)
                 p_corr_str = None
                 if p_corr is not None:
-                    p_corr_str = format_p_value_for_num_iters(p_corr,
-                                                              num_perms)
+                    p_corr_str = p_value_to_str(p_corr, num_perms)
                 if r is None:
                     tail_type = None
                 elif r < 0:

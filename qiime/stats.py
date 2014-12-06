@@ -49,7 +49,7 @@ from numpy import (argsort, array, ceil, empty, fill_diagonal, finfo,
 
 from numpy.random import permutation, shuffle, randint
 from biom.table import Table
-from skbio.stats.distance import DistanceMatrix
+from skbio.stats.distance import DistanceMatrix, mantel as skbio_mantel
 from skbio.util import create_dir
 
 from qiime.format import format_p_value_for_num_iters
@@ -509,13 +509,11 @@ class MantelCorrelogram(CorrelationStats):
                 # (i.e. the sample doesn't have any distances that fall in the
                 # current class).
                 if not (class_num > ((num_classes // 2) - 1) and has_zero_sum):
-                    mantel_test = Mantel(model_matrix, eco_dm,
-                                         tail_type='greater')
-                    mantel_test_results = mantel_test(num_perms)
-                    p_val, orig_stat, perm_stats = (
-                        mantel_test_results['p_value'],
-                        mantel_test_results['r_value'],
-                        mantel_test_results['perm_stats'])
+                    # Compute the correlation coefficient without performing
+                    # permutation tests in order to check its sign below.
+                    orig_stat, _, _ = skbio_mantel(model_matrix, eco_dm,
+                                             method='pearson', permutations=0,
+                                             strict=True)
 
                     # Negate the Mantel r statistic because we are using
                     # distance matrices, not similarity matrices (this is a
@@ -523,13 +521,18 @@ class MantelCorrelogram(CorrelationStats):
                     # algorithm reference for more details).
                     results['mantel_r'].append(-orig_stat)
 
-                    # The mantel function produces a one-tailed p-value
-                    # (H1: r>0). Here, compute a one-tailed p-value in the
-                    # direction of the sign.
+                    # Compute a one-tailed p-value in the direction of the
+                    # sign.
                     if orig_stat < 0:
-                        perm_sum = sum([1 for ps in perm_stats
-                                        if ps <= orig_stat]) + 1
-                        p_val = perm_sum / (num_perms + 1)
+                        tail_type = 'less'
+                    else:
+                        tail_type = 'greater'
+
+                    _, p_val, _ = skbio_mantel(
+                        model_matrix, eco_dm, method='pearson',
+                        permutations=num_perms, alternative=tail_type,
+                        strict=True)
+
                     results['mantel_p'].append(p_val)
                 else:
                     results['mantel_r'].append(None)
@@ -711,20 +714,22 @@ class MantelCorrelogram(CorrelationStats):
         """Corrects p-values for multiple testing using Bonferroni correction.
 
         This method of correction is non-progressive. If any of the p-values
-        are None, they are not counted towards the number of tests used in the
-        correction.
+        are None or NaN, they are not counted towards the number of tests used
+        in the correction.
 
         Returns a list of Bonferroni-corrected p-values for those that are not
-        None. Those that are None are simply returned. The ordering of p-values
-        is maintained.
+        None/NaN. Those that are None/NaN are simply returned. The ordering of
+        p-values is maintained.
 
         Arguments:
             p_vals - list of p-values (of type float or None)
         """
-        num_tests = len([p_val for p_val in p_vals if p_val is not None])
+        num_tests = len([p_val for p_val in p_vals
+                         if p_val is not None and not isnan(p_val)])
+
         corrected_p_vals = []
         for p_val in p_vals:
-            if p_val is not None:
+            if p_val is not None and not isnan(p_val):
                 corrected_p_vals.append(min(p_val * num_tests, 1))
             else:
                 corrected_p_vals.append(p_val)

@@ -801,10 +801,16 @@ class MantelCorrelogramTests(TestHelper):
         obs = self.mc._correct_p_values([None, None])
         self.assertEqual(obs, exp)
 
+    def test_correct_p_values_all_nan(self):
+        """Test p-value correction for all NaN p-values."""
+        exp = [nan, nan]
+        obs = self.mc._correct_p_values([nan, nan])
+        self.assertEqual(obs, exp)
+
     def test_correct_p_values_mixed(self):
-        """Test p-value correction for mixture of None and valid p-values."""
-        exp = [None, 0.008, 0.01, None]
-        obs = self.mc._correct_p_values([None, 0.004, 0.005, None])
+        """p-value correction for mixture of None/NaN and valid p-values."""
+        exp = [None, 0.008, 0.01, nan]
+        obs = self.mc._correct_p_values([None, 0.004, 0.005, nan])
         self.assertEqual(obs, exp)
 
     def test_correct_p_values_no_change(self):

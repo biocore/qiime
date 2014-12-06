@@ -165,6 +165,10 @@ comment_corr = comment_mantel_pmantel[:-1] + \
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
+    if opts.num_permutations < 1:
+        option_parser.error(
+            "--num_permutations must be greater than or equal to 1.")
+
     # Create the output dir if it doesn't already exist.
     try:
         if not path.exists(opts.output_dir):
