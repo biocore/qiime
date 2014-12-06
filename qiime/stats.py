@@ -161,15 +161,22 @@ def _perform_pairwise_tests(labels, dists, tail_type, num_permutations):
                     permutations=num_permutations)
             result.append([g1_label, g2_label, obs_t, param_p_val, None,
                            nonparam_p_val, None])
-            if obs_t is not nan:
+            if not isnan(obs_t):
                 num_tests += 1
 
-    evals = [None, nan]  # vals to exclude
     # Correct the p-values for multiple comparisons, now that we know how many
     # tests succeeded.
     for stat in result:
-        stat[4] = stat[3] if stat[3] in evals else min(stat[3] * num_tests, 1)
-        stat[6] = stat[5] if stat[5] in evals else min(stat[5] * num_tests, 1)
+        corr_param_p_val = stat[3]
+        if corr_param_p_val is not None and not isnan(corr_param_p_val):
+            corr_param_p_val = min(corr_param_p_val * num_tests, 1)
+        stat[4] = corr_param_p_val
+
+        corr_nonparam_p_val = stat[5]
+        if corr_nonparam_p_val is not None and not isnan(corr_nonparam_p_val):
+            corr_nonparam_p_val = min(corr_nonparam_p_val * num_tests, 1)
+        stat[6] = corr_nonparam_p_val
+
     return result
 
 
