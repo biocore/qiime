@@ -757,7 +757,7 @@ class MantelCorrelogram(CorrelationStats):
         signif_classes = []
         signif_stats = []
         for idx, p_val in enumerate(corrected_p_vals):
-            if p_val <= self.Alpha:
+            if p_val is not None and not isnan(p_val) and p_val <= self.Alpha:
                 signif_classes.append(class_indices[idx])
                 signif_stats.append(mantel_stats[idx])
         ax.plot(signif_classes, signif_stats, 'ks', mfc='k')
