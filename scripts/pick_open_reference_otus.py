@@ -359,6 +359,12 @@ def main():
         params = parse_qiime_parameters([])
         # empty list returns empty defaultdict for now
 
+    # --otu_picking_method should not be passed in the parameters
+    # file for open-reference, but through the command line option
+    if 'otu_picking_method' in params['pick_otus']:
+        raise ValueError('The option otu_picking_method cannot be passed via '
+                         'the parameters file but only though the command line.')
+
     jobs_to_start = opts.jobs_to_start
     default_jobs_to_start = qiime_config['jobs_to_start']
     validate_and_set_jobs_to_start(params, jobs_to_start,
