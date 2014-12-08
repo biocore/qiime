@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# File created on 19 Dec 2012
 from __future__ import division
 
 __author__ = "Daniel McDonald"
@@ -22,12 +21,37 @@ script_info = {}
 script_info[
     'brief_description'] = "Compute a taxonomy-based index"
 script_info[
-    'script_description'] = """Compute a taxonomy-based index to score each sample in a table. This method is based on the microbial dysbiosis index constructed in Gevers et al. 2014 (http://www.ncbi.nlm.nih.gov/pubmed/24629344)."""
+    'script_description'] = ("Compute a taxonomy-based index to score each "
+                             "sample in a table. This method is based on the "
+                             "microbial dysbiosis index constructed in Gevers "
+                             "et al. 2014 "
+                             "(http://www.ncbi.nlm.nih.gov/pubmed/24629344).")
 script_info[
-    'script_usage'] = [("Example:", "Compute the MD-index", """%prog -i $PWD/table.biom.gz -m md -o table.md.txt"""),
-                       ("Example:", "Compute an arbitrary index", """%prog -i $PWD/table.biom.gz --increased p__Firmicutes,p__Fusobacteria --decreased p__Bacteroidetes -o table.custom.txt""")]
+    'script_usage'] = [("Example:", "Compute the MD-index",
+                        "%prog -i $PWD/table.biom.gz -m md -o table.md.txt"),
+                       ("Example:", ("Compute an arbitrary index, where the "
+                                     "abundance of Firmicutes and "
+                                     "Fusobacteria is considered to be an "
+                                     "increase for the index and the "
+                                     "abundance of Bacteroidetes is "
+                                     "considered to be a decrease. For "
+                                     "instance, in Gevers et al 2014, the "
+                                     "MD-index was formed by the organisms "
+                                     "thought to be protective and "
+                                     "inflammatory. The organisms increased "
+                                     "abundance in healthy controls and "
+                                     "protective were used as the increased "
+                                     "abundance set, and the organisms "
+                                     "thought to be inflammatory and at a "
+                                     "decreased abundance in healthy controls "
+                                     "were used as the decreased set."),
+                        ("%prog -i $PWD/table.biom.gz --increased "
+                         "p__Firmicutes,p__Fusobacteria --decreased "
+                         "p__Bacteroidetes -o table.custom.txt"))]
 script_info[
-    'output_description'] = """Two columns, the first being the sample ID and the second being the index value for the sample."""
+    'output_description'] = ("Two columns, the first being the sample ID and "
+                             "the second being the index value for the "
+                             "sample.")
 script_info['optional_options'] = [
     make_option(
         '-i',

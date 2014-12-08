@@ -5,6 +5,7 @@ The basis for this library comes from Gevers et al. 2014
 index was created based on observed increases and decreases in organisms with
 respect to Crohn's disease.
 """
+from __future__ import division
 
 __author__ = "Daniel McDonald"
 __copyright__ = "Copyright 2014, The QIIME project"
@@ -14,8 +15,6 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Daniel McDonald"
 __email__ = "mcdonadt@colorado.edu"
 
-
-from __future__ import division
 
 from numpy import log, nan
 
