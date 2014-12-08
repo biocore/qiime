@@ -6,6 +6,15 @@ index was created based on observed increases and decreases in organisms with
 respect to Crohn's disease.
 """
 
+__author__ = "Daniel McDonald"
+__copyright__ = "Copyright 2014, The QIIME project"
+__credits__ = ["Daniel McDonald"]
+__license__ = "GPL"
+__version__ = "1.8.0-dev"
+__maintainer__ = "Daniel McDonald"
+__email__ = "mcdonadt@colorado.edu"
+
+
 from __future__ import division
 
 from numpy import log, nan
@@ -26,6 +35,11 @@ def compute_index(table, increased, decreased, key):
     key : str
         The metadata key to use for the computation of the index.
 
+    Returns
+    -------
+    generator
+        (sample_id, index_score)
+
     Raises
     ------
     KeyError
@@ -35,15 +49,13 @@ def compute_index(table, increased, decreased, key):
 
     Notes
     -----
-    Yields `nan` if both the decreased count is 0.
+    Yields `nan` if the decreased count is 0.
 
-    Returns
-    -------
-    generator
-        (sample_id, index_score)
     """
-    if key not in table.metadata(axis='observation')[0]:
-        raise KeyError("%s is not present" % key)
+    md_test = table.metadata(axis='observation')[0]
+    if key not in md_test:
+        raise KeyError("%s is not present, the following are present: %s" %
+                       (key, ','.join(md_test)))
 
     inc_f = lambda v, i, md: set(md[key]) & increased
     dec_f = lambda v, i, md: set(md[key]) & decreased
@@ -56,7 +68,7 @@ def compute_index(table, increased, decreased, key):
     if dec_t.is_empty():
         raise ValueError("None of the decreased items were found")
 
-    ids_in_common = set(inc_t.ids()) & (set(dec_t.ids()))
+    ids_in_common = set(inc_t.ids()) & set(dec_t.ids())
 
     for id_ in ids_in_common:
         inc_count = inc_t.data(id_, dense=False).sum()
