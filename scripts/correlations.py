@@ -11,9 +11,11 @@ __email__ = "wdwvt1@gmail.com"
 from qiime.util import (parse_command_line_parameters, make_option,
                         sync_biom_and_mf)
 from qiime.stats import (benjamini_hochberg_step_down, bonferroni_correction,
-                         assign_correlation_pval, correlate,
-                         correlation_output_formatter, sort_by_pval, pearson,
+                         assign_correlation_pval, correlate, pearson,
                          spearman, kendall, cscore)
+from qiime.otu_significance import (correlation_output_formatter, sort_by_pval,
+                                    paired_t_output_formatter,
+                                    paired_t_generator, run_paired_t)
 from qiime.parse import parse_mapping_file_to_dict
 from biom import load_table
 
@@ -24,8 +26,8 @@ that have occurred are:
 2. Removing samples that were found in the mapping file but whose metadata for
 the given category was not convertable to float.'''
 
-correlation_assignemnt_choices = ['spearman', 'pearson', 'kendall', 'cscore']
-pvalue_assignment_choices = ['fisher_z_transform':, 'parametric_t_distribution',
+correlation_assignment_choices = ['spearman', 'pearson', 'kendall', 'cscore']
+pvalue_assignment_choices = ['fisher_z_transform', 'parametric_t_distribution',
                             'bootstrapped', 'kendall']
 bootstrap_functions = {'spearman': spearman, 'pearson': pearson,
                        'kendall': kendall, 'cscore': cscore}
@@ -74,10 +76,9 @@ pval_assignment_method='bootstrapped' while you have -s cscore, the script will
 error. 
 
 Assigning pvalues to Kendall's Tau scores with the bootstrapping method is 
-very slow.
+very slow."""
 
 
-"""
 script_info['script_usage'] = []
 script_info['script_usage'].append(("Calculate the correlation between OTUs in the table and the pH of the samples from mich they came:", "", "%prog -i otu_table.biom -m map.txt -c pH -s spearman -o spearman_otu_gradient.txt"))
 script_info['script_usage'].append(("Calculate paired t values for a before and after group of samples:", "", "%prog -i otu_table.biom --paired_t_fp=paired_samples.txt -o kendall_longitudinal_otu_gradient.txt"))
@@ -112,7 +113,7 @@ script_info['optional_options']=[
     make_option('-s', '--test', type="choice", 
         choices=correlation_assignment_choices,
         default='spearman', help='Test to use. Choices are:\n%s' % \
-            (', '.join(correlation_function_choices)+'\n\t' + \
+            (', '.join(correlation_assignment_choices)+'\n\t' + \
             '[default: %default]')),
     make_option('--pval_assignment_method', type="choice", 
         choices=pvalue_assignment_choices,
@@ -198,7 +199,7 @@ def main():
             pval = assign_correlation_pval(corr, len(feature_vector),
                                            method=opts.pval_assignment_method,
                                            permutations=opts.permutations,
-                                           perm_test_fn=bootstrap_functions[opts.pval_assignment_method]
+                                           perm_test_fn=bootstrap_functions[opts.pval_assignment_method],
                                            v1=feature_vector,
                                            v2=md_values_to_correlate)
             rhos.append(rho)
