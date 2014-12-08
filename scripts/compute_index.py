@@ -53,16 +53,10 @@ script_info[
                              "the second being the index value for the "
                              "sample.")
 script_info['optional_options'] = [
-    make_option(
-        '-i',
-        '--input',
-        type="existing_filepath",
-        help='The input BIOM table'),
-    make_option(
-        '-o',
-        '--output',
-        type='new_filepath',
-        help='Path to where the output will be written'),
+    make_option('-i', '--input', type="existing_filepath",
+                help='The input BIOM table'),
+    make_option('-o', '--output', type='new_filepath',
+                help='Path to where the output will be written'),
     make_option('--increased', type=str,
                 help="Comma separated list of taxa considered to increase",
                 default=None),
