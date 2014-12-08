@@ -49,8 +49,11 @@ script_info['optional_options'] = [
                 help="An existing index",
                 default=None),
     make_option('-n', '--name', type=str,
-                help="Index name to use in the output",
+                help="index name to use in the output",
                 default=None),
+    make_option('-k', '--key', type=str,
+                help="Metadata key to use for computing [default: 'taxonomy']",
+                default='taxonomy'),
     make_option('-s', '--show-indices', action='store_true',
                 help="List known indices",
                 default=False)]
@@ -124,7 +127,7 @@ def main():
 
     with open(opts.output, 'w') as fp:
         fp.write("#SampleID\t%s\n" % name)
-        for id_, value in compute_index(table, increased, decreased):
+        for id_, value in compute_index(table, increased, decreased, opts.key):
             fp.write("%s\t%f\n" % (id_, value))
 
 if __name__ == "__main__":

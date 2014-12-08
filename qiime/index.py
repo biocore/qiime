@@ -11,24 +11,27 @@ from __future__ import division
 from numpy import log, nan
 
 
-def compute_index(table, increased, decreased):
+def compute_index(table, increased, decreased, key):
     """Compute a per-sample index
 
     Parameters
     ----------
     table : biom.Table
-        A biom table that has taxonomy
+        A biom table that has information associated with `key`, such as
+        taxonomy.
     increased : set
-        A set of taxon names that have been observed to have increased
+        A set of items that have been observed to have increased
     decreased : set
-        A set of taxon names that have been observed to have decreased
+        A set of items that have been observed to have decreased
+    key : str
+        The metadata key to use for the computation of the index.
 
     Raises
     ------
-    AttributeError
-        If taxonomy isn't present
+    KeyError
+        If the key isn't present
     ValueError
-        If none of the increased or decreased taxa exist in the table
+        If none of the increased or decreased items exist in the table
 
     Notes
     -----
@@ -39,19 +42,19 @@ def compute_index(table, increased, decreased):
     generator
         (sample_id, index_score)
     """
-    if 'taxonomy' not in table.metadata(axis='observation')[0]:
-        raise AttributeError("Missing taxonomy data")
+    if key not in table.metadata(axis='observation')[0]:
+        raise KeyError("%s is not present" % key)
 
-    inc_f = lambda v, i, md: set(md['taxonomy']) & increased
-    dec_f = lambda v, i, md: set(md['taxonomy']) & decreased
+    inc_f = lambda v, i, md: set(md[key]) & increased
+    dec_f = lambda v, i, md: set(md[key]) & decreased
     inc_t = table.filter(inc_f, axis='observation', inplace=False)
     dec_t = table.filter(dec_f, axis='observation', inplace=False)
 
     if inc_t.is_empty():
-        raise ValueError("None of the increased taxa were found")
+        raise ValueError("None of the increased items were found")
 
     if dec_t.is_empty():
-        raise ValueError("None of the decreased taxa were found")
+        raise ValueError("None of the decreased items were found")
 
     ids_in_common = set(inc_t.ids()) & (set(dec_t.ids()))
 

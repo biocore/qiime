@@ -34,9 +34,15 @@ class IndexTests(TestCase):
         decreased = set(['not bar'])
 
         exp = [('S1', log(1 / 3)), ('S2', nan), ('S3', log(2 / 2))]
-        obs = sorted(compute_index(self.t1, increased, decreased))
+        obs = sorted(compute_index(self.t1, increased, decreased, 'taxonomy'))
         self.assertEqual(obs, exp)
 
+    def test_compute_index_raises(self):
+        with self.assertRaises(KeyError):
+            next(compute_index(self.t1, set(['foo']), set(['bar']), 'missing'))
+
+        with self.assertRaises(ValueError):
+            next(compute_index(self.t1, set(['foo']), set(['x']), 'taxonomy'))
 
 if __name__ == '__main__':
     main()
