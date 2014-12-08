@@ -362,8 +362,10 @@ def main():
     # --otu_picking_method should not be passed in the parameters
     # file for open-reference, but through the command line option
     if 'otu_picking_method' in params['pick_otus']:
-        raise ValueError('The option otu_picking_method cannot be passed via '
-                         'the parameters file but only though the command line.')
+        except ValueError:
+            option_parser.error('The option otu_picking_method cannot be passed via '
+                         'the parameters file. Instead, pass --otu_picking_method '
+                         'on the command line.')
 
     jobs_to_start = opts.jobs_to_start
     default_jobs_to_start = qiime_config['jobs_to_start']
