@@ -721,8 +721,7 @@ class MothurTaxonAssigner(TaxonAssigner):
         """Transform results to remove any changes introduced by formatting.
         """
         unformatted_result = {}
-        for seq_id in result.keys():
-            taxa, conf = result[seq_id]
+        for seq_id, (taxa, conf) in result.iteritems():
             unformatted_taxa = [self._unformat_taxon(t) for t in taxa]
             unformatted_result[seq_id] = (unformatted_taxa, conf)
         return unformatted_result
@@ -734,15 +733,22 @@ class MothurTaxonAssigner(TaxonAssigner):
         """
         if not hasattr(self, "_original_taxa"):
             self._original_taxa = {}
-        if ' ' in taxon:
-            mothur_taxon = taxon.replace(' ', '_')
+        # Escape underscores with more underscores.  This functions in
+        # a similar way to escaping a backslash with another backslash
+        # in Python strings.
+        mothur_taxon = taxon.replace("_", "__")
+        # Now we can safely replace spaces with underscores
+        mothur_taxon = mothur_taxon.replace(' ', '_')
+        if mothur_taxon != taxon:
             self._original_taxa[mothur_taxon] = taxon
-            return mothur_taxon
-        else:
-            return taxon
+        return mothur_taxon
 
     def _unformat_taxon(self, taxon):
         """Recover original taxon names that were altered due to formatting.
+
+        Looks up taxon names in the attribute self._original_taxa.  If
+        self._format_taxon() was never called, this attribute will be
+        missing, and an AttributeError will be raised.
         """
         return self._original_taxa.get(taxon, taxon)
 
@@ -760,6 +766,7 @@ class MothurTaxonAssigner(TaxonAssigner):
             ksize=self.Params['KmerSize'],
             output_fp=None,
         )
+        mothur_tax_file.close()
         result = self._unformat_result(result)
         if result_path is not None:
             with open(result_path, "w") as f:

@@ -42,6 +42,7 @@ optionally a mapping file. Check out the new documentation for the naming conven
 * Fixed bug where ``--phred_offset`` in ``split_libraries_fastq.py`` was ignored (see [#1656](https://github.com/biocore/qiime/issues/1656)).
 * ``--tail_type`` option in ``compare_distance_matrices.py`` now accepts "two-sided" instead of "two sided" for specifying a two-sided alternative hypothesis. The new name is easier to specify via the command-line (quotes aren't needed because it is a single word).
 * The Mantel test (``--method mantel``) and Mantel correlogram (``--method mantel_corr)`` in ``compare_distance_matrices.py`` are considerably faster than previous implementations.
+* Spaces in taxa will not cause an error when using ``--assignment_method=mothur`` in ``assign_taxonomy.py``.
 
 QIIME 1.8.0 (11 Dec 2013)
 =========================
