@@ -31,6 +31,7 @@ from qiime.split_libraries_fastq import (
 )
 from qiime.golay import decode_golay_12
 
+import skbio.parse.sequences
 from skbio.parse.sequences.fastq import ascii_to_phred64, ascii_to_phred33
 
 
@@ -142,6 +143,23 @@ class SplitLibrariesFastqTests(TestCase):
         expected = (1, "CCAGTGTATGCA", True, None)
         self.assertEqual(actual, expected)
 
+    def test_process_fastq_single_end_read_file_invalid_phred_offset(self):
+        # passing phred_offset that isn't 33 or 64 raises error
+        with self.assertRaises(ValueError):
+            list(process_fastq_single_end_read_file(
+                self.fastq1,self.barcode_fastq1, self.barcode_map1,
+                store_unassigned=True, max_bad_run_length=1000,
+                phred_quality_threshold=None, min_per_read_length_fraction=0.,
+                rev_comp=False, rev_comp_barcode=False, seq_max_N=1000,
+                start_seq_id=0, filter_bad_illumina_qual_digit=False,
+                phred_offset=42))
+
+        # passing wrong phred_offset for illumina1.8+ data raises error
+        with self.assertRaises(skbio.parse.sequences.FastqParseError):
+            list(process_fastq_single_end_read_file(
+                self.fastq2, self.barcode_fastq2, self.barcode_map1,
+                min_per_read_length_fraction=0.45, phred_offset=64))
+
     def test_process_fastq_single_end_read_file(self):
         """process_fastq_single_end_read_file functions as expected w no qual filter
         """
@@ -192,15 +210,18 @@ class SplitLibrariesFastqTests(TestCase):
     def test_process_fastq_single_end_read_file_w_defaults_v180(self):
         """process_fastq_single_end_read_file functions as expected w default filters on casava 180 data
         """
-        actual = process_fastq_single_end_read_file(self.fastq2,
-                                                    self.barcode_fastq2,
-                                                    self.barcode_map1,
-                                                    min_per_read_length_fraction=0.45)
-        actual = list(actual)
-        expected = self.fastq2_expected_default
-        self.assertEqual(len(actual), len(expected))
-        for i in range(len(expected)):
-            np.testing.assert_equal(actual[i], expected[i])
+        # test autodetection of phred_offset (phred_offset=None) and
+        # phred_offset=33 gives same results
+        for phred_offset in None, 33:
+            actual = process_fastq_single_end_read_file(
+                self.fastq2, self.barcode_fastq2, self.barcode_map1,
+                min_per_read_length_fraction=0.45, phred_offset=phred_offset)
+
+            actual = list(actual)
+            expected = self.fastq2_expected_default
+            self.assertEqual(len(actual), len(expected))
+            for i in range(len(expected)):
+                np.testing.assert_equal(actual[i], expected[i])
 
     def test_process_fastq_single_end_read_file_handles_log(self):
         """ process_fastq_single_end_read_file generates log when expected
