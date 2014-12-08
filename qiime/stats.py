@@ -2599,3 +2599,33 @@ def cscore(v1, v2):
     v2_b = v2.astype(bool)
     sij = (v1_b * v2_b).sum()
     return (v1_b.sum() - sij) * (v2_b.sum() - sij)
+
+def correlate(v1, v2, method):
+    '''Correlate vectors using method.
+
+    Parameters
+    ----------
+    v1 : array-like
+        List or array of ints or floats to be correlated.
+    v2 : array-like
+        List or array of ints or floats to be correlated.
+    method : str
+        One of 'spearman', 'pearson', 'kendall', 'cscore'.
+
+    Returns
+    -------
+    rho : float
+        Correlation between the vectors.
+    '''
+    if method is 'pearson':
+        corr_fn = pearson
+    elif method is 'spearman':
+        corr_fn = spearman
+    elif method is 'kendall':
+        corr_fn = kendall
+    elif method is 'cscore':
+        corr_fn = cscore
+    else:
+        raise ValueError('Correlation function not recognized.')
+
+    return corr_fn(v1, v2)

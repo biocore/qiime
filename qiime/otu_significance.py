@@ -331,16 +331,27 @@ def run_correlation_test(data_generator, test, test_choices,
 
 def correlation_output_formatter(bt, corr_coefs, pvals, fdr_pvals, bon_pvals,
                                  md_key):
-    """Format the output of the correlations for easy writing.
+    '''Produce lines for a tab delimited text file for correlations.py.
 
-    """
-    header = [
-        'OTU',
-        'Correlation Coef',
-        'pval',
-        'pval_fdr',
-        'pval_bon',
-        md_key]
+    Paramaters
+    ----------
+    bt : biom table object
+    corr_coefs : array-like
+        Floats representing correlation coefficients.
+    pvals : array-like
+        Floats representing pvalues for given correlation coefficients.
+    fdr_pvals : array-like
+        Floats representing FDR corrected pvals.
+    bon_pvals : array-like
+        Floats representing Bonferroni corrected pvals.
+    md_key : str or None
+        Key for extracting feature metadata from biom table.
+
+    Returns
+    -------
+    list of strs
+    '''
+    header = ['Feature ID', 'Corr coef', 'pval', 'pval_fdr', 'pval_bon', md_key]
     num_lines = len(corr_coefs)
     lines = ['\t'.join(header)]
     for i in range(num_lines):
