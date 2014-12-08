@@ -201,6 +201,10 @@ Supervised learning (``supervised_learning.py``) and ``compare_categories.py``:
 
 * R 3.0.2 (`src_r <http://www.r-project.org/>`_) See :ref:`R install notes <R-install>`. (license: GPL2)
 
+Alternative normalization and OTU differential abundance testing techniques (normalize_table.py and differential_abundance.py):
+
+* R 3.1.1
+
 If you plan to build the QIIME documentation locally:
 
 * Sphinx 1.0.4 (`src <http://pypi.python.org/pypi/Sphinx>`_) See :ref:`Building the QIIME documentation <build-qiime-docs>` (license: BSD)
@@ -442,6 +446,10 @@ To install R visit http://www.r-project.org/ and follow the install instructions
 	install.packages('gtools')
 	install.packages('klaR')
 	install.packages('RColorBrewer')
+	install.packages('biom')
+	install.packages('metagenomeSeq')
+	install.packages('DESeq')
+	install.packages('DESeq2')
 	q()
 
 .. _ampliconnoise-install:

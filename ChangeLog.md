@@ -39,6 +39,10 @@ optionally a mapping file. Check out the new documentation for the naming conven
 * Fasttree v1.x is no longer supported by ``make_phylogeny.py`` (see [issue #1516](https://github.com/biocore/qiime/issues/1516)).
 * Relaxed sanity tests for ``compare_categories.py --method adonis`` so that unique values are only checked for categories that are non-numeric (see [issue #1316](https://github.com/biocore/qiime/issues/1360)).
 * ``core_diversity_analyses.py`` now requires ``--tree_fp`` unless ``--nonphylogenetic_diversity`` is passed (see [#1671](https://github.com/biocore/qiime/issues/1671)).
+*Added differential_abundance.py to supplement group_significance.py
+for those who wish to use metagenomeSeq's fitZIG algorithm and DESeq2's
+negative binomial algorithm.  Note the input for this is an unnormalized, raw matrix.
+*Added normalize_table.py for other normalization algorithms other than rarefying.  Included are metagenomeSeq's CSS and DESeq transformations.
 
 QIIME 1.8.0 (11 Dec 2013)
 =========================
