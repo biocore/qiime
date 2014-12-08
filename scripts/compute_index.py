@@ -48,6 +48,9 @@ script_info['optional_options'] = [
     make_option('-m', '--index', type=str,
                 help="An existing index",
                 default=None),
+    make_option('-n', '--name', type=str,
+                help="Index name to use in the output",
+                default=None),
     make_option('-s', '--show-indices', action='store_true',
                 help="List known indices",
                 default=False)]
@@ -103,9 +106,11 @@ def main():
         option_parser.error("Must specify increased taxa")
 
     if opts.index is not None:
+        name = opts.name if opts.name is not None else opts.index
         increased = known_indices[opts.index]['increased']
         decreased = known_indices[opts.index]['decreased']
     else:
+        name = opts.name if opts.name is not None else 'index'
         increased = set(opts.increased.split(','))
         decreased = set(opts.decreased.split(','))
 
@@ -118,7 +123,7 @@ def main():
     table = load_table(opts.input)
 
     with open(opts.output, 'w') as fp:
-        fp.write("#SampleID\tindex\n")
+        fp.write("#SampleID\t%s\n" % name)
         for id_, value in compute_index(table, increased, decreased):
             fp.write("%s\t%f\n" % (id_, value))
 
