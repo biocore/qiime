@@ -11,7 +11,7 @@
                     nlines=1,quiet=TRUE)
     close(f)
     # read the rest of the table
-    datatable <- read.table(filepath,sep='\t',skip=header.index, comment='#',quote='"',
+    datatable <- read.table(filepath,sep='\t',skip=header.index, comment='',quote='"',
                         head=F,row.names=1,check=FALSE,strip.white=TRUE)
     
     # set column names using header
