@@ -64,9 +64,10 @@ http://qiime.org for details).
 In addition to Colwell et al. (2012), the following resources were extremely
 useful while implementing and testing these estimators, so it is appropriate to
 also acknowledge them here:
-    Hsieh et al. (2013)
-    Shen et al. (2003)
-    Colwell (2013)
+
+- Hsieh et al. (2013)
+- Shen et al. (2003)
+- Colwell (2013)
 
 References:
 

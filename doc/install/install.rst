@@ -89,7 +89,7 @@ The next are python packages not included in Canopy Express. Each of these can b
 * PyNAST 1.2.2 (`src_pynast <https://pypi.python.org/packages/source/p/pynast/pynast-1.2.2.tar.gz>`_) (license: BSD)
 * Emperor >= 0.9.5 and < 1.0.0 (`src_emperor <https://pypi.python.org/packages/source/e/emperor/emperor-0.9.5.tar.gz>`_) (license: BSD)
 * pyqi 0.3.1 (`src_pyqi <https://pypi.python.org/packages/source/p/pyqi/pyqi-0.3.1.tar.gz>`_) (license: BSD)
-* scikit-bio 0.2.1 (`src_skbio https://pypi.python.org/packages/source/s/scikit-bio/scikit-bio-0.2.1.tar.gz`_) (license: BSD)
+* scikit-bio 0.2.2 (`src_skbio <https://pypi.python.org/packages/source/s/scikit-bio/scikit-bio-0.2.2.tar.gz>`_) (license: BSD)
 * burrito-fillings (latest development version) (`src_bfillings <https://github.com/biocore/burrito-fillings>`_) (license: GPL)
 
 Next, there are two non-python dependencies required for the QIIME base package. These should be installed by following their respective install instructions.
