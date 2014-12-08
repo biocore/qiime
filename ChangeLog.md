@@ -39,6 +39,7 @@ optionally a mapping file. Check out the new documentation for the naming conven
 * Fasttree v1.x is no longer supported by ``make_phylogeny.py`` (see [issue #1516](https://github.com/biocore/qiime/issues/1516)).
 * Relaxed sanity tests for ``compare_categories.py --method adonis`` so that unique values are only checked for categories that are non-numeric (see [issue #1316](https://github.com/biocore/qiime/issues/1360)).
 * ``core_diversity_analyses.py`` now requires ``--tree_fp`` unless ``--nonphylogenetic_diversity`` is passed (see [#1671](https://github.com/biocore/qiime/issues/1671)).
+* parallel_pick_otus_sortmerna.py added
 
 QIIME 1.8.0 (11 Dec 2013)
 =========================
@@ -71,7 +72,6 @@ QIIME 1.8.0 (11 Dec 2013)
 * Required matplotlib version is now >= 1.1.0, <= 1.3.1.
 * Required numpy version is now >= 1.5.1, <= 1.7.1.
 * QIIME has been added to [PyPi](https://pypi.python.org/pypi) and can be installed using ``pip``.
-* parallel_pick_otus_sortmerna.py added
 
 QIIME 1.7.0 (14 May 2013)
 =========================
