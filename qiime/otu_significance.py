@@ -329,7 +329,7 @@ def run_correlation_test(data_generator, test, test_choices,
     return corr_coefs, pvals
 
 
-def correlation_output_formatter(bt, corr_coefs, pvals, fdr_pvals, bon_pvals,
+def correlate_output_formatter(bt, corr_coefs, pvals, fdr_pvals, bon_pvals,
                                  md_key):
     '''Produce lines for a tab delimited text file for correlations.py.
 
@@ -378,23 +378,6 @@ def run_paired_t(data_generator):
         pvals.append(pval)
     return test_stats, pvals
 
-
-def paired_t_output_formatter(bt, test_stats, pvals, fdr_pvals, bon_pvals,
-                              md_key):
-    """Format the output for all tests so it can be easily written."""
-    header = ['OTU', 'Test-Statistic', 'P', 'FDR_P', 'Bonferroni_P', md_key]
-    num_lines = len(pvals)
-    lines = ['\t'.join(header)]
-    for i in range(num_lines):
-        tmp = [bt.ids(axis='observation')[i], test_stats[i], pvals[i], fdr_pvals[i],
-               bon_pvals[i]]
-        lines.append('\t'.join(map(str, tmp)))
-    nls = _add_metadata(bt, md_key, lines)
-    return nls
-
-# Functions used by both scripts
-
-
 def sort_by_pval(lines, ind):
     """Sort lines with pvals in descending order.
 
@@ -407,10 +390,7 @@ def sort_by_pval(lines, ind):
             return val
         else:
             return inf
-    return (
-        # header+sorted lines
-        [lines[0]] + sorted(lines[1:], key=_nan_safe_sort)
-    )
+    return [lines[0]] + sorted(lines[1:], key=_nan_safe_sort))
 
 
 def _add_metadata(bt, md_key, lines):

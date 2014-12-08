@@ -13,7 +13,7 @@ from qiime.util import (parse_command_line_parameters, make_option,
 from qiime.stats import (benjamini_hochberg_step_down, bonferroni_correction,
                          assign_correlation_pval, correlate, pearson,
                          spearman, kendall, cscore)
-from qiime.otu_significance import (correlation_output_formatter, sort_by_pval,
+from qiime.otu_significance import (correlate_output_formatter, sort_by_pval,
                                     paired_t_output_formatter,
                                     paired_t_generator, run_paired_t)
 from qiime.parse import parse_mapping_file_to_dict
@@ -154,8 +154,8 @@ def main():
         fdr_pvals = array(benjamini_hochberg_step_down(pvals))
         bon_pvals = bonferroni_correction(pvals)
         # write output results after sorting
-        lines = paired_t_output_formatter(bt, test_stats, pvals, fdr_pvals, 
-            bon_pvals, md_key=opts.metadata_key)
+        lines = correlate_output_formatter(bt, test_stats, pvals, fdr_pvals, 
+                                           bon_pvals, md_key=opts.metadata_key)
         lines = sort_by_pval(lines, ind=2)
         o = open(opts.output_fp, 'w')
         o.writelines('\n'.join(lines))
@@ -208,8 +208,8 @@ def main():
         fdr_pvals = benjamini_hochberg_step_down(pvals)
         bon_pvals = bonferroni_correction(pvals)
 
-        lines = correlation_output_formatter(bt, rhos, pvals, fdr_pvals,
-                                             bon_pvals, opts.metadata_key)
+        lines = correlate_output_formatter(bt, rhos, pvals, fdr_pvals,
+                                           bon_pvals, opts.metadata_key)
         lines = sort_by_pval(lines, ind=2)
 
         o = open(opts.output_fp, 'w')
