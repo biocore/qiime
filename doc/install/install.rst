@@ -103,7 +103,6 @@ Data files necessary for the QIIME base installation
 After you've installed the base QIIME dependencies, there are several data files that are likely to be useful in your analyses. These can all be obtained using ``wget`` or ``curl``, and unzipping where necessary.
 
 * greengenes core set data file (`fasta <http://greengenes.lbl.gov/Download/Sequence_Data/Fasta_data_files/core_set_aligned.fasta.imputed>`_)
-* greengenes alignment lanemask file (`txt <http://greengenes.lbl.gov/Download/Sequence_Data/lanemask_in_1s_and_0s>`_)
 * Marker gene reference OTUs, taxonomies, and trees  (follow the *Resources* link from the `QIIME homepage <http://www.qiime.org>`_)
 
 You should next `write your QIIME config file <./qiime_config.html>`_.
@@ -145,7 +144,6 @@ You should see output that looks like the following::
 	pynast_template_alignment_blastdb:	None
 	assign_taxonomy_reference_seqs_fp:	$HOME/data/gg_13_5_otus/rep_set/97_otus.fasta
 	                     torque_queue:	friendlyq
-	   template_alignment_lanemask_fp:	$HOME/data/greengenes_core_sets/lanemask_in_1s_and_0s.txt
 	                    jobs_to_start:	2
 	            denoiser_min_per_core:	50
 	                         temp_dir:	$HOME/temp
@@ -252,7 +250,6 @@ You should see output that looks like the following::
 	pynast_template_alignment_blastdb:	None
 	assign_taxonomy_reference_seqs_fp:	$HOME/data/gg_13_5_otus/rep_set/97_otus.fasta
 	                     torque_queue:	friendlyq
-	   template_alignment_lanemask_fp:	$HOME/data/greengenes_core_sets/lanemask_in_1s_and_0s.txt
 	                    jobs_to_start:	2
 	            denoiser_min_per_core:	50
 	                         temp_dir:	$HOME/temp
