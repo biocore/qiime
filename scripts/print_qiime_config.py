@@ -121,6 +121,24 @@ pynast_lib_version = get_pynast_version()
 if pynast_lib_version is None:
     pynast_lib_version = "Not installed."
 
+if which('sortmerna') is None:
+    sortmerna_lib_version = "Not installed."
+else:
+    _, stderr, _ = qiime_system_call("sortmerna --version")
+    sortmerna_lib_version = stderr.strip()
+
+if which('sumaclust') is None:
+    sumaclust_lib_version = "Not installed."
+else:
+    stdout, _, _ = qiime_system_call("sumaclust --help")
+    stdout_lines = stdout.split('\n')
+    sumaclust_lib_version = "Installed, but can't identify version."
+    for e in stdout_lines:
+        e = e.strip()
+        if e.startswith('SUMACLUST Version'):
+            sumaclust_lib_version = e
+            break
+
 script_info = {}
 script_info['brief_description'] = """Print out the qiime config settings."""
 script_info[
@@ -266,7 +284,6 @@ class QIIMEConfig(TestCase):
             if extra_vals:
                 self.fail("The .qiime_config in your HOME" +
                           error_msg_fragment % ", ".join(extra_vals))
-
 
 class QIIMEDependencyBase(QIIMEConfig):
 
@@ -730,6 +747,8 @@ def main():
         ("Emperor version", emperor_lib_version),
         ("burrito version", burrito_lib_version),
         ("burrito-fillings version", bfillings_lib_version),
+        ("sortmerna version", sortmerna_lib_version),
+        ("sumaclust version", sumaclust_lib_version),
         ("gdata", gdata_installed)
     ]
 
