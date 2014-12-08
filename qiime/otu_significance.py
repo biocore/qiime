@@ -12,7 +12,7 @@ __email__ = "lkursell@gmail.com"
 
 from qiime.parse import parse_mapping_file_to_dict
 from numpy import (array, argsort, vstack, isnan, inf, nan, apply_along_axis,
-                   mean, zeros)
+                   mean, zeros, isinf, logical_or)
 
 from qiime.stats import (fisher_population_correlation,
                                   pearson, spearman, g_fit, ANOVA_one_way, 
@@ -329,15 +329,16 @@ def run_correlation_test(data_generator, test, test_choices,
     return corr_coefs, pvals
 
 
-def correlate_output_formatter(bt, corr_coefs, pvals, fdr_pvals, bon_pvals,
-                                 md_key):
+def correlate_output_formatter(bt, test_stats, pvals, fdr_pvals, bon_pvals,
+                               md_key):
     '''Produce lines for a tab delimited text file for correlations.py.
 
     Paramaters
     ----------
     bt : biom table object
-    corr_coefs : array-like
-        Floats representing correlation coefficients.
+    test_stats : array-like
+        Floats representing correlation coefficients or paired t test
+        statistics.
     pvals : array-like
         Floats representing pvalues for given correlation coefficients.
     fdr_pvals : array-like
@@ -346,34 +347,50 @@ def correlate_output_formatter(bt, corr_coefs, pvals, fdr_pvals, bon_pvals,
         Floats representing Bonferroni corrected pvals.
     md_key : str or None
         Key for extracting feature metadata from biom table.
+    type_of_stat : str
+        Type of statistic - used to modify header to report either 'Co
 
     Returns
     -------
     list of strs
     '''
-    header = ['Feature ID', 'Corr coef', 'pval', 'pval_fdr', 'pval_bon', md_key]
-    num_lines = len(corr_coefs)
+    header = ['Feature ID', 'Test stat.', 'pval', 'pval_fdr', 'pval_bon',
+              md_key]
+    num_lines = len(test_stats)
     lines = ['\t'.join(header)]
     for i in range(num_lines):
-        tmp = [bt.ids(axis='observation')[i], corr_coefs[i], pvals[i], fdr_pvals[i],
-               bon_pvals[i]]
+        tmp = [bt.ids(axis='observation')[i], test_stats[i], pvals[i],
+               fdr_pvals[i], bon_pvals[i]]
         lines.append('\t'.join(map(str, tmp)))
     nls = _add_metadata(bt, md_key, lines)
     return nls
 
+def run_paired_t(bt, s1, s2):
+    '''Perform a paired t test between samples.
 
-def paired_t_generator(bt, s_before, s_after):
-    """Produce a generator to run paired t tests on each OTU."""
-    b_data = vstack([bt.sampleData(i) for i in s_before]).T
-    a_data = vstack([bt.sampleData(i) for i in s_after]).T
-    return ((b_data[i], a_data[i]) for i in range(len(bt.ids(axis='observation'))))
+    Parameters
+    ----------
+    bt : biom table object
+        Table containing data for samples in s1 and s2.
+    s1 : list
+        List of sample ids found in bt (strs).
+    s2 : list
+        List of sample ids found in bt (strs).
 
+    Returns
+    -------
+    test_stats : list
+        Floats representing the test statistic for each paired comparison. 
+    pvals : list
+        Floats representing the p-values of the reported test statistics.
+    '''
+    test_stats = []
+    pvals = []
+    s1_indices = [bt.index(i, axis='sample') for i in s1]
+    s2_indices = [bt.index(i, axis='sample') for i in s2]
 
-def run_paired_t(data_generator):
-    """Run paired t test on data."""
-    test_stats, pvals = [], []
-    for b_data, a_data in data_generator:
-        test_stat, pval = t_paired(b_data, a_data)
+    for data in bt.iter_data(axis='observation'):
+        test_stat, pval = t_paired(data.take(s1_indices), data.take(s2_indices))
         test_stats.append(test_stat)
         pvals.append(pval)
     return test_stats, pvals
@@ -390,7 +407,7 @@ def sort_by_pval(lines, ind):
             return val
         else:
             return inf
-    return [lines[0]] + sorted(lines[1:], key=_nan_safe_sort))
+    return [lines[0]] + sorted(lines[1:], key=_nan_safe_sort)
 
 
 def _add_metadata(bt, md_key, lines):
@@ -404,3 +421,25 @@ def _add_metadata(bt, md_key, lines):
     else:  # remove md_header from the first line
         nls = ['\t'.join(lines[0].split('\t')[:-1])] + lines[1:]
         return nls
+
+def is_computable_float(v):
+    '''Return float if v can be converted to float excluding nan and inf.
+
+    Parameters
+    ----------
+    v : variable
+        Value to be converted to float if possible.
+
+    Returns
+    -------
+    If v can be converted to a float that is not nan or inf, return v.
+    Otherwise return False.
+    '''
+    try:
+        tmp = float(v)
+        if not logical_or(isnan(tmp), isinf(tmp)):
+            return tmp 
+        else:
+            return False
+    except ValueError:
+        return False

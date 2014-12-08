@@ -1701,10 +1701,13 @@ def assign_correlation_pval(corr, n, method, permutations=None,
             raise ValueError('You must specify vectors, permutation '
                              'function, and number of permutations to calc '
                              'bootstrapped pvalues. Cant continue.')
-        r = empty(permutations)
-        for i in range(permutations):
-            r[i] = perm_test_fn(v1, permutation(v2))
-        return (abs(r) >= abs(corr)).sum() / float(permutations)
+        if any([isnan(corr), isinf(corr)]):
+            return nan
+        else:
+            r = empty(permutations)
+            for i in range(permutations):
+                r[i] = perm_test_fn(v1, permutation(v2))
+            return (abs(r) >= abs(corr)).sum() / float(permutations)
     elif method == 'kendall':
         return kendall_pval(corr, n)
     else:
@@ -2617,15 +2620,14 @@ def correlate(v1, v2, method):
     rho : float
         Correlation between the vectors.
     '''
-    if method is 'pearson':
+    if method == 'pearson':
         corr_fn = pearson
-    elif method is 'spearman':
+    elif method == 'spearman':
         corr_fn = spearman
-    elif method is 'kendall':
+    elif method == 'kendall':
         corr_fn = kendall
-    elif method is 'cscore':
+    elif method == 'cscore':
         corr_fn = cscore
     else:
         raise ValueError('Correlation function not recognized.')
-
     return corr_fn(v1, v2)
