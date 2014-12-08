@@ -124,16 +124,16 @@ if pynast_lib_version is None:
 if which('sortmerna') is None:
     sortmerna_lib_version = "Not installed."
 else:
-    _, stderr, _ = qiime_system_call("sortmerna --version")
-    sortmerna_lib_version = stderr.strip()
+    _, serr, _ = qiime_system_call("sortmerna --version")
+    sortmerna_lib_version = serr.strip()
 
 if which('sumaclust') is None:
     sumaclust_lib_version = "Not installed."
 else:
-    stdout, _, _ = qiime_system_call("sumaclust --help")
-    stdout_lines = stdout.split('\n')
+    sout, _, _ = qiime_system_call("sumaclust --help")
+    sout_lines = sout.split('\n')
     sumaclust_lib_version = "Installed, but can't identify version."
-    for e in stdout_lines:
+    for e in sout_lines:
         e = e.strip()
         if e.startswith('SUMACLUST Version'):
             sumaclust_lib_version = e
@@ -145,10 +145,10 @@ script_info[
     'script_description'] = """A simple scripts that prints out the qiime config settings and does some sanity checks."""
 script_info['script_usage'] = []
 script_info['script_usage'].append(
-    ("Example 1", """Print qiime config settings:""", """print_qiime_config.py"""))
+    ("Example 1", """Print basic QIIME configuration details:""", """%prog"""))
 script_info['script_usage'].append(
-    ("Example 2", """Print and check qiime config settings for sanity:""",
-     """print_qiime_config.py -t"""))
+    ("Example 2", """Print basic QIIME configuration details and test the base QIIME install:""",
+     """%prog -tb"""))
 
 script_info[
     'output_description'] = """This prints the qiime_config to stdout."""
