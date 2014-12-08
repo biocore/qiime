@@ -121,16 +121,34 @@ pynast_lib_version = get_pynast_version()
 if pynast_lib_version is None:
     pynast_lib_version = "Not installed."
 
+if which('sortmerna') is None:
+    sortmerna_lib_version = "Not installed."
+else:
+    _, serr, _ = qiime_system_call("sortmerna --version")
+    sortmerna_lib_version = serr.strip()
+
+if which('sumaclust') is None:
+    sumaclust_lib_version = "Not installed."
+else:
+    sout, _, _ = qiime_system_call("sumaclust --help")
+    sout_lines = sout.split('\n')
+    sumaclust_lib_version = "Installed, but can't identify version."
+    for e in sout_lines:
+        e = e.strip()
+        if e.startswith('SUMACLUST Version'):
+            sumaclust_lib_version = e
+            break
+
 script_info = {}
 script_info['brief_description'] = """Print out the qiime config settings."""
 script_info[
     'script_description'] = """A simple scripts that prints out the qiime config settings and does some sanity checks."""
 script_info['script_usage'] = []
 script_info['script_usage'].append(
-    ("Example 1", """Print qiime config settings:""", """print_qiime_config.py"""))
+    ("Example 1", """Print basic QIIME configuration details:""", """%prog"""))
 script_info['script_usage'].append(
-    ("Example 2", """Print and check qiime config settings for sanity:""",
-     """print_qiime_config.py -t"""))
+    ("Example 2", """Print basic QIIME configuration details and test the base QIIME install:""",
+     """%prog -tb"""))
 
 script_info[
     'output_description'] = """This prints the qiime_config to stdout."""
@@ -267,7 +285,6 @@ class QIIMEConfig(TestCase):
                 self.fail("The .qiime_config in your HOME" +
                           error_msg_fragment % ", ".join(extra_vals))
 
-
 class QIIMEDependencyBase(QIIMEConfig):
 
     def test_uclust_supported_version(self):
@@ -290,117 +307,6 @@ class QIIMEDependencyBase(QIIMEConfig):
         self.assertTrue(pass_test,
                         "Unsupported uclust version. %s is required, but running %s."
                         % ('.'.join(map(str, acceptable_version)), version_string))
-
-    def test_python_supported_version(self):
-        """python is in path and version is supported """
-        min_acceptable_version = (2, 7, 0)
-        min_unacceptable_version = (3, 0, 0)
-
-        command = 'python --version'
-        proc = Popen(command, shell=True, universal_newlines=True,
-                     stdout=PIPE, stderr=STDOUT)
-        stdout = proc.stdout.read()
-
-        version_str_matches = re.findall('Python\s+(\S+)\s*', stdout.strip())
-        self.assertEqual(len(version_str_matches), 1,
-                         "Could not determine the Python version in '%s'." %
-                         stdout)
-        version_string = version_str_matches[0]
-
-        try:
-            if version_string[-1] == '+':
-                version_string = version_string[:-1]
-            version = tuple(map(int, version_string.split('.')))
-            if len(version) == 2:
-                version = (version[0], version[1], 0)
-            pass_test = (version >= min_acceptable_version and
-                         version < min_unacceptable_version)
-        except ValueError:
-            pass_test = False
-            version_string = stdout
-        self.assertTrue(pass_test,
-                        "Unsupported Python version. Must be >= %s and < %s, "
-                        "but running %s."
-                        % ('.'.join(map(str, min_acceptable_version)),
-                           '.'.join(map(str, min_unacceptable_version)),
-                           version_string))
-
-    def test_numpy_supported_version(self):
-        """numpy version is supported """
-        min_acceptable_version = (1, 7, 1)
-        try:
-            from numpy import __version__ as numpy_lib_version
-            version = tuple(map(int, numpy_lib_version.split('.')))
-            pass_test = (version >= min_acceptable_version)
-            version_string = str(numpy_lib_version)
-        except ImportError:
-            pass_test = False
-            version_string = "Not installed"
-        self.assertTrue(pass_test,
-                        "Unsupported numpy version. Must be >= %s, but running %s."
-                        % ('.'.join(map(str, min_acceptable_version)),
-                            version_string))
-
-    def test_scipy_supported_version(self):
-        """scipy version is supported """
-        min_acceptable_version = (0, 13, 0)
-        try:
-            from scipy import __version__ as scipy_lib_version
-            version = tuple(map(int, scipy_lib_version.split('.')))
-            pass_test = version >= min_acceptable_version
-            version_string = str(scipy_lib_version)
-        except ImportError:
-            pass_test = False
-            version_string = "Not installed"
-        self.assertTrue(
-            pass_test,
-            "Unsupported scipy version. Must be >= %s, but running %s." %
-            ('.'.join(map(str, min_acceptable_version)), version_string))
-
-    def test_matplotlib_suported_version(self):
-        """matplotlib version is supported """
-        min_acceptable_version = (1, 1, 0)
-        max_acceptable_version = (1, 3, 1)
-        try:
-            from matplotlib import __version__ as matplotlib_lib_version
-            version = matplotlib_lib_version.split('.')
-            if version[-1].endswith('rc'):
-                version[-1] = version[-1][:-2]
-            version = tuple(map(int, version))
-            pass_test = (version >= min_acceptable_version and
-                         version <= max_acceptable_version)
-            version_string = str(matplotlib_lib_version)
-        except ImportError:
-            pass_test = False
-            version_string = "Not installed"
-        self.assertTrue(pass_test,
-                        "Unsupported matplotlib version. Must be >= %s and <= %s , but running %s."
-                        % ('.'.join(map(str, min_acceptable_version)),
-                           '.'.join(map(str, max_acceptable_version)), version_string))
-
-    def test_pynast_suported_version(self):
-        """pynast version is supported """
-        min_acceptable_version = (1, 2)
-        max_acceptable_version = (1, 2, 2)
-        try:
-            from pynast import __version__ as pynast_lib_version
-            version = pynast_lib_version.split('.')
-            if version[-1][-4:] == '-dev':
-                version[-1] = version[-1][:-4]
-            version = tuple(map(int, version))
-            pass_test = (version >= min_acceptable_version and
-                         version <= max_acceptable_version)
-            version_string = str(pynast_lib_version)
-        except ImportError:
-            pass_test = False
-            version_string = "Not installed"
-
-        min_version_str = '.'.join(map(str, min_acceptable_version))
-        max_version_str = '.'.join(map(str, max_acceptable_version))
-        error_msg = ("Unsupported pynast version. Must be >= %s and <= %s, "
-                     "but running %s." % (min_version_str, max_version_str,
-                                          version_string))
-        self.assertTrue(pass_test, error_msg)
 
     def test_FastTree_supported_version(self):
         """FastTree is in path and version is supported """
@@ -841,6 +747,8 @@ def main():
         ("Emperor version", emperor_lib_version),
         ("burrito version", burrito_lib_version),
         ("burrito-fillings version", bfillings_lib_version),
+        ("sortmerna version", sortmerna_lib_version),
+        ("sumaclust version", sumaclust_lib_version),
         ("gdata", gdata_installed)
     ]
 
