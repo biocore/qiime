@@ -19,3 +19,5 @@ torque_queue	friendlyq
 assign_taxonomy_reference_seqs_fp
 assign_taxonomy_id_to_taxonomy_fp
 sc_queue	all.q
+slurm_queue
+slurm_memory
