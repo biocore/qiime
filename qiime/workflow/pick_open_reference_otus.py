@@ -752,7 +752,11 @@ def pick_subsampled_open_reference_otus(input_fp,
 
     # number of subsampled failures sequences is greater than the threshold,
     # continue to step 2,3 and 4
-    if num_subsampled_seqs >= minimum_failure_threshold:
+    run_step_2_and_3 = True
+    if (num_subsampled_seqs < minimum_failure_threshold or num_subsampled_seqs == 0):
+        run_step_2_and_3 = False
+
+    if run_step_2_and_3:
         # Prep the OTU picking command for the subsampled failures
         step2_dir = '%s/step2_otus/' % output_dir
         step2_cmd = pick_denovo_otus(step2_input_fasta_fp,
@@ -800,80 +804,64 @@ def pick_subsampled_open_reference_otus(input_fp,
              merged_otu_map_fp,
              _index_headers['otu_maps']))
 
-        if not suppress_step4:
+    if not suppress_step4:
+        step4_dir = '%s/step4_otus/' % output_dir
+        if run_step_2_and_3:
             step3_failures_fasta_fp = '%s/failures_failures.fasta' % step3_dir
             step3_filter_fasta_cmd = 'filter_fasta.py -f %s -s %s -o %s' %\
                 (step1_failures_fasta_fp,
                  step3_failures_list_fp, step3_failures_fasta_fp)
             commands.append([('Create fasta file of step3 failures',
-                              step3_filter_fasta_cmd)])
+                            step3_filter_fasta_cmd)])
 
-            step4_dir = '%s/step4_otus/' % output_dir
-            step4_cmd = pick_denovo_otus(step3_failures_fasta_fp,
-                                         step4_dir,
-                                         '.'.join([new_ref_set_id, 'CleanUp']),
-                                         denovo_otu_picking_method,
-                                         params,
-                                         logger)
-            step4_otu_map_fp = '%s/failures_failures_otus.txt' % step4_dir
-            commands.append([('Pick de novo OTUs on step3 failures', step4_cmd)])
-            # Merge the otu maps, note that we are explicitly using the '>' operator
-            # otherwise passing the --force flag on the script interface would
-            # append the newly created maps to the map that was previously created
-            cat_otu_tables_cmd = 'cat %s %s %s > %s' %\
-                (step1_otu_map_fp, step3_otu_map_fp,
-                 step4_otu_map_fp, merged_otu_map_fp)
-            commands.append([('Merge OTU maps', cat_otu_tables_cmd)])
-            step4_repset_fasta_fp = '%s/step4_rep_set.fna' % step4_dir
-            step4_rep_set_cmd = 'pick_rep_set.py -i %s -o %s -f %s' %\
-                (step4_otu_map_fp, step4_repset_fasta_fp, step3_failures_fasta_fp)
-            commands.append(
-                [('Pick representative set for subsampled failures', step4_rep_set_cmd)])
-
+            failures_fp = step3_failures_fasta_fp
+            failures_otus_fp = 'failures_failures_otus.txt'
+            failures_step = 'step3'
         else:
-            # Merge the otu maps, note that we are explicitly using the '>' operator
-            # otherwise passing the --force flag on the script interface would
-            # append the newly created maps to the map that was previously created
-            cat_otu_tables_cmd = 'cat %s %s > %s' %\
-                (step1_otu_map_fp, step3_otu_map_fp, merged_otu_map_fp)
-            commands.append([('Merge OTU maps', cat_otu_tables_cmd)])
-            # Move the step 3 failures file to the top-level directory
-            commands.append([('Move final failures file to top-level directory',
-                              'mv %s %s/final_failures.txt' % (step3_failures_list_fp, output_dir))])
-    # number of subsampled failed sequences is less than the threshold,
-    # skip steps 2,3 and continue to step 4
+            failures_fp = step1_failures_fasta_fp
+            failures_otus_fp = 'failures_otus.txt'
+            failures_step = 'step1'
+            step3_otu_map_fp = ""
+
+        step4_cmd = pick_denovo_otus(failures_fp,
+                                     step4_dir,
+                                     '.'.join([new_ref_set_id, 'CleanUp']),
+                                     denovo_otu_picking_method,
+                                     params,
+                                     logger)
+
+        step4_otu_map_fp = '%s/%s' % (step4_dir, failures_otus_fp)
+        commands.append([('Pick de novo OTUs on %s failures' % failures_step, step4_cmd)])
+
+        # Merge the otu maps, note that we are explicitly using the '>' operator
+        # otherwise passing the --force flag on the script interface would
+        # append the newly created maps to the map that was previously created
+        cat_otu_tables_cmd = 'cat %s %s %s > %s' %\
+            (step1_otu_map_fp, step3_otu_map_fp,
+             step4_otu_map_fp, merged_otu_map_fp)
+        commands.append([('Merge OTU maps', cat_otu_tables_cmd)])
+        step4_repset_fasta_fp = '%s/step4_rep_set.fna' % step4_dir
+        step4_rep_set_cmd = 'pick_rep_set.py -i %s -o %s -f %s' %\
+            (step4_otu_map_fp, step4_repset_fasta_fp, failures_fp)
+        commands.append(
+            [('Pick representative set for subsampled failures', step4_rep_set_cmd)])
     else:
-        if not suppress_step4:
-            step4_dir = '%s/step4_otus/' % output_dir
-            step4_cmd = pick_denovo_otus(step1_failures_fasta_fp,
-                                         step4_dir,
-                                         '.'.join([new_ref_set_id, 'CleanUp']),
-                                         denovo_otu_picking_method,
-                                         params,
-                                         logger)
-            step4_otu_map_fp = '%s/failures_otus.txt' % step4_dir
-            commands.append([('Pick de novo OTUs on step1 failures', step4_cmd)])
-            # Merge the otu maps, note that we are explicitly using the '>' operator
-            # otherwise passing the --force flag on the script interface would
-            # append the newly created maps to the map that was previously created
-            cat_otu_tables_cmd = 'cat %s %s > %s' %\
-                (step1_otu_map_fp, step4_otu_map_fp, merged_otu_map_fp)
-            commands.append([('Merge OTU maps', cat_otu_tables_cmd)])
-            step4_repset_fasta_fp = '%s/step4_rep_set.fna' % step4_dir
-            step4_rep_set_cmd = 'pick_rep_set.py -i %s -o %s -f %s' %\
-                (step4_otu_map_fp, step4_repset_fasta_fp, step1_failures_fasta_fp)
-            commands.append(
-                [('Pick representative set for subsampled failures', step4_rep_set_cmd)])
+        # Merge the otu maps, note that we are explicitly using the '>' operator
+        # otherwise passing the --force flag on the script interface would
+        # append the newly created maps to the map that was previously created
+        if run_step_2_and_3:
+            failures_fp = step3_failures_list_fp
         else:
-            # Merge the otu maps, note that we are explicitly using the '>' operator
-            # otherwise passing the --force flag on the script interface would
-            # append the newly created maps to the map that was previously created
-            cat_otu_tables_cmd = 'cat %s > %s' %\
-                (step1_otu_map_fp, merged_otu_map_fp)
-            commands.append([('Merge OTU maps', cat_otu_tables_cmd)])
-            # Move the step 1 failures file to the top-level directory
-            commands.append([('Move final failures file to top-level directory',
-                              'mv %s %s/final_failures.txt' % (step1_failures_list_fp, output_dir))])
+            failures_fp = step1_failures_list_fp
+            step3_otu_map_fp = ""
+
+        cat_otu_tables_cmd = 'cat %s %s > %s' %\
+            (step1_otu_map_fp, step3_otu_map_fp, merged_otu_map_fp)
+        commands.append([('Merge OTU maps', cat_otu_tables_cmd)])
+
+        # Move the step 3 failures file to the top-level directory
+        commands.append([('Move final failures file to top-level directory',
+                          'mv %s %s/final_failures.txt' % (failures_fp, output_dir))])
 
     command_handler(commands,
                     status_update_callback,
