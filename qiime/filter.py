@@ -637,6 +637,9 @@ def get_lane_mask():
         Goodfellow,M. (eds), Nucleic Acid Techniques in Bacterial Systematics.
         John Wiley and Sons, New York, pp. 115-175.
 
+    Lane mask was originally available in ARB. For more information on ARB, see:
+        http://www.ncbi.nlm.nih.gov/pubmed/14985472
+
     16S alignment Lane mask taken from:
         http://greengenes.lbl.gov/Download/Sequence_Data/lanemask_in_1s_and_0s
 
