@@ -637,7 +637,7 @@ def get_lane_mask():
         Goodfellow,M. (eds), Nucleic Acid Techniques in Bacterial Systematics.
         John Wiley and Sons, New York, pp. 115-175.
 
-    16S alignment lane mask taken from:
+    16S alignment Lane mask taken from:
         http://greengenes.lbl.gov/Download/Sequence_Data/lanemask_in_1s_and_0s
 
     The trailing newline that is present in the original file has been removed.
