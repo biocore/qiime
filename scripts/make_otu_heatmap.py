@@ -126,12 +126,18 @@ script_info['optional_options'] = [
                      "http://matplotlib.org/examples/color/"
                      "colormaps_reference.html for choices "
                      "[default: %default]"),
+    make_option('--width',
+                help='width of the figure in inches [default: %default]',
+                default=5, type='float'),
+    make_option('--height',
+                help='height of the figure in inches [default: %default]',
+                default=5, type='float'),
+    make_option('--obs_md_category', default="taxonomy",
+                help="observation metadata category to plot "
+                     "[default: %default]"),
     make_option('--obs_md_level', default=None, type="int",
                 help="the level of observation metadata to plot for "
-                     "hierarchical metadata [default: lowest level]"),
-    make_option('--obs_md_category', default="taxonomy",
-                help="the level of observation metadata to plot for "
-                     "hierarchical metadata [default: %default]")
+                     "hierarchical metadata [default: lowest level]")
 ]
 
 script_info['version'] = __version__
@@ -256,8 +262,8 @@ def main():
     sample_ids = np.array(otu_table.ids())[sample_order]
 
     plot_heatmap(otu_table, otu_labels, sample_ids,
-                 filename=join(dir_path, 'heatmap.pdf'),
-                 color_scheme=opts.color_scheme)
+                 filename=join(dir_path, 'heatmap.pdf'), width=opts.width,
+                 height=opts.height, color_scheme=opts.color_scheme)
 
 
 if __name__ == "__main__":
