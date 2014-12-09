@@ -39,6 +39,7 @@ optionally a mapping file. Check out the new documentation for the naming conven
 * Fasttree v1.x is no longer supported by ``make_phylogeny.py`` (see [issue #1516](https://github.com/biocore/qiime/issues/1516)).
 * Relaxed sanity tests for ``compare_categories.py --method adonis`` so that unique values are only checked for categories that are non-numeric (see [issue #1316](https://github.com/biocore/qiime/issues/1360)).
 * ``core_diversity_analyses.py`` now requires ``--tree_fp`` unless ``--nonphylogenetic_diversity`` is passed (see [#1671](https://github.com/biocore/qiime/issues/1671)).
+* Added ``compute_index.py`` which implements the microbial dysbiosis index (MD-index) from Gevers et al 2014 (http://www.ncbi.nlm.nih.gov/pubmed/24629344).
 
 QIIME 1.8.0 (11 Dec 2013)
 =========================
