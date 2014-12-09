@@ -30,8 +30,7 @@ from numpy import (array, asarray, roll, median, nan, arange, matrix,
                    concatenate, nan, ndarray, number, ones,
                    reshape, testing, tril, var, log, fill_diagonal)
 from numpy.random import permutation, shuffle, seed
-from biom import Table
-from biom.util import biom_open
+from biom import Table, load_table
 
 from qiime.stats import (all_pairs_t_test, _perform_pairwise_tests,
                          CorrelationStats,
@@ -1073,8 +1072,7 @@ class PairedDifferenceTests(TestHelper):
         self.assertTrue(exists(biom_table_fp))
         sids_fp = join(self.test_out, 'differences_sids.txt')
         self.assertTrue(exists(sids_fp))
-        with biom_open(biom_table_fp) as biom_file:
-            table = Table.from_hdf5(biom_file)
+        table = load_table(biom_table_fp)
         self.assertItemsEqual(table.ids(), ['subject1', 'subject2'])
         self.assertItemsEqual(table.ids(axis='observation'),
                               ['firmicutes-abundance', 'bacteroidetes-abundance'])

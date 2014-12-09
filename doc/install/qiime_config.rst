@@ -1,6 +1,6 @@
 .. _qiime_config:
 
-Setting up your qiime_config file 
+Setting up your qiime_config file
 ==================================
 
 First things first: you should not edit or remove :file:`Qiime/qiime/support_files/qiime_config`. Modifying or removing this file may cause QIIME to fail.
@@ -32,8 +32,6 @@ Definition of values in qiime_config
 ``pynast_template_alignment_fp`` : default template alignment to use with PyNAST as a fasta file
 
 ``pynast_template_alignment_blastdb`` : default template alignment to use with PyNAST as a pre-formatted BLAST database
-
-``template_alignment_lanemask_fp`` : default alignment lanemask to use with ``filter_alignment.py``
 
 ``jobs_to_start`` : default number of jobs to start when running QIIME in parallel. don't make this more than the available cores/processors on your system
 
