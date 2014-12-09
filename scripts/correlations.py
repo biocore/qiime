@@ -39,42 +39,27 @@ bootstrap_functions = {'spearman': spearman, 'pearson': pearson,
                        'kendall': kendall, 'cscore': cscore}
 
 script_info = {}
-script_info['brief_description'] = """
+script_info['brief_description'] = """This script calculates correlations between feature abundances and continuous-valued metadata."""
+script_info['script_description'] = """
 This script allows the calculation of:
     1. Correlations between feature abundances (relative or absolute) and 
        numeric metadata.
     2. Paired t-tests between two groups of samples.
-The available methods for calculating correlations are Spearmans
-Rho, Pearson, Kendall's Tau, and the C or checkerboard score. The available 
-methods for assigning p-values to the calculated correlation scores are 
-bootstrapping, Fisher's Z transformation, a parametric t-distribution, and 
-a Kendall's Tau specific p-value calculation.
-"""
-script_info['script_description'] = """
-This script calculates the correlation between feature values and a gradient of 
-sample data. Several methods are provided to allow the user to correlate 
-features to sample metadata values. This script also allows paired t testing.
-The paired t test is accomplished by passing a paired mapping file which is just
-a two column (tab separation) table with the samples that should be paired in 
-each row. It should not have a header.
-The available correlations tests are Kendall's Tau, Spearmans rank correlation,
-Pearsons  product moment correlation, and the C-score (or checkerboard score). 
-This script generates a tab separated output file which differs based on which 
-test you have chosen. If you have chosen simple correlation or paired_t then you
-will see the following headers:
-Feature ID - ID of the features being correlated. If these are OTUs, then they
- will take the form of GreenGenes identifiers or de-novo identifiers. 
-Test-Statistic - the value of the test statistic for the given test
-P - the raw P value returned by the given test. 
-FDR_P - the P value corrected by the Benjamini-Hochberg FDR procedure for 
- multiple comparisons.
-Bonferroni_P - the P value corrected by the Bonferroni procedure for multiple
- comparisons.
-Metadata - this column will be present only if the biom table contained metadata
- information for your features. If these are OTUs, and taxonomy is present in
- the biom table, this category will contain that taxonomy (or other metadata).
 
-Warnings:
+Several methods are provided to allow the user to correlate 
+features to sample metadata values including Spearmans Rho, Pearson, Kendall's
+Tau, and the C or checkerboard score. 
+
+The available methods for assigning p-values to the calculated correlation
+scores are bootstrapping, Fisher's Z transformation, a parametric
+t-distribution, and a Kendall's Tau specific p-value calculation.
+
+This script also allows paired t testing. The paired t test is accomplished by
+passing a paired mapping file which is just a two column (tab separation) table
+with the samples that should be paired in each row. It should not have a header.
+
+Notes:
+
 The only supported metric for P-value assignment with the C-score is 
 bootstrapping. For more information on the C-score, read Stone and Roberts 1990
 Oecologea paper 85: 74-79. If you fail to pass 
@@ -82,28 +67,39 @@ pval_assignment_method='bootstrapped' while you have -s cscore, the script will
 error. 
 
 Assigning pvalues to Kendall's Tau scores with the bootstrapping method is 
-very slow."""
+very slow.
 
+"""
 
 script_info['script_usage'] = []
-script_info['script_usage'].append(("Calculate the correlation between OTUs in the table and the pH of the samples from mich they came:", "", "%prog -i otu_table.biom -m map.txt -c pH -s spearman -o spearman_otu_gradient.txt"))
-script_info['script_usage'].append(("Calculate paired t values for a before and after group of samples:", "", "%prog -i otu_table.biom --paired_t_fp=paired_samples.txt -o paired.txt"))
-script_info['script_usage'].append(("Calculate the correlation between OTUs in the table and the pH of the samples from mich they came using bootstrapping and pearon correlation:", "", "%prog -i otu_table.biom -m map.txt -c pH -s pearson --pval_assignment_method bootstrapped --permutations 100 -o pearson_bootstrapped.txt"))
+script_info['script_usage'].append(
+    ("Calculate the correlation between OTUs in the table and the pH of the samples from mich they came:",
+     "",
+     "%prog -i otu_table.biom -m map.txt -c pH -s spearman -o spearman_otu_gradient.txt"))
+script_info['script_usage'].append(
+    ("Calculate paired t values for a before and after group of samples:",
+     "",
+     "%prog -i otu_table.biom --paired_t_fp=paired_samples.txt -o paired.txt"))
+script_info['script_usage'].append(
+    ("Calculate the correlation between OTUs in the table and the pH of the samples from mich they came using bootstrapping and pearon correlation:",
+     "",
+     "%prog -i otu_table.biom -m map.txt -c pH -s pearson --pval_assignment_method bootstrapped --permutations 100 -o pearson_bootstrapped.txt"))
 
 script_info['output_description']= """
-If you have chosen simple correlation or paired_t then you
-will see the following headers:
-Feature ID - ID of the features being correlated. If these are OTUs, then they
- will take the form of GreenGenes identifiers or de-novo identifiers. 
-Test-Statistic - the value of the test statistic for the given test
-P - the raw P value returned by the given test. 
-FDR_P - the P value corrected by the Benjamini-Hochberg FDR procedure for 
- multiple comparisons.
-Bonferroni_P - the P value corrected by the Bonferroni procedure for multiple
- comparisons.
-Metadata - this column will be present only if the biom table contained metadata
- information for your features. If these are OTUs, and taxonomy is present in
- the biom table, this category will contain that taxonomy (or other metadata).
+The output will be a tab delimited file with the following headers. Each row
+will record the values calculated for a fiven featue:
+- Feature ID: ID of the features being correlated. If these are OTUs, then they
+  will take the form of GreenGenes identifiers or de-novo identifiers. 
+- Test-Statistic: the value of the test statistic for the given test.
+- P: the raw P value returned by the given test. 
+- FDR_P: the P value corrected by the Benjamini-Hochberg FDR procedure for 
+  multiple comparisons.
+- Bonferroni_P: the P value corrected by the Bonferroni procedure for multiple
+  comparisons.
+- Metadata - this column will be present only if the biom table contained
+  metadata information for your features. If these are OTUs, and taxonomy is
+  present in the biom table, this category will contain that taxonomy (or other
+  metadata).
 """
 script_info['required_options']=[
     make_option('-i','--otu_table_fp',
@@ -119,24 +115,23 @@ script_info['optional_options']=[
         help='name of the category over which to run the analysis'),
     make_option('-s', '--test', type="choice", 
         choices=correlation_assignment_choices,
-        default='spearman', help='Test to use. Choices are:\n%s' % \
-            (', '.join(correlation_assignment_choices)+'\n\t' + \
-            '[default: %default]')),
+        default='spearman', help='Correlation method to use. Choices are: %s' %
+        (', '.join(correlation_assignment_choices)) + ' [default: %default]'),
     make_option('--pval_assignment_method', type="choice", 
         choices=pvalue_assignment_choices,
-        default='fisher_z_transform', help='Test to use. Choices are:\n%s' % \
-            (', '.join(pvalue_assignment_choices))+'\n\t' + \
-            '[default: %default]'),
+        default='fisher_z_transform', help='Pvalue method to use. Choices are: '
+        '%s' % (', '.join(pvalue_assignment_choices)) + ' [default: %default]'),
     make_option('--metadata_key', default='taxonomy', type=str, 
-        help='Key to extract metadata from biom table. default: %default]'),
+        help='Key to extract metadata from biom table. [default: %default]'),
     make_option('--paired_t_fp', type='existing_filepath', default=None, 
-        help='Pass a paired sample map as described in help to test with a '+\
-            'paired_t_two_sample test. Overrides all other options. A '+\
-            'paired sample map must be two columns without header that are '+\
-            'tab separated. Each row contains samples which should be paired.'),
+        help='Pass a paired sample map as described in help to test with a '
+            'paired_t_two_sample test. Overrides all other options. A '
+            'paired sample map must be two columns without header that are '
+            'tab separated. Each row contains samples which should be paired.'
+            ' [default: %default]'),
     make_option('--permutations', default=1000, type=int, 
-        help='Number of permutations to use for bootstrapped tests.'+\
-            '[default: %default]')]
+        help='Number of permutations to use for bootstrapped tests.'
+            ' [default: %default]')]
 
 script_info['version'] = __version__
 
@@ -188,7 +183,7 @@ def main():
                     samples_to_correlate.append(sample_id)
                     md_values_to_correlate.append(v)
                 except KeyError:
-                    raise ValueError(('The category (%s)' % opts.category) +\
+                    raise ValueError('The category (%s)' % opts.category +
                         ' was not found in the mapping file.')
             else:
                 pass  # sample in mf, but not bt
