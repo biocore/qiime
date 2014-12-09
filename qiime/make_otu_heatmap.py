@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# file make_otu_heatmap.py
-
 from __future__ import division
 
 __author__ = "Dan Knights"
@@ -11,20 +8,15 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Dan Knights"
 __email__ = "daniel.knights@colorado.edu"
 
-
-from numpy import (array, concatenate, asarray, transpose, log, invert,
-                   asarray, float32, float64, unique, fliplr, inf)
-from optparse import OptionParser
-from qiime.util import MissingFileError
-import os
-from matplotlib import use
-use('Agg', warn=False)
+import numpy as np
 import matplotlib
-from matplotlib.pylab import *
+matplotlib.use('Agg', warn=False)
+import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.cluster.hierarchy import linkage
 from skbio.tree import TreeNode
 from skbio.diversity.beta import pw_distances
-from skbio.stats.distance import DistanceMatrix
+
 from qiime.parse import parse_newick, PhyloNode
 from qiime.filter import filter_samples_from_otu_table
 
@@ -37,7 +29,8 @@ def get_overlapping_samples(map_rows, otu_table):
     map_sample_ids = zip(*map_rows)[0]
     shared_ids = set(map_sample_ids) & set(otu_table.ids())
 
-    otu_table = filter_samples_from_otu_table(otu_table, shared_ids, -inf, inf)
+    otu_table = filter_samples_from_otu_table(otu_table, shared_ids, -np.inf,
+                                              np.inf)
 
     new_map = []
     for sam_id in map_sample_ids:
@@ -64,19 +57,19 @@ def extract_metadata_column(sample_ids, metadata, category):
 
 def get_order_from_categories(otu_table, category_labels):
     """Groups samples by category values; clusters within each group"""
-    category_labels = array(category_labels)
+    category_labels = np.array(category_labels)
     sample_order = []
 
-    for label in unique(category_labels):
+    for label in np.unique(category_labels):
         label_ix = category_labels == label
         selected = [s for (i, s) in zip(label_ix, otu_table.ids()) if i]
         sub_otu_table = filter_samples_from_otu_table(otu_table, selected,
-                                                      -inf, inf)
-        data = asarray([val for val in sub_otu_table.iter_data(axis='observation')])
+                                                      -np.inf, np.inf)
+        data = np.asarray(list(sub_otu_table.iter_data(axis='observation')))
         label_ix_ix = get_clusters(data, axis='column')
 
-        sample_order += list(nonzero(label_ix)[0][array(label_ix_ix)])
-    return array(sample_order)
+        sample_order += list(np.nonzero(label_ix)[0][np.array(label_ix_ix)])
+    return np.array(sample_order)
 
 
 def get_order_from_tree(ids, tree_text):
@@ -118,7 +111,7 @@ def names_to_indices(names, ordered_names):
     for ordered_name in ordered_names:
         if ordered_name in names_list:
             indices.append(names_list.index(ordered_name))
-    return array(indices)
+    return np.array(indices)
 
 
 def get_log_transform(otu_table):
@@ -128,7 +121,7 @@ def get_log_transform(otu_table):
 
     # take log of all values
     def h(s_v, s_id, s_md):
-        return log10(s_v)
+        return np.log10(s_v)
 
     return otu_table.transform(h, axis='sample', inplace=False)
 
@@ -172,41 +165,46 @@ def plot_heatmap(otu_table, row_labels, col_labels, filename='heatmap.pdf',
         color_scheme: choices can be found at
          http://matplotlib.org/examples/color/colormaps_reference.html
     """
-    nrow = len(otu_table.ids(axis='observation'))
-    ncol = len(otu_table.ids())
+    nrow = otu_table.length(axis='observation')
+    ncol = otu_table.length(axis='sample')
 
     # determine appropriate font sizes for tick labels
     row_fontsize = get_fontsize(nrow)
     col_fontsize = get_fontsize(ncol)
 
     # create figure and plot heatmap
-    fig = figure(figsize=(width, height))
-    my_cmap = get_cmap(color_scheme)
-
-    data = [val for val in otu_table.iter_data(axis='observation')]
-    imshow(fliplr(data), interpolation='nearest', aspect='auto', cmap=my_cmap)
-    ax = fig.axes[0]
+    fig, ax = plt.subplots(figsize=(width, height))
+    data = list(otu_table.iter_data(axis='observation'))
+    im = plt.imshow(np.fliplr(data), interpolation='nearest', aspect='auto',
+                    cmap=color_scheme)
 
     # imshow is offset by .5 for some reason
-    xlim(-.5, ncol - .5)
-    ylim(-.5, nrow - .5)
+    plt.xlim(-.5, ncol - .5)
+    plt.ylim(-.5, nrow - .5)
 
     # add ticklabels to axes
-    xticks(arange(ncol), col_labels[::-1], fontsize=col_fontsize)
-    yticks(arange(nrow), row_labels, fontsize=row_fontsize)
+    plt.xticks(np.arange(ncol), col_labels[::-1], fontsize=col_fontsize,
+               rotation=90)
+    plt.yticks(np.arange(nrow), row_labels, fontsize=row_fontsize)
 
     # turn off tick marks
     ax.xaxis.set_ticks_position('none')
     ax.yaxis.set_ticks_position('none')
 
-    # rotate x ticklabels
-    for label in ax.xaxis.get_ticklabels():
-        label.set_rotation(90)
-
     # add space for tick labels
     fig.subplots_adjust(left=textborder, bottom=textborder)
-    cb = colorbar()  # grab the Colorbar instance
+
+    # create colorbar (legend) in its own axes so that tight_layout will
+    # respect both the heatmap and colorbar when it makes room for everything.
+    # code based on example in:
+    #     http://matplotlib.org/users/tight_layout_guide.html
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes("right", "5%", pad="3%")
+    cb = plt.colorbar(im, cax=cax)
+
     # set colorbar tick labels to a reasonable value (normal is large)
     for t in cb.ax.get_yticklabels():
         t.set_fontsize(5)
+
+    plt.tight_layout()
     fig.savefig(filename)

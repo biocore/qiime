@@ -119,7 +119,7 @@ script_info['optional_options'] = [
                 'If --map_fname is provided, this flag is ignored.',
                 default=False),
     make_option('--absolute_abundance', action="store_true",
-                help='Do not normalize samples to sum to 1.[default %default]',
+                help='Do not normalize samples to sum to 1 [default: %default]',
                 default=False),
     make_option('--color_scheme', default="YlGn",
                 help="color scheme for figure. see "
