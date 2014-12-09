@@ -95,7 +95,7 @@ An example image of a the entire primer construct and amplicon is shown below, u
 
 .. image:: ../images/ example_primer_construct.png
    :align: center
-   
+
 454 sequencing, in most cases, generates sequences that begin at the BarcodeSequence, which is followed by the LinkerPrimerSequence, both of which are automatically removed during the demultiplexing step described below.  However, the ReversePrimer (i.e., the primer at the end of the read) is not removed by default, and needs to be specified.  The adapter sequence (Adapter B) does not match genomic data, such as 16S sequences, and as such it can disrupt analyses.
 
 .. _assignsamples:
@@ -124,27 +124,27 @@ A few lines from the :file:`seqs.fna` file are shown below:
    * TTGGGCCGTGTCTCAGTCCCAATGTGGCCGATCAGTCTCTTAACTCGGCTATGCATCATTGCCTT....
    * >PC.481_4 FLP3FBN01DEHK3 orig_bc=ACCAGCGACTAG new_bc=ACCAGCGACTAG bc_diffs=0
    * CTGGGCCGTGTCTCAGTCCCAATGTGGCCGTTCAACCTCTCAGTCCGGCTACTGATCGTCGACT....
-   
+
 Reverse primer removal can be accomplished by adding the -z option.  An example command using the mapping file with reverse primers described above is this: ::
 
     split_libraries.py -m Fasting_Map_reverse_primers.txt -f Fasting_Example.fna -q Fasting_Example.qual -z truncate_only -o split_library_output_revprimers/
-    
+
 The following is the first several lines of the :file:`split_library_log.txt`
 
 .. note::
 
    * Number raw input seqs	1339
-   * 
+   *
    * Length outside bounds of 200 and 1000	0
    * Num ambiguous bases exceeds limit of 6	0
    * Missing Qual Score	0
    * Mean qual score below minimum of 25	1
    * Max homopolymer run exceeds limit of 6	0
    * Num mismatches in primer exceeds limit of 0: 1
-   * 
+   *
    * Number of sequences with identifiable barcode but without identifiable reverse primer: 961
    * ...
-   
+
 If the number of sequences where the reverse primer is not identifiable is high, you want to check the primer sequence to make sure it is in 5'->3' orientation, or increase the number of mismatches allowed with --reverse_primer_mismatches.
 
 Data that are already demultiplexed can have reverse primers removed using the stand-alone script `truncate_reverse_primer.py <../scripts/truncate_reverse_primer.html>`_.
@@ -179,7 +179,7 @@ The results of `pick_de_novo_otus.py` are in :file:`otus/`, and a description of
 Step 1. Pick OTUs based on Sequence Similarity within the Reads
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-At this step, all of the sequences from all of the samples will be clustered into Operational Taxonomic Units (OTUs) based on their sequence similarity. OTUs in QIIME are clusters of sequences, frequently intended to represent some degree of taxonomic relatedness. For example, when sequences are clustered at 97% sequence similarity with uclust, each resulting cluster is typically thought of as representing a species. This model and the current techniques for picking OTUs are known to be flawed, however, in that 97% OTUs do not match what humans have called species for many microbes. Determining exactly how OTUs should be defined, and what they represent, is an active area of research. 
+At this step, all of the sequences from all of the samples will be clustered into Operational Taxonomic Units (OTUs) based on their sequence similarity. OTUs in QIIME are clusters of sequences, frequently intended to represent some degree of taxonomic relatedness. For example, when sequences are clustered at 97% sequence similarity with uclust, each resulting cluster is typically thought of as representing a species. This model and the current techniques for picking OTUs are known to be flawed, however, in that 97% OTUs do not match what humans have called species for many microbes. Determining exactly how OTUs should be defined, and what they represent, is an active area of research.
 
 `pick_de_novo_otus.py` assigns sequences to OTUs at 97% similarity by default. Further information on how to view and change default behavior will be discussed later.
 
@@ -227,13 +227,13 @@ After aligning the sequences, a log file and an alignment file are created in th
 
 Step 5. Filter Alignment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Before inferring a phylogenetic tree relating the sequences, it is beneficial to filter the sequence alignment to removed columns comprised of only gaps, and locations known to be excessively variable. Most QIIME installations use a lanemask file named either lanemask_in_1s_and_0s.txt or lanemask_in_1s_and_0s by default. After filtering, a filtered alignment file is created in the directory :file:`otus/pynast_aligned_seqs/`.
+Before inferring a phylogenetic tree relating the sequences, it is beneficial to filter the sequence alignment to removed columns comprised of only gaps, and locations known to be excessively variable. QIIME uses a 16S alignment Lane mask (Lane, D.J. 1991) by default. After filtering, a filtered alignment file is created in the directory :file:`otus/pynast_aligned_seqs/`.
 
 .. _maketree:
 
 Step 6. Make Phylogenetic Tree
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The filtered alignment file produced in the directory :file:`otus/pynast_aligned_seqs/` is then used to build a phylogenetic tree using a tree-building program. 
+The filtered alignment file produced in the directory :file:`otus/pynast_aligned_seqs/` is then used to build a phylogenetic tree using a tree-building program.
 
 The Newick format tree file is written to :file:`rep_set.tre`, which is located in the :file:`otus/` directory . This file can be viewed in a tree visualization software, and is necessary for UniFrac_ diversity measurements and other phylogenetically aware analyses (described below). The tree obtained can be visualized with programs such as FigTree, which was used to visualize the phylogenetic tree obtained from :file:`rep_set.tre`.
 
@@ -263,7 +263,7 @@ Open the output file :file:`otus/otu_table_summary.txt`, which contains a summar
 .. note ::
 
     | Num samples: 9
-    | 
+    |
     | Seqs/sample summary:
     |  Min: 146
     |  Max: 150
@@ -273,7 +273,7 @@ Open the output file :file:`otus/otu_table_summary.txt`, which contains a summar
     |  Median Absolute Deviation: 1.0
     |  Default even sampling depth in
     |   core_qiime_analyses.py (just a suggestion): 146
-    | 
+    |
     | Seqs/sample detail:
     |  PC.355: 146
     |  PC.481: 146
@@ -326,7 +326,7 @@ To visualize the network, we use the Cytoscape_ program (which you can run by ca
 
 Summarize Communities by Taxonomic Composition
 ----------------------------------------------------------------------------
-You can group OTUs by samples or categories (when "-c" option is passed) by different taxonomic levels (division, class, family, etc.) with the workflow script `summarize_taxa_through_plots.py <../scripts/summarize_taxa_through_plots.html>`_. Note that this process depends directly on the method used to assign taxonomic information to OTUS (see `Assigning Taxonomy`__ above). Type: 
+You can group OTUs by samples or categories (when "-c" option is passed) by different taxonomic levels (division, class, family, etc.) with the workflow script `summarize_taxa_through_plots.py <../scripts/summarize_taxa_through_plots.html>`_. Note that this process depends directly on the method used to assign taxonomic information to OTUS (see `Assigning Taxonomy`__ above). Type:
 
 __ assigntax_
 
@@ -391,7 +391,7 @@ to also use the shannon index, create a custom parameters file by typing: ::
 
     echo "alpha_diversity:metrics shannon,PD_whole_tree,chao1,observed_otus" > alpha_params.txt
 
-Then run the workflow, which requires the OTU table (-i) and phylogenetic tree (-t) from `above`__, and the custom parameters file we just created: 
+Then run the workflow, which requires the OTU table (-i) and phylogenetic tree (-t) from `above`__, and the custom parameters file we just created:
 
 __ pickotusandrepseqs_
 
@@ -432,7 +432,7 @@ In the newly created directory :file:`wf_arare/alpha_div_collated/`, there will 
 
 .. note::
 
-   * Sequences per sample   iteration   PC.354  PC.355  PC.356  PC.481  PC.593   
+   * Sequences per sample   iteration   PC.354  PC.355  PC.356  PC.481  PC.593
    * alpha_rarefaction_21_0.txt 21          0       14.0    16.0    18.0    18.0    13.0
    * alpha_rarefaction_21_1.txt 21          1       15.0    17.0    18.0    20.0    12.0
    * alpha_rarefaction_21_2.txt 21          2       15.0    16.0    21.0    19.0    13.0
@@ -446,7 +446,7 @@ Step 4. Generate Rarefaction Curves
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 QIIME creates plots of alpha diversity vs. simulated sequencing effort, known as rarefaction plots, using the script `make_rarefaction_plots.py <../scripts/make_rarefaction_plots.html>`_. This script takes a mapping file and any number of rarefaction files generated by `collate_alpha.py <../scripts/collate_alpha.html>`_ and creates rarefaction curves. Each curve represents a sample and can be colored by the sample metadata supplied in the mapping file.
 
-This step generates a :file:`wf_arare/alpha_rarefaction_plots/rarefaction_plots.html` that can be opened with a web browser, in addition to other files. The :file:`wf_arare/alpha_rarefaction_plots/average_tables/` folder, which contains the rarefaction averages for each diversity metric, so the user can optionally plot the rarefaction curves in another application, like MS Excel. The :file:`wf_arare/alpha_rarefaction_plots/average_plots/` folder contains the average plots for each metric and category and the :file:`wf_arare/alpha_rarefaction_plots/html_plots/` folder contains all the images used in the html page generated. 
+This step generates a :file:`wf_arare/alpha_rarefaction_plots/rarefaction_plots.html` that can be opened with a web browser, in addition to other files. The :file:`wf_arare/alpha_rarefaction_plots/average_tables/` folder, which contains the rarefaction averages for each diversity metric, so the user can optionally plot the rarefaction curves in another application, like MS Excel. The :file:`wf_arare/alpha_rarefaction_plots/average_plots/` folder contains the average plots for each metric and category and the :file:`wf_arare/alpha_rarefaction_plots/html_plots/` folder contains all the images used in the html page generated.
 
 
 
@@ -486,7 +486,7 @@ The 9 communities in the tutorial data contain the following numbers of sequence
 .. note ::
 
     | Num samples: 9
-    | 
+    |
     | Seqs/sample summary:
     |  Min: 146
     |  Max: 150
@@ -496,7 +496,7 @@ The 9 communities in the tutorial data contain the following numbers of sequence
     |  Median Absolute Deviation: 1.0
     |  Default even sampling depth in
     |   core_qiime_analyses.py (just a suggestion): 146
-    | 
+    |
     | Seqs/sample detail:
     |  PC.355: 146
     |  PC.481: 146
@@ -518,7 +518,7 @@ The resulting distance matrices ( :file:`wf_bdiv_even146/unweighted_unifrac_dm.t
 
 Step 3. Generate Principal Coordinates
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Principal Coordinate Analysis (PCoA) is a technique that helps to extract and visualize a few highly informative components of variation from complex, multidimensional data. This is a transformation that maps the samples present in the distance matrix to a new set of orthogonal axes such that a maximum amount of variation is explained by the first principal coordinate, the second largest amount of variation is explained by the second principal coordinate, etc. The principal coordinates can be plotted in two or three dimensions to provide an intuitive visualization of the data structure and look at differences between the samples, and look for similarities by sample category. 
+Principal Coordinate Analysis (PCoA) is a technique that helps to extract and visualize a few highly informative components of variation from complex, multidimensional data. This is a transformation that maps the samples present in the distance matrix to a new set of orthogonal axes such that a maximum amount of variation is explained by the first principal coordinate, the second largest amount of variation is explained by the second principal coordinate, etc. The principal coordinates can be plotted in two or three dimensions to provide an intuitive visualization of the data structure and look at differences between the samples, and look for similarities by sample category.
 
 The files :file:`wf_bdiv_even146/unweighted_unifrac_pc.txt` and :file:`wf_bdiv_even146/weighted_unifrac_pc.txt` list every sample in the first column, and the subsequent columns contain the value for the sample against the noted principal coordinate. At the bottom of each Principal Coordinate column, you will find the eigenvalue and percent of variation explained by the coordinate.
 
@@ -558,7 +558,7 @@ To run the analysis, type the following:
 
 Steps 1 and 2. UPGMA Clustering
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Unweighted Pair Group Method with Arithmetic mean (UPGMA) is type of hierarchical clustering method using average linkage and can be used to interpret the distance matrix produced by `beta_diversity.py <../scripts/beta_diversity.html>`_. 
+Unweighted Pair Group Method with Arithmetic mean (UPGMA) is type of hierarchical clustering method using average linkage and can be used to interpret the distance matrix produced by `beta_diversity.py <../scripts/beta_diversity.html>`_.
 
 The output is a file that can be opened with tree viewing software, such as FigTree.
 
@@ -566,7 +566,7 @@ The output is a file that can be opened with tree viewing software, such as FigT
    :align: center
    :width: 700px
 
-This tree shows the relationship among the 9 samples, and reveals that the 4 samples from the guts of fasting mice cluster together (PC.6xx, fasting data is in :file:`Fasting_Map.txt`). 
+This tree shows the relationship among the 9 samples, and reveals that the 4 samples from the guts of fasting mice cluster together (PC.6xx, fasting data is in :file:`Fasting_Map.txt`).
 
 .. _jacksupport:
 
@@ -581,7 +581,7 @@ __ perlibrarystats_
 .. note::
 
     | Num samples: 9
-    | 
+    |
     | Seqs/sample summary:
     |  Min: 146
     |  Max: 150
@@ -597,7 +597,7 @@ The workflow then calculates the distance matrix for each jackknifed dataset, bu
 
 Step 6. Compare Jackknifed Trees
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-UPGMA clustering of the 10 distance matrix files results in 10 hierarchical clusters of the 9 mouse microbial communities, each  hierarchical cluster based on a random sub-sample of the available sequence data. 
+UPGMA clustering of the 10 distance matrix files results in 10 hierarchical clusters of the 9 mouse microbial communities, each  hierarchical cluster based on a random sub-sample of the available sequence data.
 
 This compares the UPGMA clustering based on all available data with the jackknifed UPGMA results. Three files are written to :file:`wf_jack/unweighted_unifrac/upgma_cmp/` and :file:`wf_jack/weighted_unifrac/upgma_cmp/`:
 
@@ -614,7 +614,7 @@ The jackknifed replicate PCoA plots can be compared to assess the degree of vari
 .. image:: ../images/ jackpcoa.png
    :align: center
    :width: 700px
-   
+
 .. _genboottree:
 
 Generate Bootstrapped Tree

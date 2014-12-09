@@ -9,7 +9,6 @@ blastmat_dir
 blastall_fp	blastall
 pynast_template_alignment_fp
 pynast_template_alignment_blastdb
-template_alignment_lanemask_fp
 jobs_to_start	1
 seconds_to_sleep	2
 temp_dir	/tmp/
