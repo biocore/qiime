@@ -125,7 +125,7 @@ Parameters that should be modified:
 
 	* align_seqs:template_fp (specify the core aligned Silva 104 fasta file path)
 
-	* filter_alignment:lane_mask_fp (do not specify a lanemask filepath)
+	* filter_alignment:suppress_lane_mask_filter
 	* filter_alignment:allowed_gap_frac	0.999999 (set to 0.80 instead of default)
 	* filter_alignment:entropy_threshold	0.10 (set to 0.10 if not already set)
 
