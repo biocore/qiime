@@ -68,7 +68,7 @@ script_info['optional_options'] = [
                 help="Comma separated list of taxa considered to increase",
                 default=None),
     make_option('--decreased', type=str,
-                help="Comma separated list of taxa considered to decreased",
+                help="Comma separated list of taxa considered to decrease",
                 default=None),
     make_option('-e', '--index', type=str,
                 help="An existing index",
@@ -170,7 +170,7 @@ def main():
         with open(opts.output, 'w') as fp:
             fp.write(str(mapping_data))
 
-        output_fp.close()
+    output_fp.close()
 
 
 if __name__ == "__main__":
