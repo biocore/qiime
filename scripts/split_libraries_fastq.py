@@ -23,7 +23,6 @@ from qiime.split_libraries_fastq import (process_fastq_single_end_read_file,
 from qiime.split_libraries import check_map
 from qiime.split_libraries_fastq import get_illumina_qual_chars
 from qiime.golay import get_invalid_golay_barcodes
-from qiime.quality import phred_to_ascii33, phred_to_ascii64
 
 script_info = {}
 

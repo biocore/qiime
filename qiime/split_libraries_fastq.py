@@ -25,7 +25,6 @@ from qiime.format import (format_histogram_one_count,
 from qiime.parse import is_casava_v180_or_later
 from qiime.hamming import decode_hamming_8
 from qiime.golay import decode_golay_12
-from qiime.quality import phred_to_ascii33, phred_to_ascii64
 from qiime.util import qiime_open
 
 
