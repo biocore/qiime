@@ -16,7 +16,7 @@ __maintainer__ = "Daniel McDonald"
 __email__ = "mcdonadt@colorado.edu"
 
 
-from numpy import log, nan
+from numpy import log, nan, allclose, inf
 
 
 def compute_index(table, increased, decreased, key):
@@ -73,7 +73,9 @@ def compute_index(table, increased, decreased, key):
         inc_count = inc_t.data(id_, dense=False).sum()
         dec_count = dec_t.data(id_, dense=False).sum()
 
-        if dec_count == 0:
+        if allclose(dec_count, 0):
             yield (id_, nan)
+        elif allclose(inc_count, 0):
+            yield (id_, -inf)
         else:
             yield (id_, log(inc_count / dec_count))
