@@ -80,8 +80,8 @@ script_info['optional_options'] = [
                 'between 0 and 1.  For example, if 0.10 were ' +
                 'specified, the top 10% most entropic base positions would be ' +
                 'filtered.  If this value is used, any lane mask supplied will be ' +
-                'ignored.  Entropy filtered occurs after gap filtering.  ' +
-                '  [default: %default]', default=None)
+                'ignored.  Entropy filtering occurs after gap filtering. ' +
+                '[default: %default]', default=None)
 ]
 script_info['version'] = __version__
 
