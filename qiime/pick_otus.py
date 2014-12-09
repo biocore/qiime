@@ -224,7 +224,7 @@ class SortmernaV2OtuPicker(OtuPicker):
             self.sortmerna_db, self.files_to_remove = \
                 build_database_sortmerna(abspath(refseqs_fp),
                                          max_pos=self.Params['max_pos'],
-                                         output_dir=dirname(result_path))
+                                         output_dir=dirname(abspath(result_path)))
 
             self.log_lines.append('Reference seqs fp (to build '
                                   'sortmerna database): %s' %
@@ -687,8 +687,8 @@ class SumaClustOtuPicker(OtuPicker):
 
         # Run SumaClust, return a dict of output files
         clusters = sumaclust_denovo_cluster(
-            seq_path=seq_path,
-            result_path=result_path,
+            seq_path=abspath(seq_path),
+            result_path=abspath(result_path),
             shortest_len=self.Params['l'],
             similarity=self.Params['similarity'],
             threads=self.Params['threads'],

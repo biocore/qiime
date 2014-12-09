@@ -109,8 +109,7 @@ class ParallelPickOtusSortMeRNA(ParallelPickOtus):
     def _precommand_initiation(
             self, input_fp, output_dir, working_dir, params):
         if not params['sortmerna_db']:
-            # Build the blast database from the reference_seqs_fp -- all procs
-            # will then access one db rather than create one per proc
+            # Build the sortmerna database from the reference_seqs_fp
             sortmerna_db, db_files_to_remove = \
                 build_database_sortmerna(params['refseqs_fp'],
                                          max_pos=params['sortmerna_max_pos'],

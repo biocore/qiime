@@ -39,13 +39,12 @@ script_info['script_usage'] = []
 script_info['script_usage'].append(
     ("""Example""",
      """Pick OTUs by searching $PWD/inseqs.fasta against $PWD/refseqs.fasta with
-        reference-based sortmerna and write the output to the $PWD/sortmerna_otus/ directory.
+        reference-based sortmerna and write the output to the $PWD/smr_otus/ directory.
         This is a closed-reference OTU picking process. ALWAYS SPECIFY ABSOLUTE FILE PATHS
         (absolute path represented here as $PWD, but will generally look something like
             /home/ubuntu/my_analysis/).""",
      """%prog -i $PWD/seqs.fna -r $PWD/refseqs.fna -o $PWD/smr_otus/"""))
-script_info[
-    'output_description'] = """The output consists of two files (i.e. seqs_otus.txt and seqs_otus.log).
+script_info['output_description'] = """The output consists of two files (i.e. seqs_otus.txt and seqs_otus.log).
     The .txt file is composed of tab-delimited lines, where the first field on each line corresponds
     to an OTU identifier which is the reference sequence identifier, and the remaining fields correspond
     to sequence identifiers assigned to that OTU. The resulting .log file contains a list of parameters
@@ -53,15 +52,13 @@ script_info[
 
 script_info['required_options'] = [
     make_option('-i', '--input_fasta_fp', action='store',
-                type='existing_filepath', help='full path to ' +
-                'input_fasta_fp'),
+                type='existing_filepath', help='Path to input fasta file.'),
 
     make_option('-o', '--output_dir', action='store',
-                type='new_dirpath', help='path to store output files'),
+                type='new_dirpath', help='Directory where output should be written.'),
 
     make_option('-r', '--refseqs_fp', action='store',
-                type='existing_filepath', help='full path to ' +
-                'reference collection')
+                type='existing_filepath', help='Path to reference fasta file.')
 ]
 
 script_info['optional_options'] = [
@@ -83,7 +80,7 @@ script_info['optional_options'] = [
                      'and 1 [default: %default]'),
 
     make_option('--sortmerna_tabular', default=False, action='store_true',
-                help='Output alignments in the Blast tabular format '
+                help='Output alignments in the Blast-like tabular format '
                      'with two additional columns including the CIGAR '
                      'string and the percent query coverage '
                      '[default: %default]'),
@@ -98,7 +95,8 @@ script_info['optional_options'] = [
                      ' in the indexed database [default: %default]'),
 
     make_option('--threads', default=1, help=
-                "Specify number of threads (1 thread per core)"
+                "Specify the number of threads to use per job. "
+                "Use --jobs_to_start to specify the number of jobs."
                 "[default: %default]"),
 
     options_lookup['jobs_to_start'],
