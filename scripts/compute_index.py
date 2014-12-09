@@ -57,7 +57,8 @@ script_info[
 script_info[
     'output_description'] = ("Two columns, the first being the sample ID and "
                              "the second being the index value for the "
-                             "sample.")
+                             "sample. If a mapping file is provided, then the "
+                             "index values are merged into it.")
 script_info['optional_options'] = [
     make_option('-i', '--input', type="existing_filepath",
                 help='The input BIOM table'),
