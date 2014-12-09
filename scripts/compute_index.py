@@ -10,11 +10,13 @@ __maintainer__ = "Daniel McDonald"
 __email__ = "mcdonadt@colorado.edu"
 
 from sys import exit
+from tempfile import TemporaryFile
 
+from numpy import nan
 from biom import load_table
 
 from qiime.index import compute_index
-from qiime.util import parse_command_line_parameters, make_option
+from qiime.util import parse_command_line_parameters, make_option, MetadataMap
 
 
 script_info = {}
@@ -28,7 +30,11 @@ script_info[
                              "(http://www.ncbi.nlm.nih.gov/pubmed/24629344).")
 script_info[
     'script_usage'] = [("Example:", "Compute the MD-index",
-                        "%prog -i $PWD/table.biom.gz -m md -o table.md.txt"),
+                        "%prog -i $PWD/table.biom.gz -e md -o table.md.txt"),
+                       ("Example:", ("Compute the MD-index and add it to an "
+                                     "existing mapping file"),
+                        ("%prog -i $PWD/table.biom.gz -e md -o mapping.md.txt "
+                         "-m map.txt")),
                        ("Example:", ("Compute an arbitrary index, where the "
                                      "abundance of Firmicutes and "
                                      "Fusobacteria is considered to be an "
@@ -63,12 +69,14 @@ script_info['optional_options'] = [
     make_option('--decreased', type=str,
                 help="Comma separated list of taxa considered to decreased",
                 default=None),
-    make_option('-m', '--index', type=str,
+    make_option('-e', '--index', type=str,
                 help="An existing index",
                 default=None),
     make_option('-n', '--name', type=str,
                 help="index name to use in the output",
                 default=None),
+    make_option('-m', '--mapping_file', type="existing_filepath",
+                help="A mapping file to add the computed index to"),
     make_option('-k', '--key', type=str,
                 help="Metadata key to use for computing [default: 'taxonomy']",
                 default='taxonomy'),
@@ -143,10 +151,26 @@ def main():
 
     table = load_table(opts.input)
 
-    with open(opts.output, 'w') as fp:
-        fp.write("#SampleID\t%s\n" % name)
-        for id_, value in compute_index(table, increased, decreased, opts.key):
-            fp.write("%s\t%f\n" % (id_, value))
+    if opts.mapping_file:
+        mapping_file = open(opts.mapping_file, 'U')
+        output_fp = TemporaryFile()
+    else:
+        mapping_file = None
+        output_fp = open(opts.output, 'w')
+
+    output_fp.write("#SampleID\t%s\n" % name)
+    for id_, value in compute_index(table, increased, decreased, opts.key):
+        output_fp.write("%s\t%f\n" % (id_, value))
+
+    if opts.mapping_file:
+        output_fp.seek(0)
+        mapping_data = MetadataMap.mergeMappingFiles([output_fp, mapping_file],
+                                                     no_data_value=nan)
+        with open(opts.output, 'w') as fp:
+            fp.write(str(mapping_data))
+
+        output_fp.close()
+
 
 if __name__ == "__main__":
     main()
