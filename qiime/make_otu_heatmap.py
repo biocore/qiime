@@ -21,9 +21,9 @@ from matplotlib import use
 use('Agg', warn=False)
 import matplotlib
 from matplotlib.pylab import *
-from qiime.beta_diversity import get_nonphylogenetic_metric
 from scipy.cluster.hierarchy import linkage
 from skbio.tree import TreeNode
+from skbio.diversity.beta import pw_distances
 from skbio.stats.distance import DistanceMatrix
 from qiime.parse import parse_newick, PhyloNode
 from qiime.filter import filter_samples_from_otu_table
@@ -133,20 +133,18 @@ def get_log_transform(otu_table):
     return otu_table.transform(h, axis='sample', inplace=False)
 
 
-def get_clusters(x_original, axis=['row', 'column'][0]):
+def get_clusters(x_original, axis='row'):
     """Performs UPGMA clustering using euclidean distances"""
     x = x_original.copy()
     if axis == 'column':
         x = x.T
     nr = x.shape[0]
-    metric_f = get_nonphylogenetic_metric('euclidean')
-    row_dissims = DistanceMatrix(metric_f(x), map(str, range(nr)))
+    row_dissims = pw_distances(x, ids=map(str, range(nr)), metric='euclidean')
     # do upgma - rows
-    # Average in SciPy's cluster.heirarchy.linkage is UPGMA
+    # Average in SciPy's cluster.hierarchy.linkage is UPGMA
     linkage_matrix = linkage(row_dissims.condensed_form(), method='average')
     tree = TreeNode.from_linkage_matrix(linkage_matrix, row_dissims.ids)
-    row_order = [int(tip.name) for tip in tree.tips()]
-    return row_order
+    return [int(tip.name) for tip in tree.tips()]
 
 
 def get_fontsize(numrows):

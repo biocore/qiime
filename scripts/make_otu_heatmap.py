@@ -55,7 +55,7 @@ script_info['script_description'] = (
     "value and subsequently clustered within each group.")
 script_info['script_usage'] = []
 script_info['script_usage'].append(
-    ("""Examples:""",
+    ("",
      """Using default values:""",
      """%prog -i otu_table.biom"""))
 script_info['script_usage'].append(
@@ -64,12 +64,13 @@ script_info['script_usage'].append(
      "%prog -i otu_table.biom -o otu_heatmap"))
 script_info['script_usage'].append(
     ("",
-     "Sort the heatmap columns by the order in a mapping file, as follows:",
+     "Sort the heatmap columns (samples) by the order of samples in a mapping "
+     "file",
      "%prog -i otu_table.biom -o otu_heatmap -m mapping_file.txt"))
 script_info['script_usage'].append(
     ("",
-     "Sort the heatmap columns by Sample ID's and the heatmap rows by the "
-     "order of tips in the tree, you can supply a tree as follows:",
+     "Sort the heatmap columns by Sample IDs and the heatmap rows by the "
+     "order of tips in the tree:",
      "%prog -i otu_table.biom -o otu_heatmap -m mapping_file.txt -t "
      "rep_set.tre"))
 script_info['script_usage'].append(
@@ -77,7 +78,7 @@ script_info['script_usage'].append(
      "Group the heatmap columns by metadata category (e.g., Treatment), then "
      "cluster within each group:""",
      "%prog -i otu_table.biom -o otu_heatmap -m mapping_file.txt -c "
-     "'Treatment'"))
+     "Treatment"))
 
 script_info['output_description'] = (
     "The heatmap image is located in the specified output directory. It is "
