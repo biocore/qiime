@@ -1278,14 +1278,8 @@ class MothurTaxonAssignerTests(TestCase):
     def test_assignment_with_collision(self):
         """Taxa with spaces should be distinct from taxa with underscores.
         """
-        fd, id_to_taxonomy_fp = mkstemp(
-            prefix='MothurTaxonAssigner_',
-            suffix='.txt')
-        close(fd)
-
-        with open(id_to_taxonomy_fp, "w") as f:
+        with open(self.params['id_to_taxonomy_fp'], "w") as f:
             f.write(mothur_id_to_taxonomy_collision)
-        self.params['id_to_taxonomy_fp'] = id_to_taxonomy_fp
 
         with open(self.seq_fp1, "w") as f:
             f.write(mothur_input_collision)
@@ -1297,6 +1291,28 @@ class MothurTaxonAssignerTests(TestCase):
         self.assertEqual(spaces_lineage[:4], [
             'Bacteria', 'Proteo bacteria', 'Gammaproteobacteria',
             'Vibr iona les'])
+
+        underscores_lineage, _ = result['underscores_seq']
+        self.assertEqual(underscores_lineage[:4], [
+            'Bacteria', 'Proteo bacteria', 'Gammaproteobacteria',
+            'Vibr_iona_les'])
+
+    def test_assignment_with_double_spaces(self):
+        """Taxa with two spaces should be distinct from taxa with a single underscore.
+        """
+        with open(self.params['id_to_taxonomy_fp'], "w") as f:
+            f.write(mothur_id_to_taxonomy_collision2)
+
+        with open(self.seq_fp1, "w") as f:
+            f.write(mothur_input_collision)
+
+        assigner = MothurTaxonAssigner(self.params)
+        result = assigner(self.seq_fp1)
+
+        spaces_lineage, _ = result['spaces_seq']
+        self.assertEqual(spaces_lineage[:4], [
+            'Bacteria', 'Proteo bacteria', 'Gammaproteobacteria',
+            'Vibr  iona  les'])
 
         underscores_lineage, _ = result['underscores_seq']
         self.assertEqual(underscores_lineage[:4], [
@@ -1860,6 +1876,16 @@ xxxxxx	Bacteria; Proteo bacteria; Gammaproteobacteria; Pseudomonadales; Pseudomo
 AB004748	Bacteria; Proteo bacteria; Gammaproteobacteria; Enterobacter iales; Enterobacteriaceae; Enterobacter
 AB000278	Bacteria; Proteo bacteria; Gammaproteobacteria; Vibr_iona_les; Vibrionaceae; Photobacterium
 AB000390	Bacteria; Proteo bacteria; Gammaproteobacteria; Vibr iona les; Vibrionaceae; Vibrio
+"""
+
+mothur_id_to_taxonomy_collision2 = \
+    """X67228	Bacteria; Proteo bacteria; Alphaproteobacteria; Rhizobiales; Rhizobiaceae; Rhizobium
+X73443	Bacteria; Firmicutes; Clostridia; Clostridiales; Clostridiaceae; Clostridium
+AB004750	Bacteria; Proteo bacteria; Gammaproteobacteria; Enterobacter iales; Enterobacteriaceae; Enterobacter
+xxxxxx	Bacteria; Proteo bacteria; Gammaproteobacteria; Pseudomonadales; Pseudomonadaceae; Pseudomonas
+AB004748	Bacteria; Proteo bacteria; Gammaproteobacteria; Enterobacter iales; Enterobacteriaceae; Enterobacter
+AB000278	Bacteria; Proteo bacteria; Gammaproteobacteria; Vibr_iona_les; Vibrionaceae; Photobacterium
+AB000390	Bacteria; Proteo bacteria; Gammaproteobacteria; Vibr  iona  les; Vibrionaceae; Vibrio
 """
 
 mothur_input_collision = """\

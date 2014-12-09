@@ -731,16 +731,34 @@ class MothurTaxonAssigner(TaxonAssigner):
 
         Original taxon names are saved to self._original_taxa for later lookup.
         """
+        # Create private attribute to store unformatted taxon names.
+        # If _unformat_taxon() is called without first calling
+        # _format_taxon(), this attribute will be missing, and an
+        # AttributeError will be raised.
         if not hasattr(self, "_original_taxa"):
             self._original_taxa = {}
-        # Escape underscores with more underscores.  This functions in
-        # a similar way to escaping a backslash with another backslash
-        # in Python strings.
-        mothur_taxon = taxon.replace("_", "__")
+        # Escape backslashes
+        mothur_taxon = taxon.replace("\\", "\\\\")
+        # Escape underscores
+        mothur_taxon = mothur_taxon.replace("_", "\\_")
         # Now we can safely replace spaces with underscores
         mothur_taxon = mothur_taxon.replace(' ', '_')
         if mothur_taxon != taxon:
-            self._original_taxa[mothur_taxon] = taxon
+            previously_registered_taxon = self._original_taxa.get(mothur_taxon)
+            # If we have not yet registered the escaped taxon name, add it now.
+            if previously_registered_taxon is None:
+                self._original_taxa[mothur_taxon] = taxon
+            # Otherwise, check that the previously registered taxon is
+            # consistent with the current taxon.  If we have not
+            # escaped the taxon names properly, two distinct taxa may
+            # be registered under the same name.  This should probably
+            # never happen, but I can't prove it, so we check and
+            # raise an error if the taxa are inconsistent.
+            elif taxon != previously_registered_taxon:
+                raise ValueError(
+                    "Taxon %s conflicts with another taxon, %s. "
+                    "Please change one of the names." % (
+                        taxon, previously_registered_taxon))
         return mothur_taxon
 
     def _unformat_taxon(self, taxon):
@@ -757,16 +775,18 @@ class MothurTaxonAssigner(TaxonAssigner):
         percent_confidence = int(self.Params['Confidence'] * 100)
         with open(self.Params['id_to_taxonomy_fp'], "U") as tax_file:
             mothur_tax_file = self._format_id_to_taxonomy(tax_file)
-        result = mothur.mothur_classify_file(
-            query_file=seq_file,
-            ref_fp=self.Params['reference_sequences_fp'],
-            tax_fp=mothur_tax_file.name,
-            cutoff=percent_confidence,
-            iters=self.Params['Iterations'],
-            ksize=self.Params['KmerSize'],
-            output_fp=None,
-        )
-        mothur_tax_file.close()
+        try:
+            result = mothur.mothur_classify_file(
+                query_file=seq_file,
+                ref_fp=self.Params['reference_sequences_fp'],
+                tax_fp=mothur_tax_file.name,
+                cutoff=percent_confidence,
+                iters=self.Params['Iterations'],
+                ksize=self.Params['KmerSize'],
+                output_fp=None,
+            )
+        finally:
+            mothur_tax_file.close()
         result = self._unformat_result(result)
         if result_path is not None:
             with open(result_path, "w") as f:
