@@ -40,6 +40,8 @@ optionally a mapping file. Check out the new documentation for the naming conven
 * Relaxed sanity tests for ``compare_categories.py --method adonis`` so that unique values are only checked for categories that are non-numeric (see [issue #1316](https://github.com/biocore/qiime/issues/1360)).
 * ``core_diversity_analyses.py`` now requires ``--tree_fp`` unless ``--nonphylogenetic_diversity`` is passed (see [#1671](https://github.com/biocore/qiime/issues/1671)).
 * Fixed bug where ``--phred_offset`` in ``split_libraries_fastq.py`` was ignored (see [#1656](https://github.com/biocore/qiime/issues/1656)).
+* ``--tail_type`` option in ``compare_distance_matrices.py`` now accepts "two-sided" instead of "two sided" for specifying a two-sided alternative hypothesis. The new name is easier to specify via the command-line (quotes aren't needed because it is a single word).
+* The Mantel test (``--method mantel``) and Mantel correlogram (``--method mantel_corr)`` in ``compare_distance_matrices.py`` are considerably faster than previous implementations.
 
 QIIME 1.8.0 (11 Dec 2013)
 =========================
