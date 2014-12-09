@@ -220,12 +220,6 @@ class QIIMEConfig(TestCase):
         test_qiime_config_variable("pynast_template_alignment_blastdb_fp",
                                    self.config, self)
 
-    def test_template_alignment_lanemask_fp(self):
-        """template_alignment_lanemask, if set, is set to a valid path"""
-
-        test_qiime_config_variable("template_alignment_lanemask_fp",
-                                   self.config, self)
-
     def test_get_qiime_scripts_dir(self):
         """Test that we can find the directory containing QIIME scripts."""
         # get_qiime_scripts_dir will raise an error if it can't find a scripts

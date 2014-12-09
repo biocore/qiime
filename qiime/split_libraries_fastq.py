@@ -25,7 +25,6 @@ from qiime.format import (format_histogram_one_count,
 from qiime.parse import is_casava_v180_or_later
 from qiime.hamming import decode_hamming_8
 from qiime.golay import decode_golay_12
-from qiime.quality import phred_to_ascii33, phred_to_ascii64
 from qiime.util import qiime_open
 
 
@@ -187,7 +186,7 @@ def process_fastq_single_end_read_file_no_barcode(
         filter_bad_illumina_qual_digit=False,
         log_f=None,
         histogram_f=None,
-        phred_to_ascii_f=None):
+        phred_offset=None):
     """ Quality filtering when a single sample has been run in a lane
 
         This code simulates a barcode file to allow us to re-use the quality
@@ -216,7 +215,7 @@ def process_fastq_single_end_read_file_no_barcode(
             barcode_correction_fn=None,
             max_barcode_errors=0,
             strict_header_match=False,
-            phred_to_ascii_f=phred_to_ascii_f):
+            phred_offset=phred_offset):
         yield e
 
 
@@ -237,7 +236,7 @@ def process_fastq_single_end_read_file(fastq_read_f,
                                        barcode_correction_fn=None,
                                        max_barcode_errors=1.5,
                                        strict_header_match=True,
-                                       phred_to_ascii_f=None):
+                                       phred_offset=None):
     """parses fastq single-end read file
     """
     header_index = 0
@@ -254,13 +253,19 @@ def process_fastq_single_end_read_file(fastq_read_f,
         fastq_read_f_line1 = fastq_read_f[0]
         fastq_read_f_line2 = fastq_read_f[1]
 
-    post_casava_v180 = is_casava_v180_or_later(fastq_read_f_line1)
-    if post_casava_v180:
-        offset = 33
+    if phred_offset is None:
+        post_casava_v180 = is_casava_v180_or_later(fastq_read_f_line1)
+        if post_casava_v180:
+            phred_offset = 33
+        else:
+            phred_offset = 64
+
+    if phred_offset == 33:
         check_header_match_f = check_header_match_180_or_later
-    else:
-        offset = 64
+    elif phred_offset == 64:
         check_header_match_f = check_header_match_pre180
+    else:
+        raise ValueError("Invalid PHRED offset: %d" % phred_offset)
 
     # compute the barcode length, if they are all the same.
     # this is useful for selecting a subset of the barcode read
@@ -287,8 +292,8 @@ def process_fastq_single_end_read_file(fastq_read_f,
     sequence_lengths = []
     seqs_per_sample_counts = {}
     for bc_data, read_data in izip(
-            parse_fastq(fastq_barcode_f, strict=False, phred_offset=offset),
-            parse_fastq(fastq_read_f, strict=False, phred_offset=offset)):
+            parse_fastq(fastq_barcode_f, strict=False, phred_offset=phred_offset),
+            parse_fastq(fastq_read_f, strict=False, phred_offset=phred_offset)):
         input_sequence_count += 1
         # Confirm match between barcode and read headers
         if strict_header_match and \
