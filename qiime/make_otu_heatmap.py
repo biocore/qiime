@@ -156,7 +156,7 @@ def get_fontsize(numrows):
 def plot_heatmap(otu_table, row_labels, col_labels, filename, imagetype='pdf',
                  width=5, height=5, dpi=None, textborder=.25,
                  color_scheme='YlGn'):
-    """Create a heatmap plot, save as a pdf.
+    """Create a heatmap plot, save as a pdf by default.
 
         'width', 'height' are in inches
 
