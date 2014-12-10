@@ -752,9 +752,7 @@ def pick_subsampled_open_reference_otus(input_fp,
 
     # number of subsampled failures sequences is greater than the threshold,
     # continue to step 2,3 and 4
-    run_step_2_and_3 = True
-    if (num_subsampled_seqs < minimum_failure_threshold or num_subsampled_seqs == 0):
-        run_step_2_and_3 = False
+    run_step_2_and_3 = num_subsampled_seqs > minimum_failure_threshold
 
     if run_step_2_and_3:
         # Prep the OTU picking command for the subsampled failures
@@ -929,7 +927,7 @@ def pick_subsampled_open_reference_otus(input_fp,
     # iterate over all representative sequences from step2 and step4 and write
     # those corresponding to non-singleton otus to the final representative set
     # file and the new reference sequences file.
-    if num_subsampled_seqs >= minimum_failure_threshold:
+    if run_step_2_and_3:
         for otu_id, seq in parse_fasta(open(step2_repset_fasta_fp, 'U')):
             if otu_id.split()[0] in otus_to_keep:
                 new_refseqs_f.write('>%s\n%s\n' % (otu_id, seq))
@@ -943,7 +941,7 @@ def pick_subsampled_open_reference_otus(input_fp,
     final_repset_f.close()
 
     # steps 1-4 executed
-    if num_subsampled_seqs >= minimum_failure_threshold:
+    if run_step_2_and_3:
         logger.write('# Write non-singleton otus representative sequences from ' +
                      'step 2 and step 4 to the final representative set and the new reference' +
                      ' set (%s and %s respectively)\n\n' % (final_repset_fp, new_refseqs_fp))
