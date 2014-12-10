@@ -10,7 +10,7 @@ __email__ = "mcdonadt@colorado.edu"
 
 from unittest import TestCase, main
 
-from numpy import log, array, nan
+from numpy import log, array, nan, inf
 from biom import Table
 
 from qiime.index import compute_index
@@ -18,16 +18,20 @@ from qiime.index import compute_index
 
 class IndexTests(TestCase):
     def setUp(self):
+        ids_and_md = (['O1', 'O2', 'O3', 'O4'],
+                      ['S1', 'S2', 'S3'],
+                      [{'taxonomy': ['foo', 'bar']},
+                       {'taxonomy': ['foo', 'not bar']},
+                       {'taxonomy': ['foo', 'bar']},
+                       {'taxonomy': ['foo', 'not bar']}])
         self.t1 = Table(array([[0, 1, 2],
                                [0, 0, 1],
                                [1, 1, 0],
-                               [3, 0, 1]]),
-                        ['O1', 'O2', 'O3', 'O4'],
-                        ['S1', 'S2', 'S3'],
-                        [{'taxonomy': ['foo', 'bar']},
-                         {'taxonomy': ['foo', 'not bar']},
-                         {'taxonomy': ['foo', 'bar']},
-                         {'taxonomy': ['foo', 'not bar']}])
+                               [3, 0, 1]]), *ids_and_md)
+        self.t2 = Table(array([[0, 1, 2],
+                               [1, 0, 1],
+                               [0, 1, 0],
+                               [3, 0, 1]]), *ids_and_md)
 
     def test_compute_index(self):
         increased = set(['bar'])
@@ -37,12 +41,20 @@ class IndexTests(TestCase):
         obs = sorted(compute_index(self.t1, increased, decreased, 'taxonomy'))
         self.assertEqual(obs, exp)
 
+        decreased = set(['foo'])
+        increased = set(['bar'])
+        exp = [('S1', -inf), ('S2', log(2.0 / 2.0)), ('S3', log(2.0 / 4.0))]
+        obs = sorted(compute_index(self.t2, increased, decreased, 'taxonomy'))
+        self.assertEqual(obs, exp)
+
     def test_compute_index_raises(self):
         with self.assertRaises(KeyError):
             next(compute_index(self.t1, set(['foo']), set(['bar']), 'missing'))
 
         with self.assertRaises(ValueError):
             next(compute_index(self.t1, set(['foo']), set(['x']), 'taxonomy'))
+
+
 
 if __name__ == '__main__':
     main()
