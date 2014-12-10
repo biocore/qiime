@@ -243,8 +243,8 @@ script_info['optional_options'] = [
     make_option('--sortmerna_max_pos', type='int', default=10000,
                 help='The maximum number of positions per seed to store '
                      ' in the indexed database [default: %default]'),
-
     # end SortMeRNA specific parameters
+
     make_option('--min_aligned_percent',
                 help='Minimum percent of query sequence that can be aligned '
                      'to consider a hit, expressed as a fraction between 0 '
