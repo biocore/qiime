@@ -18,12 +18,11 @@ from matplotlib.pylab import *
 from matplotlib.cbook import iterable, is_string_like
 from matplotlib.patches import Ellipse
 from matplotlib.font_manager import FontProperties
-from commands import getoutput
 from string import strip
 from numpy import array, asarray, ndarray
 from time import strftime
 from random import choice
-from qiime.util import summarize_pcoas, isarray
+from qiime.util import summarize_pcoas, isarray, qiime_system_call
 from qiime.parse import group_by_field, group_by_fields, parse_coords
 from qiime.colors import data_color_order, data_colors, \
     get_group_colors, data_colors, iter_color_groups
@@ -103,7 +102,7 @@ data_colors={'blue':'#0000FF','lime':'#00FF00','red':'#FF0000', \
 default_colors = ['blue', 'lime', 'red', 'aqua', 'fuchsia', 'yellow', 'green',
                   'maroon', 'teal', 'purple', 'olive', 'silver', 'gray']
 
-# This function used to live in make_3d_plots.py but in the Boulder sk-bio 
+# This function used to live in make_3d_plots.py but in the Boulder sk-bio
 # code sprint it got moved here to remove the 3D files.
 def get_coord(coord_fname, method="IQR"):
     """Opens and returns coords location matrix and metadata.
@@ -112,7 +111,7 @@ def get_coord(coord_fname, method="IQR"):
     """
     if not os.path.isdir(coord_fname):
         try:
-            coord_f = open(coord_fname, 'U').readlines()
+            coord_f = open(coord_fname, 'U')
         except (TypeError, IOError):
             raise MissingFileError('Coord file required for this analysis')
         coord_header, coords, eigvals, pct_var = parse_coords(coord_f)
@@ -186,7 +185,8 @@ def make_line_plot(
     if generate_eps:
         eps_img_name = str('scree_plot.eps')
         savefig(os.path.join(dir_path, eps_img_name), format='eps')
-        out = getoutput("gzip -f " + os.path.join(dir_path, eps_img_name))
+        out, err, retcode = qiime_system_call(
+            "gzip -f " + os.path.join(dir_path, eps_img_name))
         eps_link = DOWNLOAD_LINK % ((os.path.join(data_file_link, eps_img_name)
                                      + ".gz"), "Download Figure")
 
@@ -272,7 +272,8 @@ def make_interactive_scatter(plot_label, dir_path, data_file_link,
     if generate_eps:
         eps_img_name = str(x_label[0:3] + 'vs' + y_label[0:3] + 'plot.eps')
         savefig(os.path.join(dir_path, eps_img_name), format='eps')
-        out = getoutput("gzip -f " + os.path.join(dir_path, eps_img_name))
+        out, err, retcode = qiime_system_call(
+            "gzip -f " + os.path.join(dir_path, eps_img_name))
         eps_link = DOWNLOAD_LINK % ((os.path.join(data_file_link, eps_img_name)
                                      + ".gz"), "Download Figure")
 

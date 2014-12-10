@@ -52,6 +52,15 @@ script_info['script_usage'].append(
 
 script_info['script_usage'].append(
     ("",
+     "Pick OTUs using usearch_ref, assign taxonomy, and create an OTU table "
+     "against a reference set of OTUs using usearch_ref. ALWAYS SPECIFY ABSOLUTE "
+     "FILE PATHS (absolute path represented here as $PWD, but will generally look "
+     "something like /home/ubuntu/my_analysis/).",
+     "%prog -i $PWD/seqs.fna -r $PWD/refseqs.fna -o $PWD/otus_usearch_ref/ "
+     "-p $PWD/usearch5.2_params.txt -t $PWD/taxa.txt"))
+
+script_info['script_usage'].append(
+    ("",
      "Pick OTUs, assign taxonomy, and create an OTU table against a "
      "reference set of OTUs using sortmerna. ALWAYS SPECIFY ABSOLUTE "
      "FILE PATHS (absolute path represented here as $PWD, but will "
@@ -64,7 +73,8 @@ script_info[
     '$PWD/otus/',
     '$PWD/otus_w_tax/',
     '$PWD/otus_usearch/',
-    '$PWD/otus_sortmerna/']
+    '$PWD/otus_sortmerna/',
+    '$PWD/otus_usearch_ref/']
 
 script_info['output_description'] = ""
 
@@ -96,6 +106,11 @@ script_info['optional_options'] = [
         '--taxonomy_fp',
         type='existing_filepath',
         help='the taxonomy map [default: %default]'),
+    make_option('-s', '--assign_taxonomy', action='store_true',
+                default=False,
+                help='Assign taxonomy to each sequence using '
+                'assign_taxonomy.py (this will override --taxonomy_fp, if provided). '
+                '[default: %default]'),
     make_option('-f', '--force', action='store_true',
                 dest='force', help='Force overwrite of existing output directory' +
                 ' (note: existing files in output_dir will not be removed)' +
@@ -122,11 +137,12 @@ def main():
     output_dir = opts.output_dir
     verbose = opts.verbose
     print_only = opts.print_only
+    assign_taxonomy = opts.assign_taxonomy
 
     parallel = opts.parallel
     # No longer checking that jobs_to_start > 2, but
     # commenting as we may change our minds about this.
-    #if parallel: raise_error_on_parallel_unavailable()
+    # if parallel: raise_error_on_parallel_unavailable()
 
     if opts.parameter_fp:
         try:
@@ -171,6 +187,7 @@ def main():
         reference_fp,
         output_dir,
         taxonomy_fp,
+        assign_taxonomy=assign_taxonomy,
         command_handler=command_handler,
         params=params,
         qiime_config=qiime_config,

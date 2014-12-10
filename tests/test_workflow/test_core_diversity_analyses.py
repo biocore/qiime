@@ -16,7 +16,7 @@ from shutil import rmtree
 from os.path import exists
 from tempfile import mkdtemp
 
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 from unittest import TestCase, main
 from qiime.util import (get_qiime_temp_dir,
                         load_qiime_config)
@@ -59,7 +59,7 @@ class CoreDiversityAnalysesTests(TestCase):
 
         # Define number of seconds a test can run for before timing out
         # and failing
-        initiate_timeout(480)
+        initiate_timeout(600)
 
     def tearDown(self):
 
@@ -145,6 +145,7 @@ class CoreDiversityAnalysesTests(TestCase):
             20,
             output_dir=self.test_out,
             params=parse_qiime_parameters({}),
+            arare_num_steps=3,
             qiime_config=self.qiime_config,
             categories=['SampleType', 'days_since_epoch'],
             tree_fp=self.test_data['tree'][0],

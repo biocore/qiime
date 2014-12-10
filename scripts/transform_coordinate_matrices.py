@@ -148,20 +148,16 @@ def main():
                                            randomize=False,
                                            max_dimensions=num_dimensions)
 
-        with open(output_matrix1_fp, 'w') as f:
-            transf_coords1.to_file(f)
-        with open(output_matrix2_fp, 'w') as f:
-            transf_coords2.to_file(f)
+        transf_coords1.write(output_matrix1_fp)
+        transf_coords2.write(output_matrix2_fp)
 
         if random_trials:
             if opts.store_trial_details:
                 trial_output_dir = join(output_dir, 'trial_details_%d' % i + 2)
             else:
                 trial_output_dir = None
-            with open(reference_input_fp, 'U') as f:
-                coords_f1 = list(f)
-            with open(query_input_fp, 'U') as f:
-                coords_f2 = list(f)
+            coords_f1 = open(reference_input_fp, 'U')
+            coords_f2 = open(query_input_fp, 'U')
             actual_m_squared, trial_m_squareds, count_better, mc_p_value =\
                 procrustes_monte_carlo(coords_f1,
                                        coords_f2,

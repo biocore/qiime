@@ -25,22 +25,22 @@ warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
 from os import remove
 from numpy import median
 
-import brokit
-from brokit.infernal import cmalign_from_alignment
-import brokit.clustalw
-import brokit.muscle_v38
-import brokit.mafft
+import bfillings
+from bfillings.infernal import cmalign_from_alignment
+import bfillings.clustalw
+import bfillings.muscle_v38
+import bfillings.mafft
 
 from cogent.parse.rfam import MinimalRfamParser, ChangedSequence
 from burrito.util import ApplicationNotFoundError
-from skbio.core.exception import RecordError
+from skbio.io import RecordError
 from skbio.parse.sequences import parse_fasta
 
 from qiime.util import (FunctionWithParams,
                         get_qiime_temp_dir)
 
-from skbio.core.alignment import SequenceCollection, Alignment
-from skbio.core.sequence import DNASequence
+from skbio.alignment import SequenceCollection, Alignment
+from skbio.sequence import DNASequence
 from skbio.parse.sequences import parse_fasta
 
 # Load PyNAST if it's available. If it's not, skip it if not but set up
@@ -301,8 +301,8 @@ alignment_method_constructors = {'pynast': PyNastAligner,
                                  'infernal': InfernalAligner}
 
 alignment_module_names = {
-    'muscle': brokit.muscle_v38,
-    'clustalw': brokit.clustalw,
-    'mafft': brokit.mafft,
-    'infernal': brokit.infernal,
+    'muscle': bfillings.muscle_v38,
+    'clustalw': bfillings.clustalw,
+    'mafft': bfillings.mafft,
+    'infernal': bfillings.infernal,
 }

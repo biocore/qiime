@@ -14,8 +14,8 @@ from os.path import join
 from types import ListType
 
 import pandas as pd
-from skbio.core.distance import DistanceMatrix
-from skbio.math.stats.distance import ANOSIM, PERMANOVA, bioenv
+from skbio.stats.distance import DistanceMatrix
+from skbio.stats.distance import anosim, permanova, bioenv
 
 from qiime.parse import parse_mapping_file_to_dict
 from qiime.util import get_qiime_temp_dir, MetadataMap, RExecutor
@@ -60,7 +60,7 @@ def compare_categories(dm_fp, map_fp, method, categories, num_perms, out_dir):
                          "analyses). Please choose a different metadata "
                          "column to perform statistical tests on.")
 
-    dm = DistanceMatrix.from_file(dm_fp)
+    dm = DistanceMatrix.read(dm_fp)
 
     if method in ('anosim', 'permanova', 'bioenv'):
         with open(map_fp, 'U') as map_f:
@@ -71,18 +71,16 @@ def compare_categories(dm_fp, map_fp, method, categories, num_perms, out_dir):
 
         if method in ('anosim', 'permanova'):
             if method == 'anosim':
-                method_cls = ANOSIM
+                method_fn = anosim
             elif method == 'permanova':
-                method_cls = PERMANOVA
+                method_fn = permanova
 
-            method_inst = method_cls(dm, df, column=categories[0])
-            results = method_inst(num_perms)
-
-            with open(out_fp, 'w') as out_f:
-                out_f.write(results.summary())
+            results = method_fn(dm, df, column=categories[0],
+                                permutations=num_perms)
         elif method == 'bioenv':
             results = bioenv(dm, df, columns=categories)
-            results.to_csv(out_fp, sep='\t')
+
+        results.to_csv(out_fp, sep='\t')
     else:
         # Remove any samples from the mapping file that aren't in the distance
         # matrix (important for validation checks). Use strict=True so that an
@@ -126,7 +124,9 @@ def compare_categories(dm_fp, map_fp, method, categories, num_perms, out_dir):
                 # The rest require groups of samples, so the category values
                 # cannot all be unique.
                 for category in categories:
-                    if md_map.hasUniqueCategoryValues(category):
+                    if (md_map.hasUniqueCategoryValues(category) and not
+                        (method == 'adonis' and
+                         md_map.isNumericCategory(category))):
                         raise ValueError("All values in category '%s' are "
                                          "unique. This statistical method "
                                          "cannot operate on a category with "

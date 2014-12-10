@@ -20,12 +20,7 @@ script_info = {}
 script_info['brief_description'] = """Pick representative set of sequences"""
 script_info['script_description'] = """After picking OTUs, you can then pick a\
  representative set of sequences. For each OTU, you will end up with one\
- sequence that can be used in subsequent analyses. By default, the\
- representative sequence for an OTU is chosen as the most abundant sequence\
- showing up in that OTU. This is computed by collapsing identical sequences,\
- and choosing the one that was read the most times as the representative\
- sequence (note that each of these would have a different sequence identifier\
- in the FASTA provided as input)."""
+ sequence that can be used in subsequent analyses."""
 script_info['script_usage'] = []
 
 script_info['script_usage'].append(("""Simple example: picking a representative\
@@ -33,11 +28,8 @@ script_info['script_usage'].append(("""Simple example: picking a representative\
  an 'OTU map' (via the \"-i\" parameter) which maps OTU identifiers to sequence\
  identifiers. Typically, this will be the output file provided by pick_otus.py.\
  Additionally, a FASTA file is required, via \"-f\", which contains all of the\
- sequences whose identifiers are listed in the OTU map.  By default, a\
- representative sequence will be chosen as the most abundant sequence in the\
- OTU. This can be changed to, for example, choose the first sequence listed in\
- each OTU by passing -m first.""",
-                                    """%prog -i seqs_otus.txt -f seqs.fna -o rep_set1.fna"""))
+ sequences whose identifiers are listed in the OTU map.""",
+     """%prog -i seqs_otus.txt -f seqs.fna -o rep_set1.fna"""))
 
 script_info['script_usage'].append(
     ("""Picking OTUs with "preferred representative" sequences""",

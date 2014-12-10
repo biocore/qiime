@@ -17,7 +17,7 @@ from os import makedirs
 from multiprocessing import cpu_count
 
 from qiime.util import make_option
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 from qiime.util import (parse_command_line_parameters, create_dir)
 from qiime.sort import sort_fasta_by_abundance
 from qiime.pick_otus  import otu_picking_method_constructors,\
@@ -243,8 +243,8 @@ script_info['optional_options'] = [
     make_option('--sortmerna_max_pos', type='int', default=10000,
                 help='The maximum number of positions per seed to store '
                      ' in the indexed database [default: %default]'),
-
     # end SortMeRNA specific parameters
+
     make_option('--min_aligned_percent',
                 help='Minimum percent of query sequence that can be aligned '
                      'to consider a hit, expressed as a fraction between 0 '

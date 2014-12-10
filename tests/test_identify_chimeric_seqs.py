@@ -16,11 +16,11 @@ from shutil import rmtree
 from tempfile import mkstemp, mkdtemp
 from unittest import TestCase, main
 
-from skbio.util.misc import remove_files
-from skbio.core.alignment import SequenceCollection
-from skbio.core.sequence import DNA
+from skbio.util import remove_files
+from skbio.alignment import SequenceCollection
+from skbio.sequence import DNA
 
-from brokit.formatdb import build_blast_db_from_fasta_file
+from bfillings.formatdb import build_blast_db_from_fasta_file
 
 from qiime.identify_chimeric_seqs import (BlastFragmentsChimeraChecker,
                                           chimeraSlayer_identify_chimeras, parse_CPS_file,

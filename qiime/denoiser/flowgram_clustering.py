@@ -22,7 +22,7 @@ from math import fsum, trunc
 from tempfile import mkstemp
 
 from burrito.util import ApplicationNotFoundError, ApplicationError
-from brokit.denoiser import (lazy_parse_sff_handle, Flowgram,
+from bfillings.denoiser import (lazy_parse_sff_handle, Flowgram,
                              FlowgramCollection, seq_to_flow)
 from skbio.parse.sequences import parse_fasta
 

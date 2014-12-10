@@ -9,7 +9,8 @@ __credits__ = [
     "Justin Kuczynski",
     "Jesse Stombaugh",
     "Greg Caporaso",
-    "Adam Robbins-Pianka"]
+    "Adam Robbins-Pianka",
+    "Sami Pietila"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -22,7 +23,8 @@ from qiime.filter import (get_seq_ids_from_seq_id_file,
                           get_seq_ids_from_fasta_file)
 from qiime.util import (parse_command_line_parameters, get_options_lookup,
                         make_option, write_biom_table)
-from qiime.parse import parse_taxonomy
+from qiime.parse import (parse_taxonomy, parse_mapping_file,
+                         mapping_file_to_dict)
 from qiime.make_otu_table import make_otu_table
 
 options_lookup = get_options_lookup()
@@ -48,6 +50,11 @@ script_info['script_usage'].append(
      """Make an OTU table, excluding the sequences listed in chimeric_seqs.txt""",
      "%prog -i otu_map.txt -o otu_table_non_chimeric.biom -e chimeric_seqs.txt"))
 
+script_info['script_usage'].append(
+    ("Make OTU table, passing a mapping file with sample metadata",
+     """Make an OTU table from an OTU map (i.e., result from pick_otus.py). Write the output file to otu_table.biom.""",
+     """%prog -i otu_map.txt -t tax_assignments.txt -o otu_table.biom -m mapping_file.txt"""))
+
 script_info[
     'output_description'] = """The output of make_otu_table.py is a biom file, where the columns correspond to Samples and rows correspond to OTUs and the number of times a sample appears in a particular OTU."""
 
@@ -60,6 +67,7 @@ script_info['optional_options'] = [
     make_option(
         '-t', '--taxonomy', type='existing_filepath', dest='taxonomy_fname',
         help='Path to taxonomy assignment, containing the assignments of taxons to sequences (i.e., resulting txt file from assign_taxonomy.py) [default: %default]'),
+    options_lookup['mapping_fp'],
     make_option('-e', '--exclude_otus_fp', type='existing_filepath',
                 help=("path to a file listing OTU identifiers that should not be included in the "
                       "OTU table (e.g., the output of identify_chimeric_seqs.py) or a fasta "
@@ -88,9 +96,21 @@ def main():
         else:
             ids_to_exclude = \
                 get_seq_ids_from_seq_id_file(open(exclude_otus_fp, 'U'))
-    biom_otu_table = make_otu_table(open(opts.otu_map_fp, 'U'),
-                                    otu_to_taxonomy=otu_to_taxonomy,
-                                    otu_ids_to_exclude=ids_to_exclude)
+
+    sample_metadata = None
+    if opts.mapping_fp is not None:
+        with open(opts.mapping_fp, 'U') as map_f:
+            mapping_data, mapping_header, mapping_comments = \
+                parse_mapping_file(map_f)
+
+        sample_metadata = mapping_file_to_dict(mapping_data,
+                                               mapping_header)
+
+    with open(opts.otu_map_fp, 'U') as otu_map_f:
+        biom_otu_table = make_otu_table(otu_map_f,
+                                        otu_to_taxonomy=otu_to_taxonomy,
+                                        otu_ids_to_exclude=ids_to_exclude,
+                                        sample_metadata=sample_metadata)
 
     write_biom_table(biom_otu_table, opts.output_biom_fp)
 

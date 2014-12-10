@@ -1,7 +1,7 @@
-include README.md
+include CONTRIBUTING.md
+include COPYING.txt
 include ChangeLog.md
-include README
-include INSTALL
+include README.md
 
 graft examples
 graft tests

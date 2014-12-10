@@ -12,10 +12,12 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 
-from numpy import array, matrix
+from unittest import TestCase, main
+from StringIO import StringIO
+
 from biom.parse import parse_biom_table
 from biom.exception import UnknownIDError
-from unittest import TestCase, main
+from numpy import array, matrix
 from numpy.testing import assert_almost_equal
 from StringIO import StringIO
 
@@ -355,7 +357,7 @@ class GroupTests(TestCase):
                     "Site constraints\t0\t0",
                     ""]
 
-        pc = parse_coords(pc_lines)
+        pc = parse_coords(StringIO('\n'.join(pc_lines)))
         expected_coords = [[-0.049, 0.245, 0.146, -0.036],
                            [-0.002, 0.216, -0.052, -0.085],
                            [-0.285, -0.260, -0.017, -0.070],
@@ -367,7 +369,7 @@ class GroupTests(TestCase):
         assert_almost_equal(actual_coords, expected_coords)
         self.assertEqual(actual_sids, expected_sids)
 
-        pc = parse_coords(pc_lines)
+        pc = parse_coords(StringIO('\n'.join(pc_lines)))
         expected_coords = [[-0.049, 0.245, 0.146, -0.036],
                            [-0.267, -0.228, -0.024, -0.095]]
         expected_sids = ['s1', 's5']
@@ -376,7 +378,7 @@ class GroupTests(TestCase):
         assert_almost_equal(actual_coords, expected_coords)
         self.assertEqual(actual_sids, expected_sids)
 
-        pc = parse_coords(pc_lines)
+        pc = parse_coords(StringIO('\n'.join(pc_lines)))
         expected_coords = [[-0.049, 0.245, 0.146, -0.036],
                            [-0.267, -0.228, -0.024, -0.095]]
         expected_sids = ['s1', 's5']
@@ -385,7 +387,7 @@ class GroupTests(TestCase):
         assert_almost_equal(actual_coords, expected_coords)
         self.assertEqual(actual_sids, expected_sids)
 
-        pc = parse_coords(pc_lines)
+        pc = parse_coords(StringIO('\n'.join(pc_lines)))
         expected_coords = [[-0.049, 0.245, 0.146, -0.036],
                            [-0.267, -0.228, -0.024, -0.095]]
         expected_sids = ['s1', 's5']

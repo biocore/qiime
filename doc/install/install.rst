@@ -87,10 +87,10 @@ The next are python packages not included in Canopy Express. Each of these can b
 * biom-format 1.3.1 (`src_biom <https://pypi.python.org/packages/source/b/biom-format/biom-format-1.3.1.tar.gz>`_) (license: BSD)
 * qcli 0.1.0 (`src_qcli <https://pypi.python.org/packages/source/q/qcli/qcli-0.1.0.tar.gz>`_) (license: GPL)
 * PyNAST 1.2.2 (`src_pynast <https://pypi.python.org/packages/source/p/pynast/pynast-1.2.2.tar.gz>`_) (license: BSD)
-* Emperor 0.9.3 (`src_emperor <https://pypi.python.org/packages/source/e/emperor/emperor-0.9.3.tar.gz>`_) (license: BSD)
+* Emperor >= 0.9.5 and < 1.0.0 (`src_emperor <https://pypi.python.org/packages/source/e/emperor/emperor-0.9.5.tar.gz>`_) (license: BSD)
 * pyqi 0.3.1 (`src_pyqi <https://pypi.python.org/packages/source/p/pyqi/pyqi-0.3.1.tar.gz>`_) (license: BSD)
-* scikit-bio 0.1.1-dev (latest development version) (`src_skbio <https://github.com/biocore/scikit-bio>`_) (license: BSD)
-* brokit (latest development version) (`src_brokit <https://github.com/biocore/brokit>`_) (license: GPL)
+* scikit-bio 0.2.2 (`src_skbio <https://pypi.python.org/packages/source/s/scikit-bio/scikit-bio-0.2.2.tar.gz>`_) (license: BSD)
+* burrito-fillings (latest development version) (`src_bfillings <https://github.com/biocore/burrito-fillings>`_) (license: GPL)
 
 Next, there are two non-python dependencies required for the QIIME base package. These should be installed by following their respective install instructions.
 
@@ -103,7 +103,6 @@ Data files necessary for the QIIME base installation
 After you've installed the base QIIME dependencies, there are several data files that are likely to be useful in your analyses. These can all be obtained using ``wget`` or ``curl``, and unzipping where necessary.
 
 * greengenes core set data file (`fasta <http://greengenes.lbl.gov/Download/Sequence_Data/Fasta_data_files/core_set_aligned.fasta.imputed>`_)
-* greengenes alignment lanemask file (`txt <http://greengenes.lbl.gov/Download/Sequence_Data/lanemask_in_1s_and_0s>`_)
 * Marker gene reference OTUs, taxonomies, and trees  (follow the *Resources* link from the `QIIME homepage <http://www.qiime.org>`_)
 
 You should next `write your QIIME config file <./qiime_config.html>`_.
@@ -145,7 +144,6 @@ You should see output that looks like the following::
 	pynast_template_alignment_blastdb:	None
 	assign_taxonomy_reference_seqs_fp:	$HOME/data/gg_13_5_otus/rep_set/97_otus.fasta
 	                     torque_queue:	friendlyq
-	   template_alignment_lanemask_fp:	$HOME/data/greengenes_core_sets/lanemask_in_1s_and_0s.txt
 	                    jobs_to_start:	2
 	            denoiser_min_per_core:	50
 	                         temp_dir:	$HOME/temp
@@ -252,7 +250,6 @@ You should see output that looks like the following::
 	pynast_template_alignment_blastdb:	None
 	assign_taxonomy_reference_seqs_fp:	$HOME/data/gg_13_5_otus/rep_set/97_otus.fasta
 	                     torque_queue:	friendlyq
-	   template_alignment_lanemask_fp:	$HOME/data/greengenes_core_sets/lanemask_in_1s_and_0s.txt
 	                    jobs_to_start:	2
 	            denoiser_min_per_core:	50
 	                         temp_dir:	$HOME/temp

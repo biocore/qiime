@@ -16,7 +16,7 @@ from shutil import rmtree
 from os.path import exists, join
 from tempfile import mkstemp , mkdtemp
 
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
 from biom import load_table

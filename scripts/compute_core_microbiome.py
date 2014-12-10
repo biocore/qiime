@@ -16,7 +16,7 @@ from matplotlib import use
 use('Agg', warn=False)
 from pylab import xlim, ylim, xlabel, ylabel, plot, savefig
 import numpy as np
-from skbio.util.misc import create_dir
+from skbio.util import create_dir
 from biom.parse import parse_biom_table
 from biom.exception import TableException
 

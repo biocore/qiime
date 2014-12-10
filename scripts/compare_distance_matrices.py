@@ -11,7 +11,7 @@ __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 
 from os import path
-from skbio.util.misc import create_dir
+from skbio.util import create_dir
 from qiime.parse import fields_to_dict, parse_distmat
 from qiime.util import (parse_command_line_parameters,
                         get_options_lookup,
@@ -112,12 +112,12 @@ script_info['optional_options'] = [
     # Standard Mantel specific, i.e., method == mantel
     make_option('-t', '--tail_type',
                 help='the type of tail test to perform when calculating the p-value. '
-                'Valid options: [two sided, less, greater] Two sided is a two-tailed '
-                'test, while less tests for r statistics less than the observed r '
-                'statistic, and greater tests for r statistics greater than the '
+                'Valid options: [two-sided, less, greater]. "two-sided" is a two-tailed '
+                'test, while "less" tests for r statistics less than the observed r '
+                'statistic, and "greater" tests for r statistics greater than the '
                 'observed r statistic. Only applies when method is mantel [default: '
-                '%default]', default='two sided', type='choice',
-                choices=['two sided', 'greater', 'less']),
+                '%default]', default='two-sided', type='choice',
+                choices=['two-sided', 'greater', 'less']),
     # Mantel Correlogram specific, i.e., method == mantel_corr
     make_option('-a', '--alpha',
                 help='the value of alpha to use when denoting significance in the '
@@ -164,6 +164,10 @@ comment_corr = comment_mantel_pmantel[:-1] + \
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
+
+    if opts.num_permutations < 1:
+        option_parser.error(
+            "--num_permutations must be greater than or equal to 1.")
 
     # Create the output dir if it doesn't already exist.
     try:

@@ -19,7 +19,7 @@ import os.path
 
 import numpy
 from numpy import inf
-from skbio.math.subsample import subsample
+from skbio.stats import subsample
 from biom.err import errstate
 
 from qiime.util import FunctionWithParams, write_biom_table

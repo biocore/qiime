@@ -14,7 +14,7 @@ from numpy import array, in1d
 from itertools import product
 
 from skbio.parse.sequences import parse_fasta
-from skbio.util.misc import create_dir
+from skbio.util import create_dir
 
 from qiime.parse import parse_mapping_file
 from qiime.format import format_mapping_file
