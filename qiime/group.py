@@ -294,7 +294,7 @@ def group_by_sample_metadata(mapping_f, collapse_fields,
         The sample metadata mapping file.
     collapse_fields : iterable
         The fields to combine when collapsing samples. For each sample in the
-        mapping_f, the ordered values from these columns will be tuplized as
+        mapping_f, the ordered values from these columns will be tuplized and
         used as the group identfier. Samples whose tuplized values in these
         fields are identical will be grouped.
     sample_id_field : str, optional
