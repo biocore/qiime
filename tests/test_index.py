@@ -55,6 +55,5 @@ class IndexTests(TestCase):
             next(compute_index(self.t1, set(['foo']), set(['x']), 'taxonomy'))
 
 
-
 if __name__ == '__main__':
     main()
