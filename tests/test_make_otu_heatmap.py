@@ -140,7 +140,7 @@ class TopLevelTests(TestCase):
     def test_plot_heatmap(self):
         plot_heatmap(
             self.otu_table, self.otu_table.ids(axis='observation'),
-            self.otu_table.ids(), filename=self.tmp_heatmap_fpath)
+            self.otu_table.ids(), self.tmp_heatmap_fpath)
         self.assertEqual(exists(self.tmp_heatmap_fpath), True)
         remove_files(set([self.tmp_heatmap_fpath]))
 
