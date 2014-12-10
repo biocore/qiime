@@ -497,7 +497,7 @@ class BlastTaxonAssigner(TaxonAssigner):
 
             blast_db_dir = mkdtemp(prefix='bltax-', dir=get_qiime_temp_dir())
             blast_db, db_files_to_remove = build_blast_db_from_fasta_path(
-                reference_seqs_path, output_dir=blast_db_dir)
+                abspath(reference_seqs_path), output_dir=blast_db_dir)
 
         # build the mapping of sequence identifier
         # (wrt to the blast db seqs) to taxonomy
