@@ -435,11 +435,8 @@ def is_computable_float(v):
     If v can be converted to a float that is not nan or inf, return v.
     Otherwise return False.
     '''
-    try:
-        tmp = float(v)
-        if not logical_or(isnan(tmp), isinf(tmp)):
-            return tmp 
-        else:
-            return False
-    except ValueError:
+    tmp = float(v)
+    if not logical_or(isnan(tmp), isinf(tmp)):
+        return tmp 
+    else:
         return False

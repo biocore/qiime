@@ -41,25 +41,19 @@ bootstrap_functions = {'spearman': spearman, 'pearson': pearson,
 script_info = {}
 script_info['brief_description'] = """This script calculates correlations between feature abundances and continuous-valued metadata."""
 script_info['script_description'] = """
-This script allows the calculation of:
-    1. Correlations between feature abundances (relative or absolute) and 
-       numeric metadata.
-    2. Paired t-tests between two groups of samples.
-
-Several methods are provided to allow the user to correlate 
-features to sample metadata values including Spearmans Rho, Pearson, Kendall's
-Tau, and the C or checkerboard score. 
+This script calculates correlations between feature (aka observation) abundances
+(relative or absolute) and numeric metadata.Several methods are provided to
+allow the user to correlate features to sample metadata values including
+Spearmans Rho, Pearson, Kendall's Tau, and the C or checkerboard score.
+References for these methods are numerous, but good descriptions may be found in 
+'Biometry' by Sokal and Rolhf. 
 
 The available methods for assigning p-values to the calculated correlation
 scores are bootstrapping, Fisher's Z transformation, a parametric
-t-distribution, and a Kendall's Tau specific p-value calculation.
-
-This script also allows paired t testing. The paired t test is accomplished by
-passing a paired mapping file which is just a two column (tab separation) table
-with the samples that should be paired in each row. It should not have a header.
+t-distribution, and a Kendall's Tau specific p-value calculation. These methods
+are also described in 'Biometry'.
 
 Notes:
-
 The only supported metric for P-value assignment with the C-score is 
 bootstrapping. For more information on the C-score, read Stone and Roberts 1990
 Oecologea paper 85: 74-79. If you fail to pass 
@@ -76,10 +70,6 @@ script_info['script_usage'].append(
     ("Calculate the correlation between OTUs in the table and the pH of the samples from mich they came:",
      "",
      "%prog -i otu_table.biom -m map.txt -c pH -s spearman -o spearman_otu_gradient.txt"))
-script_info['script_usage'].append(
-    ("Calculate paired t values for a before and after group of samples:",
-     "",
-     "%prog -i otu_table.biom --paired_t_fp=paired_samples.txt -o paired.txt"))
 script_info['script_usage'].append(
     ("Calculate the correlation between OTUs in the table and the pH of the samples from mich they came using bootstrapping and pearon correlation:",
      "",
@@ -106,13 +96,13 @@ script_info['required_options']=[
         help='path to input biom format table',
         type='existing_path'),
     make_option('-o', '--output_fp', type='new_filepath',
-        help='path to the output file to be created')]
-
-script_info['optional_options']=[
+        help='path to the output file to be created'),
     make_option('-m','--mapping_fp', type='existing_filepath',
         help='path to category mapping file'),
     make_option('-c', '--category', type='string',
-        help='name of the category over which to run the analysis'),
+        help='name of the category over which to run the analysis')]
+
+script_info['optional_options']=[
     make_option('-s', '--test', type="choice", 
         choices=correlation_assignment_choices,
         default='spearman', help='Correlation method to use. Choices are: %s' %
@@ -123,12 +113,6 @@ script_info['optional_options']=[
         '%s' % (', '.join(pvalue_assignment_choices)) + ' [default: %default]'),
     make_option('--metadata_key', default='taxonomy', type=str, 
         help='Key to extract metadata from biom table. [default: %default]'),
-    make_option('--paired_t_fp', type='existing_filepath', default=None, 
-        help='Pass a paired sample map as described in help to test with a '
-            'paired_t_two_sample test. Overrides all other options. A '
-            'paired sample map must be two columns without header that are '
-            'tab separated. Each row contains samples which should be paired.'
-            ' [default: %default]'),
     make_option('--permutations', default=1000, type=int, 
         help='Number of permutations to use for bootstrapped tests.'
             ' [default: %default]')]
@@ -142,91 +126,65 @@ def main():
         raise ValueError(cscore_error_text)
     
     bt = load_table(opts.otu_table_fp)
+    pmf, _ = parse_mapping_file_to_dict(opts.mapping_fp)
 
-    if opts.paired_t_fp is not None: #user wants to conduct paired t_test
-        o = open(opts.paired_t_fp, 'U')
-        lines = o.readlines()
-        o.close()
-        b_samples = []
-        a_samples = []
-        for i in lines:
-            a,b = i.strip().split('\t')
-            a_samples.append(a)
-            b_samples.append(b)
-        test_stats, pvals = run_paired_t(bt, a_samples, b_samples)
-        # calculate corrected pvals
-        fdr_pvals = array(benjamini_hochberg_step_down(pvals))
-        bon_pvals = bonferroni_correction(pvals)
-        # correct for cases where values above 1.0 due to correction
-        fdr_pvals = where(array(fdr_pvals) > 1.0, 1.0, fdr_pvals)
-        bon_pvals = where(array(bon_pvals) > 1.0, 1.0, bon_pvals)
-        # write output results after sorting
-        lines = correlate_output_formatter(bt, test_stats, pvals, fdr_pvals, 
-                                           bon_pvals, md_key=opts.metadata_key)
-        lines = sort_by_pval(lines, ind=2)
-        o = open(opts.output_fp, 'w')
-        o.writelines('\n'.join(lines))
-        o.close()
+    samples_to_correlate = []
+    md_values_to_correlate = []
+    bt_sample_ids = bt.ids(axis='sample')
 
-    else:  # user wants normal correlation analysis
-        pmf, _ = parse_mapping_file_to_dict(opts.mapping_fp)
-        category = opts.category
+    for sample_id, sample_md in pmf.items():
+        if sample_id in bt_sample_ids:
+            try:
+                v = is_computable_float(sample_md[opts.category])
+                samples_to_correlate.append(sample_id)
+                md_values_to_correlate.append(v)
+            except KeyError:
+                option_parser.error('The category (%s)' % opts.category +
+                    ' was not found in the mapping file.')
+            except ValueError:
+                pass  # value couldn't be converted to float, ignore this sample
+        else:
+            pass  # sample in mf, but not bt
 
-        samples_to_correlate = []
-        md_values_to_correlate = []
-        bt_sample_ids = bt.ids(axis='sample')
+    # remove samples which are not found in the mapping file or do not have
+    # metadata that converts to float
+    bt.filter(ids_to_keep = samples_to_correlate, axis='sample')
 
-        for sample_id, sample_md in pmf.items():
-            if sample_id in bt_sample_ids:
-                try:
-                    v = is_computable_float(sample_md[category])
-                    samples_to_correlate.append(sample_id)
-                    md_values_to_correlate.append(v)
-                except KeyError:
-                    raise ValueError('The category (%s)' % opts.category +
-                        ' was not found in the mapping file.')
-            else:
-                pass  # sample in mf, but not bt
+    # sort the biom table so that feature values are retrieved in the same 
+    # order as the metadata in the samples they correspond to
+    bt.sort(sort_f = lambda _: samples_to_correlate, axis='sample')
 
-        # remove samples which are not found in the mapping file or do not have
-        # metadata that converts to float
-        bt.filter(ids_to_keep = samples_to_correlate, axis='sample')
+    if bt.shape[1] <= 3:
+        raise ValueError(filtration_error_text)
 
-        # sort the biom table so that feature values are retrieved in the same 
-        # order as the metadata in the samples they correspond to
-        bt.sort(sort_f = lambda _: samples_to_correlate, axis='sample')
+    rhos = []
+    pvals = []
+    for feature_vector in bt.iter_data(axis='observation'):
+        rho = correlate(feature_vector, md_values_to_correlate,
+                        method=opts.test)
+        pval = assign_correlation_pval(rho, len(feature_vector),
+                                       method=opts.pval_assignment_method,
+                                       permutations=opts.permutations,
+                                       perm_test_fn=\
+                                            bootstrap_functions[opts.test],
+                                       v1=feature_vector,
+                                       v2=md_values_to_correlate)
+        rhos.append(rho)
+        pvals.append(pval)
 
-        if bt.shape[1] <= 3:
-            raise ValueError(filtration_error_text)
+    fdr_pvals = benjamini_hochberg_step_down(pvals)
+    bon_pvals = bonferroni_correction(pvals)
+    # correct for cases where values above 1.0 due to correction
+    fdr_pvals = where(array(fdr_pvals) > 1.0, 1.0, fdr_pvals)
+    bon_pvals = where(array(bon_pvals) > 1.0, 1.0, bon_pvals)
 
-        rhos = []
-        pvals = []
-        for feature_vector in bt.iter_data(axis='observation'):
-            rho = correlate(feature_vector, md_values_to_correlate,
-                            method=opts.test)
-            pval = assign_correlation_pval(rho, len(feature_vector),
-                                           method=opts.pval_assignment_method,
-                                           permutations=opts.permutations,
-                                           perm_test_fn=\
-                                                bootstrap_functions[opts.test],
-                                           v1=feature_vector,
-                                           v2=md_values_to_correlate)
-            rhos.append(rho)
-            pvals.append(pval)
+    lines = correlate_output_formatter(bt, rhos, pvals, fdr_pvals,
+                                       bon_pvals, opts.metadata_key)
+    lines = sort_by_pval(lines, ind=2)
 
-        fdr_pvals = benjamini_hochberg_step_down(pvals)
-        bon_pvals = bonferroni_correction(pvals)
-        # correct for cases where values above 1.0 due to correction
-        fdr_pvals = where(array(fdr_pvals) > 1.0, 1.0, fdr_pvals)
-        bon_pvals = where(array(bon_pvals) > 1.0, 1.0, bon_pvals)
-
-        lines = correlate_output_formatter(bt, rhos, pvals, fdr_pvals,
-                                           bon_pvals, opts.metadata_key)
-        lines = sort_by_pval(lines, ind=2)
-
-        o = open(opts.output_fp, 'w')
-        o.writelines('\n'.join(lines))
-        o.close()
+    o = open(opts.output_fp, 'w')
+    o.writelines('\n'.join(lines))
+    o.close()
 
 if __name__ == "__main__":
     main()
