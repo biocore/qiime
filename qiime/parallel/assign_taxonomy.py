@@ -140,7 +140,6 @@ class ParallelBlastTaxonomyAssigner(ParallelTaxonomyAssigner):
             blast_db, db_files_to_remove = build_blast_db_from_fasta_path(
                 params['reference_seqs_fp'], output_dir=working_dir)
             self.files_to_remove += db_files_to_remove
-            #self.files_to_remove += blast_db_dir
             params['blast_db'] = blast_db
 
     def _get_job_commands(self, fasta_fps, output_dir, params, job_prefix,
