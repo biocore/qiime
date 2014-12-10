@@ -1,18 +1,16 @@
-For most QIIME analyses, you'll want to use the Greengenes Core Set files. To get these, first open a new terminal window (click on the black box with a > symbol on the top of your screen).
+For most QIIME analyses, you'll want to use the Greengenes Core Set file. To get this, first open a new terminal window (click on the black box with a > symbol on the top of your screen).
 
 Ensure that you are in your home directory by entering the command:
 
 cd
 
-Then, run the two commands:
+Then, run the following command:
 
 wget http://greengenes.lbl.gov/Download/Sequence_Data/Fasta_data_files/core_set_aligned.fasta.imputed
 
-wget http://greengenes.lbl.gov/Download/Sequence_Data/lanemask_in_1s_and_0s
-
 Note that the command wget works as follows: "wget URL_to_file". The entire command is one line.
 
-This will download the two required files to your home directory. These files are used by QIIME and their location is set in the /home/qiime/.qiime_config file, if you move them from your home directory, please, update this file with the new location.
+This will download the required file to your home directory. This file is used by QIIME and its location is set in the /home/qiime/.qiime_config file. If you move them from your home directory, please, update this file with the new location.
 
-Once you have downloaded these files, you should be ready to run your first QIIME analysis. The best way to start is reading the tutorial, available locally by double clicking on the documentation.html in the Before_you_start folder. If you are using the current Virtual Machine version you can also use the online documetation, here:
+Once you have downloaded this file, you should be ready to run your first QIIME analysis. The best way to start is reading the tutorial, available locally by double clicking on the documentation.html in the Before_you_start folder. If you are using the current Virtual Machine version you can also use the online documetation, here:
    http://www.qiime.org/
