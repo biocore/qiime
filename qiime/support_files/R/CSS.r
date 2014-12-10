@@ -29,12 +29,11 @@ if(is.null(opts$input_path)) stop('Please supply an otu table.')
 "CSS" <- function(input_path, out_path, output_CSS_statistics=NULL) {
 			obj = load_biom(input_path)
             p = cumNormStatFast(obj)
-            data = cumNorm(obj, p = p)
-            mat = MRcounts(data, norm = TRUE, log = TRUE)
+            obj = cumNorm(obj, p = p)
             if (!is.null(output_CSS_statistics)) {
                 exportStats(obj, p=p, file = file.path(output_CSS_statistics))
             }
-            write_biom(make_biom(mat), out_path)
+            write_biom(MRexperiment2biom(obj, norm=TRUE, log=TRUE), out_path)
         }
         
 CSS(opts$input_path, opts$out_path, opts$output_CSS_statistics)
