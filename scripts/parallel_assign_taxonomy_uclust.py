@@ -13,7 +13,9 @@ __email__ = "gregcaporaso@gmail.com"
 from os import getenv
 from os.path import join
 from qiime.util import (get_options_lookup, load_qiime_config, make_option,
-                        parse_command_line_parameters)
+                         parse_command_line_parameters,
+                         get_default_taxonomy_assignment_reference_seqs,
+                         get_default_reference_taxonomy)
 from qiime.parallel.assign_taxonomy import ParallelUclustConsensusTaxonomyAssigner
 
 qiime_config = load_qiime_config()
@@ -39,8 +41,8 @@ script_info['required_options'] = [
                 type='new_dirpath', help='path to store output files [REQUIRED]'),
 ]
 
-default_reference_seqs_fp = qiime_config['assign_taxonomy_reference_seqs_fp']
-default_id_to_taxonomy_fp = qiime_config['assign_taxonomy_id_to_taxonomy_fp']
+default_reference_seqs_fp = get_default_taxonomy_assignment_reference_seqs()
+default_id_to_taxonomy_fp = get_default_reference_taxonomy()
 
 script_info['optional_options'] = [
     make_option('-t', '--id_to_taxonomy_fp', action='store',

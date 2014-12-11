@@ -340,6 +340,16 @@ def get_default_template_alignment():
     return (qiime_config['pynast_template_alignment_fp'] or
              get_template_alignment())
 
+def get_default_taxonomy_assignment_reference_seqs():
+    qiime_config = load_qiime_config()
+    return (qiime_config['assign_taxonomy_reference_seqs_fp'] or
+             get_reference_sequences())
+
+def get_default_reference_taxonomy():
+    qiime_config = load_qiime_config()
+    return (qiime_config['assign_taxonomy_id_to_taxonomy_fp'] or
+             get_reference_taxonomy())
+
 def qiime_blast_seqs(seqs,
                      blast_constructor=Blastall,
                      blast_program='blastn',

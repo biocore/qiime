@@ -11,11 +11,10 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Antonio Gonzalez Pena"
 __email__ = "antgonza@gmail.com"
 
-from qiime.util import (parse_command_line_parameters,
-                        get_options_lookup,
-                        make_option,
-                        load_qiime_config,
-                        remove_files)
+from qiime.util import (parse_command_line_parameters, get_options_lookup,
+                         make_option, load_qiime_config, remove_files,
+                         get_default_taxonomy_assignment_reference_seqs,
+                         get_default_reference_taxonomy)
 from os import mkdir, close
 from os.path import split, splitext, isfile
 from tempfile import mkstemp
@@ -109,23 +108,20 @@ script_info['required_options'] = [
     options_lookup['fasta_as_primary_input']
 ]
 
-default_reference_seqs_fp = qiime_config['assign_taxonomy_reference_seqs_fp']
-default_id_to_taxonomy_fp = qiime_config['assign_taxonomy_id_to_taxonomy_fp']
+default_reference_seqs_fp = get_default_taxonomy_assignment_reference_seqs()
+default_id_to_taxonomy_fp = get_default_reference_taxonomy()
 
 script_info['optional_options'] = [
     make_option('-t', '--id_to_taxonomy_fp', type="existing_filepath",
                 help='Path to tab-delimited file mapping sequences to assigned '
                 'taxonomy. Each assigned taxonomy is provided as a semicolon-separated'
                 ' list. For assignment with rdp, each assigned taxonomy must be '
-                'exactly 6 levels deep. [default: %s; REQUIRED when method is blast]'
-                % default_id_to_taxonomy_fp,
+                'exactly 6 levels deep. [default: %default]',
                 default=default_id_to_taxonomy_fp),
     make_option('-r', '--reference_seqs_fp', type="existing_filepath",
                 help='Path to reference sequences.  For assignment with blast, these '
                 'are used to generate a blast database. For assignment with rdp, they '
-                'are used as training sequences for the classifier. '
-                '[default: %s; REQUIRED if -b is not provided when method is blast]'
-                % default_reference_seqs_fp,
+                'are used as training sequences for the classifier. [default: %default]',
                 default=default_reference_seqs_fp),
     make_option(
         '-p', '--training_data_properties_fp', type="existing_filepath",
