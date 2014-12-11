@@ -25,6 +25,7 @@ from collections import Counter, defaultdict
 from shutil import rmtree
 
 from skbio.parse.sequences import parse_fasta
+from skbio.util import remove_files
 
 from bfillings.blast import blast_seqs, Blastall, BlastResult
 from bfillings.formatdb import build_blast_db_from_fasta_path
@@ -493,8 +494,10 @@ class BlastTaxonAssigner(TaxonAssigner):
             # build a temporary blast_db
             reference_seqs_path = self.Params['reference_seqs_filepath']
             refseqs_dir, refseqs_name = os.path.split(reference_seqs_path)
-            blast_db, db_files_to_remove = \
-                build_blast_db_from_fasta_path(reference_seqs_path)
+
+            blast_db_dir = mkdtemp(prefix='bltax-', dir=get_qiime_temp_dir())
+            blast_db, db_files_to_remove = build_blast_db_from_fasta_path(
+                abspath(reference_seqs_path), output_dir=blast_db_dir)
 
         # build the mapping of sequence identifier
         # (wrt to the blast db seqs) to taxonomy
@@ -567,7 +570,8 @@ class BlastTaxonAssigner(TaxonAssigner):
 
         # clean-up temp blastdb files, if a temp blastdb was created
         if 'reference_seqs_filepath' in self.Params:
-            map(remove, db_files_to_remove)
+            remove_files(db_files_to_remove)
+            rmtree(blast_db_dir)
 
         # return the result
         return result
