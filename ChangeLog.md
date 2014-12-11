@@ -1,6 +1,6 @@
 QIIME 1.8.0-dev (changes since 1.8.0 go here)
 =============================================
-* ``correlations.py`` has been added. This script allows the calculation of correlations between feature abundances and continuous-valued metadata. It also reintroduces the paired-t test functionality that has been missing in 1.8. This script also replaces the functions that were in ``otu_category_significance.py`` in QIIME 1.7 and earlier.
+* ``observation_metadata_correlation.py`` has been added. This script allows the calculation of correlations between feature abundances and continuous-valued metadata.This script  replaces the functions that were in ``otu_category_significance.py`` in QIIME 1.7 and earlier.
 * ``split_otu_table.py`` now allows multiple fields to be passed to split a biom table, and
 optionally a mapping file. Check out the new documentation for the naming conventions
 (which have changed slightly) and an example.
