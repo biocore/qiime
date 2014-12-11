@@ -137,8 +137,8 @@ class ParallelBlastTaxonomyAssigner(ParallelTaxonomyAssigner):
         if not params['blast_db']:
             # Build the blast database from the reference_seqs_fp -- all procs
             # will then access one db rather than create one per proc.
-            blast_db, db_files_to_remove = \
-                build_blast_db_from_fasta_path(params['reference_seqs_fp'])
+            blast_db, db_files_to_remove = build_blast_db_from_fasta_path(
+                params['reference_seqs_fp'], output_dir=working_dir)
             self.files_to_remove += db_files_to_remove
             params['blast_db'] = blast_db
 
