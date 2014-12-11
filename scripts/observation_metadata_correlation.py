@@ -46,12 +46,55 @@ This script calculates correlations between feature (aka observation) abundances
 allow the user to correlate features to sample metadata values including
 Spearmans Rho, Pearson, Kendall's Tau, and the C or checkerboard score.
 References for these methods are numerous, but good descriptions may be found in 
-'Biometry' by Sokal and Rolhf. 
+'Biometry' by Sokal and Rolhf. A brief description of the available tests
+follows:
 
-The available methods for assigning p-values to the calculated correlation
-scores are bootstrapping, Fisher's Z transformation, a parametric
-t-distribution, and a Kendall's Tau specific p-value calculation. These methods
-are also described in 'Biometry'.
+- Pearson score: The Pearson score aka Pearson's Product Moment correlation, is
+  a scaled measure of the degree to which two sequences of numbers co-vary. For
+  'correlated' sequences, Pearson > 0, and for 'anticorrelated' sequences
+  Pearson < 0 (uncorrelated implies Pearson = 0). Pearson is a paramateric
+  and linear measure of correlation.
+
+- Spearmans Rho: The Spearman correlation is a non-paramateric measure of
+  correlation between two sequences of numbers. Spearman correlation is
+  appropriate for data where the values of the observations are not necessarily
+  accurate, but for which their relative magnitudes are (see Biometry for more 
+  details.)
+
+- Kendalls Tau: Kendall's Tau is an alternative method of calculating
+  correlation between two sequences of numbers. It is slower and less widely
+  utilized than Spearman or Pearson scores.
+
+- Cscore: The c-score or 'checkerboard score' is a measure of covariation
+  between two sequences that is derived from traditional ecology (Stone and
+  Roberts. 1990, Oecologia 85:74-79). 
+
+Raw correlation statistics alone reflect only the degree of association between
+two sequences of numbers or vectors. Assigning a likelihood to these score via
+a p-value can be done with several methods depending on the particular
+assumptions that are used. This script allows four methods for calculating
+p-values:
+
+- Bootrapping: Bootstrapping is the most robust, but slowest procedure for
+  calculating the p-value of a given correlation score. Bootstrapping takes the
+  input sequences, shuffles the order of one, and then recomputes the
+  correlation score. The p-value is then the number of times (out of the given
+  number of permutations) that the score of the permuted sequence pair was more
+  extreme than the observed pair. Bootstrapping is good when the underlying
+  properties of the distributions are unknown. 
+
+- Parametric t distribution: the traditional method for calculating the
+  significance of a correlation score, this method assumes that the scores are
+  normally distributed and computes a t statistic for each correlation score in 
+  conjunction with the length of the sequences being correlated. 
+
+- Fisher Z transform: Fisher's Z transform is a way to make the distribution of
+  correlation scores (especially when there are many highly correlation scores)
+  look more normal. It is not to be confused with Fisher's transformation for
+  the combination of p-values.
+
+- Kendalls Tau: for the Kendalls Tau calculation, the specific Kendalls Tau 
+  pvalue is provided. 
 
 Notes:
 The only supported metric for P-value assignment with the C-score is 
