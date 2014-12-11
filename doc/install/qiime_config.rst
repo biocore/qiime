@@ -49,4 +49,6 @@ Definition of values in qiime_config
 
 ``assign_taxonomy_id_to_taxonomy_fp`` : id-to-taxonomy map to use with assign_taxonomy.py (and parallel versions), if you prefer to not use the default
 
+``pick_otus_reference_seqs_fp`` : reference database to use with all OTU picking scripts and workflows, if you prefer to not use the default
+
 ``sc_queue`` : default queue to submit jobs to when running parallel QIIME on StarCluster
