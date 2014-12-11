@@ -72,6 +72,12 @@ except ImportError as e:
     raise ImportError("%s\n%s" % (e, core_dependency_missing_msg))
 
 try:
+    from qiime_default_reference import __version__ as qdr_lib_version
+except ImportError as e:
+    raise ImportError("%s\n%s" % (e, core_dependency_missing_msg))
+
+
+try:
     from skbio import __version__ as skbio_lib_version
     from burrito.util import which
 except ImportError as e:
@@ -729,6 +735,7 @@ def main():
     version_info = [
         ("QIIME library version", get_qiime_library_version()),
         ("QIIME script version", __version__),
+        ("qiime-default-reference version", qdr_lib_version),
         ("NumPy version", numpy_lib_version),
         ("SciPy version", scipy_lib_version),
         ("pandas version", pandas_lib_version),
