@@ -108,7 +108,7 @@ def main():
                         params,
                         job_prefix=opts.job_prefix,
                         poll_directly=opts.poll_directly,
-                        suppress_submit_jobs=False)
+                        suppress_submit_jobs=opts.suppress_submit_jobs)
     elif opts.assignment_method == 'blat':
         parallel_runner = ParallelDatabaseMapperBlat(
             cluster_jobs_fp=opts.cluster_jobs_fp,
@@ -121,7 +121,7 @@ def main():
                         params,
                         job_prefix=opts.job_prefix,
                         poll_directly=opts.poll_directly,
-                        suppress_submit_jobs=False)
+                        suppress_submit_jobs=opts.suppress_submit_jobs)
     elif opts.assignment_method == 'bwa-short':
         # cast max_diff to an int if it's being passed as an int
         if params['max_diff'] is not None and params['max_diff'] > 1.0:
@@ -137,7 +137,7 @@ def main():
                         params,
                         job_prefix=opts.job_prefix,
                         poll_directly=opts.poll_directly,
-                        suppress_submit_jobs=False)
+                        suppress_submit_jobs=opts.suppress_submit_jobs)
     else:
         # other -- shouldn't be able to get here as a KeyError would have
         # been raised earlier

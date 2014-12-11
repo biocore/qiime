@@ -19,7 +19,7 @@ from skbio.parse.sequences import parse_fasta
 from biom import Table
 from biom.util import biom_open
 
-from qiime.util import (subsample_fasta)
+from qiime.util import (subsample_fasta, count_seqs_from_file)
 from qiime.filter import (filter_otus_from_otu_table,
                           get_seq_ids_from_fasta_file,
                           filter_otus_from_otu_map)
@@ -90,7 +90,7 @@ def pick_reference_otus(input_fp,
         else:
             params_copy['pick_otus'] = {'similarity': str(similarity_override)}
 
-    if parallel and otu_picking_method == 'uclust_ref':
+    if parallel and (otu_picking_method == 'uclust_ref' or otu_picking_method == "sortmerna"):
         # Grab the parallel-specific parameters
         try:
             params_str = get_params_str(params_copy['parallel'])
@@ -376,7 +376,8 @@ def iterative_pick_subsampled_open_reference_otus(
         suppress_md5=False,
         denovo_otu_picking_method='uclust',
         reference_otu_picking_method='uclust_ref',
-        status_update_callback=print_to_stdout):
+        status_update_callback=print_to_stdout,
+        minimum_failure_threshold=100000):
     """ Call the pick_subsampled_open_reference_otus workflow on multiple inputs
          and handle processing of the results.
     """
@@ -432,7 +433,8 @@ def iterative_pick_subsampled_open_reference_otus(
                                                 suppress_index_page=True,
                                                 denovo_otu_picking_method=denovo_otu_picking_method,
                                                 reference_otu_picking_method=reference_otu_picking_method,
-                                                status_update_callback=status_update_callback)
+                                                status_update_callback=status_update_callback,
+                                                minimum_failure_threshold=minimum_failure_threshold)
         # perform post-iteration file shuffling whether the previous iteration's
         # data previously existed or was just computed.
         # step1 otu map and failures can only be used for the first iteration
@@ -575,7 +577,8 @@ def pick_subsampled_open_reference_otus(input_fp,
                                         suppress_index_page=False,
                                         denovo_otu_picking_method='uclust',
                                         reference_otu_picking_method='uclust_ref',
-                                        status_update_callback=print_to_stdout):
+                                        status_update_callback=print_to_stdout,
+                                        minimum_failure_threshold=100000):
     """ Run the data preparation steps of Qiime
 
         The steps performed by this function are:
@@ -740,74 +743,94 @@ def pick_subsampled_open_reference_otus(input_fp,
                                                         step2_input_fasta_fp),
                                                     percent_subsample))
 
-    # Prep the OTU picking command for the subsampled failures
-    step2_dir = '%s/step2_otus/' % output_dir
-    step2_cmd = pick_denovo_otus(step2_input_fasta_fp,
-                                 step2_dir,
-                                 new_ref_set_id,
-                                 denovo_otu_picking_method,
-                                 params,
-                                 logger)
-    step2_otu_map_fp = '%s/subsampled_failures_otus.txt' % step2_dir
-
-    commands.append([('Pick de novo OTUs for new clusters', step2_cmd)])
-
-    # Prep the rep set picking command for the subsampled failures
-    step2_repset_fasta_fp = '%s/step2_rep_set.fna' % step2_dir
-    step2_rep_set_cmd = 'pick_rep_set.py -i %s -o %s -f %s' %\
-        (step2_otu_map_fp, step2_repset_fasta_fp, step2_input_fasta_fp)
-    commands.append(
-        [('Pick representative set for subsampled failures', step2_rep_set_cmd)])
-
-    step3_dir = '%s/step3_otus/' % output_dir
-    step3_otu_map_fp = '%s/failures_otus.txt' % step3_dir
-    step3_failures_list_fp = '%s/failures_failures.txt' % step3_dir
-
-    # remove the indexed reference database from the dictionary of
-    # parameters as it must be forced to build a new database
-    # using the step2_repset_fasta_fp
-    if reference_otu_picking_method == 'sortmerna':
-        if 'sortmerna_db' in params['pick_otus']:
-            del params['pick_otus']['sortmerna_db']
-
-    step3_cmd = pick_reference_otus(
-        step1_failures_fasta_fp,
-        step3_dir,
-        reference_otu_picking_method,
-        step2_repset_fasta_fp,
-        parallel,
-        params,
-        logger)
-
-    commands.append([
-        ('Pick reference OTUs using de novo rep set', step3_cmd)])
+    # count number of sequences in subsampled failures fasta file
+    with open(abspath(step2_input_fasta_fp), 'U') as step2_input_fasta_f:
+        num_subsampled_seqs, mean, std = count_seqs_from_file(step2_input_fasta_f)
 
     # name the final otu map
     merged_otu_map_fp = '%s/final_otu_map.txt' % output_dir
 
-    index_links.append(
-        ('Final map of OTU identifier to sequence identifers (i.e., "OTU map")',
-         merged_otu_map_fp,
-         _index_headers['otu_maps']))
+    # number of subsampled failures sequences is greater than the threshold,
+    # continue to step 2,3 and 4
+    run_step_2_and_3 = num_subsampled_seqs > minimum_failure_threshold
 
+    if run_step_2_and_3:
+        # Prep the OTU picking command for the subsampled failures
+        step2_dir = '%s/step2_otus/' % output_dir
+        step2_cmd = pick_denovo_otus(step2_input_fasta_fp,
+                                     step2_dir,
+                                     new_ref_set_id,
+                                     denovo_otu_picking_method,
+                                     params,
+                                     logger)
+        step2_otu_map_fp = '%s/subsampled_failures_otus.txt' % step2_dir
+
+        commands.append([('Pick de novo OTUs for new clusters', step2_cmd)])
+
+        # Prep the rep set picking command for the subsampled failures
+        step2_repset_fasta_fp = '%s/step2_rep_set.fna' % step2_dir
+        step2_rep_set_cmd = 'pick_rep_set.py -i %s -o %s -f %s' %\
+            (step2_otu_map_fp, step2_repset_fasta_fp, step2_input_fasta_fp)
+        commands.append(
+            [('Pick representative set for subsampled failures', step2_rep_set_cmd)])
+
+        step3_dir = '%s/step3_otus/' % output_dir
+        step3_otu_map_fp = '%s/failures_otus.txt' % step3_dir
+        step3_failures_list_fp = '%s/failures_failures.txt' % step3_dir
+
+        # remove the indexed reference database from the dictionary of
+        # parameters as it must be forced to build a new database
+        # using the step2_repset_fasta_fp
+        if reference_otu_picking_method == 'sortmerna':
+            if 'sortmerna_db' in params['pick_otus']:
+                del params['pick_otus']['sortmerna_db']
+
+        step3_cmd = pick_reference_otus(
+            step1_failures_fasta_fp,
+            step3_dir,
+            reference_otu_picking_method,
+            step2_repset_fasta_fp,
+            parallel,
+            params,
+            logger)
+
+        commands.append([
+            ('Pick reference OTUs using de novo rep set', step3_cmd)])
+
+        index_links.append(
+            ('Final map of OTU identifier to sequence identifers (i.e., "OTU map")',
+             merged_otu_map_fp,
+             _index_headers['otu_maps']))
 
     if not suppress_step4:
-        step3_failures_fasta_fp = '%s/failures_failures.fasta' % step3_dir
-        step3_filter_fasta_cmd = 'filter_fasta.py -f %s -s %s -o %s' %\
-            (step1_failures_fasta_fp,
-             step3_failures_list_fp, step3_failures_fasta_fp)
-        commands.append([('Create fasta file of step3 failures',
-                          step3_filter_fasta_cmd)])
-
         step4_dir = '%s/step4_otus/' % output_dir
-        step4_cmd = pick_denovo_otus(step3_failures_fasta_fp,
+        if run_step_2_and_3:
+            step3_failures_fasta_fp = '%s/failures_failures.fasta' % step3_dir
+            step3_filter_fasta_cmd = 'filter_fasta.py -f %s -s %s -o %s' %\
+                (step1_failures_fasta_fp,
+                 step3_failures_list_fp, step3_failures_fasta_fp)
+            commands.append([('Create fasta file of step3 failures',
+                            step3_filter_fasta_cmd)])
+
+            failures_fp = step3_failures_fasta_fp
+            failures_otus_fp = 'failures_failures_otus.txt'
+            failures_step = 'step3'
+        else:
+            failures_fp = step1_failures_fasta_fp
+            failures_otus_fp = 'failures_otus.txt'
+            failures_step = 'step1'
+            step3_otu_map_fp = ""
+
+        step4_cmd = pick_denovo_otus(failures_fp,
                                      step4_dir,
                                      '.'.join([new_ref_set_id, 'CleanUp']),
                                      denovo_otu_picking_method,
                                      params,
                                      logger)
-        step4_otu_map_fp = '%s/failures_failures_otus.txt' % step4_dir
-        commands.append([('Pick de novo OTUs on step3 failures', step4_cmd)])
+
+        step4_otu_map_fp = '%s/%s' % (step4_dir, failures_otus_fp)
+        commands.append([('Pick de novo OTUs on %s failures' % failures_step, step4_cmd)])
+
         # Merge the otu maps, note that we are explicitly using the '>' operator
         # otherwise passing the --force flag on the script interface would
         # append the newly created maps to the map that was previously created
@@ -817,20 +840,26 @@ def pick_subsampled_open_reference_otus(input_fp,
         commands.append([('Merge OTU maps', cat_otu_tables_cmd)])
         step4_repset_fasta_fp = '%s/step4_rep_set.fna' % step4_dir
         step4_rep_set_cmd = 'pick_rep_set.py -i %s -o %s -f %s' %\
-            (step4_otu_map_fp, step4_repset_fasta_fp, step3_failures_fasta_fp)
+            (step4_otu_map_fp, step4_repset_fasta_fp, failures_fp)
         commands.append(
             [('Pick representative set for subsampled failures', step4_rep_set_cmd)])
-
     else:
         # Merge the otu maps, note that we are explicitly using the '>' operator
         # otherwise passing the --force flag on the script interface would
         # append the newly created maps to the map that was previously created
+        if run_step_2_and_3:
+            failures_fp = step3_failures_list_fp
+        else:
+            failures_fp = step1_failures_list_fp
+            step3_otu_map_fp = ""
+
         cat_otu_tables_cmd = 'cat %s %s > %s' %\
             (step1_otu_map_fp, step3_otu_map_fp, merged_otu_map_fp)
         commands.append([('Merge OTU maps', cat_otu_tables_cmd)])
+
         # Move the step 3 failures file to the top-level directory
         commands.append([('Move final failures file to top-level directory',
-                          'mv %s %s/final_failures.txt' % (step3_failures_list_fp, output_dir))])
+                          'mv %s %s/final_failures.txt' % (failures_fp, output_dir))])
 
     command_handler(commands,
                     status_update_callback,
@@ -898,10 +927,11 @@ def pick_subsampled_open_reference_otus(input_fp,
     # iterate over all representative sequences from step2 and step4 and write
     # those corresponding to non-singleton otus to the final representative set
     # file and the new reference sequences file.
-    for otu_id, seq in parse_fasta(open(step2_repset_fasta_fp, 'U')):
-        if otu_id.split()[0] in otus_to_keep:
-            new_refseqs_f.write('>%s\n%s\n' % (otu_id, seq))
-            final_repset_f.write('>%s\n%s\n' % (otu_id, seq))
+    if run_step_2_and_3:
+        for otu_id, seq in parse_fasta(open(step2_repset_fasta_fp, 'U')):
+            if otu_id.split()[0] in otus_to_keep:
+                new_refseqs_f.write('>%s\n%s\n' % (otu_id, seq))
+                final_repset_f.write('>%s\n%s\n' % (otu_id, seq))
     if not suppress_step4:
         for otu_id, seq in parse_fasta(open(step4_repset_fasta_fp, 'U')):
             if otu_id.split()[0] in otus_to_keep:
@@ -909,9 +939,17 @@ def pick_subsampled_open_reference_otus(input_fp,
                 final_repset_f.write('>%s\n%s\n' % (otu_id, seq))
     new_refseqs_f.close()
     final_repset_f.close()
-    logger.write('# Write non-singleton otus representative sequences from ' +
-                 'step 2 and step 4 to the final representative set and the new reference' +
-                 ' set (%s and %s respectively)\n\n' % (final_repset_fp, new_refseqs_fp))
+
+    # steps 1-4 executed
+    if run_step_2_and_3:
+        logger.write('# Write non-singleton otus representative sequences from ' +
+                     'step 2 and step 4 to the final representative set and the new reference' +
+                     ' set (%s and %s respectively)\n\n' % (final_repset_fp, new_refseqs_fp))
+    # only steps 1 and 4 executed
+    else:
+        logger.write('# Write non-singleton otus representative sequences from ' +
+                     'step 4 to the final representative set and the new reference' +
+                     ' set (%s and %s respectively)\n\n' % (final_repset_fp, new_refseqs_fp))     
 
     # Prep the make_otu_table.py command
     otu_table_fp = '%s/otu_table_mc%d.biom' % (output_dir, min_otu_size)

@@ -19,7 +19,7 @@ from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
 from cogent.parse.tree import DndParser
 from cogent.core.tree import PhyloNode
-from skbio.util import remove_files
+from skbio.util import remove_files, safe_md5
 from biom.parse import parse_biom_table
 from qiime.parse import (parse_distmat, parse_mapping_file,
                          parse_metadata_state_descriptions)
@@ -35,7 +35,7 @@ from qiime.filter import (filter_fasta, filter_samples_from_otu_table,
                           filter_mapping_file_by_metadata_states,
                           get_otu_ids_from_taxonomy_f,
                           sample_ids_from_metadata_description,
-                          get_seq_ids_from_seq_id_file)
+                          get_seq_ids_from_seq_id_file, get_lane_mask)
 from qiime.test import FakeFile
 from qiime.util import load_qiime_config
 
@@ -1194,6 +1194,13 @@ o2	s1_3	s1_4	s2_5
         exp = set(['x', '1', '42'])
         self.assertEqual(get_seq_ids_from_seq_id_file(self.seq_ids_lines),
                          exp)
+
+    def test_get_lane_mask(self):
+        # make sure the literal Lane mask stored in qiime.filter.get_lane_mask
+        # matches the real file's MD5 (without the trailing newline)
+        exp = 'e3e5f2804e29694e03a01fd9cc157a53'
+        obs = safe_md5(StringIO(get_lane_mask())).hexdigest()
+        self.assertEqual(obs, exp)
 
 
 tree1 = "(aaa:10,(bbb:2,ccc:4):5);"
