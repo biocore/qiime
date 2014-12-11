@@ -13,7 +13,8 @@ __email__ = "gregcaporaso@gmail.com"
 from qiime.util import make_option
 from os.path import split, splitext, join
 from qiime.util import (make_option, parse_command_line_parameters,
-                        load_qiime_config, get_options_lookup)
+                        load_qiime_config, get_options_lookup,
+                        get_default_template_alignment)
 
 from qiime.parallel.identify_chimeric_seqs import ParallelChimericSequenceIdentifier
 
@@ -54,7 +55,7 @@ chimera_detection_method_choices = ['blast_fragments', 'ChimeraSlayer']
 script_info['optional_options'] = [
     make_option('-a', '--aligned_reference_seqs_fp',
                 type='existing_filepath',
-                default=qiime_config['pynast_template_alignment_fp'],
+                default=get_default_template_alignment(),
                 help='Path to (Py)Nast aligned reference sequences. '
                 'REQUIRED when method ChimeraSlayer [default: %default]'),
 

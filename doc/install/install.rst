@@ -116,45 +116,55 @@ After installing the QIIME base packages, you can test this for sanity by runnin
 
 You should see output that looks like the following::
 
-	System information
-	==================
-	         Platform:	darwin
-	   Python version:	2.7.1 (r271:86832, Aug 30 2012, 10:07:33)  [GCC 4.2.1 (Based on Apple Inc. build 5658) (LLVM build 2336.11.00)]
-	Python executable:	$HOME/.virtualenvs/qiime/bin/python
+    System information
+    ==================
+             Platform:	darwin
+       Python version:	2.7.5 (default, Mar  9 2014, 22:15:05)  [GCC 4.2.1 Compatible Apple LLVM 5.0 (clang-500.0.68)]
+    Python executable:	/Users/caporaso/.virtualenvs/qiime/bin/python
 
-	Dependency versions
-	===================
-	             PyCogent version:	1.5.3
-	                NumPy version:	1.5.1
-	           matplotlib version:	1.1.0
-	          biom-format version:	1.2.0
-	                 qcli version:	0.1.0
-	        QIIME library version:	1.7.0
-	         QIIME script version:	1.7.0
-	PyNAST version (if installed):	1.2.1
-	              Emperor version:	0.9.2
+    Dependency versions
+    ===================
+       QIIME library version:	1.8.0-dev, issue1696@6a91fc7
+        QIIME script version:	1.8.0-dev
+               NumPy version:	1.9.1
+               SciPy version:	0.14.0
+              pandas version:	0.15.1
+          matplotlib version:	1.3.1
+         biom-format version:	2.1.1
+                qcli version:	0.1.0
+                pyqi version:	0.3.2
+          scikit-bio version:	0.2.2
+              PyNAST version:	1.2.2
+             Emperor version:	0.9.5
+             burrito version:	0.9.0
+    burrito-fillings version:	Installed.
+           sortmerna version:	SortMeRNA version 2.0, development
+           sumaclust version:	Not installed.
+                       gdata:	Installed.
 
-	QIIME config values
-	===================
-	                     blastmat_dir:	None
-	                         sc_queue:	all.q
-	      topiaryexplorer_project_dir:	$HOME/code/TopiaryExplorer-0.9.1/
-	     pynast_template_alignment_fp:	$HOME/data/greengenes_core_sets/core_set_aligned_imputed.fasta_11_8_07.no_dots
-	                  cluster_jobs_fp:	start_parallel_jobs.py
-	pynast_template_alignment_blastdb:	None
-	assign_taxonomy_reference_seqs_fp:	$HOME/data/gg_13_5_otus/rep_set/97_otus.fasta
-	                     torque_queue:	friendlyq
-	                    jobs_to_start:	2
-	            denoiser_min_per_core:	50
-	                         temp_dir:	$HOME/temp
-	                      blastall_fp:	blastall
-	                 seconds_to_sleep:	1
-	assign_taxonomy_id_to_taxonomy_fp:	$HOME/data/gg_13_5_otus/taxonomy/97_otu_taxonomy.txt
-	................
-	----------------------------------------------------------------------
-	Ran 16 tests in 0.440s
+    QIIME config values
+    ===================
+                         blastmat_dir:	None
+                             sc_queue:	all.q
+          topiaryexplorer_project_dir:	None
+         pynast_template_alignment_fp:	None
+                      cluster_jobs_fp:	start_parallel_jobs.py
+    pynast_template_alignment_blastdb:	None
+    assign_taxonomy_reference_seqs_fp:	None
+                         torque_queue:	friendlyq
+                        jobs_to_start:	4
+                denoiser_min_per_core:	50
+    assign_taxonomy_id_to_taxonomy_fp:	None
+                             temp_dir:	/Users/caporaso/temp/
+                         slurm_memory:	None
+                          slurm_queue:	None
+                          blastall_fp:	blastall
+                     seconds_to_sleep:	2
+    .........
+    ----------------------------------------------------------------------
+    Ran 9 tests in 0.013s
 
-	OK
+    OK
 
 This indicates that you have a complete QIIME base install.
 
@@ -220,42 +230,50 @@ After installing the QIIME base packages, you can test this for sanity by runnin
 
 You should see output that looks like the following::
 
-	System information
-	==================
-	         Platform:	darwin
-	   Python version:	2.7.1 (r271:86832, Aug 30 2012, 10:07:33)  [GCC 4.2.1 (Based on Apple Inc. build 5658) (LLVM build 2336.11.00)]
-	Python executable:	$HOME/.virtualenvs/qiime/bin/python
+    System information
+    ==================
+             Platform:	darwin
+       Python version:	2.7.5 (default, Mar  9 2014, 22:15:05)  [GCC 4.2.1 Compatible Apple LLVM 5.0 (clang-500.0.68)]
+    Python executable:	/Users/caporaso/.virtualenvs/qiime/bin/python
 
-	Dependency versions
-	===================
-	                     PyCogent version:	1.5.3
-	                        NumPy version:	1.5.1
-	                   matplotlib version:	1.1.0
-	                  biom-format version:	1.2.0-dev
-	                         qcli version:	0.1.0
-	                QIIME library version:	1.7.0-dev
-	                 QIIME script version:	1.7.0-dev
-	        PyNAST version (if installed):	1.2.1
-	                      Emperor version:	0.9.2-dev
-	RDP Classifier version (if installed):	rdp_classifier-2.2.jar
-	          Java version (if installed):	1.6.0_43
+    Dependency versions
+    ===================
+       QIIME library version:	1.8.0-dev, issue1696@6a91fc7
+        QIIME script version:	1.8.0-dev
+               NumPy version:	1.9.1
+               SciPy version:	0.14.0
+              pandas version:	0.15.1
+          matplotlib version:	1.3.1
+         biom-format version:	2.1.1
+                qcli version:	0.1.0
+                pyqi version:	0.3.2
+          scikit-bio version:	0.2.2
+              PyNAST version:	1.2.2
+             Emperor version:	0.9.5
+             burrito version:	0.9.0
+    burrito-fillings version:	Installed.
+           sortmerna version:	SortMeRNA version 2.0, development
+           sumaclust version:	Not installed.
+                       gdata:	Installed.
 
-	QIIME config values
-	===================
-	                     blastmat_dir:	/Applications/blast-2.2.22/data/
-	                         sc_queue:	all.q
-	      topiaryexplorer_project_dir:	$HOME/code/TopiaryExplorer-0.9.1/
-	     pynast_template_alignment_fp:	$HOME/data/greengenes_core_sets/core_set_aligned_imputed.fasta_11_8_07.no_dots
-	                  cluster_jobs_fp:	start_parallel_jobs.py
-	pynast_template_alignment_blastdb:	None
-	assign_taxonomy_reference_seqs_fp:	$HOME/data/gg_13_5_otus/rep_set/97_otus.fasta
-	                     torque_queue:	friendlyq
-	                    jobs_to_start:	2
-	            denoiser_min_per_core:	50
-	                         temp_dir:	$HOME/temp
-	                      blastall_fp:	blastall
-	                 seconds_to_sleep:	1
-	assign_taxonomy_id_to_taxonomy_fp:	$HOME/data/gg_13_5_otus/taxonomy/97_otu_taxonomy.txt
+    QIIME config values
+    ===================
+                         blastmat_dir:	None
+                             sc_queue:	all.q
+          topiaryexplorer_project_dir:	None
+         pynast_template_alignment_fp:	None
+                      cluster_jobs_fp:	start_parallel_jobs.py
+    pynast_template_alignment_blastdb:	None
+    assign_taxonomy_reference_seqs_fp:	None
+                         torque_queue:	friendlyq
+                        jobs_to_start:	4
+                denoiser_min_per_core:	50
+    assign_taxonomy_id_to_taxonomy_fp:	None
+                             temp_dir:	/Users/caporaso/temp/
+                         slurm_memory:	None
+                          slurm_queue:	None
+                          blastall_fp:	blastall
+                     seconds_to_sleep:	2
 	...................................
 	----------------------------------------------------------------------
 	Ran 35 tests in 0.641s

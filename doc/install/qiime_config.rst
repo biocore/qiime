@@ -29,9 +29,9 @@ Definition of values in qiime_config
 
 ``blastall_fp`` : path to ``blastall`` executable
 
-``pynast_template_alignment_fp`` : default template alignment to use with PyNAST as a fasta file
+``pynast_template_alignment_fp`` : template alignment to use with PyNAST as a fasta file, if you prefer to not use the default
 
-``pynast_template_alignment_blastdb`` : default template alignment to use with PyNAST as a pre-formatted BLAST database
+``pynast_template_alignment_blastdb`` : default template alignment to use with PyNAST as a pre-formatted BLAST database, if you prefer to not use the default
 
 ``jobs_to_start`` : default number of jobs to start when running QIIME in parallel. don't make this more than the available cores/processors on your system
 
@@ -45,8 +45,8 @@ Definition of values in qiime_config
 
 ``torque_queue`` : default queue to submit jobs to when using parallel QIIME with torque
 
-``assign_taxonomy_reference_seqs_fp`` : default reference database to use with assign_taxonomy.py (and parallel versions)
+``assign_taxonomy_reference_seqs_fp`` : reference database to use with assign_taxonomy.py (and parallel versions), if you prefer to not use the default
 
-``assign_taxonomy_id_to_taxonomy_fp`` : default id-to-taxonomy map to use with assign_taxonomy.py (and parallel versions)
+``assign_taxonomy_id_to_taxonomy_fp`` : id-to-taxonomy map to use with assign_taxonomy.py (and parallel versions), if you prefer to not use the default
 
 ``sc_queue`` : default queue to submit jobs to when running parallel QIIME on StarCluster

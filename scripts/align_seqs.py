@@ -15,18 +15,13 @@ from os import makedirs
 from os.path import exists, splitext, split, isdir
 from qiime.util import (parse_command_line_parameters, get_options_lookup,
                         make_option, get_pynast_version, load_qiime_config,
-                        create_dir)
+                        create_dir, get_default_template_alignment)
 from qiime.align_seqs import alignment_module_names, alignment_method_constructors,\
     pairwise_alignment_methods, CogentAligner, compute_min_alignment_length
 
 options_lookup = get_options_lookup()
 
 qiime_config = load_qiime_config()
-
-if qiime_config['pynast_template_alignment_fp']:
-    template_fp_default_help = '[default: %default]'
-else:
-    template_fp_default_help = '[REQUIRED if -m pynast or -m infernal]'
 
 blast_db_default_help =\
     qiime_config['pynast_template_alignment_blastdb'] or\
@@ -103,9 +98,9 @@ if pynast_installed:
                     default='uclust'))
     script_info['optional_options'].append(
         make_option('-t', '--template_fp',
-                    type='existing_filepath', dest='template_fp', help='Filepath for ' +
-                    'template against %s' % template_fp_default_help,
-                    default=qiime_config['pynast_template_alignment_fp']))
+                    type='existing_filepath',
+                    help='Filepath for template against [default: %default]',
+                    default=get_default_template_alignment()))
     script_info['optional_options'].append(
         make_option('-e', '--min_length',
                     type='int', help='Minimum sequence ' +

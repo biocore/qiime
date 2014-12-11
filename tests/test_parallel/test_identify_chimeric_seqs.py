@@ -18,7 +18,8 @@ from unittest import TestCase, main
 
 from skbio.util import remove_files
 
-from qiime.util import get_qiime_temp_dir, load_qiime_config
+from qiime.util import (get_qiime_temp_dir, load_qiime_config,
+                         get_default_template_alignment)
 from qiime.test import initiate_timeout, disable_timeout
 from qiime.parse import fields_to_dict
 from qiime.parallel.identify_chimeric_seqs import ParallelChimericSequenceIdentifier
@@ -100,8 +101,7 @@ class ParallelChimericSequenceIdentifierTests(TestCase):
         qiime_config = load_qiime_config()
         params = {
             'reference_seqs_fp': None,
-            'aligned_reference_seqs_fp': qiime_config[
-                'pynast_template_alignment_fp'],
+            'aligned_reference_seqs_fp': get_default_template_alignment(),
             'chimera_detection_method': 'ChimeraSlayer',
             'num_fragments': 3,
             'taxonomy_depth': 4,

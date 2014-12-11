@@ -55,7 +55,10 @@ from skbio.parse.sequences import FastaIterator, FastqIterator
 
 from bfillings.blast import Blastall, BlastResult
 from bfillings.formatdb import (build_blast_db_from_fasta_path,
-                             build_blast_db_from_fasta_file)
+    build_blast_db_from_fasta_file)
+from qiime_default_reference import (get_template_alignment,
+    get_reference_sequences, get_reference_taxonomy,
+    get_template_alignment_column_mask)
 
 
 from qcli import make_option, qcli_system_call, parse_command_line_parameters
@@ -331,6 +334,11 @@ def load_qiime_config():
 
     return parse_qiime_config_files(qiime_config_files)
 
+
+def get_default_template_alignment():
+    qiime_config = load_qiime_config()
+    return (qiime_config['pynast_template_alignment_fp'] or
+             get_template_alignment())
 
 def qiime_blast_seqs(seqs,
                      blast_constructor=Blastall,
