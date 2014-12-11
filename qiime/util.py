@@ -350,6 +350,11 @@ def get_default_reference_taxonomy():
     return (qiime_config['assign_taxonomy_id_to_taxonomy_fp'] or
              get_reference_taxonomy())
 
+def get_default_otu_picking_reference_seqs():
+    qiime_config = load_qiime_config()
+    return (qiime_config['pick_otus_reference_seqs_fp'] or
+             get_reference_sequences())
+
 def qiime_blast_seqs(seqs,
                      blast_constructor=Blastall,
                      blast_program='blastn',

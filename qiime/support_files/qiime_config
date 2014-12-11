@@ -15,6 +15,7 @@ temp_dir	/tmp/
 denoiser_min_per_core	50
 topiaryexplorer_project_dir
 torque_queue	friendlyq
+pick_otus_reference_seqs_fp
 assign_taxonomy_reference_seqs_fp
 assign_taxonomy_id_to_taxonomy_fp
 sc_queue	all.q

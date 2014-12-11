@@ -13,7 +13,8 @@ __email__ = "gregcaporaso@gmail.com"
 from os import makedirs
 
 from qiime.util import (parse_command_line_parameters,
-                        make_option, get_options_lookup, load_qiime_config)
+                         make_option, get_options_lookup, load_qiime_config,
+                         get_default_otu_picking_reference_seqs)
 from qiime.parse import parse_qiime_parameters
 from qiime.workflow.util import (validate_and_set_jobs_to_start,
                                  call_commands_serially, print_commands, no_status_updates, print_to_stdout)
@@ -235,8 +236,6 @@ script_info['output_description'] = ""
 script_info['required_options'] = [
     make_option('-i', '--input_fps', help='the input sequences filepath or '
                 'comma-separated list of filepaths', type='existing_filepaths'),
-    make_option('-r', '--reference_fp', type='existing_filepath', help='the '
-                'reference sequences'),
     make_option('-o', '--output_dir', type='new_dirpath', help='the output '
                 'directory'),
 ]
@@ -249,6 +248,9 @@ script_info['optional_options'] = [
                       'means that usearch61 will be used for the de novo steps and '
                       'usearch61_ref will be used for reference steps. [default: %default]'),
                 default='uclust'),
+    make_option('-r', '--reference_fp', type='existing_filepath', help='the '
+                'reference sequences [default: %default]',
+                default=get_default_otu_picking_reference_seqs()),
     make_option('-p', '--parameter_fp', type='existing_filepath', help='path '
                 'to the parameter file, which specifies changes to the default '
                 'behavior. See http://www.qiime.org/documentation/file_formats.html#'
@@ -340,7 +342,7 @@ def main():
         denovo_otu_picking_method = 'sumaclust'
         reference_otu_picking_method = 'sortmerna'
         # SortMeRNA uses the E-value to filter out erroneous
-        # sequences, this option does not apply for this 
+        # sequences, this option does not apply for this
         # tool
         if prefilter_percent_id > 0.0:
             prefilter_percent_id = None

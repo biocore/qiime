@@ -13,16 +13,13 @@ __email__ = "gregcaporaso@gmail.com"
 
 from qiime.util import make_option
 from os import makedirs
-from qiime.util import (load_qiime_config,
-                        parse_command_line_parameters,
-                        get_options_lookup)
+from qiime.util import (load_qiime_config, parse_command_line_parameters,
+    get_options_lookup, get_default_otu_picking_reference_seqs,
+    get_default_reference_taxonomy)
 from qiime.parse import parse_qiime_parameters
 from qiime.workflow.upstream import run_pick_closed_reference_otus
-from qiime.workflow.util import (print_commands,
-                                 call_commands_serially,
-                                 print_to_stdout,
-                                 no_status_updates,
-                                 validate_and_set_jobs_to_start)
+from qiime.workflow.util import (print_commands, call_commands_serially,
+    print_to_stdout, no_status_updates, validate_and_set_jobs_to_start)
 
 qiime_config = load_qiime_config()
 options_lookup = get_options_lookup()
@@ -85,27 +82,23 @@ script_info['required_options'] = [
         type='existing_filepath',
         help='the input sequences'),
     make_option(
-        '-r',
-        '--reference_fp',
-        type='existing_filepath',
-        help='the reference sequences'),
-    make_option(
         '-o',
         '--output_dir',
         type='new_dirpath',
         help='the output directory'),
 ]
 script_info['optional_options'] = [
+    make_option('-r', '--reference_fp', type='existing_filepath',
+                help='the reference sequences [default: %default]',
+                default=get_default_otu_picking_reference_seqs()),
     make_option('-p', '--parameter_fp', type='existing_filepath',
                 help='path to the parameter file, which specifies changes' +
                 ' to the default behavior. ' +
                 'See http://www.qiime.org/documentation/file_formats.html#qiime-parameters .' +
                 ' [if omitted, default values will be used]'),
-    make_option(
-        '-t',
-        '--taxonomy_fp',
-        type='existing_filepath',
-        help='the taxonomy map [default: %default]'),
+    make_option('-t', '--taxonomy_fp', type='existing_filepath',
+        help='the taxonomy map [default: %default]',
+        default=get_default_reference_taxonomy()),
     make_option('-s', '--assign_taxonomy', action='store_true',
                 default=False,
                 help='Assign taxonomy to each sequence using '
