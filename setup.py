@@ -264,7 +264,7 @@ setup(name='qiime',
                         'scikit-bio >= 0.2.2, < 0.3.0',
                         'burrito-fillings >= 0.1.0, < 0.2.0',
                         'pandas >= 0.13.1', 'burrito  < 1.0.0',
-                        'qiime-default-reference < 0.2.0'],
+                        'qiime-default-reference >= 0.1.1, < 0.2.0'],
       extras_require={'all': ['ipython[all]', 'sphinx >= 0.3']}
       )
 
