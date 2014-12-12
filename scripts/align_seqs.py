@@ -100,7 +100,7 @@ if pynast_installed:
         make_option('-t', '--template_fp',
                     type='existing_filepath',
                     help='Filepath for template against [default: %default]',
-                    default=get_default_template_alignment()))
+                    default=qiime_config['pynast_template_alignment_fp']))
     script_info['optional_options'].append(
         make_option('-e', '--min_length',
                     type='int', help='Minimum sequence ' +

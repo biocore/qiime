@@ -108,8 +108,8 @@ script_info['required_options'] = [
     options_lookup['fasta_as_primary_input']
 ]
 
-default_reference_seqs_fp = get_default_taxonomy_assignment_reference_seqs()
-default_id_to_taxonomy_fp = get_default_reference_taxonomy()
+default_reference_seqs_fp = qiime_config['assign_taxonomy_reference_seqs_fp']
+default_id_to_taxonomy_fp = qiime_config['assign_taxonomy_id_to_taxonomy_fp']
 
 script_info['optional_options'] = [
     make_option('-t', '--id_to_taxonomy_fp', type="existing_filepath",

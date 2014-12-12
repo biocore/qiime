@@ -43,8 +43,8 @@ script_info['required_options'] = [
 ]
 rdp_classifier_fp = getenv('RDP_JAR_PATH')
 
-default_reference_seqs_fp = get_default_taxonomy_assignment_reference_seqs()
-default_id_to_taxonomy_fp = get_default_reference_taxonomy()
+default_reference_seqs_fp = qiime_config['assign_taxonomy_reference_seqs_fp']
+default_id_to_taxonomy_fp = qiime_config['assign_taxonomy_id_to_taxonomy_fp']
 
 script_info['optional_options'] = [
     make_option('--rdp_classifier_fp', action='store',

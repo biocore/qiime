@@ -207,7 +207,7 @@ script_info['optional_options'] = [
                 help='Path to reference sequences to search against when using -m '
                       'blast, -m sortmerna, -m uclust_ref, -m usearch_ref, or -m '
                       'usearch61_ref [default: %default]',
-                      default=get_default_otu_picking_reference_seqs()),
+                      default=qiime_config['pick_otus_reference_seqs_fp']),
 
     make_option('-b', '--blast_db', type='blast_db',
                 help='Pre-existing database to blast against when using -m blast '

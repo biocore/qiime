@@ -55,7 +55,7 @@ chimera_detection_method_choices = ['blast_fragments', 'ChimeraSlayer']
 script_info['optional_options'] = [
     make_option('-a', '--aligned_reference_seqs_fp',
                 type='existing_filepath',
-                default=get_default_template_alignment(),
+                default=qiime_config['pynast_template_alignment_fp'],
                 help='Path to (Py)Nast aligned reference sequences. '
                 'REQUIRED when method ChimeraSlayer [default: %default]'),
 

@@ -28,7 +28,7 @@ from qiime.workflow.util import (print_commands, call_commands_serially,
 qiime_config = load_qiime_config()
 options_lookup = get_options_lookup()
 
-if get_reference_sequences() == get_default_otu_picking_reference_seqs():
+if get_reference_sequences() == qiime_config['pick_otus_reference_seqs_fp']:
     reference_fp_help = (
              "The reference sequences [default: %default]. " +
              "NOTE: If you do not pass -r to this script, you will be using "
@@ -105,7 +105,7 @@ script_info['required_options'] = [
 script_info['optional_options'] = [
     make_option('-r', '--reference_fp', type='existing_filepath',
                 help=reference_fp_help,
-                default=get_default_otu_picking_reference_seqs()),
+                default=qiime_config['pick_otus_reference_seqs_fp']),
     make_option('-p', '--parameter_fp', type='existing_filepath',
                 help='path to the parameter file, which specifies changes' +
                 ' to the default behavior. ' +
@@ -113,7 +113,7 @@ script_info['optional_options'] = [
                 ' [if omitted, default values will be used]'),
     make_option('-t', '--taxonomy_fp', type='existing_filepath',
         help='the taxonomy map [default: %default]',
-        default=get_default_reference_taxonomy()),
+        default=qiime_config['assign_taxonomy_id_to_taxonomy_fp']),
     make_option('-s', '--assign_taxonomy', action='store_true',
                 default=False,
                 help='Assign taxonomy to each sequence using '

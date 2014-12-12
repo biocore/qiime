@@ -334,6 +334,8 @@ def load_qiime_config():
 
     qiime_config = parse_qiime_config_files(qiime_config_files)
 
+    # For files that are defined in the qiime-default-reference package,
+    # add values to the qiime_config if they haven't already been defined.
     qiime_config['pick_otus_reference_seqs_fp'] = \
         qiime_config['pick_otus_reference_seqs_fp'] or get_reference_sequences()
 
@@ -347,22 +349,6 @@ def load_qiime_config():
         qiime_config['assign_taxonomy_id_to_taxonomy_fp'] or get_reference_taxonomy()
 
     return qiime_config
-
-def get_default_template_alignment():
-    qiime_config = load_qiime_config()
-    return qiime_config['pynast_template_alignment_fp']
-
-def get_default_taxonomy_assignment_reference_seqs():
-    qiime_config = load_qiime_config()
-    return qiime_config['assign_taxonomy_reference_seqs_fp']
-
-def get_default_reference_taxonomy():
-    qiime_config = load_qiime_config()
-    return qiime_config['assign_taxonomy_id_to_taxonomy_fp']
-
-def get_default_otu_picking_reference_seqs():
-    qiime_config = load_qiime_config()
-    return qiime_config['pick_otus_reference_seqs_fp']
 
 def qiime_blast_seqs(seqs,
                      blast_constructor=Blastall,

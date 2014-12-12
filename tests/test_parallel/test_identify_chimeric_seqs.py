@@ -101,7 +101,7 @@ class ParallelChimericSequenceIdentifierTests(TestCase):
         qiime_config = load_qiime_config()
         params = {
             'reference_seqs_fp': None,
-            'aligned_reference_seqs_fp': get_default_template_alignment(),
+            'aligned_reference_seqs_fp': qiime_config['pynast_template_alignment_fp'],
             'chimera_detection_method': 'ChimeraSlayer',
             'num_fragments': 3,
             'taxonomy_depth': 4,

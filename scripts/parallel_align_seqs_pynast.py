@@ -47,7 +47,7 @@ blast_db_default_help =\
 script_info['optional_options'] = [
     make_option('-t', '--template_fp', type='existing_filepath',
                 help='Filepath for template alignment [default: %default]',
-                default=get_default_template_alignment()),
+                default=qiime_config['pynast_template_alignment_fp']),
     make_option('-a', '--pairwise_alignment_method',
                 type='choice', help='Method to use for pairwise alignments' +
                 ' [default: %default]',

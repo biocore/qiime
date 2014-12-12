@@ -250,7 +250,7 @@ script_info['optional_options'] = [
                 default='uclust'),
     make_option('-r', '--reference_fp', type='existing_filepath', help='the '
                 'reference sequences [default: %default]',
-                default=get_default_otu_picking_reference_seqs()),
+                default=qiime_config['pick_otus_reference_seqs_fp']),
     make_option('-p', '--parameter_fp', type='existing_filepath', help='path '
                 'to the parameter file, which specifies changes to the default '
                 'behavior. See http://www.qiime.org/documentation/file_formats.html#'

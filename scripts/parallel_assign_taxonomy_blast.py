@@ -20,8 +20,8 @@ from qiime.parallel.assign_taxonomy import ParallelBlastTaxonomyAssigner
 qiime_config = load_qiime_config()
 options_lookup = get_options_lookup()
 
-default_reference_seqs_fp = get_default_taxonomy_assignment_reference_seqs()
-default_id_to_taxonomy_fp = get_default_reference_taxonomy()
+default_reference_seqs_fp = qiime_config['assign_taxonomy_reference_seqs_fp']
+default_id_to_taxonomy_fp = qiime_config['assign_taxonomy_id_to_taxonomy_fp']
 
 script_info = {}
 
