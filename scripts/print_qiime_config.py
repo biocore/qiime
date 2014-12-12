@@ -741,6 +741,11 @@ def main():
     for v in system_info:
         print "%*s:\t%s" % (max_len, v[0], v[1])
 
+    print "\nQIIME default reference information"
+    print "==================================="
+    print "For details on what files are used as QIIME's default references, see here:"
+    print " https://github.com/biocore/qiime-default-reference/releases/tag/%s" % qdr_lib_version
+
     version_info = [
         ("QIIME library version", get_qiime_library_version()),
         ("QIIME script version", __version__),
@@ -775,6 +780,9 @@ def main():
 
     print "\nQIIME config values"
     print "==================="
+    print "For definitions of these settings and to learn how to configure QIIME, see here:"
+    print " http://qiime.org/install/qiime_config.html"
+    print " http://qiime.org/tutorials/parallel_qiime.html\n"
     max_len = max([len(key) for key in qiime_config])
     for key, value in qiime_config.items():
         print "%*s:\t%s" % (max_len, key, value)
