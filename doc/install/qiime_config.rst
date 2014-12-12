@@ -41,7 +41,7 @@ If you have added some of the above settings to a *qiime config* file, and you d
 Default reference files
 -----------------------
 
-Several of the above settings will fall back to default files if their value is ``None`` in the print_qiime_config.py output. These are:
+Several of the above settings will fall back to default files if not overwritten. These are:
 
 - ``assign_taxonomy_id_to_taxonomy_fp``
 - ``assign_taxonomy_reference_seqs_fp``
