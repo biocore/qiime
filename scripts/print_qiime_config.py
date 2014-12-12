@@ -789,8 +789,12 @@ def main():
 
     if test:
         if qiime_full_install:
+            print "\nQIIME full install test results"
+            print "==============================="
             suite = TestLoader().loadTestsFromTestCase(QIIMEDependencyFull)
         else:
+            print "\nQIIME base install test results"
+            print "==============================="
             suite = TestLoader().loadTestsFromTestCase(QIIMEDependencyBase)
         if opts.verbose:
             verbosity = 2
