@@ -149,6 +149,11 @@ If you plan to use SourceTracker with QIIME:
 
 * SourceTracker 0.9.5 (`src <http://downloads.sourceforge.net/project/sourcetracker/sourcetracker-0.9.5.tar.gz>`_) (license: GPL)
 
+For improved performance with large BIOM files, or if you're working with BIOM format 2.x files:
+
+* HDF5 (`web_hdf5 <http://www.hdfgroup.org/HDF5/>`_)
+* h5py (`web_h5py <http://www.h5py.org>`_; this can be installed with ``pip install h5py`` after HDF5 has been installed)
+
 Testing the QIIME full installation
 -----------------------------------
 
