@@ -1,14 +1,12 @@
 .. _virtual_box:
 
+=================
 QIIME Virtual Box
-^^^^^^^^^^^^^^^^^
-
-What is the QIIME Virtual Box?
-==============================
+=================
 
 As a consequence of QIIME's *pipeline* architecture, **QIIME has a lot of dependencies and can (but doesn't have to) be very challenging to install**. The QIIME Virtual Box gets around the difficulty of installation by providing a functioning QIIME full install inside an Ubuntu Linux virtual machine. You can use the QIIME Virtual Box on Mac OS X, Windows, or Linux.
 
-It is strongly recommended that your system have 8 or more gigabytes of memory to use the QIIME Virtual Box.
+It is strongly recommended that your system have 8 gigabytes or more of memory to use the QIIME Virtual Box.
 
 Installing the QIIME Virtual Box
 ================================
@@ -19,7 +17,7 @@ Installing the QIIME Virtual Box
   * Launch VirtualBox, and create a new machine (press the New button).
   * A new window will show up. Click 'Next'.
   * In this screen type QIIME as the name for the virtual machine. Then select Linux as the Operating System, and Ubuntu (64 bit) as the version. Click Next.
-  * Select the amount of RAM (memory). You will need at least 3G, but the best option is based on your machine. After selecting the amount of RAM, click Next.
+  * Select the amount of RAM (memory). You will need at least 3 GB, but the best option is based on your machine. After selecting the amount of RAM, click Next.
   * Select "Use existing hard drive", and click the folder icon next to the selector (it has a green up arrow). In the new window click 'Add', and locate the virtual hard drive that was downloaded in step 2. Click Select and then click Next.
   * In the new window click Finish.
 
