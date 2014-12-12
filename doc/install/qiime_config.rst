@@ -31,7 +31,7 @@ Definition of values in qiime_config
 
 ``pynast_template_alignment_fp`` : template alignment to use with PyNAST as a fasta file, if you prefer to not use the default
 
-``pynast_template_alignment_blastdb`` : default template alignment to use with PyNAST as a pre-formatted BLAST database, if you prefer to not use the default
+``pynast_template_alignment_blastdb`` : template alignment to use with PyNAST as a pre-formatted BLAST database, if you prefer to not have a BLAST database constructed from the fasta filepath provided for ``pynast_template_alignment_fp``
 
 ``jobs_to_start`` : default number of jobs to start when running QIIME in parallel. don't make this more than the available cores/processors on your system
 
