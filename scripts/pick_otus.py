@@ -18,10 +18,12 @@ from multiprocessing import cpu_count
 
 from skbio.util import remove_files
 from qiime.util import (parse_command_line_parameters, create_dir,
-                         make_option)
+                         make_option, load_qiime_config)
 from qiime.sort import sort_fasta_by_abundance
 from qiime.pick_otus  import otu_picking_method_constructors,\
     otu_picking_method_choices, MothurOtuPicker
+
+qiime_config = load_qiime_config()
 
 script_info = {}
 script_info['brief_description'] = """OTU picking"""
