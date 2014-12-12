@@ -13,8 +13,7 @@ __email__ = "gregcaporaso@gmail.com"
 from os import makedirs
 
 from qiime.util import (parse_command_line_parameters,
-                         make_option, get_options_lookup, load_qiime_config,
-                         get_default_otu_picking_reference_seqs)
+                         make_option, get_options_lookup, load_qiime_config)
 from qiime.parse import parse_qiime_parameters
 from qiime.workflow.util import (validate_and_set_jobs_to_start,
                                  call_commands_serially, print_commands, no_status_updates, print_to_stdout)

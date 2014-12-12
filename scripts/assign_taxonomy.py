@@ -12,9 +12,7 @@ __maintainer__ = "Antonio Gonzalez Pena"
 __email__ = "antgonza@gmail.com"
 
 from qiime.util import (parse_command_line_parameters, get_options_lookup,
-                         make_option, load_qiime_config, remove_files,
-                         get_default_taxonomy_assignment_reference_seqs,
-                         get_default_reference_taxonomy)
+                         make_option, load_qiime_config, remove_files)
 from os import mkdir, close
 from os.path import split, splitext, isfile
 from tempfile import mkstemp

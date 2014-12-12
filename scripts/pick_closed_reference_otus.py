@@ -18,8 +18,7 @@ from qiime_default_reference import (get_reference_sequences,
                                       get_reference_tree)
 
 from qiime.util import (load_qiime_config, parse_command_line_parameters,
-    get_options_lookup, get_default_otu_picking_reference_seqs,
-    get_default_reference_taxonomy, make_option)
+    get_options_lookup, make_option)
 from qiime.parse import parse_qiime_parameters
 from qiime.workflow.upstream import run_pick_closed_reference_otus
 from qiime.workflow.util import (print_commands, call_commands_serially,
@@ -213,7 +212,7 @@ def main():
     if get_reference_sequences() == reference_fp:
         reference_tree_fp = get_reference_tree()
         fn = basename(reference_tree_fp)
-        copyfile(get_reference_tree(), join(output_dir, fn))
+        copyfile(reference_tree_fp, join(output_dir, fn))
 
 
 if __name__ == "__main__":

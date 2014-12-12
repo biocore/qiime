@@ -12,9 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 
 from os.path import join, abspath
 from qiime.util import (get_options_lookup, load_qiime_config, make_option,
-                         parse_command_line_parameters,
-                         get_default_taxonomy_assignment_reference_seqs,
-                         get_default_reference_taxonomy)
+                         parse_command_line_parameters)
 from qiime.parallel.assign_taxonomy import ParallelBlastTaxonomyAssigner
 
 qiime_config = load_qiime_config()

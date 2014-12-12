@@ -18,8 +18,7 @@ from unittest import TestCase, main
 
 from skbio.util import remove_files
 
-from qiime.util import (get_qiime_temp_dir, load_qiime_config,
-                         get_default_template_alignment)
+from qiime.util import (get_qiime_temp_dir, load_qiime_config)
 from qiime.test import initiate_timeout, disable_timeout
 from qiime.parse import fields_to_dict
 from qiime.parallel.identify_chimeric_seqs import ParallelChimericSequenceIdentifier

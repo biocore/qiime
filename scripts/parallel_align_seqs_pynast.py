@@ -14,7 +14,7 @@ import warnings
 warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
 from qiime.util import (parse_command_line_parameters,
                         get_options_lookup, make_option,
-                        load_qiime_config, get_default_template_alignment)
+                        load_qiime_config)
 from qiime.align_seqs import pairwise_alignment_methods
 from qiime.parallel.align_seqs import ParallelAlignSeqsPyNast
 

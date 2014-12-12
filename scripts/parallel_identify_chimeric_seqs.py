@@ -13,8 +13,7 @@ __email__ = "gregcaporaso@gmail.com"
 from qiime.util import make_option
 from os.path import split, splitext, join
 from qiime.util import (make_option, parse_command_line_parameters,
-                        load_qiime_config, get_options_lookup,
-                        get_default_template_alignment)
+                        load_qiime_config, get_options_lookup)
 
 from qiime.parallel.identify_chimeric_seqs import ParallelChimericSequenceIdentifier
 

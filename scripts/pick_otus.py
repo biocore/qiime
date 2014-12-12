@@ -18,7 +18,7 @@ from multiprocessing import cpu_count
 
 from skbio.util import remove_files
 from qiime.util import (parse_command_line_parameters, create_dir,
-    get_default_otu_picking_reference_seqs, make_option)
+                         make_option)
 from qiime.sort import sort_fasta_by_abundance
 from qiime.pick_otus  import otu_picking_method_constructors,\
     otu_picking_method_choices, MothurOtuPicker

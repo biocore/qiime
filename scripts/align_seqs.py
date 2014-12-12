@@ -15,7 +15,7 @@ from os import makedirs
 from os.path import exists, splitext, split, isdir
 from qiime.util import (parse_command_line_parameters, get_options_lookup,
                         make_option, get_pynast_version, load_qiime_config,
-                        create_dir, get_default_template_alignment)
+                        create_dir)
 from qiime.align_seqs import alignment_module_names, alignment_method_constructors,\
     pairwise_alignment_methods, CogentAligner, compute_min_alignment_length
 
