@@ -146,31 +146,40 @@ else:
             break
 
 script_info = {}
-script_info['brief_description'] = """Print out the qiime config settings."""
-script_info[
-    'script_description'] = """A simple scripts that prints out the qiime config settings and does some sanity checks."""
+script_info['brief_description'] = ("Print and optionally test QIIME "
+                                    "configuration details")
+script_info['script_description'] = ("Print QIIME configuration details and "
+                                     "optionally perform tests of the QIIME "
+                                     "base or full install.")
 script_info['script_usage'] = []
 script_info['script_usage'].append(
-    ("Example 1", """Print basic QIIME configuration details:""", """%prog"""))
+    ("Example 1",
+     "Print basic QIIME configuration details:", """%prog"""))
 script_info['script_usage'].append(
-    ("Example 2", """Print basic QIIME configuration details and test the base QIIME install:""",
-     """%prog -tb"""))
+    ("Example 2",
+     "Print basic QIIME configuration details and test the base QIIME installation:",
+     "%prog -t"))
+script_info['script_usage'].append(
+    ("Example 3",
+     "Print basic QIIME configuration details and test the full QIIME installation:",
+     "%prog -tf"))
 
-script_info[
-    'output_description'] = """This prints the qiime_config to stdout."""
+script_info['output_description'] = ("Prints QIIME configuration details to "
+                                     "standard output.")
 script_info['version'] = __version__
 script_info['help_on_no_arguments'] = False
 script_info['required_options'] = []
 script_info['optional_options'] = [
-    make_option('-t', '--test',
-                action='store_true',
-                default=False,
-                help='Test the QIIME install and configuration [default: %default]'),
-    make_option('-b',
-                '--qiime_base_install',
-                action='store_true',
-                default=False,
-                help='If passed, report only on dependencies required for the QIIME base install [default: %default]'),
+    make_option('-t', '--test', action='store_true', default=False,
+                help='Test the QIIME install and configuration '
+                     '[default: %default]'),
+    make_option('-b', '--qiime_base_install', action='store_true',
+                default=True, help=SUPPRESS_HELP),
+    make_option('-f', '--qiime_full_install', action='store_true',
+    default=False, help='If passed, report on dependencies required for the '
+                        'QIIME full install. To perform tests of the QIIME '
+                        'full install, you must also pass -t. '
+                        '[default: %default]'),
     make_option('--haiku',
                 action='store_true',
                 default=False,
@@ -710,7 +719,7 @@ def main():
 
     qiime_config = load_qiime_config()
     test = opts.test
-    qiime_base_install = opts.qiime_base_install
+    qiime_full_install = opts.qiime_full_install
 
     rdp_jarpath = get_rdp_jarpath()
     if rdp_jarpath is None:
@@ -753,7 +762,7 @@ def main():
         ("gdata", gdata_installed)
     ]
 
-    if not qiime_base_install:
+    if qiime_full_install:
         version_info += [
             ("RDP Classifier version (if installed)", rdp_version),
             ("Java version (if installed)", java_version)]
@@ -771,10 +780,10 @@ def main():
         print "%*s:\t%s" % (max_len, key, value)
 
     if test:
-        if qiime_base_install:
-            suite = TestLoader().loadTestsFromTestCase(QIIMEDependencyBase)
-        else:
+        if qiime_full_install:
             suite = TestLoader().loadTestsFromTestCase(QIIMEDependencyFull)
+        else:
+            suite = TestLoader().loadTestsFromTestCase(QIIMEDependencyBase)
         if opts.verbose:
             verbosity = 2
         else:
