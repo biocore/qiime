@@ -123,6 +123,14 @@ except ImportError:
 else:
     gdata_installed = "Installed."
 
+try:
+    import h5py
+    h5py_lib_version = (
+     h5py.__version__ + ' (HDF5 version: %s)' % h5py.version.hdf5_version)
+except ImportError:
+    h5py_lib_version = "Not installed."
+
+
 pynast_lib_version = get_pynast_version()
 if pynast_lib_version is None:
     pynast_lib_version = "Not installed."
@@ -685,6 +693,15 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
             pass_test = False
         self.assertTrue(pass_test, "gdata is not installed.")
 
+    def test_h5py(self):
+        """h5py is installed"""
+        self.assertTrue(h5py_lib_version != "Not installed.",
+                        "h5py is not installed. You should install this for "
+                        "improved performance with large BIOM files or if "
+                        "working with BIOM format version 2.x files. For "
+                        "more information, see http://biom-format.org.")
+        # cd-hit does not have a version print in their program
+
 
 def test_qiime_config_variable(variable, qiime_config, test,
                                access_var=R_OK, fail_on_missing=False):
@@ -755,6 +772,7 @@ def main():
         ("pandas version", pandas_lib_version),
         ("matplotlib version", matplotlib_lib_version),
         ("biom-format version", biom_lib_version),
+        ("h5py version", h5py_lib_version),
         ("qcli version", qcli_lib_version),
         ("pyqi version", pyqi_lib_version),
         ("scikit-bio version", skbio_lib_version),
