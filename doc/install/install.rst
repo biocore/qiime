@@ -123,9 +123,9 @@ Alignment, tree-building, taxonomy assignment, OTU picking, and other data gener
 * muscle 3.8.31 (`src_muscle <http://www.drive5.com/muscle/downloads.htm>`_) (Public domain)
 * rtax 0.984 (`src_rtax <http://static.davidsoergel.com/rtax-0.984.tgz>`_) (license: BSD)
 * usearch v5.2.236 and/or usearch v6.1 (`src_usearch <http://www.drive5.com/usearch/>`_) (license: see http://www.drive5.com/usearch/nonprofit_form.html) **At this stage two different versions of usearch are supported.** usearch v5.2.236 is referred to as ``usearch`` in QIIME, and usearch v6.1 is referred to as ``usearch61``.
-* sumaclust v1.0 **ADD INFO**
-* swarm **ADD INFO**
-* sortmerna **ADD INFO**
+* sumaclust v1.0.00 (`src_sumaclust <ftp://ftp.microbio.me/pub/QIIME-v1.9.0-dependencies/suma_package_V_1.0.00.tar.gz>`_) (license: CeCILL FREE SOFTWARE LICENSE AGREEMENT)
+* swarm 1.2.19 (`src_swarm <https://github.com/torognes/swarm/releases/tag/1.2.19>`_) (license: GPL)
+* sortmerna 2.0 (`src_sortmerna <https://github.com/biocore/sortmerna/releases/tag/2.0>`_) (license: LGPL)
 
 Processing sff files:
 
