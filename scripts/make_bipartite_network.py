@@ -28,7 +28,7 @@ script_info[
 script_info['script_description'] = \
     """This script was created to ease the process of making bipartite networks
 that have appeared in high profile publications including
-10.1073/pnas.1217767110 and 10.1126/science.1198719. The script will take an
+10.1073/pnas.1217767110 and 10.1126/science.1198719. The script will take a
 biom table and a mapping file and produce an edge table which connects each
 sample in the biom table to the observations found in that sample. It is
 bipartite because there are two distinct node classes -- OTU and Sample. The
