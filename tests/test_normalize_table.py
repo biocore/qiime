@@ -33,51 +33,39 @@ class RNormalizeTableTests(TestCase):
         self.qiime_config = load_qiime_config()
         self.tmp_dir = self.qiime_config['temp_dir'] or '/tmp/'
 
-        # Temporary input file
-        fd, self.tmp_otu_fp = mkstemp(dir=self.tmp_dir,
+        #Temporary input file
+        fd, self.tmp_otu_fp = mkstemp(dir= self.tmp_dir,
                                       prefix='R_test_otu_table_',
                                       suffix='.biom')
         close(fd)
         seq_file = open(self.tmp_otu_fp, 'w')
         seq_file.write(test_otu_table)
         seq_file.close()
-        
-        #Temporary output files for each of the methods 
-        fd, self.tmp_otu_fp_out_CSS = mkstemp(dir=self.tmp_dir,
-                                              prefix='R_test_otu_table_out_CSS',
-                                              suffix='.txt')
-        fd, self.tmp_otu_fp_out_DESeq = mkstemp(dir=self.tmp_dir,
-                                                prefix='R_test_otu_table_out_DESeq',
-                                                suffix='.txt')
+
+        self.tmp_otu_fp_out_CSS = '%s/R_test_otu_table_out_CSS.biom' % (str(self.tmp_dir))
+        self.tmp_otu_fp_out_DESeq = '%s/R_test_otu_table_out_DESeq.biom' % (str(self.tmp_dir))
 
         self.files_to_remove = \
             [self.tmp_otu_fp, self.tmp_otu_fp_out_CSS, self.tmp_otu_fp_out_DESeq]
-        self._dirs_to_clean_up = [self.tmp_dir]
 
-        normalize_CSS(self.tmp_otu_fp, self.tmp_otu_fp_out_CSS, output_CSS_statistics=False)  #, self.tmp_map_fp, 'Individual', 'S1', 'S2')
-        normalize_DESeq(self.tmp_otu_fp, self.tmp_otu_fp_out_DESeq, DESeq_negatives_to_zero=False)  #, self.tmp_map_fp, 'Individual', 'S1', 'S2')
+        normalize_CSS(self.tmp_otu_fp, self.tmp_otu_fp_out_CSS, output_CSS_statistics=False)
+        normalize_DESeq(self.tmp_otu_fp, self.tmp_otu_fp_out_DESeq, DESeq_negatives_to_zero=False) 
 
     
-    def test_features_normalize_table_CSS(self):
+    def test_normalize_table_CSS(self):
         """OTU table IDs should be the same before and after CSS normalization
         """
+        q=load_table(self.tmp_otu_fp)
         self.assertItemsEqual(
-            load_table(self.tmp_otu_fp).ids(),
+            q.ids(),
             load_table(self.tmp_otu_fp_out_CSS).ids())
 
-        #test taxonomy added to CSS; DESeq gives negatives so no taxonomy added
+        test taxonomy added to CSS; DESeq gives negatives so no taxonomy added
+        print self.tmp_otu_fp_out_CSS
         self.assertItemsEqual(
-            load_table(self.tmp_otu_fp)._observation_metadata,
+            q._observation_metadata,
             load_table(self.tmp_otu_fp_out_CSS)._observation_metadata)
 
-    def test_features_normalize_table_DESeq(self):
-        """OTU table IDs should be the same before and after DESeq normalization
-        """
-        self.assertItemsEqual(
-            load_table(self.tmp_otu_fp).ids(),
-            load_table(self.tmp_otu_fp_out_DESeq).ids())
-
-    def test_matrix_normalize_table_CSS(self):
         """catch any R/metagenomeSeq version changes by testing output against current version
         """
         z = load_table(self.tmp_otu_fp_out_CSS)
@@ -91,19 +79,27 @@ class RNormalizeTableTests(TestCase):
         assert_almost_equal(OTU_88, OTU_88_CSS, decimal=2, 
                             err_msg='possible CSS method change, or version change')
 
-    def test_matrix_normalize_table_DESeq(self):
-        """catch any R/DESeq version changes by testing output against current version
+
+    def test_normalize_table_DESeq(self):
+        """OTU table IDs should be the same before and after DESeq normalization
         """
         z = load_table(self.tmp_otu_fp_out_DESeq)
+        self.assertItemsEqual(
+            load_table(self.tmp_otu_fp).ids(),
+            z.ids())
+
+        """catch any R/DESeq version changes by testing output against current version
+        """
         OTU_1848 = [val[28] for (val, otu_id, meta) in z.iter(axis='sample')]
-        OTU_1848_DESeq = [8.05049, 8.0751, 8.117, 5.86779, 8.17489, 7.76229, 8.08649, 8.3190, 8.08329, 8.16869, 8.7093, 8.26629, 3.1490, 3.6269, 2.77119, 4.8254, 2.9857, 3.23919, 1.64189, 3.847, 5.4534, 4.8300, 5.5575, 3.3833, 4.3348, 7.7861, 8.0864, 7.8117, 7.1631, 7.6269, 6.8592, 7.5787, 8.2705, 8.7767, 7.88849, 7.84659, 7.5189, 7.4541]
+        OTU_1848_DESeq = [7.4334, 7.4437, 7.4609, 6.172, 7.4844, 7.3088, 7.4484, 7.5416, 7.447, 7.4819, 7.6865, 7.5209, 3.1861, 3.7992, 2.6914, 5.1891, 2.9709, 3.3051, 1.3145, 4.0617, 5.8195, 5.194, 5.9127, 3.4936, 4.6303, 7.3194, 7.4484, 7.3309, 7.016, 7.2469, 6.847, 7.2242, 7.5226, 7.7103, 7.3645, 7.3462, 7.1957, 7.1643]
         assert_almost_equal(OTU_1848, OTU_1848_DESeq, decimal=3, 
                             err_msg='possible DESeq method change, or version change')
 
         OTU_88 = [val[0] for (val, otu_id, meta) in z.iter(axis='sample')]
-        OTU_88_DESeq = [0.3774, 0.40022, 0.3693, 0.38338, 0.377429, 0.369319, 0.36447, 0.377429, 0.38338, 0.36447, 0.43168, 0.43168, -0.651789, 0.81457, 2.0165, 1.8280, 0.28005, 2.3909, 1.9534, 2.39429, 0.11536, 0.030804, 1.49869, 2.21649, 2.0478, 2.4746, 1.6059, 1.60339, 1.60339, 1.5942, 2.1412, 1.61559, 0.37391, 0.4516, 0.369319, 1.6109, 0.36447, 1.6059]
+        OTU_88_DESeq = [0.28477, 0.30354, 0.27808, 0.28967, 0.28477, 0.27808, 0.27408, 0.28477, 0.28967, 0.27408, 0.32945, 0.32945, -0.56644, 0.6423, 1.7223, 1.5033, 0.20445, 2.207, 1.6455, 2.2115, 0.068394, -0.001519, 1.1843, 1.9803, 1.7614, 2.3137, 1.2806, 1.2782, 1.2782, 1.2697, 1.8815, 1.2896, 0.28188, 0.34588, 0.27808, 1.2852, 0.27408, 1.2806]
         assert_almost_equal(OTU_88, OTU_88_DESeq, decimal=3, 
                             err_msg='possible DESeq method change, or version change')
+
 
     def tearDown(self):
         """cleanup temporary files and dirs

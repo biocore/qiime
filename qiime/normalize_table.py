@@ -117,7 +117,7 @@ def run_DESeq(input_path, out_path, DESeq_negatives_to_zero, HALT_EXEC=False):
     # instantiate the object
     rsl = RExecutor()
     # run the app
-    app_result = rsl(command_args=command_args, script_name='DESeq.r')
+    app_result = rsl(command_args=command_args, script_name='DESeq2.r')
 
     return app_result
 
