@@ -23,11 +23,6 @@ options_lookup = get_options_lookup()
 
 qiime_config = load_qiime_config()
 
-if qiime_config['pynast_template_alignment_fp']:
-    template_fp_default_help = '[default: %default]'
-else:
-    template_fp_default_help = '[REQUIRED if -m pynast or -m infernal]'
-
 blast_db_default_help =\
     qiime_config['pynast_template_alignment_blastdb'] or\
     'created on-the-fly from template_alignment'
@@ -103,8 +98,8 @@ if pynast_installed:
                     default='uclust'))
     script_info['optional_options'].append(
         make_option('-t', '--template_fp',
-                    type='existing_filepath', dest='template_fp', help='Filepath for ' +
-                    'template against %s' % template_fp_default_help,
+                    type='existing_filepath',
+                    help='Filepath for template alignment [default: %default]',
                     default=qiime_config['pynast_template_alignment_fp']))
     script_info['optional_options'].append(
         make_option('-e', '--min_length',

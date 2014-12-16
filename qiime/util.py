@@ -55,7 +55,10 @@ from skbio.parse.sequences import FastaIterator, FastqIterator
 
 from bfillings.blast import Blastall, BlastResult
 from bfillings.formatdb import (build_blast_db_from_fasta_path,
-                             build_blast_db_from_fasta_file)
+    build_blast_db_from_fasta_file)
+from qiime_default_reference import (get_template_alignment,
+    get_reference_sequences, get_reference_taxonomy,
+    get_template_alignment_column_mask)
 
 
 from qcli import make_option, qcli_system_call, parse_command_line_parameters
@@ -329,8 +332,23 @@ def load_qiime_config():
         if exists(qiime_config_filepath):
             qiime_config_files.append(open(qiime_config_filepath))
 
-    return parse_qiime_config_files(qiime_config_files)
+    qiime_config = parse_qiime_config_files(qiime_config_files)
 
+    # For files that are defined in the qiime-default-reference package,
+    # add values to the qiime_config if they haven't already been defined.
+    qiime_config['pick_otus_reference_seqs_fp'] = \
+        qiime_config['pick_otus_reference_seqs_fp'] or get_reference_sequences()
+
+    qiime_config['pynast_template_alignment_fp'] = \
+        qiime_config['pynast_template_alignment_fp'] or get_template_alignment()
+
+    qiime_config['assign_taxonomy_reference_seqs_fp'] = \
+        qiime_config['assign_taxonomy_reference_seqs_fp'] or get_reference_sequences()
+
+    qiime_config['assign_taxonomy_id_to_taxonomy_fp'] = \
+        qiime_config['assign_taxonomy_id_to_taxonomy_fp'] or get_reference_taxonomy()
+
+    return qiime_config
 
 def qiime_blast_seqs(seqs,
                      blast_constructor=Blastall,

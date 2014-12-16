@@ -15,10 +15,10 @@ from os.path import split, exists, splitext, getsize
 from os import mkdir, remove
 
 import numpy as np
+from qiime_default_reference import get_template_alignment_column_mask
 
 from qiime.util import (load_qiime_config, parse_command_line_parameters,
                         make_option)
-from qiime.filter import get_lane_mask
 from qiime.filter_alignment import (apply_lane_mask_and_gap_filter,
                                     remove_outliers, generate_lane_mask)
 
@@ -116,7 +116,7 @@ def main():
         if opts.lane_mask_fp is not None:
             lane_mask = open(opts.lane_mask_fp, 'U').read().strip()
         else:
-            lane_mask = get_lane_mask()
+            lane_mask = get_template_alignment_column_mask()
     else:
         lane_mask = None
 

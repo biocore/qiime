@@ -16,12 +16,14 @@ from os.path import splitext, split, exists, abspath, isfile
 from os import makedirs
 from multiprocessing import cpu_count
 
-from qiime.util import make_option
 from skbio.util import remove_files
-from qiime.util import (parse_command_line_parameters, create_dir)
+from qiime.util import (parse_command_line_parameters, create_dir,
+                         make_option, load_qiime_config)
 from qiime.sort import sort_fasta_by_abundance
 from qiime.pick_otus  import otu_picking_method_constructors,\
     otu_picking_method_choices, MothurOtuPicker
+
+qiime_config = load_qiime_config()
 
 script_info = {}
 script_info['brief_description'] = """OTU picking"""
@@ -55,7 +57,7 @@ Quality filtering pipeline with usearch 5.X is described as usearch_qf "usearch 
 
 10. sumaclust (Mercier, C. et al., 2014, version 1.0), creates \"seeds\" of sequences which generate clusters based on similarity threshold.
 
-11. sortmerna_v2 (Kopylova, E. et al., 2012), takes a reference database to use as seeds. 
+11. sortmerna_v2 (Kopylova, E. et al., 2012), takes a reference database to use as seeds.
 
 12. swarm (Mahe, F. et al., 2014), creates \"seeds\" of sequences which generate clusters based on a resolution threshold.
 
@@ -206,7 +208,8 @@ script_info['optional_options'] = [
     make_option('-r', '--refseqs_fp', type='existing_filepath',
                 help='Path to reference sequences to search against when using -m '
                       'blast, -m sortmerna, -m uclust_ref, -m usearch_ref, or -m '
-                      'usearch61_ref [default: %default]'),
+                      'usearch61_ref [default: %default]',
+                      default=qiime_config['pick_otus_reference_seqs_fp']),
 
     make_option('-b', '--blast_db', type='blast_db',
                 help='Pre-existing database to blast against when using -m blast '
@@ -373,7 +376,7 @@ script_info['optional_options'] = [
                                            "uclust [default: %default]"),
 
     make_option('--suppress_prefilter_exact_match',
-                default=False, action='store_true', 
+                default=False, action='store_true',
                 help="Don't collapse exact matches before calling "
                   "sortmerna, sumaclust or uclust [default: %default]"),
 
@@ -704,7 +707,7 @@ def main():
 
         # sortmerna_tabular must be set if sortmerna_best_N_alignments > 1;
         # sortmerna_best_N_alignments = 1 will always be passed to sortmerna,
-        # with or without sortmerna_tabular, as at least 1 best match is 
+        # with or without sortmerna_tabular, as at least 1 best match is
         # required to build an OTU map
         elif sortmerna_best_N_alignments > 1 and \
              sortmerna_tabular is False:
@@ -723,7 +726,7 @@ def main():
         # check resolution is a positive integer
         if swarm_resolution < 1:
             option_parser.error('--swarm_resolution=INT must '
-                                'be a positive integer value.')                   
+                                'be a positive integer value.')
 
     # End input validation
 
