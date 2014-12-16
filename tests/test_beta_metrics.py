@@ -219,7 +219,7 @@ class FunctionTests(TestCase):
             for j in range(len(self.l19_sample_names)):
                 if j in [0, 3, 4, 5, 8, 9]:
                     continue  # ok if meaningless number in zero sample
-                self.assertEqual(res_row[j], res[i, j])
+                self.assertAlmostEqual(res_row[j], res[i, j])
         warnings.resetwarnings()
 
     def test_make_unifrac_row_metric2(self):
