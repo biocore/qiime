@@ -5,7 +5,7 @@ optionally a mapping file. Check out the new documentation for the naming conven
 (which have changed slightly) and an example.
 * QIIME is now even easier to install! Removed ``qiime_scripts_dir``, ``python_exe_fp``, ``working_dir``, ``cloud_environment``, and ``template_alignment_lanemask_fp`` from the QIIME config file. If these values are present in your QIIME config file, they will be flagged as unrecognized by ``print_qiime_config.py -t`` and will be ignored by QIIME. QIIME will now use the ``python`` executable and QIIME scripts that are found in your ``PATH`` environment variable, and ``temp_dir`` will be used in place of ``working_dir`` (this value was used by some parts of parallel QIIME previously). ``filter_alignment.py`` will now use the 16S alignment Lane mask (Lane, D.J. 1991) by default if one is not provided via ``--lane_mask_fp``.
 * Removed ``-Y``/``--python_exe_fp`` and ``-N`` options from ``parallel_merge_otu_tables.py`` script as these are not available in any of the other parallel QIIME scripts and we do not have good reason to support them (see QIIME 1.6.0 release notes below for more details).
-* SciPy >= 0.13.0, pyqi 0.3.1, and scikit-bio >= 0.2.2, < 0.3.0 are now required dependencies for a QIIME base install.
+* SciPy >= 0.13.0, pyqi 0.3.1, scikit-bio >= 0.2.2, < 0.3.0, and qiime-default-reference >= 0.1.1, < 0.2.0 are now required dependencies for a QIIME base install.
 * Added new options to ``make_otu_heatmap.py``: ``--color_scheme``, which allows users to choose from different color schemes [here](http://matplotlib.org/examples/color/colormaps_reference.html); ``--observation_metadata_category``, which allows users to select a column other than taxonomy to use when labeling the rows; and ``--observation_metadata_level``, which allows the user to specify which level in the hierarchical metadata category to use in creating the row labels.
 * ``-m/--mapping_fps`` is no longer required for split_libraries_fastq.py. The mapping file is not required when running with ``--barcode_type 'not-barcoded'``,but the mapping file would fail to validate when passing multiple sequence files and sample ids but a mapping file without barcodes (see #1400).
 * Added alphabetical sorting option (based on boxplot labels) to ``make_distance_boxplots.py``. Sorting by boxplot median can now be performed by passing ``--sort median`` (this was previously invoked by passing ``--sort``). Sorting alphabetically can be performed by passing ``--sort alphabetical``.
@@ -50,6 +50,13 @@ optionally a mapping file. Check out the new documentation for the naming conven
 * Added new options ``-g``/``--imagetype``, ``--dpi``, ``--width``, and ``--height`` to ``make_otu_heatmap.py``, which offer more control over the generation of heatmap figures.
 * Removed ``--output_dir`` optional option from ``make_otu_heatmap.py`` and replaced it with the required option ``--output_fp``.
 * Fixed bug where ``-S``/``--suppress_submit_jobs`` was being ignored by several of the parallel scripts (e.g. ``parallel_pick_otus_uclust_ref.py``) (see [#1665](https://github.com/biocore/qiime/issues/1665)).
+* Simplified and improved QIIME documentation.
+* ``print_qiime_config.py -t`` now tests a QIIME minimal (base) install instead of a QIIME full install. ``print_qiime_config.py -tf`` tests a QIIME full install.
+* Added ``pick_otus_reference_seqs_fp`` to the QIIME config file. This is a filepath to reference sequences to use with QIIME's OTU picking scripts/workflows. See the [QIIME config docs](http://qiime.org/install/qiime_config.html) and [#1696](https://github.com/biocore/qiime/issues/1696) for more details.
+* The QIIME config settings ``assign_taxonomy_id_to_taxonomy_fp``, ``assign_taxonomy_reference_seqs_fp``, ``pick_otus_reference_seqs_fp``, and ``pynast_template_alignment_fp`` now default to reference data files in the [qiime-default-reference project](http://github.com/biocore/qiime-default-reference).
+* Installing QIIME via ``pip install qiime`` now works out-of-the-box by providing a functioning QIIME minimal (base) install (see [#1696](https://github.com/biocore/qiime/issues/1696)).
+* ``cluster_jobs_fp`` in the QIIME config file now defaults to ``start_parallel_jobs.py``. ``seconds_to_sleep`` now defaults to 1.
+* Added ``--suppress_taxonomy_assignment`` option to ``pick_closed_reference_otus.py``.
 
 QIIME 1.8.0 (11 Dec 2013)
 =========================
