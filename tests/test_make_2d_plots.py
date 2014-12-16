@@ -184,9 +184,9 @@ plot into html spatial coords which allows for mouseovers"""
 
         obs1, obs2, obs3 = transform_xy_coords(self.xy_coords, sc_plot)
 
-        self.assertEqual(obs1, self.all_cids)
-        self.assertEqual(obs2, self.all_xcoords)
-        self.assertEqual(obs3, self.all_ycoords)
+        self.assertEqual(len(obs1), len(self.all_cids))
+        self.assertEqual(len(obs2), len(self.all_xcoords))
+        self.assertEqual(len(obs3), len(self.all_ycoords))
 
     def test_draw_scree_graph(self):
         """draw_scree_graph: draws the matplotlib figure"""
