@@ -95,8 +95,9 @@ script_info['optional_options'] = [
         help=(
             'Suppress OTU/category significance analysis. [default: %default]')),
     make_option('-t', '--tree_fp', type='existing_filepath',
-                help=('Path to the tree file if one should be used.'
-                      ' [default: no tree will be used]')),
+                help=('Path to the tree file if one should be used. Required '
+                      'unless --nonphylogenetic_diversity is passed. '
+                      '[default: no tree will be used]')),
     make_option('-c', '--categories', type='string',
                 help=('The metadata category or categories to compare'
                       ' (i.e., column headers in the mapping file)'
@@ -150,6 +151,11 @@ def main():
             params['beta_diversity']['metrics'] = 'bray_curtis'
         if 'metrics' not in params['alpha_diversity']:
             params['alpha_diversity']['metrics'] = 'observed_otus,chao1'
+    else:
+        if tree_fp is None:
+            option_parser.error(
+                "--tree_fp is required unless --nonphylogenetic_diversity "
+                "is passed.")
 
     jobs_to_start = opts.jobs_to_start
     default_jobs_to_start = qiime_config['jobs_to_start']

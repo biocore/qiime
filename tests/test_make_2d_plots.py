@@ -10,6 +10,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 
+from string import digits
 import matplotlib
 from matplotlib import use
 use('Agg', warn=False)
@@ -106,6 +107,21 @@ class TopLevelTests(TestCase):
     def tearDown(self):
         map(remove, self._paths_to_clean_up)
 
+    def remove_nums(self, text):
+        """Removes all digits from the given string.
+
+        Returns the string will all digits removed. Useful for testing strings
+        for equality in unit tests where you don't care about numeric values,
+        or if some values are random.
+
+        This code was taken from http://bytes.com/topic/python/answers/
+            850562-finding-all-numbers-string-replacing
+
+        Arguments:
+            text - the string to remove digits from
+        """
+        return text.translate(None, digits)
+
     def test_make_line_plot(self):
         """ make_line_plot: creates HTML source for scree plot"""
 
@@ -144,9 +160,9 @@ images"""
             self.x_len, self.y_len, self.size,
             draw_axes=False, generate_eps=True)
 
-        self.assertEqual(obs1, expsrcmap1)
-        self.assertEqual(obs2, expimgmap1)
-        self.assertEqual(obs3, expeps1)
+        self.assertEqual(self.remove_nums(obs1), self.remove_nums(expsrcmap1))
+        self.assertEqual(self.remove_nums(obs2), self.remove_nums(expimgmap1))
+        self.assertEqual(self.remove_nums(obs3), self.remove_nums(expeps1))
         self.assertTrue(exists(filename1), 'The png file was not created in \
 the appropriate location')
         self.assertTrue(exists(filename2), 'The eps file was not created in \
@@ -184,9 +200,9 @@ plot into html spatial coords which allows for mouseovers"""
 
         obs1, obs2, obs3 = transform_xy_coords(self.xy_coords, sc_plot)
 
-        self.assertEqual(obs1, self.all_cids)
-        self.assertEqual(obs2, self.all_xcoords)
-        self.assertEqual(obs3, self.all_ycoords)
+        self.assertEqual(len(obs1), len(self.all_cids))
+        self.assertEqual(len(obs2), len(self.all_xcoords))
+        self.assertEqual(len(obs3), len(self.all_ycoords))
 
     def test_draw_scree_graph(self):
         """draw_scree_graph: draws the matplotlib figure"""

@@ -41,28 +41,31 @@ script_info['script_usage'].append(
      """ %prog -m SeqPrep -f $PWD/forward_reads.fastq -r $PWD/reverse_reads.fastq -o $PWD/SeqPrep_joined"""))
 script_info['script_usage'].append(
     ("""Update the index / barcode reads file to match the surviving joined pairs.""",
-     """This is required if you will be using \'split_libraries_fastq.py\'.""",
+     """This is required if you will be using split_libraries_fastq.py.""",
      """ %prog -f $PWD/forward_reads.fastq -r $PWD/reverse_reads.fastq -b $PWD/barcodes.fastq -o $PWD/fastq-join_joined"""))
 script_info['output_description'] = """All paired-end joining software will return a joined / merged / assembled paired-end fastq file. Depending on the method chosen, additional files may be written to the user-specified output directory.
 
 
 1. fastq-join will output fastq-formatted files as:
-   \"*.join\" - assembled / joined reads output
-   \"*.un1\" - unassembled / unjoined reads1 output
-   \"*.un2\" - unassembled / unjoined reads2 output
+
+   - \"*.join\": assembled / joined reads output
+   - \"*.un1\": unassembled / unjoined reads1 output
+   - \"*.un2\": unassembled / unjoined reads2 output
 
 2. SeqPrep will output fastq-formatted gzipped files as:
-   \"*_assembled.gz\" - unassembled / unjoined reads1 output
-   \"*_unassembled_R1.gz\" - unassembled / unjoined reads1 output
-   \"*_unassembled_R2.gz\" - unassembled / unjoined reads2 output
+
+   - \"*_assembled.gz\": unassembled / unjoined reads1 output
+   - \"*_unassembled_R1.gz\": unassembled / unjoined reads1 output
+   - \"*_unassembled_R2.gz\": unassembled / unjoined reads2 output
 
 3. If a barcode / index file is provided via the \'-b\' option, an updated
    barcodes file will be output as:
-   \"..._barcodes.fastq\"
-    This barcode / index file must be used in conjunction with the joined
-    paired-ends file as input to \'split_libraries_fastq.py\'. Except for
-    missing reads that may result from failed merging of paired-ends, the
-    index-reads and joined-reads must be in the same order.
+
+   - \"..._barcodes.fastq\": This barcode / index file must be used in
+     conjunction with the joined
+     paired-ends file as input to split_libraries_fastq.py. Except for
+     missing reads that may result from failed merging of paired-ends, the
+     index-reads and joined-reads must be in the same order.
 
 """
 script_info['required_options'] = [

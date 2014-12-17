@@ -20,7 +20,7 @@ from qiime.otu_significance import (get_sample_cats, get_cat_sample_groups,
                                     run_correlation_test)
 from qiime.stats import (assign_correlation_pval, fisher,
                                    fisher_population_correlation)
-from numpy import array, hstack, corrcoef, asarray
+from numpy import array, hstack, corrcoef, asarray, nan
 from numpy.random import seed
 from numpy.testing import assert_almost_equal
 from os import remove
@@ -128,6 +128,7 @@ class GroupSignificanceFunctionsTests(TestCase):
     def test_run_group_significance_test(self):
         """Test that all group significance tests can be run."""
         bt = parse_biom_table(BT_IN_1)
+        bt_2 = parse_biom_table(BT_IN_2)
         bt_4 = parse_biom_table(BT_4)
 
         # test with non-paramteric t-test
@@ -536,6 +537,29 @@ class GroupSignificanceFunctionsTests(TestCase):
         assert_almost_equal(exp_test_stats, obs_test_stats)
         assert_almost_equal(exp_pvals, obs_pvals)
         assert_almost_equal(exp_means, obs_means)
+        # Test with equal data point, which should normally cause an error
+        # in kruskal wallis
+        sample_indices = {'cat1': [0, 3], 'cat2': [4, 5], 'cat3': [2, 1]}
+        row_gen = group_significance_row_generator(bt_2, sample_indices)
+
+        exp_test_stats = [nan, 4.5714285714285694, 3.7142857142857117,
+                          3.7142857142857117, 4.5714285714285694,
+                          0.85714285714285765]
+        exp_pvals = [nan, 0.10170139230422694, 0.15611804531597129,
+                     0.15611804531597129, 0.10170139230422694,
+                     0.65143905753105535]
+        exp_means = [[28.0, 28.0, 28.0],
+                     [30.0, 55.5, 12.5],
+                     [50.0, 45.5,  8.5],
+                     [50.5, 47.5, 69.0],
+                     [28.0,  9.0, 50.0],
+                     [65.0, 39.5, 31.0]]
+        obs_test_stats, obs_pvals, obs_means = \
+            run_group_significance_test(row_gen, 'kruskal_wallis',
+                                        GROUP_TEST_CHOICES)
+        assert_almost_equal(exp_test_stats, obs_test_stats)
+        assert_almost_equal(exp_pvals, obs_pvals)
+        assert_almost_equal(exp_means, obs_means)
 
     def test_group_significance_output_formatter(self):
         """output_formatter works"""
@@ -937,6 +961,8 @@ class GroupedCorrelationTests(TestCase):
 
 # globals used by certain tests.
 BT_IN_1 = '{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","type": "OTU table","generated_by": "testCode","date": "2013-08-20T15:48:21.166180","matrix_type": "sparse","matrix_element_type": "float","shape": [6, 6],"data": [[0,0,28.0],[0,1,52.0],[0,2,51.0],[0,3,78.0],[0,4,16.0],[0,5,77.0],[1,0,25.0],[1,1,14.0],[1,2,11.0],[1,3,32.0],[1,4,48.0],[1,5,63.0],[2,0,31.0],[2,1,2.0],[2,2,15.0],[2,3,69.0],[2,4,64.0],[2,5,27.0],[3,0,36.0],[3,1,68.0],[3,2,70.0],[3,3,65.0],[3,4,33.0],[3,5,62.0],[4,0,16.0],[4,1,41.0],[4,2,59.0],[4,3,40.0],[4,4,15.0],[4,5,3.0],[5,0,32.0],[5,1,8.0],[5,2,54.0],[5,3,98.0],[5,4,29.0],[5,5,50.0]],"rows": [{"id": "OTU1", "metadata": {"taxonomy": ["k__One"]}},{"id": "OTU2", "metadata": {"taxonomy": ["k__Two"]}},{"id": "OTU3", "metadata": {"taxonomy": ["k__Three"]}},{"id": "OTU4", "metadata": {"taxonomy": ["k__Four"]}},{"id": "OTU5", "metadata": {"taxonomy": ["k__Five"]}},{"id": "OTU6", "metadata": {"taxonomy": ["k__Six"]}}],"columns": [{"id": "Sample1", "metadata": null},{"id": "Sample2", "metadata": null},{"id": "Sample3", "metadata": null},{"id": "Sample4", "metadata": null},{"id": "Sample5", "metadata": null},{"id": "Sample6", "metadata": null}]}'
+BT_IN_2 = '{"id": "None","format": "Biological Observation Matrix 1.0.0","format_url": "http://biom-format.org","type": "OTU table","generated_by": "testCode","date": "2013-08-20T15:48:21.166180","matrix_type": "sparse","matrix_element_type": "float","shape": [6, 6],"data": [[0,0,28.0],[0,1,28.0],[0,2,28.0],[0,3,28.0],[0,4,28.0],[0,5,28.0],[1,0,28.0],[1,1,14.0],[1,2,11.0],[1,3,32.0],[1,4,48.0],[1,5,63.0],[2,0,31.0],[2,1,2.0],[2,2,15.0],[2,3,69.0],[2,4,64.0],[2,5,27.0],[3,0,36.0],[3,1,68.0],[3,2,70.0],[3,3,65.0],[3,4,33.0],[3,5,62.0],[4,0,16.0],[4,1,41.0],[4,2,59.0],[4,3,40.0],[4,4,15.0],[4,5,3.0],[5,0,32.0],[5,1,8.0],[5,2,54.0],[5,3,98.0],[5,4,29.0],[5,5,50.0]],"rows": [{"id": "OTU1", "metadata": {"taxonomy": ["k__One"]}},{"id": "OTU2", "metadata": {"taxonomy": ["k__Two"]}},{"id": "OTU3", "metadata": {"taxonomy": ["k__Three"]}},{"id": "OTU4", "metadata": {"taxonomy": ["k__Four"]}},{"id": "OTU5", "metadata": {"taxonomy": ["k__Five"]}},{"id": "OTU6", "metadata": {"taxonomy": ["k__Six"]}}],"columns": [{"id": "Sample1", "metadata": null},{"id": "Sample2", "metadata": null},{"id": "Sample3", "metadata": null},{"id": "Sample4", "metadata": null},{"id": "Sample5", "metadata": null},{"id": "Sample6", "metadata": null}]}'
+
 MF_IN_1 = ['#SampleID\ttest_cat\ttest_corr',
            'Sample1\tcat1\t1',
            'Sample2\tcat1\t2',

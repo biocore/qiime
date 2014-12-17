@@ -1,26 +1,23 @@
 .. _virtual_box:
 
+=================
 QIIME Virtual Box
-^^^^^^^^^^^^^^^^^
+=================
 
-What is the QIIME Virtual Box?
-==============================
-Because of the 'pipeline' nature of QIIME, there are many external dependencies and installation can therefore be a challenge. The QIIME Virtual Box should get around that problem, and is a fully functional environment for analyzing microbial community surveys and visualizing results.
+As a consequence of QIIME's *pipeline* architecture, **QIIME has a lot of dependencies and can (but doesn't have to) be very challenging to install**. The QIIME Virtual Box gets around the difficulty of installation by providing a functioning QIIME full install inside an Ubuntu Linux virtual machine. You can use the QIIME Virtual Box on Mac OS X, Windows, or Linux.
 
-The QIIME Virtual Box is a virtual machine based on Ubuntu Linux which comes pre-packaged with QIIME's dependencies. This is the fastest way to get up-and-running with QIIME, and is useful for small analyses (approximately up to a full 454 run); and testing QIIME to determine if it meets your needs before investing time in installing it, for example, in your cluster environment.
-
-It is strongly recommended that your system have 8 or more gigabytes of memory to use the virtual box with the newest releases of reference databases (e.g. Greengenes, UNITE).
+It is strongly recommended that your system have 8 gigabytes or more of memory to use the QIIME Virtual Box.
 
 Installing the QIIME Virtual Box
 ================================
 1. Download and install the `VirtualBox`_ (VB) version for your machine.
-2. Download the `64-bit QIIME Virtual Box`_. This file is large so it may take between a few minutes and a few hours depending on your Internet connection speed. You will need to unzip this file, which you can typically do by double-clicking on it.
+2. Download the 64-bit QIIME Virtual Box, which is linked from the `QIIME Resources page <http://qiime.org/home_static/dataFiles.html>`_. This file is large so it may take between a few minutes and a few hours depending on your Internet connection speed. You will need to unzip this file, which you can typically do by double-clicking on it.
 3. Create a new virtual machine:
 
   * Launch VirtualBox, and create a new machine (press the New button).
   * A new window will show up. Click 'Next'.
   * In this screen type QIIME as the name for the virtual machine. Then select Linux as the Operating System, and Ubuntu (64 bit) as the version. Click Next.
-  * Select the amount of RAM (memory). You will need at least 3G, but the best option is based on your machine. After selecting the amount of RAM, click Next.
+  * Select the amount of RAM (memory). You will need at least 3 GB, but the best option is based on your machine. After selecting the amount of RAM, click Next.
   * Select "Use existing hard drive", and click the folder icon next to the selector (it has a green up arrow). In the new window click 'Add', and locate the virtual hard drive that was downloaded in step 2. Click Select and then click Next.
   * In the new window click Finish.
 
@@ -35,20 +32,13 @@ A video illustrating these steps can be found `here <http://www.youtube.com/watc
 
 Limitations of the QIIME Virtual Box
 ====================================
-Due to licensing restrictions, we cannot package Roche's ``sff tools`` with the QIIME Virtual Box. These must be obtained from Roche/454. When you run QIIME's ``tests/all_tests.py`` script, you will therefore get failures associated with the wrapper for ``sff tools`` which look like:
+Due to licensing restrictions, we cannot package Roche's ``sff tools`` or ``usearch`` with the QIIME Virtual Box. You can find information on how to obtain these package in the `QIIME Installation Guide <./install.html#installing-qiime-natively-with-a-full-install>`_.
 
-::
-	
-	Failed the following unit tests, in part or whole due to missing external applications.
-	Depending on the QIIME features you plan to use, this may not be critical.
-	$HOME/Qiime/tests/test_process_sff.py
-
-
-You can safely ignore these as QIIME contains built-in tools for parsing sff files. The QIIME sff tools are about 10x slower than Roche's version however, so if you have a copy of Roche's sff tools you may want to install those in the VB.
+These are not essential for most of QIIME's functionality, so most users can likely ignore this.
 
 Support for the 32-bit QIIME Virtual Box is discontinued
 ========================================================
-As of Qiime 1.2.0, we no longer build and distribute the 32 bit Virtual Box. The majority of our users work on 64 bit platforms, and supporting multiple versions has become too time-consuming. We apologize for the inconvenience. If upgrading to a 64-bit system is not an option for you, you might want to look into the `QIIME EC image <./vm_ec2.html>`_.
+As of QIIME 1.2.0, we no longer build and distribute the 32 bit Virtual Box. The majority of our users work on 64-bit platforms, and supporting multiple versions has become too time-consuming. We apologize for the inconvenience. If upgrading to a 64-bit system is not an option for you, you might want to look into the `QIIME EC image <./vm_ec2.html>`_.
 
 If you don't know whether your machine is 32 or 64 bit, go through the following steps.
 
@@ -64,7 +54,7 @@ Error when starting the 64-bit QIIME Virtual Box on Windows
 If you see the following error message when starting the 64-bit QIIME Virtual Box on Windows, follow the instructions below.
 
 ::
-	
+
 	Hardware acceleration has been enabled but is not operational. Your 64-bit guest will fail to detect a 64-bit CPU and will not be able to boot.
 
 By default VT (virtualization technology) comes disabled in Windows. HP has nice instructions on how to fix this, so we point users to those instructions.
@@ -79,13 +69,11 @@ Enabling virtualization in the BIOS
 
 The computer automatically restarts. If you cannot enable Virtualization Technology on in your BIOS, check if your BIOS needs to be updated.
 
-These instructions were extracted directly from HPs website: `link 
+These instructions were extracted directly from HPs website: `link
 <http://h10025.www1.hp.com/ewfrf/wc/document?docname=c01959244&cc=us&lc=en&dlc=en&product=3744198>`_.
 
 If this doesn't work, you might need to instead hit F9 to enter the BIOS.
 
 Briefly, on booting the system, hit F9. Enter Advanced Options -> Processor Options -> Intel(R) Virtualization Technology and then hit Enable.
 
-.. _CloVR: http://clovr.org
-.. _64-bit QIIME Virtual Box: ftp://thebeast.colorado.edu/pub/qiime-release-VMs/QIIME-1.8.0-amd64.vdi.gz
 .. _VirtualBox: http://www.virtualbox.org/wiki/Downloads

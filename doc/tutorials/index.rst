@@ -43,6 +43,7 @@ The QIIME development team is very interested in incorporating community-contrib
    filtering_contamination_otus
    chaining_otu_pickers
    extracting_barcodes_from_fastq_data
+   processing_jgi_fastq_data
 
 **Analyzing diversity**
 

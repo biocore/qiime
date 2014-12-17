@@ -13,8 +13,7 @@ __email__ = "gregcaporaso@gmail.com"
 import warnings
 warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
 from qiime.util import (parse_command_line_parameters,
-                        get_options_lookup,
-                        make_option,
+                        get_options_lookup, make_option,
                         load_qiime_config)
 from qiime.align_seqs import pairwise_alignment_methods
 from qiime.parallel.align_seqs import ParallelAlignSeqsPyNast
@@ -46,6 +45,9 @@ blast_db_default_help =\
     'created on-the-fly from template_alignment'
 
 script_info['optional_options'] = [
+    make_option('-t', '--template_fp', type='existing_filepath',
+                help='Filepath for template alignment [default: %default]',
+                default=qiime_config['pynast_template_alignment_fp']),
     make_option('-a', '--pairwise_alignment_method',
                 type='choice', help='Method to use for pairwise alignments' +
                 ' [default: %default]',
@@ -76,18 +78,6 @@ script_info['optional_options'] = [
 
 script_info['version'] = __version__
 
-# pynast_template_alignment_fp is required only if it is not
-# provided in qiime_config
-if qiime_config['pynast_template_alignment_fp']:
-    script_info['optional_options'].append(make_option('-t', '--template_fp',
-                                                       type='string', dest='template_fp', help='Filepath for ' +
-                                                       'template against [default: %default]',
-                                                       default=qiime_config['pynast_template_alignment_fp']))
-else:
-    script_info['required_options'].append(make_option('-t', '--template_fp',
-                                                       type='string', dest='template_fp',
-                                                       help='Filepath for template against',
-                                                       default=qiime_config['pynast_template_alignment_fp']))
 
 
 def main():
@@ -107,7 +97,7 @@ def main():
                     params,
                     job_prefix=opts.job_prefix,
                     poll_directly=opts.poll_directly,
-                    suppress_submit_jobs=False)
+                    suppress_submit_jobs=opts.suppress_submit_jobs)
 
 
 if __name__ == "__main__":

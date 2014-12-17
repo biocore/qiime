@@ -26,6 +26,7 @@ from numpy import asarray
 import os
 from os.path import splitext
 from StringIO import StringIO
+from copy import deepcopy
 
 options_lookup = get_options_lookup()
 
@@ -252,16 +253,26 @@ def main():
             color=opts.line_color,
             alpha=opts.line_alpha)
     else:
+        # not all the categories that are going to be enumerated are found in
+        # the distance matrices i.e. the mapping file is a superset that can
+        # contain more samples than the distance matrices
+        used_categories = deepcopy(categories)
+
         for index, single_category in enumerate(categories):
             good_sample_ids = sample_ids_from_metadata_description(
                 open(mapping_fp), '%s:%s' % (category, single_category))
 
-            _y_samples, _y_distmtx = parse_distmat(StringIO(
-                filter_samples_from_distance_matrix((y_samples, y_distmtx),
-                                                    good_sample_ids, negate=True)))
-            _x_samples, _x_distmtx = parse_distmat(StringIO(
-                filter_samples_from_distance_matrix((x_samples, x_distmtx),
-                                                    good_sample_ids, negate=True)))
+            try:
+                _y_samples, _y_distmtx = parse_distmat(StringIO(
+                    filter_samples_from_distance_matrix((y_samples, y_distmtx),
+                                                        good_sample_ids, negate=True)))
+                _x_samples, _x_distmtx = parse_distmat(StringIO(
+                    filter_samples_from_distance_matrix((x_samples, x_distmtx),
+                                                        good_sample_ids, negate=True)))
+            except ValueError:
+                # no samples found for this category
+                used_categories.remove(single_category)
+                continue
 
             x_val, y_val, x_fit, y_fit, func_text = fit_semivariogram(
                 (_x_samples, _x_distmtx), (_y_samples, _y_distmtx),
@@ -305,7 +316,7 @@ def main():
 
         if extension == '':
             extension = 'png'
-        make_legend(categories, colors_used, 0, 0, 'black', 'white',
+        make_legend(used_categories, colors_used, 0, 0, 'black', 'white',
                     opts.output_path, extension, 80)
 
 if __name__ == "__main__":

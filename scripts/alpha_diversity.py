@@ -102,8 +102,8 @@ def main():
     if opts.show_metrics:
         print("Known metrics are: %s\n"
               % (', '.join(list_known_metrics()),))
-        print("For more information, see http://scikit-bio.org/docs/latest/ge"
-              "nerated/skbio.diversity.alpha.html#module-skbio.diversity.alpha")
+        print("For more information, see http://scikit-bio.org/docs/latest/"
+              "generated/skbio.diversity.alpha.html")
         exit(0)
     almost_required_options = ['input_path', 'output_path', 'metrics']
     for option in almost_required_options:

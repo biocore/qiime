@@ -1,13 +1,4 @@
-The QIIME tutorial contains two shell scripts that a user can run. You will need an appropriate template alignment and lanemask. Run "print_qiime_config.py", and view:
-template_alignment_lanemask_fp
-and 
-pynast_template_alignment_fp
-
-The paths should be changed to point to the greengenes core set alignment and lanemask on your system. As of April 2010, you can grab these files from these two links, respectively:
-
-http://greengenes.lbl.gov/Download/Sequence_Data/Fasta_data_files/core_set_aligned.fasta.imputed
-http://greengenes.lbl.gov/Download/Sequence_Data/lanemask_in_1s_and_0s
-
+The QIIME tutorial contains two shell scripts that a user can run.
 
 To use the shell scripts the user may need to make them executable by running one of the following commands:
 
@@ -25,6 +16,3 @@ To run the shell scripts the user can use the following commands:
 or
 
 ./qiime_tutorial_commands_parallel.sh
-
-
-
