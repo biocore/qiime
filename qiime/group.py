@@ -430,7 +430,7 @@ def mapping_lines_from_collapsed_df(collapsed_df):
     return lines
 
 def _collapse_metadata(mapping_f, collapse_fields):
-    """
+    """ Load a mapping file into a DataFrame and then collapse rows
 
     Parameters
     ----------
