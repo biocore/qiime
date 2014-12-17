@@ -16,6 +16,7 @@ from collections import defaultdict
 from numpy import array
 from qiime.stats import is_symmetric_and_hollow
 from qiime.parse import group_by_field
+from qiime.filter import filter_mapping_file
 
 
 def get_grouped_distances(dist_matrix_header, dist_matrix, mapping_header,
@@ -136,6 +137,10 @@ def get_field_state_comparisons(dist_matrix_header, dist_matrix,
     """
     _validate_input(dist_matrix_header, dist_matrix, mapping_header, mapping,
                     field)
+
+    # avoid empty groups of distances
+    mapping_header, mapping = filter_mapping_file(mapping, mapping_header,
+                                                  dist_matrix_header)
 
     # Make sure each comparison group field state is in the specified field.
     if not comparison_field_states:
@@ -311,6 +316,12 @@ def _validate_input(dist_matrix_header, dist_matrix, mapping_header, mapping,
     if field not in mapping_header:
         raise ValueError("The field '%s' is not in the mapping file header."
                          % field)
+
+    # check that we share sample identifiers between th mf and the dm
+    if not (set(zip(*mapping)[0]) & set(dist_matrix_header)):
+        raise ValueError('The mapping file does not share samples with the '
+                         'distance matrix.')
+
 
 
 def _get_indices(input_items, wanted_items):

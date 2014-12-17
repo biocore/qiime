@@ -226,6 +226,15 @@ class GroupTests(TestCase):
                                          0.73699999999999999]}}
         self.assertDictEqual(comparison_groupings, expected)
 
+    def test_get_field_state_comparisons_extra_samples(self):
+        self.small_mapping.append(['a', 'ACTCGAGGACT', 'xx'])
+        comparison_groupings = get_field_state_comparisons(
+            self.small_dist_matrix_header, self.small_dist_matrix,
+            self.small_mapping_header, self.small_mapping,
+            self.small_field, ['SampleFieldState1'])
+        expected = {'SampleFieldState2': {'SampleFieldState1': [0.5]}}
+        self.assertDictEqual(comparison_groupings, expected)
+
     def test_get_field_state_comparisons_small(self):
         """get_field_state_comparisons() should return a 2D dictionary of
         distances between a field state and its comparison field states."""
@@ -270,6 +279,15 @@ class GroupTests(TestCase):
                           ['Samp.1', 'Samp.2'],
                           array([[10.0, 0.0003], [0.0003, 0.0]]),
                           self.small_mapping_header, self.small_mapping,
+                          self.small_field, ['SampleFieldState1'])
+
+    def test_get_field_state_comparisons_no_shared_samples(self):
+        """Handles invalid distance matrix."""
+        self.assertRaises(ValueError, get_field_state_comparisons,
+                          ['Samp.1', 'Samp.2'],
+                          array([[10.0, 0.0003], [0.0003, 0.0]]),
+                          self.small_mapping_header, [['foo', 'b', 'c'],
+                          ['bar', 'bb', 'cc']],
                           self.small_field, ['SampleFieldState1'])
 
     def test_get_adjacent_distances(self):
