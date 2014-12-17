@@ -36,7 +36,7 @@ from qiime.group import (get_grouped_distances, get_all_grouped_distances,
                           group_by_sample_metadata, _sample_id_from_group_id,
                           _collapse_to_first, _collapse_to_median,
                           _collapse_to_random, _mapping_lines_from_collapsed_df,
-                          collapse_metadata)
+                          _collapse_metadata)
 
 
 class GroupTests(TestCase):
@@ -838,9 +838,24 @@ class GroupTests(TestCase):
         self.assertTrue(e[1] in [1, 4])
         self.assertTrue(e[2] in [2, 5])
 
+    def test_collapse_metadata(self):
+        in_f = StringIO(self.group_by_sample_metadata_map_f1)
+        actual = _collapse_metadata(
+            in_f, ['replicate-group', 'subject'])
+        # correct collapsing
+        self.assertEqual(actual['#SampleID'][(1, 1)], ('f1', 'f2'))
+        self.assertEqual(actual['#SampleID'][(1, 2)], ('f3', 'f4'))
+        self.assertEqual(actual['#SampleID'][(2, 1)], ('f5', 'f6', 'p1'))
+        self.assertEqual(actual['#SampleID'][(2, 2)], ('p2', 't1', 't2'))
+        self.assertEqual(actual['#SampleID'][(3, 1)], ('not16S.1', ))
+        # original values tuple-ized
+        self.assertEqual(actual['BarcodeSequence'][(1, 1)], ('ACACTGTTCATG', 'ACCAGACGATGC'))
+        self.assertEqual(actual['BarcodeSequence'][(1, 2)], ('ACCAGACGATGC', 'ACCAGACGATGC'))
+
+
     def test_mapping_lines_from_collapsed_df(self):
         in_f = StringIO(self.group_by_sample_metadata_map_f1)
-        collapsed_df = collapse_metadata(
+        collapsed_df = _collapse_metadata(
             in_f, ['replicate-group', 'subject'])
         expected = _mapping_lines_from_collapsed_df(collapsed_df)
         self.assertTrue(expected[0].startswith("#SampleID	original-sample-ids	BarcodeSequence	LinkerPrimerSequence"))

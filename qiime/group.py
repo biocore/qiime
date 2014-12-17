@@ -285,8 +285,33 @@ def get_adjacent_distances(dist_matrix_header,
             (filtered_sids[i], filtered_sids[i + 1]))
     return distance_results, header_results
 
-def collapse_metadata(mapping_f, collapse_fields,
-                      sample_id_field="#SampleID"):
+def _collapse_metadata(mapping_f, collapse_fields, sample_id_field="#SampleID"):
+    """
+
+    Parameters
+    ----------
+    mapping_f : file handle or filepath
+        The sample metadata mapping file.
+    collapse_fields : iterable
+        The fields to combine when collapsing samples. For each sample in the
+        mapping_f, the ordered values from these columns will be tuplized and
+        used as the group identfier. Samples whose tuplized values in these
+        fields are identical will be grouped.
+    sample_id_field : str, optional
+        The sample id field in the mapping_f.
+
+    Returns
+    -------
+    pd.DataFrame
+        Sample metadata resulting from the collapse operation.
+
+    Raises
+    ------
+    KeyError
+        If sample_id_field or any of the collapse fields are not column headers
+        in mapping_f.
+
+    """
     sample_md = pd.read_csv(mapping_f, sep='\t')
     grouped = sample_md.groupby(collapse_fields)
     collapsed_md = grouped.agg(lambda x: tuple(x))
@@ -324,8 +349,8 @@ def group_by_sample_metadata(mapping_f, collapse_fields,
         in mapping_f.
 
     """
-    collapsed_md = collapse_metadata(mapping_f, collapse_fields,
-                                     sample_id_field)
+    collapsed_md = _collapse_metadata(mapping_f, collapse_fields,
+                                      sample_id_field)
 
     new_index_to_group = {}
     old_index_to_new_index = {}
