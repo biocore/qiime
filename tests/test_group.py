@@ -24,19 +24,19 @@ from numpy.testing import assert_almost_equal
 from StringIO import StringIO
 
 from qiime.parse import (parse_mapping_file, parse_distmat,
-                          group_by_field, parse_coords,
-                          parse_mapping_file_to_dict)
+                         group_by_field, parse_coords,
+                         parse_mapping_file_to_dict)
 from qiime.group import (get_grouped_distances, get_all_grouped_distances,
-                          get_field_state_comparisons, _get_indices,
-                          _get_groupings, _validate_input,
-                          get_adjacent_distances, get_ordered_coordinates,
-                          extract_per_individual_states_from_sample_metadata,
-                          extract_per_individual_state_metadatum_from_sample_metadata,
-                          extract_per_individual_state_metadata_from_sample_metadata_and_biom,
-                          _group_by_sample_metadata, _sample_id_from_group_id,
-                          collapse_samples, mapping_lines_from_collapsed_df,
-                          _collapse_to_first, _collapse_to_median,
-                          _collapse_to_random, _collapse_metadata, get_collapse_fns)
+                         get_field_state_comparisons, _get_indices,
+                         _get_groupings, _validate_input,
+                         get_adjacent_distances, get_ordered_coordinates,
+                         extract_per_individual_states_from_sample_metadata,
+                         extract_per_individual_state_metadatum_from_sample_metadata,
+                         extract_per_individual_state_metadata_from_sample_metadata_and_biom,
+                         _group_by_sample_metadata, _sample_id_from_group_id,
+                         collapse_samples, mapping_lines_from_collapsed_df,
+                         _collapse_to_first, _collapse_to_median,
+                         _collapse_to_random, _collapse_metadata, get_collapse_fns)
 
 
 class GroupTests(TestCase):

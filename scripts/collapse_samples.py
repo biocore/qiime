@@ -69,10 +69,9 @@ def main():
                          collapse_mode)
 
     write_biom_table(collapsed_table, output_biom_fp)
-    output_mapping_f = open(output_mapping_fp, 'w')
     output_map_lines = mapping_lines_from_collapsed_df(collapsed_metadata)
-    output_mapping_f.write('\n'.join(output_map_lines))
-    output_mapping_f.close()
+    with open(output_mapping_fp, 'w') as output_mapping_f:
+        output_mapping_f.write('\n'.join(output_map_lines))
 
 if __name__ == "__main__":
     main()
