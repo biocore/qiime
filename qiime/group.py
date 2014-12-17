@@ -336,7 +336,9 @@ def get_collapse_fns():
     """
     return {'median': _collapse_to_median,
             'first': _collapse_to_first,
-            'random': _collapse_to_random}
+            'random': _collapse_to_random,
+            'sum': _collapse_to_sum,
+            'mean': _collapse_to_mean}
 
 def collapse_samples(table, mapping_f, collapse_fields, collapse_mode):
     """ Collapse samples in a biom table and sample metadata
@@ -378,21 +380,14 @@ def collapse_samples(table, mapping_f, collapse_fields, collapse_mode):
                           sid_to_group_id=old_index_to_new_index)
 
     collapse_fns = get_collapse_fns()
-    if collapse_mode == 'sum':
-        output_table = table.collapse(
-            partition_f, norm=False, axis='sample')
-    elif collapse_mode == 'mean':
-        output_table = table.collapse(
-            partition_f, norm=True, axis='sample')
-    else:
-        try:
-            collapse_f = collapse_fns[collapse_mode]
-        except KeyError:
-            raise KeyError(
-             "Unknown collapse function %s. Valid choices are: mean, sum, "
-             "%s." % (collapse_mode, ', '.join(collapse_fns.keys())))
-        output_table = table.collapse(
-            partition_f, collapse_f=collapse_f, norm=False, axis='sample')
+    try:
+        collapse_f = collapse_fns[collapse_mode]
+    except KeyError:
+        raise KeyError(
+         "Unknown collapse function %s. Valid choices are: mean, sum, "
+         "%s." % (collapse_mode, ', '.join(collapse_fns.keys())))
+    output_table = table.collapse(
+        partition_f, collapse_f=collapse_f, norm=False, axis='sample')
 
     return collapsed_metadata, output_table
 
@@ -471,6 +466,12 @@ def _collapse_to_first(t, axis):
 
 def _collapse_to_median(t, axis):
     return np.asarray([np.median(e) for e in t.iter_data(axis=axis, dense=True)])
+
+def _collapse_to_sum(t, axis):
+    return np.asarray([np.sum(e) for e in t.iter_data(axis=axis)])
+
+def _collapse_to_mean(t, axis):
+    return np.asarray([np.mean(e) for e in t.iter_data(axis=axis)])
 
 def _collapse_to_random(t, axis):
     if axis == 'sample':

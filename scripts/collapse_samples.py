@@ -20,7 +20,7 @@ from qiime.group import (collapse_samples, get_collapse_fns,
                           mapping_lines_from_collapsed_df)
 
 collapse_fns = get_collapse_fns()
-collapse_modes = ['sum', 'mean'] + collapse_fns.keys()
+collapse_modes = collapse_fns.keys()
 
 script_info = {}
 script_info['brief_description'] = "Collapse samples in a BIOM table and mapping file."

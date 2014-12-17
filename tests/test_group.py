@@ -873,6 +873,32 @@ class GroupTests(TestCase):
         self.assertTrue(e[1] in [1, 4])
         self.assertTrue(e[2] in [2, 5])
 
+    def test_collapse_to_sum(self):
+        """ Table collapse function _collapse_to_sum functions as expected
+        """
+        # #OTU ID	s1	s2	s3
+        # o1	0.0	1.0	2.0
+        # o2	3.0	4.0	5.0
+        t1 = Table(np.array([[0, 1, 2], [3, 4, 5]]),
+                   ['o1', 'o2'], ['s1', 's2', 's3'])
+        self.assertEqual(list(_collapse_to_sum(t1, "observation")),
+                         [3.0, 12.0])
+        self.assertEqual(list(_collapse_to_sum(t1, "sample")),
+                         [3.0, 5.0, 7.0])
+
+    def test_collapse_to_mean(self):
+        """ Table collapse function _collapse_to_sum functions as expected
+        """
+        # #OTU ID	s1	s2	s3
+        # o1	0.0	1.0	2.0
+        # o2	3.0	4.0	5.0
+        t1 = Table(np.array([[0, 1, 2], [3, 4, 5]]),
+                   ['o1', 'o2'], ['s1', 's2', 's3'])
+        self.assertEqual(list(_collapse_to_mean(t1, "observation")),
+                         [1.0, 4.0])
+        self.assertEqual(list(_collapse_to_mean(t1, "sample")),
+                         [1.5, 2.5, 3.5])
+
     def test_collapse_metadata(self):
         in_f = StringIO(self._group_by_sample_metadata_map_f1)
         actual = _collapse_metadata(
