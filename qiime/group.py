@@ -285,7 +285,52 @@ def get_adjacent_distances(dist_matrix_header,
             (filtered_sids[i], filtered_sids[i + 1]))
     return distance_results, header_results
 
-def _collapse_metadata(mapping_f, collapse_fields, sample_id_field="#SampleID"):
+def group_by_sample_metadata(collapsed_md, sample_id_field="#SampleID"):
+    """Group sample identifiers by one or more metadata fields
+
+    Parameters
+    ----------
+    collapsed_md : pd.DataFrame
+        The result of collapsing a sample metadata DataFrame, for example with
+        collapse_metadata.
+    sample_id_field : str, optional
+        The sample id field in the mapping_f.
+
+    Returns
+    -------
+    dict
+        Mapping of group id to set of input sample ids in that group.
+    dict
+        Mapping of input sample id to new group id.
+    pd.DataFrame
+        Sample metadata resulting from the collapse operation.
+
+    Raises
+    ------
+    KeyError
+        If sample_id_field or any of the collapse fields are not column headers
+        in mapping_f.
+
+    """
+    new_index_to_group = {}
+    old_index_to_new_index = {}
+    for i in collapsed_md.index:
+        old_indices = collapsed_md[sample_id_field][i]
+
+        # this is a little ugly, but we need to handle single and multi-index
+        # values here, and we always want to result to be a tuple
+        if isinstance(i, tuple):
+            new_index = i
+        else:
+            new_index = (i, )
+
+        new_index_to_group[new_index] = set(old_indices)
+        for old_index in old_indices:
+            old_index_to_new_index[old_index] = new_index
+
+    return new_index_to_group, old_index_to_new_index
+
+def collapse_metadata(mapping_f, collapse_fields):
     """
 
     Parameters
@@ -317,73 +362,20 @@ def _collapse_metadata(mapping_f, collapse_fields, sample_id_field="#SampleID"):
     collapsed_md = grouped.agg(lambda x: tuple(x))
     return collapsed_md
 
-def group_by_sample_metadata(mapping_f, collapse_fields,
-                             sample_id_field="#SampleID"):
-    """Group sample identifiers by one or more metadata fields
-
-    Parameters
-    ----------
-    mapping_f : file handle or filepath
-        The sample metadata mapping file.
-    collapse_fields : iterable
-        The fields to combine when collapsing samples. For each sample in the
-        mapping_f, the ordered values from these columns will be tuplized and
-        used as the group identfier. Samples whose tuplized values in these
-        fields are identical will be grouped.
-    sample_id_field : str, optional
-        The sample id field in the mapping_f.
-
-    Returns
-    -------
-    dict
-        Mapping of group id to set of input sample ids in that group.
-    dict
-        Mapping of input sample id to new group id.
-    pd.DataFrame
-        Sample metadata resulting from the collapse operation.
-
-    Raises
-    ------
-    KeyError
-        If sample_id_field or any of the collapse fields are not column headers
-        in mapping_f.
-
-    """
-    collapsed_md = _collapse_metadata(mapping_f, collapse_fields,
-                                      sample_id_field)
-
-    new_index_to_group = {}
-    old_index_to_new_index = {}
-    for i in collapsed_md.index:
-        old_indices = collapsed_md[sample_id_field][i]
-
-        # this is a little ugly, but we need to handle single and multi-index
-        # values here, and we always want to result to be a tuple
-        if isinstance(i, tuple):
-            new_index = i
-        else:
-            new_index = (i, )
-
-        new_index_to_group[new_index] = set(old_indices)
-        for old_index in old_indices:
-            old_index_to_new_index[old_index] = new_index
-
-    return new_index_to_group, old_index_to_new_index
-
-def _sample_id_from_group_id(id_, md, sid_to_group_id):
+def sample_id_from_group_id(id_, md, sid_to_group_id):
     try:
         group_id = sid_to_group_id[id_]
     except KeyError:
         raise KeyError("Sample id %s doesn't map to a group id." % id_)
     return '.'.join(map(str, group_id))
 
-def _collapse_to_first(t, axis):
+def collapse_to_first(t, axis):
     return np.asarray([e[0] for e in t.iter_data(axis=axis, dense=True)])
 
-def _collapse_to_median(t, axis):
+def collapse_to_median(t, axis):
     return np.asarray([np.median(e) for e in t.iter_data(axis=axis, dense=True)])
 
-def _collapse_to_random(t, axis):
+def collapse_to_random(t, axis):
     if axis == 'sample':
         length = t.length("observation")
     elif axis == 'observation':
@@ -393,7 +385,7 @@ def _collapse_to_random(t, axis):
     n = np.random.randint(length)
     return np.asarray([e[n] for e in t.iter_data(axis=axis, dense=True)])
 
-def _mapping_lines_from_collapsed_df(collapsed_df):
+def mapping_lines_from_collapsed_df(collapsed_df):
     """ formats a collapsed DataFrame as lines of a QIIME mapping file
     """
     lines = []
