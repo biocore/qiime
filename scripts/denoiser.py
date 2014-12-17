@@ -178,8 +178,9 @@ script_info['optional_options'] = [
 
     make_option('-e', '--error_profile', action='store',
                 dest='error_profile', help='path to error profile ' +
-                '[default= %default]',
-                default=RELATIVE_DENOISER_DATA_DIR + 'FLX_error_profile.dat'),
+                '[default= %s]' % (RELATIVE_DENOISER_DATA_DIR +
+                                   'FLX_error_profile.dat'),
+                default=DENOISER_DATA_DIR + 'FLX_error_profile.dat'),
 
     # might be needed once we switch to Titanium as default
     #    make_option('-flx', action='store_true',
