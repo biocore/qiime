@@ -384,7 +384,7 @@ def collapse_samples(table, mapping_f, collapse_fields, collapse_mode):
         collapse_f = collapse_fns[collapse_mode]
     except KeyError:
         raise KeyError(
-         "Unknown collapse function %s. Valid choices are: mean, sum, "
+         "Unknown collapse function %s. Valid choices are: "
          "%s." % (collapse_mode, ', '.join(collapse_fns.keys())))
     output_table = table.collapse(
         partition_f, collapse_f=collapse_f, norm=False, axis='sample')

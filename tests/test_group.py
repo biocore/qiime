@@ -36,7 +36,8 @@ from qiime.group import (get_grouped_distances, get_all_grouped_distances,
                          _group_by_sample_metadata, _sample_id_from_group_id,
                          collapse_samples, mapping_lines_from_collapsed_df,
                          _collapse_to_first, _collapse_to_median,
-                         _collapse_to_random, _collapse_metadata, get_collapse_fns)
+                         _collapse_to_random, _collapse_metadata,
+                         _collapse_to_sum, _collapse_to_mean, get_collapse_fns)
 
 
 class GroupTests(TestCase):
@@ -799,7 +800,7 @@ class GroupTests(TestCase):
         t1 = Table(np.array([[0, 1, 2], [3, 4, 5]]),
                    ['o1', 'o2'], ['f1', 'f2', 'f3'])
         collapse_fields = ['replicate-group', 'subject']
-        for e in ['mean', 'sum'] + get_collapse_fns().keys():
+        for e in get_collapse_fns().keys():
             # all collapse functions work without failure
             in_f = StringIO(self._group_by_sample_metadata_map_f1)
             collapse_samples(t1, in_f, collapse_fields, e)
