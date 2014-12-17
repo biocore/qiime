@@ -343,6 +343,38 @@ def group_by_sample_metadata(mapping_f, collapse_fields,
 
     return new_index_to_group, old_index_to_new_index
 
+def _sample_id_from_group_id(id_, md, sid_to_group_id):
+    return '.'.join(map(str, sid_to_group_id[id_]))
+
+def _collapse_to_first(t, axis):
+    return np.asarray([e[0] for e in t.iter_data(axis=axis, dense=True)])
+
+def _collapse_to_median(t, axis):
+    return np.asarray([np.median(e) for e in t.iter_data(axis=axis, dense=True)])
+
+def _collapse_to_random(t, axis):
+    # this is a little clunky - waiting for an answer here
+    # http://stackoverflow.com/q/26050412/3424666
+    if axis == 'sample':
+        length = t.shape[0]
+    elif axis == 'observation':
+        length = t.shape[1]
+    else:
+        raise UnknownAxisError(axis)
+    n = np.random.randint(length)
+    return np.asarray([e[n] for e in t.iter_data(axis=axis, dense=True)])
+
+def _mapping_lines_from_collapsed_df(collapsed_df):
+    lines = []
+    lines.append('\t'.join(['#SampleID', 'represented-sample-id'] +\
+                           list(collapsed_df.columns)[1:]))
+
+    for r in collapsed_df.iterrows():
+        new_idx = '.'.join(map(str, r[0]))
+        new_values = map(str,[e[0] for e in r[1]])
+        lines.append('\t'.join([new_idx] + new_values))
+    return lines
+
 def _validate_input(dist_matrix_header, dist_matrix, mapping_header, mapping,
                     field):
     """Validates the input data to make sure it can be used and makes sense.

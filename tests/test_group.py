@@ -31,7 +31,7 @@ from qiime.group import (get_grouped_distances, get_all_grouped_distances,
                           extract_per_individual_states_from_sample_metadata,
                           extract_per_individual_state_metadatum_from_sample_metadata,
                           extract_per_individual_state_metadata_from_sample_metadata_and_biom,
-                          group_by_sample_metadata)
+                          group_by_sample_metadata, _sample_id_from_group_id)
 
 
 class GroupTests(TestCase):
@@ -763,6 +763,29 @@ class GroupTests(TestCase):
         self.assertRaises(KeyError, group_by_sample_metadata, in_f,
                           ['subject'], 'not-a-header')
 
+    def test_sample_id_from_group_id(self):
+        sid_to_group_id1 = {'f1': (1, ), 'f2': (2, ), 'f5': (4, )}
+        md = {}
+        self.assertEqual(_sample_id_from_group_id('f1', md, sid_to_group_id1),
+                         '1')
+        self.assertEqual(_sample_id_from_group_id('f2', md, sid_to_group_id1),
+                         '2')
+        self.assertEqual(_sample_id_from_group_id('f5', md, sid_to_group_id1),
+                         '4')
+
+        sid_to_group_id2 = {'f1': (1, 1), 'f2': (1, 1), 'f5': (2, 1)}
+        self.assertEqual(_sample_id_from_group_id('f1', md, sid_to_group_id2),
+                         '1.1')
+        self.assertEqual(_sample_id_from_group_id('f2', md, sid_to_group_id2),
+                         '1.1')
+        self.assertEqual(_sample_id_from_group_id('f5', md, sid_to_group_id2),
+                         '2.1')
+
+        sid_to_group_id3 = {'f1': (1, 1, 2), 'f5': (2, 1, 0)}
+        self.assertEqual(_sample_id_from_group_id('f1', md, sid_to_group_id3),
+                         '1.1.2')
+        self.assertEqual(_sample_id_from_group_id('f5', md, sid_to_group_id3),
+                         '2.1.0')
 
 
 
