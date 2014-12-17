@@ -91,6 +91,7 @@ QIIME 1.8.0 (11 Dec 2013)
 * Required matplotlib version is now >= 1.1.0, <= 1.3.1.
 * Required numpy version is now >= 1.5.1, <= 1.7.1.
 * QIIME has been added to [PyPi](https://pypi.python.org/pypi) and can be installed using ``pip``.
+* Removed ``make_otu_heatmap_html.py`` in favor of ``make_otu_heatmap.py`` (see discussion on [#1724](https://github.com/biocore/qiime/issues/1724)).
 
 QIIME 1.7.0 (14 May 2013)
 =========================

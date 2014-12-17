@@ -17,7 +17,7 @@ rm -rf otus ; pick_de_novo_otus.py -i split_library_output/seqs.fna -o otus -a
 
 #OTU Heatmap
 echo "OTU Heatmap"
-make_otu_heatmap_html.py -i otus/otu_table.biom -o otus/OTU_Heatmap/
+make_otu_heatmap.py -i otus/otu_table.biom -o otu_heatmap.pdf
 
 #OTU Network
 echo "OTU Network"
