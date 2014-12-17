@@ -60,8 +60,7 @@ class RNormalizeTableTests(TestCase):
             q.ids(),
             load_table(self.tmp_otu_fp_out_CSS).ids())
 
-        test taxonomy added to CSS; DESeq gives negatives so no taxonomy added
-        print self.tmp_otu_fp_out_CSS
+        #test taxonomy added to CSS; DESeq gives negatives so no taxonomy added
         self.assertItemsEqual(
             q._observation_metadata,
             load_table(self.tmp_otu_fp_out_CSS)._observation_metadata)
