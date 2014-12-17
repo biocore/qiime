@@ -33,10 +33,10 @@ from qiime.group import (get_grouped_distances, get_all_grouped_distances,
                           extract_per_individual_states_from_sample_metadata,
                           extract_per_individual_state_metadatum_from_sample_metadata,
                           extract_per_individual_state_metadata_from_sample_metadata_and_biom,
-                          group_by_sample_metadata, sample_id_from_group_id,
-                          collapse_to_first, collapse_to_median,
-                          collapse_to_random, mapping_lines_from_collapsed_df,
-                          collapse_metadata)
+                          group_by_sample_metadata, _sample_id_from_group_id,
+                          collapse_samples, mapping_lines_from_collapsed_df,
+                          _collapse_to_first, _collapse_to_median,
+                          _collapse_to_random, _collapse_metadata, get_collapse_fns)
 
 
 class GroupTests(TestCase):
@@ -732,7 +732,7 @@ class GroupTests(TestCase):
 
     def test_group_by_sample_metadata(self):
         in_f = StringIO(self.group_by_sample_metadata_map_f1)
-        collapsed_md = collapse_metadata(in_f, ['replicate-group', 'subject'])
+        collapsed_md = _collapse_metadata(in_f, ['replicate-group', 'subject'])
         actual = group_by_sample_metadata(collapsed_md)
         expected1 = {(1, 1): set(('f1', 'f2')), (2, 1): set(('f5', 'f6', 'p1')),
                      (3, 1): set(('not16S.1', )), (1, 2): set(('f3', 'f4')),
@@ -743,7 +743,7 @@ class GroupTests(TestCase):
         self.assertEqual(actual, (expected1, expected2))
 
         in_f = StringIO(self.group_by_sample_metadata_map_f1)
-        collapsed_md = collapse_metadata(in_f, ['replicate-group'])
+        collapsed_md = _collapse_metadata(in_f, ['replicate-group'])
         actual = group_by_sample_metadata(collapsed_md)
         expected1 = {(1, ): set(('f1', 'f2', 'f3', 'f4')),
                      (2, ): set(('f5', 'f6', 'p1', 'p2', 't1', 't2')),
@@ -754,7 +754,7 @@ class GroupTests(TestCase):
         self.assertEqual(actual, (expected1, expected2))
 
         in_f = StringIO(self.group_by_sample_metadata_map_f1)
-        collapsed_md = collapse_metadata(in_f, ['subject'])
+        collapsed_md = _collapse_metadata(in_f, ['subject'])
         actual = group_by_sample_metadata(collapsed_md)
         expected1 = {(1, ): set(('f1', 'f2', 'f5', 'f6', 'p1', 'not16S.1')),
                      (2, ): set(('f3', 'f4', 'p2', 't1', 't2'))}
@@ -766,76 +766,117 @@ class GroupTests(TestCase):
     def test_sample_id_from_group_id(self):
         sid_to_group_id1 = {'f1': (1, ), 'f2': (2, ), 'f5': (4, )}
         md = {}
-        self.assertEqual(sample_id_from_group_id('f1', md, sid_to_group_id1),
+        self.assertEqual(_sample_id_from_group_id('f1', md, sid_to_group_id1),
                          '1')
-        self.assertEqual(sample_id_from_group_id('f2', md, sid_to_group_id1),
+        self.assertEqual(_sample_id_from_group_id('f2', md, sid_to_group_id1),
                          '2')
-        self.assertEqual(sample_id_from_group_id('f5', md, sid_to_group_id1),
+        self.assertEqual(_sample_id_from_group_id('f5', md, sid_to_group_id1),
                          '4')
 
         sid_to_group_id2 = {'f1': (1, 1), 'f2': (1, 1), 'f5': (2, 1)}
-        self.assertEqual(sample_id_from_group_id('f1', md, sid_to_group_id2),
+        self.assertEqual(_sample_id_from_group_id('f1', md, sid_to_group_id2),
                          '1.1')
-        self.assertEqual(sample_id_from_group_id('f2', md, sid_to_group_id2),
+        self.assertEqual(_sample_id_from_group_id('f2', md, sid_to_group_id2),
                          '1.1')
-        self.assertEqual(sample_id_from_group_id('f5', md, sid_to_group_id2),
+        self.assertEqual(_sample_id_from_group_id('f5', md, sid_to_group_id2),
                          '2.1')
 
         sid_to_group_id3 = {'f1': (1, 1, 2), 'f5': (2, 1, 0)}
-        self.assertEqual(sample_id_from_group_id('f1', md, sid_to_group_id3),
+        self.assertEqual(_sample_id_from_group_id('f1', md, sid_to_group_id3),
                          '1.1.2')
-        self.assertEqual(sample_id_from_group_id('f5', md, sid_to_group_id3),
+        self.assertEqual(_sample_id_from_group_id('f5', md, sid_to_group_id3),
                          '2.1.0')
 
-        self.assertRaises(KeyError, sample_id_from_group_id, 'f2', md,
+        self.assertRaises(KeyError, _sample_id_from_group_id, 'f2', md,
                           sid_to_group_id3)
 
+    def test_collapse_samples(self):
+        """Collapsing samples functions as expected
+        """
+        # #OTU ID	f1	f2	f3
+        # o1	0.0	1.0	2.0
+        # o2	3.0	4.0	5.0
+        t1 = Table(np.array([[0, 1, 2], [3, 4, 5]]),
+                   ['o1', 'o2'], ['f1', 'f2', 'f3'])
+        collapse_fields = ['replicate-group', 'subject']
+        for e in ['mean', 'sum'] + get_collapse_fns().keys():
+            # all collapse functions work without failure
+            in_f = StringIO(self.group_by_sample_metadata_map_f1)
+            collapse_samples(t1, in_f, collapse_fields, e)
+        in_f = StringIO(self.group_by_sample_metadata_map_f1)
+        self.assertRaises(KeyError, collapse_samples, t1, in_f,
+                          collapse_fields, "not-a-valid-mode")
+
+        # test with a few collapse functions (the collapse functions
+        # are tested individually, so don't need to test them all here)
+        in_f = StringIO(self.group_by_sample_metadata_map_f1)
+        md, t = collapse_samples(t1, in_f, collapse_fields, 'sum')
+        self.assertEqual(t.get_value_by_ids('o1', '1.1'), 1.0)
+        self.assertEqual(t.get_value_by_ids('o1', '1.2'), 2.0)
+        self.assertEqual(t.get_value_by_ids('o2', '1.1'), 7.0)
+        self.assertEqual(t.get_value_by_ids('o2', '1.2'), 5.0)
+
+        in_f = StringIO(self.group_by_sample_metadata_map_f1)
+        md, t = collapse_samples(t1, in_f, collapse_fields, 'mean')
+        self.assertEqual(t.get_value_by_ids('o1', '1.1'), 0.5)
+        self.assertEqual(t.get_value_by_ids('o1', '1.2'), 2.0)
+        self.assertEqual(t.get_value_by_ids('o2', '1.1'), 3.5)
+        self.assertEqual(t.get_value_by_ids('o2', '1.2'), 5.0)
+
+        in_f = StringIO(self.group_by_sample_metadata_map_f1)
+        md, t = collapse_samples(t1, in_f, collapse_fields, 'first')
+        self.assertEqual(t.get_value_by_ids('o1', '1.1'), 0.0)
+        self.assertEqual(t.get_value_by_ids('o1', '1.2'), 2.0)
+        self.assertEqual(t.get_value_by_ids('o2', '1.1'), 3.0)
+        self.assertEqual(t.get_value_by_ids('o2', '1.2'), 5.0)
+
+
     def test_collapse_to_first(self):
-        """ Table collapse function collapse_to_first functions as expected
+        """ Table collapse function _collapse_to_first functions as expected
         """
         # #OTU ID	s1	s2	s3
         # o1	0.0	1.0	2.0
         # o2	3.0	4.0	5.0
         t1 = Table(np.array([[0, 1, 2], [3, 4, 5]]),
                    ['o1', 'o2'], ['s1', 's2', 's3'])
-        self.assertEqual(list(collapse_to_first(t1, "observation")),
+        self.assertEqual(list(_collapse_to_first(t1, "observation")),
                          [0.0, 3.0])
-        self.assertEqual(list(collapse_to_first(t1, "sample")),
+        self.assertEqual(list(_collapse_to_first(t1, "sample")),
                          [0.0, 1.0, 2.0])
 
     def test_collapse_to_median(self):
-        """ Table collapse function collapse_to_median functions as expected
+        """ Table collapse function _collapse_to_median functions as expected
         """
         # #OTU ID	s1	s2	s3
         # o1	0.0	1.0	2.0
         # o2	3.0	4.0	5.0
         t1 = Table(np.array([[0, 1, 2], [3, 4, 5]]),
                    ['o1', 'o2'], ['s1', 's2', 's3'])
-        self.assertEqual(list(collapse_to_median(t1, "observation")),
+        self.assertEqual(list(_collapse_to_median(t1, "observation")),
                          [1.0, 4.0])
-        self.assertEqual(list(collapse_to_median(t1, "sample")),
+        self.assertEqual(list(_collapse_to_median(t1, "sample")),
                          [1.5, 2.5, 3.5])
 
     def test_collapse_to_random(self):
-        """ Table collapse function collapse_to_random functions as expected
+        """ Table collapse function _collapse_to_random functions as expected
         """
         # #OTU ID	s1	s2	s3
         # o1	0.0	1.0	2.0
         # o2	3.0	4.0	5.0
         t1 = Table(np.array([[0, 1, 2], [3, 4, 5]]),
                    ['o1', 'o2'], ['s1', 's2', 's3'])
-        e = list(collapse_to_random(t1, "observation"))
+        e = list(_collapse_to_random(t1, "observation"))
         self.assertTrue(e[0] in [0, 1, 2])
         self.assertTrue(e[1] in [3, 4, 5])
 
-        e = list(collapse_to_random(t1, "sample"))
+        e = list(_collapse_to_random(t1, "sample"))
         self.assertTrue(e[0] in [0, 3])
         self.assertTrue(e[1] in [1, 4])
         self.assertTrue(e[2] in [2, 5])
 
     def test_collapse_metadata(self):
         in_f = StringIO(self.group_by_sample_metadata_map_f1)
-        actual = collapse_metadata(
+        actual = _collapse_metadata(
             in_f, ['replicate-group', 'subject'])
         # correct collapsing
         self.assertEqual(actual['#SampleID'][(1, 1)], ('f1', 'f2'))
@@ -848,13 +889,12 @@ class GroupTests(TestCase):
         self.assertEqual(actual['BarcodeSequence'][(1, 2)], ('ACCAGACGATGC', 'ACCAGACGATGC'))
 
         in_f = StringIO(self.group_by_sample_metadata_map_f1)
-        self.assertRaises(KeyError, collapse_metadata, in_f,
+        self.assertRaises(KeyError, _collapse_metadata, in_f,
                           ['not-a-header'])
-
 
     def test_mapping_lines_from_collapsed_df(self):
         in_f = StringIO(self.group_by_sample_metadata_map_f1)
-        collapsed_df = collapse_metadata(
+        collapsed_df = _collapse_metadata(
             in_f, ['replicate-group', 'subject'])
         expected = mapping_lines_from_collapsed_df(collapsed_df)
         self.assertTrue(expected[0].startswith("#SampleID	original-sample-ids	BarcodeSequence	LinkerPrimerSequence"))

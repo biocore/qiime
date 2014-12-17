@@ -10,22 +10,16 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
-from functools import partial
-
 import numpy as np
 from biom import load_table
 from biom.exception import UnknownAxisError
 
 from qiime.util import (parse_command_line_parameters, make_option,
                          write_biom_table)
-from qiime.group import (group_by_sample_metadata, collapse_metadata,
-                          _collapse_to_median, _collapse_to_first,
-                          _collapse_to_random, _sample_id_from_group_id,
-                          _mapping_lines_from_collapsed_df)
+from qiime.group import (collapse_samples, get_collapse_fns,
+                          mapping_lines_from_collapsed_df)
 
-collapse_fns = {'median': _collapse_to_median,
-                'first': _collapse_to_first,
-                'random': _collapse_to_random}
+collapse_fns = get_collapse_fns()
 collapse_modes = ['sum', 'mean'] + collapse_fns.keys()
 
 script_info = {}
@@ -55,43 +49,24 @@ script_info['optional_options'] = []
 
 script_info['version'] = __version__
 
-
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
     mapping_fp = opts.mapping_fp
-    collapse_fields = opts.collapse_fields
+    collapse_fields = opts.collapse_fields.split(',')
     input_biom_fp = opts.input_biom_fp
     collapse_mode = opts.collapse_mode
     output_biom_fp = opts.output_biom_fp
     output_mapping_fp = opts.output_mapping_fp
 
-    collapsed_metadata = collapse_metadata(open(mapping_fp, 'U'),
-                                           collapse_fields.split(','))
+    collapsed_metadata, collapsed_table = \
+        collapse_samples(load_table(input_biom_fp),
+                         open(mapping_fp, 'U'),
+                         collapse_fields,
+                         collapse_mode)
 
-    new_index_to_group, old_index_to_new_index = \
-        group_by_sample_metadata(open(mapping_fp, 'U'),
-                                 collapse_fields.split(','))
-    partition_f = partial(_sample_id_from_group_id,
-                          sid_to_group_id=old_index_to_new_index)
-    input_table = load_table(input_biom_fp)
-
-    if collapse_mode == 'sum':
-        output_table = input_table.collapse(
-            partition_f, norm=False, axis='sample')
-    elif collapse_mode == 'mean':
-        output_table = input_table.collapse(
-            partition_f, norm=True, axis='sample')
-    else:
-        # A KeyError is not possible here, since a collapse_mode that is not
-        # in collapse_fns or one of the modes listed above would be caught
-        # by the option parser.
-        collapse_f = collapse_fns[collapse_mode]
-        output_table = input_table.collapse(
-            partition_f, collapse_f=collapse_f, norm=False, axis='sample')
-
-    write_biom_table(output_table, output_biom_fp)
+    write_biom_table(collapsed_table, output_biom_fp)
     output_mapping_f = open(output_mapping_fp, 'w')
-    output_map_lines = _mapping_lines_from_collapsed_df(collapsed_metadata)
+    output_map_lines = mapping_lines_from_collapsed_df(collapsed_metadata)
     output_mapping_f.write('\n'.join(output_map_lines))
     output_mapping_f.close()
 
