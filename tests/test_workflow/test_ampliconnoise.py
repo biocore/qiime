@@ -16,10 +16,11 @@ from shutil import rmtree
 from glob import glob
 from os.path import join, exists, getsize, dirname
 from tempfile import mkstemp, mkdtemp
-
 from unittest import TestCase, main
+
 from skbio.util import remove_files
-from qiime.filter import get_lane_mask
+from qiime_default_reference import get_template_alignment_column_mask
+
 from qiime.util import (load_qiime_config,
                         count_seqs,
                         get_qiime_temp_dir)
@@ -112,7 +113,7 @@ class AmpliconNoiseWorkflowTests(TestCase):
                                       prefix='wf_lanemask', suffix='.txt')
         close(fd)
         lanemask_f = open(self.lanemask_fp, 'w')
-        lanemask_f.write(get_lane_mask())
+        lanemask_f.write(get_template_alignment_column_mask())
         lanemask_f.close()
         self.files_to_remove.append(self.lanemask_fp)
 

@@ -4,11 +4,13 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Kestrel Gorlick"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
+
+from skbio.util import create_dir
 
 from qiime.util import make_option
 from os import makedirs
@@ -122,16 +124,7 @@ def main():
                                    parallel,
                                    option_parser)
 
-    try:
-        makedirs(output_dir)
-    except OSError:
-        if opts.force:
-            pass
-        else:
-            # Since the analysis can take quite a while, I put this check
-            # in to help users avoid overwriting previous output.
-            option_parser.error("Output directory already exists. Please choose"
-                                " a different directory, or force overwrite with -f.")
+    create_dir(output_dir, fail_on_exist=not opts.force)
 
     if print_only:
         command_handler = print_commands
