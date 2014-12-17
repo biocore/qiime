@@ -887,7 +887,7 @@ class GroupTests(TestCase):
                          [3.0, 5.0, 7.0])
 
     def test_collapse_to_mean(self):
-        """ Table collapse function _collapse_to_sum functions as expected
+        """ Table collapse function _collapse_to_mean functions as expected
         """
         # #OTU ID	s1	s2	s3
         # o1	0.0	1.0	2.0
