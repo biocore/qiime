@@ -11,7 +11,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 from os.path import split, splitext, getsize, exists, abspath, join
-from shutil import copy, rmtree
+from shutil import copyfile, rmtree
 from numpy import inf
 from copy import deepcopy
 from skbio.util import create_dir, remove_files
@@ -919,7 +919,7 @@ def pick_subsampled_open_reference_otus(input_fp,
     logger.write('# Write non-singleton otus representative sequences ' +
                  'from step1 to the final rep set file: %s\n\n' % final_repset_fp)
     # copy the full input refseqs file to the new refseqs_fp
-    copy(refseqs_fp, new_refseqs_fp)
+    copyfile(refseqs_fp, new_refseqs_fp)
     new_refseqs_f = open(new_refseqs_fp, 'a')
     new_refseqs_f.write('\n')
     logger.write('# Copy the full input refseqs file to the new refseq file\n' +
@@ -949,7 +949,7 @@ def pick_subsampled_open_reference_otus(input_fp,
     else:
         logger.write('# Write non-singleton otus representative sequences from ' +
                      'step 4 to the final representative set and the new reference' +
-                     ' set (%s and %s respectively)\n\n' % (final_repset_fp, new_refseqs_fp))     
+                     ' set (%s and %s respectively)\n\n' % (final_repset_fp, new_refseqs_fp))
 
     # Prep the make_otu_table.py command
     otu_table_fp = '%s/otu_table_mc%d.biom' % (output_dir, min_otu_size)
