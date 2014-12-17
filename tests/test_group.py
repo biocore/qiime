@@ -730,7 +730,7 @@ class GroupTests(TestCase):
             individual_identifier_category="PersonalID",
             observation_ids=['o1', 'bad.obs.id'])
 
-    def test__group_by_sample_metadata(self):
+    def test_group_by_sample_metadata(self):
         in_f = StringIO(self._group_by_sample_metadata_map_f1)
         collapsed_md = _collapse_metadata(in_f, ['replicate-group', 'subject'])
         actual = _group_by_sample_metadata(collapsed_md)
@@ -829,7 +829,6 @@ class GroupTests(TestCase):
         self.assertEqual(t.get_value_by_ids('o1', '1.2'), 2.0)
         self.assertEqual(t.get_value_by_ids('o2', '1.1'), 3.0)
         self.assertEqual(t.get_value_by_ids('o2', '1.2'), 5.0)
-
 
     def test_collapse_to_first(self):
         """ Table collapse function _collapse_to_first functions as expected
