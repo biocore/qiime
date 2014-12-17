@@ -69,7 +69,7 @@ script_info['optional_options'] = [
     make_option('-a', '--absolute_counts', help='plot absolute abundance '
                 'values instead of relative [default: %default]',
                 action='store_true', default=False),
-    make_option('-n', '--no-legend', action='store_true', default=False,
+    make_option('-n', '--no_legend', action='store_true', default=False,
                 help='do not draw a legend [default: %default]'),
     make_option('-x', '--x_linear_scale', help='draw x axis in linear scale '
                 '[default: %default]', action='store_true', default=False),
