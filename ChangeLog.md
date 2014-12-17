@@ -60,6 +60,38 @@ optionally a mapping file. Check out the new documentation for the naming conven
 * sumaclust v1.0.00, swarm 1.2.19, and sortmerna 2.0 are now optional dependencies (see the [QIIME install docs](http://qiime.org/install/install.html) for details).
 * Removed ``submit_to_mgrast.py`` script (see [#1780](https://github.com/biocore/qiime/issues/1780)).
 * ``qiime/workflow/pick_open_reference_otus.py`` no longer copies the permission bits of the reference file which caused a file permission failure in some cases.
+* Standardized use of underscores in option longnames. Affected scripts and options:
+  * ``scripts/compute_index.py``
+    * `show-indices` is now `show_indices`
+  * ``scripts/demultiplex_fasta.py``
+    * `start-numbering-at` is now `start_numbering_at`
+  * ``scripts/denoiser.py``
+    * `low_cut-off` is now `low_cut_off`
+    * `high_cut-off` is now `high_cut_off`
+  * ``scripts/multiple_rarefactions.py``
+    * `num-reps` is now `num_reps`
+  * ``scripts/multiple_rarefactions_even_depth.py``
+    * `num-reps` is now `num_reps`
+  * ``scripts/parallel_multiple_rarefactions.py``
+    * `num-reps` is now `num_reps`
+  * ``scripts/plot_rank_abundance_graph.py``
+    * `no-legend` is now `no_legend`
+  * ``scripts/start_parallel_jobs_slurm.py``
+    * `mem-per-cpu` is now `mem_per_cpu`
+  * ``scripts/split_libraries.py``
+    * `min-seq-length` is now `min_seq_length`
+    * `max-seq-length` is now `max_seq_length`
+    * `trim-seq-length` is now `trim_seq_length`
+    * `min-qual-score` is now `min_qual_score`
+    * `keep-primer` is now `keep_primer`
+    * `keep-barcode` is now `keep_barcode`
+    * `max-ambig` is now `max_ambig`
+    * `max-homopolymer` is now `max_homopolymer`
+    * `max-primer-mismatch` is now `max_primer_mismatch`
+    * `barcode-type` is now `barcode_type`
+    * `dir-prefix` is now `dir_prefix`
+    * `max-barcode-errors` is now `max_barcode_errors`
+    * `start-numbering-at` is now `start_numbering_at`
 
 QIIME 1.8.0 (11 Dec 2013)
 =========================
