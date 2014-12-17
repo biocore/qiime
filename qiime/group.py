@@ -344,7 +344,11 @@ def group_by_sample_metadata(mapping_f, collapse_fields,
     return new_index_to_group, old_index_to_new_index
 
 def _sample_id_from_group_id(id_, md, sid_to_group_id):
-    return '.'.join(map(str, sid_to_group_id[id_]))
+    try:
+        group_id = sid_to_group_id[id_]
+    except KeyError:
+        raise KeyError("Sample id %s doesn't map to a group id." % id_)
+    return '.'.join(map(str, group_id))
 
 def _collapse_to_first(t, axis):
     return np.asarray([e[0] for e in t.iter_data(axis=axis, dense=True)])

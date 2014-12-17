@@ -787,6 +787,9 @@ class GroupTests(TestCase):
         self.assertEqual(_sample_id_from_group_id('f5', md, sid_to_group_id3),
                          '2.1.0')
 
+        self.assertRaises(KeyError, _sample_id_from_group_id, 'f2', md,
+                          sid_to_group_id3)
+
 
 
 individual_states_and_responses_map_f1 = """#SampleID	PersonalID	Response	TreatmentState	StreptococcusAbundance	VeillonellaAbundance

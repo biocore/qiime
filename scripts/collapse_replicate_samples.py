@@ -20,7 +20,7 @@ from qiime.util import (parse_command_line_parameters, make_option,
                          write_biom_table)
 from qiime.group import (group_by_sample_metadata, collapse_metadata,
                           _collapse_to_median, _collapse_to_first,
-                          _collapse_to_random, _partition_f,
+                          _collapse_to_random, _sample_id_from_group_id,
                           _mapping_lines_from_collapsed_df)
 
 collapse_fns = {'median': collapse_to_median,
@@ -71,7 +71,8 @@ def main():
     new_index_to_group, old_index_to_new_index = \
         group_by_sample_metadata(open(mapping_fp, 'U'),
                                  collapse_fields.split(','))
-    partition_f = partial(_partition_f, sid_to_group_id=old_index_to_new_index)
+    partition_f = partial(_sample_id_from_group_id,
+                          sid_to_group_id=old_index_to_new_index)
     input_table = load_table(input_biom_fp)
 
     if collapse_mode == 'sum':
