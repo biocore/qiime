@@ -286,7 +286,7 @@ def get_adjacent_distances(dist_matrix_header,
             (filtered_sids[i], filtered_sids[i + 1]))
     return distance_results, header_results
 
-def group_by_sample_metadata(collapsed_md, sample_id_field="#SampleID"):
+def _group_by_sample_metadata(collapsed_md, sample_id_field="#SampleID"):
     """Group sample identifiers by one or more metadata fields
 
     Parameters
@@ -373,7 +373,7 @@ def collapse_samples(table, mapping_f, collapse_fields, collapse_mode):
                                             collapse_fields)
 
     new_index_to_group, old_index_to_new_index = \
-        group_by_sample_metadata(collapsed_metadata)
+        _group_by_sample_metadata(collapsed_metadata)
     partition_f = partial(_sample_id_from_group_id,
                           sid_to_group_id=old_index_to_new_index)
 

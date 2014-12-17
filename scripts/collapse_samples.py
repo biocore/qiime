@@ -24,7 +24,11 @@ collapse_modes = ['sum', 'mean'] + collapse_fns.keys()
 
 script_info = {}
 script_info['brief_description'] = "Collapse samples in a BIOM table and mapping file."
-script_info['script_description'] = ""
+script_info['script_description'] = ("Collapse samples in a BIOM table and mapping file. "
+    "Values in the BIOM table are collapsed in one of several different ways; see the "
+    "available options for --collapse_mode. Values in the mapping file are collapsed "
+    "by grouping the values if they differ for the grouped samples, and by providing the single "
+    "value if they don't differ for the grouped samples.")
 script_info['script_usage'] = [
     ("Collapse samples in biom table and mapping file",
      "Collapse samples by taking the median value for each observation in each group, where group is defined by having the same values for both subject and replicate-group in the mapping file.",
