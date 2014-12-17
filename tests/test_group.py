@@ -15,6 +15,8 @@ __email__ = "jai.rideout@gmail.com"
 from unittest import TestCase, main
 from StringIO import StringIO
 
+import numpy as np
+from biom import Table
 from biom.parse import parse_biom_table
 from biom.exception import UnknownIDError
 from numpy import array, matrix
@@ -31,7 +33,10 @@ from qiime.group import (get_grouped_distances, get_all_grouped_distances,
                           extract_per_individual_states_from_sample_metadata,
                           extract_per_individual_state_metadatum_from_sample_metadata,
                           extract_per_individual_state_metadata_from_sample_metadata_and_biom,
-                          group_by_sample_metadata, _sample_id_from_group_id)
+                          group_by_sample_metadata, _sample_id_from_group_id,
+                          _collapse_to_first, _collapse_to_median,
+                          _collapse_to_random, _mapping_lines_from_collapsed_df,
+                          collapse_metadata)
 
 
 class GroupTests(TestCase):
@@ -790,6 +795,57 @@ class GroupTests(TestCase):
         self.assertRaises(KeyError, _sample_id_from_group_id, 'f2', md,
                           sid_to_group_id3)
 
+    def test_collapse_to_first(self):
+        """ Table collapse function _collapse_to_first functions as expected
+        """
+        # #OTU ID	s1	s2	s3
+        # o1	0.0	1.0	2.0
+        # o2	3.0	4.0	5.0
+        t1 = Table(np.array([[0, 1, 2], [3, 4, 5]]),
+                   ['o1', 'o2'], ['s1', 's2', 's3'])
+        self.assertEqual(list(_collapse_to_first(t1, "observation")),
+                         [0.0, 3.0])
+        self.assertEqual(list(_collapse_to_first(t1, "sample")),
+                         [0.0, 1.0, 2.0])
+
+    def test_collapse_to_median(self):
+        """ Table collapse function _collapse_to_median functions as expected
+        """
+        # #OTU ID	s1	s2	s3
+        # o1	0.0	1.0	2.0
+        # o2	3.0	4.0	5.0
+        t1 = Table(np.array([[0, 1, 2], [3, 4, 5]]),
+                   ['o1', 'o2'], ['s1', 's2', 's3'])
+        self.assertEqual(list(_collapse_to_median(t1, "observation")),
+                         [1.0, 4.0])
+        self.assertEqual(list(_collapse_to_median(t1, "sample")),
+                         [1.5, 2.5, 3.5])
+
+    def test_collapse_to_random(self):
+        """ Table collapse function _collapse_to_random functions as expected
+        """
+        # #OTU ID	s1	s2	s3
+        # o1	0.0	1.0	2.0
+        # o2	3.0	4.0	5.0
+        t1 = Table(np.array([[0, 1, 2], [3, 4, 5]]),
+                   ['o1', 'o2'], ['s1', 's2', 's3'])
+        e = list(_collapse_to_random(t1, "observation"))
+        self.assertTrue(e[0] in [0, 1, 2])
+        self.assertTrue(e[1] in [3, 4, 5])
+
+        e = list(_collapse_to_random(t1, "sample"))
+        self.assertTrue(e[0] in [0, 3])
+        self.assertTrue(e[1] in [1, 4])
+        self.assertTrue(e[2] in [2, 5])
+
+    def test_mapping_lines_from_collapsed_df(self):
+        in_f = StringIO(self.group_by_sample_metadata_map_f1)
+        collapsed_df = collapse_metadata(
+            in_f, ['replicate-group', 'subject'])
+        expected = _mapping_lines_from_collapsed_df(collapsed_df)
+        self.assertTrue(expected[0].startswith("#SampleID	original-sample-ids	BarcodeSequence	LinkerPrimerSequence"))
+        self.assertTrue(expected[1].startswith('1.1	(f1, f2)	(ACACTGTTCATG, ACCAGACGATGC)	GTGCCAGCMGCCGCGGTAA	feces'))
+        self.assertTrue(expected[2].startswith('1.2	(f3, f4)	ACCAGACGATGC	GTGCCAGCMGCCGCGGTAA	feces'))
 
 
 individual_states_and_responses_map_f1 = """#SampleID	PersonalID	Response	TreatmentState	StreptococcusAbundance	VeillonellaAbundance

@@ -23,9 +23,9 @@ from qiime.group import (group_by_sample_metadata, collapse_metadata,
                           _collapse_to_random, _sample_id_from_group_id,
                           _mapping_lines_from_collapsed_df)
 
-collapse_fns = {'median': collapse_to_median,
-                'first': collapse_to_first,
-                'random': collapse_to_random}
+collapse_fns = {'median': _collapse_to_median,
+                'first': _collapse_to_first,
+                'random': _collapse_to_random}
 collapse_modes = ['sum', 'mean'] + collapse_fns.keys()
 
 script_info = {}

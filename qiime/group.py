@@ -12,9 +12,11 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 
-import pandas as pd
 from collections import defaultdict
-from numpy import array
+
+import pandas as pd
+import numpy as np
+
 from qiime.stats import is_symmetric_and_hollow
 from qiime.parse import group_by_field
 
@@ -357,25 +359,35 @@ def _collapse_to_median(t, axis):
     return np.asarray([np.median(e) for e in t.iter_data(axis=axis, dense=True)])
 
 def _collapse_to_random(t, axis):
-    # this is a little clunky - waiting for an answer here
-    # http://stackoverflow.com/q/26050412/3424666
     if axis == 'sample':
-        length = t.shape[0]
+        length = t.length("observation")
     elif axis == 'observation':
-        length = t.shape[1]
+        length = t.length("sample")
     else:
         raise UnknownAxisError(axis)
     n = np.random.randint(length)
     return np.asarray([e[n] for e in t.iter_data(axis=axis, dense=True)])
 
 def _mapping_lines_from_collapsed_df(collapsed_df):
+    """ formats a collapsed DataFrame as lines of a QIIME mapping file
+    """
     lines = []
-    lines.append('\t'.join(['#SampleID', 'represented-sample-id'] +\
+    lines.append('\t'.join(['#SampleID', 'original-sample-ids'] +\
                            list(collapsed_df.columns)[1:]))
 
     for r in collapsed_df.iterrows():
         new_idx = '.'.join(map(str, r[0]))
-        new_values = map(str,[e[0] for e in r[1]])
+        new_values = []
+        for e in r[1]:
+            if len(set(e)) == 1:
+                # if all samples in the replicate group have the same
+                # value for this column, just store that value
+                new_values.append(str(e[0]))
+            else:
+                # if any samples in the replicate group differ in the value
+                # in this column, store all of the values in the same order
+                # as the ids in the new "original-sample-ids" column
+                new_values.append('(%s)' % ', '.join(map(str,e)))
         lines.append('\t'.join([new_idx] + new_values))
     return lines
 
