@@ -20,7 +20,6 @@ from os.path import join, splitext, exists, isfile, abspath
 
 from skbio.io import read
 from skbio.sequence import BiologicalSequence
-#from skbio.parse.sequences import parse_fastq
 from biom.table import Table
 
 from qiime.util import get_qiime_library_version, load_qiime_config, qiime_open
@@ -604,7 +603,6 @@ def write_Fasta_from_name_seq_pairs(name_seqs, fh):
         raise ValueError("Need open file handle to write to.")
 
     for (name, seq) in name_seqs:
-        #fh.write("%s\n" % BiologicalSequence(seq, id=name).to_fasta())
         BiologicalSequence(seq, id=name).write(fh, format='fasta')
 
 
