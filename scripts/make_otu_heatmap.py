@@ -238,15 +238,14 @@ def main():
     # otu_order and sample_order should be ids, rather than indices
     #  to use in sortObservationOrder/sortSampleOrder
     otu_id_order = [otu_table.ids(axis='observation')[i] for i in otu_order]
-    sample_id_order = [otu_table.ids()[i] for i in sample_order]
 
     # Re-order otu table, sampleids, etc. as necessary
     otu_table = otu_table.sort_order(otu_id_order, axis='observation')
     # otu_ids not used after: tagged for deletion
     otu_ids = np.array(otu_table.ids(axis='observation'))[otu_order]
     otu_labels = np.array(otu_labels)[otu_order]
-    otu_table = otu_table.sort_order(sample_id_order)
     sample_ids = np.array(otu_table.ids())[sample_order]
+    otu_table = otu_table.sort_order(sample_ids)
 
     plot_heatmap(otu_table, otu_labels, sample_ids, opts.output_fp,
                  imagetype=opts.imagetype, width=opts.width,

@@ -58,6 +58,7 @@ optionally a mapping file. Check out the new documentation for the naming conven
 * ``cluster_jobs_fp`` in the QIIME config file now defaults to ``start_parallel_jobs.py``. ``seconds_to_sleep`` now defaults to 1.
 * Added ``--suppress_taxonomy_assignment`` option to ``pick_closed_reference_otus.py``.
 * sumaclust v1.0.00, swarm 1.2.19, and sortmerna 2.0 are now optional dependencies (see the [QIIME install docs](http://qiime.org/install/install.html) for details).
+* Fixed bug where ``make_otu_heatmap.py`` would not respect sample order (see [#1790](https://github.com/biocore/qiime/issues/1790)).
 * Removed ``submit_to_mgrast.py`` script (see [#1780](https://github.com/biocore/qiime/issues/1780)).
 * Added ``collpase_samples.py``, which can be used for collapsing groups of samples in BIOM tables and mapping files based on their metadata (see [#1678](https://github.com/biocore/qiime/issues/1678)). This can be used, for example, to collapse samples belonging to a replicate group.
 * ``qiime/workflow/pick_open_reference_otus.py`` no longer copies the permission bits of the reference file which caused a file permission failure in some cases.
