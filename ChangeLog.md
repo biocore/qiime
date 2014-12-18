@@ -92,7 +92,7 @@ QIIME 1.8.0 (11 Dec 2013)
 * Required numpy version is now >= 1.5.1, <= 1.7.1.
 * QIIME has been added to [PyPi](https://pypi.python.org/pypi) and can be installed using ``pip``.
 * Removed ``make_otu_heatmap_html.py`` in favor of ``make_otu_heatmap.py`` (see discussion on [#1724](https://github.com/biocore/qiime/issues/1724)).
-* Fixed bug that resulted in samples being mislabeled in ``make_otu_heatmap.py`` when one of the following options was passed: ``--category``, ``--map_fname``, ``--sample_tree``, or ``--suppress_column_clustering``.
+* Fixed bug that resulted in samples being mislabeled in ``make_otu_heatmap.py`` when one of the following options was passed: ``--category``, ``--map_fname``, ``--sample_tree``, or ``--suppress_column_clustering``. This is discussed in [#1790](https://github.com/biocore/qiime/issues/1790).
 
 QIIME 1.7.0 (14 May 2013)
 =========================
