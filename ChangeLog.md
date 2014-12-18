@@ -92,6 +92,7 @@ optionally a mapping file. Check out the new documentation for the naming conven
     * `dir-prefix` is now `dir_prefix`
     * `max-barcode-errors` is now `max_barcode_errors`
     * `start-numbering-at` is now `start_numbering_at`
+* Fixed bug in ``make_rarefaction_plots.py`` where ``--generate_per_sample_plots`` wasn't working (see [#1475](https://github.com/biocore/qiime/issues/1475)).
 
 QIIME 1.8.0 (11 Dec 2013)
 =========================

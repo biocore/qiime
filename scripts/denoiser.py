@@ -27,6 +27,7 @@ from qiime.denoiser.utils import files_exist, get_denoiser_data_dir,\
 
 options_lookup = get_options_lookup()
 DENOISER_DATA_DIR = get_denoiser_data_dir()
+RELATIVE_DENOISER_DATA_DIR = '<qiime-install-path>/qiime/support_files/denoiser/Data/'
 
 # denoiser.py
 script_info = {}
@@ -177,7 +178,8 @@ script_info['optional_options'] = [
 
     make_option('-e', '--error_profile', action='store',
                 dest='error_profile', help='path to error profile ' +
-                '[default= %default]',
+                '[default= %s]' % (RELATIVE_DENOISER_DATA_DIR +
+                                   'FLX_error_profile.dat'),
                 default=DENOISER_DATA_DIR + 'FLX_error_profile.dat'),
 
     # might be needed once we switch to Titanium as default
@@ -187,7 +189,7 @@ script_info['optional_options'] = [
 
     make_option('--titanium', action='store_true',
                 dest='titanium', help='shortcut for ' +
-                '-e ' + DENOISER_DATA_DIR +
+                '-e ' + RELATIVE DENOISER_DATA_DIR +
                 '/Titanium_error_profile.dat --low_cut_off=4 --high_cut_off=5 . ' +
                 'Warning: overwrites all previous cut-off values ' +
                 '[DEFAULT: %default]', default=False)
@@ -240,7 +242,7 @@ def main(commandline_args=None):
     else:
         # make random dir in current dir
         tmpoutdir = mkdtemp(dir="", prefix="denoiser_", suffix="/")
-	
+
 
     log_fp = 'denoiser.log'
 
