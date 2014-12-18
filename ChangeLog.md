@@ -59,6 +59,7 @@ optionally a mapping file. Check out the new documentation for the naming conven
 * Added ``--suppress_taxonomy_assignment`` option to ``pick_closed_reference_otus.py``.
 * sumaclust v1.0.00, swarm 1.2.19, and sortmerna 2.0 are now optional dependencies (see the [QIIME install docs](http://qiime.org/install/install.html) for details).
 * Removed ``submit_to_mgrast.py`` script (see [#1780](https://github.com/biocore/qiime/issues/1780)).
+* Added ``collpase_samples.py``, which can be used for collapsing groups of samples in BIOM tables and mapping files based on their metadata (see [#1678](https://github.com/biocore/qiime/issues/1678)). This can be used, for example, to collapse samples belonging to a replicate group.
 * ``qiime/workflow/pick_open_reference_otus.py`` no longer copies the permission bits of the reference file which caused a file permission failure in some cases.
 * Fixed bug in ``make_rarefaction_plots.py`` where ``--generate_per_sample_plots`` wasn't working (see [#1475](https://github.com/biocore/qiime/issues/1475)).
 
