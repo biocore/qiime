@@ -318,10 +318,9 @@ def _validate_input(dist_matrix_header, dist_matrix, mapping_header, mapping,
                          % field)
 
     # check that we share sample identifiers between th mf and the dm
-    if not (set(zip(*mapping)[0]) & set(dist_matrix_header)):
+    if len(set(zip(*mapping)[0]) & set(dist_matrix_header)) < 2:
         raise ValueError('The mapping file does not share samples with the '
                          'distance matrix.')
-
 
 
 def _get_indices(input_items, wanted_items):
