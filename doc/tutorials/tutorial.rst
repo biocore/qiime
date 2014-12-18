@@ -294,7 +294,7 @@ The QIIME pipeline includes a very useful utility to generate images of the OTU 
 
     make_otu_heatmap.py -i otus/otu_table.biom -o otu_heatmap.pdf
 
-A PDF file is created in the current working directory called :file:`otu_heatmap.pdf`. You can open this file with any PDF viewer, and this will allow you to visualize differences in abundances of OTUs on a per-sample basis (or per-category basis, if you pass the `-c` flag).
+A PDF file is created in the current working directory called :file:`otu_heatmap.pdf`. You can open this file with any PDF viewer, and this will allow you to visualize differences in abundances of OTUs on a per-sample basis (this can also be ordered by sample metadata category if you pass the `-c` flag).
 
 .. _makeotunetwork:
 
