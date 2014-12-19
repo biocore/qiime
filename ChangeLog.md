@@ -59,10 +59,13 @@ optionally a mapping file. Check out the new documentation for the naming conven
 * Fixed bug where ``make_distance_comparison_plots.py`` would create empty groups (see [#1627](https://github.com/biocore/qiime/issues/1627)).
 * Added ``--suppress_taxonomy_assignment`` option to ``pick_closed_reference_otus.py``.
 * sumaclust v1.0.00, swarm 1.2.19, and sortmerna 2.0 are now optional dependencies (see the [QIIME install docs](http://qiime.org/install/install.html) for details).
+* Errors raised by scripts are easier to read and include a supplementary message on how to get help (see [#1794](https://github.com/biocore/qiime/issues/1794)).
 * Removed ``submit_to_mgrast.py`` script (see [#1780](https://github.com/biocore/qiime/issues/1780)).
 * Added ``collpase_samples.py``, which can be used for collapsing groups of samples in BIOM tables and mapping files based on their metadata (see [#1678](https://github.com/biocore/qiime/issues/1678)). This can be used, for example, to collapse samples belonging to a replicate group.
 * ``qiime/workflow/pick_open_reference_otus.py`` no longer copies the permission bits of the reference file which caused a file permission failure in some cases.
 * Fixed bug in ``make_rarefaction_plots.py`` where ``--generate_per_sample_plots`` wasn't working (see [#1475](https://github.com/biocore/qiime/issues/1475)).
+* Removed ``make_otu_heatmap_html.py`` in favor of ``make_otu_heatmap.py`` (see discussion on [#1724](https://github.com/biocore/qiime/issues/1724)).
+* Fixed bug that resulted in samples being mislabeled in ``make_otu_heatmap.py`` when one of the following options was passed: ``--category``, ``--map_fname``, ``--sample_tree``, or ``--suppress_column_clustering``. This is discussed in [#1790](https://github.com/biocore/qiime/issues/1790).
 
 QIIME 1.8.0 (11 Dec 2013)
 =========================
@@ -95,8 +98,6 @@ QIIME 1.8.0 (11 Dec 2013)
 * Required matplotlib version is now >= 1.1.0, <= 1.3.1.
 * Required numpy version is now >= 1.5.1, <= 1.7.1.
 * QIIME has been added to [PyPi](https://pypi.python.org/pypi) and can be installed using ``pip``.
-* Removed ``make_otu_heatmap_html.py`` in favor of ``make_otu_heatmap.py`` (see discussion on [#1724](https://github.com/biocore/qiime/issues/1724)).
-* Fixed bug that resulted in samples being mislabeled in ``make_otu_heatmap.py`` when one of the following options was passed: ``--category``, ``--map_fname``, ``--sample_tree``, or ``--suppress_column_clustering``. This is discussed in [#1790](https://github.com/biocore/qiime/issues/1790).
 
 QIIME 1.7.0 (14 May 2013)
 =========================
