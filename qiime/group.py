@@ -319,7 +319,7 @@ def _validate_input(dist_matrix_header, dist_matrix, mapping_header, mapping,
 
     # check that we share sample identifiers between th mf and the dm
     if not set(zip(*mapping)[0]) & set(dist_matrix_header):
-        raise ValueError('The mapping file does not share at least two samples'
+        raise ValueError('The mapping file does not share at least one sample'
                          ' with the distance matrix.')
 
 
