@@ -31,7 +31,7 @@ optionally a mapping file. Check out the new documentation for the naming conven
 * Beta support has been added for performing de novo OTU picking using SumaClust ([In Preparation](http://metabarcoding.org/sumatra)). This can be accessed with ``pick_de_novo_otus.py -p params.txt`` where params.txt includes the line ``pick_otus:otu_picking_method sumaclust``.
 * numpy version requirement has been updated to 1.7.1 or later.
 * Updated to use [burrito](https://github.com/biocore/burrito) instead of scikit-bio for imports from the application controller framework, as the former is replacing the latter.
-* QIIME now depends on [biom-format](https://github.com/biocore/biom-format) 2.1.0.
+* QIIME now depends on [biom-format](https://github.com/biocore/biom-format) >= 2.1.2, < 2.2.0.
 * the parameters ``--uclust_min_consensus_fraction`` and ``--uclust_similarity`` in assign taxonomy scripts have been changed to ``--min_consensus_fraction`` and ``--similarity`` since both of these parameters apply to the SortMeRNA taxon assigner as well.
 * Renamed ``split_fasta_on_sample_ids_to_files.py`` to      ``split_sequence_file_on_sample_ids_to_files.py``, which now supports splitting FASTQ files, as well. Added a parameter, ``file_type``, which is used to specify the type of the input file.
 * Added --assign_taxonomy option to pick_closed_reference_otus.py to allow taxonomy assignment using a classifier, rather than the default of using the taxonomic assignment of the cluster centroid.
@@ -56,10 +56,16 @@ optionally a mapping file. Check out the new documentation for the naming conven
 * The QIIME config settings ``assign_taxonomy_id_to_taxonomy_fp``, ``assign_taxonomy_reference_seqs_fp``, ``pick_otus_reference_seqs_fp``, and ``pynast_template_alignment_fp`` now default to reference data files in the [qiime-default-reference project](http://github.com/biocore/qiime-default-reference).
 * Installing QIIME via ``pip install qiime`` now works out-of-the-box by providing a functioning QIIME minimal (base) install (see [#1696](https://github.com/biocore/qiime/issues/1696)).
 * ``cluster_jobs_fp`` in the QIIME config file now defaults to ``start_parallel_jobs.py``. ``seconds_to_sleep`` now defaults to 1.
+* Fixed bug where ``make_distance_comparison_plots.py`` would create empty groups (see [#1627](https://github.com/biocore/qiime/issues/1627)).
 * Added ``--suppress_taxonomy_assignment`` option to ``pick_closed_reference_otus.py``.
 * sumaclust v1.0.00, swarm 1.2.19, and sortmerna 2.0 are now optional dependencies (see the [QIIME install docs](http://qiime.org/install/install.html) for details).
-* Add an extra message to errors printed with ``option_parser.error`` (see [#1794](https://github.com/biocore/qiime/issues/1794)).
+* Errors raised by scripts are easier to read and include a supplementary message on how to get help (see [#1794](https://github.com/biocore/qiime/issues/1794)).
 * Removed ``submit_to_mgrast.py`` script (see [#1780](https://github.com/biocore/qiime/issues/1780)).
+* Added ``collpase_samples.py``, which can be used for collapsing groups of samples in BIOM tables and mapping files based on their metadata (see [#1678](https://github.com/biocore/qiime/issues/1678)). This can be used, for example, to collapse samples belonging to a replicate group.
+* ``qiime/workflow/pick_open_reference_otus.py`` no longer copies the permission bits of the reference file which caused a file permission failure in some cases.
+* Fixed bug in ``make_rarefaction_plots.py`` where ``--generate_per_sample_plots`` wasn't working (see [#1475](https://github.com/biocore/qiime/issues/1475)).
+* Removed ``make_otu_heatmap_html.py`` in favor of ``make_otu_heatmap.py`` (see discussion on [#1724](https://github.com/biocore/qiime/issues/1724)).
+* Fixed bug that resulted in samples being mislabeled in ``make_otu_heatmap.py`` when one of the following options was passed: ``--category``, ``--map_fname``, ``--sample_tree``, or ``--suppress_column_clustering``. This is discussed in [#1790](https://github.com/biocore/qiime/issues/1790).
 
 QIIME 1.8.0 (11 Dec 2013)
 =========================
