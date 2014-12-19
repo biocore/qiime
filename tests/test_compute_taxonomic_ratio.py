@@ -13,7 +13,7 @@ from unittest import TestCase, main
 from numpy import log, array, nan, inf
 from biom import Table
 
-from qiime.index import compute_index
+from qiime.compute_taxonomic_ratio import compute_index
 
 
 class IndexTests(TestCase):
