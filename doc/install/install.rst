@@ -1,9 +1,3 @@
-.. _doc_install:
-.. QIIME documentation master file, created by Jesse Stombaugh
-   sphinx-quickstart on Mon Jan 25 12:57:02 2010.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 .. index:: Installing QIIME
 
 =========================
@@ -12,160 +6,109 @@ QIIME installation guide
 
 QIIME consists of native python code and additionally wraps many external applications. This gives the user flexibility to easily build their own analysis pipelines, making use of popular microbial community analysis tools. QIIME handles the processing of input and output of these applications, so the user can spend time analyzing their data rather than parsing, writing, and converting file formats.
 
-As a consequence of this 'pipeline' architecture, **QIIME has a lot of dependencies and can be very challenging to install**.
+As a consequence of this *pipeline* architecture, **QIIME has a lot of dependencies and can (but doesn't have to) be very challenging to install**.
 
+We therefore break this guide down into several parts:
 
-How to not install QIIME
-========================
+ - First we tell you how you can `avoid installing QIIME natively`__, and instead use pre-built virtual machines or MacQIIME.
 
-Because QIIME is hard to install, we have attempted to shift this burden to the QIIME development group rather than our users by providing virtual machines with QIIME and all of its dependencies pre-installed. We, and third-party developers, have also created several automated installation procedures. These alternatives (`summarized here <../index.html#downloading-and-installing-qiime>`_) allow you to bypass the complex installation procedure and have access to a full, working QIIME installation.
+ __ vm-or-macqiime_
 
-**We highly recommend going with one of these solutions if you're new to QIIME, or just want to test it out to see if it will do what you want.**
+ - Then we show how to `install QIIME natively with a minimal (base) install.`__ This is easy, and is sufficient for the vast majority of users.
 
-How to install QIIME
-====================
+__ native-base_
 
-If you want to customize QIIME, work with QIIME in a multi-user environment (e.g., a Linux cluster), are interested in getting involved in QIIME development, or want to use the development version of QIIME, you may need to install QIIME manually (but you also may not - see `MacQIIME <http://www.wernerlab.org/software/macqiime>`_ and `qiime-deploy <https://github.com/qiime/qiime-deploy>`_).
+ - Finally, we cover how to `install QIIME natively doing a complete install.`__ This can be very challenging, and is likely only needed by users looking to develop custom analysis workflows.
 
-Depending on the features of QIIME that you or your users are interested in, a *QIIME base install* may be sufficient. This is much easier than a *QIIME full install*. Both of these procedures are covered in the following sections.
+__ native-full_
 
-To install most of following dependencies, either for the base or full install, you need to have a build environment on your machine. On OS X, this involves installing the `developer tools <http://developer.apple.com/technologies/xcode.html>`_. On Debian-based Linux (e.g., Ubuntu), this involves installing the ``build-essential`` package::
+.. _vm-or-macqiime:
 
-	sudo apt-get install build-essential
+How you can avoid installing QIIME by using a virtual machine or MacQIIME
+=========================================================================
 
-Shortcuts in this document
---------------------------
-For simplicity throughout this document, we assume that you have downloaded QIIME in ``$HOME/``. You should consider all occurrences of ``$HOME/`` in the remainder of this document as references to the directory which contains the QIIME directory which you'll have after downloading and unpacking QIIME.
+Since QIIME can be difficult to install, we have attempted to shift this burden away from our users by providing the following options:
 
-QIIME base install (standard QIIME workflow with default parameters)
---------------------------------------------------------------------
+ - `MacQIIME <http://www.wernerlab.org/software/macqiime>`_: The easiest way to get a complete, native QIIME base install (and a nearly complete full install) for Mac OS X. MacQIIME is built and maintained by the `Werner Lab <http://www.wernerlab.org/>`_.
+ - `QIIME Virtual Box <./virtual_box.html>`_: A virtual machine that you run on your own hardware.
+ - `QIIME Amazon Web Services virtual machine <./vm_ec2.html>`_: A virtual machine that you run on rented hardware.
 
-When getting started with QIIME, most users will want to begin with the QIIME base install. This allows users to run through the core QIIME workflows (including, but not limited to `validate_mapping_file.py <../scripts/validate_mapping_file.html>`_, `split_libraries.py <../scripts/split_libraries.html>`_, `split_libraries_fastq.py <../scripts/split_libraries_fastq.html>`_, `pick_open_reference_otus.py <../scripts/pick_open_reference_otus.html>`_, `pick_de_novo_otus.py <../scripts/pick_de_novo_otus.html>`_, `pick_closed_reference_otus.py <../scripts/pick_closed_reference_otus.html>`_, and `core_diversity_analyses.py <../scripts/core_diversity_analyses.html>`_) while limiting the time and effort spent on installation.
+**We highly recommend going with one of these options if you're new to QIIME, or just want to test it out to see if it will do what you want.**
 
-You can install the QIIME base dependencies either via pip or by manually downloading and installing each package.
+.. _native-base:
 
-Installing QIIME via pip
-++++++++++++++++++++++++
+Installing QIIME natively with a minimal (base) install
+=======================================================
 
-The easiest way to install the latest QIIME release and its base dependencies is by using pip::
+If you want to customize QIIME, work with QIIME in a multi-user environment (e.g., a Linux cluster), are interested in getting involved in QIIME development, or want to use the development version of QIIME, you may need to install QIIME manually.
 
-	pip install numpy==1.7.1
+**For the vast majority of use cases, the QIIME minimal (base) install will be sufficient.** This is much easier than a *QIIME full install*. Additionally, it's possible to add parts of the QIIME full install to an existing QIIME base install as needed, so the QIIME base install is nearly always what you should do to get started.
+
+The QIIME base install allows use of core QIIME functionality, including, but not limited to:
+
+ - `validate_mapping_file.py <../scripts/validate_mapping_file.html>`_
+ - `split_libraries.py <../scripts/split_libraries.html>`_
+ - `split_libraries_fastq.py <../scripts/split_libraries_fastq.html>`_
+ - `pick_open_reference_otus.py <../scripts/pick_open_reference_otus.html>`_
+ - `pick_de_novo_otus.py <../scripts/pick_de_novo_otus.html>`_
+ - `pick_closed_reference_otus.py <../scripts/pick_closed_reference_otus.html>`_
+ - `core_diversity_analyses.py <../scripts/core_diversity_analyses.html>`_
+
+Prepare your build environment...
+---------------------------------
+
+First, you need to have a build environment on your machine:
+
+ - On OS X, this involves installing the `developer tools <http://developer.apple.com/technologies/xcode.html>`_.
+ - On Debian-based Linux (e.g., Ubuntu), this involves installing the ``build-essential`` package with the command: ``sudo apt-get install build-essential``
+
+Then, just pip install qiime!
+-----------------------------
+
+The easiest way to install the latest QIIME release and its base dependencies is with pip::
+
+	pip install numpy
 	pip install qiime
 
-**Note:** You may need to prefix the above commands with ``sudo`` if you do not have permission to place files in the default locations. You will also need an active Internet connection. If you do not have pip, the easiest way to install it is by running::
+If you do not have pip, the easiest way to install it is by running::
 
 	easy_install pip
 
-That's it!
+**Note:** You may need to prefix the above commands with ``sudo`` if you do not have permission to place files in the default locations. You will also need an active Internet connection.
 
-You should next `write your QIIME config file <./qiime_config.html>`_.
+Alternatives to pip install qiime
+---------------------------------
 
-Installing QIIME on Mac OS X (Using MacQIIME)
-+++++++++++++++++++++++++++++++++++++++++++++
+If you don't have permission to (or don't want to) install QIIME into your system version of python, you might want to look into these alternatives:
 
-Jeff Werner builds and maintains MacQIIME, a package that provides a way to get a semi-full QIIME installation on Mac OS X. For more information see the `installation instructions <http://www.wernerlab.org/software/macqiime>`_.
-
-
-Manually installing QIIME
-+++++++++++++++++++++++++
-
-If you decided not to install QIIME using pip, you can install it (and its dependencies) manually.
-
-The following QIIME base install dependencies are grouped by installation method.
-
-The first are the core scientific python dependencies. The easiest way to install these is by installing `Canopy Express <https://www.enthought.com/canopy-express/>`_ (formerly EPD Free), which contains core modules for python scientific computing, including those required by QIIME, but also packages such as IPython and Pandas, which QIIME users may also find useful.
-
-* Python 2.7.3 (`src_python <http://www.python.org/ftp/python/2.7.3/Python-2.7.3.tgz>`_) (license: PSF)
-* Numpy 1.5.1 - 1.7.1 (`src_numpy <http://sourceforge.net/projects/numpy/files/NumPy/1.7.1/numpy-1.7.1.tar.gz/download>`_) (license: BSD)
-* MatPlotLib 1.1.0 - 1.3.1 (`src_matplotlib <http://downloads.sourceforge.net/project/matplotlib/matplotlib/matplotlib-1.1.0/matplotlib-1.1.0.tar.gz>`_) (license: PFS)
-* SciPy >= 0.13.0 (`src_scipy <https://pypi.python.org/packages/source/s/scipy/scipy-0.13.0.tar.gz>`_) (license: BSD)
-
-The next are python packages not included in Canopy Express. Each of these can be installed either via pip (e.g., ``pip install <package-name>``) or by downloading the package, unzipping with ``tar -xzf``, changing to the resulting directory, and running ``python setup.py install`` (see :ref:`Installing with setup.py <python-setup>` for some notes that may be useful).
-
-* QIIME (see :ref:`Getting QIIME <getting-qiime>`)
-* PyCogent 1.5.3 (`src_pycogent <https://pypi.python.org/packages/source/c/cogent/cogent-1.5.3.tgz>`_) (license: GPL)
-* biom-format 1.3.1 (`src_biom <https://pypi.python.org/packages/source/b/biom-format/biom-format-1.3.1.tar.gz>`_) (license: BSD)
-* qcli 0.1.0 (`src_qcli <https://pypi.python.org/packages/source/q/qcli/qcli-0.1.0.tar.gz>`_) (license: GPL)
-* PyNAST 1.2.2 (`src_pynast <https://pypi.python.org/packages/source/p/pynast/pynast-1.2.2.tar.gz>`_) (license: BSD)
-* Emperor >= 0.9.5 and < 1.0.0 (`src_emperor <https://pypi.python.org/packages/source/e/emperor/emperor-0.9.5.tar.gz>`_) (license: BSD)
-* pyqi 0.3.1 (`src_pyqi <https://pypi.python.org/packages/source/p/pyqi/pyqi-0.3.1.tar.gz>`_) (license: BSD)
-* scikit-bio 0.2.2 (`src_skbio <https://pypi.python.org/packages/source/s/scikit-bio/scikit-bio-0.2.2.tar.gz>`_) (license: BSD)
-* burrito-fillings (latest development version) (`src_bfillings <https://github.com/biocore/burrito-fillings>`_) (license: GPL)
-
-Next, there are two non-python dependencies required for the QIIME base package. These should be installed by following their respective install instructions.
-
-* uclust 1.2.22q (`src_uclust <http://www.drive5.com/uclust/downloads1_2_22q.html>`_) See :ref:`uclust install notes <uclust-install>`. (licensed specially for Qiime and PyNAST users)
-* fasttree 2.1.3 (`src_fasttree <http://www.microbesonline.org/fasttree/FastTree-2.1.3.c>`_) See `FastTree install instructions <http://www.microbesonline.org/fasttree/#Install>`_ (license: GPL)
-
-Data files necessary for the QIIME base installation
-++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-After you've installed the base QIIME dependencies, there are several data files that are likely to be useful in your analyses. These can all be obtained using ``wget`` or ``curl``, and unzipping where necessary.
-
-* greengenes core set data file (`fasta <http://greengenes.lbl.gov/Download/Sequence_Data/Fasta_data_files/core_set_aligned.fasta.imputed>`_)
-* Marker gene reference OTUs, taxonomies, and trees  (follow the *Resources* link from the `QIIME homepage <http://www.qiime.org>`_)
-
-You should next `write your QIIME config file <./qiime_config.html>`_.
+ - `virtualenv and virtualenv-wrapper <https://virtualenvwrapper.readthedocs.org/en/latest/>`_ (this is what most of the QIIME developers use instead of system-wide QIIME installations)
+ - `Anaconda <https://store.continuum.io/cshop/anaconda/>`_
+ - `Canopy <https://www.enthought.com/products/canopy/>`_
+ - `pip-install to a non-system directory <https://pip.pypa.io/en/latest/user_guide.html#user-installs>`_
 
 Testing the QIIME base installation
 -----------------------------------
 
-After installing the QIIME base packages, you can test this for sanity by running::
+After installing the QIIME base packages, you can test the installation::
 
-	print_qiime_config.py -tb
+	print_qiime_config.py -t
 
-You should see output that looks like the following::
+If the output doesn't indicate any failures, you're now ready to use QIIME. If you're working in a cluster environment, you may next want to make some customizations by `setting up your qiime config file <./qiime_config.html>`_. You should also read the documentation on `using parallel qiime <../tutorials/parallel_qiime.html>`_.
 
-	System information
-	==================
-	         Platform:	darwin
-	   Python version:	2.7.1 (r271:86832, Aug 30 2012, 10:07:33)  [GCC 4.2.1 (Based on Apple Inc. build 5658) (LLVM build 2336.11.00)]
-	Python executable:	$HOME/.virtualenvs/qiime/bin/python
+.. _native-full:
 
-	Dependency versions
-	===================
-	             PyCogent version:	1.5.3
-	                NumPy version:	1.5.1
-	           matplotlib version:	1.1.0
-	          biom-format version:	1.2.0
-	                 qcli version:	0.1.0
-	        QIIME library version:	1.7.0
-	         QIIME script version:	1.7.0
-	PyNAST version (if installed):	1.2.1
-	              Emperor version:	0.9.2
+Installing QIIME natively with a full install
+=============================================
 
-	QIIME config values
-	===================
-	                     blastmat_dir:	None
-	                         sc_queue:	all.q
-	      topiaryexplorer_project_dir:	$HOME/code/TopiaryExplorer-0.9.1/
-	     pynast_template_alignment_fp:	$HOME/data/greengenes_core_sets/core_set_aligned_imputed.fasta_11_8_07.no_dots
-	                  cluster_jobs_fp:	start_parallel_jobs.py
-	pynast_template_alignment_blastdb:	None
-	assign_taxonomy_reference_seqs_fp:	$HOME/data/gg_13_5_otus/rep_set/97_otus.fasta
-	                     torque_queue:	friendlyq
-	                    jobs_to_start:	2
-	            denoiser_min_per_core:	50
-	                         temp_dir:	$HOME/temp
-	                      blastall_fp:	blastall
-	                 seconds_to_sleep:	1
-	assign_taxonomy_id_to_taxonomy_fp:	$HOME/data/gg_13_5_otus/taxonomy/97_otu_taxonomy.txt
-	................
-	----------------------------------------------------------------------
-	Ran 16 tests in 0.440s
+You should begin by performing the `QIIME minimal (base) install`__. The following steps are not necessary for the vast majority of QIIME's use cases.
 
-	OK
+__ native-base_
 
-This indicates that you have a complete QIIME base install.
+Then, install the following packages. If you're installing on Linux, the easiest way to install all of these packages is using `qiime-deploy <https://github.com/qiime/qiime-deploy>`_.
 
-You should next :ref:`run QIIME's unit tests <run-test-suite>`. You will experience some test failures as a result of not having a full QIIME install. If you have questions about these failures, you should post to the `QIIME Forum <http://forum.qiime.org>`_.
+Alternatively, you can manually install some or all of the following packages. These are grouped by the features that each dependency will provide access to. Installation instructions should be followed for each individual package (e.g., from the project's website or README/INSTALL file).
 
-QIIME full install (for access to advanced features in QIIME, and non-default processing pipelines)
----------------------------------------------------------------------------------------------------
-
-The dependencies described below will support a full QIIME install. These are grouped by the features that each dependency will provide access to. Installation instructions should be followed for each individual package (e.g., from the project's website or README/INSTALL file).
-
-Alignment, tree-building, taxonomy assignment, OTU picking, and other data generation steps (required for non-default processing pipelines):
+Alignment, tree-building, taxonomy assignment, OTU picking, and other data generation steps:
 
 * jre1.6.0_05 (`src_jre <http://java.sun.com/javase/downloads/index.jsp>`_) (license: GPL2)
 * rdp_classifier-2.2 (`src_rdp <http://sourceforge.net/projects/rdp-classifier/files/rdp-classifier/rdp_classifier_2.2.zip/download>`_) See :ref:`RDP install notes <rdp-install>`. (license: GPL)
@@ -180,6 +123,9 @@ Alignment, tree-building, taxonomy assignment, OTU picking, and other data gener
 * muscle 3.8.31 (`src_muscle <http://www.drive5.com/muscle/downloads.htm>`_) (Public domain)
 * rtax 0.984 (`src_rtax <http://static.davidsoergel.com/rtax-0.984.tgz>`_) (license: BSD)
 * usearch v5.2.236 and/or usearch v6.1 (`src_usearch <http://www.drive5.com/usearch/>`_) (license: see http://www.drive5.com/usearch/nonprofit_form.html) **At this stage two different versions of usearch are supported.** usearch v5.2.236 is referred to as ``usearch`` in QIIME, and usearch v6.1 is referred to as ``usearch61``.
+* sumaclust v1.0.00 (`src_sumaclust <ftp://ftp.microbio.me/pub/QIIME-v1.9.0-dependencies/suma_package_V_1.0.00.tar.gz>`_) (license: CeCILL FREE SOFTWARE LICENSE AGREEMENT)
+* swarm 1.2.19 (`src_swarm <https://github.com/torognes/swarm/releases/tag/1.2.19>`_) (license: GPL)
+* sortmerna 2.0 (`src_sortmerna <https://github.com/biocore/sortmerna/releases/tag/2.0>`_) (license: LGPL)
 
 Processing sff files:
 
@@ -191,189 +137,59 @@ Denoising 454 data:
 * AmpliconNoise 1.27 (`src_ampliconnoise <http://ampliconnoise.googlecode.com/files/AmpliconNoiseV1.27.tar.gz>`_) See :ref:`AmpliconNoise install notes <ampliconnoise-install>`.
 * ghc 6.8 (required by the QIIME denoiser) (`src_ghc <http://haskell.org/ghc>`_)
 
-Visualization and plotting steps:
+Network visualization:
 
 * cytoscape v2.7.0 (`src_cytoscape <http://www.cytoscape.org/>`_) (license: LGPL)
 
-Supervised learning (``supervised_learning.py``) and ``compare_categories.py``:
+Advanced statistics, including those performed in ``supervised_learning.py``, ``detrend.py`` and ``compare_categories.py``:
 
-* R 3.0.2 (`src_r <http://www.r-project.org/>`_) See :ref:`R install notes <R-install>`. (license: GPL2)
-
-If you plan to build the QIIME documentation locally:
-
-* Sphinx 1.0.4 (`src <http://pypi.python.org/pypi/Sphinx>`_) See :ref:`Building the QIIME documentation <build-qiime-docs>` (license: BSD)
-
-If you plan to use remote mapping files (stored as Google Spreadsheets) with QIIME (see the tutorial `here <../tutorials/remote_mapping_files.html>`_):
-
-* gdata 2.0.17 (`src <http://gdata-python-client.googlecode.com/files/gdata-2.0.17.tar.gz>`_) (license: Apache 2.0)
+* R 3.1.2 (`src_r <http://www.r-project.org/>`_) See :ref:`R install notes <R-install>`. (license: GPL2)
 
 If you plan to use SourceTracker with QIIME:
 
 * SourceTracker 0.9.5 (`src <http://downloads.sourceforge.net/project/sourcetracker/sourcetracker-0.9.5.tar.gz>`_) (license: GPL)
 
+For improved performance with large BIOM files, or if you're working with BIOM format 2.x files:
+
+* HDF5 (`web_hdf5 <http://www.hdfgroup.org/HDF5/>`_)
+* h5py (`web_h5py <http://www.h5py.org>`_; this can be installed with ``pip install h5py`` after HDF5 has been installed)
+
 Testing the QIIME full installation
 -----------------------------------
 
-After installing the QIIME base packages, you can test this for sanity by running::
+After installing the packages above, you can test this for sanity by running::
 
-	print_qiime_config.py -t
+    print_qiime_config.py -tf
 
-You should see output that looks like the following::
-
-	System information
-	==================
-	         Platform:	darwin
-	   Python version:	2.7.1 (r271:86832, Aug 30 2012, 10:07:33)  [GCC 4.2.1 (Based on Apple Inc. build 5658) (LLVM build 2336.11.00)]
-	Python executable:	$HOME/.virtualenvs/qiime/bin/python
-
-	Dependency versions
-	===================
-	                     PyCogent version:	1.5.3
-	                        NumPy version:	1.5.1
-	                   matplotlib version:	1.1.0
-	                  biom-format version:	1.2.0-dev
-	                         qcli version:	0.1.0
-	                QIIME library version:	1.7.0-dev
-	                 QIIME script version:	1.7.0-dev
-	        PyNAST version (if installed):	1.2.1
-	                      Emperor version:	0.9.2-dev
-	RDP Classifier version (if installed):	rdp_classifier-2.2.jar
-	          Java version (if installed):	1.6.0_43
-
-	QIIME config values
-	===================
-	                     blastmat_dir:	/Applications/blast-2.2.22/data/
-	                         sc_queue:	all.q
-	      topiaryexplorer_project_dir:	$HOME/code/TopiaryExplorer-0.9.1/
-	     pynast_template_alignment_fp:	$HOME/data/greengenes_core_sets/core_set_aligned_imputed.fasta_11_8_07.no_dots
-	                  cluster_jobs_fp:	start_parallel_jobs.py
-	pynast_template_alignment_blastdb:	None
-	assign_taxonomy_reference_seqs_fp:	$HOME/data/gg_13_5_otus/rep_set/97_otus.fasta
-	                     torque_queue:	friendlyq
-	                    jobs_to_start:	2
-	            denoiser_min_per_core:	50
-	                         temp_dir:	$HOME/temp
-	                      blastall_fp:	blastall
-	                 seconds_to_sleep:	1
-	assign_taxonomy_id_to_taxonomy_fp:	$HOME/data/gg_13_5_otus/taxonomy/97_otu_taxonomy.txt
-	...................................
-	----------------------------------------------------------------------
-	Ran 35 tests in 0.641s
-
-	OK
-
-You should next :ref:`run QIIME's unit tests <run-test-suite>`. All tests should pass if you have a working full QIIME installation. If you have questions about these failures, you should post to the `QIIME Forum <http://forum.qiime.org>`_.
-
-==========================================
-QIIME installation guide: Additional notes
-==========================================
-
-The following sections are referenced from the installation guide above.
-
-.. _getting-qiime:
-
-Getting QIIME
-=============
-
-First, change to the directory where you would like to download QIIME::
-
-	cd $HOME
-
-Stable Release
---------------
-Currently the most stable version of QIIME is our |release| release, which you can download from `here <https://pypi.python.org/pypi/qiime>`_.
-
-Latest Development Version
---------------------------
-To get the latest development version of QIIME, you should check it out of our git repository, which is hosted on GitHub. While this code is subject to changes in interface and hasn't been as extensively tested as the release version, it will provide access to the latest and greatest QIIME features. The official web documentation is likely to be out-of-date with respect to the development software. You should instead refer to the documentation in ``Qiime/doc``. Check out the latest version of QIIME using git with the command::
-
-	git clone git://github.com/biocore/qiime.git Qiime
-
-If you are using the latest development version of QIIME, you should periodically update your checkout by running the following command (from within your checkout)::
-
-	git pull
-
-Unpacking QIIME (release only)
-------------------------------
-After downloading the QIIME release tar file you'll need to unpack the code. For simplicity in this document, we will assume that you have downloaded QIIME to the directory ``$HOME/``.
-
-Unpack the release .tar.gz file with the commands::
-
-	cd $HOME
-	tar -xvzf qiime-1.8.0.tar.gz
-	ln -s $HOME/qiime-1.8.0 $HOME/Qiime
-
-If you have downloaded the development version from GitHub, QIIME is already unpacked.
-
-Installing QIIME
-----------------
-QIIME consists of library code (in ``Qiime/qiime``), test code (in ``Qiime/tests``), example script input (in ``Qiime/qiime_test_data``), documentation (in ``Qiime/doc``), and scripts (in ``Qiime/scripts``). Installing QIIME consists of installing the library code in a place where python knows where to find it, and installing the scripts in a place where the shell looks for executable files, and running the tests (optional, but highly recommended).
-
-.. _python-setup:
-
-Installing with setup.py
-------------------------
-
-Using ``Qiime/setup.py`` (and thereby python's ``distutils`` package) is the recommended way of installing the Qiime library code and scripts. You can optionally specify where the library code and scripts should be installed -- depending on your setup, you may want to do this. By default, the QIIME library code will be placed under python's ``site-packages``, and the QIIME scripts will be place in ``/usr/local/bin/``. You may need to run ``setup.py`` using ``sudo`` if you do not have permission to place files in the default locations.
-
-First, ensure that you are in the top-level QIIME directory::
-
-	cd $HOME/Qiime
-
-By default the QIIME scripts will be installed in ``/usr/local/bin``. As there are a lot of QIIME scripts, we highly recommend customizing the script directory to keep your system organized. This can be customized with the ``--install_scripts`` option. You also can specify an alternate directory for the library files with ``--install-purelib``. An example command is::
-
-	python setup.py install --install-scripts=$HOME/bin/ --install-purelib=$HOME/lib/
-
-For a complete discussion of customizations related to the setup.py script, `see this page <http://docs.python.org/release/2.7.1/install/index.html#alternate-installation>`_.
-
-If you used default values for ``--install-scripts`` and ``--install-purelib`` (by not specifying them), your installation should be complete. If you specified an alternate value for ``--install-scripts``, you'll need to ensure that the shell knows where to look for the scripts. If you are using the bash shell and the locations specified in the examples above, you can do this with the following command::
-
-	echo "export PATH=$HOME/bin/:$PATH" >> $HOME/.bashrc
-
-If you specified an alternate value for ``--install-purelib``, you'll need to be sure that python knows where to look for Qiime. If you are using the bash shell and the locations specified in the examples above, you can do this with the following command::
-
-	echo "export PYTHONPATH=$HOME/lib/:$PYTHONPATH" >> $HOME/.bashrc
-
-Then source your ``.bashrc``::
-
-	source $HOME/.bashrc
-
-Finally, you should `write your QIIME config file <./qiime_config.html>`_.
-
-.. _run-test-suite:
+If the output doesn't indicate any failures related to packages that you plan to use, you're now ready to use QIIME. If you're working in a cluster environment, you may next want to make some customizations by `setting up your qiime config file <./qiime_config.html>`_. You should also read the documentation on `using parallel qiime <../tutorials/parallel_qiime.html>`_.
 
 Running the test suite
 ----------------------
-Next you should run the test suite. Execute the following commands::
 
-	cd $HOME/Qiime/tests/
+Due to size constraints, pip-installing QIIME won't download QIIME's unit tests. If you want to run QIIME's comprehensive unit test suite after installing QIIME, you should `download the QIIME source code from GitHub <https://github.com/biocore/qiime/releases>`_ for the version of QIIME that you've installed. After unpacking the source distribution, you should run the test suite. Execute the following commands::
+
+	cd qiime-<version>/tests/
 	python all_tests.py
 
-You will see test output on the terminal indicating test successes and failures. Some failures are OK. The ``all_tests.py`` command will complete with a summary of test failures. Some tests may fail due to missing external applications -- these will be noted separately from other test failures. If these are related to features of QIIME that you are not using, this is acceptable. Otherwise, you'll need to ensure that you have the external applications installed correctly (and the correct versions), and re-run the tests.
+Where ``qiime-<version>`` will be dependent on the specific version that you've downloaded.
+
+You will see test output on the terminal indicating test successes and failures. Some failures are OK.
+
+The ``all_tests.py`` command will complete with a summary of test failures. Some tests may fail due to missing external applications -- these will be noted separately from other test failures. If these are related to features of QIIME that you are not using, this is acceptable. Otherwise, you'll want to ensure that you have the external applications installed correctly (be sure to check that you have the right versions, QIIME may not always work with the latest version of an external dependency), and re-run the tests.
 
 License information for external dependencies
 =============================================
 We have attempted to provide accurate licensing information for the above dependencies for the convenience of our users. This information is by no means definitive and may contain errors. Any questions about licenses or the legality of specific uses of these software packages should be directed to the authors of the software. Do not rely solely on the license information presented above!
 
-External application install notes
-==================================
+Additional install notes for some external dependencies
+=======================================================
 
 PATH Environment Variable
 -------------------------
 
-External applications used by QIIME need to be visible to the shell by existing in executable search path (i.e., listed in the ``$PATH`` environment variable). For example, if you plan to use cd-hit, and have the cd-hit executables installed in ``$HOME/bin`` you can add this directory to your system path with the commands::
+External applications used by QIIME need to be visible to the shell by existing in the executable search path (i.e., listed in the ``$PATH`` environment variable). For example, if you plan to use cd-hit, and have the cd-hit executables installed in ``$HOME/bin`` you can add this directory to your system path with the commands::
 
 	echo "export PATH=$HOME/bin/:$PATH" >> $HOME/.bashrc
-	source $HOME/.bashrc
-
-PYTHONPATH Environment Variable
--------------------------------
-
-Qiime, PyCogent, and NumPy must be visible to python for all features of QIIME. matplotlib must be visible to python if you plan to use graphics features of QIIME; PyNAST must be visible to python if you plan to use PyNAST for multiple sequence alignment; and Denoiser must be visible to python if you plan to denoise 454 data. With the exception of Denoiser, all of these packages come with setup.py scripts. If you have used these, you should not need to modify your PYTHONPATH to make the library code visible. If you haven't used the respective setup.py scripts, or if you specified an alternate value for ``--install-purelib``, you may need to add the locations of these libraries to your PYTHONPATH environment variable.
-
-For example, if you've installed PyNAST in ``$HOME/PyNAST`` you can add this to your PYTHONPATH with the commands::
-
-	echo "export PYTHONPATH=$HOME/PyNAST/:$PYTHONPATH" >> $HOME/.bashrc
 	source $HOME/.bashrc
 
 .. _rdp-install:
@@ -420,7 +236,7 @@ If you're having trouble getting ChimeraSlayer to work via QIIME, you should fir
 
 Once you have configured Qiime, you can test your ChimeraSlayer install by running::
 
-	print_qiime_config.py -t
+	print_qiime_config.py -tf
 
 This includes a check for obvious problems with your ChimeraSlayer install, and should help you determine if you have it installed correctly.
 
@@ -429,17 +245,21 @@ This includes a check for obvious problems with your ChimeraSlayer install, and 
 R Install Notes
 ---------------
 
-To install R visit http://www.r-project.org/ and follow the install instructions. Once R is installed, run R and excecute the following commands::
+To install R visit http://www.r-project.org/ and follow the install instructions. Once R is installed, run R and execute the following commands::
 
-	install.packages('randomForest')
-	install.packages('optparse')
-	install.packages('vegan')
-	install.packages('ape')
-	install.packages('MASS')
-	install.packages('gtools')
-	install.packages('klaR')
-	install.packages('RColorBrewer')
-	q()
+    install.packages('ape')
+    install.packages('biom')
+    install.packages('gtools')
+    install.packages('klaR')
+    install.packages('MASS')
+    install.packages('optparse')
+    install.packages('RColorBrewer')
+    install.packages('randomForest')
+    install.packages('vegan')
+    source('http://bioconductor.org/biocLite.R')
+    biocLite('DESeq')
+    biocLite('metagenomeSeq')
+    q()
 
 .. _ampliconnoise-install:
 
@@ -461,12 +281,3 @@ If you do not install QIIME using ``setup.py`` and you plan to use the QIIME Den
 	make ; make install
 
 .. _build-qiime-docs:
-
-Building The QIIME Documentation
-================================
-
-If you are using the development version of QIIME, you may want to build the documentation locally for access to the latest version. You can change to the ``Qiime/doc`` directory and run::
-
-	make html
-
-We try to update the documentation as we update the code, but development version users may notice some discrepancies. After building the documentation, you can view it in a web browser by opening the file ``Qiime/doc/_build/html/index.html``. You may want to bookmark that page for easy access.

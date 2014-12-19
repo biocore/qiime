@@ -1,52 +1,51 @@
 .. _qiime_config:
 
-Setting up your qiime_config file
+Setting up your qiime config file
 ==================================
 
-First things first: you should not edit or remove :file:`Qiime/qiime/support_files/qiime_config`. Modifying or removing this file may cause QIIME to fail.
+Your QIIME installation can be customized using a *qiime config* file.
 
-Some QIIME scripts read default values from a :file:`qiime_config` file. The default location of this file is (:file:`Qiime/qiime/support_files/qiime_config`). QIIME scripts pull default values from this file which are system-specific, such as paths to executable files, and these can be overwritten for convenience. The recommended procedure for overwriting these defaults is to copy the :file:`qiime_config` file to either :file:`$HOME/.qiime_config` or a location specified by the environment variable $QIIME_CONFIG_FP.
+You have two options of where your *qiime config* file can be stored, and you can use either or both of these options. First, you can place a file called ``.qiime_config`` in your home directory (i.e., ``$HOME/.qiime_config``). Second, you can put the *qiime config* file in a location of your choice, and define an environment variable called ``QIIME_CONFIG_FP`` whose value is the absolute path to the *qiime config* file. If you use both of these options, the settings that are defined in ``$HOME/.qiime_config`` will take precedence over the settings that are defined in ``$QIIME_CONFIG_FP``.
 
-The QIIME configuration values should only be modified in these copies of the :file:`qiime_config` file, as changes to the :file:`Qiime/qiime/support_files/qiime_config` version may be overwritten in future QIIME updates.
+The values that you can set in your *qiime config* file are listed below. Defining any of these is optional. QIIME will use built-in defaults for any of these values that you don't set.
 
-When defaults are loaded, all three locations are checked in order of precedence. Lowest precedence is given to the :file:`Qiime/qiime/support_files/qiime_config` file, as these are defaults defined by the QIIME development team and are likely not relevant to other users' environments. Higher precedence is given to the file specified by $QIIME_CONFIG_FP, and this is envisioned to be used for defining system-wide defaults. Finally, highest precedence is given to :file:`~/.qiime_config`, so users have the ability to overwrite defaults defined elsewhere to have maximum control over their environment (e.g., if testing an experimental version of their :file:`cluster_jobs` script). Note that these values are defaults: the scripts typically allow overwriting of these values via their command line interfaces.
-
-Note that users can have up to three separate :file:`qiime_config` files, and one is provided by default with QIIME. At least one :file:`qiime_config` file must be present in one of the three locations, or scripts that rely on :file:`qiime_config` file will raise an error. Not all values need to be defined in all :file:`qiime_config` files, but all values must be defined at least once. This is one more reason why you should not edit or remove :file:`Qiime/qiime/support_files/qiime_config`: when new values are added in the future they will be defined in QIIME's default copy, but not in your local copies.
+- ``assign_taxonomy_id_to_taxonomy_fp`` : id-to-taxonomy map to use with assign_taxonomy.py (and parallel versions), if you prefer to not use the default
+- ``assign_taxonomy_reference_seqs_fp`` : reference database to use with assign_taxonomy.py (and parallel versions), if you prefer to not use the default
+- ``blastmat_dir`` : directory where BLAST substitution matrices are stored
+- ``blastall_fp`` : path to ``blastall`` executable
+- ``cluster_jobs_fp`` : path to your *cluster jobs* file. This file is described in :doc:`../tutorials/parallel_qiime`.
+- ``denoiser_min_per_core`` : minimum number of flowgrams to denoise per core in parallel denoiser runs
+- ``jobs_to_start`` : default number of jobs to start when running QIIME in parallel.
+- ``pick_otus_reference_seqs_fp`` : reference database to use with all OTU picking scripts and workflows, if you prefer to not use the default
+- ``pynast_template_alignment_blastdb`` : template alignment to use with PyNAST as a pre-formatted BLAST database, if you prefer to not have a BLAST database constructed from the fasta filepath provided for ``pynast_template_alignment_fp``
+- ``pynast_template_alignment_fp`` : template alignment to use with PyNAST as a fasta file, if you prefer to not use the default
+- ``sc_queue`` : default queue to submit jobs to when running parallel QIIME on `StarCluster-based <http://star.mit.edu/cluster/>`_ Amazon Web Services clusters
+- ``seconds_to_sleep`` : number of seconds to wait when checking whether parallel jobs have completed
+- ``slurm_memory`` : amount of memory in megabytes to request per CPU, when using ``start_parallel_jobs_slurm.py``; will default to slurm's default
+- ``slurm_queue`` : queue to submit jobs to, when using ``start_parallel_jobs_slurm.py``; will default to slurm's default
+- ``temp_dir`` : directory for storing temporary files created by QIIME scripts. when a script completes successfully, any temporary files that it created are cleaned up. If you're working in a cluster environment, this directory must be shared across all of the worker nodes that QIIME jobs may be running on.
+- ``topiaryexplorer_project_dir`` : directory where TopiaryExplorer is installed
+- ``torque_queue`` : default queue to submit jobs to when using ``start_parallel_jobs_torque.py``
 
 Viewing and testing your ``qiime_config`` settings
-----------------------------------------------------------------
+--------------------------------------------------
 
-To see the qiime_config values as read by QIIME, and to test your settings, you can call::
+To see the qiime_config values as read by QIIME, run::
 
 	print_qiime_config.py -t
 
-Definition of values in qiime_config
-------------------------------------
+We refer to the output of this command as the *print_qiime_config.py output*.
 
-``cluster_jobs_fp`` : path to your *cluster jobs* file. This file is described in :doc:`../tutorials/parallel_qiime`.
+If you have added some of the above settings to a *qiime config* file, and you do not see those settings associated with the values in your print_qiime_config.py output, that means that QIIME did not find your *qiime config* file. Check that it is in one of the two allowed locations described above.
 
-``blastmat_dir`` : directory where BLAST substitution matrices are stored
+Default reference files
+-----------------------
 
-``blastall_fp`` : path to ``blastall`` executable
+Several of the above settings will fall back to default files if not overwritten. These are:
 
-``pynast_template_alignment_fp`` : default template alignment to use with PyNAST as a fasta file
+- ``assign_taxonomy_id_to_taxonomy_fp``
+- ``assign_taxonomy_reference_seqs_fp``
+- ``pick_otus_reference_seqs_fp``
+- ``pynast_template_alignment_fp``
 
-``pynast_template_alignment_blastdb`` : default template alignment to use with PyNAST as a pre-formatted BLAST database
-
-``jobs_to_start`` : default number of jobs to start when running QIIME in parallel. don't make this more than the available cores/processors on your system
-
-``seconds_to_sleep`` : number of seconds to wait when checking whether parallel jobs have completed
-
-``temp_dir`` : directory for storing temporary files created by QIIME scripts. when a script completes successfully, any temporary files that it created are cleaned up (if you notice this isn't the case for some script, please let us know)
-
-``denoiser_min_per_core`` : minimum number of flowgrams to denoise per core in parallel denoiser runs
-
-``topiaryexplorer_project_dir`` : directory where TopiaryExplorer is installed
-
-``torque_queue`` : default queue to submit jobs to when using parallel QIIME with torque
-
-``assign_taxonomy_reference_seqs_fp`` : default reference database to use with assign_taxonomy.py (and parallel versions)
-
-``assign_taxonomy_id_to_taxonomy_fp`` : default id-to-taxonomy map to use with assign_taxonomy.py (and parallel versions)
-
-``sc_queue`` : default queue to submit jobs to when running parallel QIIME on StarCluster
+In the *QIIME default reference information* section of the print_qiime_config.py output, you'll be presented with a link to a page that describes what files are used as the defaults for each of these. These files come from the `qiime-default-reference project <http://github.com/biocore/qiime-default-reference>`_, one of QIIME's core dependencies. (We don't describe those here as the defaults may differ based on how recent your QIIME installation is.)

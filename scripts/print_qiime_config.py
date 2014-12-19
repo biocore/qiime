@@ -72,6 +72,12 @@ except ImportError as e:
     raise ImportError("%s\n%s" % (e, core_dependency_missing_msg))
 
 try:
+    from qiime_default_reference import __version__ as qdr_lib_version
+except ImportError as e:
+    raise ImportError("%s\n%s" % (e, core_dependency_missing_msg))
+
+
+try:
     from skbio import __version__ as skbio_lib_version
     from burrito.util import which
 except ImportError as e:
@@ -117,6 +123,14 @@ except ImportError:
 else:
     gdata_installed = "Installed."
 
+try:
+    import h5py
+    h5py_lib_version = (
+     h5py.__version__ + ' (HDF5 version: %s)' % h5py.version.hdf5_version)
+except ImportError:
+    h5py_lib_version = "Not installed."
+
+
 pynast_lib_version = get_pynast_version()
 if pynast_lib_version is None:
     pynast_lib_version = "Not installed."
@@ -140,31 +154,40 @@ else:
             break
 
 script_info = {}
-script_info['brief_description'] = """Print out the qiime config settings."""
-script_info[
-    'script_description'] = """A simple scripts that prints out the qiime config settings and does some sanity checks."""
+script_info['brief_description'] = ("Print and optionally test QIIME "
+                                    "configuration details")
+script_info['script_description'] = ("Print QIIME configuration details and "
+                                     "optionally perform tests of the QIIME "
+                                     "base or full install.")
 script_info['script_usage'] = []
 script_info['script_usage'].append(
-    ("Example 1", """Print basic QIIME configuration details:""", """%prog"""))
+    ("Example 1",
+     "Print basic QIIME configuration details:", """%prog"""))
 script_info['script_usage'].append(
-    ("Example 2", """Print basic QIIME configuration details and test the base QIIME install:""",
-     """%prog -tb"""))
+    ("Example 2",
+     "Print basic QIIME configuration details and test the base QIIME installation:",
+     "%prog -t"))
+script_info['script_usage'].append(
+    ("Example 3",
+     "Print basic QIIME configuration details and test the full QIIME installation:",
+     "%prog -tf"))
 
-script_info[
-    'output_description'] = """This prints the qiime_config to stdout."""
+script_info['output_description'] = ("Prints QIIME configuration details to "
+                                     "standard output.")
 script_info['version'] = __version__
 script_info['help_on_no_arguments'] = False
 script_info['required_options'] = []
 script_info['optional_options'] = [
-    make_option('-t', '--test',
-                action='store_true',
-                default=False,
-                help='Test the QIIME install and configuration [default: %default]'),
-    make_option('-b',
-                '--qiime_base_install',
-                action='store_true',
-                default=False,
-                help='If passed, report only on dependencies required for the QIIME base install [default: %default]'),
+    make_option('-t', '--test', action='store_true', default=False,
+                help='Test the QIIME install and configuration '
+                     '[default: %default]'),
+    make_option('-b', '--qiime_base_install', action='store_true',
+                default=True, help=SUPPRESS_HELP),
+    make_option('-f', '--qiime_full_install', action='store_true',
+    default=False, help='If passed, report on dependencies required for the '
+                        'QIIME full install. To perform tests of the QIIME '
+                        'full install, you must also pass -t. '
+                        '[default: %default]'),
     make_option('--haiku',
                 action='store_true',
                 default=False,
@@ -670,6 +693,15 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
             pass_test = False
         self.assertTrue(pass_test, "gdata is not installed.")
 
+    def test_h5py(self):
+        """h5py is installed"""
+        self.assertTrue(h5py_lib_version != "Not installed.",
+                        "h5py is not installed. You should install this for "
+                        "improved performance with large BIOM files or if "
+                        "working with BIOM format version 2.x files. For "
+                        "more information, see http://biom-format.org.")
+        # cd-hit does not have a version print in their program
+
 
 def test_qiime_config_variable(variable, qiime_config, test,
                                access_var=R_OK, fail_on_missing=False):
@@ -704,7 +736,7 @@ def main():
 
     qiime_config = load_qiime_config()
     test = opts.test
-    qiime_base_install = opts.qiime_base_install
+    qiime_full_install = opts.qiime_full_install
 
     rdp_jarpath = get_rdp_jarpath()
     if rdp_jarpath is None:
@@ -726,14 +758,21 @@ def main():
     for v in system_info:
         print "%*s:\t%s" % (max_len, v[0], v[1])
 
+    print "\nQIIME default reference information"
+    print "==================================="
+    print "For details on what files are used as QIIME's default references, see here:"
+    print " https://github.com/biocore/qiime-default-reference/releases/tag/%s" % qdr_lib_version
+
     version_info = [
         ("QIIME library version", get_qiime_library_version()),
         ("QIIME script version", __version__),
+        ("qiime-default-reference version", qdr_lib_version),
         ("NumPy version", numpy_lib_version),
         ("SciPy version", scipy_lib_version),
         ("pandas version", pandas_lib_version),
         ("matplotlib version", matplotlib_lib_version),
         ("biom-format version", biom_lib_version),
+        ("h5py version", h5py_lib_version),
         ("qcli version", qcli_lib_version),
         ("pyqi version", pyqi_lib_version),
         ("scikit-bio version", skbio_lib_version),
@@ -746,7 +785,7 @@ def main():
         ("gdata", gdata_installed)
     ]
 
-    if not qiime_base_install:
+    if qiime_full_install:
         version_info += [
             ("RDP Classifier version (if installed)", rdp_version),
             ("Java version (if installed)", java_version)]
@@ -759,15 +798,22 @@ def main():
 
     print "\nQIIME config values"
     print "==================="
+    print "For definitions of these settings and to learn how to configure QIIME, see here:"
+    print " http://qiime.org/install/qiime_config.html"
+    print " http://qiime.org/tutorials/parallel_qiime.html\n"
     max_len = max([len(key) for key in qiime_config])
     for key, value in qiime_config.items():
         print "%*s:\t%s" % (max_len, key, value)
 
     if test:
-        if qiime_base_install:
-            suite = TestLoader().loadTestsFromTestCase(QIIMEDependencyBase)
-        else:
+        if qiime_full_install:
+            print "\nQIIME full install test results"
+            print "==============================="
             suite = TestLoader().loadTestsFromTestCase(QIIMEDependencyFull)
+        else:
+            print "\nQIIME base install test results"
+            print "==============================="
+            suite = TestLoader().loadTestsFromTestCase(QIIMEDependencyBase)
         if opts.verbose:
             verbosity = 2
         else:

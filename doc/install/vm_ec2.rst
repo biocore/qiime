@@ -1,19 +1,22 @@
 .. _ec2:
 
-QIIME EC2 Image
-^^^^^^^^^^^^^^^^^
+======================
+QIIME Amazon EC2 Image
+======================
 
-What is the QIIME EC2 image?
-==============================
-The QIIME EC2 image is a pre-built image containing QIIME and its dependencies developed for the Amazon Cloud. Any problems should be brought up in the `QIIME Forum <http://groups.google.com/group/qiime-forum>`_.
+As a consequence of QIIME's *pipeline* architecture, **QIIME has a lot of dependencies and can (but doesn't have to) be very challenging to install**. The QIIME Amazon EC2 Image gets around the difficulty of installation by providing a functioning QIIME full install inside an Ubuntu Linux virtual machine that runs on the Amazon Cloud.
 
-The QIIME EC2 image will allow users to load a fully-functional QIIME environment in their own Amazon Web Services (AWS) accounts to make use of the compute resources available in Amazon's cloud. 
+Users will need their own Amazon Web Services (AWS) account to make use of the compute resources available in the Amazon Cloud. Those resources are typically rented by the hour. Note that those fees cover your use of Amazon's hardware. Use of QIIME itself, as always, is free.
 
-To get started working the QIIME EC2 image, see :ref:`working_with_ec2`.
+To get started working with the QIIME Amazon EC2 Image, see :ref:`working_with_ec2`.
+
+The Amazon Machine Identifiers (AMIs) for all QIIME releases are listed on the `QIIME Resources page <http://qiime.org/home_static/dataFiles.html>`_.
+
+As of this writing, `Amazon has an open call for proposals <http://aws.amazon.com/grants/>`_ for grants related to using AWS resources for research and education. 
 
 Acknowledgements
 ================
-We'd like to acknowledge the support of AWS: the QIIME EC2 image was developed using an AWS in Education (for Researchers) grant of compute resource time. 
+The QIIME Amazon EC2 Image was developed using an AWS in Education (for Researchers) grant of compute resource time.
 
 .. _AWS: http://aws.amazon.com/
 .. _AWS console: http://aws.amazon.com/console/
