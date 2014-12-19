@@ -619,12 +619,12 @@ def run_summarize_taxa_through_plots(otu_table_fp,
         output_map_fp = join(
             output_dir, '%s_map.txt' % base_filename)
         # Build the collapse samples command
-        summarize_otu_by_cat_cmd = \
+        collapse_samples_cmd = \
             "collapse_samples.py -m %s -b %s --output_biom_fp %s --output_mapping_fp %s --collapse_fields '%s' %s" %\
             (mapping_fp, otu_table_fp, output_biom_fp, output_map_fp, mapping_cat, params_str)
 
         commands.append(
-            [('Collapse samples in OTU table by categories', summarize_otu_by_cat_cmd)])
+            [('Collapse samples in OTU table by categories', collapse_samples_cmd)])
 
         otu_table_fp = output_biom_fp
 
