@@ -298,12 +298,12 @@ beta_diversity:metrics	weighted_unifrac,unweighted_unifrac
 make_3d_plots:custom_axes
 
 # Rarefaction parameters
-multiple_rarefactions:num-reps	1
+multiple_rarefactions:num_reps	1
 multiple_rarefactions:depth
 multiple_rarefactions:lineages_included	False
 
 # Even-depth rarefaction parameters
-multiple_rarefactions_even_depth:num-reps	5
+multiple_rarefactions_even_depth:num_reps	5
 
 # Alpha diversity parameters
 alpha_diversity:metrics	PD_whole_tree

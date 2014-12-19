@@ -81,7 +81,7 @@ script_info['optional_options'] = [
     make_option('-k', '--key', type=str,
                 help="Metadata key to use for computing [default: 'taxonomy']",
                 default='taxonomy'),
-    make_option('-s', '--show-indices', action='store_true',
+    make_option('-s', '--show_indices', action='store_true',
                 help="List known indices",
                 default=False)]
 
