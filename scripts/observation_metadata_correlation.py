@@ -198,7 +198,7 @@ def main():
     bt.sort(sort_f = lambda _: samples_to_correlate, axis='sample')
 
     if bt.shape[1] <= 3:
-        raise ValueError(filtration_error_text)
+        option_parser.error(filtration_error_text)
 
     rhos = []
     pvals = []
