@@ -415,11 +415,11 @@ def mapping_lines_from_collapsed_df(collapsed_df):
 
     for r in collapsed_df.iterrows():
         # this is a little ugly, but we need to handle single and multi-index
-        # values here, and we always want to result to be a tuple
+        # values here
         if isinstance(r[0], tuple):
             new_idx = '.'.join(map(str, r[0]))
         else:
-            new_idx = '.'.join(map(str, (r[0], )))
+            new_idx = str(r[0])
         new_values = []
         for e in r[1]:
             if len(set(e)) == 1:
