@@ -31,7 +31,7 @@ optionally a mapping file. Check out the new documentation for the naming conven
 * Beta support has been added for performing de novo OTU picking using SumaClust ([In Preparation](http://metabarcoding.org/sumatra)). This can be accessed with ``pick_de_novo_otus.py -p params.txt`` where params.txt includes the line ``pick_otus:otu_picking_method sumaclust``.
 * numpy version requirement has been updated to 1.7.1 or later.
 * Updated to use [burrito](https://github.com/biocore/burrito) instead of scikit-bio for imports from the application controller framework, as the former is replacing the latter.
-* QIIME now depends on [biom-format](https://github.com/biocore/biom-format) 2.1.0.
+* QIIME now depends on [biom-format](https://github.com/biocore/biom-format) >= 2.1.2, < 2.2.0.
 * the parameters ``--uclust_min_consensus_fraction`` and ``--uclust_similarity`` in assign taxonomy scripts have been changed to ``--min_consensus_fraction`` and ``--similarity`` since both of these parameters apply to the SortMeRNA taxon assigner as well.
 * Renamed ``split_fasta_on_sample_ids_to_files.py`` to      ``split_sequence_file_on_sample_ids_to_files.py``, which now supports splitting FASTQ files, as well. Added a parameter, ``file_type``, which is used to specify the type of the input file.
 * Added --assign_taxonomy option to pick_closed_reference_otus.py to allow taxonomy assignment using a classifier, rather than the default of using the taxonomic assignment of the cluster centroid.
