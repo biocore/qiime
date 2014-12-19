@@ -56,6 +56,7 @@ optionally a mapping file. Check out the new documentation for the naming conven
 * The QIIME config settings ``assign_taxonomy_id_to_taxonomy_fp``, ``assign_taxonomy_reference_seqs_fp``, ``pick_otus_reference_seqs_fp``, and ``pynast_template_alignment_fp`` now default to reference data files in the [qiime-default-reference project](http://github.com/biocore/qiime-default-reference).
 * Installing QIIME via ``pip install qiime`` now works out-of-the-box by providing a functioning QIIME minimal (base) install (see [#1696](https://github.com/biocore/qiime/issues/1696)).
 * ``cluster_jobs_fp`` in the QIIME config file now defaults to ``start_parallel_jobs.py``. ``seconds_to_sleep`` now defaults to 1.
+* Fixed bug where ``make_distance_comparison_plots.py`` would create empty groups (see [#1627](https://github.com/biocore/qiime/issues/1627)).
 * Added ``--suppress_taxonomy_assignment`` option to ``pick_closed_reference_otus.py``.
 * sumaclust v1.0.00, swarm 1.2.19, and sortmerna 2.0 are now optional dependencies (see the [QIIME install docs](http://qiime.org/install/install.html) for details).
 * Removed ``submit_to_mgrast.py`` script (see [#1780](https://github.com/biocore/qiime/issues/1780)).
