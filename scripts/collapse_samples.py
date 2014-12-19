@@ -55,11 +55,11 @@ script_info['required_options'] = [
 ]
 script_info['optional_options'] = [
     make_option('--collapse_mode', type='choice', choices=collapse_modes,
-        help="the mechanism for collapsing counts from replicates; "
+        help="the mechanism for collapsing counts within groups; "
         "valid options are: %s" % ' '.join(collapse_modes), default='sum'),
     make_option('--normalize',
-        help='Normalize OTU counts to relative abundances, so the counts '
-             'within each sample sum to 1.0. [default: %default]',
+        help='Normalize observation counts to relative abundances, so the '
+             'counts within each sample sum to 1.0. [default: %default]',
              default=False, action='store_true')]
 
 script_info['version'] = __version__
@@ -81,7 +81,7 @@ def main():
                          collapse_mode)
 
     if normalize:
-        collapsed_table.norm(axis='sample')
+        collapsed_table.norm(axis='sample', inplace=True)
 
     write_biom_table(collapsed_table, output_biom_fp)
     output_map_lines = mapping_lines_from_collapsed_df(collapsed_metadata)
