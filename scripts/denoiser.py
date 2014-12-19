@@ -188,8 +188,8 @@ script_info['optional_options'] = [
     #                      "-e %s/FLX_error_profile.dat --low_cut_off=3.75 --high_cut_off=4.5" % DENOISER_DATA_DIR),
 
     make_option('--titanium', action='store_true',
-                dest='titanium', help='shortcut for ' +
-                '-e ' + RELATIVE DENOISER_DATA_DIR +
+                dest='titanium', help='shortcut for '
+                '-e ' + RELATIVE_DENOISER_DATA_DIR +
                 '/Titanium_error_profile.dat --low_cut_off=4 --high_cut_off=5 . ' +
                 'Warning: overwrites all previous cut-off values ' +
                 '[DEFAULT: %default]', default=False)
