@@ -42,7 +42,7 @@ script_info = {}
 script_info['brief_description'] = """This script calculates correlations between feature abundances and continuous-valued metadata."""
 script_info['script_description'] = """
 This script calculates correlations between feature (aka observation) abundances
-(relative or absolute) and numeric metadata.Several methods are provided to
+(relative or absolute) and numeric metadata. Several methods are provided to
 allow the user to correlate features to sample metadata values including
 Spearmans Rho, Pearson, Kendall's Tau, and the C or checkerboard score.
 References for these methods are numerous, but good descriptions may be found in 
@@ -59,7 +59,7 @@ follows:
   correlation between two sequences of numbers. Spearman correlation is
   appropriate for data where the values of the observations are not necessarily
   accurate, but for which their relative magnitudes are (see Biometry for more 
-  details.)
+  details).
 
 - Kendalls Tau: Kendall's Tau is an alternative method of calculating
   correlation between two sequences of numbers. It is slower and less widely
@@ -166,7 +166,7 @@ def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     if opts.test == 'cscore' and opts.pval_assignment_method != 'bootstrapped':
-        raise ValueError(cscore_error_text)
+        option_parser.error(cscore_error_text)
     
     bt = load_table(opts.otu_table_fp)
     pmf, _ = parse_mapping_file_to_dict(opts.mapping_fp)
@@ -231,5 +231,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-

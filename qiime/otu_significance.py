@@ -347,8 +347,6 @@ def correlate_output_formatter(bt, test_stats, pvals, fdr_pvals, bon_pvals,
         Floats representing Bonferroni corrected pvals.
     md_key : str or None
         Key for extracting feature metadata from biom table.
-    type_of_stat : str
-        Type of statistic - used to modify header to report either 'Co
 
     Returns
     -------
