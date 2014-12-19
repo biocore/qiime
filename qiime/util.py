@@ -80,6 +80,12 @@ from qiime.parse import (parse_qiime_config_files,
 # qiime.util.compute_seqs_per_library_stats
 compute_seqs_per_library_stats = compute_counts_per_sample_stats
 
+# add a support message to script-raised errors
+parse_command_line_parameters = partial(parse_command_line_parameters,
+                                        error_suffix="\nIf you need help with "
+                                                     "QIIME, see:\nhttp://help"
+                                                     ".qiime.org\n")
+
 
 class TreeMissingError(IOError):
 

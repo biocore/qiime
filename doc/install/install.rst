@@ -247,18 +247,9 @@ R Install Notes
 
 To install R visit http://www.r-project.org/ and follow the install instructions. Once R is installed, run R and execute the following commands::
 
-    install.packages('ape')
-    install.packages('biom')
-    install.packages('gtools')
-    install.packages('klaR')
-    install.packages('MASS')
-    install.packages('optparse')
-    install.packages('RColorBrewer')
-    install.packages('randomForest')
-    install.packages('vegan')
+    install.packages(c('ape', 'biom', 'optparse', 'RColorBrewer', 'randomForest', 'vegan'))
     source('http://bioconductor.org/biocLite.R')
-    biocLite('DESeq')
-    biocLite('metagenomeSeq')
+    biocLite(c('DESeq2', 'metagenomeSeq'))
     q()
 
 .. _ampliconnoise-install:

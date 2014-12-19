@@ -290,24 +290,11 @@ Open the output file :file:`otus/otu_table_summary.txt`, which contains a summar
 
 Make OTU Heatmap
 --------------------------------------------------------------------
-The QIIME pipeline includes a very useful utility to generate images of the OTU table. The script is `make_otu_heatmap_html.py <../scripts/make_otu_heatmap_html.html>`_. Type::
+The QIIME pipeline includes a very useful utility to generate images of the OTU table. The script is `make_otu_heatmap.py <../scripts/make_otu_heatmap.html>`_. Type::
 
-    make_otu_heatmap_html.py -i otus/otu_table.biom -o otus/OTU_Heatmap/
+    make_otu_heatmap.py -i otus/otu_table.biom -o otu_heatmap.pdf
 
-An html file is created in the directory :file:`otus/OTU_Heatmap/`. You can open this file with any web browser, and will be prompted to enter a value for "Filter by Counts per OTU". Only OTUs with total counts at or above this threshold will be displayed. The OTU heatmap displays raw OTU counts per sample, where the counts are colored based on the contribution of each OTU to the total OTU count present in that sample (blue: contributes low percentage of OTUs to sample; red: contributes high percentage of OTUs). Leave the filter value unchanged, and click the "Sample ID" button, and a graphic will be generated like the figure below. For each sample, you will see in a heatmap the number of times each OTU was found in that sample. You can mouse over any individual count to get more information on the OTU (including taxonomic assignment). Within the mouseover, there is a link for the terminal lineage assignment, so you can easily search Google for more information about that assignment.
-
-.. image:: ../images/ heatmap.png
-   :align: center
-
-Alternatively, you can click on one of the counts in the heatmap and a new pop-up window will appear. The pop-up window uses a Google Visualization API called Magic-Table. Depending on which table count you clicked on, the pop-up window will put the clicked-on count in the middle of the pop-up heatmap as shown below. For the following example, the table count with the red arrow mouseover is the same one being focused on using the Magic-Table.
-
-.. image:: ../images/ fisheyeheatmap.png
-   :align: center
-
-On the original heatmap webpage, select the "Taxonomy" button instead: you will generate a heatmap keyed by taxon assignment, which allows you to conveniently look for organisms and lineages of interest in your study. Again, mousing over an individual count will show additional information for that OTU and sample.
-
-.. image:: ../images/ taxheatmap.png
-   :align: center
+A PDF file is created in the current working directory called :file:`otu_heatmap.pdf`. You can open this file with any PDF viewer, and this will allow you to visualize differences in abundances of OTUs on a per-sample basis (this can also be ordered by sample metadata category if you pass the `-c` flag).
 
 .. _makeotunetwork:
 
