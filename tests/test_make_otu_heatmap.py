@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# file test_make_otu_heatmap_html.py
+# file test_make_otu_heatmap.py
 
 __author__ = "Dan Knights"
 __copyright__ = "Copyright 2011, The QIIME project"

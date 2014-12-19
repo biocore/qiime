@@ -242,13 +242,11 @@ def main():
 
     # Re-order otu table, sampleids, etc. as necessary
     otu_table = otu_table.sort_order(otu_id_order, axis='observation')
-    # otu_ids not used after: tagged for deletion
-    otu_ids = np.array(otu_table.ids(axis='observation'))[otu_order]
     otu_labels = np.array(otu_labels)[otu_order]
     otu_table = otu_table.sort_order(sample_id_order)
-    sample_ids = np.array(otu_table.ids())[sample_order]
+    sample_labels = otu_table.ids()
 
-    plot_heatmap(otu_table, otu_labels, sample_ids, opts.output_fp,
+    plot_heatmap(otu_table, otu_labels, sample_labels, opts.output_fp,
                  imagetype=opts.imagetype, width=opts.width,
                  height=opts.height, dpi=opts.dpi,
                  color_scheme=opts.color_scheme)
