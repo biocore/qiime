@@ -70,7 +70,7 @@ script_info['required_options'] = [
 ]
 script_info['optional_options'] = [
     make_option('-n', '--normalize',
-                help='Normalize OTU counts, where the OTU table columns sum to 1.',
+                help='Transform the OTU counts to relative abundance.',
                 default=False, action='store_true')
 ]
 script_info['option_label'] = {'otu_table_fp': 'OTU table filepath',
