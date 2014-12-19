@@ -277,10 +277,6 @@ assign_taxonomy:confidence	0.8
 make_phylogeny:tree_method	fasttree
 make_phylogeny:root_method	tree_method_default
 
-# Summarize OTU by Category parameters
-summarize_otu_by_cat:normalize True
-summarize_otu_by_cat:mapping_category Treatment
-
 # Summarize taxonomy parameters
 summarize_taxa:level 3
 summarize_taxa:absolute_abundance True
