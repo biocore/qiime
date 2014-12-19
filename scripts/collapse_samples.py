@@ -43,13 +43,13 @@ script_info['required_options'] = [
                 help="path where collapsed biom table should be written"),
     make_option('--output_mapping_fp', type="new_filepath",
                 help="path where collapsed mapping file should be written"),
-    make_option('--collapse_mode', type='choice', choices=collapse_modes,
-                help="the mechanism for collapsing counts from replicates; "
-                     "valid options are: %s" % ' '.join(collapse_modes)),
     make_option('--collapse_fields',
                 help="comma-separated list of fields to collapse on")
 ]
-script_info['optional_options'] = []
+script_info['optional_options'] = [
+    make_option('--collapse_mode', type='choice', choices=collapse_modes,
+        help="the mechanism for collapsing counts from replicates; "
+        "valid options are: %s" % ' '.join(collapse_modes), default='sum'),]
 
 script_info['version'] = __version__
 
