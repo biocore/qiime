@@ -939,6 +939,14 @@ class GroupTests(TestCase):
     def test_mapping_lines_from_collapsed_df(self):
         in_f = StringIO(self._group_by_sample_metadata_map_f1)
         collapsed_df = _collapse_metadata(
+        in_f, ['subject'])
+        expected = mapping_lines_from_collapsed_df(collapsed_df)
+        self.assertTrue(expected[0].startswith("#SampleID	original-sample-ids	BarcodeSequence	LinkerPrimerSequence"))
+        self.assertTrue(expected[1].startswith('1	(f1, f2, f5, f6, p1, not16S.1)	'))
+        self.assertTrue(expected[2].startswith('2	(f3, f4, p2, t1, t2)	'))
+
+        in_f = StringIO(self._group_by_sample_metadata_map_f1)
+        collapsed_df = _collapse_metadata(
             in_f, ['replicate-group', 'subject'])
         expected = mapping_lines_from_collapsed_df(collapsed_df)
         self.assertTrue(expected[0].startswith("#SampleID	original-sample-ids	BarcodeSequence	LinkerPrimerSequence"))

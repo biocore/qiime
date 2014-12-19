@@ -31,6 +31,9 @@ script_info['script_description'] = ("Collapse samples in a BIOM table and mappi
     "value if they don't differ for the grouped samples.")
 script_info['script_usage'] = [
     ("Collapse samples in biom table and mapping file",
+     "Collapse samples by taking the median value for each observation in each group, where group is defined by having the same values for subject in the mapping file.",
+     "%prog -b table.biom -m map.txt --output_biom_fp collapsed.biom --output_mapping_fp collapsed_map.txt --collapse_mode median --collapse_fields subject"),
+    ("Collapse samples in biom table and mapping file",
      "Collapse samples by taking the median value for each observation in each group, where group is defined by having the same values for both subject and replicate-group in the mapping file.",
      "%prog -b table.biom -m map.txt --output_biom_fp collapsed.biom --output_mapping_fp collapsed_map.txt --collapse_mode median --collapse_fields replicate-group,subject"),
     ("Collapse samples in biom table and mapping file, and normalize the table",
