@@ -27,7 +27,7 @@ opts <- parse_args(OptionParser(option_list=option_list), args=args)
 if(is.null(opts$input_path)) stop('Please supply an otu table.')
 
 
-"DESeq"<- function(input_path, out_path, DESeq_negatives_to_zero=NULL, sampleConditions = c(rep("A", ncol(foo)/2),rep("B", ncol(foo)/2))) {
+"DESeq2"<- function(input_path, out_path, DESeq_negatives_to_zero=NULL, sampleConditions = c(rep("A", ncol(foo)/2),rep("B", ncol(foo)/2))) {
                 	foo = read_biom(input_path)
                 	x = as(biom_data(foo), "matrix")
                 	# avoid zeros
@@ -44,4 +44,4 @@ if(is.null(opts$input_path)) stop('Please supply an otu table.')
                 	write_biom(MRexperiment2biom(vsmat), out_path)
             	}
             	
-DESeq(opts$input_path, opts$out_path, opts$DESeq_negatives_to_zero)
+DESeq2(opts$input_path, opts$out_path, opts$DESeq_negatives_to_zero)
