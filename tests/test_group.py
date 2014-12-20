@@ -753,33 +753,43 @@ class GroupTests(TestCase):
         in_f = StringIO(self._group_by_sample_metadata_map_f1)
         collapsed_md = _collapse_metadata(in_f, ['replicate-group', 'subject'])
         actual = _group_by_sample_metadata(collapsed_md)
-        expected1 = {(1, 1): set(('f1', 'f2')), (2, 1): set(('f5', 'f6', 'p1')),
-                     (3, 1): set(('not16S.1', )), (1, 2): set(('f3', 'f4')),
-                     (2, 2): set(('p2', 't1', 't2'))}
-        expected2 = {'f1': (1, 1), 'f2': (1, 1), 'f5': (2, 1), 'f6': (2, 1),
-                     'p1': (2, 1), 'not16S.1': (3, 1), 'f3': (1, 2),
-                     'f4': (1, 2), 'p2': (2, 2), 't1': (2, 2), 't2': (2, 2)}
+        expected1 = {('1', '1'): set(('f1', 'f2')),
+                     ('2', '1'): set(('f5', 'f6', 'p1')),
+                     ('3', '1'): set(('not16S.1', )),
+                     ('1', '2'): set(('f3', 'f4')),
+                     ('2', '2'): set(('p2', 't1', 't2'))}
+        expected2 = {'f1': ('1', '1'),
+                     'f2': ('1', '1'),
+                     'f5': ('2', '1'),
+                     'f6': ('2', '1'),
+                     'p1': ('2', '1'),
+                     'not16S.1': ('3', '1'),
+                     'f3': ('1', '2'),
+                     'f4': ('1', '2'),
+                     'p2': ('2', '2'),
+                     't1': ('2', '2'),
+                     't2': ('2', '2')}
         self.assertEqual(actual, (expected1, expected2))
 
         in_f = StringIO(self._group_by_sample_metadata_map_f1)
         collapsed_md = _collapse_metadata(in_f, ['replicate-group'])
         actual = _group_by_sample_metadata(collapsed_md)
-        expected1 = {(1, ): set(('f1', 'f2', 'f3', 'f4')),
-                     (2, ): set(('f5', 'f6', 'p1', 'p2', 't1', 't2')),
-                     (3, ): set(('not16S.1', ))}
-        expected2 = {'f1': (1, ), 'f2': (1, ), 'f5': (2, ), 'f6': (2, ),
-                     'p1': (2, ), 'not16S.1': (3, ), 'f3': (1, ),
-                     'f4': (1, ), 'p2': (2, ), 't1': (2, ), 't2': (2, )}
+        expected1 = {('1', ): set(('f1', 'f2', 'f3', 'f4')),
+                     ('2', ): set(('f5', 'f6', 'p1', 'p2', 't1', 't2')),
+                     ('3', ): set(('not16S.1', ))}
+        expected2 = {'f1': ('1', ), 'f2': ('1', ), 'f5': ('2', ), 'f6': ('2', ),
+                     'p1': ('2', ), 'not16S.1': ('3', ), 'f3': ('1', ),
+                     'f4': ('1', ), 'p2': ('2', ), 't1': ('2', ), 't2': ('2', )}
         self.assertEqual(actual, (expected1, expected2))
 
         in_f = StringIO(self._group_by_sample_metadata_map_f1)
         collapsed_md = _collapse_metadata(in_f, ['subject'])
         actual = _group_by_sample_metadata(collapsed_md)
-        expected1 = {(1, ): set(('f1', 'f2', 'f5', 'f6', 'p1', 'not16S.1')),
-                     (2, ): set(('f3', 'f4', 'p2', 't1', 't2'))}
-        expected2 = {'f1': (1, ), 'f2': (1, ), 'f5': (1, ), 'f6': (1, ),
-                     'p1': (1, ), 'not16S.1': (1, ), 'f3': (2, ),
-                     'f4': (2, ), 'p2': (2, ), 't1': (2, ), 't2': (2, )}
+        expected1 = {('1', ): set(('f1', 'f2', 'f5', 'f6', 'p1', 'not16S.1')),
+                     ('2', ): set(('f3', 'f4', 'p2', 't1', 't2'))}
+        expected2 = {'f1': ('1', ), 'f2': ('1', ), 'f5': ('1', ), 'f6': ('1', ),
+                     'p1': ('1', ), 'not16S.1': ('1', ), 'f3': ('2', ),
+                     'f4': ('2', ), 'p2': ('2', ), 't1': ('2', ), 't2': ('2', )}
         self.assertEqual(actual, (expected1, expected2))
 
     def test_sample_id_from_group_id(self):
@@ -923,20 +933,30 @@ class GroupTests(TestCase):
         actual = _collapse_metadata(
             in_f, ['replicate-group', 'subject'])
         # correct collapsing
-        self.assertEqual(actual['#SampleID'][(1, 1)], ('f1', 'f2'))
-        self.assertEqual(actual['#SampleID'][(1, 2)], ('f3', 'f4'))
-        self.assertEqual(actual['#SampleID'][(2, 1)], ('f5', 'f6', 'p1'))
-        self.assertEqual(actual['#SampleID'][(2, 2)], ('p2', 't1', 't2'))
-        self.assertEqual(actual['#SampleID'][(3, 1)], ('not16S.1', ))
+        self.assertEqual(actual['SampleID'][('1', '1')], ('f1', 'f2'))
+        self.assertEqual(actual['SampleID'][('1', '2')], ('f3', 'f4'))
+        self.assertEqual(actual['SampleID'][('2', '1')], ('f5', 'f6', 'p1'))
+        self.assertEqual(actual['SampleID'][('2', '2')], ('p2', 't1', 't2'))
+        self.assertEqual(actual['SampleID'][('3', '1')], ('not16S.1', ))
         # original values tuple-ized
-        self.assertEqual(actual['BarcodeSequence'][(1, 1)], ('ACACTGTTCATG', 'ACCAGACGATGC'))
-        self.assertEqual(actual['BarcodeSequence'][(1, 2)], ('ACCAGACGATGC', 'ACCAGACGATGC'))
+        self.assertEqual(actual['BarcodeSequence'][('1', '1')],
+                         ('ACACTGTTCATG', 'ACCAGACGATGC'))
+        self.assertEqual(actual['BarcodeSequence'][('1', '2')],
+                         ('ACCAGACGATGC', 'ACCAGACGATGC'))
 
         in_f = StringIO(self._group_by_sample_metadata_map_f1)
         self.assertRaises(KeyError, _collapse_metadata, in_f,
                           ['not-a-header'])
 
     def test_mapping_lines_from_collapsed_df(self):
+        in_f = StringIO(self._group_by_sample_metadata_map_f1)
+        collapsed_df = _collapse_metadata(
+        in_f, ['subject'])
+        expected = mapping_lines_from_collapsed_df(collapsed_df)
+        self.assertTrue(expected[0].startswith("#SampleID	original-sample-ids	BarcodeSequence	LinkerPrimerSequence"))
+        self.assertTrue(expected[1].startswith('1	(f1, f2, f5, f6, p1, not16S.1)	'))
+        self.assertTrue(expected[2].startswith('2	(f3, f4, p2, t1, t2)	'))
+
         in_f = StringIO(self._group_by_sample_metadata_map_f1)
         collapsed_df = _collapse_metadata(
             in_f, ['replicate-group', 'subject'])

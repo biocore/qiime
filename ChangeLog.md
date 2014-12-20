@@ -61,7 +61,7 @@ optionally a mapping file. Check out the new documentation for the naming conven
 * sumaclust v1.0.00, swarm 1.2.19, and sortmerna 2.0 are now optional dependencies (see the [QIIME install docs](http://qiime.org/install/install.html) for details).
 * Errors raised by scripts are easier to read and include a supplementary message on how to get help (see [#1794](https://github.com/biocore/qiime/issues/1794)).
 * Removed ``submit_to_mgrast.py`` script (see [#1780](https://github.com/biocore/qiime/issues/1780)).
-* Added ``collpase_samples.py``, which can be used for collapsing groups of samples in BIOM tables and mapping files based on their metadata (see [#1678](https://github.com/biocore/qiime/issues/1678)). This can be used, for example, to collapse samples belonging to a replicate group.
+* Added ``collpase_samples.py``, which can be used for collapsing groups of samples in BIOM tables and mapping files based on their metadata (see [#1678](https://github.com/biocore/qiime/issues/1678)). This can be used, for example, to collapse samples belonging to a replicate group. This also has replaced ``summarize_otu_by_cat.py`` (see discussion on [#1798](https://github.com/biocore/qiime/issues/1798)).
 * ``qiime/workflow/pick_open_reference_otus.py`` no longer copies the permission bits of the reference file which caused a file permission failure in some cases.
 * Standardized use of underscores in option longnames. Affected scripts and options:
   * ``scripts/compute_index.py``

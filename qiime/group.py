@@ -19,7 +19,7 @@ import pandas as pd
 import numpy as np
 
 from qiime.stats import is_symmetric_and_hollow
-from qiime.parse import group_by_field
+from qiime.parse import group_by_field, parse_mapping_file
 from qiime.filter import filter_mapping_file
 
 
@@ -291,7 +291,7 @@ def get_adjacent_distances(dist_matrix_header,
             (filtered_sids[i], filtered_sids[i + 1]))
     return distance_results, header_results
 
-def _group_by_sample_metadata(collapsed_md, sample_id_field="#SampleID"):
+def _group_by_sample_metadata(collapsed_md, sample_id_field="SampleID"):
     """Group sample identifiers by one or more metadata fields
 
     Parameters
@@ -414,7 +414,12 @@ def mapping_lines_from_collapsed_df(collapsed_df):
                            list(collapsed_df.columns)[1:]))
 
     for r in collapsed_df.iterrows():
-        new_idx = '.'.join(map(str, r[0]))
+        # this is a little ugly, but we need to handle single and multi-index
+        # values here
+        if isinstance(r[0], tuple):
+            new_idx = '.'.join(map(str, r[0]))
+        else:
+            new_idx = str(r[0])
         new_values = []
         for e in r[1]:
             if len(set(e)) == 1:
@@ -454,7 +459,8 @@ def _collapse_metadata(mapping_f, collapse_fields):
         in mapping_f.
 
     """
-    sample_md = pd.read_csv(mapping_f, sep='\t')
+    mapping_data, header, _ = parse_mapping_file(mapping_f)
+    sample_md = pd.DataFrame(mapping_data, columns=header)
     grouped = sample_md.groupby(collapse_fields)
     collapsed_md = grouped.agg(lambda x: tuple(x))
     return collapsed_md

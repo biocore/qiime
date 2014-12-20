@@ -31,8 +31,15 @@ script_info['script_description'] = ("Collapse samples in a BIOM table and mappi
     "value if they don't differ for the grouped samples.")
 script_info['script_usage'] = [
     ("Collapse samples in biom table and mapping file",
+     "Collapse samples by taking the median value for each observation in each group, where group is defined by having the same values for subject in the mapping file.",
+     "%prog -b table.biom -m map.txt --output_biom_fp collapsed.biom --output_mapping_fp collapsed_map.txt --collapse_mode median --collapse_fields subject"),
+    ("Collapse samples in biom table and mapping file",
      "Collapse samples by taking the median value for each observation in each group, where group is defined by having the same values for both subject and replicate-group in the mapping file.",
-     "%prog -b table.biom -m map.txt --output_biom_fp collapsed.biom --output_mapping_fp collapsed_map.txt --collapse_mode median --collapse_fields replicate-group,subject")]
+     "%prog -b table.biom -m map.txt --output_biom_fp collapsed.biom --output_mapping_fp collapsed_map.txt --collapse_mode median --collapse_fields replicate-group,subject"),
+    ("Collapse samples in biom table and mapping file, and normalize the table",
+     "Collapse samples by taking the median value for each observation in each group, where group is defined by having the same values for both subject and replicate-group in the mapping file. Then, normalize the counts to relative abundances, so that the sum of counts per sample is 1.0.",
+     "%prog -b table.biom -m map.txt --output_biom_fp collapsed-normed.biom --output_mapping_fp collapsed_map.txt --collapse_mode median --collapse_fields replicate-group,subject --normalize")
+     ]
 script_info['output_description']= "A collapsed mapping file and BIOM table will be generated at the requested paths."
 script_info['required_options'] = [
     make_option('-b', '--input_biom_fp', type='existing_filepath',
@@ -43,13 +50,17 @@ script_info['required_options'] = [
                 help="path where collapsed biom table should be written"),
     make_option('--output_mapping_fp', type="new_filepath",
                 help="path where collapsed mapping file should be written"),
-    make_option('--collapse_mode', type='choice', choices=collapse_modes,
-                help="the mechanism for collapsing counts from replicates; "
-                     "valid options are: %s" % ' '.join(collapse_modes)),
     make_option('--collapse_fields',
                 help="comma-separated list of fields to collapse on")
 ]
-script_info['optional_options'] = []
+script_info['optional_options'] = [
+    make_option('--collapse_mode', type='choice', choices=collapse_modes,
+        help="the mechanism for collapsing counts within groups; "
+        "valid options are: %s" % ' '.join(collapse_modes), default='sum'),
+    make_option('--normalize',
+        help='Normalize observation counts to relative abundances, so the '
+             'counts within each sample sum to 1.0. [default: %default]',
+             default=False, action='store_true')]
 
 script_info['version'] = __version__
 
@@ -61,12 +72,16 @@ def main():
     collapse_mode = opts.collapse_mode
     output_biom_fp = opts.output_biom_fp
     output_mapping_fp = opts.output_mapping_fp
+    normalize = opts.normalize
 
     collapsed_metadata, collapsed_table = \
         collapse_samples(load_table(input_biom_fp),
                          open(mapping_fp, 'U'),
                          collapse_fields,
                          collapse_mode)
+
+    if normalize:
+        collapsed_table.norm(axis='sample', inplace=True)
 
     write_biom_table(collapsed_table, output_biom_fp)
     output_map_lines = mapping_lines_from_collapsed_df(collapsed_metadata)
