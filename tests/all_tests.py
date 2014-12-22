@@ -38,7 +38,7 @@ script_info['optional_options'] = [
                 action='store_true',
                 help='suppress script usage tests [default: %default]',
                 default=False),
-    make_option('--unittest_glob',
+    make_option('--unit_test_glob',
                 help='wildcard pattern to match tests to run [default: run all]',
                 default=None),
     make_option('--script_usage_tests',
