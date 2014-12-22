@@ -3,7 +3,7 @@ from __future__ import division
  
 __author__ = "William Walters"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["William Walters"]
+__credits__ = ["William Walters", "Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "William Walters"
@@ -56,6 +56,7 @@ as part of the output directory name.
 
 """
 script_info['script_usage'] = []
+
 script_info['script_usage'].append(
     ("Example 1:",
      "Process an input folder of files, with default options used for "
