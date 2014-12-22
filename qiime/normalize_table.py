@@ -58,7 +58,7 @@ def run_CSS(input_path, out_path, output_CSS_statistics, HALT_EXEC=False):
     """Run metagenomeSeq's fitZIG algorithm through Rscript
     """
     # set options
-    if output_CSS_statistics==False:
+    if not output_CSS_statistics:
         command_args = ['-i %s -o %s' % (input_path, out_path)]
     else:
         command_args = ['-i %s -o %s -s %s' % (input_path, out_path, output_CSS_statistics)]
