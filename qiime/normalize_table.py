@@ -24,14 +24,12 @@ def normalize_CSS(input_path, out_path, output_CSS_statistics):
     json_infile = base_fname+'_json.biom'
     open(str(json_infile),'w').write(load_table(input_path).to_json('forR'))
 
-    if output_CSS_statistics==False:
-        run_CSS(json_infile, out_path, output_CSS_statistics=False)
-        remove(json_infile)
-    else:
+    if output_CSS_statistics:
         base_fname, ext = splitext(out_path)
-        statistics_outfile = base_fname+'_CSS_statistics.txt'
-        run_CSS(json_infile, out_path, output_CSS_statistics=statistics_outfile)
-        remove(json_infile)
+        output_CSS_statistics = base_fname+'_CSS_statistics.txt'
+    
+    run_CSS(json_infile, out_path, output_CSS_statistics=output_CSS_statistics)
+    remove(json_infile)
 
 
 def multiple_file_normalize_CSS(input_dir, output_dir, output_CSS_statistics):
@@ -39,8 +37,7 @@ def multiple_file_normalize_CSS(input_dir, output_dir, output_CSS_statistics):
     """
     if not exists(output_dir):
         makedirs(output_dir)
-    file_names = listdir(input_dir)
-    file_names = [fname for fname in file_names if not (fname.startswith('.')\
+    file_names = [fname for fname in listdir(input_dir) if not (fname.startswith('.')\
         or isdir(fname))]
 
     for fname in file_names:
@@ -51,13 +48,10 @@ def multiple_file_normalize_CSS(input_dir, output_dir, output_CSS_statistics):
         json_infile = join(input_dir, json_fname)
         open(str(json_infile),'w').write(load_table(hdf5_infile).to_json('forR'))
         outfile = join(output_dir, 'CSS_'+base_fname+'.biom')
-        if output_CSS_statistics==False:
-            run_CSS(json_infile, outfile)
-            remove(json_infile)
-        else:
+        if output_CSS_statistics:
             statistics_outfile = join(output_dir, 'CSS_statistics_'+base_fname+'.txt')
-            run_CSS(json_infile, outfile, output_CSS_statistics=statistics_outfile)
-            remove(json_infile)
+        run_CSS(json_infile, outfile, output_CSS_statistics=output_CSS_statistics)
+        remove(json_infile)
 
 def run_CSS(input_path, out_path, output_CSS_statistics, HALT_EXEC=False):
     """Run metagenomeSeq's fitZIG algorithm through Rscript
@@ -90,8 +84,7 @@ def multiple_file_normalize_DESeq(input_dir, output_dir, DESeq_negatives_to_zero
     """
     if not exists(output_dir):
         makedirs(output_dir)
-    file_names = listdir(input_dir)
-    file_names = [fname for fname in file_names if not (fname.startswith('.')\
+    file_names = [fname for fname in listdir(input_dir) if not (fname.startswith('.')\
         or isdir(fname))]
 
     for fname in file_names:
@@ -110,7 +103,7 @@ def run_DESeq(input_path, out_path, DESeq_negatives_to_zero, HALT_EXEC=False):
     """Run metagenomeSeq's fitZIG algorithm through Rscript
     """
     # set options
-    if DESeq_negatives_to_zero==True:
+    if DESeq_negatives_to_zero:
         command_args = ['-i %s -o %s -z %s' % (input_path, out_path, DESeq_negatives_to_zero)]
     else:
         command_args = ['-i %s -o %s' % (input_path, out_path)]

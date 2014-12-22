@@ -20,7 +20,7 @@ __email__ = "sophie.sjw@gmail.com"
 
 script_info = {}
 script_info['brief_description'] = """Alternate (not rarefying) matrix normalization techniques"""
-script_info['script_description'] = """To perform most downstream analyses after OTU picking (besides metagenomeSeq's fitZIG and DESeq OTU differential abundance testing), the OTU matrix must be normalized to account for uneven column (sample) sums that are a result of most modern sequencing techniques.  Some methods attempt to correct for compositionality too.  Rarefying throws away some data by rarefying to a constant sum and throwing away extremely low depth samples.  Even with these new normalization techinques, we would recommend throwing away low depth samples (e.g. less that 1000 sequences/sample).  DESeq outputs negative values for lower abundant OTUs as a result of its log transformation.  For most ecologically useful metrics (e.g. UniFrac/Bray Curtis) this presents problems.  Note that one is added to the matrix to avoid log(0).  It has been shown that clustering results can be highly dependent upon the choice of the pseudocount (e.g. should it be 0.01 instead of 1?), for more please see Costea, P. et al. (2014) "A fair comparison", Nature Methods.  If you do use these alternatives to rarefying, we would only recommend metagenomeSeq's CSS transformation for those metrics that are abundance-based.  E.g. do not use these new methods for binary Jaccard or unweighted UniFrac.  For more on the methods, please see Paulson, JN, et al. 'Differential abundance analysis for microbial marker-gene surveys' Nature Methods 2013.  For DESeq please see Anders S, Huber W. 'Differential expression analysis for sequence count data.' Genome Biology 2010.  For any of these methods, clustering by sequence depth MUST BE checked for as a confounding variable, e.g. by coloring by sequences/sample on a PCoA plot and testing by category_significance.py"""
+script_info['script_description'] = """To perform most downstream analyses after OTU picking (besides metagenomeSeq's fitZIG and DESeq OTU differential abundance testing), the OTU matrix must be normalized to account for uneven column (sample) sums that are a result of most modern sequencing techniques.  These methods attempt to correct for compositionality too.  Rarefying throws away some data by rarefying to a constant sum and throwing away extremely low depth samples.  Even with these new normalization techinques, we would recommend throwing away low depth samples (e.g. less that 1000 sequences/sample).  DESeq outputs negative values for lower abundant OTUs as a result of its log transformation.  For most ecologically useful metrics (e.g. UniFrac/Bray Curtis) this presents problems. No good solution exists at the moment for this issue.  Note that one is added to the matrix to avoid log(0).  It has been shown that clustering results can be highly dependent upon the choice of the pseudocount (e.g. should it be 0.01 instead of 1?), for more please see Costea, P. et al. (2014) "A fair comparison", Nature Methods.  DESeq can also have a very slow runtime, especially for larger datasets.  If you do use these alternatives to rarefying, we would only recommend metagenomeSeq's CSS transformation for those metrics that are abundance-based.  E.g. do not use these new methods for binary Jaccard or unweighted UniFrac.  For more on the methods, please see Paulson, JN, et al. 'Differential abundance analysis for microbial marker-gene surveys' Nature Methods 2013.  For DESeq please see Anders S, Huber W. 'Differential expression analysis for sequence count data.' Genome Biology 2010.  For any of these methods, clustering by sequence depth MUST BE CHECKED FOR as a confounding variable, e.g. by coloring by sequences/sample on a PCoA plot and testing by category_significance.py"""
 script_info['script_usage']=[]
 script_info['script_usage'].append(("""Matrix Normalization""","""For this script, the user supplies an input raw (NOT normalized) OTU matrix (usually always having different column sums), a normalization method (either CSS or DESeqVS), and an output file path, as follows:""","""%prog -i raw_OTU_table.biom -a 'CSS' -o CSS_normalized_OTU_table.biom"""))
 script_info['output_description']="""The resulting output file is a normalized count matrix with the same number of OTUs (rows) and samples (columns) as the input raw matrix.  Can be used in all downstream analyses except differential abundance testing, and OTU correlations."""
@@ -57,14 +57,10 @@ def main():
     algorithm_types = opts.algorithm_types
 
 
-    if algorithm_types:
+    if algorithm_types: 
         print 'Implemented algorithms are:\n%s' % ', '.join(algorithm_list())
     else:
-        if len(algorithm)!=1:
-            raise ValueError, 'Current implementation only accepts 1 algorithm at a '\
-               'time: %s' % algorithm
-        else:
-            algorithm = algorithm[0]
+        algorithm = algorithm[0]
 
     if algorithm == 'CSS':            
         if os.path.isdir(input_path):
@@ -74,18 +70,17 @@ def main():
         else:
             print("io error, check input file path")
         exit(1)
-
-
-    if algorithm == 'DESeq':            
+    elif algorithm == 'DESeq':
+        print 'The DESeq normalization algorithm runs slowly on large datasets, please be patient.'            
         if os.path.isdir(input_path):
             multiple_file_normalize_DESeq(input_path, out_path, DESeq_negatives_to_zero)
         elif os.path.isfile(input_path):
             normalize_DESeq(input_path, out_path, DESeq_negatives_to_zero)   
         else:
             print("io error, check input file path")
-        exit(1)
+        exit(1) 
 
-
+   
 if __name__ == "__main__":
     main()
 
