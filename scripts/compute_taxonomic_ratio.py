@@ -15,7 +15,7 @@ from tempfile import TemporaryFile
 from numpy import nan
 from biom import load_table
 
-from qiime.index import compute_index
+from qiime.compute_taxonomic_ratio import compute_index
 from qiime.util import parse_command_line_parameters, make_option, MetadataMap
 
 
