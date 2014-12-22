@@ -38,8 +38,7 @@ def multiple_file_DA_fitZIG(input_dir, output_dir, mapping_fp, mapping_category,
     """
     if not exists(output_dir):
         makedirs(output_dir)
-    file_names = listdir(input_dir)
-    file_names = [fname for fname in file_names if not (fname.startswith('.')\
+    file_names = [fname for fname in listdir(input_dir) if not (fname.startswith('.')\
         or isdir(fname))]
 
     for fname in file_names:
@@ -97,13 +96,11 @@ def multiple_file_DA_DESeq2(input_dir, output_dir, mapping_fp, mapping_category,
     """
     if not exists(output_dir):
         makedirs(output_dir)
-    file_names = listdir(input_dir)
-    file_names = [fname for fname in file_names if not (fname.startswith('.')\
+    file_names = [fname for fname in listdir(input_dir) if not (fname.startswith('.')\
         or isdir(fname))]
 
     for fname in file_names:
         base_fname, ext = splitext(fname)
-        print base_fname
         original_fname = base_fname+'.biom'
         json_fname = base_fname+'_json.biom'
         hdf5_infile = join(input_dir, original_fname)
