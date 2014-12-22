@@ -39,8 +39,8 @@ script_info[
                         "%prog -i otu_table.biom -o otu_table_control_only.biom -m map.txt -s 'Treatment:Control'"),
                        ("Metadata-based filtering (negative)", "Filter samples from the table, keeping samples where the value for 'Treatment' in the mapping file is not 'Control'",
                         "%prog -i otu_table.biom -o otu_table_not_control.biom -m map.txt -s 'Treatment:*,!Control'"),
-                       ("List-based filtering", "Filter samples where the id is listed in samples_to_keep.txt", "%prog -i otu_table.biom -o otu_table_samples_to_keep.biom --sample_id_fp samples_to_keep.txt"),
-                       ("List-based filtering (negation)", "Discard samples listed in samples_to_discard.txt", "%prog -i otu_table.biom -o filtered_otu_table.biom --sample_id_fp samples_to_discard.txt --negate_sample_id_fp")]
+                       ("ID-based filtering", "Keep samples where the id is listed in ids.txt", "%prog -i otu_table.biom -o filtered_otu_table.biom --sample_id_fp ids.txt"),
+                       ("ID-based filtering (negation)", "Discard samples where the id is listed in ids.txt", "%prog -i otu_table.biom -o filtered_otu_table.biom --sample_id_fp ids.txt --negate_sample_id_fp")]
 
 script_info['output_description'] = ""
 script_info['required_options'] = [
