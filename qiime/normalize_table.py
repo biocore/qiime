@@ -42,6 +42,7 @@ def multiple_file_normalize_CSS(input_dir, output_dir, output_CSS_statistics):
 
     for fname in file_names:
         base_fname, ext = splitext(fname)
+        print base_fname
         original_fname = base_fname+'.biom'
         json_fname = base_fname+'_json.biom'
         hdf5_infile = join(input_dir, original_fname)
@@ -49,7 +50,7 @@ def multiple_file_normalize_CSS(input_dir, output_dir, output_CSS_statistics):
         open(str(json_infile),'w').write(load_table(hdf5_infile).to_json('forR'))
         outfile = join(output_dir, 'CSS_'+base_fname+'.biom')
         if output_CSS_statistics:
-            statistics_outfile = join(output_dir, 'CSS_statistics_'+base_fname+'.txt')
+            output_CSS_statistics = join(output_dir, 'CSS_statistics_'+base_fname+'.txt')
         run_CSS(json_infile, outfile, output_CSS_statistics=output_CSS_statistics)
         remove(json_infile)
 
