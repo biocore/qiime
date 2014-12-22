@@ -3,7 +3,7 @@ from __future__ import division
 
 __author__ = "Daniel McDonald"
 __copyright__ = "Copyright 2014, The QIIME project"
-__credits__ = ["Daniel McDonald"]
+__credits__ = ["Daniel McDonald", "Greg Caporaso", "Jai Rideout"]
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
 __maintainer__ = "Daniel McDonald"
@@ -37,7 +37,7 @@ script_info = {}
 script_info[
     'brief_description'] = "Compute the log ratio abundance of specified taxonomic groups."
 script_info[
-    'script_description'] = ("This method is based on the "
+    'script_description'] = script_info['brief_description'] + (" This method is based on the "
                              "microbial dysbiosis index described in Gevers "
                              "et al. 2014: "
                              "http://www.ncbi.nlm.nih.gov/pubmed/24629344")
@@ -49,7 +49,7 @@ script_info[
                         ("%prog -i table.biom.gz -e md -o map_w_md.txt -m map.txt")),
                        ("Example:", (
                         "Compute the log of the abundance of p__Firmicutes "
-                        "plus p__Fusobacteria over the abundance of "
+                        "plus p__Fusobacteria divided by the abundance of "
                         "p__Bacteroidetes and write the results to "
                         "custom_index.txt."),
                         ("%prog -i table.biom.gz --increased "
