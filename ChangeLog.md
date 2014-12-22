@@ -39,15 +39,6 @@ optionally a mapping file. Check out the new documentation for the naming conven
 * Fasttree v1.x is no longer supported by ``make_phylogeny.py`` (see [issue #1516](https://github.com/biocore/qiime/issues/1516)).
 * Relaxed sanity tests for ``compare_categories.py --method adonis`` so that unique values are only checked for categories that are non-numeric (see [issue #1316](https://github.com/biocore/qiime/issues/1360)).
 * ``core_diversity_analyses.py`` now requires ``--tree_fp`` unless ``--nonphylogenetic_diversity`` is passed (see [#1671](https://github.com/biocore/qiime/issues/1671)).
-<<<<<<< HEAD
-<<<<<<< HEAD
-*Added differential_abundance.py to supplement group_significance.py
-for those who wish to use metagenomeSeq's fitZIG algorithm and DESeq2's
-negative binomial algorithm.  Note the input for this is an unnormalized, raw matrix.
-*Added normalize_table.py for other normalization algorithms other than rarefying.  Included are metagenomeSeq's CSS and DESeq transformations.
-=======
-=======
->>>>>>> master
 * Fixed bug in ``assign_taxonomy.py -m blast`` and ``parallel_assign_taxonomy_blast.py`` that prevented multiple instances of either to run at the same time (see [#1768](https://github.com/biocore/qiime/issues/1768)).
 * parallel_pick_otus_sortmerna.py added, and pick_closed_reference_otus.py and pick_open_reference_otus.py updated to use this functionality.
 * Added new ``compute_taxonomy_ratios.py`` script, which implements the microbial dysbiosis index (MD-index) from [Gevers et al 2014](http://www.ncbi.nlm.nih.gov/pubmed/24629344).
@@ -107,10 +98,11 @@ negative binomial algorithm.  Note the input for this is an unnormalized, raw ma
 * Fixed bug in ``make_rarefaction_plots.py`` where ``--generate_per_sample_plots`` wasn't working (see [#1475](https://github.com/biocore/qiime/issues/1475)).
 * Removed ``make_otu_heatmap_html.py`` in favor of ``make_otu_heatmap.py`` (see discussion on [#1724](https://github.com/biocore/qiime/issues/1724)).
 * Fixed bug that resulted in samples being mislabeled in ``make_otu_heatmap.py`` when one of the following options was passed: ``--category``, ``--map_fname``, ``--sample_tree``, or ``--suppress_column_clustering``. This is discussed in [#1790](https://github.com/biocore/qiime/issues/1790).
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> master
+*Added differential_abundance.py to supplement group_significance.py
+for those who wish to use metagenomeSeq's fitZIG algorithm and DESeq2's
+negative binomial algorithm.  Note that the input for this is a unnormalized, raw matrix.
+*Added normalize_table.py for normalization algorithms other than rarefying.
+Included are metagenomeSeq's CSS and DESeq's variance stabilizing transformation.
 
 QIIME 1.8.0 (11 Dec 2013)
 =========================

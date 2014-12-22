@@ -141,25 +141,7 @@ Network visualization:
 
 * cytoscape v2.7.0 (`src_cytoscape <http://www.cytoscape.org/>`_) (license: LGPL)
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-Supervised learning (``supervised_learning.py``) and ``compare_categories.py``:
-
-* R 3.0.2 (`src_r <http://www.r-project.org/>`_) See :ref:`R install notes <R-install>`. (license: GPL2)
-
-Alternative normalization and OTU differential abundance testing techniques (normalize_table.py and differential_abundance.py):
-
-* R 3.1.1
-
-If you plan to build the QIIME documentation locally:
-
-* Sphinx 1.0.4 (`src <http://pypi.python.org/pypi/Sphinx>`_) See :ref:`Building the QIIME documentation <build-qiime-docs>` (license: BSD)
-=======
 Advanced statistics, including those performed in ``supervised_learning.py``, ``detrend.py`` and ``compare_categories.py``:
->>>>>>> master
-=======
-Advanced statistics, including those performed in ``supervised_learning.py``, ``detrend.py`` and ``compare_categories.py``:
->>>>>>> master
 
 * R 3.1.2 (`src_r <http://www.r-project.org/>`_) See :ref:`R install notes <R-install>`. (license: GPL2)
 
@@ -265,32 +247,10 @@ R Install Notes
 
 To install R visit http://www.r-project.org/ and follow the install instructions. Once R is installed, run R and execute the following commands::
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-	install.packages('randomForest')
-	install.packages('optparse')
-	install.packages('vegan')
-	install.packages('ape')
-	install.packages('MASS')
-	install.packages('gtools')
-	install.packages('klaR')
-	install.packages('RColorBrewer')
-	install.packages('biom')
-	install.packages('metagenomeSeq')
-	install.packages('DESeq')
-	install.packages('DESeq2')
-	q()
-=======
-=======
->>>>>>> master
     install.packages(c('ape', 'biom', 'optparse', 'RColorBrewer', 'randomForest', 'vegan'))
     source('http://bioconductor.org/biocLite.R')
     biocLite(c('DESeq2', 'metagenomeSeq'))
     q()
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> master
 
 .. _ampliconnoise-install:
 
