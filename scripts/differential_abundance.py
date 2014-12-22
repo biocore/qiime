@@ -24,6 +24,8 @@ script_info['script_description'] = "OTU differential abundance testing is commo
 script_info['script_usage'] = [("""OTU Differential Abundance Testing""","""For this script, the user supplies an input raw (NOT normalized - either by rarefying, CSS, DESeq, etc.) OTU matrix (usually always having different column sums), an output file, a mapping file, a category in the mapping file for which it is desired to test differential abundance, and the algorithm that the user want for differential abundance testing, as follows:""","""differential_abundance.py -i raw_OTU_table.biom -o DE_OTUs.txt -m mapping_fp.txt -a 'metagenomeSeq_fitZIG' -c 'BODY_SITE' -x 'Tongue' -y 'Palm'""")]
 script_info['output_description']= "The resulting output OTU txt file contains a list of all the OTUs in the input matrix, along with their associated statistics and FDR p-values."
 script_info['required_options']=[\
+]
+script_info['optional_options']=[\
  make_option('-i', '--input_path',type='existing_path', help='path to the input raw '
     'matrix file(s) (i.e., the output from OTU picking). '
     'processing and a filename for a single file operation.'),\
@@ -36,8 +38,6 @@ script_info['required_options']=[\
  make_option('-c', '--mapping_file_category', type='string', help='mapping file category, e.g. "BODY_SITE".'),\
  make_option('-x', '--mapping_file_subcategory_1', type='string', help='mapping file subcategory, e.g. "Palm".'),\
  make_option('-y', '--mapping_file_subcategory_2', type='string', help='mapping file subcategory, e.g. "Tongue".'),\
-]
-script_info['optional_options']=[\
  make_option('-s', '--show_algorithms',action='store_true', default=False, help='show '
      'available OTU differential abundance testing algorithms'),\
  make_option('-d', '--DESeq2_diagnostic_plots', default=False, action='store_true', help='show '
