@@ -98,6 +98,11 @@ optionally a mapping file. Check out the new documentation for the naming conven
 * Fixed bug in ``make_rarefaction_plots.py`` where ``--generate_per_sample_plots`` wasn't working (see [#1475](https://github.com/biocore/qiime/issues/1475)).
 * Removed ``make_otu_heatmap_html.py`` in favor of ``make_otu_heatmap.py`` (see discussion on [#1724](https://github.com/biocore/qiime/issues/1724)).
 * Fixed bug that resulted in samples being mislabeled in ``make_otu_heatmap.py`` when one of the following options was passed: ``--category``, ``--map_fname``, ``--sample_tree``, or ``--suppress_column_clustering``. This is discussed in [#1790](https://github.com/biocore/qiime/issues/1790).
+*Added differential_abundance.py to supplement group_significance.py
+for those who wish to use metagenomeSeq's fitZIG algorithm and DESeq2's
+negative binomial algorithm.  Note that the input for this is a unnormalized, raw matrix.
+*Added normalize_table.py for normalization algorithms other than rarefying.
+Included are metagenomeSeq's CSS and DESeq's variance stabilizing transformation.
 
 QIIME 1.8.0 (11 Dec 2013)
 =========================
