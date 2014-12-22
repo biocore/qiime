@@ -46,15 +46,15 @@ def create_commands_jpe(pairs, base_output_dir, optional_params = "",
             
         curr_outputdir = join(base_output_dir, added_output_str) 
         if match_barcodes:
-            command = "%sjoin_paired_ends.py %s -b %s -f %s -r %s -o %s %s" %\
+            command = "%s join_paired_ends.py %s -b %s -f %s -r %s -o %s %s" %\
                 (leading_text, optional_params, bc_pairs[curr_fp], curr_fp,
                 pairs[curr_fp], curr_outputdir, trailing_text)
         else:
-            command = "%sjoin_paired_ends.py %s -f %s -r %s -o %s %s" %\
+            command = "%s join_paired_ends.py %s -f %s -r %s -o %s %s" %\
                 (leading_text, optional_params, curr_fp, pairs[curr_fp],
                 curr_outputdir, trailing_text)
             
-        commands.append([('', command)])
+        commands.append([('join_paired_ends.py: %s' % curr_fp, command)])
                     
     return commands
     
@@ -91,15 +91,15 @@ def create_commands_eb(all_files, ispaired, base_output_dir,
             
         curr_outputdir = join(base_output_dir, added_output_str) 
         if ispaired:
-            command = "%sextract_barcodes.py %s -f %s -r %s -o %s %s" %\
+            command = "%s extract_barcodes.py %s -f %s -r %s -o %s %s" %\
             (leading_text, optional_params, curr_fp, all_files[curr_fp],
             curr_outputdir, trailing_text)
         else:
-            command = "%sextract_barcodes.py %s -f %s -o %s %s" %\
+            command = "%s extract_barcodes.py %s -f %s -o %s %s" %\
             (leading_text, optional_params, curr_fp,
             curr_outputdir, trailing_text)
             
-        commands.append([('', command)])
+        commands.append([('extract_barcodes.py: %s' % curr_fp, command)])
                     
     return commands
     
@@ -150,17 +150,17 @@ def create_commands_slf(all_files, demultiplexing_method, output_dir,
             
     if demultiplexing_method == 'sampleid_by_file':
         command =\
-            "%ssplit_libraries_fastq.py %s -i %s --sample_ids %s -o %s %s --barcode_type 'not-barcoded'" %\
+            "%s split_libraries_fastq.py %s -i %s --sample_ids %s -o %s %s --barcode_type 'not-barcoded'" %\
             (leading_text, params, ",".join(read_files), ",".join(sample_ids),
             output_dir, trailing_text)
     else:
         command =\
-            "%ssplit_libraries_fastq.py %s -i %s --barcode_read_fps %s --mapping_fps %s -o %s %s" %\
+            "%s split_libraries_fastq.py %s -i %s --barcode_read_fps %s --mapping_fps %s -o %s %s" %\
             (leading_text, params, ",".join(read_files),
             ",".join(barcode_files), ",".join(mapping_files),
             output_dir, trailing_text)
     
-    commands.append([('', command)])
+    commands.append([('split_libraries_fastq.py', command)])
        
     return commands
     
