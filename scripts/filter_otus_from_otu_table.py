@@ -110,7 +110,6 @@ def main():
 
     if min_count_fraction > 0:
         min_count = otu_table.sum() * min_count_fraction
-        print otu_table.sum(), min_count
 
     otu_ids_to_keep = set(otu_table.ids(axis='observation'))
 

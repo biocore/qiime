@@ -39,7 +39,9 @@ script_info[
                         "%prog -i otu_table.biom -o otu_table_control_only.biom -m map.txt -s 'Treatment:Control'"),
                        ("Metadata-based filtering (negative)", "Filter samples from the table, keeping samples where the value for 'Treatment' in the mapping file is not 'Control'",
                         "%prog -i otu_table.biom -o otu_table_not_control.biom -m map.txt -s 'Treatment:*,!Control'"),
-                       ("List-based filtering", "Filter samples where the id is listed in samples_to_keep.txt", "%prog -i otu_table.biom -o otu_table_samples_to_keep.biom --sample_id_fp samples_to_keep.txt")]
+                       ("List-based filtering", "Filter samples where the id is listed in samples_to_keep.txt", "%prog -i otu_table.biom -o otu_table_samples_to_keep.biom --sample_id_fp samples_to_keep.txt"),
+                       ("List-based filtering (negation)", "Discard samples listed in samples_to_discard.txt", "%prog -i otu_table.biom -o filtered_otu_table.biom --sample_id_fp samples_to_discard.txt --negate_sample_id_fp")]
+
 script_info['output_description'] = ""
 script_info['required_options'] = [
     make_option('-i', '--input_fp', type="existing_filepath",
@@ -70,7 +72,10 @@ script_info['optional_options'] = [
                 '--max_count',
                 type='int',
                 default=inf,
-                help="the maximum total observation count in a sample for that sample to be retained [default: infinity]")
+                help="the maximum total observation count in a sample for that sample to be retained [default: infinity]"),
+    make_option('--negate_sample_id_fp',
+                action='store_true', default=False,
+                help='discard samples specified in --sample_id_fp instead of keeping them [default: %default]'),
 
 ]
 script_info['version'] = __version__
@@ -89,6 +94,11 @@ def main():
     max_count = opts.max_count
     sample_id_fp = opts.sample_id_fp
 
+    if ((mapping_fp is None and valid_states is not None) or
+        (mapping_fp is not None and valid_states is None)):
+        option_parser.error("Both --mapping_fp and --valid_states must be "
+                            "provided if either are used.")
+
     if not ((mapping_fp and valid_states) or
             min_count != 0 or
             not isinf(max_count) or
@@ -97,29 +107,34 @@ def main():
                             "mapping_fp and valid states, min counts, "
                             "max counts, or sample_id_fp (or some combination "
                             "of those).")
+    if (mapping_fp and valid_states) and sample_id_fp:
+        option_parser.error("Providing both --sample_id_fp and "
+                            "--mapping_fp/--valid_states is not supported.")
     if output_mapping_fp and not mapping_fp:
         option_parser.error("Must provide input mapping file to generate"
                             " output mapping file.")
 
-    otu_table =  load_table(opts.input_fp)
+    otu_table = load_table(opts.input_fp)
 
+    negate_sample_id_fp = opts.negate_sample_id_fp
     if mapping_fp and valid_states:
         sample_ids_to_keep = sample_ids_from_metadata_description(
             open(mapping_fp, 'U'), valid_states)
+        negate_sample_id_fp = False
     else:
         sample_ids_to_keep = otu_table.ids()
 
-    if sample_id_fp is not None:
-        o = open(sample_id_fp, 'U')
-        sample_id_f_ids = set([l.strip().split()[0] for l in o if not
-                               l.startswith('#')])
-        o.close()
-        sample_ids_to_keep = set(sample_ids_to_keep) & sample_id_f_ids
+        if sample_id_fp is not None:
+            o = open(sample_id_fp, 'U')
+            sample_id_f_ids = set([l.strip().split()[0] for l in o if not
+                                   l.startswith('#')])
+            o.close()
+            sample_ids_to_keep = set(sample_ids_to_keep) & sample_id_f_ids
 
-    filtered_otu_table = filter_samples_from_otu_table(otu_table,
-                                                       sample_ids_to_keep,
-                                                       min_count,
-                                                       max_count)
+    filtered_otu_table = filter_samples_from_otu_table(
+        otu_table, sample_ids_to_keep, min_count, max_count,
+        negate_ids_to_keep=negate_sample_id_fp)
+
     write_biom_table(filtered_otu_table, output_fp)
 
     # filter mapping file if requested
