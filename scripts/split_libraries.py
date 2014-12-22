@@ -192,54 +192,54 @@ script_info['optional_options'] = [
                 help='DEPRECATED: pass --retain_unassigned_reads to keep ' +
                 'unassigned reads  [default: %default]'),
 
-    make_option('-l', '--min-seq-length', dest='min_seq_len',
+    make_option('-l', '--min_seq_length', dest='min_seq_len',
                 type='int', default=200,
                 help='minimum sequence length, in nucleotides [default: %default]'),
 
-    make_option('-L', '--max-seq-length', dest='max_seq_len',
+    make_option('-L', '--max_seq_length', dest='max_seq_len',
                 type='int', default=1000,
                 help='maximum sequence length, in nucleotides [default: %default]'),
 
-    make_option('-t', '--trim-seq-length', dest='trim_seq_len',
+    make_option('-t', '--trim_seq_length', dest='trim_seq_len',
                 action='store_true',
                 help='calculate sequence lengths after trimming primers and barcodes' +
                 ' [default: %default]', default=False),
 
-    make_option('-s', '--min-qual-score', type='int', default=None,
+    make_option('-s', '--min_qual_score', type='int', default=None,
                 help='min average qual score allowed in read [default: %d]' %
                 min_qual_score_default),
 
-    make_option('-k', '--keep-primer', action='store_true',
+    make_option('-k', '--keep_primer', action='store_true',
                 help='do not remove primer from sequences', default=False),
 
-    make_option('-B', '--keep-barcode', action='store_true',
+    make_option('-B', '--keep_barcode', action='store_true',
                 help='do not remove barcode from sequences', default=False),
 
-    make_option('-a', '--max-ambig', type='int', default=6,
+    make_option('-a', '--max_ambig', type='int', default=6,
                 help='maximum number of ambiguous bases [default: %default]'),
 
-    make_option('-H', '--max-homopolymer', type='int', default=6,
+    make_option('-H', '--max_homopolymer', type='int', default=6,
                 help='maximum length of homopolymer run [default: %default]'),
 
-    make_option('-M', '--max-primer-mismatch', dest='max_primer_mm',
+    make_option('-M', '--max_primer_mismatch', dest='max_primer_mm',
                 type='int', default=0,
                 help='maximum number of primer mismatches [default: %default]'),
 
-    make_option('-b', '--barcode-type', default='golay_12', type='string',
+    make_option('-b', '--barcode_type', default='golay_12', type='string',
                 help=
                 'barcode type, hamming_8, golay_12, variable_length (will ' +
                 'disable any barcode correction if variable_length set), or a ' +
                 'number representing the length of the barcode, such as -b 4. ' +
                 ' [default: %default]'),
 
-    make_option('-o', '--dir-prefix', default='.', type='new_dirpath',
+    make_option('-o', '--dir_prefix', default='.', type='new_dirpath',
                 help='directory prefix for output files [default: %default]'),
 
-    make_option('-e', '--max-barcode-errors', dest='max_bc_errors',
+    make_option('-e', '--max_barcode_errors', dest='max_bc_errors',
                 default=1.5, type='float',
                 help='maximum number of errors in barcode [default: %default]'),
 
-    make_option('-n', '--start-numbering-at', dest='start_index',
+    make_option('-n', '--start_numbering_at', dest='start_index',
                 default=1, type='int',
                 help='seq id to use for the first sequence [default: %default]'),
 

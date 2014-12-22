@@ -61,8 +61,40 @@ optionally a mapping file. Check out the new documentation for the naming conven
 * sumaclust v1.0.00, swarm 1.2.19, and sortmerna 2.0 are now optional dependencies (see the [QIIME install docs](http://qiime.org/install/install.html) for details).
 * Errors raised by scripts are easier to read and include a supplementary message on how to get help (see [#1794](https://github.com/biocore/qiime/issues/1794)).
 * Removed ``submit_to_mgrast.py`` script (see [#1780](https://github.com/biocore/qiime/issues/1780)).
-* Added ``collpase_samples.py``, which can be used for collapsing groups of samples in BIOM tables and mapping files based on their metadata (see [#1678](https://github.com/biocore/qiime/issues/1678)). This can be used, for example, to collapse samples belonging to a replicate group.
+* Added ``collpase_samples.py``, which can be used for collapsing groups of samples in BIOM tables and mapping files based on their metadata (see [#1678](https://github.com/biocore/qiime/issues/1678)). This can be used, for example, to collapse samples belonging to a replicate group. This also has replaced ``summarize_otu_by_cat.py`` (see discussion on [#1798](https://github.com/biocore/qiime/issues/1798)).
 * ``qiime/workflow/pick_open_reference_otus.py`` no longer copies the permission bits of the reference file which caused a file permission failure in some cases.
+* Standardized use of underscores in option longnames. Affected scripts and options:
+  * ``scripts/compute_index.py``
+    * `show-indices` is now `show_indices`
+  * ``scripts/demultiplex_fasta.py``
+    * `start-numbering-at` is now `start_numbering_at`
+  * ``scripts/denoiser.py``
+    * `low_cut-off` is now `low_cut_off`
+    * `high_cut-off` is now `high_cut_off`
+  * ``scripts/multiple_rarefactions.py``
+    * `num-reps` is now `num_reps`
+  * ``scripts/multiple_rarefactions_even_depth.py``
+    * `num-reps` is now `num_reps`
+  * ``scripts/parallel_multiple_rarefactions.py``
+    * `num-reps` is now `num_reps`
+  * ``scripts/plot_rank_abundance_graph.py``
+    * `no-legend` is now `no_legend`
+  * ``scripts/start_parallel_jobs_slurm.py``
+    * `mem-per-cpu` is now `mem_per_cpu`
+  * ``scripts/split_libraries.py``
+    * `min-seq-length` is now `min_seq_length`
+    * `max-seq-length` is now `max_seq_length`
+    * `trim-seq-length` is now `trim_seq_length`
+    * `min-qual-score` is now `min_qual_score`
+    * `keep-primer` is now `keep_primer`
+    * `keep-barcode` is now `keep_barcode`
+    * `max-ambig` is now `max_ambig`
+    * `max-homopolymer` is now `max_homopolymer`
+    * `max-primer-mismatch` is now `max_primer_mismatch`
+    * `barcode-type` is now `barcode_type`
+    * `dir-prefix` is now `dir_prefix`
+    * `max-barcode-errors` is now `max_barcode_errors`
+    * `start-numbering-at` is now `start_numbering_at`
 * Fixed bug in ``make_rarefaction_plots.py`` where ``--generate_per_sample_plots`` wasn't working (see [#1475](https://github.com/biocore/qiime/issues/1475)).
 * Removed ``make_otu_heatmap_html.py`` in favor of ``make_otu_heatmap.py`` (see discussion on [#1724](https://github.com/biocore/qiime/issues/1724)).
 * Fixed bug that resulted in samples being mislabeled in ``make_otu_heatmap.py`` when one of the following options was passed: ``--category``, ``--map_fname``, ``--sample_tree``, or ``--suppress_column_clustering``. This is discussed in [#1790](https://github.com/biocore/qiime/issues/1790).
