@@ -1,0 +1,1 @@
+extract_barcodes:input_type barcode_paired_end
