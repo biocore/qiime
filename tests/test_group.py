@@ -15,20 +15,29 @@ __email__ = "jai.rideout@gmail.com"
 from unittest import TestCase, main
 from StringIO import StringIO
 
+import numpy as np
+from biom import Table
 from biom.parse import parse_biom_table
 from biom.exception import UnknownIDError
 from numpy import array, matrix
 from numpy.testing import assert_almost_equal
+from StringIO import StringIO
 
 from qiime.parse import (parse_mapping_file, parse_distmat,
                          group_by_field, parse_coords,
                          parse_mapping_file_to_dict)
 from qiime.group import (get_grouped_distances, get_all_grouped_distances,
-                         get_field_state_comparisons, _get_indices, _get_groupings, _validate_input,
+                         get_field_state_comparisons, _get_indices,
+                         _get_groupings, _validate_input,
                          get_adjacent_distances, get_ordered_coordinates,
                          extract_per_individual_states_from_sample_metadata,
                          extract_per_individual_state_metadatum_from_sample_metadata,
-                         extract_per_individual_state_metadata_from_sample_metadata_and_biom)
+                         extract_per_individual_state_metadata_from_sample_metadata_and_biom,
+                         _group_by_sample_metadata, _sample_id_from_group_id,
+                         collapse_samples, mapping_lines_from_collapsed_df,
+                         _collapse_to_first, _collapse_to_median,
+                         _collapse_to_random, _collapse_metadata,
+                         _collapse_to_sum, _collapse_to_mean, get_collapse_fns)
 
 
 class GroupTests(TestCase):
@@ -128,6 +137,8 @@ class GroupTests(TestCase):
         self.paired_difference_biom1 = \
             parse_biom_table(paired_difference_biom_f1.split('\n'))
 
+        self._group_by_sample_metadata_map_f1 = _group_by_sample_metadata_map_f1
+
     def test_get_grouped_distances_within(self):
         """get_grouped_distances() should return a list of within distance
         groupings."""
@@ -226,6 +237,15 @@ class GroupTests(TestCase):
                                          0.73699999999999999]}}
         self.assertDictEqual(comparison_groupings, expected)
 
+    def test_get_field_state_comparisons_extra_samples(self):
+        self.small_mapping.append(['a', 'ACTCGAGGACT', 'xx'])
+        comparison_groupings = get_field_state_comparisons(
+            self.small_dist_matrix_header, self.small_dist_matrix,
+            self.small_mapping_header, self.small_mapping,
+            self.small_field, ['SampleFieldState1'])
+        expected = {'SampleFieldState2': {'SampleFieldState1': [0.5]}}
+        self.assertDictEqual(comparison_groupings, expected)
+
     def test_get_field_state_comparisons_small(self):
         """get_field_state_comparisons() should return a 2D dictionary of
         distances between a field state and its comparison field states."""
@@ -270,6 +290,15 @@ class GroupTests(TestCase):
                           ['Samp.1', 'Samp.2'],
                           array([[10.0, 0.0003], [0.0003, 0.0]]),
                           self.small_mapping_header, self.small_mapping,
+                          self.small_field, ['SampleFieldState1'])
+
+    def test_get_field_state_comparisons_no_shared_samples(self):
+        """Handles invalid distance matrix."""
+        self.assertRaises(ValueError, get_field_state_comparisons,
+                          ['Samp.1', 'Samp.2'],
+                          array([[10.0, 0.0003], [0.0003, 0.0]]),
+                          self.small_mapping_header, [['foo', 'b', 'c'],
+                          ['bar', 'bb', 'cc']],
                           self.small_field, ['SampleFieldState1'])
 
     def test_get_adjacent_distances(self):
@@ -720,6 +749,223 @@ class GroupTests(TestCase):
             individual_identifier_category="PersonalID",
             observation_ids=['o1', 'bad.obs.id'])
 
+    def test_group_by_sample_metadata(self):
+        in_f = StringIO(self._group_by_sample_metadata_map_f1)
+        collapsed_md = _collapse_metadata(in_f, ['replicate-group', 'subject'])
+        actual = _group_by_sample_metadata(collapsed_md)
+        expected1 = {('1', '1'): set(('f1', 'f2')),
+                     ('2', '1'): set(('f5', 'f6', 'p1')),
+                     ('3', '1'): set(('not16S.1', )),
+                     ('1', '2'): set(('f3', 'f4')),
+                     ('2', '2'): set(('p2', 't1', 't2'))}
+        expected2 = {'f1': ('1', '1'),
+                     'f2': ('1', '1'),
+                     'f5': ('2', '1'),
+                     'f6': ('2', '1'),
+                     'p1': ('2', '1'),
+                     'not16S.1': ('3', '1'),
+                     'f3': ('1', '2'),
+                     'f4': ('1', '2'),
+                     'p2': ('2', '2'),
+                     't1': ('2', '2'),
+                     't2': ('2', '2')}
+        self.assertEqual(actual, (expected1, expected2))
+
+        in_f = StringIO(self._group_by_sample_metadata_map_f1)
+        collapsed_md = _collapse_metadata(in_f, ['replicate-group'])
+        actual = _group_by_sample_metadata(collapsed_md)
+        expected1 = {('1', ): set(('f1', 'f2', 'f3', 'f4')),
+                     ('2', ): set(('f5', 'f6', 'p1', 'p2', 't1', 't2')),
+                     ('3', ): set(('not16S.1', ))}
+        expected2 = {'f1': ('1', ), 'f2': ('1', ), 'f5': ('2', ), 'f6': ('2', ),
+                     'p1': ('2', ), 'not16S.1': ('3', ), 'f3': ('1', ),
+                     'f4': ('1', ), 'p2': ('2', ), 't1': ('2', ), 't2': ('2', )}
+        self.assertEqual(actual, (expected1, expected2))
+
+        in_f = StringIO(self._group_by_sample_metadata_map_f1)
+        collapsed_md = _collapse_metadata(in_f, ['subject'])
+        actual = _group_by_sample_metadata(collapsed_md)
+        expected1 = {('1', ): set(('f1', 'f2', 'f5', 'f6', 'p1', 'not16S.1')),
+                     ('2', ): set(('f3', 'f4', 'p2', 't1', 't2'))}
+        expected2 = {'f1': ('1', ), 'f2': ('1', ), 'f5': ('1', ), 'f6': ('1', ),
+                     'p1': ('1', ), 'not16S.1': ('1', ), 'f3': ('2', ),
+                     'f4': ('2', ), 'p2': ('2', ), 't1': ('2', ), 't2': ('2', )}
+        self.assertEqual(actual, (expected1, expected2))
+
+    def test_sample_id_from_group_id(self):
+        sid_to_group_id1 = {'f1': (1, ), 'f2': (2, ), 'f5': (4, )}
+        md = {}
+        self.assertEqual(_sample_id_from_group_id('f1', md, sid_to_group_id1),
+                         '1')
+        self.assertEqual(_sample_id_from_group_id('f2', md, sid_to_group_id1),
+                         '2')
+        self.assertEqual(_sample_id_from_group_id('f5', md, sid_to_group_id1),
+                         '4')
+
+        sid_to_group_id2 = {'f1': (1, 1), 'f2': (1, 1), 'f5': (2, 1)}
+        self.assertEqual(_sample_id_from_group_id('f1', md, sid_to_group_id2),
+                         '1.1')
+        self.assertEqual(_sample_id_from_group_id('f2', md, sid_to_group_id2),
+                         '1.1')
+        self.assertEqual(_sample_id_from_group_id('f5', md, sid_to_group_id2),
+                         '2.1')
+
+        sid_to_group_id3 = {'f1': (1, 1, 2), 'f5': (2, 1, 0)}
+        self.assertEqual(_sample_id_from_group_id('f1', md, sid_to_group_id3),
+                         '1.1.2')
+        self.assertEqual(_sample_id_from_group_id('f5', md, sid_to_group_id3),
+                         '2.1.0')
+
+        self.assertRaises(KeyError, _sample_id_from_group_id, 'f2', md,
+                          sid_to_group_id3)
+
+    def test_collapse_samples(self):
+        """Collapsing samples functions as expected
+        """
+        # #OTU ID	f1	f2	f3
+        # o1	0.0	1.0	2.0
+        # o2	3.0	4.0	5.0
+        t1 = Table(np.array([[0, 1, 2], [3, 4, 5]]),
+                   ['o1', 'o2'], ['f1', 'f2', 'f3'])
+        collapse_fields = ['replicate-group', 'subject']
+        for e in get_collapse_fns().keys():
+            # all collapse functions work without failure
+            in_f = StringIO(self._group_by_sample_metadata_map_f1)
+            collapse_samples(t1, in_f, collapse_fields, e)
+        in_f = StringIO(self._group_by_sample_metadata_map_f1)
+        self.assertRaises(KeyError, collapse_samples, t1, in_f,
+                          collapse_fields, "not-a-valid-mode")
+
+        # test with a few collapse functions (the collapse functions
+        # are tested individually, so don't need to test them all here)
+        in_f = StringIO(self._group_by_sample_metadata_map_f1)
+        md, t = collapse_samples(t1, in_f, collapse_fields, 'sum')
+        self.assertEqual(t.get_value_by_ids('o1', '1.1'), 1.0)
+        self.assertEqual(t.get_value_by_ids('o1', '1.2'), 2.0)
+        self.assertEqual(t.get_value_by_ids('o2', '1.1'), 7.0)
+        self.assertEqual(t.get_value_by_ids('o2', '1.2'), 5.0)
+
+        in_f = StringIO(self._group_by_sample_metadata_map_f1)
+        md, t = collapse_samples(t1, in_f, collapse_fields, 'mean')
+        self.assertEqual(t.get_value_by_ids('o1', '1.1'), 0.5)
+        self.assertEqual(t.get_value_by_ids('o1', '1.2'), 2.0)
+        self.assertEqual(t.get_value_by_ids('o2', '1.1'), 3.5)
+        self.assertEqual(t.get_value_by_ids('o2', '1.2'), 5.0)
+
+        in_f = StringIO(self._group_by_sample_metadata_map_f1)
+        md, t = collapse_samples(t1, in_f, collapse_fields, 'first')
+        self.assertEqual(t.get_value_by_ids('o1', '1.1'), 0.0)
+        self.assertEqual(t.get_value_by_ids('o1', '1.2'), 2.0)
+        self.assertEqual(t.get_value_by_ids('o2', '1.1'), 3.0)
+        self.assertEqual(t.get_value_by_ids('o2', '1.2'), 5.0)
+
+    def test_collapse_to_first(self):
+        """ Table collapse function _collapse_to_first functions as expected
+        """
+        # #OTU ID	s1	s2	s3
+        # o1	0.0	1.0	2.0
+        # o2	3.0	4.0	5.0
+        t1 = Table(np.array([[0, 1, 2], [3, 4, 5]]),
+                   ['o1', 'o2'], ['s1', 's2', 's3'])
+        self.assertEqual(list(_collapse_to_first(t1, "observation")),
+                         [0.0, 3.0])
+        self.assertEqual(list(_collapse_to_first(t1, "sample")),
+                         [0.0, 1.0, 2.0])
+
+    def test_collapse_to_median(self):
+        """ Table collapse function _collapse_to_median functions as expected
+        """
+        # #OTU ID	s1	s2	s3
+        # o1	0.0	1.0	2.0
+        # o2	3.0	4.0	5.0
+        t1 = Table(np.array([[0, 1, 2], [3, 4, 5]]),
+                   ['o1', 'o2'], ['s1', 's2', 's3'])
+        self.assertEqual(list(_collapse_to_median(t1, "observation")),
+                         [1.0, 4.0])
+        self.assertEqual(list(_collapse_to_median(t1, "sample")),
+                         [1.5, 2.5, 3.5])
+
+    def test_collapse_to_random(self):
+        """ Table collapse function _collapse_to_random functions as expected
+        """
+        # #OTU ID	s1	s2	s3
+        # o1	0.0	1.0	2.0
+        # o2	3.0	4.0	5.0
+        t1 = Table(np.array([[0, 1, 2], [3, 4, 5]]),
+                   ['o1', 'o2'], ['s1', 's2', 's3'])
+        e = list(_collapse_to_random(t1, "observation"))
+        self.assertTrue(e[0] in [0, 1, 2])
+        self.assertTrue(e[1] in [3, 4, 5])
+
+        e = list(_collapse_to_random(t1, "sample"))
+        self.assertTrue(e[0] in [0, 3])
+        self.assertTrue(e[1] in [1, 4])
+        self.assertTrue(e[2] in [2, 5])
+
+    def test_collapse_to_sum(self):
+        """ Table collapse function _collapse_to_sum functions as expected
+        """
+        # #OTU ID	s1	s2	s3
+        # o1	0.0	1.0	2.0
+        # o2	3.0	4.0	5.0
+        t1 = Table(np.array([[0, 1, 2], [3, 4, 5]]),
+                   ['o1', 'o2'], ['s1', 's2', 's3'])
+        self.assertEqual(list(_collapse_to_sum(t1, "observation")),
+                         [3.0, 12.0])
+        self.assertEqual(list(_collapse_to_sum(t1, "sample")),
+                         [3.0, 5.0, 7.0])
+
+    def test_collapse_to_mean(self):
+        """ Table collapse function _collapse_to_mean functions as expected
+        """
+        # #OTU ID	s1	s2	s3
+        # o1	0.0	1.0	2.0
+        # o2	3.0	4.0	5.0
+        t1 = Table(np.array([[0, 1, 2], [3, 4, 5]]),
+                   ['o1', 'o2'], ['s1', 's2', 's3'])
+        self.assertEqual(list(_collapse_to_mean(t1, "observation")),
+                         [1.0, 4.0])
+        self.assertEqual(list(_collapse_to_mean(t1, "sample")),
+                         [1.5, 2.5, 3.5])
+
+    def test_collapse_metadata(self):
+        in_f = StringIO(self._group_by_sample_metadata_map_f1)
+        actual = _collapse_metadata(
+            in_f, ['replicate-group', 'subject'])
+        # correct collapsing
+        self.assertEqual(actual['SampleID'][('1', '1')], ('f1', 'f2'))
+        self.assertEqual(actual['SampleID'][('1', '2')], ('f3', 'f4'))
+        self.assertEqual(actual['SampleID'][('2', '1')], ('f5', 'f6', 'p1'))
+        self.assertEqual(actual['SampleID'][('2', '2')], ('p2', 't1', 't2'))
+        self.assertEqual(actual['SampleID'][('3', '1')], ('not16S.1', ))
+        # original values tuple-ized
+        self.assertEqual(actual['BarcodeSequence'][('1', '1')],
+                         ('ACACTGTTCATG', 'ACCAGACGATGC'))
+        self.assertEqual(actual['BarcodeSequence'][('1', '2')],
+                         ('ACCAGACGATGC', 'ACCAGACGATGC'))
+
+        in_f = StringIO(self._group_by_sample_metadata_map_f1)
+        self.assertRaises(KeyError, _collapse_metadata, in_f,
+                          ['not-a-header'])
+
+    def test_mapping_lines_from_collapsed_df(self):
+        in_f = StringIO(self._group_by_sample_metadata_map_f1)
+        collapsed_df = _collapse_metadata(
+        in_f, ['subject'])
+        expected = mapping_lines_from_collapsed_df(collapsed_df)
+        self.assertTrue(expected[0].startswith("#SampleID	original-sample-ids	BarcodeSequence	LinkerPrimerSequence"))
+        self.assertTrue(expected[1].startswith('1	(f1, f2, f5, f6, p1, not16S.1)	'))
+        self.assertTrue(expected[2].startswith('2	(f3, f4, p2, t1, t2)	'))
+
+        in_f = StringIO(self._group_by_sample_metadata_map_f1)
+        collapsed_df = _collapse_metadata(
+            in_f, ['replicate-group', 'subject'])
+        expected = mapping_lines_from_collapsed_df(collapsed_df)
+        self.assertTrue(expected[0].startswith("#SampleID	original-sample-ids	BarcodeSequence	LinkerPrimerSequence"))
+        self.assertTrue(expected[1].startswith('1.1	(f1, f2)	(ACACTGTTCATG, ACCAGACGATGC)	GTGCCAGCMGCCGCGGTAA	feces'))
+        self.assertTrue(expected[2].startswith('1.2	(f3, f4)	ACCAGACGATGC	GTGCCAGCMGCCGCGGTAA	feces'))
+
+
 individual_states_and_responses_map_f1 = """#SampleID	PersonalID	Response	TreatmentState	StreptococcusAbundance	VeillonellaAbundance
 001A	001	Improved	Pre	57.4	6.9
 001B	001	Improved	Post	26	9.3
@@ -741,6 +987,19 @@ individual_states_and_responses_map_f2 = """#SampleID	PersonalID	Response	Treatm
 001C	001	Improved	PostPost	22	10.1
 """
 
+_group_by_sample_metadata_map_f1 = """#SampleID	BarcodeSequence	LinkerPrimerSequence	SampleType	year	month	day	subject	replicate-group	days_since_epoch	Description
+f1	ACACTGTTCATG	GTGCCAGCMGCCGCGGTAA	feces	2008	10	22	1	1	14174	fecal1
+f2	ACCAGACGATGC	GTGCCAGCMGCCGCGGTAA	feces	2008	10	23	1	1	14175	fecal2
+f3	ACCAGACGATGC	GTGCCAGCMGCCGCGGTAA	feces	2008	10	23	2	1	14175	identical sequences to fecal2
+f4	ACCAGACGATGC	GTGCCAGCMGCCGCGGTAA	feces	2008	10	23	2	1	14175	all sequences identical, map to GG 295053 at 97 percent id
+f5	ACCAGACGATGC	GTGCCAGCMGCCGCGGTAA	feces	2008	10	23	1	2	14175	derived from f3 with some changes to sequences to add one new otu
+f6	ACCAGACGATGC	GTGCCAGCMGCCGCGGTAA	feces	2008	10	23	1	2	14175	derived from f4 with some changes to sequences to add one new otu
+p1	AACGCACGCTAG	GTGCCAGCMGCCGCGGTAA	L_palm	2008	10	21	1	2	14173	palm1, contains one randomly generated sequence
+p2	ACACTGTTCATG	GTGCCAGCMGCCGCGGTAA	L_palm	2008	10	22	2	2	14174	palm2
+t1	AGTGAGAGAAGC	GTGCCAGCMGCCGCGGTAA	Tongue	2008	10	21	2	2	14173	tongue1, contains one randomly generated sequence
+t2	ATACTATTGCGC	GTGCCAGCMGCCGCGGTAA	Tongue	2008	10	22	2	2	14174	tongue2
+not16S.1	ATACTATTGCGC	GTGCCAGCMGCCGCGGTAA	Other	2008	10	22	1	3	14174	randomly generated sequence plus some variants, these should not map to 16S
+"""
 
 if __name__ == '__main__':
     main()

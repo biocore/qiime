@@ -19,7 +19,7 @@ from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
 from cogent.parse.tree import DndParser
 from cogent.core.tree import PhyloNode
-from skbio.util import remove_files
+from skbio.util import remove_files, safe_md5
 from biom.parse import parse_biom_table
 from qiime.parse import (parse_distmat, parse_mapping_file,
                          parse_metadata_state_descriptions)

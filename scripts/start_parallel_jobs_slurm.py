@@ -59,7 +59,7 @@ script_info['optional_options'] = [
                       '[default: %s]' % default_slurm_queue_desc),
                 default=qiime_config['slurm_queue']),
 
-    make_option('-K', '--mem-per-cpu',
+    make_option('-K', '--mem_per_cpu',
                 help=('megabytes of memory to request per '
                       'CPU [default: %s]' % default_slurm_memory_desc),
                 default=qiime_config['slurm_memory']),
@@ -114,7 +114,7 @@ def main():
     job_prefix = args[1]
 
     if opts.mem_per_cpu:
-        mem_per_cpu = " --mem-per-cpu=" + opts.mem_per_cpu
+        mem_per_cpu = " --mem_per_cpu=" + opts.mem_per_cpu
     else:
         mem_per_cpu = ""
 

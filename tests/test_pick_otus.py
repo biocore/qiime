@@ -218,7 +218,7 @@ class SortmernaV2OtuPickerTests(TestCase):
             seq_path=self.file_read_seqs_fp,
             result_path=self.result_path,
             log_path=self.log_path,
-            sortmerna_db=None,
+            sortmerna_db=sortmerna_db,
             refseqs_fp=self.file_reference_seq_fp,
             failure_path=self.failure_path)
 

@@ -523,8 +523,8 @@ class DownstreamWorkflowTests(TestCase):
         self.assertTrue(getsize(log_fp) > 0)
 
 params_f1 = """
-multiple_rarefactions:num-reps	1
-multiple_rarefactions_even_depth:num-reps	5
+multiple_rarefactions:num_reps	1
+multiple_rarefactions_even_depth:num_reps	5
 """.split('\n')
 
 if __name__ == "__main__":

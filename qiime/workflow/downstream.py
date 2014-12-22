@@ -595,36 +595,38 @@ def run_summarize_taxa_through_plots(otu_table_fp,
     # check if it is passed in params file
     if not mapping_cat:
         try:
-            mapping_cat = params['summarize_otu_by_cat']['mapping_category']
+            mapping_cat = params['collapse_samples']['collapse_fields']
         except:
             mapping_cat = None
 
     try:
-        params_str = get_params_str(params['summarize_otu_by_cat'])
+        params_str = get_params_str(params['collapse_samples'])
         # Need to remove the mapping category option, since it is defined above.
         # Using this method since we don't want to change the params dict
         split_params = params_str.split('--')
         updated_params_str = []
         for i in split_params:
-            if not i.startswith('mapping_category'):
+            if not i.startswith('collapse_fields'):
                 updated_params_str.append(i)
         params_str = '--'.join(updated_params_str)
     except:
         params_str = ''
 
     if mapping_cat:
-        output_fp = join(
-            output_dir, '%s_otu_table.biom' %
-            (mapping_cat.replace(' ', '-')))
-        # Build the summarize otu by category command
-        summarize_otu_by_cat_cmd = \
-            "summarize_otu_by_cat.py -m %s -i %s -o %s -c '%s' %s" %\
-            (mapping_fp, otu_table_fp, output_fp, mapping_cat, params_str)
+        base_filename = mapping_cat.replace(' ', '-').replace(',','')
+        output_biom_fp = join(
+            output_dir, '%s_otu_table.biom' % base_filename)
+        output_map_fp = join(
+            output_dir, '%s_map.txt' % base_filename)
+        # Build the collapse samples command
+        collapse_samples_cmd = \
+            "collapse_samples.py -m %s -b %s --output_biom_fp %s --output_mapping_fp %s --collapse_fields '%s' %s" %\
+            (mapping_fp, otu_table_fp, output_biom_fp, output_map_fp, mapping_cat, params_str)
 
         commands.append(
-            [('Summarize OTU table by Category', summarize_otu_by_cat_cmd)])
+            [('Collapse samples in OTU table by categories', collapse_samples_cmd)])
 
-        otu_table_fp = output_fp
+        otu_table_fp = output_biom_fp
 
     # Build the sort OTU table command
     if sort:

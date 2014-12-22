@@ -1,7 +1,4 @@
 #!/usr/bin/env python
-# File created on 09 Feb 2010
-# file make_otu_heatmap.py
-
 from __future__ import division
 
 __author__ = "Dan Knights"
@@ -18,77 +15,72 @@ __maintainer__ = "Dan Knights"
 __email__ = "daniel.knights@colorado.edu"
 
 
-import shutil
-import os
-from os.path import join
-
 import numpy as np
-from biom.parse import parse_biom_table
 from biom import load_table
 
 from qiime.make_otu_heatmap import (
     plot_heatmap, get_clusters, make_otu_labels, extract_metadata_column,
     get_order_from_categories, get_order_from_tree, names_to_indices,
     get_log_transform, get_overlapping_samples)
-from qiime.util import (
-    get_qiime_project_dir, parse_command_line_parameters, get_options_lookup,
-    make_option, MissingFileError)
+from qiime.util import (parse_command_line_parameters, get_options_lookup,
+                        make_option, MissingFileError)
 from qiime.parse import parse_mapping_file
-from qiime.make_otu_heatmap_html import get_otu_counts, filter_by_otu_hits
 
 options_lookup = get_options_lookup()
 
 script_info = {}
-script_info['brief_description'] = """Make heatmap of OTU table"""
+script_info['brief_description'] = """Plot heatmap of OTU table"""
 script_info['script_description'] = (
-    "Once an OTU table has been generated, it can be visualized using a "
-    "heatmap. In these heatmaps each row corresponds to an OTU, and each "
-    "column corresponds to a sample. The higher the relative abundance of "
-    "an OTU in a sample, the more intense the color at the corresponsing "
-    "position in the heatmap. By default, the OTUs (rows) will be clustered "
-    "by UPGMA hierarchical clustering, and the samples (columns) will be "
-    "presented in the order in which they appear in the OTU table. "
-    "Alternatively, the user may pass in a tree to sort the OTUs (rows) or "
-    "samples (columns), or both. For samples, the user may also pass in a "
-    "mapping file. If the user passes in a mapping file and a metadata "
-    "category, samples (columns in the heatmap) will be grouped by category "
+    "This script visualizes an OTU table as a heatmap where each row "
+    "corresponds to an OTU and each column corresponds to a sample. The "
+    "higher the relative abundance of an OTU in a sample, the more intense "
+    "the color at the corresponsing position in the heatmap. By default, the "
+    "OTUs (rows) will be clustered by UPGMA hierarchical clustering, and the "
+    "samples (columns) will be presented in the order in which they appear in "
+    "the OTU table. Alternatively, the user may supply a tree to sort the "
+    "OTUs (rows) or samples (columns), or both. The user may also pass in a "
+    "mapping file for sorting samples. If the user passes in a mapping file "
+    "and a metadata category, samples (columns) will be grouped by category "
     "value and subsequently clustered within each group.")
 script_info['script_usage'] = []
 script_info['script_usage'].append(
-    ("""Examples:""",
-     """Using default values:""",
-     """%prog -i otu_table.biom"""))
+    ("",
+     "Generate a heatmap as a PDF using all default values:",
+     "%prog -i otu_table.biom -o heatmap.pdf"))
 script_info['script_usage'].append(
     ("",
-     "Different output directory (i.e., 'otu_heatmap'):",
-     "%prog -i otu_table.biom -o otu_heatmap"))
+     "Generate a heatmap as a PNG:",
+     "%prog -i otu_table.biom -o heatmap.png -g png"))
 script_info['script_usage'].append(
     ("",
-     "Sort the heatmap columns by the order in a mapping file, as follows:",
-     "%prog -i otu_table.biom -o otu_heatmap -m mapping_file.txt"))
+     "Sort the heatmap columns (samples) by the order of samples in the "
+     "mapping file",
+     "%prog -i otu_table.biom -o heatmap_sorted_samples.pdf -m "
+     "mapping_file.txt"))
 script_info['script_usage'].append(
     ("",
-     "Sort the heatmap columns by Sample ID's and the heatmap rows by the "
-     "order of tips in the tree, you can supply a tree as follows:",
-     "%prog -i otu_table.biom -o otu_heatmap -m mapping_file.txt -t "
+     "Sort the heatmap columns (samples) by the order of samples in the "
+     "mapping file, and sort the heatmap rows by the order of tips in the "
+     "tree:",
+     "%prog -i otu_table.biom -o heatmap_sorted.pdf -m mapping_file.txt -t "
      "rep_set.tre"))
 script_info['script_usage'].append(
     ("",
-     "Group the heatmap columns by metadata category (e.g., Treatment), then "
-     "cluster within each group:""",
-     "%prog -i otu_table.biom -o otu_heatmap -m mapping_file.txt -c "
-     "'Treatment'"))
+     "Group the heatmap columns (samples) by metadata category (e.g., "
+     "Treatment), then cluster within each group:""",
+     "%prog -i otu_table.biom -o heatmap_grouped_by_Treatment.pdf -m "
+     "mapping_file.txt -c Treatment"))
 
 script_info['output_description'] = (
-    "The heatmap image is located in the specified output directory. It is "
-    "formatted as a PDF file.")
+    "A single output file is created containing the heatmap of the OTU "
+    "table (a PDF file by default).")
 
 script_info['required_options'] = [
-    options_lookup['otu_table_as_primary_input']
+    options_lookup['otu_table_as_primary_input'],
+    options_lookup['output_fp']
 ]
 
 script_info['optional_options'] = [
-    options_lookup['output_dir'],
     make_option('-t', '--otu_tree', type='existing_filepath', help='Tree file '
                 'to be used for sorting OTUs in the heatmap', default=None),
     make_option('-m', '--map_fname', dest='map_fname',
@@ -103,6 +95,10 @@ script_info['optional_options'] = [
                 'sorting samples (e.g, output from upgma_cluster.py). If both '
                 'this and the sample mapping file are provided, the mapping '
                 'file is ignored.', default=None),
+    make_option('-g', '--imagetype',
+                help='type of image to produce (i.e. png, svg, pdf) '
+                '[default: %default]', default='pdf', type="choice",
+                choices=['pdf', 'png', 'svg']),
     make_option('--no_log_transform', action="store_true",
                 help='Data will not be log-transformed. Without this option, '
                 'all zeros will be set to a small value (default is 1/2 the '
@@ -118,19 +114,29 @@ script_info['optional_options'] = [
                 'If --map_fname is provided, this flag is ignored.',
                 default=False),
     make_option('--absolute_abundance', action="store_true",
-                help='Do not normalize samples to sum to 1.[default %default]',
+                help='Do not normalize samples to sum to 1 [default: %default]',
                 default=False),
     make_option('--color_scheme', default="YlGn",
                 help="color scheme for figure. see "
                      "http://matplotlib.org/examples/color/"
                      "colormaps_reference.html for choices "
                      "[default: %default]"),
+    make_option('--width',
+                help='width of the figure in inches [default: %default]',
+                default=5, type='float'),
+    make_option('--height',
+                help='height of the figure in inches [default: %default]',
+                default=5, type='float'),
+    make_option('--dpi',
+                help='resolution of the figure in dots per inch '
+                     '[default: value of savefig.dpi in matplotlibrc file]',
+                type='int', default=None),
+    make_option('--obs_md_category', default="taxonomy",
+                help="observation metadata category to plot "
+                     "[default: %default]"),
     make_option('--obs_md_level', default=None, type="int",
                 help="the level of observation metadata to plot for "
-                     "hierarchical metadata [default: lowest level]"),
-    make_option('--obs_md_category', default="taxonomy",
-                help="the level of observation metadata to plot for "
-                     "hierarchical metadata [default: %default]")
+                     "hierarchical metadata [default: lowest level]")
 ]
 
 script_info['version'] = __version__
@@ -174,18 +180,6 @@ def main():
     # Get log transform if requested
     if not opts.no_log_transform:
         otu_table = get_log_transform(otu_table)
-
-    if opts.output_dir:
-        if os.path.exists(opts.output_dir):
-            dir_path = opts.output_dir
-        else:
-            try:
-                os.mkdir(opts.output_dir)
-                dir_path = opts.output_dir
-            except OSError:
-                pass
-    else:
-        dir_path = './'
 
     # Re-order samples by tree if provided
     if opts.sample_tree is not None:
@@ -248,14 +242,13 @@ def main():
 
     # Re-order otu table, sampleids, etc. as necessary
     otu_table = otu_table.sort_order(otu_id_order, axis='observation')
-    # otu_ids not used after: tagged for deletion
-    otu_ids = np.array(otu_table.ids(axis='observation'))[otu_order]
     otu_labels = np.array(otu_labels)[otu_order]
     otu_table = otu_table.sort_order(sample_id_order)
-    sample_ids = np.array(otu_table.ids())[sample_order]
+    sample_labels = otu_table.ids()
 
-    plot_heatmap(otu_table, otu_labels, sample_ids,
-                 filename=join(dir_path, 'heatmap.pdf'),
+    plot_heatmap(otu_table, otu_labels, sample_labels, opts.output_fp,
+                 imagetype=opts.imagetype, width=opts.width,
+                 height=opts.height, dpi=opts.dpi,
                  color_scheme=opts.color_scheme)
 
 

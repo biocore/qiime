@@ -27,6 +27,7 @@ from qiime.denoiser.utils import files_exist, get_denoiser_data_dir,\
 
 options_lookup = get_options_lookup()
 DENOISER_DATA_DIR = get_denoiser_data_dir()
+RELATIVE_DENOISER_DATA_DIR = '<qiime-install-path>/qiime/support_files/denoiser/Data/'
 
 # denoiser.py
 script_info = {}
@@ -160,12 +161,12 @@ script_info['optional_options'] = [
                 'threshold, expressed as a fraction between 0 and 1 '
                 '[default: %default]', default=0.97),
 
-    make_option('--low_cut-off', action='store',
+    make_option('--low_cut_off', action='store',
                 type='float', dest='low_cutoff',
                 help='low clustering threshold for phase II ' +
                 '[default: %default]', default=3.75),
 
-    make_option('--high_cut-off', action='store',
+    make_option('--high_cut_off', action='store',
                 type='float', dest='high_cutoff',
                 help='high clustering threshold for phase III ' +
                 '[default: %default]', default=4.5),
@@ -177,18 +178,19 @@ script_info['optional_options'] = [
 
     make_option('-e', '--error_profile', action='store',
                 dest='error_profile', help='path to error profile ' +
-                '[default= %default]',
+                '[default= %s]' % (RELATIVE_DENOISER_DATA_DIR +
+                                   'FLX_error_profile.dat'),
                 default=DENOISER_DATA_DIR + 'FLX_error_profile.dat'),
 
     # might be needed once we switch to Titanium as default
     #    make_option('-flx', action='store_true',
     #                      dest='flx', help='shortcut for '+
-    #                      "-e %s/FLX_error_profile.dat --low_cut-off=3.75 --high_cut_off=4.5" % DENOISER_DATA_DIR),
+    #                      "-e %s/FLX_error_profile.dat --low_cut_off=3.75 --high_cut_off=4.5" % DENOISER_DATA_DIR),
 
     make_option('--titanium', action='store_true',
-                dest='titanium', help='shortcut for ' +
-                '-e ' + DENOISER_DATA_DIR +
-                '/Titanium_error_profile.dat --low_cut-off=4 --high_cut_off=5 . ' +
+                dest='titanium', help='shortcut for '
+                '-e ' + RELATIVE_DENOISER_DATA_DIR +
+                '/Titanium_error_profile.dat --low_cut_off=4 --high_cut_off=5 . ' +
                 'Warning: overwrites all previous cut-off values ' +
                 '[DEFAULT: %default]', default=False)
 ]
@@ -240,7 +242,7 @@ def main(commandline_args=None):
     else:
         # make random dir in current dir
         tmpoutdir = mkdtemp(dir="", prefix="denoiser_", suffix="/")
-	
+
 
     log_fp = 'denoiser.log'
 

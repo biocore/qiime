@@ -34,16 +34,15 @@ from biom import Table, load_table
 
 from qiime.stats import (all_pairs_t_test, _perform_pairwise_tests,
                          CorrelationStats,
-                         DistanceMatrixStats, MantelCorrelogram, Mantel,
+                         DistanceMatrixStats, MantelCorrelogram,
                          PartialMantel, quantile, _quantile,
                          paired_difference_analyses,
                          G_2_by_2, g_fit, t_paired, t_one_sample,
                          t_two_sample, mc_t_two_sample,
                          _permute_observations,
                          correlation_t, ZeroExpectedError, fisher,
-                         safe_sum_p_log_p, permute_2d, mantel,
-                         mantel_t, _flatten_lower_triangle, pearson,
-                         spearman, ANOVA_one_way, mw_t,
+                         safe_sum_p_log_p, permute_2d,
+                         pearson, spearman, ANOVA_one_way, mw_t,
                          mw_boot, is_symmetric_and_hollow,
                          tail, fdr_correction,
                          benjamini_hochberg_step_down,
@@ -800,10 +799,16 @@ class MantelCorrelogramTests(TestHelper):
         obs = self.mc._correct_p_values([None, None])
         self.assertEqual(obs, exp)
 
+    def test_correct_p_values_all_nan(self):
+        """Test p-value correction for all NaN p-values."""
+        exp = [nan, nan]
+        obs = self.mc._correct_p_values([nan, nan])
+        self.assertEqual(obs, exp)
+
     def test_correct_p_values_mixed(self):
-        """Test p-value correction for mixture of None and valid p-values."""
-        exp = [None, 0.008, 0.01, None]
-        obs = self.mc._correct_p_values([None, 0.004, 0.005, None])
+        """p-value correction for mixture of None/NaN and valid p-values."""
+        exp = [None, 0.008, 0.01, nan]
+        obs = self.mc._correct_p_values([None, 0.004, 0.005, nan])
         self.assertEqual(obs, exp)
 
     def test_correct_p_values_no_change(self):
@@ -845,90 +850,6 @@ class MantelCorrelogramTests(TestHelper):
         self.assertEqual(obs_ax.get_title(), "Mantel Correlogram")
         self.assertEqual(obs_ax.get_xlabel(), "Distance class index")
         self.assertEqual(obs_ax.get_ylabel(), "Mantel correlation statistic")
-
-
-class MantelTests(TestHelper):
-
-    """Tests for the Mantel class."""
-
-    def setUp(self):
-        """Set up Mantel instances for use in tests."""
-        super(MantelTests, self).setUp()
-
-        # Create two small test distance matrices.
-        sample_ids = ["S1", "S2", "S3"]
-        m1 = array([[0, 1, 2], [1, 0, 3], [2, 3, 0]])
-        m2 = array([[0, 2, 7], [2, 0, 6], [7, 6, 0]])
-        m1_dm = DistanceMatrix(m1, sample_ids)
-        m2_dm = DistanceMatrix(m2, sample_ids)
-
-        self.small_mantel = Mantel(m1_dm, m2_dm, 'less')
-        self.overview_mantel = Mantel(self.overview_dm, self.overview_dm,
-                                      'greater')
-
-    def test_DistanceMatrices_setter(self):
-        """Test setting matrices using a valid number of distance matrices."""
-        dms = [self.overview_dm, self.overview_dm]
-        self.overview_mantel.DistanceMatrices = dms
-        self.assertEqual(self.overview_mantel.DistanceMatrices, dms)
-
-    def test_DistanceMatrices_setter_wrong_number(self):
-        """Test setting an invalid number of distance matrices."""
-        self.assertRaises(ValueError, setattr, self.overview_mantel,
-                          'DistanceMatrices', [self.overview_dm])
-        self.assertRaises(ValueError, setattr, self.overview_mantel,
-                          'DistanceMatrices', [self.overview_dm, self.overview_dm,
-                                               self.overview_dm])
-
-    def test_DistanceMatrices_setter_too_small(self):
-        """Test setting distance matrices that are too small."""
-        self.assertRaises(ValueError, setattr, self.overview_mantel,
-                          'DistanceMatrices', [self.single_ele_dm, self.single_ele_dm])
-
-    def test_call_overview(self):
-        """Runs mantel test on the overview dm when compared to itself.
-
-        Expected R output:
-            Mantel statistic r: 1
-            Significance: 0.001
-
-        Based on 999 permutations
-        """
-        expected_method_name = "Mantel"
-        expected_p_value = 0.001
-        expected_r_value = 1.0
-        expected_perm_stats_len = 999
-        expected_number_of_permutations = 999
-        expected_tail_type = "greater"
-
-        overview_mantel_output = self.overview_mantel(999)
-
-        obs_method_name = overview_mantel_output['method_name']
-        obs_num_permutations = overview_mantel_output['num_perms']
-        obs_r_value = overview_mantel_output['r_value']
-        obs_perm_stats_len = len(overview_mantel_output['perm_stats'])
-        obs_tail_type = overview_mantel_output['tail_type']
-
-        self.assertEqual(expected_method_name, obs_method_name)
-        assert_almost_equal(expected_r_value, obs_r_value)
-        assert_almost_equal(expected_perm_stats_len, obs_perm_stats_len)
-        self.assertEqual(expected_number_of_permutations, obs_num_permutations)
-        self.assertEqual(expected_tail_type, obs_tail_type)
-        self.assertCorrectPValue(0, 0.006, self.overview_mantel, 999)
-
-    def test_call_small(self):
-        """Test one-sided mantel test (less) on small example dataset."""
-        # This test output was verified by R (their mantel function does a
-        # one-sided greater test, but I modified their output to do a one-sided
-        # less test).
-        results = self.small_mantel(999)
-
-        self.assertEqual(results['method_name'], 'Mantel')
-        self.assertEqual(results['num_perms'], 999)
-        self.assertEqual(results['tail_type'], 'less')
-        assert_almost_equal(results['r_value'], 0.755928946018)
-        self.assertEqual(len(results['perm_stats']), 999)
-        self.assertCorrectPValue(0.6, 1.0, self.small_mantel, 999)
 
 
 class PartialMantelTests(TestHelper):
@@ -1707,113 +1628,6 @@ class CorrelationTests(TestsHelper):
         # silence the warnings that will tests for correlation_test
         filterwarnings('ignore', category=RuntimeWarning)
 
-    def test_mantel(self):
-        """mantel should be significant for same matrix, not for random"""
-        a = reshape(arange(25), (5, 5))
-        a = tril(a) + tril(a).T
-        fill_diagonal(a, 0)
-        b = a.copy()
-        # closely related -- should be significant
-        self.assertCorrectPValue(0.0, 0.049, mantel, (a, b, 1000))
-
-        c = reshape(ones(25), (5, 5))
-        c[0, 1] = 3.0
-        c[1, 0] = 3.0
-        fill_diagonal(c, 0)
-        # not related -- should not be significant
-        self.assertCorrectPValue(0.06, 1.0, mantel, (a, c, 1000))
-
-    def test_mantel_test_one_sided_greater(self):
-        """Test one-sided mantel test (greater)."""
-        # This test output was verified by R (their mantel function does a
-        # one-sided greater test).
-        m1 = array([[0, 1, 2], [1, 0, 3], [2, 3, 0]])
-        m2 = array([[0, 2, 7], [2, 0, 6], [7, 6, 0]])
-        p, stat, perms = mantel_t(m1, m1, 999, alt='greater')
-        assert_allclose(stat, 1.0)
-        self.assertEqual(len(perms), 999)
-
-        self.assertCorrectPValue(0.09, 0.25, mantel_t, (m1, m1, 999),
-                                 {'alt': 'greater'})
-
-        p, stat, perms = mantel_t(m1, m2, 999, alt='greater')
-        assert_allclose(stat, 0.755928946018)
-        self.assertEqual(len(perms), 999)
-        self.assertCorrectPValue(0.2, 0.5, mantel_t, (m1, m2, 999),
-                                 {'alt': 'greater'})
-
-    def test_mantel_test_one_sided_less(self):
-        """Test one-sided mantel test (less)."""
-        # This test output was verified by R (their mantel function does a
-        # one-sided greater test, but I modified their output to do a one-sided
-        # less test).
-        m1 = array([[0, 1, 2], [1, 0, 3], [2, 3, 0]])
-        m2 = array([[0, 2, 7], [2, 0, 6], [7, 6, 0]])
-        m3 = array([[0, 0.5, 0.25], [0.5, 0, 0.1], [0.25, 0.1, 0]])
-        p, stat, perms = mantel_t(m1, m1, 999, alt='less')
-        assert_allclose(p, 1.0)
-        assert_allclose(stat, 1.0)
-        self.assertEqual(len(perms), 999)
-
-        p, stat, perms = mantel_t(m1, m2, 999, alt='less')
-        assert_allclose(stat, 0.755928946018)
-        self.assertEqual(len(perms), 999)
-        self.assertCorrectPValue(0.6, 1.0, mantel_t, (m1, m2, 999),
-                                 {'alt': 'less'})
-
-        p, stat, perms = mantel_t(m1, m3, 999, alt='less')
-        assert_allclose(stat, -0.989743318611)
-        self.assertEqual(len(perms), 999)
-        self.assertCorrectPValue(0.1, 0.25, mantel_t, (m1, m3, 999),
-                                 {'alt': 'less'})
-
-    def test_mantel_test_two_sided(self):
-        """Test two-sided mantel test."""
-        # This test output was verified by R (their mantel function does a
-        # one-sided greater test, but I modified their output to do a two-sided
-        # test).
-        m1 = array([[0, 1, 2], [1, 0, 3], [2, 3, 0]])
-        m2 = array([[0, 2, 7], [2, 0, 6], [7, 6, 0]])
-        m3 = array([[0, 0.5, 0.25], [0.5, 0, 0.1], [0.25, 0.1, 0]])
-        p, stat, perms = mantel_t(m1, m1, 999, alt='two sided')
-        assert_allclose(stat, 1.0)
-        self.assertEqual(len(perms), 999)
-        self.assertCorrectPValue(0.20, 0.45, mantel_t, (m1, m1, 999),
-                                 {'alt': 'two sided'})
-
-        p, stat, perms = mantel_t(m1, m2, 999, alt='two sided')
-        assert_allclose(stat, 0.755928946018)
-        self.assertEqual(len(perms), 999)
-        self.assertCorrectPValue(0.6, 0.75, mantel_t, (m1, m2, 999),
-                                 {'alt': 'two sided'})
-
-        p, stat, perms = mantel_t(m1, m3, 999, alt='two sided')
-        assert_allclose(stat, -0.989743318611)
-        self.assertEqual(len(perms), 999)
-        self.assertCorrectPValue(0.2, 0.45, mantel_t, (m1, m3, 999),
-                                 {'alt': 'two sided'})
-
-    def test_mantel_test_invalid_distance_matrix(self):
-        """Test mantel test with invalid distance matrix."""
-        # Single asymmetric, non-hollow distance matrix.
-        self.assertRaises(ValueError, mantel_t, array([[1, 2], [3, 4]]),
-                          array([[0, 0], [0, 0]]), 999)
-
-        # Two asymmetric distance matrices.
-        self.assertRaises(ValueError, mantel_t, array([[0, 2], [3, 0]]),
-                          array([[0, 1], [0, 0]]), 999)
-
-    def test_mantel_test_invalid_input(self):
-        """Test mantel test with invalid input."""
-        self.assertRaises(ValueError, mantel_t, array([[1]]),
-                          array([[1]]), 999, alt='foo')
-        self.assertRaises(ValueError, mantel_t, array([[1]]),
-                          array([[1, 2], [3, 4]]), 999)
-        self.assertRaises(ValueError, mantel_t, array([[1]]),
-                          array([[1]]), 0)
-        self.assertRaises(ValueError, mantel_t, array([[1]]),
-                          array([[1]]), -1)
-
     def test_is_symmetric_and_hollow(self):
         """Should correctly test for symmetry and hollowness of dist mats."""
         self.assertTrue(is_symmetric_and_hollow(array([[0, 1], [1, 0]])))
@@ -1826,15 +1640,6 @@ class CorrelationTests(TestsHelper):
             array([[0, 1.1], [1, 0]])))
         self.assertTrue(not is_symmetric_and_hollow(
             array([[0.5, 1.1], [1, 0]])))
-
-    def test_flatten_lower_triangle(self):
-        """Test flattening various dms' lower triangulars."""
-        self.assertEqual(_flatten_lower_triangle(
-            array([[8]])), [])
-        self.assertEqual(_flatten_lower_triangle(
-            array([[1, 2], [3, 4]])), [3])
-        self.assertEqual(_flatten_lower_triangle(
-            array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])), [4, 7, 8])
 
     def test_pearson(self):
         """Test pearson correlation method on valid data."""

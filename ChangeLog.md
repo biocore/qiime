@@ -3,9 +3,9 @@ QIIME 1.8.0-dev (changes since 1.8.0 go here)
 * ``split_otu_table.py`` now allows multiple fields to be passed to split a biom table, and
 optionally a mapping file. Check out the new documentation for the naming conventions
 (which have changed slightly) and an example.
-* QIIME is now even easier to install! Removed ``qiime_scripts_dir``, ``python_exe_fp``, ``working_dir``, and ``cloud_environment`` from the QIIME config file. If these values are present in your QIIME config file, they will be flagged as unrecognized by ``print_qiime_config.py -t`` and will be ignored by QIIME. QIIME will now use the ``python`` executable and QIIME scripts that are found in your ``PATH`` environment variable, and ``temp_dir`` will be used in place of ``working_dir`` (this value was used by some parts of parallel QIIME previously).
+* QIIME is now even easier to install! Removed ``qiime_scripts_dir``, ``python_exe_fp``, ``working_dir``, ``cloud_environment``, and ``template_alignment_lanemask_fp`` from the QIIME config file. If these values are present in your QIIME config file, they will be flagged as unrecognized by ``print_qiime_config.py -t`` and will be ignored by QIIME. QIIME will now use the ``python`` executable and QIIME scripts that are found in your ``PATH`` environment variable, and ``temp_dir`` will be used in place of ``working_dir`` (this value was used by some parts of parallel QIIME previously). ``filter_alignment.py`` will now use the 16S alignment Lane mask (Lane, D.J. 1991) by default if one is not provided via ``--lane_mask_fp``.
 * Removed ``-Y``/``--python_exe_fp`` and ``-N`` options from ``parallel_merge_otu_tables.py`` script as these are not available in any of the other parallel QIIME scripts and we do not have good reason to support them (see QIIME 1.6.0 release notes below for more details).
-* SciPy >= 0.13.0, pyqi 0.3.1, and scikit-bio >= 0.2.2, < 0.3.0 are now required dependencies for a QIIME base install.
+* SciPy >= 0.13.0, pyqi 0.3.1, scikit-bio >= 0.2.2, < 0.3.0, and qiime-default-reference >= 0.1.1, < 0.2.0 are now required dependencies for a QIIME base install.
 * Added new options to ``make_otu_heatmap.py``: ``--color_scheme``, which allows users to choose from different color schemes [here](http://matplotlib.org/examples/color/colormaps_reference.html); ``--observation_metadata_category``, which allows users to select a column other than taxonomy to use when labeling the rows; and ``--observation_metadata_level``, which allows the user to specify which level in the hierarchical metadata category to use in creating the row labels.
 * ``-m/--mapping_fps`` is no longer required for split_libraries_fastq.py. The mapping file is not required when running with ``--barcode_type 'not-barcoded'``,but the mapping file would fail to validate when passing multiple sequence files and sample ids but a mapping file without barcodes (see #1400).
 * Added alphabetical sorting option (based on boxplot labels) to ``make_distance_boxplots.py``. Sorting by boxplot median can now be performed by passing ``--sort median`` (this was previously invoked by passing ``--sort``). Sorting alphabetically can be performed by passing ``--sort alphabetical``.
@@ -31,7 +31,7 @@ optionally a mapping file. Check out the new documentation for the naming conven
 * Beta support has been added for performing de novo OTU picking using SumaClust ([In Preparation](http://metabarcoding.org/sumatra)). This can be accessed with ``pick_de_novo_otus.py -p params.txt`` where params.txt includes the line ``pick_otus:otu_picking_method sumaclust``.
 * numpy version requirement has been updated to 1.7.1 or later.
 * Updated to use [burrito](https://github.com/biocore/burrito) instead of scikit-bio for imports from the application controller framework, as the former is replacing the latter.
-* QIIME now depends on [biom-format](https://github.com/biocore/biom-format) 2.1.0.
+* QIIME now depends on [biom-format](https://github.com/biocore/biom-format) >= 2.1.2, < 2.2.0.
 * the parameters ``--uclust_min_consensus_fraction`` and ``--uclust_similarity`` in assign taxonomy scripts have been changed to ``--min_consensus_fraction`` and ``--similarity`` since both of these parameters apply to the SortMeRNA taxon assigner as well.
 * Renamed ``split_fasta_on_sample_ids_to_files.py`` to      ``split_sequence_file_on_sample_ids_to_files.py``, which now supports splitting FASTQ files, as well. Added a parameter, ``file_type``, which is used to specify the type of the input file.
 * Added --assign_taxonomy option to pick_closed_reference_otus.py to allow taxonomy assignment using a classifier, rather than the default of using the taxonomic assignment of the cluster centroid.
@@ -39,10 +39,72 @@ optionally a mapping file. Check out the new documentation for the naming conven
 * Fasttree v1.x is no longer supported by ``make_phylogeny.py`` (see [issue #1516](https://github.com/biocore/qiime/issues/1516)).
 * Relaxed sanity tests for ``compare_categories.py --method adonis`` so that unique values are only checked for categories that are non-numeric (see [issue #1316](https://github.com/biocore/qiime/issues/1360)).
 * ``core_diversity_analyses.py`` now requires ``--tree_fp`` unless ``--nonphylogenetic_diversity`` is passed (see [#1671](https://github.com/biocore/qiime/issues/1671)).
+<<<<<<< HEAD
 *Added differential_abundance.py to supplement group_significance.py
 for those who wish to use metagenomeSeq's fitZIG algorithm and DESeq2's
 negative binomial algorithm.  Note the input for this is an unnormalized, raw matrix.
 *Added normalize_table.py for other normalization algorithms other than rarefying.  Included are metagenomeSeq's CSS and DESeq transformations.
+=======
+* Fixed bug in ``assign_taxonomy.py -m blast`` and ``parallel_assign_taxonomy_blast.py`` that prevented multiple instances of either to run at the same time (see [#1768](https://github.com/biocore/qiime/issues/1768)).
+* parallel_pick_otus_sortmerna.py added, and pick_closed_reference_otus.py and pick_open_reference_otus.py updated to use this functionality.
+* Added ``compute_index.py`` which implements the microbial dysbiosis index (MD-index) from Gevers et al 2014 (http://www.ncbi.nlm.nih.gov/pubmed/24629344).
+* Fixed bug where ``--phred_offset`` in ``split_libraries_fastq.py`` was ignored (see [#1656](https://github.com/biocore/qiime/issues/1656)).
+* ``--tail_type`` option in ``compare_distance_matrices.py`` now accepts "two-sided" instead of "two sided" for specifying a two-sided alternative hypothesis. The new name is easier to specify via the command-line (quotes aren't needed because it is a single word).
+* The Mantel test (``--method mantel``) and Mantel correlogram (``--method mantel_corr)`` in ``compare_distance_matrices.py`` are considerably faster than previous implementations.
+* Spaces in taxa will not cause an error when using ``--assignment_method=mothur`` in ``assign_taxonomy.py``.
+* Fixed bug where long axis labels were cut off in heatmaps generated by ``make_otu_heatmap.py`` (see [#1571](https://github.com/biocore/qiime/issues/1571)).
+* Added new options ``-g``/``--imagetype``, ``--dpi``, ``--width``, and ``--height`` to ``make_otu_heatmap.py``, which offer more control over the generation of heatmap figures.
+* Removed ``--output_dir`` optional option from ``make_otu_heatmap.py`` and replaced it with the required option ``--output_fp``.
+* Fixed bug where ``-S``/``--suppress_submit_jobs`` was being ignored by several of the parallel scripts (e.g. ``parallel_pick_otus_uclust_ref.py``) (see [#1665](https://github.com/biocore/qiime/issues/1665)).
+* Simplified and improved QIIME documentation.
+* ``print_qiime_config.py -t`` now tests a QIIME minimal (base) install instead of a QIIME full install. ``print_qiime_config.py -tf`` tests a QIIME full install.
+* Added ``pick_otus_reference_seqs_fp`` to the QIIME config file. This is a filepath to reference sequences to use with QIIME's OTU picking scripts/workflows. See the [QIIME config docs](http://qiime.org/install/qiime_config.html) and [#1696](https://github.com/biocore/qiime/issues/1696) for more details.
+* The QIIME config settings ``assign_taxonomy_id_to_taxonomy_fp``, ``assign_taxonomy_reference_seqs_fp``, ``pick_otus_reference_seqs_fp``, and ``pynast_template_alignment_fp`` now default to reference data files in the [qiime-default-reference project](http://github.com/biocore/qiime-default-reference).
+* Installing QIIME via ``pip install qiime`` now works out-of-the-box by providing a functioning QIIME minimal (base) install (see [#1696](https://github.com/biocore/qiime/issues/1696)).
+* ``cluster_jobs_fp`` in the QIIME config file now defaults to ``start_parallel_jobs.py``. ``seconds_to_sleep`` now defaults to 1.
+* Fixed bug where ``make_distance_comparison_plots.py`` would create empty groups (see [#1627](https://github.com/biocore/qiime/issues/1627)).
+* Added ``--suppress_taxonomy_assignment`` option to ``pick_closed_reference_otus.py``.
+* sumaclust v1.0.00, swarm 1.2.19, and sortmerna 2.0 are now optional dependencies (see the [QIIME install docs](http://qiime.org/install/install.html) for details).
+* Errors raised by scripts are easier to read and include a supplementary message on how to get help (see [#1794](https://github.com/biocore/qiime/issues/1794)).
+* Removed ``submit_to_mgrast.py`` script (see [#1780](https://github.com/biocore/qiime/issues/1780)).
+* Added ``collpase_samples.py``, which can be used for collapsing groups of samples in BIOM tables and mapping files based on their metadata (see [#1678](https://github.com/biocore/qiime/issues/1678)). This can be used, for example, to collapse samples belonging to a replicate group. This also has replaced ``summarize_otu_by_cat.py`` (see discussion on [#1798](https://github.com/biocore/qiime/issues/1798)).
+* ``qiime/workflow/pick_open_reference_otus.py`` no longer copies the permission bits of the reference file which caused a file permission failure in some cases.
+* Standardized use of underscores in option longnames. Affected scripts and options:
+  * ``scripts/compute_index.py``
+    * `show-indices` is now `show_indices`
+  * ``scripts/demultiplex_fasta.py``
+    * `start-numbering-at` is now `start_numbering_at`
+  * ``scripts/denoiser.py``
+    * `low_cut-off` is now `low_cut_off`
+    * `high_cut-off` is now `high_cut_off`
+  * ``scripts/multiple_rarefactions.py``
+    * `num-reps` is now `num_reps`
+  * ``scripts/multiple_rarefactions_even_depth.py``
+    * `num-reps` is now `num_reps`
+  * ``scripts/parallel_multiple_rarefactions.py``
+    * `num-reps` is now `num_reps`
+  * ``scripts/plot_rank_abundance_graph.py``
+    * `no-legend` is now `no_legend`
+  * ``scripts/start_parallel_jobs_slurm.py``
+    * `mem-per-cpu` is now `mem_per_cpu`
+  * ``scripts/split_libraries.py``
+    * `min-seq-length` is now `min_seq_length`
+    * `max-seq-length` is now `max_seq_length`
+    * `trim-seq-length` is now `trim_seq_length`
+    * `min-qual-score` is now `min_qual_score`
+    * `keep-primer` is now `keep_primer`
+    * `keep-barcode` is now `keep_barcode`
+    * `max-ambig` is now `max_ambig`
+    * `max-homopolymer` is now `max_homopolymer`
+    * `max-primer-mismatch` is now `max_primer_mismatch`
+    * `barcode-type` is now `barcode_type`
+    * `dir-prefix` is now `dir_prefix`
+    * `max-barcode-errors` is now `max_barcode_errors`
+    * `start-numbering-at` is now `start_numbering_at`
+* Fixed bug in ``make_rarefaction_plots.py`` where ``--generate_per_sample_plots`` wasn't working (see [#1475](https://github.com/biocore/qiime/issues/1475)).
+* Removed ``make_otu_heatmap_html.py`` in favor of ``make_otu_heatmap.py`` (see discussion on [#1724](https://github.com/biocore/qiime/issues/1724)).
+* Fixed bug that resulted in samples being mislabeled in ``make_otu_heatmap.py`` when one of the following options was passed: ``--category``, ``--map_fname``, ``--sample_tree``, or ``--suppress_column_clustering``. This is discussed in [#1790](https://github.com/biocore/qiime/issues/1790).
+>>>>>>> master
 
 QIIME 1.8.0 (11 Dec 2013)
 =========================
