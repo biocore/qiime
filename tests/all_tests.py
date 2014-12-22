@@ -38,7 +38,7 @@ script_info['optional_options'] = [
                 action='store_true',
                 help='suppress script usage tests [default: %default]',
                 default=False),
-    make_option('--unittest_glob',
+    make_option('--unit_test_glob',
                 help='wildcard pattern to match tests to run [default: run all]',
                 default=None),
     make_option('--script_usage_tests',
@@ -71,13 +71,13 @@ def main():
     # fail unit tests.
     if not opts.suppress_unit_tests:
         unittest_names = []
-        if not opts.unittest_glob:
+        if not opts.unit_test_glob:
             for root, dirs, files in walk(test_dir):
                 for name in files:
                     if name.startswith('test_') and name.endswith('.py'):
                         unittest_names.append(join(root, name))
         else:
-            for fp in glob(opts.unittest_glob):
+            for fp in glob(opts.unit_test_glob):
                 fn = split(fp)[1]
                 if fn.startswith('test_') and fn.endswith('.py'):
                     unittest_names.append(abspath(fp))

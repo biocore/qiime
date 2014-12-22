@@ -50,7 +50,7 @@ negative binomial algorithm.  Note the input for this is an unnormalized, raw ma
 >>>>>>> master
 * Fixed bug in ``assign_taxonomy.py -m blast`` and ``parallel_assign_taxonomy_blast.py`` that prevented multiple instances of either to run at the same time (see [#1768](https://github.com/biocore/qiime/issues/1768)).
 * parallel_pick_otus_sortmerna.py added, and pick_closed_reference_otus.py and pick_open_reference_otus.py updated to use this functionality.
-* Added ``compute_index.py`` which implements the microbial dysbiosis index (MD-index) from Gevers et al 2014 (http://www.ncbi.nlm.nih.gov/pubmed/24629344).
+* Added new ``compute_taxonomy_ratios.py`` script, which implements the microbial dysbiosis index (MD-index) from [Gevers et al 2014](http://www.ncbi.nlm.nih.gov/pubmed/24629344).
 * Fixed bug where ``--phred_offset`` in ``split_libraries_fastq.py`` was ignored (see [#1656](https://github.com/biocore/qiime/issues/1656)).
 * ``--tail_type`` option in ``compare_distance_matrices.py`` now accepts "two-sided" instead of "two sided" for specifying a two-sided alternative hypothesis. The new name is easier to specify via the command-line (quotes aren't needed because it is a single word).
 * The Mantel test (``--method mantel``) and Mantel correlogram (``--method mantel_corr)`` in ``compare_distance_matrices.py`` are considerably faster than previous implementations.
