@@ -25,8 +25,7 @@ qiime_config = load_qiime_config()
 options_lookup = get_options_lookup()
 
 script_info = {}
-script_info['brief_description'] = """
-This script is used to pick open reference OTUs"""
+script_info['brief_description'] = """Perform open-reference OTU picking"""
 script_info['script_description'] = """
 This script is broken down into 4 possible OTU picking steps, and 2 steps
 involving the creation of OTU tables and trees. The commands for each step are
@@ -34,7 +33,7 @@ described below, including what the input and resulting output files are.
 Additionally, the optional specified parameters of this script that can be passed
 are referenced.
 
-Step 1) Prefilting and picking closed reference OTUs
+Step 1) Prefiltering and picking closed reference OTUs
 The first step is an optional prefiltering of the input fasta file to remove
 sequences that do not hit the reference database with a given sequence
 identity (PREFILTER_PERCENT_ID). This step can take a very long time, so is
@@ -168,6 +167,18 @@ rerun the script and pass in the:
 --step_1_otu_map_fp
 --step1_failures_fasta_fp
 parameters, and the script will continue with Steps 2 - 4.
+
+**Note:** If most or all of your sequences are failing to hit the reference
+during the prefiltering or closed-reference OTU picking steps, your sequences
+may be in the reverse orientation with respect to your reference database. To
+address this, you should add the following line to your parameters file
+(creating one, if necessary) and pass this file as -p:
+
+pick_otus:enable_rev_strand_match True
+
+Be aware that this doubles the amount of memory used in these steps of the
+workflow.
+
 """
 
 script_info['script_usage'] = []

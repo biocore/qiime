@@ -41,8 +41,22 @@ else:
 script_info = {}
 script_info[
     'brief_description'] = "Closed-reference OTU picking/Shotgun UniFrac workflow."
-script_info[
-    'script_description'] = "This script picks OTUs using a closed reference and constructs an OTU table. Taxonomy is assigned using a pre-defined taxonomy map of reference sequence OTU to taxonomy. If full-length genomes are provided as the reference sequences, this script applies the Shotgun UniFrac method."
+script_info['script_description'] = """
+This script picks OTUs using a closed reference and constructs an OTU table.
+Taxonomy is assigned using a pre-defined taxonomy map of reference sequence OTU
+to taxonomy. If full-length genomes are provided as the reference sequences,
+this script applies the Shotgun UniFrac method.
+
+**Note:** If most or all of your sequences are failing to hit the reference,
+your sequences may be in the reverse orientation with respect to your reference
+database. To address this, you should add the following line to your parameters
+file (creating one, if necessary) and pass this file as -p:
+
+pick_otus:enable_rev_strand_match True
+
+Be aware that this doubles the amount of memory used.
+
+"""
 
 script_info['script_usage'] = []
 
