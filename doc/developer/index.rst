@@ -4,7 +4,7 @@
 QIIME Developer Notes
 =====================
 
-QIIME is an open-source project, developed primarily in `Knight <http://knightlab.colorado.edu>`_ and `Caporaso <http://caporasolab.us>`_ labs.
+QIIME is an open-source project, developed primarily in the `Knight <http://knightlab.colorado.edu>`_ and `Caporaso <http://caporasolab.us>`_ labs.
 
 If you're interested in getting involved, see `Contributing to QIIME <https://github.com/biocore/qiime/blob/master/CONTRIBUTING.md>`_.
 
