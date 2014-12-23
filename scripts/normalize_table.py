@@ -53,13 +53,10 @@ script_info['script_usage'].append(
       ("CSS Matrix Normalization",
        "Normalize a raw (non-normalized/non-rarefied) otu_table.biom using CSS:",
        "%prog -i otu_table.biom -a CSS -o CSS_normalized_otu_table.biom"))
-# This usage example is commented out as it currently produces an error in the
-# underlying R code. This is discussed in QIIME issue #1810:
-# https://github.com/biocore/qiime/issues/1810
-# script_info['script_usage'].append(
-#        ("DESeq Matrix Normalization",
-#        "Normalize a raw (non-normalized/non-rarefied) otu_table.biom using DESeq:",
-#        "%prog -i otu_table.biom -a DESeq -o DESeq_normalized_otu_table.biom"))
+script_info['script_usage'].append(
+       ("DESeq Matrix Normalization",
+       "Normalize a raw (non-normalized/non-rarefied) otu_table.biom using DESeq:",
+       "%prog -i otu_table.biom -a DESeq -o DESeq_normalized_otu_table.biom"))
 script_info['output_description']= \
 """BIOM table with normalized counts. Can be used in all downstream analyses
 except differential abundance testing and OTU correlations."""
