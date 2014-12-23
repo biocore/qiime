@@ -50,34 +50,45 @@ Bioconductor/R websites."""
 script_info['script_usage'] = []
 script_info['script_usage'].append((
     "OTU Differential Abundance Testing with metagenomeSeq_fitZIG",
-    "For this script, the user supplies an input raw (NOT normalized) BIOM Talbes (usually always having different column sums), an output file, a mapping file, a category in the mapping file for which it is desired to test differential abundance, and the algorithm that the user want for differential abundance testing, as follows:",
+    """Apply metagenomeSeq_fitZIG differential OTU abundance testing to a """
+    """raw (NOT normalized) BIOM table to test for differences in OTU """
+    """abundance between samples in the Treatment:Control and """
+    """Treatment:Fast groups.""",
     "%prog -i otu_table.biom -o diff_otus.txt -m map.txt -a metagenomeSeq_fitZIG -c Treatment -x Control -y Fast")
     )
 script_info['output_description']= "The resulting output OTU txt file contains a list of all the OTUs in the input matrix, along with their associated statistics and FDR p-values."
-script_info['required_options']=[\
+script_info['required_options']=[
 ]
-script_info['optional_options']=[\
- make_option('-i', '--input_path',type='existing_path', help='path to the input raw '
-    'matrix file(s) (i.e., the output from OTU picking). '
-    'processing and a filename for a single file operation.'),\
- make_option('-o', '--out_path',type='new_path', help='output path. directory for '
-    'batch processing, filename for single file operation'),\
- make_option('-a', '--algorithm', type='multiple_choice',
-     mchoices=algorithm_list(), help='algorithm to calculate the differentially abundant OTUs '
-     'To see the full list of methods and their description use -s'),\
- make_option('-m', '--mapping_file_path', type='new_path', help='mapping file path.'),\
- make_option('-c', '--mapping_file_category', type='string', help='mapping file category, e.g. "BODY_SITE".'),\
- make_option('-x', '--mapping_file_subcategory_1', type='string', help='mapping file subcategory, e.g. "Palm".'),\
- make_option('-y', '--mapping_file_subcategory_2', type='string', help='mapping file subcategory, e.g. "Tongue".'),\
- make_option('-s', '--show_algorithms',action='store_true', default=False, help='show '
-     'available OTU differential abundance testing algorithms'),\
- make_option('-d', '--DESeq2_diagnostic_plots', default=False, action='store_true', help='show '
-     'a MA plot - y axis: log2 fold change, x axis: average size factor normalized OTU value. '
-     'also show a Dispersion Estimate plot - visualize the fitted dispersion vs. mean relationship'),
+script_info['optional_options']=[
+    make_option('-i', '--input_path', type='existing_path',
+    help='path to the input BIOM file (e.g., the output '
+    'from OTU picking) or directory containing input BIOM files '
+    'for batch processing [REQUIRED if not passing -l]'),
+    make_option('-o', '--out_path', type='new_path',
+    help='output filename for single file operation, or output '
+    'directory for batch processing [REQUIRED if not passing -l]'),
+make_option('-a', '--algorithm', default='metagenomeSeq_fitZIG', type='choice',
+    choices=algorithm_list(), help='differential abundance algorithm to '
+    'apply to input BIOM table(s) [default: %default]' + ' Available options are: '
+    '%s' % ', '.join(algorithm_list())),
+make_option('-m', '--mapping_file_path', type='existing_filepath',
+    help='path to mapping file [REQUIRED if not passing -l]'),
+make_option('-c', '--mapping_file_category',
+    help='mapping file category [REQUIRED if not passing -l]'),
+make_option('-x', '--mapping_file_subcategory_1',
+    help='mapping file subcategory [REQUIRED if not passing -l]'),
+make_option('-y', '--mapping_file_subcategory_2',
+    help='mapping file subcategory [REQUIRED if not passing -l]'),
+make_option('-l', '--list_algorithms', action='store_true', default=False,
+    help='show available differential abundance algorithms and exit '
+    '[default: %default]'),
+make_option('-d', '--DESeq2_diagnostic_plots', default=False,
+    action='store_true', help='show a MA plot - y axis: log2 fold change, '
+    'x axis: average size factor normalized OTU value. Also show a Dispersion '
+    'Estimate plot - visualize the fitted dispersion vs. mean relationship '
+    '[default: %default]'),
  ]
 script_info['version'] = __version__
-
-
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
@@ -88,32 +99,30 @@ def main():
     mapping_category = opts.mapping_file_category
     subcategory_1 = opts.mapping_file_subcategory_1
     subcategory_2 = opts.mapping_file_subcategory_2
-    show_algorithms = opts.show_algorithms
+    list_algorithms = opts.list_algorithms
     DESeq2_diagnostic_plots = opts.DESeq2_diagnostic_plots
 
-
-    if show_algorithms:
-        print 'Implemented algorithms are:\n%s' % ', '.join(algorithm_list())
-    else:
-        algorithm = algorithm[0]
-
-    if algorithm == 'metagenomeSeq_fitZIG':
+    if list_algorithms:
+        print 'Available differential abundance algorithms are:\n%s' % ', '.join(algorithm_list())
+    elif algorithm == 'metagenomeSeq_fitZIG':
         if os.path.isdir(input_path):
             multiple_file_DA_fitZIG(input_path, out_path, mapping_fp, mapping_category, subcategory_1, subcategory_2)
         elif os.path.isfile(input_path):
             DA_fitZIG(input_path, out_path, mapping_fp, mapping_category, subcategory_1, subcategory_2)
         else:
-            print("io error, check input file path")
-        exit(1)
+            # it shouldn't be possible to get here
+            option_parser.error("Unknown input type: %s" % input_path)
     elif algorithm == 'DESeq2_nbinom':
         if os.path.isdir(input_path):
             multiple_file_DA_DESeq2(input_path, out_path, mapping_fp, mapping_category, subcategory_1, subcategory_2, DESeq2_diagnostic_plots)
         elif os.path.isfile(input_path):
             DA_DESeq2(input_path, out_path, mapping_fp, mapping_category, subcategory_1, subcategory_2, DESeq2_diagnostic_plots)
         else:
-            print("io error, check input file path")
-        exit(1)
-
+            # it shouldn't be possible to get here
+            option_parser.error("Unknown input type: %s" % input_path)
+    else:
+        # it shouldn't be possible to get here
+        option_parser.error("Unknown normalization algorithm: %s" % algorithm)
 
 if __name__ == "__main__":
     main()
