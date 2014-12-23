@@ -1,5 +1,5 @@
 from __future__ import division
- 
+
 __author__ = "William Walters"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["William Walters"]
@@ -25,13 +25,13 @@ def create_commands_jpe(pairs, base_output_dir, optional_params = "",
         directory names
     remove_filepath_in_name: If True, the base filename will not be used in the
         output directory names.
-    match_barcodes: True to match barcodes. 
+    match_barcodes: True to match barcodes.
     bc_pairs: dictionary of read1:bc_read filepaths (empty if not used)
     """
-    
+
     commands = []
     extensions = ['.fastq.gz', '.fastq', '.fq.gz', '.fq']
-    
+
     for curr_fp in pairs:
         for extension in extensions:
             if extension in curr_fp:
@@ -42,22 +42,22 @@ def create_commands_jpe(pairs, base_output_dir, optional_params = "",
             added_output_str = ""
         if not remove_filepath_in_name:
             added_output_str += basename(curr_fp).split(curr_ext)[0]
-            
-            
-        curr_outputdir = join(base_output_dir, added_output_str) 
+
+
+        curr_outputdir = join(base_output_dir, added_output_str)
         if match_barcodes:
-            command = "%s join_paired_ends.py %s -b %s -f %s -r %s -o %s %s" %\
-                (leading_text, optional_params, bc_pairs[curr_fp], curr_fp,
+            command = "%sjoin_paired_ends.py %s -b %s -f %s -r %s -o %s %s" %\
+                (_clean_leading_text(leading_text), optional_params, bc_pairs[curr_fp], curr_fp,
                 pairs[curr_fp], curr_outputdir, trailing_text)
         else:
-            command = "%s join_paired_ends.py %s -f %s -r %s -o %s %s" %\
-                (leading_text, optional_params, curr_fp, pairs[curr_fp],
+            command = "%sjoin_paired_ends.py %s -f %s -r %s -o %s %s" %\
+                (_clean_leading_text(leading_text), optional_params, curr_fp, pairs[curr_fp],
                 curr_outputdir, trailing_text)
-            
+
         commands.append([('join_paired_ends.py: %s' % curr_fp, command)])
-                    
+
     return commands
-    
+
 def create_commands_eb(all_files, ispaired, base_output_dir,
         optional_params = "", leading_text = "", trailing_text = "",
         include_input_dir_path=False, remove_filepath_in_name=False):
@@ -74,10 +74,10 @@ def create_commands_eb(all_files, ispaired, base_output_dir,
     remove_filepath_in_name: If True, the base filename will not be used in the
         output directory names.
     """
-    
+
     commands = []
     extensions = ['.fastq.gz', '.fastq', '.fq.gz', '.fq']
-    
+
     for curr_fp in all_files:
         if include_input_dir_path:
             added_output_str = curr_fp.split('/')[-2]
@@ -88,21 +88,21 @@ def create_commands_eb(all_files, ispaired, base_output_dir,
                 if extension in curr_fp:
                     curr_ext = extension
             added_output_str += basename(curr_fp).split(curr_ext)[0]
-            
-        curr_outputdir = join(base_output_dir, added_output_str) 
+
+        curr_outputdir = join(base_output_dir, added_output_str)
         if ispaired:
-            command = "%s extract_barcodes.py %s -f %s -r %s -o %s %s" %\
-            (leading_text, optional_params, curr_fp, all_files[curr_fp],
+            command = "%sextract_barcodes.py %s -f %s -r %s -o %s %s" %\
+            (_clean_leading_text(leading_text), optional_params, curr_fp, all_files[curr_fp],
             curr_outputdir, trailing_text)
         else:
-            command = "%s extract_barcodes.py %s -f %s -o %s %s" %\
-            (leading_text, optional_params, curr_fp,
+            command = "%sextract_barcodes.py %s -f %s -o %s %s" %\
+            (_clean_leading_text(leading_text), optional_params, curr_fp,
             curr_outputdir, trailing_text)
-            
+
         commands.append([('extract_barcodes.py: %s' % curr_fp, command)])
-                    
+
     return commands
-    
+
 def create_commands_slf(all_files, demultiplexing_method, output_dir,
         params = "", leading_text = "", trailing_text = "",
         include_input_dir_path=False, remove_filepath_in_name=False,
@@ -122,16 +122,16 @@ def create_commands_slf(all_files, demultiplexing_method, output_dir,
     sampleid_indicator: Split on this character in input fastq filenames to
         generate output SampleID name.
     """
-    
+
     commands = []
     read_files = []
     barcode_files = []
     mapping_files = []
     sample_ids = []
-    
+
     # Using a set in this case to keep consistent order (needed for unit tests)
     all_fps = set(all_files)
-    
+
     for curr_fp in all_fps:
         read_files.append(curr_fp)
         # Just need to build up a list of SampleID names
@@ -147,41 +147,41 @@ def create_commands_slf(all_files, demultiplexing_method, output_dir,
         else:
             barcode_files.append(all_files[curr_fp][0])
             mapping_files.append(all_files[curr_fp][1])
-            
+
     if demultiplexing_method == 'sampleid_by_file':
         command =\
-            "%s split_libraries_fastq.py %s -i %s --sample_ids %s -o %s %s --barcode_type 'not-barcoded'" %\
-            (leading_text, params, ",".join(read_files), ",".join(sample_ids),
+            "%ssplit_libraries_fastq.py %s -i %s --sample_ids %s -o %s %s --barcode_type 'not-barcoded'" %\
+            (_clean_leading_text(leading_text), params, ",".join(read_files), ",".join(sample_ids),
             output_dir, trailing_text)
     else:
         command =\
-            "%s split_libraries_fastq.py %s -i %s --barcode_read_fps %s --mapping_fps %s -o %s %s" %\
-            (leading_text, params, ",".join(read_files),
+            "%ssplit_libraries_fastq.py %s -i %s --barcode_read_fps %s --mapping_fps %s -o %s %s" %\
+            (_clean_leading_text(leading_text), params, ",".join(read_files),
             ",".join(barcode_files), ",".join(mapping_files),
             output_dir, trailing_text)
-    
+
     commands.append([('split_libraries_fastq.py', command)])
-       
+
     return commands
-    
+
 def get_pairs(all_files, read1_indicator, read2_indicator, match_barcodes=False,
         barcode_indicator="_I1_"):
     """ Finds pairs of files from a list of files, optionally matches barcodes
-    
+
     all_files: list of filepaths
     read1_indicator: string indicating read 1 of a pair
     read2_indicator: string indicating read 2 of a pair
     match_barcodes: If True, will attempt to match up barcodes file
     barcode_indicator: string indicating barcode file.
     """
-    
+
     pairs = {}
     bc_pairs = {}
-    
+
     read1_files = []
     read2_files = []
     bc_files = []
-    
+
     for curr_file in all_files:
         curr_file_string_r1 = curr_file.split(read1_indicator)
         curr_file_string_r2 = curr_file.split(read2_indicator)
@@ -198,20 +198,20 @@ def get_pairs(all_files, read1_indicator, read2_indicator, match_barcodes=False,
             raise ValueError,("Invalid filename found for splitting on input "+\
                 "for file %s, " % curr_file + "check input read1_indicator "+\
                 "and read2_indicator parameters as well.")
-                
+
     for curr_read1 in read1_files:
         for curr_read2 in read2_files:
             if curr_read1 == curr_read2:
                 pairs[read1_indicator.join(curr_read1)] =\
                     read2_indicator.join(curr_read2)
-                    
+
     if match_barcodes:
         for curr_read1 in read1_files:
             for curr_bc in bc_files:
                 if curr_read1 == curr_bc:
                     bc_pairs[read1_indicator.join(curr_read1)] =\
                         barcode_indicator.join(curr_bc)
-        # Need a specific test if matched barcodes are used-the barcodes should 
+        # Need a specific test if matched barcodes are used-the barcodes should
         # match both the forward and reverse reads.
         forward_reads = set(pairs.keys())
         bc_reads = set(bc_pairs.keys())
@@ -225,20 +225,20 @@ def get_pairs(all_files, read1_indicator, read2_indicator, match_barcodes=False,
 def get_matching_files(all_fastq, all_mapping,
         read_indicator, barcode_indicator, mapping_indicator):
     """ Matches up read, barcode, and mapping files based on filenames
-    
+
     all_fastq: list of sequence filepaths
     all_mapping: list of mapping filepaths
     read_indicator: string indicating read file
     barcode_indicator: string indicating barcode file
     mapping_indicator: string indicating mapping file
     """
-    
+
     read_files = []
     barcode_files = []
     mapping_files = {}
     matching_files = {}
 
-    # Have to assume trailing text will not match extensions, so have to 
+    # Have to assume trailing text will not match extensions, so have to
     # do some splitting at the extension point to match up.
     for curr_file in all_mapping:
         try:
@@ -249,7 +249,7 @@ def get_matching_files(all_fastq, all_mapping,
             raise IndexError,("Found file with .txt extension that does not "
                 "contain the mapping file indicators (see mapping_indicator) "
                 ": %s" % curr_file)
-       
+
     for curr_file in all_fastq:
         curr_file_string_read = curr_file.split(read_indicator)
         curr_file_string_bc = curr_file.split(barcode_indicator)
@@ -275,3 +275,11 @@ def get_matching_files(all_fastq, all_mapping,
                     raise KeyError,("Found read file with no matching mapping "
                        "file: %s" % read_indicator.join(curr_read))
     return matching_files
+
+
+def _clean_leading_text(leading_text):
+    leading_text = leading_text.strip()
+    if leading_text:
+        return leading_text + ' '
+    else:
+        return leading_text
