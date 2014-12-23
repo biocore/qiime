@@ -9,8 +9,8 @@ __maintainer__ = "Mike Robeson"
 __email__ = "robesonms@ornl.gov"
 
 from qiime.join_paired_ends import (join_method_names,
-                                    join_method_constructors,
-                                    write_synced_barcodes_fastq)
+                                    join_method_constructors)
+from qiime.format import write_synced_barcodes_fastq
 from qiime.util import (parse_command_line_parameters, get_options_lookup,
                         make_option, load_qiime_config, create_dir)
 import os
@@ -117,7 +117,14 @@ script_info['optional_options'] = [
                 help='Only applies to SeqPrep method, otherwise ignored.' +
                       ' Set if input reads are in phred+64 format. Output will '
                       'always be phred+33. [default: %default]',
-                default=False)]
+                default=False),
+    make_option('-q', '--qual_score_variant',
+                help=' Input format of fastq data. Can be: \'illumina1.3\' or'+
+                    ' \'illumina1.8\'. Only used if using the \'-b\' option.' +
+                      ' Output will always be \'illumina1.8\'.' +
+                      '[default: %default]. For more info see: '+
+                      'http://scikit-bio.org/docs/latest/generated/skbio.io.fastq.html',
+                default='illumina1.8')]
 
 script_info['version'] = __version__
 
@@ -130,6 +137,7 @@ def main():
     forward_reads_fp = opts.forward_reads_fp
     reverse_reads_fp = opts.reverse_reads_fp
     pe_join_method = opts.pe_join_method
+    qual_score_variant=opts.qual_score_variant
     output_dir = opts.output_dir
     # fastq-join only options:
     perc_max_diff = opts.perc_max_diff
@@ -171,7 +179,7 @@ def main():
     if opts.index_reads_fp:
         index_reads = opts.index_reads_fp
         assembly_fp = paths['Assembled']  # grab joined-pairs output path
-        write_synced_barcodes_fastq(assembly_fp, index_reads)
+        write_synced_barcodes_fastq(assembly_fp, index_reads, qual_score_variant=qual_score_variant)
 
 
 if __name__ == "__main__":

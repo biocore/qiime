@@ -3,7 +3,8 @@ from __future__ import division
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Rob Knight", "Justin Kuczynski", "Jeremy Widmann",
-               "Antonio Gonzalez Pena", "Daniel McDonald", "Jai Ram Rideout"]
+               "Antonio Gonzalez Pena", "Daniel McDonald", "Jai Ram Rideout",
+               "Mike Robeson"]
 # remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.8.0-dev"
@@ -14,13 +15,14 @@ import numpy
 from numpy import asarray, isnan, log10, median
 from StringIO import StringIO
 from re import compile, sub
-from os import walk
+from os import walk, path
 from os.path import join, splitext, exists, isfile, abspath
 
+from skbio.io import read
 from skbio.sequence import BiologicalSequence
 from biom.table import Table
 
-from qiime.util import get_qiime_library_version, load_qiime_config
+from qiime.util import get_qiime_library_version, load_qiime_config, qiime_open
 from qiime.colors import data_color_hsv
 
 """Contains formatters for the files we expect to encounter in 454 workflow.
@@ -601,7 +603,7 @@ def write_Fasta_from_name_seq_pairs(name_seqs, fh):
         raise ValueError("Need open file handle to write to.")
 
     for (name, seq) in name_seqs:
-        fh.write("%s\n" % BiologicalSequence(seq, id=name).to_fasta())
+        BiologicalSequence(seq, id=name).write(fh, format='fasta')
 
 
 def illumina_data_to_fastq(record_data, number_of_bases=None):
@@ -893,6 +895,68 @@ def format_fastq_record(label,
     """
 
     return "@%s\n%s\n+\n%s\n" % (label, seq, qual)
+
+
+def write_synced_barcodes_fastq(joined_fp, index_fp, qual_score_variant='illumina1.8'):
+    """Writes new index file based on surviving assembled paired-ends.
+       -joined_fp : file path to paired-end assembled fastq file
+       -index_fp : file path to index / barcode reads fastq file
+       -qual_score_variant : format of fastq quality scores. Can be
+                            \'illumina1.3\' or \'illumina1.8\'
+
+       This function iterates through the joined reads file and index file.
+       Only those index-reads within the file at index_fp, that have headers
+       matching those within the joined-pairs at joined_fp, are written
+       to file.
+
+       Always forces output to be: illumina1.8
+
+     WARNING: Assumes reads are in the same order in both files,
+              except for cases in which the corresponding
+              read in the joined_fp file is missing (i.e. pairs
+              failed to assemble).
+
+    """
+
+    # open files (handles normal / gzipped data)
+    jh = qiime_open(joined_fp)
+    ih = qiime_open(index_fp)
+
+    # base new index file name on joined paired-end file name:
+    j_path, ext = path.splitext(joined_fp)
+    filtered_bc_outfile_path = j_path + '_barcodes.fastq'
+    fbc_fh = open(filtered_bc_outfile_path, 'w')
+
+    # Set up iterators
+    index_fastq_iter = read(ih, format='fastq', variant=qual_score_variant)
+    joined_fastq_iter = read(jh, format='fastq', variant=qual_score_variant)
+
+    # Write barcodes / index reads that we observed within
+    # the joined paired-ends. Warn if index and joined data
+    # are not in order.
+    for joined in joined_fastq_iter:
+        index = index_fastq_iter.next()
+        while joined.id != index.id:
+            try:
+                index = index_fastq_iter.next()
+            except StopIteration:
+                raise StopIteration("\n\nReached end of index-reads file" +
+                                    " before iterating through joined paired-end-reads file!" +
+                                    " Except for missing paired-end reads that did not survive" +
+                                    " assembly, your index and paired-end reads files must be in" +
+                                    " the same order! Also, check that the index-reads and" +
+                                    " paired-end reads have identical headers. The last joined" +
+                                    " paired-end ID processed was:\n\'%s\'\n" % (joined.id))
+        else:
+            # force output to illumina1.8
+            index.write(fbc_fh, format='fastq', variant='illumina1.8')
+
+    ih.close()
+    jh.close()
+    fbc_fh.close()
+
+    return filtered_bc_outfile_path
+
 
 
 HTML_LINES_INIT = """<html>
