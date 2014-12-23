@@ -1629,10 +1629,13 @@ def assign_correlation_pval(corr, n, method, permutations=None,
             raise ValueError('You must specify vectors, permutation '
                              'function, and number of permutations to calc '
                              'bootstrapped pvalues. Cant continue.')
-        r = empty(permutations)
-        for i in range(permutations):
-            r[i] = perm_test_fn(v1, permutation(v2))
-        return (abs(r) >= abs(corr)).sum() / float(permutations)
+        if any([isnan(corr), isinf(corr)]):
+            return nan
+        else:
+            r = empty(permutations)
+            for i in range(permutations):
+                r[i] = perm_test_fn(v1, permutation(v2))
+            return (abs(r) >= abs(corr)).sum() / float(permutations)
     elif method == 'kendall':
         return kendall_pval(corr, n)
     else:
@@ -2425,3 +2428,32 @@ def cscore(v1, v2):
     v2_b = v2.astype(bool)
     sij = (v1_b * v2_b).sum()
     return (v1_b.sum() - sij) * (v2_b.sum() - sij)
+
+def correlate(v1, v2, method):
+    '''Correlate vectors using method.
+
+    Parameters
+    ----------
+    v1 : array-like
+        List or array of ints or floats to be correlated.
+    v2 : array-like
+        List or array of ints or floats to be correlated.
+    method : str
+        One of 'spearman', 'pearson', 'kendall', 'cscore'.
+
+    Returns
+    -------
+    rho : float
+        Correlation between the vectors.
+    '''
+    if method == 'pearson':
+        corr_fn = pearson
+    elif method == 'spearman':
+        corr_fn = spearman
+    elif method == 'kendall':
+        corr_fn = kendall
+    elif method == 'cscore':
+        corr_fn = cscore
+    else:
+        raise ValueError('Correlation function not recognized.')
+    return corr_fn(v1, v2)
