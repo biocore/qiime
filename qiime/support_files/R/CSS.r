@@ -6,7 +6,7 @@ sourcedir <- args[which(args == '--source_dir') + 1]
 source(sprintf('%s/util.r',sourcedir))
 
 load.library('optparse')
-load.library('metagenomeSeq')
+load.library('metagenomeSeq', bioconductor=TRUE)
 load.library('biom')
 
 # make option list and parse command line
@@ -35,6 +35,5 @@ if(is.null(opts$input_path)) stop('Please supply an otu table.')
             }
             write_biom(MRexperiment2biom(obj, norm=TRUE, log=TRUE), out_path)
         }
-        
+
 CSS(opts$input_path, opts$out_path, opts$output_CSS_statistics)
- 

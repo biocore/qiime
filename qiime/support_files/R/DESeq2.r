@@ -6,9 +6,9 @@ sourcedir <- args[which(args == '--source_dir') + 1]
 source(sprintf('%s/util.r',sourcedir))
 
 load.library('optparse')
-load.library('DESeq2')
+load.library('DESeq2', bioconductor=TRUE)
 load.library('biom')
-load.library('metagenomeSeq')
+load.library('metagenomeSeq', bioconductor=TRUE)
 
 # make option list and parse command line
 option_list <- list(
@@ -34,7 +34,7 @@ if(is.null(opts$input_path)) stop('Please supply an otu table.')
                 	x = x + 1
                 	#Create annotated data.frame with mock conditions: these should not influence normalization - just required for DESeqDataSetFromMatrix
                 	sampleTable <- data.frame(sampleName=colnames(x), condition=sampleConditions)
-          			dds <- DESeqDataSetFromMatrix(x, sampleTable, design=~condition)          
+          			dds <- DESeqDataSetFromMatrix(x, sampleTable, design=~condition)
                 	vsmat = assay(varianceStabilizingTransformation(dds))
                 	if (!is.null(DESeq_negatives_to_zero)) {
                     	vsmat[vsmat<0]=0
@@ -43,5 +43,5 @@ if(is.null(opts$input_path)) stop('Please supply an otu table.')
                		colnames(vsmat) <- c(colnames(x))
                 	write_biom(MRexperiment2biom(vsmat), out_path)
             	}
-            	
+
 DESeq2(opts$input_path, opts$out_path, opts$DESeq_negatives_to_zero)
