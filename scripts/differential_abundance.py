@@ -3,10 +3,10 @@
 from __future__ import division
 
 from qiime.util import parse_command_line_parameters, make_option
-from qiime.differential_abundance import DA_fitZIG, multiple_file_DA_fitZIG, DA_DESeq2, multiple_file_DA_DESeq2, algorithm_list
+from qiime.differential_abundance import (DA_fitZIG, multiple_file_DA_fitZIG,
+    DA_DESeq2, multiple_file_DA_DESeq2, algorithm_list)
 
 import os
-
 
 __author__ = "Sophie Weiss"
 __copyright__ = "Copyright 2014, The QIIME Project"
@@ -16,12 +16,43 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Sophie Weiss"
 __email__ = "sophie.sjw@gmail.com"
 
-
-
 script_info = {}
-script_info['brief_description'] = "OTU differential abundance between two sample categories"
-script_info['script_description'] = "OTU differential abundance testing is commonly used to identify OTUs that differ between two mapping file sample categories (i.e. Palm and Tongue body sites).  These methods can be used in comparison to group_significance.py on a rarefied matrix, and we would always recommend comparing the results of these approaches to the rarefied/group_significance.py approaches.  We would also recommend treating the differentially abundant OTUs identified by these (fitZIG and DESeq negative binomial) techinques with caution, as they assume a distribution and are therefore parametric.  They are also newer techinques that are less well tested compared to rarefying/group_signficance.py.  The input is a raw (not rarefied) matrix having uneven column sums.  With these techniques, we would still recommend removing low depth samples (e.g. below 1000 sequences per sample) from the data set.  The DESeq2 method should NOT be used if the fit line on the disperison plot (one of the diagnostic plots output by the -d, or --DESeq2_diagnostic_plots option) does not look smooth and there are big gaps in the points.  DESeq2 is stronger at very small/smaller data sets and the run-time beyond 100 total samples becomes very long.  fitZIG is a better algorithm for over 100 samples per category (e.g. Palm samples).  In simulation, these techinques have higher sensitivity, but sometimes higher false positive rate compared to group_significance.py, especially with low and very uneven library sizes.  In practice and with real data, we do not observe much of a difference between these results and group_significance.py.  For more on these techinques please see Paulson, JN, et al. 'Differential abundance analysis for microbial marker-gene surveys.'  Nature Methods 2013.  For DESeq2/DESeq please see Love, MI et al. 'Moderated estimation of fold change and dispersion for RNA-Seq data with DESeq2,' Genome Biology 2014.  Anders S, Huber W. 'Differential expression analysis for sequence count data.' Genome Biology 2010.  Additionally, you can also read the vignettes for each of the techinques on the Bioconductor/R websites."
-script_info['script_usage'] = [("""OTU Differential Abundance Testing""","""For this script, the user supplies an input raw (NOT normalized - either by rarefying, CSS, DESeq, etc.) OTU matrix (usually always having different column sums), an output file, a mapping file, a category in the mapping file for which it is desired to test differential abundance, and the algorithm that the user want for differential abundance testing, as follows:""","""%prog -i otu_table.biom -o DE_OTUs.txt -m map.txt -a metagenomeSeq_fitZIG -c Treatment -x Control -y Fast""")]
+script_info['brief_description'] = "Identify OTUs that are differentially abundance across two sample categories"
+script_info['script_description'] = \
+"""OTU differential abundance testing is commonly used to identify OTUs that
+differ between two mapping file sample categories (i.e. Palm and Tongue body
+sites).  These methods can be used in comparison to group_significance.py on a
+rarefied matrix, and we would always recommend comparing the results of these
+approaches to the rarefied/group_significance.py approaches.  We would also
+recommend treating the differentially abundant OTUs identified by these (fitZIG
+and DESeq negative binomial) techinques with caution, as they assume a
+distribution and are therefore parametric.  They are also newer techinques that
+are less well tested compared to rarefying/group_signficance.py.  The input is
+a raw (not rarefied) matrix having uneven column sums.  With these techniques,
+we would still recommend removing low depth samples (e.g. below 1000 sequences
+per sample) from the data set.  The DESeq2 method should NOT be used if the fit
+line on the disperison plot (one of the diagnostic plots output by the -d, or
+--DESeq2_diagnostic_plots option) does not look smooth and there are big gaps
+in the points.  DESeq2 is stronger at very small/smaller data sets and the
+run-time beyond 100 total samples becomes very long.  fitZIG is a better
+algorithm for over 100 samples per category (e.g. Palm samples).  In simulation,
+these techinques have higher sensitivity, but sometimes higher false positive
+rate compared to group_significance.py, especially with low and very uneven
+library sizes.  In practice and with real data, we do not observe much of a
+difference between these results and group_significance.py.  For more on these
+techinques please see Paulson, JN, et al. 'Differential abundance analysis for
+microbial marker-gene surveys.'  Nature Methods 2013.  For DESeq2/DESeq please
+see Love, MI et al. 'Moderated estimation of fold change and dispersion for
+RNA-Seq data with DESeq2,' Genome Biology 2014.  Anders S, Huber W.
+'Differential expression analysis for sequence count data.' Genome Biology 2010.
+Additionally, you can also read the vignettes for each of the techinques on the
+Bioconductor/R websites."""
+script_info['script_usage'] = []
+script_info['script_usage'].append((
+    "OTU Differential Abundance Testing with metagenomeSeq_fitZIG",
+    "For this script, the user supplies an input raw (NOT normalized) BIOM Talbes (usually always having different column sums), an output file, a mapping file, a category in the mapping file for which it is desired to test differential abundance, and the algorithm that the user want for differential abundance testing, as follows:",
+    "%prog -i otu_table.biom -o diff_otus.txt -m map.txt -a metagenomeSeq_fitZIG -c Treatment -x Control -y Fast")
+    )
 script_info['output_description']= "The resulting output OTU txt file contains a list of all the OTUs in the input matrix, along with their associated statistics and FDR p-values."
 script_info['required_options']=[\
 ]
