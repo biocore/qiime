@@ -47,16 +47,14 @@ def multiple_file_DA_fitZIG(input_dir, output_dir, mapping_fp, mapping_category,
         json_fname = base_fname+'_json.biom'
         hdf5_infile = join(input_dir, original_fname)
         json_infile = join(input_dir, json_fname)
-        tmp_bt = load_table(hdf5_infile)
-        #add metadata for R
+        tmp_bt = load_table(hdf5_infile) 
         tmp_pmf, _ = parse_mapping_file_to_dict(mapping_fp)
         tmp_bt.add_metadata(tmp_pmf, 'sample')
         #make temporary json biom version - R currently does not have hdf5
         open(str(json_infile),'w').write(tmp_bt.to_json('forR'))
         outfile = join(output_dir, 'fitZIG_DA_'+base_fname+'.txt')
 
-        run_fitZIG(json_infile, outfile, mapping_category, subcategory_1, subcategory_2)
-        #delete temporary json formatted OTU table  
+        run_fitZIG(json_infile, outfile, mapping_category, subcategory_1, subcategory_2) 
         remove(json_infile)
 
 
@@ -79,10 +77,8 @@ def DA_DESeq2(input_path, out_path, mapping_fp, mapping_category, subcategory_1,
     base_fname, ext = splitext(input_path)
     json_infile = base_fname+'_json.biom'
     tmp_bt = load_table(input_path)
-    #add metadata for R
     tmp_pmf, _ = parse_mapping_file_to_dict(mapping_fp)
     tmp_bt.add_metadata(tmp_pmf, 'sample')
-    #make temporary json biom version - R currently does not have hdf5
     open(str(json_infile),'w').write(tmp_bt.to_json('forR'))
     base_fname, ext = splitext(out_path)
     outfile_diagnostic = join(base_fname+'_diagnostic_plots.pdf') 
