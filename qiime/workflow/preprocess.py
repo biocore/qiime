@@ -8,7 +8,7 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "William Walters"
 __email__ = "William.A.Walters@colorado.edu"
 
-from os.path import join, basename
+from os.path import join, basename, splitext
 
 def create_commands_jpe(pairs, base_output_dir, optional_params = "",
         leading_text = "", trailing_text = "", include_input_dir_path=False,
@@ -244,11 +244,12 @@ def get_matching_files(all_fastq, all_mapping,
         try:
             curr_mapping = curr_file.split(mapping_indicator)
             mapping_files[curr_mapping[0] +
-                curr_mapping[1].split('.txt')[0]] = curr_file
+                splitext(curr_mapping[1])[0]] = curr_file
         except IndexError:
-            raise IndexError,("Found file with .txt extension that does not "
-                "contain the mapping file indicators (see mapping_indicator) "
-                ": %s" % curr_file)
+            raise IndexError(
+                "Found file with a mapping file extension that does not "
+                "contain the mapping file indicators (see mapping_indicator): "
+                "%s" % curr_file)
 
     for curr_file in all_fastq:
         curr_file_string_read = curr_file.split(read_indicator)
@@ -259,7 +260,7 @@ def get_matching_files(all_fastq, all_mapping,
         elif len(curr_file_string_bc) == 2:
             barcode_files.append(curr_file_string_bc)
         else:
-            raise ValueError,("Invalid filename found for splitting on input "+\
+            raise ValueError("Invalid filename found for splitting on input "+\
                 "for file %s, " % curr_file + "check input read indicator "+\
                 "and barcode indicator parameters.")
 
@@ -272,7 +273,7 @@ def get_matching_files(all_fastq, all_mapping,
                         (barcode_indicator.join(curr_bc),
                         mapping_files[curr_read_sans_ext])
                 except KeyError:
-                    raise KeyError,("Found read file with no matching mapping "
+                    raise KeyError("Found read file with no matching mapping "
                        "file: %s" % read_indicator.join(curr_read))
     return matching_files
 
