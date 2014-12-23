@@ -1,0 +1,11 @@
+#SampleID	pH
+s0	1.1
+s1	2.1
+s2	1.7
+s3	4.7
+s4	300
+s5	-12
+s6	89.242251
+s7	‘SKJDKJSD’
+s8	nan
+s9	100

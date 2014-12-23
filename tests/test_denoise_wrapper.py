@@ -17,8 +17,8 @@ from tempfile import mkstemp, mkdtemp
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
 
-from skbio.util.misc import remove_files
-from brokit.denoiser import Flowgram, FlowgramCollection, get_header_info
+from skbio.util import remove_files
+from bfillings.denoiser import Flowgram, FlowgramCollection, get_header_info
 from qiime.denoise_wrapper import fast_denoiser, extract_cluster_size
 
 

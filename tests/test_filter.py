@@ -19,7 +19,7 @@ from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
 from cogent.parse.tree import DndParser
 from cogent.core.tree import PhyloNode
-from skbio.util.misc import remove_files
+from skbio.util import remove_files, safe_md5
 from biom.parse import parse_biom_table
 from qiime.parse import (parse_distmat, parse_mapping_file,
                          parse_metadata_state_descriptions)
@@ -763,6 +763,44 @@ B
         self.assertEqual(
             set(filtered_otu_table.ids()),
             expected_sample_ids)
+
+    def test_filter_samples_from_otu_table_negate_ids_to_keep(self):
+        otu_table = parse_biom_table(dense_otu_table1, input_is_dense=True)
+
+        # keep everything
+        filtered_otu_table = filter_samples_from_otu_table(
+            otu_table,
+            set(),
+            0,
+            inf,
+            negate_ids_to_keep=True)
+
+        self.assertEqual(set(filtered_otu_table.ids()),
+                         set(['PC.354', 'PC.355', 'PC.356', 'PC.481', 'PC.634',
+                              'PC.635', 'PC.636', 'PC.593', 'PC.607']))
+
+        # discard everything
+        filtered_otu_table = filter_samples_from_otu_table(
+            otu_table,
+            set(['PC.354', 'PC.355', 'PC.356', 'PC.481', 'PC.634',
+                 'PC.635', 'PC.636', 'PC.593', 'PC.607']),
+            0,
+            inf,
+            negate_ids_to_keep=True)
+
+        self.assertEqual(set(filtered_otu_table.ids()), set())
+
+        # discard two samples
+        filtered_otu_table = filter_samples_from_otu_table(
+            otu_table,
+            set(['PC.355', 'PC.607']),
+            0,
+            inf,
+            negate_ids_to_keep=True)
+
+        self.assertEqual(set(filtered_otu_table.ids()),
+                         set(['PC.354', 'PC.593', 'PC.356', 'PC.481', 'PC.634',
+                              'PC.635', 'PC.636']))
 
     def test_filter_otu_table_to_n_samples(self):
         """filter_otu_table_to_n_samples returns randomly selected subset of samples

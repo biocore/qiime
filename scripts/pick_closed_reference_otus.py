@@ -10,28 +10,53 @@ __version__ = "1.8.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
-
-from qiime.util import make_option
+from shutil import copyfile
 from os import makedirs
-from qiime.util import (load_qiime_config,
-                        parse_command_line_parameters,
-                        get_options_lookup)
+from os.path import basename, join
+
+from qiime_default_reference import (get_reference_sequences,
+                                      get_reference_tree)
+
+from qiime.util import (load_qiime_config, parse_command_line_parameters,
+    get_options_lookup, make_option)
 from qiime.parse import parse_qiime_parameters
 from qiime.workflow.upstream import run_pick_closed_reference_otus
-from qiime.workflow.util import (print_commands,
-                                 call_commands_serially,
-                                 print_to_stdout,
-                                 no_status_updates,
-                                 validate_and_set_jobs_to_start)
+from qiime.workflow.util import (print_commands, call_commands_serially,
+    print_to_stdout, no_status_updates, validate_and_set_jobs_to_start)
 
 qiime_config = load_qiime_config()
 options_lookup = get_options_lookup()
 
+if get_reference_sequences() == qiime_config['pick_otus_reference_seqs_fp']:
+    reference_fp_help = (
+             "The reference sequences [default: %default]. " +
+             "NOTE: If you do not pass -r to this script, you will be using "
+             "QIIME's default reference sequences. In this case, QIIME will "
+             "copy the corresponding reference tree to the output directory. "
+             "This is the tree that should be used to perform phylogenetic "
+             "diversity analyses (e.g., with core_diversity_analyses.py).")
+else:
+    reference_fp_help = "The reference sequences [default: %default]."
+
 script_info = {}
 script_info[
     'brief_description'] = "Closed-reference OTU picking/Shotgun UniFrac workflow."
-script_info[
-    'script_description'] = "This script picks OTUs using a closed reference and constructs an OTU table. Taxonomy is assigned using a pre-defined taxonomy map of reference sequence OTU to taxonomy. If full-length genomes are provided as the reference sequences, this script applies the Shotgun UniFrac method."
+script_info['script_description'] = """
+This script picks OTUs using a closed reference and constructs an OTU table.
+Taxonomy is assigned using a pre-defined taxonomy map of reference sequence OTU
+to taxonomy. If full-length genomes are provided as the reference sequences,
+this script applies the Shotgun UniFrac method.
+
+**Note:** If most or all of your sequences are failing to hit the reference,
+your sequences may be in the reverse orientation with respect to your reference
+database. To address this, you should add the following line to your parameters
+file (creating one, if necessary) and pass this file as -p:
+
+pick_otus:enable_rev_strand_match True
+
+Be aware that this doubles the amount of memory used.
+
+"""
 
 script_info['script_usage'] = []
 
@@ -85,27 +110,28 @@ script_info['required_options'] = [
         type='existing_filepath',
         help='the input sequences'),
     make_option(
-        '-r',
-        '--reference_fp',
-        type='existing_filepath',
-        help='the reference sequences'),
-    make_option(
         '-o',
         '--output_dir',
         type='new_dirpath',
         help='the output directory'),
 ]
 script_info['optional_options'] = [
+    make_option('-r', '--reference_fp', type='existing_filepath',
+                help=reference_fp_help,
+                default=qiime_config['pick_otus_reference_seqs_fp']),
     make_option('-p', '--parameter_fp', type='existing_filepath',
                 help='path to the parameter file, which specifies changes' +
                 ' to the default behavior. ' +
                 'See http://www.qiime.org/documentation/file_formats.html#qiime-parameters .' +
                 ' [if omitted, default values will be used]'),
-    make_option(
-        '-t',
-        '--taxonomy_fp',
-        type='existing_filepath',
-        help='the taxonomy map [default: %default]'),
+    make_option('-t', '--taxonomy_fp', type='existing_filepath',
+        help='the taxonomy map [default: %default]',
+        default=qiime_config['assign_taxonomy_id_to_taxonomy_fp']),
+    make_option('-s', '--assign_taxonomy', action='store_true',
+                default=False,
+                help='Assign taxonomy to each sequence using '
+                'assign_taxonomy.py (this will override --taxonomy_fp, if provided) '
+                '[default: %default]'),
     make_option('-f', '--force', action='store_true',
                 dest='force', help='Force overwrite of existing output directory' +
                 ' (note: existing files in output_dir will not be removed)' +
@@ -116,7 +142,11 @@ script_info['optional_options'] = [
     make_option('-a', '--parallel', action='store_true',
                 dest='parallel', default=False,
                 help='Run in parallel where available [default: %default]'),
-    options_lookup['jobs_to_start_workflow']
+    options_lookup['jobs_to_start_workflow'],
+    make_option('--suppress_taxonomy_assignment', action='store_true',
+                default=False, help='skip the taxonomy assignment step, resulting in '
+                'an OTU table without taxonomy (this will override --taxonomy_fp '
+                'and --assign_taxonomy, if provided) [default: %default]'),
 ]
 script_info['version'] = __version__
 
@@ -132,11 +162,16 @@ def main():
     output_dir = opts.output_dir
     verbose = opts.verbose
     print_only = opts.print_only
+    assign_taxonomy = opts.assign_taxonomy
+
+    if opts.suppress_taxonomy_assignment:
+        assign_taxonomy = False
+        taxonomy_fp = None
 
     parallel = opts.parallel
     # No longer checking that jobs_to_start > 2, but
     # commenting as we may change our minds about this.
-    #if parallel: raise_error_on_parallel_unavailable()
+    # if parallel: raise_error_on_parallel_unavailable()
 
     if opts.parameter_fp:
         try:
@@ -181,11 +216,17 @@ def main():
         reference_fp,
         output_dir,
         taxonomy_fp,
+        assign_taxonomy=assign_taxonomy,
         command_handler=command_handler,
         params=params,
         qiime_config=qiime_config,
         parallel=parallel,
         status_update_callback=status_update_callback)
+
+    if get_reference_sequences() == reference_fp:
+        reference_tree_fp = get_reference_tree()
+        fn = basename(reference_tree_fp)
+        copyfile(reference_tree_fp, join(output_dir, fn))
 
 
 if __name__ == "__main__":

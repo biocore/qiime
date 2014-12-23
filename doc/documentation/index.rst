@@ -13,11 +13,9 @@ These pages provide references on different features of QIIME. If you're instead
 
 .. toctree::
    :maxdepth: 2
-   
+
    biom_format
    file_formats
-   script_index
+   ../scripts/index
    qiime_parameters_files
    table_objects
-
-

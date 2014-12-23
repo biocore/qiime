@@ -22,30 +22,30 @@ from os import makedirs, close, rename
 from itertools import imap
 from tempfile import mkstemp
 
-from brokit.mothur import parse_otu_list as mothur_parse
+from bfillings.mothur import parse_otu_list as mothur_parse
 
-from skbio.util.misc import remove_files, flatten
-from skbio.core.tree import CompressedTrie, fasta_to_pairlist
+from skbio.util import remove_files, flatten
+from skbio.tree import CompressedTrie, fasta_to_pairlist
 from skbio.parse.sequences import parse_fasta
-from skbio.core.alignment import SequenceCollection
-from skbio.core.sequence import DNA
+from skbio.alignment import SequenceCollection
+from skbio.sequence import DNA
 
 from qiime.util import FunctionWithParams, get_qiime_temp_dir
 from qiime.sort import sort_fasta_by_abundance
 from qiime.parse import fields_to_dict
 
-from brokit.blast import blast_seqs, Blastall, BlastResult
-from brokit.formatdb import build_blast_db_from_fasta_path
-from brokit.mothur import Mothur
-from brokit.cd_hit import cdhit_clusters_from_seqs
-from brokit.uclust import get_clusters_from_fasta_filepath
-from brokit.sortmerna_v2 import (build_database_sortmerna,
-                                 sortmerna_ref_cluster)
-from brokit.usearch import (usearch_qf,
+from bfillings.blast import blast_seqs, Blastall, BlastResult
+from bfillings.formatdb import build_blast_db_from_fasta_path
+from bfillings.mothur import Mothur
+from bfillings.cd_hit import cdhit_clusters_from_seqs
+from bfillings.uclust import get_clusters_from_fasta_filepath
+from bfillings.sortmerna_v2 import (build_database_sortmerna,
+                                    sortmerna_ref_cluster)
+from bfillings.usearch import (usearch_qf,
                             usearch61_denovo_cluster,
                             usearch61_ref_cluster)
-from brokit.sumaclust_v1 import sumaclust_denovo_cluster
-from brokit.swarm_v127 import swarm_denovo_cluster
+from bfillings.sumaclust_v1 import sumaclust_denovo_cluster
+from bfillings.swarm_v127 import swarm_denovo_cluster
 
 
 class OtuPicker(FunctionWithParams):
@@ -220,11 +220,11 @@ class SortmernaV2OtuPicker(OtuPicker):
 
         # Indexed database not provided, build it
         if not sortmerna_db:
-
+            # write index to output directory
             self.sortmerna_db, self.files_to_remove = \
                 build_database_sortmerna(abspath(refseqs_fp),
                                          max_pos=self.Params['max_pos'],
-                                         output_dir=get_qiime_temp_dir())
+                                         output_dir=dirname(abspath(result_path)))
 
             self.log_lines.append('Reference seqs fp (to build '
                                   'sortmerna database): %s' %
@@ -303,7 +303,7 @@ class SortmernaV2OtuPicker(OtuPicker):
             # the clusters in a dict of {otu_id:[seq_ids]}, where
             # otu_id is arbitrary
             result = cluster_map
-            self.log_lines.append('Result path: None, returned as dict.')            
+            self.log_lines.append('Result path: None, returned as dict.')
 
         # Log the run
         if log_path:
@@ -626,7 +626,7 @@ class SumaClustOtuPicker(OtuPicker):
 
     def __init__(self, params):
         """ Return a new SumaClustOtuPicker object with specified params.
-            The defaults are set in the SumaClust API (see brokit)
+            The defaults are set in the SumaClust API (see bfillings)
         """
 
         OtuPicker.__init__(self, params)
@@ -687,8 +687,8 @@ class SumaClustOtuPicker(OtuPicker):
 
         # Run SumaClust, return a dict of output files
         clusters = sumaclust_denovo_cluster(
-            seq_path=seq_path,
-            result_path=result_path,
+            seq_path=abspath(seq_path),
+            result_path=abspath(result_path),
             shortest_len=self.Params['l'],
             similarity=self.Params['similarity'],
             threads=self.Params['threads'],

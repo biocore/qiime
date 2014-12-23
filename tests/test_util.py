@@ -18,13 +18,13 @@ from biom import example_table
 
 from numpy.testing import assert_almost_equal
 
-from skbio.core.sequence import DNASequence
+from skbio.sequence import DNASequence
 from skbio.parse.sequences import parse_fasta
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 
 from cogent.cluster.procrustes import procrustes
 
-from brokit.formatdb import build_blast_db_from_fasta_file
+from bfillings.formatdb import build_blast_db_from_fasta_file
 
 from qiime.parse import (fields_to_dict, parse_distmat, parse_mapping_file,
                          parse_mapping_file_to_dict, parse_otu_table,
@@ -109,9 +109,25 @@ class TopLevelTests(TestCase):
     def test_write_biom_table(self):
         """HDF5-format BIOM file can be written"""
         fd, output_fp = mkstemp(prefix="test_biom_")
+        close(fd)
+
         self.files_to_remove.append(output_fp)
         write_biom_table(example_table, output_fp)
         self.assertTrue(exists(output_fp))
+
+    def test_write_biom_table_no_h5py(self):
+        fd, output_fp = mkstemp(prefix="test_biom_")
+        close(fd)
+
+        self.files_to_remove.append(output_fp)
+
+        write_biom_table(example_table, output_fp, write_hdf5=False)
+        self.assertTrue(exists(output_fp))
+
+        # verify it is indeed a JSON string
+        with open(output_fp, 'r') as f:
+            self.assertTrue(f.read(1) == '{')
+
 
     def test_expand_otu_ids(self):
         """expand otu ids functions as expected """

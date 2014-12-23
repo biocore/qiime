@@ -98,7 +98,7 @@ script_info['optional_options'] = [
                 ' every 0.5 specified counts as a primer mismatch.' +
                 ' [default: %default]'),
 
-    make_option('-n', '--start-numbering-at', dest='start_index',
+    make_option('-n', '--start_numbering_at', dest='start_index',
                 default=1, type='int',
                 help='seq id to use for the first sequence [default: %default]'),
 

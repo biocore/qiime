@@ -317,6 +317,7 @@ def run_pick_closed_reference_otus(
         command_handler,
         params,
         qiime_config,
+        assign_taxonomy=False,
         parallel=False,
         logger=None,
         suppress_md5=False,
@@ -325,7 +326,11 @@ def run_pick_closed_reference_otus(
 
         The steps performed by this function are:
           1) Pick OTUs;
-          2) Build an OTU table with optional pre-defined taxonmy.
+          2) If assignment_taxonomy is True, choose representative sequence
+             for OTUs and assign taxonomy using a classifier.
+          3) Build an OTU table with optional predefined taxonomy
+             (if assign_taxonomy=False) or taxonomic assignments from step 2
+             (if assign_taxonomy=True).
 
     """
 
@@ -363,7 +368,8 @@ def run_pick_closed_reference_otus(
     otu_fp = '%s/%s_otus.txt' % (pick_otu_dir, input_basename)
     if parallel and (otu_picking_method == 'blast' or
                      otu_picking_method == 'uclust_ref' or
-                     otu_picking_method == 'usearch61_ref'):
+                     otu_picking_method == 'usearch61_ref' or
+                     otu_picking_method == 'sortmerna'):
         # Grab the parallel-specific parameters
         try:
             params_str = get_params_str(params['parallel'])
@@ -398,7 +404,8 @@ def run_pick_closed_reference_otus(
         # suppress new clusters -- force it here.
         params_str += ' --suppress_new_clusters'
         logger.write(
-            "Forcing --suppress_new_clusters as this is closed-reference OTU picking.\n\n")
+            "Forcing --suppress_new_clusters as this is "
+            "closed-reference OTU picking.\n\n")
         # Build the OTU picking command
         pick_otus_cmd = 'pick_otus.py -i %s -o %s -r %s -m %s %s' %\
             (input_fp,
@@ -409,12 +416,79 @@ def run_pick_closed_reference_otus(
 
     commands.append([('Pick OTUs', pick_otus_cmd)])
 
+    # Assign taxonomy using a taxonomy classifier, if request by the user.
+    # (Alternatively predefined taxonomic assignments will be used, if provided.)
+    if assign_taxonomy:
+        # Prep the representative set picking command
+        rep_set_dir = '%s/rep_set/' % output_dir
+        create_dir(rep_set_dir)
+        rep_set_fp = '%s/%s_rep_set.fasta' % (rep_set_dir, input_basename)
+        rep_set_log_fp = '%s/%s_rep_set.log' % (rep_set_dir, input_basename)
+
+        try:
+            params_str = get_params_str(params['pick_rep_set'])
+        except KeyError:
+            params_str = ''
+        # Build the representative set picking command
+        pick_rep_set_cmd = 'pick_rep_set.py -i %s -f %s -l %s -o %s %s' %\
+            (otu_fp, input_fp, rep_set_log_fp, rep_set_fp, params_str)
+        commands.append([('Pick representative set', pick_rep_set_cmd)])
+
+        # Prep the taxonomy assignment command
+        try:
+            assignment_method = params['assign_taxonomy']['assignment_method']
+        except KeyError:
+            assignment_method = 'uclust'
+        assign_taxonomy_dir = '%s/%s_assigned_taxonomy' %\
+            (output_dir, assignment_method)
+        taxonomy_fp = '%s/%s_rep_set_tax_assignments.txt' % \
+            (assign_taxonomy_dir, input_basename)
+        if parallel and (assignment_method == 'rdp' or
+                         assignment_method == 'blast' or
+                         assignment_method == 'uclust'):
+            # Grab the parallel-specific parameters
+            try:
+                params_str = get_params_str(params['parallel'])
+            except KeyError:
+                params_str = ''
+
+            # Grab the taxonomy assignment parameters
+            try:
+                # Want to find a cleaner strategy for this: the parallel script
+                # is method-specific, so doesn't take a --assignment_method
+                # option. This works for now though.
+                d = params['assign_taxonomy'].copy()
+                if 'assignment_method' in d:
+                    del d['assignment_method']
+                params_str += ' %s' % get_params_str(d)
+            except KeyError:
+                pass
+
+            # Build the parallel taxonomy assignment command
+            assign_taxonomy_cmd = \
+                'parallel_assign_taxonomy_%s.py -i %s -o %s -T %s' %\
+                (assignment_method, rep_set_fp, assign_taxonomy_dir, params_str)
+        else:
+            try:
+                params_str = get_params_str(params['assign_taxonomy'])
+            except KeyError:
+                params_str = ''
+            # Build the taxonomy assignment command
+            assign_taxonomy_cmd = 'assign_taxonomy.py -o %s -i %s %s' %\
+                (assign_taxonomy_dir, rep_set_fp, params_str)
+
+        commands.append([('Assign taxonomy', assign_taxonomy_cmd)])
+
     # Prep the OTU table building command
     otu_table_fp = '%s/otu_table.biom' % output_dir
     try:
         params_str = get_params_str(params['make_otu_table'])
     except KeyError:
         params_str = ''
+    # If assign_taxonomy is True, this will be the path to the taxonomic
+    # assignment results. If assign_taxonomy is False this will be either
+    # the precomputed taxonomic assignments that the user passed in,
+    # or None.
     if taxonomy_fp:
         taxonomy_str = '-t %s' % taxonomy_fp
     else:

@@ -25,15 +25,16 @@ from collections import Counter, defaultdict
 from shutil import rmtree
 
 from skbio.parse.sequences import parse_fasta
+from skbio.util import remove_files
 
-from brokit.blast import blast_seqs, Blastall, BlastResult
-from brokit.formatdb import build_blast_db_from_fasta_path
-from brokit.uclust import Uclust
-from brokit.sortmerna_v2 import (build_database_sortmerna,
+from bfillings.blast import blast_seqs, Blastall, BlastResult
+from bfillings.formatdb import build_blast_db_from_fasta_path
+from bfillings.uclust import Uclust
+from bfillings.sortmerna_v2 import (build_database_sortmerna,
                                  sortmerna_map)
-from brokit import rdp_classifier
-from brokit import mothur
-from brokit import rtax
+from bfillings import rdp_classifier
+from bfillings import mothur
+from bfillings import rtax
 
 from qiime.util import FunctionWithParams, get_rdp_jarpath, get_qiime_temp_dir
 
@@ -493,8 +494,10 @@ class BlastTaxonAssigner(TaxonAssigner):
             # build a temporary blast_db
             reference_seqs_path = self.Params['reference_seqs_filepath']
             refseqs_dir, refseqs_name = os.path.split(reference_seqs_path)
-            blast_db, db_files_to_remove = \
-                build_blast_db_from_fasta_path(reference_seqs_path)
+
+            blast_db_dir = mkdtemp(prefix='bltax-', dir=get_qiime_temp_dir())
+            blast_db, db_files_to_remove = build_blast_db_from_fasta_path(
+                abspath(reference_seqs_path), output_dir=blast_db_dir)
 
         # build the mapping of sequence identifier
         # (wrt to the blast db seqs) to taxonomy
@@ -567,7 +570,8 @@ class BlastTaxonAssigner(TaxonAssigner):
 
         # clean-up temp blastdb files, if a temp blastdb was created
         if 'reference_seqs_filepath' in self.Params:
-            map(remove, db_files_to_remove)
+            remove_files(db_files_to_remove)
+            rmtree(blast_db_dir)
 
         # return the result
         return result
@@ -690,18 +694,110 @@ class MothurTaxonAssigner(TaxonAssigner):
         _params.update(params)
         super(MothurTaxonAssigner, self).__init__(_params)
 
+    def _format_id_to_taxonomy(self, id_to_taxonomy_file):
+        """Reformat taxa to comply with Mothur formatting requirements.
+
+        Mothur requires lineages to be semicolon-separated with no space
+        following the semicolon.  (QIIME convention is to include a
+        space.)  Taxa may have no internal spaces.  Furthermore, each
+        lineage must end with a semi-colon.
+
+        Returns the re-formatted id-to-taxonomy file as an open file
+        object.
+        """
+        mothur_tax_file = NamedTemporaryFile(
+            prefix='MothurTaxonAssigner_',
+            suffix='.txt',
+            dir=get_qiime_temp_dir())
+        original_taxonomy = self._parse_id_to_taxonomy_file(id_to_taxonomy_file)
+        for seq_id, lineage in original_taxonomy.iteritems():
+            mothur_tax_file.write(seq_id)
+            mothur_tax_file.write('\t')
+            taxa = [t.strip() for t in lineage.split(';')]
+            for taxon in taxa:
+                mothur_tax_file.write(self._format_taxon(taxon))
+                mothur_tax_file.write(';')
+            mothur_tax_file.write('\n')
+        mothur_tax_file.seek(0)
+        return mothur_tax_file
+
+    def _unformat_result(self, result):
+        """Transform results to remove any changes introduced by formatting.
+        """
+        unformatted_result = {}
+        for seq_id, (taxa, conf) in result.iteritems():
+            unformatted_taxa = [self._unformat_taxon(t) for t in taxa]
+            unformatted_result[seq_id] = (unformatted_taxa, conf)
+        return unformatted_result
+
+    def _format_taxon(self, taxon):
+        """Format taxon for MOTHUR, removing internal spaces.
+
+        Original taxon names are saved to self._original_taxa for later lookup.
+        """
+        # Create private attribute to store unformatted taxon names.
+        # If _unformat_taxon() is called without first calling
+        # _format_taxon(), this attribute will be missing, and an
+        # AttributeError will be raised.
+        if not hasattr(self, "_original_taxa"):
+            self._original_taxa = {}
+        # Escape backslashes
+        mothur_taxon = taxon.replace("\\", "\\\\")
+        # Escape underscores
+        mothur_taxon = mothur_taxon.replace("_", "\\_")
+        # Now we can safely replace spaces with underscores
+        mothur_taxon = mothur_taxon.replace(' ', '_')
+        if mothur_taxon != taxon:
+            previously_registered_taxon = self._original_taxa.get(mothur_taxon)
+            # If we have not yet registered the escaped taxon name, add it now.
+            if previously_registered_taxon is None:
+                self._original_taxa[mothur_taxon] = taxon
+            # Otherwise, check that the previously registered taxon is
+            # consistent with the current taxon.  If we have not
+            # escaped the taxon names properly, two distinct taxa may
+            # be registered under the same name.  This should probably
+            # never happen, but I can't prove it, so we check and
+            # raise an error if the taxa are inconsistent.
+            elif taxon != previously_registered_taxon:
+                raise ValueError(
+                    "Taxon %s conflicts with another taxon, %s. "
+                    "Please change one of the names." % (
+                        taxon, previously_registered_taxon))
+        return mothur_taxon
+
+    def _unformat_taxon(self, taxon):
+        """Recover original taxon names that were altered due to formatting.
+
+        Looks up taxon names in the attribute self._original_taxa.  If
+        self._format_taxon() was never called, this attribute will be
+        missing, and an AttributeError will be raised.
+        """
+        return self._original_taxa.get(taxon, taxon)
+
     def __call__(self, seq_path, result_path=None, log_path=None):
         seq_file = open(seq_path)
         percent_confidence = int(self.Params['Confidence'] * 100)
-        result = mothur.mothur_classify_file(
-            query_file=seq_file,
-            ref_fp=self.Params['reference_sequences_fp'],
-            tax_fp=self.Params['id_to_taxonomy_fp'],
-            cutoff=percent_confidence,
-            iters=self.Params['Iterations'],
-            ksize=self.Params['KmerSize'],
-            output_fp=result_path,
-        )
+        with open(self.Params['id_to_taxonomy_fp'], "U") as tax_file:
+            mothur_tax_file = self._format_id_to_taxonomy(tax_file)
+        try:
+            result = mothur.mothur_classify_file(
+                query_file=seq_file,
+                ref_fp=self.Params['reference_sequences_fp'],
+                tax_fp=mothur_tax_file.name,
+                cutoff=percent_confidence,
+                iters=self.Params['Iterations'],
+                ksize=self.Params['KmerSize'],
+                output_fp=None,
+            )
+        finally:
+            mothur_tax_file.close()
+        result = self._unformat_result(result)
+        if result_path is not None:
+            with open(result_path, "w") as f:
+                for seq_id, (taxa, conf) in result.iteritems():
+                    lineage = ';'.join(taxa)
+                    f.write("%s\t%s\t%.2f\n" % (seq_id, lineage, conf))
+            return None
         if log_path:
             self.writeLog(log_path)
         return result

@@ -12,8 +12,8 @@ __email__ = "gregcaporaso@gmail.com"
 
 from os import rename
 
-from skbio.util.misc import safe_md5, create_dir
-from skbio.core.sequence import DNA
+from skbio.util import safe_md5, create_dir
+from skbio.sequence import DNA
 from skbio.format.sequences import format_fastq_record
 
 from qiime.util import parse_command_line_parameters, make_option, gzip_open
@@ -23,9 +23,6 @@ from qiime.split_libraries_fastq import (process_fastq_single_end_read_file,
 from qiime.split_libraries import check_map
 from qiime.split_libraries_fastq import get_illumina_qual_chars
 from qiime.golay import get_invalid_golay_barcodes
-from qiime.quality import phred_to_ascii33, phred_to_ascii64
-
-phred_to_ascii_fs = {'33': phred_to_ascii33, '64': phred_to_ascii64}
 
 script_info = {}
 
@@ -136,9 +133,10 @@ script_info['optional_options'] = [
     make_option('--max_barcode_errors', default=1.5, type='float',
                 help='maximum number of errors in barcode [default: %default]'),
     make_option('--phred_offset', default=None, type="choice",
-                choices=phred_to_ascii_fs.keys(), help="the ascii offset to use when "
-                "decoding phred scores - warning: in most cases you don't need to "
-                "pass this value [default: determined automatically]")
+                choices=['33', '64'], help="the ascii offset to use when "
+                "decoding phred scores (either 33 or 64). Warning: in most "
+                "cases you don't need to pass this value "
+                "[default: determined automatically]")
     # NEED TO FIX THIS FUNCTIONALITY - CURRENTLY READING THE WRONG FIELD
     # make_option('--filter_bad_illumina_qual_digit',
     #    action='store_true',
@@ -197,16 +195,11 @@ def main():
     phred_offset = opts.phred_offset
     if phred_offset is not None:
         try:
-            phred_to_ascii_f = phred_to_ascii_fs[phred_offset]
-        except KeyError:
-            # shouldn't be able to get here, but we'll stay on the
-            # safe side
-            option_parser.error("Only valid phred offsets are: %s" %
-                                ' '.join(phred_to_ascii_fs.keys()))
-    else:
-        # let split_libraries_fastq.process_fastq_single_end_read_file
-        # figure it out...
-        phred_to_ascii_f = None
+            phred_offset = int(phred_offset)
+        except ValueError:
+            # shouldn't be able to get here...
+            option_parser.error(
+                "If --phred_offset is provided, it must be a valid integer.")
 
     if opts.last_bad_quality_char is not None:
         option_parser.error('--last_bad_quality_char is no longer supported. '
@@ -333,7 +326,7 @@ def main():
                 log_f=log_f, histogram_f=histogram_f,
                 barcode_correction_fn=barcode_correction_fn,
                 max_barcode_errors=max_barcode_errors,
-                phred_to_ascii_f=phred_to_ascii_f)
+                phred_offset=phred_offset)
         else:
             seq_generator = process_fastq_single_end_read_file_no_barcode(
                 sequence_read_f, sample_ids[i],
@@ -345,7 +338,7 @@ def main():
                 start_seq_id=start_seq_id,
                 filter_bad_illumina_qual_digit=filter_bad_illumina_qual_digit,
                 log_f=log_f, histogram_f=histogram_f,
-                phred_to_ascii_f=phred_to_ascii_f)
+                phred_offset=phred_offset)
 
         for fasta_header, sequence, quality, seq_id in seq_generator:
             output_f.write('>%s\n%s\n' % (fasta_header, sequence))

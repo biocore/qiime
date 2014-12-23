@@ -13,7 +13,7 @@ __email__ = "gregcaporaso@gmail.com"
 from os import makedirs
 
 from qiime.util import (parse_command_line_parameters,
-                        make_option, get_options_lookup, load_qiime_config)
+                         make_option, get_options_lookup, load_qiime_config)
 from qiime.parse import parse_qiime_parameters
 from qiime.workflow.util import (validate_and_set_jobs_to_start,
                                  call_commands_serially, print_commands, no_status_updates, print_to_stdout)
@@ -25,8 +25,7 @@ qiime_config = load_qiime_config()
 options_lookup = get_options_lookup()
 
 script_info = {}
-script_info['brief_description'] = """
-This script is used to pick open reference OTUs"""
+script_info['brief_description'] = """Perform open-reference OTU picking"""
 script_info['script_description'] = """
 This script is broken down into 4 possible OTU picking steps, and 2 steps
 involving the creation of OTU tables and trees. The commands for each step are
@@ -34,7 +33,7 @@ described below, including what the input and resulting output files are.
 Additionally, the optional specified parameters of this script that can be passed
 are referenced.
 
-Step 1) Prefilting and picking closed reference OTUs
+Step 1) Prefiltering and picking closed reference OTUs
 The first step is an optional prefiltering of the input fasta file to remove
 sequences that do not hit the reference database with a given sequence
 identity (PREFILTER_PERCENT_ID). This step can take a very long time, so is
@@ -168,6 +167,18 @@ rerun the script and pass in the:
 --step_1_otu_map_fp
 --step1_failures_fasta_fp
 parameters, and the script will continue with Steps 2 - 4.
+
+**Note:** If most or all of your sequences are failing to hit the reference
+during the prefiltering or closed-reference OTU picking steps, your sequences
+may be in the reverse orientation with respect to your reference database. To
+address this, you should add the following line to your parameters file
+(creating one, if necessary) and pass this file as -p:
+
+pick_otus:enable_rev_strand_match True
+
+Be aware that this doubles the amount of memory used in these steps of the
+workflow.
+
 """
 
 script_info['script_usage'] = []
@@ -235,8 +246,6 @@ script_info['output_description'] = ""
 script_info['required_options'] = [
     make_option('-i', '--input_fps', help='the input sequences filepath or '
                 'comma-separated list of filepaths', type='existing_filepaths'),
-    make_option('-r', '--reference_fp', type='existing_filepath', help='the '
-                'reference sequences'),
     make_option('-o', '--output_dir', type='new_dirpath', help='the output '
                 'directory'),
 ]
@@ -249,6 +258,9 @@ script_info['optional_options'] = [
                       'means that usearch61 will be used for the de novo steps and '
                       'usearch61_ref will be used for reference steps. [default: %default]'),
                 default='uclust'),
+    make_option('-r', '--reference_fp', type='existing_filepath', help='the '
+                'reference sequences [default: %default]',
+                default=qiime_config['pick_otus_reference_seqs_fp']),
     make_option('-p', '--parameter_fp', type='existing_filepath', help='path '
                 'to the parameter file, which specifies changes to the default '
                 'behavior. See http://www.qiime.org/documentation/file_formats.html#'
@@ -289,6 +301,12 @@ script_info['optional_options'] = [
     make_option('--step1_failures_fasta_fp', type='existing_filepath',
                 help='reference OTU picking failures fasta filepath  (to avoid '
                 'rebuilding if one has already been built)'),
+    make_option('--minimum_failure_threshold', type='int', default='100000',
+                help='The minimum number of sequences that must fail to hit the '
+                'reference for subsampling to be performed. If fewer than this '
+                'number of sequences fail to hit the reference, the de novo '
+                'clustering step will run serially rather than invoking the '
+                'subsampled open reference approach to improve performance.'),
     make_option('--suppress_step4', action='store_true', default=False,
                 help='suppress the final de novo OTU picking step  (may be necessary '
                 'for extremely large data sets) [default: %default]'),
@@ -320,6 +338,7 @@ def main():
     new_ref_set_id = opts.new_ref_set_id
     prefilter_refseqs_fp = opts.prefilter_refseqs_fp
     prefilter_percent_id = opts.prefilter_percent_id
+    minimum_failure_threshold = opts.minimum_failure_threshold
     if prefilter_percent_id == 0.0:
         prefilter_percent_id = None
 
@@ -333,7 +352,7 @@ def main():
         denovo_otu_picking_method = 'sumaclust'
         reference_otu_picking_method = 'sortmerna'
         # SortMeRNA uses the E-value to filter out erroneous
-        # sequences, this option does not apply for this 
+        # sequences, this option does not apply for this
         # tool
         if prefilter_percent_id > 0.0:
             prefilter_percent_id = None
@@ -358,6 +377,13 @@ def main():
     else:
         params = parse_qiime_parameters([])
         # empty list returns empty defaultdict for now
+
+    # --otu_picking_method should not be passed in the parameters
+    # file for open-reference, but through the command line option
+    if 'otu_picking_method' in params['pick_otus']:
+        option_parser.error('The option otu_picking_method cannot be passed via '
+                            'the parameters file. Instead, pass --otu_picking_method '
+                            'on the command line.')
 
     jobs_to_start = opts.jobs_to_start
     default_jobs_to_start = qiime_config['jobs_to_start']
@@ -399,7 +425,8 @@ def main():
                                             parallel=parallel, suppress_step4=opts.suppress_step4, logger=None,
                                             denovo_otu_picking_method=denovo_otu_picking_method,
                                             reference_otu_picking_method=reference_otu_picking_method,
-                                            status_update_callback=status_update_callback)
+                                            status_update_callback=status_update_callback,
+                                            minimum_failure_threshold=minimum_failure_threshold)
     else:
         iterative_pick_subsampled_open_reference_otus(input_fps=input_fps,
                                                       refseqs_fp=refseqs_fp, output_dir=output_dir,
@@ -416,7 +443,8 @@ def main():
                                                       parallel=parallel, suppress_step4=opts.suppress_step4, logger=None,
                                                       denovo_otu_picking_method=denovo_otu_picking_method,
                                                       reference_otu_picking_method=reference_otu_picking_method,
-                                                      status_update_callback=status_update_callback)
+                                                      status_update_callback=status_update_callback,
+                                                      minimum_failure_threshold=minimum_failure_threshold)
 
 if __name__ == "__main__":
     main()

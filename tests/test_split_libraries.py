@@ -19,7 +19,7 @@ from tempfile import mkstemp, mkdtemp
 
 from unittest import TestCase, main
 from numpy. testing import assert_almost_equal
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 
 from qiime.split_libraries import (
     expand_degeneracies, get_infile, count_mismatches,
@@ -497,6 +497,54 @@ z\tGG\tGC\t5\tsample_z"""
             qual_score_window=5,
             discard_bad_windows=False,
             min_qual_score=25,
+            min_seq_len=200)
+
+        out_f = open(out_f.name.replace('.tmp', ''), "U")
+        actual_results = '\n'.join([line.strip() for line in out_f])
+
+        self.assertEqual(actual_results, expected)
+        
+    def test_check_seqs_sliding_window_plus_rev_primer(self):
+        """check_seqs handles sliding window trunc plus rev primer removal """
+
+        in_seqs = self.in_seqs_fixed_len_bc1
+        bc_map = self.bc_map_fixed_len_bc1
+        primer_seq_lens = self.primer_seq_lens_fixed_len_bc1
+        all_primers = self.all_primers_fixed_len_bc1
+        # Should filter all reads out with a high quality score
+        expected = ''
+        reverse_primers = self.reverse_primers_fixed_len_bc1
+
+        fd, out_fp = mkstemp(prefix="sample_seqs_", suffix=".fna.tmp")
+        close(fd)
+        out_f = open(out_fp, "w")
+        self._files_to_remove.append(out_f.name.replace('.tmp', ''))
+
+        actual = check_seqs(
+            fasta_out=out_f,
+            fasta_files=[in_seqs],
+            starting_ix=0,
+            valid_map=bc_map,
+            qual_mappings=parse_qual_score(
+                self.in_seqs_fixed_len_bc1_qual_scores),
+            filters=[],
+            barcode_len=12,
+            keep_primer=False,
+            keep_barcode=False,
+            barcode_type="golay_12",
+            max_bc_errors=1.5,
+            retain_unassigned_reads=False,
+            attempt_bc_correction=True,
+            primer_seqs_lens=primer_seq_lens,
+            all_primers=all_primers,
+            max_primer_mm=0,
+            disable_primer_check=False,
+            reverse_primers='truncate_remove',
+            rev_primers=reverse_primers,
+            qual_out=False,
+            qual_score_window=10,
+            discard_bad_windows=False,
+            min_qual_score=45,
             min_seq_len=200)
 
         out_f = open(out_f.name.replace('.tmp', ''), "U")

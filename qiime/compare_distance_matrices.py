@@ -12,11 +12,11 @@ __email__ = "jai.rideout@gmail.com"
 
 from os import path
 
-from skbio.core.distance import DistanceMatrix
+from skbio.stats import p_value_to_str
+from skbio.stats.distance import DistanceMatrix, mantel
 
-from qiime.format import format_p_value_for_num_iters
 from qiime.util import make_compatible_distance_matrices
-from qiime.stats import Mantel, MantelCorrelogram, PartialMantel
+from qiime.stats import MantelCorrelogram, PartialMantel
 
 
 def run_mantel_test(method, fps, distmats, num_perms, tail_type, comment,
@@ -39,7 +39,7 @@ def run_mantel_test(method, fps, distmats, num_perms, tail_type, comment,
         num_perms - the number of permutations to use to calculate the
             p-value(s)
         tail_type - the type of tail test to use when calculating the
-            p-value(s). Can be 'two sided', 'greater', or 'less'. Only applies
+            p-value(s). Can be 'two-sided', 'greater', or 'less'. Only applies
             when method is mantel
         comment - comment string to add to the beginning of the results string
         control_dm_fp - filepath of the control distance matrix. Only applies
@@ -103,25 +103,20 @@ def run_mantel_test(method, fps, distmats, num_perms, tail_type, comment,
             dm1 = DistanceMatrix(dm1_data, dm1_labels)
             dm2 = DistanceMatrix(dm2_data, dm2_labels)
 
-            # Create an instance of our correlation test and run it with
-            # the specified number of permutations.
             if method == 'mantel':
-                results = Mantel(dm1, dm2, tail_type)(num_perms)
-                p_str = format_p_value_for_num_iters(results['p_value'],
-                                                     num_perms)
-                result += "%s\t%s\t%d\t%.5f\t%s\t%d\t%s\n" % (fp1, fp2,
-                                                              len(dm1_labels), results[
-                                                                  'r_value'], p_str,
-                                                              num_perms, tail_type)
+                corr_coeff, p_value, n = mantel(dm1, dm2, method='pearson',
+                                 permutations=num_perms, alternative=tail_type,
+                                 strict=True)
+                p_str = p_value_to_str(p_value, num_perms)
+                result += "%s\t%s\t%d\t%.5f\t%s\t%d\t%s\n" % (
+                    fp1, fp2, n, corr_coeff, p_str, num_perms, tail_type)
             elif method == 'partial_mantel':
                 cdm = DistanceMatrix(cdm_data, cdm_labels)
                 results = PartialMantel(dm1, dm2, cdm)(num_perms)
-                p_str = format_p_value_for_num_iters(results['mantel_p'],
-                                                     num_perms)
-                result += "%s\t%s\t%s\t%d\t%.5f\t%s\t%d\t%s\n" % (fp1, fp2,
-                                                                  control_dm_fp, len(
-                                                                      dm1_labels),
-                                                                  results['mantel_r'], p_str, num_perms, 'greater')
+                p_str = p_value_to_str(results['mantel_p'], num_perms)
+                result += "%s\t%s\t%s\t%d\t%.5f\t%s\t%d\t%s\n" % (
+                    fp1, fp2, control_dm_fp, len(dm1_labels),
+                    results['mantel_r'], p_str, num_perms, 'greater')
     return result
 
 
@@ -211,11 +206,10 @@ def run_mantel_correlogram(fps, distmats, num_perms, comment, alpha,
                 # on the sign of r.
                 p_str = None
                 if p is not None:
-                    p_str = format_p_value_for_num_iters(p, num_perms)
+                    p_str = p_value_to_str(p, num_perms)
                 p_corr_str = None
                 if p_corr is not None:
-                    p_corr_str = format_p_value_for_num_iters(p_corr,
-                                                              num_perms)
+                    p_corr_str = p_value_to_str(p_corr, num_perms)
                 if r is None:
                     tail_type = None
                 elif r < 0:

@@ -12,7 +12,7 @@ __email__ = "jai.rideout@gmail.com"
 from os.path import split
 from shutil import copy
 
-from brokit.formatdb import build_blast_db_from_fasta_path
+from bfillings.formatdb import build_blast_db_from_fasta_path
 
 from skbio.parse.sequences import parse_fasta
 

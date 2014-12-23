@@ -150,24 +150,6 @@ script_info['optional_options'] = [
                 ' categorically and be evenly spaced [default: %default].',
                 choices=['categorical', 'numeric'], default='categorical'),
 ]
-script_info['option_label'] = {'counts_fname': 'Summarized taxa filepaths',
-                               'labels': 'Taxonomic levels',
-                               'num_categories': '# of categories to retain',
-                               'map_fname': 'QIIME-formatted mapping filepath',
-                               'colorby': 'Colorby category',
-                               'dir-prefix': 'Output directory',
-                               'prefs_path': 'Preferences filepath',
-                               'background_color': 'Background color',
-                               'type_of_file': 'Image type',
-                               'dpi': 'Image resolution',
-                               'x_width': 'X-axis width',
-                               'y_height': 'Y-axis height',
-                               'bar_width': 'Bar width',
-                               'chart_type': 'Chart type(s)',
-                               'resize_nth_label': 'Resize nth label',
-                               'include_html_legend': 'Include HTML legend',
-                               'include_html_counts': 'Include HTML counts',
-                               'label_type': 'X-axis label type'}
 
 script_info['version'] = __version__
 

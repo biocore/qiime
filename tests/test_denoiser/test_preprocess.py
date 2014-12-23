@@ -15,7 +15,7 @@ from random import sample
 
 from unittest import TestCase, main
 from skbio.parse.sequences import parse_fasta
-from brokit.denoiser import FlowgramCollection, Flowgram
+from bfillings.denoiser import FlowgramCollection, Flowgram
 
 from qiime.denoiser.preprocess import sample_mapped_keys, \
     _average_flowgrams, prefix_filter_flowgrams

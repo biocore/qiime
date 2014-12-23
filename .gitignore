@@ -45,3 +45,7 @@ qiime/support_files/denoiser/FlowgramAlignment/FlowgramAli_4frame.o
 qiime/support_files/denoiser/FlowgramAlignment/FlowgramUtils.hi
 qiime/support_files/denoiser/FlowgramAlignment/FlowgramUtils.o
 scripts/FlowgramAli_4frame
+
+# scripts that can be present after pip install -e .
+scripts/FastTree
+scripts/uclust

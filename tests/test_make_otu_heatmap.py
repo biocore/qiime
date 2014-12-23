@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# file test_make_otu_heatmap_html.py
+# file test_make_otu_heatmap.py
 
 __author__ = "Dan Knights"
 __copyright__ = "Copyright 2011, The QIIME project"
@@ -16,7 +16,7 @@ from tempfile import mkstemp
 from numpy import array, log10, asarray, float64, argwhere
 from unittest import TestCase, main
 from numpy.testing import assert_almost_equal
-from skbio.util.misc import remove_files
+from skbio.util import remove_files
 from qiime.make_otu_heatmap import (extract_metadata_column,
                                     get_order_from_categories, get_order_from_tree, make_otu_labels,
                                     names_to_indices, get_log_transform, get_clusters,
@@ -140,7 +140,7 @@ class TopLevelTests(TestCase):
     def test_plot_heatmap(self):
         plot_heatmap(
             self.otu_table, self.otu_table.ids(axis='observation'),
-            self.otu_table.ids(), filename=self.tmp_heatmap_fpath)
+            self.otu_table.ids(), self.tmp_heatmap_fpath)
         self.assertEqual(exists(self.tmp_heatmap_fpath), True)
         remove_files(set([self.tmp_heatmap_fpath]))
 

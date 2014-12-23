@@ -13,7 +13,7 @@ __email__ = "William.A.Walters@colorado.edu"
 from os.path import join, basename
 
 from skbio.parse.sequences import parse_fasta
-from skbio.core.sequence import DNA
+from skbio.sequence import DNA
 
 from qiime.split_libraries import local_align_primer_seq
 from qiime.check_id_map import process_id_map

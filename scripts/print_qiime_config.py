@@ -34,7 +34,7 @@ except ImportError as e:
 
 try:
     from tempfile import mkdtemp
-    from skbio.util.misc import remove_files
+    from skbio.util import remove_files
     from burrito.util import ApplicationNotFoundError, ApplicationError
 except ImportError as e:
     raise ImportError("%s\n%s" % (e, core_dependency_missing_msg))
@@ -72,10 +72,21 @@ except ImportError as e:
     raise ImportError("%s\n%s" % (e, core_dependency_missing_msg))
 
 try:
+    from qiime_default_reference import __version__ as qdr_lib_version
+except ImportError as e:
+    raise ImportError("%s\n%s" % (e, core_dependency_missing_msg))
+
+
+try:
     from skbio import __version__ as skbio_lib_version
     from burrito.util import which
 except ImportError as e:
     raise ImportError("%s\n%s" % (e, core_dependency_missing_msg))
+
+try:
+    from pandas import __version__ as pandas_lib_version
+except ImportError:
+    pandas_lib_version = "Not installed."
 
 try:
     from matplotlib import __version__ as matplotlib_lib_version
@@ -87,37 +98,96 @@ try:
 except ImportError:
     emperor_lib_version = "Not installed."
 
+try:
+    from burrito import __version__ as burrito_lib_version
+except ImportError:
+    burrito_lib_version = "Not installed."
+
+# current release of bfillings doesn't have __version__. if it gets added in
+# future releases, display that info, otherwise just indicate whether it's
+# installed or not
+try:
+    import bfillings
+    bfillings_lib_version = bfillings.__version__
+except ImportError:
+    bfillings_lib_version = "Not installed."
+except AttributeError:
+    bfillings_lib_version = "Installed."
+
+# gdata doesn't have __version__ and adding that is outside of our control.
+# just indicate whether it's installed or not
+try:
+    import gdata
+except ImportError:
+    gdata_installed = "Not installed."
+else:
+    gdata_installed = "Installed."
+
+try:
+    import h5py
+    h5py_lib_version = (
+     h5py.__version__ + ' (HDF5 version: %s)' % h5py.version.hdf5_version)
+except ImportError:
+    h5py_lib_version = "Not installed."
+
 
 pynast_lib_version = get_pynast_version()
 if pynast_lib_version is None:
     pynast_lib_version = "Not installed."
 
+if which('sortmerna') is None:
+    sortmerna_lib_version = "Not installed."
+else:
+    _, serr, _ = qiime_system_call("sortmerna --version")
+    sortmerna_lib_version = serr.strip()
+
+if which('sumaclust') is None:
+    sumaclust_lib_version = "Not installed."
+else:
+    sout, _, _ = qiime_system_call("sumaclust --help")
+    sout_lines = sout.split('\n')
+    sumaclust_lib_version = "Installed, but can't identify version."
+    for e in sout_lines:
+        e = e.strip()
+        if e.startswith('SUMACLUST Version'):
+            sumaclust_lib_version = e
+            break
+
 script_info = {}
-script_info['brief_description'] = """Print out the qiime config settings."""
-script_info[
-    'script_description'] = """A simple scripts that prints out the qiime config settings and does some sanity checks."""
+script_info['brief_description'] = ("Print and optionally test QIIME "
+                                    "configuration details")
+script_info['script_description'] = ("Print QIIME configuration details and "
+                                     "optionally perform tests of the QIIME "
+                                     "base or full install.")
 script_info['script_usage'] = []
 script_info['script_usage'].append(
-    ("Example 1", """Print qiime config settings:""", """print_qiime_config.py"""))
+    ("Example 1",
+     "Print basic QIIME configuration details:", """%prog"""))
 script_info['script_usage'].append(
-    ("Example 2", """Print and check qiime config settings for sanity:""",
-     """print_qiime_config.py -t"""))
+    ("Example 2",
+     "Print basic QIIME configuration details and test the base QIIME installation:",
+     "%prog -t"))
+script_info['script_usage'].append(
+    ("Example 3",
+     "Print basic QIIME configuration details and test the full QIIME installation:",
+     "%prog -tf"))
 
-script_info[
-    'output_description'] = """This prints the qiime_config to stdout."""
+script_info['output_description'] = ("Prints QIIME configuration details to "
+                                     "standard output.")
 script_info['version'] = __version__
 script_info['help_on_no_arguments'] = False
 script_info['required_options'] = []
 script_info['optional_options'] = [
-    make_option('-t', '--test',
-                action='store_true',
-                default=False,
-                help='Test the QIIME install and configuration [default: %default]'),
-    make_option('-b',
-                '--qiime_base_install',
-                action='store_true',
-                default=False,
-                help='If passed, report only on dependencies required for the QIIME base install [default: %default]'),
+    make_option('-t', '--test', action='store_true', default=False,
+                help='Test the QIIME install and configuration '
+                     '[default: %default]'),
+    make_option('-b', '--qiime_base_install', action='store_true',
+                default=True, help=SUPPRESS_HELP),
+    make_option('-f', '--qiime_full_install', action='store_true',
+    default=False, help='If passed, report on dependencies required for the '
+                        'QIIME full install. To perform tests of the QIIME '
+                        'full install, you must also pass -t. '
+                        '[default: %default]'),
     make_option('--haiku',
                 action='store_true',
                 default=False,
@@ -171,12 +241,6 @@ class QIIMEConfig(TestCase):
         """pynast_template_alignment_blastdb, if set, is set to a valid path"""
 
         test_qiime_config_variable("pynast_template_alignment_blastdb_fp",
-                                   self.config, self)
-
-    def test_template_alignment_lanemask_fp(self):
-        """template_alignment_lanemask, if set, is set to a valid path"""
-
-        test_qiime_config_variable("template_alignment_lanemask_fp",
                                    self.config, self)
 
     def test_get_qiime_scripts_dir(self):
@@ -238,7 +302,6 @@ class QIIMEConfig(TestCase):
                 self.fail("The .qiime_config in your HOME" +
                           error_msg_fragment % ", ".join(extra_vals))
 
-
 class QIIMEDependencyBase(QIIMEConfig):
 
     def test_uclust_supported_version(self):
@@ -261,117 +324,6 @@ class QIIMEDependencyBase(QIIMEConfig):
         self.assertTrue(pass_test,
                         "Unsupported uclust version. %s is required, but running %s."
                         % ('.'.join(map(str, acceptable_version)), version_string))
-
-    def test_python_supported_version(self):
-        """python is in path and version is supported """
-        min_acceptable_version = (2, 7, 0)
-        min_unacceptable_version = (3, 0, 0)
-
-        command = 'python --version'
-        proc = Popen(command, shell=True, universal_newlines=True,
-                     stdout=PIPE, stderr=STDOUT)
-        stdout = proc.stdout.read()
-
-        version_str_matches = re.findall('Python\s+(\S+)\s*', stdout.strip())
-        self.assertEqual(len(version_str_matches), 1,
-                         "Could not determine the Python version in '%s'." %
-                         stdout)
-        version_string = version_str_matches[0]
-
-        try:
-            if version_string[-1] == '+':
-                version_string = version_string[:-1]
-            version = tuple(map(int, version_string.split('.')))
-            if len(version) == 2:
-                version = (version[0], version[1], 0)
-            pass_test = (version >= min_acceptable_version and
-                         version < min_unacceptable_version)
-        except ValueError:
-            pass_test = False
-            version_string = stdout
-        self.assertTrue(pass_test,
-                        "Unsupported Python version. Must be >= %s and < %s, "
-                        "but running %s."
-                        % ('.'.join(map(str, min_acceptable_version)),
-                           '.'.join(map(str, min_unacceptable_version)),
-                           version_string))
-
-    def test_numpy_supported_version(self):
-        """numpy version is supported """
-        min_acceptable_version = (1, 7, 1)
-        try:
-            from numpy import __version__ as numpy_lib_version
-            version = tuple(map(int, numpy_lib_version.split('.')))
-            pass_test = (version >= min_acceptable_version)
-            version_string = str(numpy_lib_version)
-        except ImportError:
-            pass_test = False
-            version_string = "Not installed"
-        self.assertTrue(pass_test,
-                        "Unsupported numpy version. Must be >= %s, but running %s."
-                        % ('.'.join(map(str, min_acceptable_version)),
-                            version_string))
-
-    def test_scipy_supported_version(self):
-        """scipy version is supported """
-        min_acceptable_version = (0, 13, 0)
-        try:
-            from scipy import __version__ as scipy_lib_version
-            version = tuple(map(int, scipy_lib_version.split('.')))
-            pass_test = version >= min_acceptable_version
-            version_string = str(scipy_lib_version)
-        except ImportError:
-            pass_test = False
-            version_string = "Not installed"
-        self.assertTrue(
-            pass_test,
-            "Unsupported scipy version. Must be >= %s, but running %s." %
-            ('.'.join(map(str, min_acceptable_version)), version_string))
-
-    def test_matplotlib_suported_version(self):
-        """matplotlib version is supported """
-        min_acceptable_version = (1, 1, 0)
-        max_acceptable_version = (1, 3, 1)
-        try:
-            from matplotlib import __version__ as matplotlib_lib_version
-            version = matplotlib_lib_version.split('.')
-            if version[-1].endswith('rc'):
-                version[-1] = version[-1][:-2]
-            version = tuple(map(int, version))
-            pass_test = (version >= min_acceptable_version and
-                         version <= max_acceptable_version)
-            version_string = str(matplotlib_lib_version)
-        except ImportError:
-            pass_test = False
-            version_string = "Not installed"
-        self.assertTrue(pass_test,
-                        "Unsupported matplotlib version. Must be >= %s and <= %s , but running %s."
-                        % ('.'.join(map(str, min_acceptable_version)),
-                           '.'.join(map(str, max_acceptable_version)), version_string))
-
-    def test_pynast_suported_version(self):
-        """pynast version is supported """
-        min_acceptable_version = (1, 2)
-        max_acceptable_version = (1, 2, 2)
-        try:
-            from pynast import __version__ as pynast_lib_version
-            version = pynast_lib_version.split('.')
-            if version[-1][-4:] == '-dev':
-                version[-1] = version[-1][:-4]
-            version = tuple(map(int, version))
-            pass_test = (version >= min_acceptable_version and
-                         version <= max_acceptable_version)
-            version_string = str(pynast_lib_version)
-        except ImportError:
-            pass_test = False
-            version_string = "Not installed"
-
-        min_version_str = '.'.join(map(str, min_acceptable_version))
-        max_version_str = '.'.join(map(str, max_acceptable_version))
-        error_msg = ("Unsupported pynast version. Must be >= %s and <= %s, "
-                     "but running %s." % (min_version_str, max_version_str,
-                                          version_string))
-        self.assertTrue(pass_test, error_msg)
 
     def test_FastTree_supported_version(self):
         """FastTree is in path and version is supported """
@@ -741,6 +693,15 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
             pass_test = False
         self.assertTrue(pass_test, "gdata is not installed.")
 
+    def test_h5py(self):
+        """h5py is installed"""
+        self.assertTrue(h5py_lib_version != "Not installed.",
+                        "h5py is not installed. You should install this for "
+                        "improved performance with large BIOM files or if "
+                        "working with BIOM format version 2.x files. For "
+                        "more information, see http://biom-format.org.")
+        # cd-hit does not have a version print in their program
+
 
 def test_qiime_config_variable(variable, qiime_config, test,
                                access_var=R_OK, fail_on_missing=False):
@@ -775,7 +736,7 @@ def main():
 
     qiime_config = load_qiime_config()
     test = opts.test
-    qiime_base_install = opts.qiime_base_install
+    qiime_full_install = opts.qiime_full_install
 
     rdp_jarpath = get_rdp_jarpath()
     if rdp_jarpath is None:
@@ -797,19 +758,34 @@ def main():
     for v in system_info:
         print "%*s:\t%s" % (max_len, v[0], v[1])
 
+    print "\nQIIME default reference information"
+    print "==================================="
+    print "For details on what files are used as QIIME's default references, see here:"
+    print " https://github.com/biocore/qiime-default-reference/releases/tag/%s" % qdr_lib_version
+
     version_info = [
+        ("QIIME library version", get_qiime_library_version()),
+        ("QIIME script version", __version__),
+        ("qiime-default-reference version", qdr_lib_version),
         ("NumPy version", numpy_lib_version),
         ("SciPy version", scipy_lib_version),
+        ("pandas version", pandas_lib_version),
         ("matplotlib version", matplotlib_lib_version),
         ("biom-format version", biom_lib_version),
+        ("h5py version", h5py_lib_version),
         ("qcli version", qcli_lib_version),
         ("pyqi version", pyqi_lib_version),
         ("scikit-bio version", skbio_lib_version),
-        ("QIIME library version", get_qiime_library_version()),
-        ("QIIME script version", __version__),
-        ("PyNAST version (if installed)", pynast_lib_version),
-        ("Emperor version", emperor_lib_version)]
-    if not qiime_base_install:
+        ("PyNAST version", pynast_lib_version),
+        ("Emperor version", emperor_lib_version),
+        ("burrito version", burrito_lib_version),
+        ("burrito-fillings version", bfillings_lib_version),
+        ("sortmerna version", sortmerna_lib_version),
+        ("sumaclust version", sumaclust_lib_version),
+        ("gdata", gdata_installed)
+    ]
+
+    if qiime_full_install:
         version_info += [
             ("RDP Classifier version (if installed)", rdp_version),
             ("Java version (if installed)", java_version)]
@@ -822,15 +798,22 @@ def main():
 
     print "\nQIIME config values"
     print "==================="
+    print "For definitions of these settings and to learn how to configure QIIME, see here:"
+    print " http://qiime.org/install/qiime_config.html"
+    print " http://qiime.org/tutorials/parallel_qiime.html\n"
     max_len = max([len(key) for key in qiime_config])
     for key, value in qiime_config.items():
         print "%*s:\t%s" % (max_len, key, value)
 
     if test:
-        if qiime_base_install:
-            suite = TestLoader().loadTestsFromTestCase(QIIMEDependencyBase)
-        else:
+        if qiime_full_install:
+            print "\nQIIME full install test results"
+            print "==============================="
             suite = TestLoader().loadTestsFromTestCase(QIIMEDependencyFull)
+        else:
+            print "\nQIIME base install test results"
+            print "==============================="
+            suite = TestLoader().loadTestsFromTestCase(QIIMEDependencyBase)
         if opts.verbose:
             verbosity = 2
         else:
