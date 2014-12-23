@@ -121,8 +121,13 @@ class RDifferentialAbundanceTests(TestCase):
              '2366\t3.63266497414694\t-2.21660628894061\t0.514240606913112\t-4.31044584799803\t1.62925724104894e-05\t0.000162925724104894\n',
              '1088\t2.80571100244187\t-1.9610730170819\t0.485853003903793\t-4.03635050380428\t5.42890917069973e-05\t0.00040716818780248\n',
              '3006\t2.62956013500845\t-1.73771036728344\t0.489095213973481\t-3.55290814065839\t0.000380997482497004\t0.00228598489498202\n']
-        self.assertEqual(nbinom[1:6],exp)
-  
+        for a, e in zip(nbinom[1:6],exp):
+            af = map(float,a.split('\t'))
+            ef = map(float,e.split('\t'))
+            self.assertEqual(len(af), len(ef))
+            for af_e, ef_e in zip(af, ef):
+                self.assertAlmostEqual(af_e, ef_e)
+
     def tearDown(self):
         """cleanup temporary files and dirs
         """
