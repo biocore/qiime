@@ -56,6 +56,14 @@ script_info['script_usage'].append((
     """Treatment:Fast groups.""",
     "%prog -i otu_table.biom -o diff_otus.txt -m map.txt -a metagenomeSeq_fitZIG -c Treatment -x Control -y Fast")
     )
+script_info['script_usage'].append((
+    "OTU Differential Abundance Testing with DESeq2_nbinom",
+    """Apply DESeq2_nbinom differential OTU abundance testing to a """
+    """raw (NOT normalized) BIOM table to test for differences in OTU """
+    """abundance between samples in the Treatment:Control and """
+    """Treatment:Fast groups, including output of plots.""",
+    "%prog -i otu_table.biom -o diff_otus.txt -m map.txt -a DESeq2_nbinom -c Treatment -x Control -y Fast -d")
+    )
 script_info['output_description']= "The resulting output OTU txt file contains a list of all the OTUs in the input matrix, along with their associated statistics and FDR p-values."
 script_info['required_options']=[
 ]
