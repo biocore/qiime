@@ -6,7 +6,7 @@ sourcedir <- args[which(args == '--source_dir') + 1]
 source(sprintf('%s/util.r',sourcedir))
 
 load.library('optparse')
-load.library('DESeq2')
+load.library('DESeq2', bioconductor=TRUE)
 load.library('biom')
 
 # make option list and parse command line
@@ -47,11 +47,11 @@ if(is.null(opts$subcategory_2)) stop('Please supply a second subcategory.')
             suppressWarnings(dds <- try(DESeq(dds, quiet = TRUE), silent = TRUE))
             if (inherits(dds, "try-error")) {
                 # If the parametric fit failed, try the local.
-                suppressWarnings(dds <- try(DESeq(dds, fitType = "local", quiet = TRUE), 
+                suppressWarnings(dds <- try(DESeq(dds, fitType = "local", quiet = TRUE),
                 silent = TRUE))
             if (inherits(dds, "try-error")) {
                 # If local fails, try the mean
-                suppressWarnings(dds <- try(DESeq(dds, fitType = "mean", quiet = TRUE), 
+                suppressWarnings(dds <- try(DESeq(dds, fitType = "mean", quiet = TRUE),
                     silent = TRUE))
                 }
             if (inherits(dds, "try-error")) {
@@ -69,8 +69,8 @@ if(is.null(opts$subcategory_2)) stop('Please supply a second subcategory.')
 	            pdf(sprintf("%s", outfile_diagnostic))
 	            plotMA(res, ylim = c(-3,3))
 	            plotDispEsts(dds, ylim = c(1e-6, 1e1))
-	            dev.off()           
+	            dev.off()
             }
         }
-        
+
 DESeq2_nbinom(opts$input_path, opts$out_path, opts$mapping_category, opts$subcategory_1, opts$subcategory_2, opts$DESeq2_diagnostic_plots, opts$outfile_diagnostic)
