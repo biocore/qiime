@@ -65,10 +65,10 @@ script_info['optional_options']=[
 make_option('-i', '--input_path', type='existing_path',
             help='path to the input BIOM file (e.g., the output '
             'from OTU picking) or directory containing input BIOM files '
-            'for batch processing [REQUIRED if not passing -t]'),
+            'for batch processing [REQUIRED if not passing -l]'),
 make_option('-o', '--out_path', type='new_path',
             help='output filename for single file operation, or output '
-            'directory for batch processing [REQUIRED if not passing -t]'),
+            'directory for batch processing [REQUIRED if not passing -l]'),
 make_option('-s', '--output_CSS_statistics', default=False,
             action='store_true', help='output CSS statistics file. This '
             'will be a directory for batch processing, and a filename for '
@@ -77,11 +77,11 @@ make_option('-z', '--DESeq_negatives_to_zero', default=False,
             action='store_true', help='replace negative numbers produced by '
             'the DESeq normalization technique with zeros [default: '
             '%default]'),
- make_option('-a', '--algorithm', default='CSS', type='choice',
+make_option('-a', '--algorithm', default='CSS', type='choice',
              choices=algorithm_list(), help='normalization algorithm to apply to input '
              'BIOM table(s). [default: %default]' + ' Available options are: '
              '%s' % ', '.join(algorithm_list())),
- make_option('-l', '--list_algorithms', action='store_true', default=False,
+make_option('-l', '--list_algorithms', action='store_true', default=False,
              help='show available normalization algorithms and exit '
              '[default: %default]'),
          ]
