@@ -99,6 +99,7 @@ optionally a mapping file. Check out the new documentation for the naming conven
 * Removed ``make_otu_heatmap_html.py`` in favor of ``make_otu_heatmap.py`` (see discussion on [#1724](https://github.com/biocore/qiime/issues/1724)).
 * Fixed bug that resulted in samples being mislabeled in ``make_otu_heatmap.py`` when one of the following options was passed: ``--category``, ``--map_fname``, ``--sample_tree``, or ``--suppress_column_clustering``. This is discussed in [#1790](https://github.com/biocore/qiime/issues/1790).
 * Added ``--negate_sample_id_fp`` option to ``filter_samples_from_otu_table.py`` (see [#1117](https://github.com/biocore/qiime/issues/1117)).
+* Added three new workflow scripts for facilitating initial QIIME processing of already-demultiplexed fastq files, as these are commonly being provided by sequencing centers. These are: ``multiple_split_libraries_fastq.py``, ``multiple_join_paired_ends.py``, and ``multiple_extract_barcodes.py``.
 
 QIIME 1.8.0 (11 Dec 2013)
 =========================
