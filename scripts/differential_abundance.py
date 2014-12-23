@@ -21,7 +21,7 @@ __email__ = "sophie.sjw@gmail.com"
 script_info = {}
 script_info['brief_description'] = "OTU differential abundance between two sample categories"
 script_info['script_description'] = "OTU differential abundance testing is commonly used to identify OTUs that differ between two mapping file sample categories (i.e. Palm and Tongue body sites).  These methods can be used in comparison to group_significance.py on a rarefied matrix, and we would always recommend comparing the results of these approaches to the rarefied/group_significance.py approaches.  We would also recommend treating the differentially abundant OTUs identified by these (fitZIG and DESeq negative binomial) techinques with caution, as they assume a distribution and are therefore parametric.  They are also newer techinques that are less well tested compared to rarefying/group_signficance.py.  The input is a raw (not rarefied) matrix having uneven column sums.  With these techniques, we would still recommend removing low depth samples (e.g. below 1000 sequences per sample) from the data set.  The DESeq2 method should NOT be used if the fit line on the disperison plot (one of the diagnostic plots output by the -d, or --DESeq2_diagnostic_plots option) does not look smooth and there are big gaps in the points.  DESeq2 is stronger at very small/smaller data sets and the run-time beyond 100 total samples becomes very long.  fitZIG is a better algorithm for over 100 samples per category (e.g. Palm samples).  In simulation, these techinques have higher sensitivity, but sometimes higher false positive rate compared to group_significance.py, especially with low and very uneven library sizes.  In practice and with real data, we do not observe much of a difference between these results and group_significance.py.  For more on these techinques please see Paulson, JN, et al. 'Differential abundance analysis for microbial marker-gene surveys.'  Nature Methods 2013.  For DESeq2/DESeq please see Love, MI et al. 'Moderated estimation of fold change and dispersion for RNA-Seq data with DESeq2,' Genome Biology 2014.  Anders S, Huber W. 'Differential expression analysis for sequence count data.' Genome Biology 2010.  Additionally, you can also read the vignettes for each of the techinques on the Bioconductor/R websites."
-script_info['script_usage'] = [("""OTU Differential Abundance Testing""","""For this script, the user supplies an input raw (NOT normalized - either by rarefying, CSS, DESeq, etc.) OTU matrix (usually always having different column sums), an output file, a mapping file, a category in the mapping file for which it is desired to test differential abundance, and the algorithm that the user want for differential abundance testing, as follows:""","""differential_abundance.py -i raw_OTU_table.biom -o DE_OTUs.txt -m mapping_fp.txt -a 'metagenomeSeq_fitZIG' -c 'BODY_SITE' -x 'Tongue' -y 'Palm'""")]
+script_info['script_usage'] = [("""OTU Differential Abundance Testing""","""For this script, the user supplies an input raw (NOT normalized - either by rarefying, CSS, DESeq, etc.) OTU matrix (usually always having different column sums), an output file, a mapping file, a category in the mapping file for which it is desired to test differential abundance, and the algorithm that the user want for differential abundance testing, as follows:""","""%prog -i otu_table.biom -o DE_OTUs.txt -m map.txt -a metagenomeSeq_fitZIG -c Treatment -x Control -y Fast""")]
 script_info['output_description']= "The resulting output OTU txt file contains a list of all the OTUs in the input matrix, along with their associated statistics and FDR p-values."
 script_info['required_options']=[\
 ]
@@ -31,7 +31,7 @@ script_info['optional_options']=[\
     'processing and a filename for a single file operation.'),\
  make_option('-o', '--out_path',type='new_path', help='output path. directory for '
     'batch processing, filename for single file operation'),\
- make_option('-a', '--algorithm', type='multiple_choice', 
+ make_option('-a', '--algorithm', type='multiple_choice',
      mchoices=algorithm_list(), help='algorithm to calculate the differentially abundant OTUs '
      'To see the full list of methods and their description use -s'),\
  make_option('-m', '--mapping_file_path', type='new_path', help='mapping file path.'),\
@@ -66,19 +66,19 @@ def main():
     else:
         algorithm = algorithm[0]
 
-    if algorithm == 'metagenomeSeq_fitZIG':            
+    if algorithm == 'metagenomeSeq_fitZIG':
         if os.path.isdir(input_path):
-            multiple_file_DA_fitZIG(input_path, out_path, mapping_fp, mapping_category, subcategory_1, subcategory_2)   
+            multiple_file_DA_fitZIG(input_path, out_path, mapping_fp, mapping_category, subcategory_1, subcategory_2)
         elif os.path.isfile(input_path):
-            DA_fitZIG(input_path, out_path, mapping_fp, mapping_category, subcategory_1, subcategory_2)   
+            DA_fitZIG(input_path, out_path, mapping_fp, mapping_category, subcategory_1, subcategory_2)
         else:
             print("io error, check input file path")
         exit(1)
-    elif algorithm == 'DESeq2_nbinom':            
+    elif algorithm == 'DESeq2_nbinom':
         if os.path.isdir(input_path):
-            multiple_file_DA_DESeq2(input_path, out_path, mapping_fp, mapping_category, subcategory_1, subcategory_2, DESeq2_diagnostic_plots)   
+            multiple_file_DA_DESeq2(input_path, out_path, mapping_fp, mapping_category, subcategory_1, subcategory_2, DESeq2_diagnostic_plots)
         elif os.path.isfile(input_path):
-            DA_DESeq2(input_path, out_path, mapping_fp, mapping_category, subcategory_1, subcategory_2, DESeq2_diagnostic_plots)   
+            DA_DESeq2(input_path, out_path, mapping_fp, mapping_category, subcategory_1, subcategory_2, DESeq2_diagnostic_plots)
         else:
             print("io error, check input file path")
         exit(1)
