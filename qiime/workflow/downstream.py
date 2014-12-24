@@ -8,7 +8,7 @@ __credits__ = ["Greg Caporaso", "Kyle Bittinger", "Justin Kuczynski",
                "Jesse Stombaugh", "Yoshiki Vazquez Baeza", "Jai Ram Rideout",
                "Adam Robbins-Pianka"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-rc1"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 

@@ -17,7 +17,7 @@ __copyright__ = "Copyright (c) 2011--, %s" % __author__
 __credits__ = ["Greg Caporaso", "Kyle Bittinger", "Jai Ram Rideout",
                "Yoshiki Vazquez Baeza", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-rc1"
 __maintainer__ = "Greg Caporaso"
 __email__ = "qiime.help@gmail.com"
 

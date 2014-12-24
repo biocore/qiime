@@ -1,5 +1,5 @@
-QIIME 1.8.0-dev (changes since 1.8.0 go here)
-=============================================
+QIIME 1.9.0-rc1
+===============
 * Added new ``observation_metadata_correlation.py`` script. This script allows the calculation of correlations between feature abundances and continuous-valued metadata. This script replaces the continuous-valued correlation functionality that was in ``otu_category_significance.py`` in QIIME 1.7.0 and earlier.
 * ``split_otu_table.py`` now allows multiple fields to be passed to split a biom table, and
 optionally a mapping file. Check out the new documentation for the naming conventions
@@ -101,6 +101,8 @@ optionally a mapping file. Check out the new documentation for the naming conven
 * Fixed bug that resulted in samples being mislabeled in ``make_otu_heatmap.py`` when one of the following options was passed: ``--category``, ``--map_fname``, ``--sample_tree``, or ``--suppress_column_clustering``. This is discussed in [#1790](https://github.com/biocore/qiime/issues/1790).
 * Added ``--negate_sample_id_fp`` option to ``filter_samples_from_otu_table.py`` (see [#1117](https://github.com/biocore/qiime/issues/1117)).
 * Added three new workflow scripts for facilitating initial QIIME processing of already-demultiplexed fastq files, as these are commonly being provided by sequencing centers. These are: ``multiple_split_libraries_fastq.py``, ``multiple_join_paired_ends.py``, and ``multiple_extract_barcodes.py``.
+* Added ``differential_abundance.py`` to supplement ``group_significance.py`` for to support metagenomeSeq's fitZIG algorithm and DESeq2's negative binomial algorithm.  Note that the input for this is a unnormalized, raw BIOM table.
+* Added ``normalize_table.py`` to support normalization algorithms in addition to rarefaction. Supported methods are metagenomeSeq's CSS and DESeq's variance stabilizing transformation.
 
 QIIME 1.8.0 (11 Dec 2013)
 =========================

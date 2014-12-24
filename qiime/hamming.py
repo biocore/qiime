@@ -15,7 +15,7 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 # remember to add yourself if you make changes
 __credits__ = ["Micah Hamady", "Rob Knight"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-rc1"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 

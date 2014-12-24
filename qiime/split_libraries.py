@@ -30,7 +30,7 @@ __credits__ = ["Rob Knight", "Micah Hamady", "Greg Caporaso", "Kyle Bittinger",
                "Jesse Stombaugh", "William Walters", "Jens Reeder",
                "Emily TerAvest", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-rc1"
 __maintainer__ = "William Walters"
 __email__ = "rob@spot.colorado.edu, william.a.walters@colorado.edu"
 

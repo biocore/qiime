@@ -8,7 +8,7 @@ __credits__ = ["William Van Treuren", "Jose Carlos Clemente Litran",
                "Jose Antonio Navas Molina", "Yoshiki Vazquez Baeza",
                "Adam Robbins-Pianka"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-rc1"
 __maintainer__ = "William Van Treuren"
 __email__ = "wdwvt1@gmail.com"
 
