@@ -6,7 +6,7 @@ __author__ = "William Walters"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["William Walters", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-rc1"
 __maintainer__ = "William Walters"
 __email__ = "William.A.Walters@colorado.edu"
 

@@ -7,7 +7,7 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jesse Stobmaugh", "Julia Goodrich",
                "Micah Hamady"]  # remember to add yourself
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-rc1"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 

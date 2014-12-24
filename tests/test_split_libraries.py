@@ -5,7 +5,7 @@ __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Rob Knight", "William Walters", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-rc1"
 __maintainer__ = "William Walters"
 __email__ = "william.a.walters@colorado.edu"
 
