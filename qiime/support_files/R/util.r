@@ -4,17 +4,17 @@
 # __copyright__ = "Copyright 2011, The QIIME Project"
 # __credits__ = ["Dan Knights"]
 # __license__ = "GPL"
-# __version__ = "1.8.0-dev"
+# __version__ = "1.9.0-rc1"
 # __maintainer__ = "Dan Knights"
 # __email__ = "daniel.knights@colorado.edu"
-# 
+#
 
 # Attempts to load a given library. If does not exists, fails gracefully
 # and prints instructions for installing the library
-"load.library" <- function(lib.name, quietly=TRUE){
+"load.library" <- function(lib.name, quietly=TRUE, bioconductor=FALSE){
 
     include.custom.library.path() # ensure that custom library is included
-    
+
     # attempt to load the library, suppress warnings if needed
     warnings.visible <- get.warning.visibility()
     if(quietly && warnings.visible) set.warning.visibility(FALSE)
@@ -24,18 +24,22 @@
             silent=FALSE
         )
     if(quietly && warnings.visible) set.warning.visibility(TRUE)
-        
+
+    if(bioconductor){
+        install.command <- sprintf('source("http://bioconductor.org/biocLite.R"); biocLite("%s")', lib.name)
+    } else {
+        install.command <- sprintf('install.packages("%s")', lib.name)
+    }
     # if library does not exist or failed, fail gracefully
     if(class(library.result)=='try-error'){
         cat(sprintf('\n\nError encounted loading library %s:\n\n',lib.name),sep='',file=stderr())
         cat(library.result[1],'\n\n',sep='',file=stderr())
     } else if(!library.result){
         help_string1 <- sprintf(
-            'To install: open R and run the command "install.packages("%s")".', 
-            lib.name)
+            'To install, open R and run the command:\n  %s', install.command)
         cat(sprintf('\n\nLibrary %s not found.\n\n',lib.name),file=stderr())
         cat(help_string1,'\n\n',sep='',file=stderr())
-        
+
         help_string2 <- sprintf(
 "If you already have the %s package installed in a local directory,
 please store the path to that directory in an environment variable
@@ -125,5 +129,3 @@ The current R instance knows about these paths:
         invisible(folds)
     }
 }
-
-

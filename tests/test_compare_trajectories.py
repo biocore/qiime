@@ -6,7 +6,7 @@ __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Jose Antonio Navas Molina", "Antonio Gonzalez Pena",
                "Yoshiki Vazquez Baeza", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-rc1"
 __maintainer__ = "Jose Antonio Navas Molina"
 __email__ = "josenavasmolina@gmail.com"
 

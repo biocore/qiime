@@ -4,7 +4,7 @@ __author__ = "Daniel McDonald"
 __copyright__ = "Copyright 2014, The QIIME Project"
 __credits__ = ["Daniel McDonald"]
 __license__ = "BSD"
-__version__ = "1.8.0-dev"
+__version__ = "1.9.0-rc1"
 __maintainer__ = "Daniel McDonald"
 __email__ = "mcdonadt@colorado.edu"
 
