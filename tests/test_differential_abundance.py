@@ -94,7 +94,12 @@ class RDifferentialAbundanceTests(TestCase):
                '979\t0\t10\t0\t20\t0\t0\t0.0956087104342576\t6.04991702771485e-07\t5.04159752309571e-06\t0.0855575301280384\t1.4678274119766\t0.00901541795158288\t-7.07862887279825\t0.000648824231851767\t0.00540686859876472\n',
                '1314\t4\t0\t7\t0\tInf\t0.34924924266116\tInf\t0.277924541082436\t0.347405676353045\t0.412980602558517\t-1.25800421238268\t-0.711956542078996\t22.3778549863952\t0.00315666606837298\t0.0197291629273311\n',
                '1351\t0\t6\t0\t12\t0\t0\t0.320469784786932\t0.000621585760904647\t0.00194245550282702\t0.106944586260241\t1.21145998904839\t0.0112690273007214\t-8.84809361558598\t0.00579444501011918\t0.0289722250505959\n']
-        self.assertEqual(zig[1:6],exp)
+        for a, e in zip(zig[1:6],exp):
+            af = map(float,a.split('\t'))
+            ef = map(float,e.split('\t'))
+            self.assertEqual(len(af), len(ef))
+            for af_e, ef_e in zip(af, ef):
+                self.assertAlmostEqual(af_e, ef_e)
 
     def test_DESeq2_nbinom_format(self):
         nbinom = open(self.tmp_otu_fp_DESeq2_out).readlines()

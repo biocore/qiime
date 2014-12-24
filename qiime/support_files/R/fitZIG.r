@@ -6,7 +6,7 @@ sourcedir <- args[which(args == '--source_dir') + 1]
 source(sprintf('%s/util.r',sourcedir))
 
 load.library('optparse')
-load.library('metagenomeSeq')
+load.library('metagenomeSeq', bioconductor=TRUE)
 load.library('biom')
 
 # make option list and parse command line
