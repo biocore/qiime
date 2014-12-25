@@ -42,7 +42,6 @@ def multiple_file_normalize_CSS(input_dir, output_dir, output_CSS_statistics):
 
     for fname in file_names:
         base_fname, ext = splitext(fname)
-        print base_fname
         original_fname = base_fname+'.biom'
         json_fname = base_fname+'_json.biom'
         hdf5_infile = join(input_dir, original_fname)
@@ -95,7 +94,7 @@ def multiple_file_normalize_DESeq(input_dir, output_dir, DESeq_negatives_to_zero
         hdf5_infile = join(input_dir, original_fname)
         json_infile = join(input_dir, json_fname)
         open(str(json_infile),'w').write(load_table(hdf5_infile).to_json('forR'))
-        outfile = join(output_dir, 'DESeqVS_'+base_fname+'.biom')
+        outfile = join(output_dir, 'DESeq2_'+base_fname+'.biom')
 
         run_DESeq(json_infile, outfile, DESeq_negatives_to_zero)
         remove(json_infile)
@@ -118,7 +117,7 @@ def run_DESeq(input_path, out_path, DESeq_negatives_to_zero, HALT_EXEC=False):
 def algorithm_list():
     """ returns list of normalization algorithms from qiime.normalize_table
     """
-    return ['CSS', 'DESeq']
+    return ['CSS', 'DESeq2']
 
 if __name__ == "__main__":
     main()

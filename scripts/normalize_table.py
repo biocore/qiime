@@ -26,40 +26,52 @@ for compositionality too.  Rarefying throws away some data by rarefying to a
 constant sum and throwing away extremely low depth samples.
 
 Even with these new normalization techinques, we would recommend throwing away
-low depth samples (e.g. less that 1000 sequences/sample).  DESeq outputs
+low depth samples (e.g. less that 1000 sequences/sample).  DESeq/DESeq2 outputs
 negative values for lower abundant OTUs as a result of its log transformation.
 For most ecologically useful metrics (e.g. UniFrac/Bray Curtis) this presents
 problems. No good solution exists at the moment for this issue.  Note that one
 is added to the matrix to avoid log(0).  It has been shown that clustering
 results can be highly dependent upon the choice of the pseudocount (e.g. should
-it be 0.01 instead of 1?), for more information see Costea, P. et al. (2014)
+it be 0.01 instead of 1?), for more information read Costea, P. et al. (2014)
 "A fair comparison", Nature Methods.
 
-DESeq can also have a very slow runtime, especially for larger datasets.
-If you do use these alternatives to rarefying, we would only recommend
-metagenomeSeq's CSS transformation for those metrics that are abundance-based.
-E.g. do not use these new methods for binary Jaccard or unweighted UniFrac. For
-more on the methods, please see Paulson, JN, et al. 'Differential abundance
-analysis for microbial marker-gene surveys' Nature Methods 2013.  For DESeq
+DESeq/DESeq2 can also have a very slow runtime, especially for larger datasets.
+Here, we implement DESeq2's variance stabilization technique. If you do use these
+alternatives to rarefying, we would recommend metagenomeSeq's CSS transformation
+for those metrics that are abundance-based.  It is not recommended to use these
+new methods with presence/absence metrics, for example binary Jaccard or unweighted
+UniFrac. 
+
+For more on the methods, please see Paulson, JN, et al. 'Differential
+abundance analysis for microbial marker-gene surveys' Nature Methods 2013.  For DESeq
 please see Anders S, Huber W. 'Differential expression analysis for sequence
 count data.' Genome Biology 2010.  For any of these methods, clustering by
 sequence depth MUST BE CHECKED FOR as a confounding variable, e.g. by coloring
-by sequences/sample on a PCoA plot and/or testing for correlations between
-taxa abundances and sequencing depth with observation_metadata_correlation.py.
+by sequences/sample on a PCoA plot and testing for correlations between
+taxa abundances and sequencing depth with e.g. adonis in compare_categories.py, 
+or observation_metadata_correlation.py.
 """
 
 script_info['script_usage']=[]
 script_info['script_usage'].append(
-      ("CSS Matrix Normalization",
+      ("Single File CSS Matrix Normalization",
        "Normalize a raw (non-normalized/non-rarefied) otu_table.biom using CSS:",
        "%prog -i otu_table.biom -a CSS -o CSS_normalized_otu_table.biom"))
 script_info['script_usage'].append(
-       ("DESeq Matrix Normalization",
-       "Normalize a raw (non-normalized/non-rarefied) otu_table.biom using DESeq:",
-       "%prog -i otu_table.biom -a DESeq -o DESeq_normalized_otu_table.biom"))
+       ("Single File DESeq2 Matrix Normalization",
+       "Normalize a raw (non-normalized/non-rarefied) otu_table.biom using DESeq2:",
+       "%prog -i otu_table.biom -a DESeq2 -o DESeq2_normalized_otu_table.biom"))
+script_info['script_usage'].append(
+      ("Multiple File CSS Matrix Normalization",
+       "Normalize a folder of raw (non-normalized/non-rarefied) otu tables using CSS:",
+       "%prog -i otu_tables/ -a CSS -o CSS_normalized_otu_tables/"))
+script_info['script_usage'].append(
+       ("Multiple File DESeq2 Matrix Normalization",
+       "Normalize a folder of raw (non-normalized/non-rarefied) otu tables using DESeq2:",
+       "%prog -i otu_tables/ -a DESeq2 -o DESeq2_normalized_otu_tables/"))
+
 script_info['output_description']= \
-"""BIOM table with normalized counts. Can be used in all downstream analyses
-except differential abundance testing and OTU correlations."""
+"""BIOM table with normalized counts."""
 script_info['required_options']=[]
 script_info['optional_options']=[
 make_option('-i', '--input_path', type='existing_path',
@@ -109,7 +121,7 @@ def main():
         else:
             # it shouldn't be possible to get here
             option_parser.error("Unknown input type: %s" % input_path)
-    elif algorithm == 'DESeq':
+    elif algorithm == 'DESeq2':
         if os.path.isdir(input_path):
             multiple_file_normalize_DESeq(input_path, out_path, DESeq_negatives_to_zero)
         elif os.path.isfile(input_path):
