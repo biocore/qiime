@@ -6,7 +6,7 @@ from os.path import exists, splitext, join, isdir
 from os import makedirs, listdir, remove, path
 
 from qiime.parse import parse_mapping_file_to_dict
-from qiime.util import RExecutor
+from qiime.util import RExecutor, MetadataMap
 from biom import load_table
 
 
@@ -19,13 +19,39 @@ __maintainer__ = "Sophie Weiss"
 __email__ = "sophie.sjw@gmail.com"
 
 
+def check_mapping_file_category(mapping_fp, mapping_category, pmf, subcategory_1, subcategory_2):
+    md_map = MetadataMap.parseMetadataMap(mapping_fp)
+    if not mapping_category in md_map.CategoryNames:
+        raise ValueError("Category '%s' not found in mapping file "
+                         "columns." % mapping_category)
 
+    if md_map.hasSingleCategoryValue(mapping_category):
+        raise ValueError("All values in category '%s' are the "
+                         "same. These statistical methods "
+                         "cannot operate on a category that "
+                         "creates only a single group of samples "
+                         "(e.g. there are no 'between' distances "
+                         "because there is only a single group)."
+                         % (mapping_category))
+
+    all_subcategories = {pmf[k][mapping_category] for k in pmf}
+
+    if subcategory_1 not in all_subcategories:
+        raise ValueError("Subcategory_1 (-x) '%s' not found in selected "
+                         "mapping file column." % subcategory_1)
+
+    if subcategory_2 not in all_subcategories:
+        raise ValueError("Subcategory_2 (-y) '%s' not found in selected "
+                         "mapping file column." % subcategory_2)
+
+                    
 def DA_fitZIG(input_path, out_path, mapping_fp, mapping_category, subcategory_1, subcategory_2):
    """perform metagenomeSeq's Zero Inflated Gaussian (ZIG) OTU differential abundance testing"""
    base_fname, ext = splitext(input_path)
    json_infile = base_fname+'_json.biom'
    tmp_bt = load_table(input_path)
    tmp_pmf, _ = parse_mapping_file_to_dict(mapping_fp)
+   check_mapping_file_category(mapping_fp, mapping_category, tmp_pmf, subcategory_1, subcategory_2)
    tmp_bt.add_metadata(tmp_pmf, 'sample')
    open(str(json_infile),'w').write(tmp_bt.to_json('forR'))
 
@@ -49,6 +75,7 @@ def multiple_file_DA_fitZIG(input_dir, output_dir, mapping_fp, mapping_category,
         json_infile = join(input_dir, json_fname)
         tmp_bt = load_table(hdf5_infile) 
         tmp_pmf, _ = parse_mapping_file_to_dict(mapping_fp)
+        check_mapping_file_category(mapping_fp, mapping_category, tmp_pmf, subcategory_1, subcategory_2)
         tmp_bt.add_metadata(tmp_pmf, 'sample')
         #make temporary json biom version - R currently does not have hdf5
         open(str(json_infile),'w').write(tmp_bt.to_json('forR'))
@@ -78,6 +105,7 @@ def DA_DESeq2(input_path, out_path, mapping_fp, mapping_category, subcategory_1,
     json_infile = base_fname+'_json.biom'
     tmp_bt = load_table(input_path)
     tmp_pmf, _ = parse_mapping_file_to_dict(mapping_fp)
+    check_mapping_file_category(mapping_fp, mapping_category, tmp_pmf, subcategory_1, subcategory_2)
     tmp_bt.add_metadata(tmp_pmf, 'sample')
     open(str(json_infile),'w').write(tmp_bt.to_json('forR'))
     base_fname, ext = splitext(out_path)
@@ -103,6 +131,7 @@ def multiple_file_DA_DESeq2(input_dir, output_dir, mapping_fp, mapping_category,
         json_infile = join(input_dir, json_fname)
         tmp_bt = load_table(hdf5_infile)
         tmp_pmf, _ = parse_mapping_file_to_dict(mapping_fp)
+        check_mapping_file_category(mapping_fp, mapping_category, tmp_pmf, subcategory_1, subcategory_2)
         tmp_bt.add_metadata(tmp_pmf, 'sample')
         open(str(json_infile),'w').write(tmp_bt.to_json('forR'))
         outfile = join(output_dir, 'DESeq2_DA_'+base_fname+'.txt') 
