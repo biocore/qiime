@@ -97,7 +97,7 @@ def run_fitZIG(input_path, out_path, mapping_category, subcategory_1, subcategor
 
 
 def DA_DESeq2(input_path, out_path, mapping_fp, mapping_category, subcategory_1, subcategory_2, DESeq2_diagnostic_plots):
-    """perform DESeq2 negative binomial differential abundance test on a raw abundance OTU matrix
+    """perform DESeq2 negative binomial Wald differential abundance test on a raw abundance OTU matrix
     """
     base_fname, ext = splitext(input_path)
     json_infile = base_fname+'_json.biom'
@@ -113,7 +113,7 @@ def DA_DESeq2(input_path, out_path, mapping_fp, mapping_category, subcategory_1,
 
 
 def multiple_file_DA_DESeq2(input_dir, output_dir, mapping_fp, mapping_category, subcategory_1, subcategory_2, DESeq2_diagnostic_plots):
-    """perform DESeq2 negative binomial differential abundance test on a directory of raw abundance OTU matrices
+    """perform DESeq2 negative binomial Wald differential abundance test on a directory of raw abundance OTU matrices
     """
     if not exists(output_dir):
         makedirs(output_dir)
@@ -138,7 +138,7 @@ def multiple_file_DA_DESeq2(input_dir, output_dir, mapping_fp, mapping_category,
 
 
 def run_DESeq2(input_path, out_path, mapping_category, subcategory_1, subcategory_2, DESeq2_diagnostic_plots, outfile_diagnostic, HALT_EXEC=False):
-    """Run metagenomeSeq's fitZIG algorithm through Rscript
+    """Run DESeq2 negative binomial Wald algorithm through Rscript
     """
     # set options
     if DESeq2_diagnostic_plots==True:
