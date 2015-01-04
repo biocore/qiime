@@ -56,7 +56,6 @@ def DA_fitZIG(input_path, out_path, mapping_fp, mapping_category, subcategory_1,
    open(str(json_infile),'w').write(tmp_bt.to_json('forR'))
 
    run_fitZIG(json_infile, out_path, mapping_category, subcategory_1, subcategory_2)
-   remove(json_infile)
 
 
 def multiple_file_DA_fitZIG(input_dir, output_dir, mapping_fp, mapping_category, subcategory_1, subcategory_2):
@@ -82,7 +81,6 @@ def multiple_file_DA_fitZIG(input_dir, output_dir, mapping_fp, mapping_category,
         outfile = join(output_dir, 'fitZIG_DA_'+base_fname+'.txt')
 
         run_fitZIG(json_infile, outfile, mapping_category, subcategory_1, subcategory_2) 
-        remove(json_infile)
 
 
 def run_fitZIG(input_path, out_path, mapping_category, subcategory_1, subcategory_2, HALT_EXEC=False):
@@ -112,7 +110,6 @@ def DA_DESeq2(input_path, out_path, mapping_fp, mapping_category, subcategory_1,
     outfile_diagnostic = join(base_fname+'_diagnostic_plots.pdf') 
 
     run_DESeq2(json_infile, out_path, mapping_category, subcategory_1, subcategory_2, DESeq2_diagnostic_plots, outfile_diagnostic)
-    remove(json_infile)
 
 
 def multiple_file_DA_DESeq2(input_dir, output_dir, mapping_fp, mapping_category, subcategory_1, subcategory_2, DESeq2_diagnostic_plots):
@@ -138,7 +135,6 @@ def multiple_file_DA_DESeq2(input_dir, output_dir, mapping_fp, mapping_category,
         outfile_diagnostic = join(output_dir, 'DESeq2_diagnostic_plots_'+base_fname+'.pdf') 
 
         run_DESeq2(json_infile, outfile, mapping_category, subcategory_1, subcategory_2, DESeq2_diagnostic_plots, outfile_diagnostic)
-        remove(json_infile)
 
 
 def run_DESeq2(input_path, out_path, mapping_category, subcategory_1, subcategory_2, DESeq2_diagnostic_plots, outfile_diagnostic, HALT_EXEC=False):

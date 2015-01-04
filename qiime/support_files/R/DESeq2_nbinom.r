@@ -39,6 +39,8 @@ if(is.null(opts$subcategory_2)) stop('Please supply a second subcategory.')
 
 "DESeq2_nbinom" <- function(input_path, out_path, mapping_category, subcategory_1, subcategory_2, DESeq2_diagnostic_plots, outfile_diagnostic) {
             foo = read_biom(input_path)
+            # remove temporary json file immediately to reduce user confusion
+            file.remove(input_path, full.names=TRUE)
             x = as(biom_data(foo), "matrix")
             # avoid zeros
             x = x + 1
