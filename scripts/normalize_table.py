@@ -3,7 +3,7 @@
 from __future__ import division
 
 from qiime.util import parse_command_line_parameters, make_option
-from qiime.normalize_table import normalize_CSS, normalize_DESeq, multiple_file_normalize_CSS, multiple_file_normalize_DESeq, algorithm_list
+from qiime.normalize_table import normalize_CSS, normalize_DESeq2, multiple_file_normalize_CSS, multiple_file_normalize_DESeq2, algorithm_list
 
 import os
 
@@ -125,9 +125,9 @@ def main():
             option_parser.error("Unknown input type: %s" % input_path)
     elif algorithm == 'DESeq2':
         if os.path.isdir(input_path):
-            multiple_file_normalize_DESeq(input_path, out_path, DESeq_negatives_to_zero)
+            multiple_file_normalize_DESeq2(input_path, out_path, DESeq_negatives_to_zero)
         elif os.path.isfile(input_path):
-            normalize_DESeq(input_path, out_path, DESeq_negatives_to_zero)
+            normalize_DESeq2(input_path, out_path, DESeq_negatives_to_zero)
         else:
             # it shouldn't be possible to get here
             option_parser.error("Unknown input type: %s" % input_path)

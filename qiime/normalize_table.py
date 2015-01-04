@@ -52,7 +52,7 @@ def multiple_file_normalize_CSS(input_dir, output_dir, output_CSS_statistics):
         run_CSS(json_infile, outfile, output_CSS_statistics=output_CSS_statistics)
 
 def run_CSS(input_path, out_path, output_CSS_statistics, HALT_EXEC=False):
-    """Run metagenomeSeq's fitZIG algorithm through Rscript
+    """Run metagenomeSeq's CSS algorithm through Rscript
     """
     # set options
     if not output_CSS_statistics:
@@ -67,17 +67,17 @@ def run_CSS(input_path, out_path, output_CSS_statistics, HALT_EXEC=False):
     return app_result
 
 
-def normalize_DESeq(input_path, out_path, DESeq_negatives_to_zero):
-    """performs DESeqVS normalization on a single raw abundance OTU matrix
+def normalize_DESeq2(input_path, out_path, DESeq_negatives_to_zero):
+    """performs DESeq2VS normalization on a single raw abundance OTU matrix
     """
     base_fname, ext = splitext(out_path)
     json_infile = base_fname+'_json.biom'
     open(str(json_infile),'w').write(load_table(input_path).to_json('forR'))
 
-    run_DESeq(json_infile, out_path, DESeq_negatives_to_zero)
+    run_DESeq2(json_infile, out_path, DESeq_negatives_to_zero)
 
-def multiple_file_normalize_DESeq(input_dir, output_dir, DESeq_negatives_to_zero):
-    """performs DESeqVS normalization on a directory of raw abundance OTU matrices
+def multiple_file_normalize_DESeq2(input_dir, output_dir, DESeq_negatives_to_zero):
+    """performs DESeq2VS normalization on a directory of raw abundance OTU matrices
     """
     if not exists(output_dir):
         makedirs(output_dir)
@@ -93,10 +93,10 @@ def multiple_file_normalize_DESeq(input_dir, output_dir, DESeq_negatives_to_zero
         open(str(json_infile),'w').write(load_table(hdf5_infile).to_json('forR'))
         outfile = join(output_dir, 'DESeq2_'+base_fname+'.biom')
 
-        run_DESeq(json_infile, outfile, DESeq_negatives_to_zero)
+        run_DESeq2(json_infile, outfile, DESeq_negatives_to_zero)
 
-def run_DESeq(input_path, out_path, DESeq_negatives_to_zero, HALT_EXEC=False):
-    """Run metagenomeSeq's fitZIG algorithm through Rscript
+def run_DESeq2(input_path, out_path, DESeq_negatives_to_zero, HALT_EXEC=False):
+    """Run DESeq2's variance stabilization algorithm through Rscript
     """
     # set options
     if DESeq_negatives_to_zero:
