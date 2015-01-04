@@ -28,6 +28,8 @@ if(is.null(opts$input_path)) stop('Please supply an otu table.')
 
 "CSS" <- function(input_path, out_path, output_CSS_statistics=NULL) {
 			obj = load_biom(input_path)
+			# remove temporary json file immediately to reduce user confusion
+            file.remove(input_path, full.names=TRUE)
             p = cumNormStatFast(obj)
             obj = cumNorm(obj, p = p)
             if (!is.null(output_CSS_statistics)) {

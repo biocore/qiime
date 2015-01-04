@@ -37,15 +37,17 @@ it be 0.01 instead of 1?), for more information read Costea, P. et al. (2014)
 
 DESeq/DESeq2 can also have a very slow runtime, especially for larger datasets.
 Here, we implement DESeq2's variance stabilization technique. If you do use these
-alternatives to rarefying, we would recommend metagenomeSeq's CSS transformation
-for those metrics that are abundance-based.  It is not recommended to use these
-new methods with presence/absence metrics, for example binary Jaccard or unweighted
-UniFrac. 
+alternatives to rarefying, we would recommend metagenomeSeq's CSS (cumulative sum
+scaling) transformation for those metrics that are abundance-based.  It is not 
+recommended to use these new methods with presence/absence metrics, for example
+binary Jaccard or unweighted UniFrac. 
 
-For more on the methods, please see Paulson, JN, et al. 'Differential
+For more on metagenomeSeq's CSS, please see Paulson, JN, et al. 'Differential
 abundance analysis for microbial marker-gene surveys' Nature Methods 2013.  For DESeq
 please see Anders S, Huber W. 'Differential expression analysis for sequence
-count data.' Genome Biology 2010.  For any of these methods, clustering by
+count data.' Genome Biology 2010.  For DESeq2 please read Love, MI et al. 
+'Moderated estimation of fold change and dispersion for RNA-Seq data 
+with DESeq2,' Genome Biology 2014.  For any of these methods, clustering by
 sequence depth MUST BE CHECKED FOR as a confounding variable, e.g. by coloring
 by sequences/sample on a PCoA plot and testing for correlations between
 taxa abundances and sequencing depth with e.g. adonis in compare_categories.py, 

@@ -29,6 +29,8 @@ if(is.null(opts$input_path)) stop('Please supply an otu table.')
 
 "DESeq2"<- function(input_path, out_path, DESeq_negatives_to_zero=NULL) {
                 	foo = read_biom(input_path)
+                	# remove temporary json file immediately to reduce user confusion
+            		file.remove(input_path, full.names=TRUE)
                 	x = as(biom_data(foo), "matrix")
                 	# avoid zeros
                 	x = x + 1
