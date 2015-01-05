@@ -64,12 +64,8 @@ script_info['script_usage'].append(
        "Normalize a raw (non-normalized/non-rarefied) otu_table.biom using DESeq2:",
        "%prog -i otu_table.biom -a DESeq2 -o DESeq2_normalized_otu_table.biom"))
 script_info['script_usage'].append(
-      ("Multiple File CSS Matrix Normalization",
-       "Normalize a folder of raw (non-normalized/non-rarefied) otu tables using CSS:",
-       "%prog -i otu_tables/ -a CSS -o otu_tables/"))
-script_info['script_usage'].append(
-       ("Multiple File DESeq2 Matrix Normalization",
-       "Normalize a folder of raw (non-normalized/non-rarefied) otu tables using DESeq2:",
+      ("Multiple File Matrix Normalization",
+       "Normalize a folder of raw (non-normalized/non-rarefied) otu tables using e.g. DESeq2:",
        "%prog -i otu_tables/ -a DESeq2 -o otu_tables/"))
 
 script_info['output_description']= \
