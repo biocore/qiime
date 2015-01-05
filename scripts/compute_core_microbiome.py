@@ -18,6 +18,7 @@ from pylab import xlim, ylim, xlabel, ylabel, plot, savefig
 import numpy as np
 from skbio.util import create_dir
 from biom.parse import parse_biom_table
+from biom.util import biom_open
 from biom.exception import TableException
 
 from qiime.util import (parse_command_line_parameters, make_option,
@@ -103,7 +104,8 @@ def main():
         # samples to work with
         sample_ids = None
 
-    input_table = parse_biom_table(open(input_fp, 'U'))
+    with biom_open(input_fp, 'U') as f:
+        input_table = parse_biom_table(f)
 
     otu_counts = []
     summary_figure_fp = join(output_dir, 'core_otu_size.pdf')
