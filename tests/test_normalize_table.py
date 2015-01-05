@@ -7,7 +7,7 @@ from unittest import TestCase, main
 from biom import load_table
 
 from skbio.util import remove_files
-from qiime.normalize_table import normalize_CSS, normalize_DESeq
+from qiime.normalize_table import normalize_CSS, normalize_DESeq2
 from qiime.util import load_qiime_config
 from numpy.testing import assert_almost_equal
 
@@ -20,7 +20,7 @@ __version__ = "1.9.0-rc1"
 __maintainer__ = "Sophie Weiss"
 __email__ = "sophie.sjw@gmail.com"
 
-"""Contains tests for producing CSS and DESeq normalized tables."""
+"""Contains tests for producing CSS and DESeq2 normalized tables."""
 
 
 
@@ -49,7 +49,7 @@ class RNormalizeTableTests(TestCase):
             [self.tmp_otu_fp, self.tmp_otu_fp_out_CSS, self.tmp_otu_fp_out_DESeq]
 
         normalize_CSS(self.tmp_otu_fp, self.tmp_otu_fp_out_CSS, output_CSS_statistics=False)
-        normalize_DESeq(self.tmp_otu_fp, self.tmp_otu_fp_out_DESeq, DESeq_negatives_to_zero=False) 
+        normalize_DESeq2(self.tmp_otu_fp, self.tmp_otu_fp_out_DESeq, DESeq_negatives_to_zero=False) 
 
     
     def test_normalize_table_CSS(self):
@@ -61,9 +61,9 @@ class RNormalizeTableTests(TestCase):
             load_table(self.tmp_otu_fp_out_CSS).ids())
 
         #test taxonomy added to CSS; DESeq gives negatives so no taxonomy added
-        # self.assertItemsEqual(
-        #     q._observation_metadata,
-        #     load_table(self.tmp_otu_fp_out_CSS)._observation_metadata)
+        self.assertItemsEqual(
+            q._observation_metadata,
+            load_table(self.tmp_otu_fp_out_CSS)._observation_metadata)
 
         """catch any R/metagenomeSeq version changes by testing output against current version
         """
@@ -79,7 +79,7 @@ class RNormalizeTableTests(TestCase):
                             err_msg='possible CSS method change, or version change')
 
 
-    def test_normalize_table_DESeq(self):
+    def test_normalize_table_DESeq2(self):
         """OTU table IDs should be the same before and after DESeq normalization
         """
         z = load_table(self.tmp_otu_fp_out_DESeq)
@@ -92,12 +92,12 @@ class RNormalizeTableTests(TestCase):
         OTU_1848 = [val[28] for (val, otu_id, meta) in z.iter(axis='sample')]
         OTU_1848_DESeq = [7.4334, 7.4437, 7.4609, 6.172, 7.4844, 7.3088, 7.4484, 7.5416, 7.447, 7.4819, 7.6865, 7.5209, 3.1861, 3.7992, 2.6914, 5.1891, 2.9709, 3.3051, 1.3145, 4.0617, 5.8195, 5.194, 5.9127, 3.4936, 4.6303, 7.3194, 7.4484, 7.3309, 7.016, 7.2469, 6.847, 7.2242, 7.5226, 7.7103, 7.3645, 7.3462, 7.1957, 7.1643]
         assert_almost_equal(OTU_1848, OTU_1848_DESeq, decimal=3, 
-                            err_msg='possible DESeq method change, or version change')
+                            err_msg='possible DESeq2 method change, or version change')
 
         OTU_88 = [val[0] for (val, otu_id, meta) in z.iter(axis='sample')]
         OTU_88_DESeq = [0.28477, 0.30354, 0.27808, 0.28967, 0.28477, 0.27808, 0.27408, 0.28477, 0.28967, 0.27408, 0.32945, 0.32945, -0.56644, 0.6423, 1.7223, 1.5033, 0.20445, 2.207, 1.6455, 2.2115, 0.068394, -0.001519, 1.1843, 1.9803, 1.7614, 2.3137, 1.2806, 1.2782, 1.2782, 1.2697, 1.8815, 1.2896, 0.28188, 0.34588, 0.27808, 1.2852, 0.27408, 1.2806]
         assert_almost_equal(OTU_88, OTU_88_DESeq, decimal=3, 
-                            err_msg='possible DESeq method change, or version change')
+                            err_msg='possible DESeq2 method change, or version change')
 
 
     def tearDown(self):
