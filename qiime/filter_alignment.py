@@ -67,13 +67,12 @@ def apply_lane_mask_and_gap_filter(fastalines, mask,
         # a mask is being computed on the fly to filter the entropy_threshold
         # most entropic positions. if highly gapped positions are being omitted
         # those are filtered first, so the entropy scores for those positions
-        # aren't included when determining the entropy threshold (since they'd
+        # aren't included when determining the entropy threshold (since the
         # positions that are mostly gaps will be counted as a lot of low
         # entropy positions)
         if not (0 <= entropy_threshold <= 1):
-            raise ValueError('Entropy threshold parameter (-e) needs to be '
-                              'between 0 and 1')
-
+            raise ValueError('entropy_threshold needs to be between 0 and 1'
+                             ' (inclusive)')
         if allowed_gap_frac < 1:
             aln = aln.omit_gap_positions(allowed_gap_frac)
         entropy_mask = generate_lane_mask(aln, entropy_threshold)
