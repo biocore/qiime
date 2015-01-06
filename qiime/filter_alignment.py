@@ -40,7 +40,7 @@ def get_masked_string(s, p):
 
 
 def apply_lane_mask_and_gap_filter(fastalines, mask,
-                                   allowed_gap_frac=1 - finfo(float).eps,
+                                   allowed_gap_frac=1.-1e-6,
                                    entropy_threshold=None):
     """Applies a mask and gap filter to fasta file, yielding filtered seqs."""
 

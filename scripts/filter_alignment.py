@@ -47,8 +47,9 @@ script_info[
     'output_description'] = """The output of filter_alignment.py consists of a single FASTA file, which ends with "pfiltered.fasta", where the "p" stands for positional filtering of the columns."""
 
 script_info['required_options'] = [
-    make_option('-i', '--input_fasta_file', action='store',
-                type='existing_filepath', help='the input directory ')
+    make_option('-i', '--input_fasta_file',
+                type='existing_filepath',
+                help='the input fasta file containing the alignment')
 ]
 
 qiime_config = load_qiime_config()
@@ -69,7 +70,7 @@ script_info['optional_options'] = [
                 type='float', help='gap filter threshold, ' +
                 'filters positions which are gaps in > allowed_gap_frac ' +
                 'of the sequences [default: %default]',
-                default=1. - np.finfo(float).eps),
+                default=1.-1e-6),
     make_option('-r', '--remove_outliers', action='store_true',
                 help='remove seqs very dissimilar to the alignment consensus' +
                 ' (see --threshold).  [default: %default]',
