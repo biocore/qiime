@@ -47,35 +47,47 @@ def apply_lane_mask_and_gap_filter(fastalines, mask,
     # load the alignment
     aln = Alignment.from_fasta_records(parse_fasta(fastalines), DNA)
 
-    # build the entropy mask
-    if mask is None and entropy_threshold is None:
-        entropy_mask = None
-    elif mask is not None and entropy_threshold is not None:
-        raise ValueError('only mask or entropy threshold can be provided.')
-    elif mask is not None:
-        # a pre-computed mask (e.g., Lane mask) was provided
-        entropy_mask = mask_to_positions(mask)
-    elif entropy_threshold is not None:
-        if not (0 <= entropy_threshold <= 1):
-            raise ValueError('Entropy threshold parameter (-e) needs to be '
-                              'between 0 and 1')
-        else:
-            entropy_mask = generate_lane_mask(aln, entropy_threshold)
-            entropy_mask = mask_to_positions(entropy_mask)
-    else:
-        # it shouldn't be possible to get here
-        raise ValueError("Can't resolve parameters for "
-                         "apply_lane_mask_and_gap_filter.")
-
-    # if entropy filtering is being applied, filter the highly entropic
-    # positions
-    if entropy_mask is not None:
-        aln = aln.subalignment(positions_to_keep=entropy_mask)
-
     # if positional gap filtering is being applied, filter highly gapped
     # positions
     if allowed_gap_frac < 1:
         aln = aln.omit_gap_positions(allowed_gap_frac)
+
+    # build the entropy mask
+    if mask is None and entropy_threshold is None:
+        if allowed_gap_frac < 1:
+            aln = aln.omit_gap_positions(allowed_gap_frac)
+    elif mask is not None and entropy_threshold is not None:
+        raise ValueError('only mask or entropy threshold can be provided.')
+    elif mask is not None:
+        # a pre-computed mask (e.g., Lane mask) was provided, so apply that
+        # and then remove highly gapped positions (gap positions have to be
+        # removed after the mask-based filtering so that the positions in the
+        # mask correspond with the positions in the alignment at the time of
+        # filtering)
+        entropy_mask = mask_to_positions(mask)
+        aln = aln.subalignment(positions_to_keep=entropy_mask)
+        if allowed_gap_frac < 1:
+            aln = aln.omit_gap_positions(allowed_gap_frac)
+    elif entropy_threshold is not None:
+        # a mask is being computed on the fly to filter the entropy_threshold
+        # most entropic positions. if highly gapped positions are being omitted
+        # those are filtered first, so the entropy scores for those positions
+        # aren't included when determining the entropy threshold (since they'd
+        # positions that are mostly gaps will be counted as a lot of low
+        # entropy positions)
+        if not (0 <= entropy_threshold <= 1):
+            raise ValueError('Entropy threshold parameter (-e) needs to be '
+                              'between 0 and 1')
+
+        if allowed_gap_frac < 1:
+            aln = aln.omit_gap_positions(allowed_gap_frac)
+        entropy_mask = generate_lane_mask(aln, entropy_threshold)
+        entropy_mask = mask_to_positions(entropy_mask)
+        aln = aln.subalignment(positions_to_keep=entropy_mask)
+    else:
+        # it shouldn't be possible to get here
+        raise ValueError("Can't resolve parameters for "
+                         "apply_lane_mask_and_gap_filter.")
 
     if aln.sequence_length() == 0:
         raise ValueError("Positional filtering resulted in removal of all "
