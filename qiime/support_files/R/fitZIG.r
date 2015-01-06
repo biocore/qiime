@@ -34,8 +34,6 @@ if(is.null(opts$subcategory_2)) stop('Please supply a second subcategory.')
 
 "fitZIG" <- function(input_path, out_path, mapping_category, subcategory_1, subcategory_2) {
             foo = read_biom(input_path)
-            # remove temporary json file immediately to reduce user confusion
-            file.remove(input_path, full.names=TRUE)
             MGS = biom2MRexperiment(foo)
             MGS = cumNorm(MGS,p = cumNormStat(MGS))
             samplesToKeep = which(pData(MGS)[,mapping_category]%in%c(subcategory_1,subcategory_2))

@@ -9,7 +9,8 @@ from biom import load_table
 
 from skbio.util import remove_files
 from qiime.util import load_qiime_config
-from qiime.differential_abundance import DA_fitZIG, DA_DESeq2
+from qiime.differential_abundance import DA_fitZIG, DA_DESeq2, check_mapping_file_category
+from qiime.parse import parse_mapping_file_to_dict
 
 
 __author__ = "Sophie Weiss"
@@ -68,6 +69,23 @@ class RDifferentialAbundanceTests(TestCase):
 
         DA_fitZIG(self.tmp_otu_fp, self.tmp_otu_fp_fitZIG_out, self.tmp_map_fp, 'Individual', 'S1', 'S2')
         DA_DESeq2(self.tmp_otu_fp, self.tmp_otu_fp_DESeq2_out, self.tmp_map_fp, 'Individual', 'S1', 'S2', DESeq2_diagnostic_plots=False)
+
+
+    def test_check_mapping_file_category(self):
+        tmp_pmf, _ = parse_mapping_file_to_dict(self.tmp_map_fp)
+
+        with self.assertRaises(ValueError):
+            check_mapping_file_category(self.tmp_map_fp, 'Q', tmp_pmf, 'S1', 'S2')
+
+        with self.assertRaises(ValueError):
+            check_mapping_file_category(self.tmp_map_fp, 'Individual', tmp_pmf, 'dog', 'S2')
+
+        with self.assertRaises(ValueError):
+            check_mapping_file_category(self.tmp_map_fp, 'Individual', tmp_pmf, 'S1', 'dog')
+
+        with self.assertRaises(ValueError):
+            check_mapping_file_category(self.tmp_map_fp, 'Individual', tmp_pmf, 'S1', 'S1')
+
 
     def test_metagenomeSeq_fitZIG_format(self):
         zig = open(self.tmp_otu_fp_fitZIG_out).readlines()
@@ -132,11 +150,6 @@ class RDifferentialAbundanceTests(TestCase):
             self.assertEqual(len(af), len(ef))
             for af_e, ef_e in zip(af, ef):
                 self.assertAlmostEqual(af_e, ef_e)
-
-    def tearDown(self):
-        """cleanup temporary files and dirs
-        """
-        remove_files(set(self.files_to_remove))
 
 
 test_OTU_IDs = ['88',

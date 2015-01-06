@@ -5,6 +5,9 @@ from __future__ import division
 from os.path import exists, splitext, join, isdir
 from os import makedirs, listdir, remove, path
 
+import tempfile
+from qiime.util import get_qiime_temp_dir
+
 from qiime.parse import parse_mapping_file_to_dict
 from qiime.util import RExecutor, MetadataMap
 from biom import load_table
@@ -21,42 +24,38 @@ __email__ = "sophie.sjw@gmail.com"
 
 def check_mapping_file_category(mapping_fp, mapping_category, pmf, subcategory_1, subcategory_2):
     md_map = MetadataMap.parseMetadataMap(mapping_fp)
-    if not mapping_category in md_map.CategoryNames:
-        raise ValueError("Category '%s' not found in mapping file "
+    if mapping_category not in md_map.CategoryNames:
+        raise ValueError("category '%s' not found in mapping file "
                          "columns." % mapping_category)
 
-    if md_map.hasSingleCategoryValue(mapping_category):
-        raise ValueError("All values in category '%s' are the "
-                         "same. These statistical methods "
-                         "cannot operate on a category that "
-                         "creates only a single group of samples "
-                         "(e.g. there are no 'between' distances "
-                         "because there is only a single group)."
-                         % (mapping_category))
-
-    all_subcategories = {pmf[k][mapping_category] for k in pmf}
+    all_subcategories = md_map.getCategoryValues(md_map.sample_ids, mapping_category)
 
     if subcategory_1 not in all_subcategories:
-        raise ValueError("Subcategory_1 (-x) '%s' not found in selected "
+        raise ValueError("subcategory_1 (-x) '%s' not found in selected "
                          "mapping file column." % subcategory_1)
 
     if subcategory_2 not in all_subcategories:
-        raise ValueError("Subcategory_2 (-y) '%s' not found in selected "
+        raise ValueError("subcategory_2 (-y) '%s' not found in selected "
                          "mapping file column." % subcategory_2)
+
+    if subcategory_2 == subcategory_1:
+        raise ValueError("subcategory_1 (-x) must be different from subcategory_2 (-y)")
 
                     
 def DA_fitZIG(input_path, out_path, mapping_fp, mapping_category, subcategory_1, subcategory_2):
    """perform metagenomeSeq's Zero Inflated Gaussian (ZIG) OTU differential abundance testing"""
    base_fname, ext = splitext(input_path)
-   json_infile = base_fname+'_json.biom'
    tmp_bt = load_table(input_path)
    tmp_pmf, _ = parse_mapping_file_to_dict(mapping_fp)
    check_mapping_file_category(mapping_fp, mapping_category, tmp_pmf, subcategory_1, subcategory_2)
    tmp_bt.add_metadata(tmp_pmf, 'sample')
-   open(str(json_infile),'w').write(tmp_bt.to_json('forR'))
 
-   run_fitZIG(json_infile, out_path, mapping_category, subcategory_1, subcategory_2)
-
+   with tempfile.NamedTemporaryFile(dir=get_qiime_temp_dir(),
+                                 prefix='QIIME-differential-abundance-temp-table-',
+                                 suffix='.biom') as temp_fh:
+        temp_fh.write(tmp_bt.to_json('forR'))
+        temp_fh.flush()
+        run_fitZIG(temp_fh.name, out_path, mapping_category, subcategory_1, subcategory_2)
 
 def multiple_file_DA_fitZIG(input_dir, output_dir, mapping_fp, mapping_category, subcategory_1, subcategory_2):
     """perform metagenomeSeq's Zero Inflated Gaussian (ZIG) OTU differential abundance test on a directory of raw abundance OTU matrices
@@ -69,18 +68,20 @@ def multiple_file_DA_fitZIG(input_dir, output_dir, mapping_fp, mapping_category,
     for fname in file_names:
         base_fname, ext = splitext(fname)
         original_fname = base_fname+'.biom'
-        json_fname = base_fname+'_json.biom'
         hdf5_infile = join(input_dir, original_fname)
-        json_infile = join(input_dir, json_fname)
         tmp_bt = load_table(hdf5_infile) 
         tmp_pmf, _ = parse_mapping_file_to_dict(mapping_fp)
         check_mapping_file_category(mapping_fp, mapping_category, tmp_pmf, subcategory_1, subcategory_2)
         tmp_bt.add_metadata(tmp_pmf, 'sample')
         #make temporary json biom version - R currently does not have hdf5
-        open(str(json_infile),'w').write(tmp_bt.to_json('forR'))
         outfile = join(output_dir, 'fitZIG_DA_'+base_fname+'.txt')
 
-        run_fitZIG(json_infile, outfile, mapping_category, subcategory_1, subcategory_2) 
+        with tempfile.NamedTemporaryFile(dir=get_qiime_temp_dir(),
+                                    prefix='QIIME-differential-abundance-temp-table-',
+                                    suffix='.biom') as temp_fh:
+            temp_fh.write(tmp_bt.to_json('forR'))
+            temp_fh.flush()
+            run_fitZIG(temp_fh.name, outfile, mapping_category, subcategory_1, subcategory_2) 
 
 
 def run_fitZIG(input_path, out_path, mapping_category, subcategory_1, subcategory_2, HALT_EXEC=False):
@@ -100,16 +101,19 @@ def DA_DESeq2(input_path, out_path, mapping_fp, mapping_category, subcategory_1,
     """perform DESeq2 negative binomial Wald differential abundance test on a raw abundance OTU matrix
     """
     base_fname, ext = splitext(input_path)
-    json_infile = base_fname+'_json.biom'
     tmp_bt = load_table(input_path)
     tmp_pmf, _ = parse_mapping_file_to_dict(mapping_fp)
     check_mapping_file_category(mapping_fp, mapping_category, tmp_pmf, subcategory_1, subcategory_2)
     tmp_bt.add_metadata(tmp_pmf, 'sample')
-    open(str(json_infile),'w').write(tmp_bt.to_json('forR'))
     base_fname, ext = splitext(out_path)
     outfile_diagnostic = join(base_fname+'_diagnostic_plots.pdf') 
 
-    run_DESeq2(json_infile, out_path, mapping_category, subcategory_1, subcategory_2, DESeq2_diagnostic_plots, outfile_diagnostic)
+    with tempfile.NamedTemporaryFile(dir=get_qiime_temp_dir(),
+                                prefix='QIIME-differential-abundance-temp-table-',
+                                suffix='.biom') as temp_fh:
+            temp_fh.write(tmp_bt.to_json('forR'))
+            temp_fh.flush()
+            run_DESeq2(temp_fh.name, out_path, mapping_category, subcategory_1, subcategory_2, DESeq2_diagnostic_plots, outfile_diagnostic) 
 
 
 def multiple_file_DA_DESeq2(input_dir, output_dir, mapping_fp, mapping_category, subcategory_1, subcategory_2, DESeq2_diagnostic_plots):
@@ -123,18 +127,20 @@ def multiple_file_DA_DESeq2(input_dir, output_dir, mapping_fp, mapping_category,
     for fname in file_names:
         base_fname, ext = splitext(fname)
         original_fname = base_fname+'.biom'
-        json_fname = base_fname+'_json.biom'
         hdf5_infile = join(input_dir, original_fname)
-        json_infile = join(input_dir, json_fname)
         tmp_bt = load_table(hdf5_infile)
         tmp_pmf, _ = parse_mapping_file_to_dict(mapping_fp)
         check_mapping_file_category(mapping_fp, mapping_category, tmp_pmf, subcategory_1, subcategory_2)
         tmp_bt.add_metadata(tmp_pmf, 'sample')
-        open(str(json_infile),'w').write(tmp_bt.to_json('forR'))
         outfile = join(output_dir, 'DESeq2_DA_'+base_fname+'.txt') 
         outfile_diagnostic = join(output_dir, 'DESeq2_diagnostic_plots_'+base_fname+'.pdf') 
 
-        run_DESeq2(json_infile, outfile, mapping_category, subcategory_1, subcategory_2, DESeq2_diagnostic_plots, outfile_diagnostic)
+        with tempfile.NamedTemporaryFile(dir=get_qiime_temp_dir(),
+                                prefix='QIIME-differential-abundance-temp-table-',
+                                suffix='.biom') as temp_fh:
+            temp_fh.write(tmp_bt.to_json('forR'))
+            temp_fh.flush()
+            run_DESeq2(temp_fh.name, outfile, mapping_category, subcategory_1, subcategory_2, DESeq2_diagnostic_plots, outfile_diagnostic) 
 
 
 def run_DESeq2(input_path, out_path, mapping_category, subcategory_1, subcategory_2, DESeq2_diagnostic_plots, outfile_diagnostic, HALT_EXEC=False):

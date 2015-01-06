@@ -26,35 +26,35 @@ methods can be used in comparison to group_significance.py on a rarefied matrix,
 and we would always recommend comparing the results of these approaches to the
 rarefied/group_significance.py approaches.  We would also recommend treating the
 differentially abundant OTUs identified by these (metagenomeSeq zero-inflated Gaussian,
-or ZIG, and DESeq2 negative binomial Wald test) techinques with caution, as they assume a
+or ZIG, and DESeq2 negative binomial Wald test) techniques with caution, as they assume a
 distribution and are therefore parametric tests.  Parametric tests can do poorly if
-the assumptions about the data are not met.  These tests are also newer techinques
+the assumptions about the data are not met.  These tests are also newer techniques
 that are less well tested compared to rarefying with a group_signficance.py test.  
 
 The input is a raw (not normalized, not rarefied) matrix having uneven column sums.
 With these techniques, we would still recommend removing low depth samples (e.g. below
 1000 sequences per sample), and low abundance/rare OTUs from the data set.  The DESeq2 method
-should NOT be used if the fit line on the disperison plot (one of the diagnostic plots
+should NOT be used if the fit line on the dispersion plot (one of the diagnostic plots
 output by the -d, or --DESeq2_diagnostic_plots option) does not look smooth, there are big
-gaps in the point spacings, and the fitted line does not look approprate for the data.
+gaps in the point spacings, and the fitted line does not look appropriate for the data.
 
 DESeq2 is stronger at very small/smaller data sets, but the run-time beyond 100 
 total samples becomes very long.  MetagenomeSeq's fitZIG is a better algorithm for larger
 library sizes and over 50 samples per category (e.g. 50 Palm samples), the more the better. 
-In simulation, these techinques have higher sensitivity, but sometimes higher false positive
+In simulation, these techniques have higher sensitivity, but sometimes higher false positive
 rate compared to the non-parametric tests (e.g. Wilcoxon rank sum) in group_significance.py, 
 especially with very uneven library sizes (starting at 2-3 fold difference).  In practice 
 and with real data, we do not observe much of a difference between these results and 
 the tests in group_significance.py.  
 
-For more on these techinques please see McMurdie, P. and Holmes, S. 'Waste not want not 
+For more on these techniques please see McMurdie, P. and Holmes, S. 'Waste not want not 
 why rarefying microbiome data is inadmissible.' PLoS Comp. Bio. 2014.  For more on 
 metagenomeSeq and fitZIG, please read Paulson, JN, et al. 'Differential abundance analysis
 for microbial marker-gene surveys.'  Nature Methods 2013.  For DESeq2/DESeq please read
 Love, MI et al. 'Moderated estimation of fold change and dispersion for RNA-Seq data 
 with DESeq2,' Genome Biology 2014.  Anders S, Huber W. 'Differential expression analysis 
 for sequence count data.' Genome Biology 2010.  Additionally, you can also read the
-vignettes for each of the techinques on the Bioconductor/R websites."""
+vignettes for each of the techniques on the Bioconductor/R websites."""
 
 script_info['script_usage'] = []
 script_info['script_usage'].append((
@@ -74,12 +74,12 @@ script_info['script_usage'].append((
     "%prog -i otu_table.biom -o diff_otus.txt -m map.txt -a DESeq2_nbinom -c Treatment -x Control -y Fast -d")
     )
 script_info['script_usage'].append((
-    "Multiple File OTU Differential Abundance Testing.  Here we",
+    "Multiple File OTU Differential Abundance Testing with metagenomeSeq_fitZIG",
     """Apply metagenomeSeq_fitZIG differential OTU abundance testing to a """
     """folder of raw (NOT normalized) BIOM tables to test for differences """
     """in OTU abundance between samples in the Treatment:Control and """
     """Treatment:Fast groups.""",
-    "%prog -i otu_tables/ -o otu_tables/ -m map.txt -a metagenomeSeq_fitZIG -c Treatment -x Control -y Fast")
+    "%prog -i otu_tables/ -o diff_otus/ -m map.txt -a metagenomeSeq_fitZIG -c Treatment -x Control -y Fast")
     )
 script_info['output_description']= "The resulting output OTU txt file contains a list of all the OTUs in the input matrix, along with their associated statistics and FDR p-values."
 script_info['required_options']=[
@@ -126,7 +126,6 @@ def main():
     subcategory_2 = opts.mapping_file_subcategory_2
     list_algorithms = opts.list_algorithms
     DESeq2_diagnostic_plots = opts.DESeq2_diagnostic_plots
-
 
     if list_algorithms:
         print 'Available differential abundance algorithms are:\n%s' % ', '.join(algorithm_list())
