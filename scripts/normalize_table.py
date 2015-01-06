@@ -25,7 +25,7 @@ result of most modern sequencing techniques.  These methods attempt to correct
 for compositionality too.  Rarefying throws away some data by rarefying to a
 constant sum and throwing away extremely low depth samples.
 
-Even with these new normalization techinques, we would recommend throwing away
+Even with these new normalization techniques, we would recommend throwing away
 low depth samples (e.g. less that 1000 sequences/sample).  DESeq/DESeq2 outputs
 negative values for lower abundant OTUs as a result of its log transformation.
 For most ecologically useful metrics (e.g. UniFrac/Bray Curtis) this presents
@@ -36,7 +36,7 @@ it be 0.01 instead of 1?), for more information read Costea, P. et al. (2014)
 "A fair comparison", Nature Methods.
 
 DESeq/DESeq2 can also have a very slow runtime, especially for larger datasets.
-Here, we implement DESeq2's variance stabilization technique. If you do use these
+In this script, we implement DESeq2's variance stabilization technique. If you do use these
 alternatives to rarefying, we would recommend metagenomeSeq's CSS (cumulative sum
 scaling) transformation for those metrics that are abundance-based.  It is not 
 recommended to use these new methods with presence/absence metrics, for example
@@ -66,7 +66,7 @@ script_info['script_usage'].append(
 script_info['script_usage'].append(
       ("Multiple File Matrix Normalization",
        "Normalize a folder of raw (non-normalized/non-rarefied) otu tables using e.g. DESeq2:",
-       "%prog -i otu_tables/ -a DESeq2 -o otu_tables/"))
+       "%prog -i otu_tables/ -a DESeq2 -o normalized_tables/"))
 
 script_info['output_description']= \
 """BIOM table with normalized counts."""
