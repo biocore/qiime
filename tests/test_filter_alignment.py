@@ -48,16 +48,10 @@ class FilterAlignmentTests(TestCase):
                                                      entropy_threshold=0.0):
             self.assertEqual(result, expected.next() + '\n')
 
-        expected = [
-            '>s1', '',
-            '>s2', '',
-            '>s3', '',
-            '>s4', '',
-            '>s5', ''
-        ].__iter__()
-        for result in apply_lane_mask_and_gap_filter(self.aln1, None, 1.0,
-                                                     entropy_threshold=1.0):
-            self.assertEqual(result, expected.next() + '\n')
+        # filtering all positions results in a ValueError
+        with self.assertRaises(ValueError):
+            list(apply_lane_mask_and_gap_filter(self.aln1, None, 1.0,
+                                                entropy_threshold=1.0))
 
     def test_apply_lane_mask_and_gap_filter_w_precomputed_mask(self):
         lm = '111111'
@@ -115,17 +109,10 @@ class FilterAlignmentTests(TestCase):
         for result in apply_lane_mask_and_gap_filter(self.aln1, lm1, 1):
             self.assertEqual(result, expected.next() + '\n')
 
+        # filtering all positions results in a ValueError
         lm2 = '000000'
-        expected = [
-            '>s1', '',
-            '>s2', '',
-            '>s3', '',
-            '>s4', '',
-            '>s5', ''
-        ].__iter__()
-
-        for result in apply_lane_mask_and_gap_filter(self.aln1, lm2, 1):
-            self.assertEqual(result, expected.next() + '\n')
+        with self.assertRaises(ValueError):
+            list(apply_lane_mask_and_gap_filter(self.aln1, lm2, 1))
 
         lm3 = '101010'
         expected = [
@@ -201,16 +188,9 @@ class FilterAlignmentTests(TestCase):
         for result in apply_lane_mask_and_gap_filter(self.aln1, None, 0.30):
             self.assertEqual(result, expected.next() + '\n')
 
-        expected = [
-            '>s1', '',
-            '>s2', '',
-            '>s3', '',
-            '>s4', '',
-            '>s5', ''
-        ].__iter__()
-
-        for result in apply_lane_mask_and_gap_filter(self.aln1, None, 0.10):
-            self.assertEqual(result, expected.next() + '\n')
+        # filtering all positions results in a ValueError
+        with self.assertRaises(ValueError):
+            list(apply_lane_mask_and_gap_filter(self.aln1, None, 0.10))
 
         # the following tests were adapted from test_alignment.py in PyCogent
 

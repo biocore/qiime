@@ -77,6 +77,9 @@ def apply_lane_mask_and_gap_filter(fastalines, mask,
     if allowed_gap_frac < 1:
         aln = aln.omit_gap_positions(allowed_gap_frac)
 
+    if aln.sequence_length() == 0:
+        raise ValueError("Positional filtering resulted in removal of all "
+                         "alignment positions.")
     for seq in aln:
         yield ">%s\n" % seq.id
         yield "%s\n" % seq
