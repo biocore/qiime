@@ -47,11 +47,6 @@ def apply_lane_mask_and_gap_filter(fastalines, mask,
     # load the alignment
     aln = Alignment.from_fasta_records(parse_fasta(fastalines), DNA)
 
-    # if positional gap filtering is being applied, filter highly gapped
-    # positions
-    if allowed_gap_frac < 1:
-        aln = aln.omit_gap_positions(allowed_gap_frac)
-
     # build the entropy mask
     if mask is None and entropy_threshold is None:
         if allowed_gap_frac < 1:
