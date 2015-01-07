@@ -25,8 +25,8 @@ __email__ = "sophie.sjw@gmail.com"
 def check_mapping_file_category(loaded_biom, mapping_fp, mapping_category, subcategory_1, subcategory_2):
     #remove mapping file samples that are not in the input BIOM table
     with open(mapping_fp, 'U') as map_f:
-        md_map = MetadataMap.parseMetadataMap(mapping_fp)
-    md_map.filterSamples(loaded_biom._sample_ids, strict=True)
+        md_map = MetadataMap.parseMetadataMap(map_f)
+    md_map.filterSamples(loaded_biom.ids(axis='sample'), strict=True)
 
     if mapping_category not in md_map.CategoryNames:
         raise ValueError("category '%s' not found in mapping file "
