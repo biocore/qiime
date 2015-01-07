@@ -109,6 +109,11 @@ def main():
     algorithm = opts.algorithm
     list_algorithms = opts.list_algorithms
 
+    almost_required_options = ['input_path', 'out_path']
+    for option in almost_required_options:
+        if getattr(opts, option) is None:
+            option_parser.error('Required option --%s omitted.' % option)
+
     if list_algorithms:
         print 'Available normalization algorithms are:\n%s' % ', '.join(algorithm_list())
     elif algorithm == 'CSS':

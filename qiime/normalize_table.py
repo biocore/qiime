@@ -31,8 +31,8 @@ def normalize_CSS(input_path, out_path, output_CSS_statistics):
         output_CSS_statistics = base_fname+'_CSS_statistics.txt'
 
     with tempfile.NamedTemporaryFile(dir=get_qiime_temp_dir(),
-                                 prefix='QIIME-differential-abundance-temp-table-',
-                                 suffix='.biom') as temp_fh:
+                                     prefix='QIIME-normalize-table-temp-table-',
+                                     suffix='.biom') as temp_fh:
         temp_fh.write(tmp_bt.to_json('forR'))
         temp_fh.flush()
         run_CSS(temp_fh.name, out_path, output_CSS_statistics=output_CSS_statistics)
@@ -56,13 +56,13 @@ def multiple_file_normalize_CSS(input_dir, output_dir, output_CSS_statistics):
             output_CSS_statistics = join(output_dir, 'CSS_statistics_'+base_fname+'.txt')
 
         with tempfile.NamedTemporaryFile(dir=get_qiime_temp_dir(),
-                                     prefix='QIIME-differential-abundance-temp-table-',
-                                     suffix='.biom') as temp_fh:
+                                         prefix='QIIME-normalize-table-temp-table-',
+                                         suffix='.biom') as temp_fh:
             temp_fh.write(tmp_bt.to_json('forR'))
             temp_fh.flush()
             run_CSS(temp_fh.name, outfile, output_CSS_statistics=output_CSS_statistics)
 
-def run_CSS(input_path, out_path, output_CSS_statistics, HALT_EXEC=False):
+def run_CSS(input_path, out_path, output_CSS_statistics):
     """Run metagenomeSeq's CSS algorithm through Rscript
     """
     # set options
@@ -83,8 +83,8 @@ def normalize_DESeq2(input_path, out_path, DESeq_negatives_to_zero):
     """
     tmp_bt = load_table(input_path) 
     with tempfile.NamedTemporaryFile(dir=get_qiime_temp_dir(),
-                                 prefix='QIIME-differential-abundance-temp-table-',
-                                 suffix='.biom') as temp_fh:
+                                     prefix='QIIME-normalize-table-temp-table-',
+                                     suffix='.biom') as temp_fh:
         temp_fh.write(tmp_bt.to_json('forR'))
         temp_fh.flush()
         run_DESeq2(temp_fh.name, out_path, DESeq_negatives_to_zero)
@@ -105,13 +105,13 @@ def multiple_file_normalize_DESeq2(input_dir, output_dir, DESeq_negatives_to_zer
         outfile = join(output_dir, 'DESeq2_'+base_fname+'.biom')
 
         with tempfile.NamedTemporaryFile(dir=get_qiime_temp_dir(),
-                                 prefix='QIIME-differential-abundance-temp-table-',
-                                 suffix='.biom') as temp_fh:
+                                         prefix='QIIME-normalize-table-temp-table-',
+                                         suffix='.biom') as temp_fh:
             temp_fh.write(tmp_bt.to_json('forR'))
             temp_fh.flush()
             run_DESeq2(temp_fh.name, outfile, DESeq_negatives_to_zero)
 
-def run_DESeq2(input_path, out_path, DESeq_negatives_to_zero, HALT_EXEC=False):
+def run_DESeq2(input_path, out_path, DESeq_negatives_to_zero):
     """Run DESeq2's variance stabilization algorithm through Rscript
     """
     # set options
