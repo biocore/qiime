@@ -22,8 +22,12 @@ __maintainer__ = "Sophie Weiss"
 __email__ = "sophie.sjw@gmail.com"
 
 
-def check_mapping_file_category(mapping_fp, mapping_category, pmf, subcategory_1, subcategory_2):
-    md_map = MetadataMap.parseMetadataMap(mapping_fp)
+def check_mapping_file_category(loaded_biom, mapping_fp, mapping_category, subcategory_1, subcategory_2):
+    #remove mapping file samples that are not in the input BIOM table
+    with open(mapping_fp, 'U') as map_f:
+        md_map = MetadataMap.parseMetadataMap(mapping_fp)
+    md_map.filterSamples(loaded_biom._sample_ids, strict=True)
+
     if mapping_category not in md_map.CategoryNames:
         raise ValueError("category '%s' not found in mapping file "
                          "columns." % mapping_category)
@@ -44,15 +48,14 @@ def check_mapping_file_category(mapping_fp, mapping_category, pmf, subcategory_1
                     
 def DA_fitZIG(input_path, out_path, mapping_fp, mapping_category, subcategory_1, subcategory_2):
    """perform metagenomeSeq's Zero Inflated Gaussian (ZIG) OTU differential abundance testing"""
-   base_fname, ext = splitext(input_path)
    tmp_bt = load_table(input_path)
    tmp_pmf, _ = parse_mapping_file_to_dict(mapping_fp)
-   check_mapping_file_category(mapping_fp, mapping_category, tmp_pmf, subcategory_1, subcategory_2)
+   check_mapping_file_category(tmp_bt, mapping_fp, mapping_category, subcategory_1, subcategory_2)
    tmp_bt.add_metadata(tmp_pmf, 'sample')
 
    with tempfile.NamedTemporaryFile(dir=get_qiime_temp_dir(),
-                                 prefix='QIIME-differential-abundance-temp-table-',
-                                 suffix='.biom') as temp_fh:
+                                    prefix='QIIME-differential-abundance-temp-table-',
+                                    suffix='.biom') as temp_fh:
         temp_fh.write(tmp_bt.to_json('forR'))
         temp_fh.flush()
         run_fitZIG(temp_fh.name, out_path, mapping_category, subcategory_1, subcategory_2)
@@ -71,20 +74,20 @@ def multiple_file_DA_fitZIG(input_dir, output_dir, mapping_fp, mapping_category,
         hdf5_infile = join(input_dir, original_fname)
         tmp_bt = load_table(hdf5_infile) 
         tmp_pmf, _ = parse_mapping_file_to_dict(mapping_fp)
-        check_mapping_file_category(mapping_fp, mapping_category, tmp_pmf, subcategory_1, subcategory_2)
+        check_mapping_file_category(tmp_bt, mapping_fp, mapping_category, subcategory_1, subcategory_2)
         tmp_bt.add_metadata(tmp_pmf, 'sample')
         #make temporary json biom version - R currently does not have hdf5
         outfile = join(output_dir, 'fitZIG_DA_'+base_fname+'.txt')
 
         with tempfile.NamedTemporaryFile(dir=get_qiime_temp_dir(),
-                                    prefix='QIIME-differential-abundance-temp-table-',
-                                    suffix='.biom') as temp_fh:
+                                         prefix='QIIME-differential-abundance-temp-table-',
+                                         suffix='.biom') as temp_fh:
             temp_fh.write(tmp_bt.to_json('forR'))
             temp_fh.flush()
             run_fitZIG(temp_fh.name, outfile, mapping_category, subcategory_1, subcategory_2) 
 
 
-def run_fitZIG(input_path, out_path, mapping_category, subcategory_1, subcategory_2, HALT_EXEC=False):
+def run_fitZIG(input_path, out_path, mapping_category, subcategory_1, subcategory_2):
     """Run metagenomeSeq's fitZIG algorithm through Rscript
     """
     # set options
@@ -100,17 +103,16 @@ def run_fitZIG(input_path, out_path, mapping_category, subcategory_1, subcategor
 def DA_DESeq2(input_path, out_path, mapping_fp, mapping_category, subcategory_1, subcategory_2, DESeq2_diagnostic_plots):
     """perform DESeq2 negative binomial Wald differential abundance test on a raw abundance OTU matrix
     """
-    base_fname, ext = splitext(input_path)
     tmp_bt = load_table(input_path)
     tmp_pmf, _ = parse_mapping_file_to_dict(mapping_fp)
-    check_mapping_file_category(mapping_fp, mapping_category, tmp_pmf, subcategory_1, subcategory_2)
+    check_mapping_file_category(tmp_bt, mapping_fp, mapping_category, subcategory_1, subcategory_2)
     tmp_bt.add_metadata(tmp_pmf, 'sample')
     base_fname, ext = splitext(out_path)
     outfile_diagnostic = join(base_fname+'_diagnostic_plots.pdf') 
 
     with tempfile.NamedTemporaryFile(dir=get_qiime_temp_dir(),
-                                prefix='QIIME-differential-abundance-temp-table-',
-                                suffix='.biom') as temp_fh:
+                                     prefix='QIIME-differential-abundance-temp-table-',
+                                     suffix='.biom') as temp_fh:
             temp_fh.write(tmp_bt.to_json('forR'))
             temp_fh.flush()
             run_DESeq2(temp_fh.name, out_path, mapping_category, subcategory_1, subcategory_2, DESeq2_diagnostic_plots, outfile_diagnostic) 
@@ -130,20 +132,20 @@ def multiple_file_DA_DESeq2(input_dir, output_dir, mapping_fp, mapping_category,
         hdf5_infile = join(input_dir, original_fname)
         tmp_bt = load_table(hdf5_infile)
         tmp_pmf, _ = parse_mapping_file_to_dict(mapping_fp)
-        check_mapping_file_category(mapping_fp, mapping_category, tmp_pmf, subcategory_1, subcategory_2)
+        check_mapping_file_category(tmp_bt, mapping_fp, mapping_category, subcategory_1, subcategory_2)
         tmp_bt.add_metadata(tmp_pmf, 'sample')
         outfile = join(output_dir, 'DESeq2_DA_'+base_fname+'.txt') 
         outfile_diagnostic = join(output_dir, 'DESeq2_diagnostic_plots_'+base_fname+'.pdf') 
 
         with tempfile.NamedTemporaryFile(dir=get_qiime_temp_dir(),
-                                prefix='QIIME-differential-abundance-temp-table-',
-                                suffix='.biom') as temp_fh:
+                                         prefix='QIIME-differential-abundance-temp-table-',
+                                         suffix='.biom') as temp_fh:
             temp_fh.write(tmp_bt.to_json('forR'))
             temp_fh.flush()
             run_DESeq2(temp_fh.name, outfile, mapping_category, subcategory_1, subcategory_2, DESeq2_diagnostic_plots, outfile_diagnostic) 
 
 
-def run_DESeq2(input_path, out_path, mapping_category, subcategory_1, subcategory_2, DESeq2_diagnostic_plots, outfile_diagnostic, HALT_EXEC=False):
+def run_DESeq2(input_path, out_path, mapping_category, subcategory_1, subcategory_2, DESeq2_diagnostic_plots, outfile_diagnostic):
     """Run DESeq2 negative binomial Wald algorithm through Rscript
     """
     # set options

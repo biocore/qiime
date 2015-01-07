@@ -127,6 +127,11 @@ def main():
     list_algorithms = opts.list_algorithms
     DESeq2_diagnostic_plots = opts.DESeq2_diagnostic_plots
 
+    almost_required_options = ['input_path', 'out_path', 'mapping_file_path', 'mapping_file_category', 'mapping_file_subcategory_1', 'mapping_file_subcategory_2']
+    for option in almost_required_options:
+        if getattr(opts, option) is None:
+            option_parser.error('Required option --%s omitted.' % option)
+
     if list_algorithms:
         print 'Available differential abundance algorithms are:\n%s' % ', '.join(algorithm_list())
     elif algorithm == 'metagenomeSeq_fitZIG':
