@@ -4,12 +4,14 @@ from __future__ import division
 from setuptools import setup
 from stat import S_IEXEC
 from os import (chdir, getcwd, listdir, chmod, walk, rename, remove, chmod,
-                stat, devnull)
+                stat, devnull, environ)
 from os.path import join, abspath
 from sys import platform, argv
 from subprocess import call
 from glob import glob
 from urllib import FancyURLopener
+from tempfile import mkdtemp
+from shutil import rmtree, copy
 import re
 
 __author__ = "QIIME development team"
@@ -137,6 +139,48 @@ def build_FastTree():
     print "FastTree built."
 
 
+def build_SortMeRNA():
+    """Download and build SortMeRNA then copy it to the scripts directory"""
+    tempdir = mkdtemp()
+    if download_file('https://github.com/biocore/sortmerna/archive/2.0.tar.gz',
+                     tempdir, 'sortmerna-2.0.tar.gz'):
+        print 'Could not download SortMeRNA, not installing it.'
+        rmtree(tempdir)
+        return
+
+    cwd = getcwd()
+    scripts = join(cwd, 'scripts')
+    chdir(tempdir)
+
+    call(['tar', 'xzf', 'sortmerna-2.0.tar.gz'])
+    chdir('sortmerna-2.0')
+
+    cxx_old = environ.get('CXX', '')
+    cc_old = environ.get('CC', '')
+
+    if platform in ['Darwin', 'darwin', 'MacOS']:
+        environ['CXX'] = 'clang++'
+        environ['CC'] = 'clang'
+    elif platform in ['Linux', 'linux', 'linux2']:
+        environ['CXX'] = 'g++'
+        environ['CC'] = 'gcc'
+    else:
+        raise ValueError("Unknown platform: %s" % platform)
+
+    call(['bash', 'build.sh'])
+
+    copy('sortmerna', scripts)
+    copy('indexdb_rna', scripts)
+
+    environ['CXX'] = cxx_old
+    environ['CC'] = cc_old
+
+    # remove the source
+    rmtree(tempdir)
+    chdir(cwd)
+    print "SortMeRNA built."
+
+
 def download_UCLUST():
     """Download the UCLUST executable and set it to the scripts directory"""
 
@@ -186,8 +230,9 @@ if build_stack:
 
     if app_available('gcc'):
         build_FastTree()
+        build_SortMeRNA()
     else:
-        print "GCC not installed, so cannot build FastTree"
+        print "GCC not installed, so cannot build FastTree or SortMeRNA"
 
     if download_UCLUST():
         print "UCLUST could not be installed."
