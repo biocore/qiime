@@ -129,7 +129,7 @@ def main():
 
     if list_algorithms:
         print 'Available differential abundance algorithms are:\n%s' % ', '.join(algorithm_list())
-    elif algorithm:
+    else:
         almost_required_options = ['input_path', 'out_path', 'mapping_file_path', 'mapping_file_category', 'mapping_file_subcategory_1', 'mapping_file_subcategory_2']
         for option in almost_required_options:
             if getattr(opts, option) is None:
