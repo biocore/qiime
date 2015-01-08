@@ -54,7 +54,8 @@ for microbial marker-gene surveys.'  Nature Methods 2013.  For DESeq2/DESeq plea
 Love, MI et al. 'Moderated estimation of fold change and dispersion for RNA-Seq data 
 with DESeq2,' Genome Biology 2014.  Anders S, Huber W. 'Differential expression analysis 
 for sequence count data.' Genome Biology 2010.  Additionally, you can also read the
-vignettes for each of the techniques on the Bioconductor/R websites."""
+vignettes for each of the techniques on the Bioconductor/R websites.  Also, if you use
+these methods, please CITE the proper sources above (metagenomeSeq and DESeq2) as well as QIIME."""
 
 script_info['script_usage'] = []
 script_info['script_usage'].append((
