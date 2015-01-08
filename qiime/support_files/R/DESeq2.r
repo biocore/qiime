@@ -27,14 +27,14 @@ opts <- parse_args(OptionParser(option_list=option_list), args=args)
 if(is.null(opts$input_path)) stop('Please supply an otu table.')
 
 
-"DESeq2"<- function(input_path, out_path, DESeq_negatives_to_zero=NULL, sampleConditions = c(rep("A", floor(ncol(foo)/2)), rep("B", ceiling(ncol(foo)/2)))) {
+"DESeq2"<- function(input_path, out_path, DESeq_negatives_to_zero=NULL) {
                 	foo = read_biom(input_path)
                 	x = as(biom_data(foo), "matrix")
                 	# avoid zeros
                 	x = x + 1
-                	#Create annotated data.frame with mock conditions: these should not influence normalization - just required for DESeqDataSetFromMatrix
-                	sampleTable <- data.frame(sampleName=colnames(x), condition=sampleConditions)
-          			dds <- DESeqDataSetFromMatrix(x, sampleTable, design=~condition)
+                	sampleTable <- data.frame(sampleName=colnames(x))
+                	#Add mock design: these should not influence normalization - just required for DESeqDataSetFromMatrix
+          			dds <- DESeqDataSetFromMatrix(x, sampleTable, design=~1)
                 	vsmat = assay(varianceStabilizingTransformation(dds))
                 	if (!is.null(DESeq_negatives_to_zero)) {
                     	vsmat[vsmat<0]=0
