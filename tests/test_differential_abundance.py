@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from os import close
-from shutil import rmtree
 from tempfile import mkstemp
 
 from unittest import TestCase, main
@@ -9,7 +8,7 @@ from biom import load_table
 
 from skbio.util import remove_files
 from qiime.util import load_qiime_config
-from qiime.differential_abundance import DA_fitZIG, DA_DESeq2
+from qiime.differential_abundance import DA_fitZIG, DA_DESeq2, check_mapping_file_category
 
 
 __author__ = "Sophie Weiss"
@@ -68,6 +67,23 @@ class RDifferentialAbundanceTests(TestCase):
 
         DA_fitZIG(self.tmp_otu_fp, self.tmp_otu_fp_fitZIG_out, self.tmp_map_fp, 'Individual', 'S1', 'S2')
         DA_DESeq2(self.tmp_otu_fp, self.tmp_otu_fp_DESeq2_out, self.tmp_map_fp, 'Individual', 'S1', 'S2', DESeq2_diagnostic_plots=False)
+
+
+    def test_check_mapping_file_category(self):
+        z = load_table(self.tmp_otu_fp)
+
+        with self.assertRaises(ValueError):
+            check_mapping_file_category(z, self.tmp_map_fp, 'Q', 'S1', 'S2')
+
+        with self.assertRaises(ValueError):
+            check_mapping_file_category(z, self.tmp_map_fp, 'Individual', 'dog', 'S2')
+
+        with self.assertRaises(ValueError):
+            check_mapping_file_category(z, self.tmp_map_fp, 'Individual', 'S1', 'dog')
+
+        with self.assertRaises(ValueError):
+            check_mapping_file_category(z, self.tmp_map_fp, 'Individual', 'S1', 'S1')
+
 
     def test_metagenomeSeq_fitZIG_format(self):
         zig = open(self.tmp_otu_fp_fitZIG_out).readlines()
@@ -134,8 +150,6 @@ class RDifferentialAbundanceTests(TestCase):
                 self.assertAlmostEqual(af_e, ef_e)
 
     def tearDown(self):
-        """cleanup temporary files and dirs
-        """
         remove_files(set(self.files_to_remove))
 
 
