@@ -47,8 +47,8 @@ abundance analysis for microbial marker-gene surveys' Nature Methods 2013.  For 
 please see Anders S, Huber W. 'Differential expression analysis for sequence
 count data.' Genome Biology 2010.  For DESeq2 please read Love, MI et al. 
 'Moderated estimation of fold change and dispersion for RNA-Seq data 
-with DESeq2,' Genome Biology 2014.  If you use these methods, please cite the
-appropriate reference as well as QIIME.For any of these methods, clustering by
+with DESeq2,' Genome Biology 2014.  If you use these methods, please CITE the
+appropriate reference as well as QIIME.  For any of these methods, clustering by
 sequence depth MUST BE CHECKED FOR as a confounding variable, e.g. by coloring
 by sequences/sample on a PCoA plot and testing for correlations between
 taxa abundances and sequencing depth with e.g. adonis in compare_categories.py, 
