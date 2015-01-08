@@ -129,35 +129,30 @@ def main():
 
     if list_algorithms:
         print 'Available differential abundance algorithms are:\n%s' % ', '.join(algorithm_list())
-    elif algorithm == 'metagenomeSeq_fitZIG':
+    elif algorithm:
         almost_required_options = ['input_path', 'out_path', 'mapping_file_path', 'mapping_file_category', 'mapping_file_subcategory_1', 'mapping_file_subcategory_2']
         for option in almost_required_options:
             if getattr(opts, option) is None:
-                option_parser.error('Required option --%s omitted.' % option)
-
-        if os.path.isdir(input_path):
-            multiple_file_DA_fitZIG(input_path, out_path, mapping_fp, mapping_category, subcategory_1, subcategory_2)
-        elif os.path.isfile(input_path):
-            DA_fitZIG(input_path, out_path, mapping_fp, mapping_category, subcategory_1, subcategory_2)
+                option_parser.error('Required option --%s omitted.' % option)        
+        if algorithm == 'metagenomeSeq_fitZIG':
+            if os.path.isdir(input_path):
+                multiple_file_DA_fitZIG(input_path, out_path, mapping_fp, mapping_category, subcategory_1, subcategory_2)
+            elif os.path.isfile(input_path):
+                DA_fitZIG(input_path, out_path, mapping_fp, mapping_category, subcategory_1, subcategory_2)
+            else:
+                # it shouldn't be possible to get here
+                option_parser.error("Unknown input type: %s" % input_path)        
+        elif algorithm == 'DESeq2_nbinom':
+            if os.path.isdir(input_path):
+                multiple_file_DA_DESeq2(input_path, out_path, mapping_fp, mapping_category, subcategory_1, subcategory_2, DESeq2_diagnostic_plots)
+            elif os.path.isfile(input_path):
+                DA_DESeq2(input_path, out_path, mapping_fp, mapping_category, subcategory_1, subcategory_2, DESeq2_diagnostic_plots)
+            else:
+                # it shouldn't be possible to get here
+                option_parser.error("Unknown input type: %s" % input_path)
         else:
             # it shouldn't be possible to get here
-            option_parser.error("Unknown input type: %s" % input_path)
-    elif algorithm == 'DESeq2_nbinom':
-        almost_required_options = ['input_path', 'out_path', 'mapping_file_path', 'mapping_file_category', 'mapping_file_subcategory_1', 'mapping_file_subcategory_2']
-        for option in almost_required_options:
-            if getattr(opts, option) is None:
-                option_parser.error('Required option --%s omitted.' % option)
-
-        if os.path.isdir(input_path):
-            multiple_file_DA_DESeq2(input_path, out_path, mapping_fp, mapping_category, subcategory_1, subcategory_2, DESeq2_diagnostic_plots)
-        elif os.path.isfile(input_path):
-            DA_DESeq2(input_path, out_path, mapping_fp, mapping_category, subcategory_1, subcategory_2, DESeq2_diagnostic_plots)
-        else:
-            # it shouldn't be possible to get here
-            option_parser.error("Unknown input type: %s" % input_path)
-    else:
-        # it shouldn't be possible to get here
-        option_parser.error("Unknown normalization algorithm: %s" % algorithm)
+            option_parser.error("Unknown normalization algorithm: %s" % algorithm)
 
 if __name__ == "__main__":
     main()

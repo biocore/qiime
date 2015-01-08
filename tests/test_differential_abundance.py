@@ -149,8 +149,8 @@ class RDifferentialAbundanceTests(TestCase):
             for af_e, ef_e in zip(af, ef):
                 self.assertAlmostEqual(af_e, ef_e)
 
-        def tearDown(self):
-            remove_files(set(self.files_to_remove))
+    def tearDown(self):
+        remove_files(set(self.files_to_remove))
 
 
 test_OTU_IDs = ['88',
