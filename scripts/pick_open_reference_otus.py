@@ -306,7 +306,7 @@ script_info['optional_options'] = [
                 'reference for subsampling to be performed. If fewer than this '
                 'number of sequences fail to hit the reference, the de novo '
                 'clustering step will run serially rather than invoking the '
-                'subsampled open reference approach to improve performance.'),
+                'subsampled open reference approach to improve performance. [default: %default]'),
     make_option('--suppress_step4', action='store_true', default=False,
                 help='suppress the final de novo OTU picking step  (may be necessary '
                 'for extremely large data sets) [default: %default]'),
