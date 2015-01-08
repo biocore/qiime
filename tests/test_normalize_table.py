@@ -62,8 +62,8 @@ class RNormalizeTableTests(TestCase):
 
         #test taxonomy added to CSS; DESeq gives negatives so no taxonomy added
         self.assertItemsEqual(
-            q._observation_metadata,
-            load_table(self.tmp_otu_fp_out_CSS)._observation_metadata)
+            q.metadata(axis='observation'),
+            load_table(self.tmp_otu_fp_out_CSS).metadata(axis='observation'))
 
         """catch any R/metagenomeSeq version changes by testing output against current version
         """

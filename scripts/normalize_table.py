@@ -109,32 +109,33 @@ def main():
     algorithm = opts.algorithm
     list_algorithms = opts.list_algorithms
 
-    almost_required_options = ['input_path', 'out_path']
-    for option in almost_required_options:
-        if getattr(opts, option) is None:
-            option_parser.error('Required option --%s omitted.' % option)
 
     if list_algorithms:
         print 'Available normalization algorithms are:\n%s' % ', '.join(algorithm_list())
-    elif algorithm == 'CSS':
-        if os.path.isdir(input_path):
-            multiple_file_normalize_CSS(input_path, out_path, output_CSS_statistics)
-        elif os.path.isfile(input_path):
-            normalize_CSS(input_path, out_path, output_CSS_statistics)
-        else:
-            # it shouldn't be possible to get here
-            option_parser.error("Unknown input type: %s" % input_path)
-    elif algorithm == 'DESeq2':
-        if os.path.isdir(input_path):
-            multiple_file_normalize_DESeq2(input_path, out_path, DESeq_negatives_to_zero)
-        elif os.path.isfile(input_path):
-            normalize_DESeq2(input_path, out_path, DESeq_negatives_to_zero)
-        else:
-            # it shouldn't be possible to get here
-            option_parser.error("Unknown input type: %s" % input_path)
     else:
-        # it shouldn't be possible to get here
-        option_parser.error("Unknown normalization algorithm: %s" % algorithm)
+        almost_required_options = ['input_path', 'out_path']
+        for option in almost_required_options:
+            if getattr(opts, option) is None:
+                option_parser.error('Required option --%s omitted.' % option)     
+        if algorithm == 'CSS':
+            if os.path.isdir(input_path):
+                multiple_file_normalize_CSS(input_path, out_path, output_CSS_statistics)
+            elif os.path.isfile(input_path):
+                normalize_CSS(input_path, out_path, output_CSS_statistics)
+            else:
+                # it shouldn't be possible to get here
+                option_parser.error("Unknown input type: %s" % input_path)
+        elif algorithm == 'DESeq2':
+            if os.path.isdir(input_path):
+                multiple_file_normalize_DESeq2(input_path, out_path, DESeq_negatives_to_zero)
+            elif os.path.isfile(input_path):
+                normalize_DESeq2(input_path, out_path, DESeq_negatives_to_zero)
+            else:
+                # it shouldn't be possible to get here
+                option_parser.error("Unknown input type: %s" % input_path)
+        else:
+            # it shouldn't be possible to get here
+            option_parser.error("Unknown normalization algorithm: %s" % algorithm)
 
 if __name__ == "__main__":
     main()
