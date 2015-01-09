@@ -12,7 +12,7 @@ QIIME can perform translated search to assign nucleic acid sequence reads to a r
 
 This tutorial is based on Guerrero Negro microbial mat metagenome data. This data was generated on Sanger, and contains approximately 120k sequences. You should begin by obtaining that data with the following command::
 	
-	curl -O https://s3.amazonaws.com/s3-qiime_tutorial_files/shotgun_analysis_gn.tgz
+	curl -O ftp://ftp.microbio.me/qiime/tutorial_files/shotgun_analysis_gn.tgz
 
 See below for the relevant references for this data set.
 
