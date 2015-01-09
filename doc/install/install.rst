@@ -149,6 +149,11 @@ If you plan to use SourceTracker with QIIME:
 
 * SourceTracker 0.9.5 (`src <http://downloads.sourceforge.net/project/sourcetracker/sourcetracker-0.9.5.tar.gz>`_) (license: GPL)
 
+For joining paired end reads, with ``join_paired_ends.py`` and ``multiple_join_paired_ends.py``:
+
+* ea-utils 1.1.2-537 (`web <https://code.google.com/p/ea-utils/>`_) (license: MIT)
+* SeqPrep v1.1 (`src <https://github.com/jstjohn/SeqPrep>`_) (license: MIT)
+
 For improved performance with large BIOM files, or if you're working with BIOM format 2.x files:
 
 * HDF5 (`web_hdf5 <http://www.hdfgroup.org/HDF5/>`_)
