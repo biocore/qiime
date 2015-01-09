@@ -101,7 +101,7 @@ class FunctionTests(TestCase):
         """rarefy_to_files should write valid files
 
         """
-        maker = RarefactionMaker(self.otu_table_fp, 0, 1, 1, 1)
+        maker = RarefactionMaker(self.otu_table_fp, 1, 2, 1, 1)
         maker.rarefy_to_files(
             self.rare_dir,
             include_full=True,
@@ -120,7 +120,7 @@ class FunctionTests(TestCase):
         """rarefy_to_files should write valid files with some metadata on otus
 
         """
-        maker = RarefactionMaker(self.otu_table_meta_fp, 0, 1, 1, 1)
+        maker = RarefactionMaker(self.otu_table_meta_fp, 1, 2, 1, 1)
         maker.rarefy_to_files(
             self.rare_dir,
             include_full=True,
