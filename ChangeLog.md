@@ -1,4 +1,4 @@
-QIIME 1.9.0-rc1
+QIIME 1.9.0-rc2
 ===============
 * Added new ``observation_metadata_correlation.py`` script. This script allows the calculation of correlations between feature abundances and continuous-valued metadata. This script replaces the continuous-valued correlation functionality that was in ``otu_category_significance.py`` in QIIME 1.7.0 and earlier.
 * ``split_otu_table.py`` now allows multiple fields to be passed to split a biom table, and
@@ -103,6 +103,7 @@ optionally a mapping file. Check out the new documentation for the naming conven
 * Added three new workflow scripts for facilitating initial QIIME processing of already-demultiplexed fastq files, as these are commonly being provided by sequencing centers. These are: ``multiple_split_libraries_fastq.py``, ``multiple_join_paired_ends.py``, and ``multiple_extract_barcodes.py``.
 * Added ``differential_abundance.py`` to supplement ``group_significance.py`` for to support metagenomeSeq's fitZIG algorithm and DESeq2's negative binomial algorithm.  Note that the input for this is a unnormalized, raw BIOM table.
 * Added ``normalize_table.py`` to support normalization algorithms in addition to rarefaction. Supported methods are metagenomeSeq's CSS and DESeq's variance stabilizing transformation.
+* Added ``start_parallel_jobs_slurm.py``, which allows for parallel job submission using [slurm](https://computing.llnl.gov/linux/slurm/).
 
 QIIME 1.8.0 (11 Dec 2013)
 =========================
