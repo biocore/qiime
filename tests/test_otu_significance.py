@@ -880,16 +880,18 @@ class GroupedCorrelationTests(TestCase):
                                                   CORRELATION_TEST_CHOICES, pval_assignment_method='bootstrapped',
                                                   permutations=1000)
 
-        # We can use the default epsilon in assertFloatEqual to test all
-        # p-values but the last one. This last one needs a different epsilon
-        # because the 479th permuted correlation coefficient can differ in
-        # equality to the observed correlation coefficient depending on the
+        # We can use the default decimal places in assert_almost_equal to test
+        # all p-values but the last one. This last one needs a different
+        # number of decimal places because the 479th permuted correlation
+        # coefficient can differ in equality to the observed correlation
+        # coefficient depending on the
         # platform/numpy installation/configuration. Thus, the count of
         # more-extreme correlation coefficients can differ by 1. With 1000
         # permutations used in the test, this difference is 1 / 1000 = 0.001,
-        # hence the larger epsilon used here.
+        # hence the smaller number of decimal places used here in the
+        # comparison.
         assert_almost_equal(obs_pvals[:-1], exp_bootstrapped_pvals)
-        assert_almost_equal(obs_pvals[-1], 0.54600000000000004)
+        assert_almost_equal(obs_pvals[-1], 0.54600000000000004, decimal=2)
 
         # spearman
         exp_ccs = [0.25714285714285712,
