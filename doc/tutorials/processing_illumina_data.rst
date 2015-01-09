@@ -69,7 +69,7 @@ This step will generate an OTU table, which is the input for a lot of the analys
 
 	beta_diversity_through_plots.py -i ucrC/uclust_ref_picked_otus/otu_table.biom -o bdiv/ -t gg_otus_4feb2011/trees/gg_97_otus_4feb2011.tre -m ./s_8_map.txt
 	
-Note that because we picked OTUs against a reference set, we can use the reference set phylogenetic tree for the UniFrac analysis. That is passed with ``-t`` in this example. To visualize the 3D UniFrac PCoA plots, you can open the ``bdiv/unweighted_unifrac_3d_continuous/unweighted_unifrac_pc_3D_PCoA_plots.html`` file that is generated in this analysis. This will launch the KiNG applet, and your 3D plots. These may take a little while to load depending on the quantity of data you have. (Improving these visualizations is something we're currently working on.)
+Note that because we picked OTUs against a reference set, we can use the reference set phylogenetic tree for the UniFrac analysis. That is passed with ``-t`` in this example. To visualize the 3D UniFrac PCoA plots, you can open the ``bdiv/unweighted_unifrac_emperor_pcoa_plot/index.html`` file that is generated in this analysis.
 
 .. _other_file_formats:
 
