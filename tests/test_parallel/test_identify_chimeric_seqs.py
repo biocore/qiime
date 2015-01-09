@@ -120,7 +120,7 @@ class ParallelChimericSequenceIdentifierTests(TestCase):
         # Basic sanity check: we should get two lines (i.e. two chimeras).
         results = [line for line in open(join(self.test_out,
                    'ChimeraSlayer_out.txt'), 'U')]
-        self.assertEqual(len(results), 2)
+        self.assertEqual(len(results), 1)
 
 # This test data is taken from qiime_test_data.
 in_seqs = """
