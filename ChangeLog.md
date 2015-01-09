@@ -1,4 +1,4 @@
-QIIME 1.9.0-rc1
+QIIME 1.9.0-rc2
 ===============
 * Added new ``observation_metadata_correlation.py`` script. This script allows the calculation of correlations between feature abundances and continuous-valued metadata. This script replaces the continuous-valued correlation functionality that was in ``otu_category_significance.py`` in QIIME 1.7.0 and earlier.
 * ``split_otu_table.py`` now allows multiple fields to be passed to split a biom table, and

@@ -6,7 +6,7 @@ __author__ = "Luke Ursell"
 __copyright__ = "Copyright 2013, The QIIME project"
 __credits__ = ["Luke Ursell", "Will Van Treuren", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.9.0-rc1"
+__version__ = "1.9.0-rc2"
 __maintainer__ = "Luke Ursell"
 __email__ = "lkursell@gmail.com"
 
