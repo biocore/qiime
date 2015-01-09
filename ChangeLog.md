@@ -93,6 +93,11 @@ Usability enhancements
   * `max-barcode-errors` is now `max_barcode_errors`
   * `start-numbering-at` is now `start_numbering_at`
 * Removed ``--output_dir`` optional option from ``make_otu_heatmap.py`` and replaced it with the required option ``--output_fp``.
+* The parameters ``--uclust_min_consensus_fraction`` and ``--uclust_similarity`` in ``*_assign_taxonomy_*`` scripts have been changed to ``--min_consensus_fraction`` and ``--similarity`` since both of these parameters apply to the SortMeRNA taxon assigner as well.
+* Several changes were made to ``alpha_diversity.py`` metric names:
+ * ``ACE`` is now ``ace``
+ * ``chao1_confidence`` is now ``chao1_ci``
+ * Added ``observed_otus``, which is equivalent to ``observed_species`` but is generally a more accurate name. ``observed_species`` is retained for backward-compatibility.
 
 Removal of outdated and unsupported functionality
 -------------------------------------------------
@@ -110,20 +115,15 @@ Dependency changes
 ------------------
 * sumaclust v1.0.00, swarm 1.2.19, and sortmerna 2.0 are now optional dependencies (see the [QIIME install docs](http://qiime.org/install/install.html) for details).
 
-Miscellaneous
--------------
+Performance enhancements
+------------------------
 
-* The alpha diversity measures available in QIIME (e.g., ``alpha_diversity.py``) are now powered by [scikit-bio](http://scikit-bio.org/)! Click [here](http://scikit-bio.org/docs/latest/generated/skbio.diversity.alpha.html) to view the documentation for these measures. Several changes were made to ``alpha_diversity.py``:
- * ``ACE`` is now ``ace``
- * ``chao1_confidence`` is now ``chao1_ci``
- * Added ``observed_otus``, which is equivalent to ``observed_species`` but is generally a more accurate name. ``observed_species`` is retained for backward-compatibility.
-* ANOSIM and PERMANOVA (available in ``compare_categories.py``) are now powered by [scikit-bio](http://scikit-bio.org/) and are approximately 1000 times faster than previous implementations. These additionally now provide more useful information in the output file.
-* Renamed ``compare_categories.py``'s BEST method to BIO-ENV to match the name used in R's vegan package (``vegan::bioenv``) and the name of the program in the original paper. Use ``compare_categories.py --method bioenv`` instead of ``compare_categories.py --method best``. The underlying implementation has also been rewritten and is considerably faster than before, and the output more closely matches the vegan package, as environmental variables are now scaled before computing Euclidean distances.
 * Changed default parameters for uclust-based OTU picking: ``max_accepts`` is now 1 (was 8), ``max_rejects`` is now 8 (was 500), ``stepwords`` is now 8 (was 20), and ``word_length`` is now 8 (was 12). These changes greatly reduce runtime, with minimal effect on the results. See Rideout et al., 2014 ([PeerJ pre-print](https://peerj.com/preprints/411/)) for more details.
 * Disabled the prefilter by default in ``pick_open_reference_otus.py``. This change greatly reduces runtime, with minimal effect on the results. See Rideout et al., 2014 ([PeerJ pre-print](https://peerj.com/preprints/411/)) for more details.
-* The parameters ``--uclust_min_consensus_fraction`` and ``--uclust_similarity`` in ``*_assign_taxonomy_*`` scripts have been changed to ``--min_consensus_fraction`` and ``--similarity`` since both of these parameters apply to the SortMeRNA taxon assigner as well.
-* The Mantel test (``--method mantel``) and Mantel correlogram (``--method mantel_corr)`` in ``compare_distance_matrices.py`` are considerably faster than previous implementations.
-
+* The alpha diversity measures available in QIIME (e.g., ``alpha_diversity.py``) are now powered by [scikit-bio](http://scikit-bio.org/), and several of these methods are now considerably faster! See the scikit-bio docs on [alpha diversity](http://scikit-bio.org/docs/latest/generated/skbio.diversity.alpha.html) for more details on the methods.
+* ANOSIM and PERMANOVA (available in ``compare_categories.py``) are now powered by [scikit-bio](http://scikit-bio.org/) and are approximately 1000 times faster than previous implementations. These additionally now provide more useful information in the output file. See the scikit-bio docs for [ANOSIM](http://scikit-bio.org/docs/latest/generated/generated/skbio.stats.distance.anosim.html) and [PERMANOVA](http://scikit-bio.org/docs/latest/generated/generated/skbio.stats.distance.permanova.html) for more detail.
+* Renamed ``compare_categories.py``'s BEST method to BIO-ENV to match the name used in R's vegan package (``vegan::bioenv``) and the name of the program in the original paper. Use ``compare_categories.py --method bioenv`` instead of ``compare_categories.py --method best``. The underlying implementation has also been rewritten and is considerably faster than before, and the output more closely matches the vegan package, as environmental variables are now scaled before computing Euclidean distances. See the scikit-bio docs for [BIO-ENV](http://scikit-bio.org/docs/latest/generated/generated/skbio.stats.distance.bioenv.html) for more detail.
+* The Mantel test (``--method mantel``) and Mantel correlogram (``--method mantel_corr)`` in ``compare_distance_matrices.py`` are considerably faster than previous implementations. See the scikit-bio docs for [Mantel](http://scikit-bio.org/docs/latest/generated/generated/skbio.stats.distance.mantel.html) for more detail.
 
 
 QIIME 1.8.0 (11 Dec 2013)
