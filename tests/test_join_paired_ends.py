@@ -6,7 +6,7 @@ __author__ = "Mike Robeson"
 __copyright__ = "Copyright 2013, The QIIME Project"
 __credits__ = ["Mike Robeson"]
 __license__ = "GPL"
-__version__ = "1.9.0-rc1"
+__version__ = "1.9.0-rc2"
 __maintainer__ = "Mike Robeson"
 __email__ = "robesonms@ornl.gov"
 

@@ -6,7 +6,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.9.0-rc1"
+__version__ = "1.9.0-rc2"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -727,36 +727,37 @@ def pick_subsampled_open_reference_otus(input_fp,
                     logger=logger,
                     close_logger_on_success=False)
     commands = []
+    # name the final otu map
+    merged_otu_map_fp = '%s/final_otu_map.txt' % output_dir
 
-    # Subsample the failures fasta file to retain (roughly) the
-    # percent_subsample
-    step2_input_fasta_fp = \
-        '%s/subsampled_failures.fasta' % step1_dir
-    subsample_fasta(step1_failures_fasta_fp,
-                    step2_input_fasta_fp,
-                    percent_subsample)
+    # count number of sequences in step 1 failures fasta file
+    with open(abspath(step1_failures_fasta_fp), 'U') as step1_failures_fasta_f:
+        num_failure_seqs, mean, std = count_seqs_from_file(step1_failures_fasta_f)
 
-    logger.write('# Subsample the failures fasta file using API \n' +
+    # number of failures sequences is greater than the threshold,
+    # continue to step 2,3 and 4
+    run_step_2_and_3 = num_failure_seqs > minimum_failure_threshold
+
+    if run_step_2_and_3:
+
+        # Subsample the failures fasta file to retain (roughly) the
+        # percent_subsample
+        step2_dir = '%s/step2_otus/' % output_dir
+        create_dir(step2_dir)
+        step2_input_fasta_fp = \
+                               '%s/subsampled_failures.fasta' % step2_dir
+        subsample_fasta(step1_failures_fasta_fp,
+                        step2_input_fasta_fp,
+                        percent_subsample)
+
+        logger.write('# Subsample the failures fasta file using API \n' +
                  'python -c "import qiime; qiime.util.subsample_fasta' +
                  '(\'%s\', \'%s\', \'%f\')\n\n"' % (abspath(step1_failures_fasta_fp),
                                                     abspath(
                                                         step2_input_fasta_fp),
                                                     percent_subsample))
 
-    # count number of sequences in subsampled failures fasta file
-    with open(abspath(step2_input_fasta_fp), 'U') as step2_input_fasta_f:
-        num_subsampled_seqs, mean, std = count_seqs_from_file(step2_input_fasta_f)
-
-    # name the final otu map
-    merged_otu_map_fp = '%s/final_otu_map.txt' % output_dir
-
-    # number of subsampled failures sequences is greater than the threshold,
-    # continue to step 2,3 and 4
-    run_step_2_and_3 = num_subsampled_seqs > minimum_failure_threshold
-
-    if run_step_2_and_3:
         # Prep the OTU picking command for the subsampled failures
-        step2_dir = '%s/step2_otus/' % output_dir
         step2_cmd = pick_denovo_otus(step2_input_fasta_fp,
                                      step2_dir,
                                      new_ref_set_id,

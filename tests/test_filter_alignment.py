@@ -4,7 +4,7 @@ __author__ = "Dan Knights"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso", "Dan Knights"]
 __license__ = "GPL"
-__version__ = "1.9.0-rc1"
+__version__ = "1.9.0-rc2"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -12,16 +12,15 @@ from unittest import TestCase, main
 
 from numpy import array
 from numpy.testing import assert_almost_equal
+from skbio import parse_fasta, Alignment, DNA
 
-from qiime.filter_alignment import (
-    apply_lane_mask, apply_gap_filter, apply_lane_mask_and_gap_filter,
+from qiime.filter_alignment import (apply_lane_mask_and_gap_filter,
     remove_outliers, generate_lane_mask)
 
 
 class FilterAlignmentTests(TestCase):
 
     def setUp(self):
-        """Init variables for the tests """
         self.aln1 = [
             '>s1', 'ACC--T',
             '>s2', 'AC---T',
@@ -33,15 +32,28 @@ class FilterAlignmentTests(TestCase):
         self.aln2_lm = aln2_lm
 
     def test_apply_lane_mask_and_gap_filter_real(self):
-        """apply_lane_mask_and_gap_filter: no error on full length seqs
-        """
         # No error when applying to full-length sequence
         actual = apply_lane_mask_and_gap_filter(
             self.aln2, self.aln2_lm)
 
-    def test_apply_lane_mask_and_gap_filter(self):
-        """apply_lane_mask_and_gap_filter: functions as expected
-        """
+    def test_apply_lane_mask_and_gap_filter_invalid(self):
+        # passing both a mask and an entropy threshold results in a ValueError
+        with self.assertRaises(ValueError):
+            list(apply_lane_mask_and_gap_filter(self.aln1, '111111',
+                                                entropy_threshold=0.0))
+
+    def test_apply_lane_mask_and_gap_filter_w_entropy_threshold(self):
+        expected = self.aln1.__iter__()
+        for result in apply_lane_mask_and_gap_filter(self.aln1, None, 1.0,
+                                                     entropy_threshold=0.0):
+            self.assertEqual(result, expected.next() + '\n')
+
+        # filtering all positions results in a ValueError
+        with self.assertRaises(ValueError):
+            list(apply_lane_mask_and_gap_filter(self.aln1, None, 1.0,
+                                                entropy_threshold=1.0))
+
+    def test_apply_lane_mask_and_gap_filter_w_precomputed_mask(self):
         lm = '111111'
         expected = self.aln1.__iter__()
         for result in apply_lane_mask_and_gap_filter(self.aln1, lm, 1.0):
@@ -91,25 +103,16 @@ class FilterAlignmentTests(TestCase):
         for result in apply_lane_mask_and_gap_filter(self.aln1, lm):
             self.assertEqual(result, expected.next() + '\n')
 
-    def test_apply_lane_mask(self):
-        """ apply_lane_mask: functions as expected with varied lane masks
-        """
+    def test_apply_lane_mask_only(self):
         lm1 = '111111'
         expected = self.aln1.__iter__()
-        for result in apply_lane_mask(self.aln1, lm1):
+        for result in apply_lane_mask_and_gap_filter(self.aln1, lm1, 1):
             self.assertEqual(result, expected.next() + '\n')
 
+        # filtering all positions results in a ValueError
         lm2 = '000000'
-        expected = [
-            '>s1', '',
-            '>s2', '',
-            '>s3', '',
-            '>s4', '',
-            '>s5', ''
-        ].__iter__()
-
-        for result in apply_lane_mask(self.aln1, lm2):
-            self.assertEqual(result, expected.next() + '\n')
+        with self.assertRaises(ValueError):
+            list(apply_lane_mask_and_gap_filter(self.aln1, lm2, 1))
 
         lm3 = '101010'
         expected = [
@@ -120,7 +123,7 @@ class FilterAlignmentTests(TestCase):
             '>s5', '---'
         ].__iter__()
 
-        for result in apply_lane_mask(self.aln1, lm3):
+        for result in apply_lane_mask_and_gap_filter(self.aln1, lm3, 1):
             self.assertEqual(result, expected.next() + '\n')
 
         lm4 = '000111'
@@ -132,15 +135,13 @@ class FilterAlignmentTests(TestCase):
             '>s5', 'A--'
         ].__iter__()
 
-        for result in apply_lane_mask(self.aln1, lm4):
+        for result in apply_lane_mask_and_gap_filter(self.aln1, lm4, 1):
             self.assertEqual(result, expected.next() + '\n')
 
-    def test_apply_gap_filter(self):
-        """ apply_gap_filter: functions as expected with varied allowed_gap_frac
-        """
+    def test_apply_gap_filter_only(self):
         expected = self.aln1.__iter__()
 
-        for result in apply_gap_filter(self.aln1, 1.0):
+        for result in apply_lane_mask_and_gap_filter(self.aln1, None, 1.0):
             self.assertEqual(result, expected.next() + '\n')
 
         expected = [
@@ -151,7 +152,7 @@ class FilterAlignmentTests(TestCase):
             '>s5', '---A-'
         ].__iter__()
 
-        for result in apply_gap_filter(self.aln1):
+        for result in apply_lane_mask_and_gap_filter(self.aln1, None):
             self.assertEqual(result, expected.next() + '\n')
 
         expected = [
@@ -162,7 +163,7 @@ class FilterAlignmentTests(TestCase):
             '>s5', '----'
         ].__iter__()
 
-        for result in apply_gap_filter(self.aln1, 0.75):
+        for result in apply_lane_mask_and_gap_filter(self.aln1, None, 0.75):
             self.assertEqual(result, expected.next() + '\n')
 
         expected = [
@@ -173,7 +174,7 @@ class FilterAlignmentTests(TestCase):
             '>s5', '----'
         ].__iter__()
 
-        for result in apply_gap_filter(self.aln1, 0.40):
+        for result in apply_lane_mask_and_gap_filter(self.aln1, None, 0.40):
             self.assertEqual(result, expected.next() + '\n')
 
         expected = [
@@ -184,19 +185,12 @@ class FilterAlignmentTests(TestCase):
             '>s5', '---'
         ].__iter__()
 
-        for result in apply_gap_filter(self.aln1, 0.30):
+        for result in apply_lane_mask_and_gap_filter(self.aln1, None, 0.30):
             self.assertEqual(result, expected.next() + '\n')
 
-        expected = [
-            '>s1', '',
-            '>s2', '',
-            '>s3', '',
-            '>s4', '',
-            '>s5', ''
-        ].__iter__()
-
-        for result in apply_gap_filter(self.aln1, 0.10):
-            self.assertEqual(result, expected.next() + '\n')
+        # filtering all positions results in a ValueError
+        with self.assertRaises(ValueError):
+            list(apply_lane_mask_and_gap_filter(self.aln1, None, 0.10))
 
         # the following tests were adapted from test_alignment.py in PyCogent
 
@@ -212,7 +206,7 @@ class FilterAlignmentTests(TestCase):
             '>b', 'CBA-',
             '>c', '-DEF'
         ].__iter__()
-        for result in apply_gap_filter(aln):
+        for result in apply_lane_mask_and_gap_filter(aln, None):
             self.assertEqual(result, expected.next() + '\n')
 
         # if allowed_gap_frac is 1, shouldn't delete anything
@@ -221,7 +215,7 @@ class FilterAlignmentTests(TestCase):
             '>b', '-CB-A--',
             '>c', '--D-EF-'
         ].__iter__()
-        for result in apply_gap_filter(aln, 1):
+        for result in apply_lane_mask_and_gap_filter(aln, None, 1):
             self.assertEqual(result, expected.next() + '\n')
 
         # if allowed_gap_frac is 0, should strip out any cols containing gaps
@@ -230,7 +224,7 @@ class FilterAlignmentTests(TestCase):
             '>b', 'BA',
             '>c', 'DE'
         ].__iter__()
-        for result in apply_gap_filter(aln, 0):
+        for result in apply_lane_mask_and_gap_filter(aln, None, 0):
             self.assertEqual(result, expected.next() + '\n')
 
         # intermediate numbers should work as expected
@@ -239,19 +233,17 @@ class FilterAlignmentTests(TestCase):
             '>b', 'BA-',
             '>c', 'DEF'
         ].__iter__()
-        for result in apply_gap_filter(aln, 0.4):
+        for result in apply_lane_mask_and_gap_filter(aln, None, 0.4):
             self.assertEqual(result, expected.next() + '\n')
         expected = [
             '>a', '-ABC',
             '>b', 'CBA-',
             '>c', '-DEF'
         ].__iter__()
-        for result in apply_gap_filter(aln, 0.7):
+        for result in apply_lane_mask_and_gap_filter(aln, None, 0.7):
             self.assertEqual(result, expected.next() + '\n')
 
     def test_apply_lane_mask_and_gap_filter_alternate_alignment(self):
-        """apply_lane_mask_and_gap_filter: functions as expected with alt aln
-        """
         aln = [
             '>ACT009', 'AACT-',
             '>ACT019', 'AACT-',
@@ -271,7 +263,6 @@ class FilterAlignmentTests(TestCase):
             self.assertEqual(result, expected.next() + '\n')
 
     def test_remove_outliers(self):
-        """ remove outliers returns only seqs similar to consensus"""
         aln = [
             '>ACT009', 'ACAT-',
             '>ACT019', 'GACT-',
@@ -308,25 +299,31 @@ class FilterAlignmentTests(TestCase):
         self.assertTrue('ACT009' not in res.ids())
 
     def test_generate_lane_mask(self):
-        """ Generates correct lane mask for dynamic entropy filtering """
 
         sample_alignment = """>1
-        .ATC-G
+        AAAAT
         >2
-        .AACCG
+        AAAGG
         >3
-        .ATC-G
+        AACCC
         >4
-        .AAC-G""".split('\n')
+        A----""".split('\n')
+        aln = Alignment.from_fasta_records(parse_fasta(sample_alignment), DNA)
 
-        entropy_threshold = 0.70
-
-        expected_lanemask = "110101"
-
-        actual_lanemask = generate_lane_mask(sample_alignment,
-                                             entropy_threshold)
-
-        self.assertEqual(actual_lanemask, expected_lanemask)
+        actual_lanemask = generate_lane_mask(aln, 0.00)
+        self.assertEqual(actual_lanemask, "11111")
+        actual_lanemask = generate_lane_mask(aln, 0.10)
+        self.assertEqual(actual_lanemask, "11100")
+        actual_lanemask = generate_lane_mask(aln, 0.20)
+        self.assertEqual(actual_lanemask, "11100")
+        actual_lanemask = generate_lane_mask(aln, 0.40)
+        self.assertEqual(actual_lanemask, "11000")
+        actual_lanemask = generate_lane_mask(aln, 0.60)
+        self.assertEqual(actual_lanemask, "11000")
+        actual_lanemask = generate_lane_mask(aln, 0.80)
+        self.assertEqual(actual_lanemask, "10000")
+        actual_lanemask = generate_lane_mask(aln, 1.00)
+        self.assertEqual(actual_lanemask, "00000")
 
 aln2_fasta = """>1121 HalF20SW_57886 RC:1..219
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------A--AT-GT-A-T-A-GT---TAA--T-CT-G--C-C-CCA--TA-G------------------------------------------------------------------T-GG----AGG-AC-AA-CAG-------------------------T-T-A-----------------------GAA-A---TGA-CTG-CTAA-TA---CT-C--C-AT-A----------C--------------------T-C--C-T-T--C--T-----------------T----AT-C-----------------------------------------------------------------------------------------------------------------------A-TA-A--------------------------------------------------------------------------------------------------------------------------------------G-T-T----A---------------A--G-T-C-G-G-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------GAAA--G-T----------------------------------------------------------------------------------------------------------------------------------------TTT------------------------------------------------------------------------------------------------------------------------------------T---C-G--------------C----T-A---T-GG-G---AT---G-A-----G-ACT-ATA--T-CGT--A------TC--A--G-CT-A----G---TTGG-T-A-AG-G-T----AAT-GG-C-T-T-ACCA--A-GG-C-T--A-TG-A------------CGC-G-T------AA-CT-G-G-TCT-G-AG----A--GG-AT--G-AT-C-AG-TCAC-A-TTGGA--A-C-TG-A-GA-C-AC-G-G-TCCAA------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

@@ -12,7 +12,7 @@ This tutorial explains the use of several different mapping file category compar
 
 Input Files
 -----------
-You can obtain the files used in this tutorial `here <https://s3.amazonaws.com/s3-qiime_tutorial_files/keyboard.zip>`_. The files are taken from a study (Fierer et al., 2010) where samples were collected from the fingertips of three individuals and the keys of their keyboards. Researchers found that an individual's fingertip samples clustered very closely with his or her corresponding keyboard samples. These results have potential application in the field of forensic science. Throughout this tutorial, we will explore various ways of determining whether the clustering of fingertip and keyboard samples is statistically significant by analyzing the groups of samples.
+You can obtain the files used in this tutorial `here <ftp://ftp.microbio.me/qiime/tutorial_files/keyboard.zip>`_. The files are taken from a study (Fierer et al., 2010) where samples were collected from the fingertips of three individuals and the keys of their keyboards. Researchers found that an individual's fingertip samples clustered very closely with his or her corresponding keyboard samples. These results have potential application in the field of forensic science. Throughout this tutorial, we will explore various ways of determining whether the clustering of fingertip and keyboard samples is statistically significant by analyzing the groups of samples.
 
 Output Files
 ------------

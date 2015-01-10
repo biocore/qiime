@@ -19,7 +19,7 @@ __copyright__ = "Copyright (c) 2011--, %s" % __author__
 __credits__ = ["Greg Caporaso", "Kyle Bittinger", "Jai Ram Rideout",
                "Yoshiki Vazquez Baeza", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.9.0-rc1"
+__version__ = "1.9.0-rc2"
 __maintainer__ = "Greg Caporaso"
 __email__ = "qiime.help@gmail.com"
 
@@ -299,7 +299,6 @@ setup(name='qiime',
                      'support_files/css/*css',
                      'support_files/html_templates/*html',
                      'support_files/images/*png',
-                     'support_files/jar/*jar',
                      'support_files/js/*js',
                      'support_files/R/*r',
                      'support_files/denoiser/Data/*',
@@ -310,7 +309,7 @@ setup(name='qiime',
       license=__license__,
       keywords=['bioinformatics', 'microbiome', 'microbiology', 'qiime'],
       platforms=['MacOS', 'Linux'],
-      install_requires=['numpy >= 1.7.1',
+      install_requires=['numpy >= 1.9.0',
                         'matplotlib >= 1.1.0',
                         'pynast == 1.2.2', 'qcli >= 0.1.1, < 0.2.0', 'gdata',
                         'biom-format >= 2.1.2, < 2.2.0',

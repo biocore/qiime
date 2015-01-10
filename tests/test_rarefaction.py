@@ -5,7 +5,7 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["justin kuczynski", "Rob Knight",
                "Jose Carlos Clemente Litran", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.9.0-rc1"
+__version__ = "1.9.0-rc2"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
@@ -101,7 +101,7 @@ class FunctionTests(TestCase):
         """rarefy_to_files should write valid files
 
         """
-        maker = RarefactionMaker(self.otu_table_fp, 0, 1, 1, 1)
+        maker = RarefactionMaker(self.otu_table_fp, 1, 2, 1, 1)
         maker.rarefy_to_files(
             self.rare_dir,
             include_full=True,
@@ -120,7 +120,7 @@ class FunctionTests(TestCase):
         """rarefy_to_files should write valid files with some metadata on otus
 
         """
-        maker = RarefactionMaker(self.otu_table_meta_fp, 0, 1, 1, 1)
+        maker = RarefactionMaker(self.otu_table_meta_fp, 1, 2, 1, 1)
         maker.rarefy_to_files(
             self.rare_dir,
             include_full=True,

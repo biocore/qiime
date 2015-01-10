@@ -7,7 +7,7 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Catherine Lozupone", "Jesse Stombaugh", "Doug Wendel",
                "Dan Knights", "Greg Caporaso", "Luke Ursell"]
 __license__ = "GPL"
-__version__ = "1.9.0-rc1"
+__version__ = "1.9.0-rc2"
 __maintainer__ = "Doug Wendel"
 __email__ = "wendel@colorado.edu"
 
