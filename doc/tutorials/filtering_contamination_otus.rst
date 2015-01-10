@@ -8,7 +8,7 @@ This tutorial explains how to use several QIIME scripts to filter all OTUs that 
 
 To accomplish this task several scripts are used to first generate an OTU table of target OTUs to remove, then filter those OTUs from the original OTU table, and finally to perform a clean-up step to remove the control samples that would now have zero sequences associated with them.
 
-The OTU table and mapping file (generated from the QIIME tutorial data set) are available `here <https://s3.amazonaws.com/s3-qiime_tutorial_files/filtering_otus_tutorial_data.zip>`_.
+The OTU table and mapping file (generated from the QIIME tutorial data set) are available `here <ftp://ftp.microbio.me/qiime/tutorial_files/filtering_otus_tutorial_data.zip>`_.
 
 Once these files are downloaded and extracted, open a terminal and change to the directory of the extracted files to begin processing.
 

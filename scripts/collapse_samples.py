@@ -6,7 +6,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2014, The QIIME Project"
 __credits__ = ["Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.9.0-rc1"
+__version__ = "1.9.0-rc2"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -56,7 +56,7 @@ script_info['required_options'] = [
 script_info['optional_options'] = [
     make_option('--collapse_mode', type='choice', choices=collapse_modes,
         help="the mechanism for collapsing counts within groups; "
-        "valid options are: %s" % ' '.join(collapse_modes), default='sum'),
+        "valid options are: %s" % ', '.join(collapse_modes), default='sum'),
     make_option('--normalize',
         help='Normalize observation counts to relative abundances, so the '
              'counts within each sample sum to 1.0. [default: %default]',

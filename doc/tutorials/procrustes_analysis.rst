@@ -26,7 +26,7 @@ Do some initial set up for the tutorial. This version of the tutorial is based o
 ::
 
 	cd
-	wget https://s3.amazonaws.com/s3-qiime_tutorial_files/moving_pictures_procrustes_demo.tgz
+	wget ftp://ftp.microbio.me/qiime/tutorial_files/moving_pictures_procrustes_demo.tgz
 	tar -xzf moving_pictures_procrustes_demo.tgz
 	screen
 	cd moving_pictures_procrustes_demo

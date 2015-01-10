@@ -12,7 +12,7 @@ This tutorial does not attempt to cover every possible usage of SourceTracker. I
 
 Tutorial data
 -------------
-You can obtain the files used in this tutorial `here <https://s3.amazonaws.com/s3-qiime_tutorial_files/sourcetracker_tutorial_files.tgz>`_. These are derived from `Hewitt et al., 2013 <http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0054703>`_, where samples were collected from various surfaces in two different Neonatal Intensive Care Units (NICUs). The 16S rRNA was sequenced from these samples, and compared against pre-existing data sets using SourceTracker in order to predict the likely origin of the microbial contaminants on each NICU surface.
+You can obtain the files used in this tutorial `here <ftp://ftp.microbio.me/qiime/tutorial_files/sourcetracker_tutorial_files.tgz>`_. These are derived from `Hewitt et al., 2013 <http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0054703>`_, where samples were collected from various surfaces in two different Neonatal Intensive Care Units (NICUs). The 16S rRNA was sequenced from these samples, and compared against pre-existing data sets using SourceTracker in order to predict the likely origin of the microbial contaminants on each NICU surface.
 
 This tutorial begins with an OTU table. For information on various ways to generate OTU tables with QIIME, see :ref:`otu_picking`.
 
