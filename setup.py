@@ -7,7 +7,7 @@ from os import (chdir, getcwd, listdir, chmod, walk, rename, remove, chmod,
                 stat, devnull, environ)
 from os.path import join, abspath
 from sys import platform, argv
-from subprocess import call
+from subprocess import call, Popen, PIPE
 from glob import glob
 from urllib import FancyURLopener
 from tempfile import mkdtemp
@@ -142,8 +142,8 @@ def build_FastTree():
 def build_SortMeRNA():
     """Download and build SortMeRNA then copy it to the scripts directory"""
     tempdir = mkdtemp()
-    if download_file('https://github.com/biocore/sortmerna/archive/2.0.tar.gz',
-                     tempdir, 'sortmerna-2.0.tar.gz'):
+    if download_file('ftp://ftp.microbio.me/pub/sortmerna-2.0-no-db.tar.gz',
+                     tempdir, 'sortmerna-2.0-no-db.tar.gz'):
         print 'Could not download SortMeRNA, not installing it.'
         rmtree(tempdir)
         return
@@ -152,7 +152,7 @@ def build_SortMeRNA():
     scripts = join(cwd, 'scripts')
     chdir(tempdir)
 
-    call(['tar', 'xzf', 'sortmerna-2.0.tar.gz'])
+    call(['tar', 'xzf', 'sortmerna-2.0-no-db.tar.gz'])
     chdir('sortmerna-2.0')
 
     cxx_old = environ.get('CXX', '')
@@ -167,7 +167,16 @@ def build_SortMeRNA():
     else:
         raise ValueError("Unknown platform: %s" % platform)
 
-    call(['bash', 'build.sh'])
+    proc = Popen('bash build.sh',
+                 universal_newlines=True,
+                 shell=True,
+                 stdout=PIPE,
+                 stderr=PIPE)
+    stdout, stderr = proc.communicate()
+    return_value = proc.returncode
+
+    if return_value != 0:
+        raise ValueError("Unable to build SortMeRNA")
 
     copy('sortmerna', scripts)
     copy('indexdb_rna', scripts)
