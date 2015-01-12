@@ -16,8 +16,7 @@ from numpy import inf
 from copy import deepcopy
 from skbio.util import create_dir, remove_files
 from skbio.parse.sequences import parse_fasta
-from biom import Table
-from biom.util import biom_open
+from biom import load_table
 
 from qiime.util import (subsample_fasta, count_seqs_from_file)
 from qiime.filter import (filter_otus_from_otu_table,
@@ -538,8 +537,7 @@ def iterative_pick_subsampled_open_reference_otus(
                 status_update_callback=status_update_callback)
 
             # Build OTU table without PyNAST failures
-            with biom_open(align_and_tree_input_otu_table) as biom_file:
-                table = Table.from_hdf5(biom_file)
+            table = load_table(align_and_tree_input_otu_table)
             filtered_otu_table = filter_otus_from_otu_table(table,
                 get_seq_ids_from_fasta_file(open(pynast_failures_fp, 'U')),
                 0, inf, 0, inf, negate_ids_to_keep=True)
@@ -1073,8 +1071,7 @@ def pick_subsampled_open_reference_otus(input_fp,
                 status_update_callback=status_update_callback)
 
             # Build OTU table without PyNAST failures
-            with biom_open(align_and_tree_input_otu_table) as biom_file:
-                table = Table.from_hdf5(biom_file)
+            table = load_table(align_and_tree_input_otu_table)
             filtered_otu_table = filter_otus_from_otu_table(table,
                 get_seq_ids_from_fasta_file(open(pynast_failures_fp, 'U')),
                 0, inf, 0, inf, negate_ids_to_keep=True)
