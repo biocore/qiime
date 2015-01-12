@@ -17,9 +17,9 @@ from numpy.testing import assert_almost_equal
 from itertools import izip
 from cogent.parse.tree import DndParser
 
+from biom import load_table
 from biom.parse import parse_biom_table
 from biom.table import Table
-from biom.util import biom_open
 from qiime.parse import parse_mapping_file
 from qiime.util import load_qiime_config, get_qiime_temp_dir
 import qiime.simsam
@@ -114,8 +114,7 @@ class SimsamTests(TestCase):
 
         result_fp = os.path.join(out_dir, 'otuf_n%d_d0.003.biom' %
                                  num_replicates)
-        with biom_open(result_fp) as biom_file:
-            res_table = Table.from_hdf5(biom_file)
+        res_table = load_table(result_fp)
 
         orig_table = parse_biom_table(open(otuf, 'U'))
 
@@ -182,8 +181,7 @@ class SimsamTests(TestCase):
         num_replicates = 3  # ensure this matches cmd above
         result_fp = os.path.join(out_dir, 'otuf_n%d_d0.0.biom' %
                                  num_replicates)
-        with biom_open(result_fp) as biom_file:
-            res_table = Table.from_hdf5(biom_file)
+        res_table = load_table(result_fp)
 
         orig_table = parse_biom_table(open(otuf, 'U'))
 
@@ -417,8 +415,7 @@ class SimsamTests(TestCase):
         self.assertTrue(exists('%s/world_n2_d0.1.txt' % self.test_out))
 
         # confirm same sample ids in table and mapping file
-        with biom_open('%s/hello_n2_d0.1.biom' % self.test_out) as biom_file:
-            t = Table.from_hdf5(biom_file)
+        t = load_table('%s/hello_n2_d0.1.biom' % self.test_out)
         d, _, _ = \
             parse_mapping_file(open('%s/world_n2_d0.1.txt' % self.test_out))
         mapping_sample_ids = [e[0] for e in d]

@@ -19,9 +19,8 @@ from unittest import TestCase, main
 
 import numpy.testing as npt
 import numpy as np
+from biom import load_table
 from biom.table import Table, TableException
-from biom.parse import parse_biom_table
-from biom.util import biom_open
 
 from qiime.rarefaction import RarefactionMaker, get_rare_data
 from qiime.util import load_qiime_config, write_biom_table
@@ -108,8 +107,7 @@ class FunctionTests(TestCase):
             include_lineages=False)
 
         fname = os.path.join(self.rare_dir, "rarefaction_1_0.biom")
-        with biom_open(fname, 'U') as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(fname)
 
         self.assertItemsEqual(
             otu_table.ids(),
@@ -127,8 +125,7 @@ class FunctionTests(TestCase):
             include_lineages=False)
 
         fname = os.path.join(self.rare_dir, "rarefaction_1_0.biom")
-        with biom_open(fname, 'U') as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(fname)
 
         self.assertItemsEqual(
             otu_table.ids(),
