@@ -301,25 +301,6 @@ def ave_seqs_per_sample(matrix, seqs_per_samp, sampleIDs):
 
     return ave_ser
 
-'''
-#This function is currently not being used
-
-def is_max_category_ops(mapping, mapping_category):
-    """Count how many unique values there are for the supplied mapping \
-    category and return true if all values are unique"""
-
-    header = mapping[1]
-    map_min = mapping[0]
-    num_samples = len(map_min)
-    index = header.index(mapping_category)
-    seen = set()
-
-    for m in map_min:
-        seen.update([m[index]])
-
-    return (len(seen) == num_samples), len(seen)
-'''
-
 
 def make_error_series(rare_mat, groups, std_type):
     """Create mean and error bar series for the supplied mapping category"""
@@ -360,20 +341,6 @@ def make_error_series(rare_mat, groups, std_type):
             err_ser[o] = stddev.tolist()
 
     return collapsed_ser, err_ser, ops
-
-'''
-function is not used
-
-def get_overall_averages(rare_mat, sampleIDs):
-    """Make series of averages of all values of seqs/sample for each \
-    sampleID"""
-
-    overall_ave = dict();
-    for s in sampleIDs:
-        overall_ave[s] = mean(array(rare_mat[s]))
-
-    return overall_ave
-'''
 
 
 def save_rarefaction_data(rare_mat, xaxis, xmax,
@@ -574,15 +541,6 @@ def make_averages(color_prefs, data, background_color, label_color, rares,
         xmax = max(xaxisvals) + (xaxisvals[len(xaxisvals) - 1] -
                                  xaxisvals[len(xaxisvals) - 2])
 
-        '''
-        #get the overall average
-        #overall_average = get_overall_averages(rare_mat_ave, sampleIDs)
-
-        rarelines.append("#" + r + '\n')
-
-        for s in sampleIDs:
-            rarelines.append('%f'%overall_average[s] + '\n')
-        '''
         if not user_ymax:
             ymax = 0
             for i in range(len(groups_and_colors)):
