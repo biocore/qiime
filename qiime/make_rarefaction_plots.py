@@ -895,6 +895,7 @@ def make_plots(background_color, label_color, rares, ymax, xmax,
                              splitext(split(raredata['headers'][0])[1])[0])
 
     all_plots_single = []
+    all_plots_ave = []
     # Sort and iterate through the groups
     for i in natsort(groups):
         # for k in groups[i]:
@@ -949,10 +950,11 @@ def make_plots(background_color, label_color, rares, ymax, xmax,
                     ''.join('%10.3f' %
                             ((raredata['error'][i][j]))))
 
-        # Create raw plots for each group in a category
-        fpath = output_dir
-
         if generate_per_sample_plots:
+            # Create raw plots for each group in a category
+            fpath = output_dir
+            categories = [k for k in groups]
+
             if output_type == "file_creation":
                 rarefaction_legend_mat = save_single_rarefaction_plots(
                     sample_dict,
@@ -962,6 +964,15 @@ def make_plots(background_color, label_color, rares, ymax, xmax,
                     label_color, resolution, ymax, xmax,
                     rarefaction_legend_mat, groups[i],
                     labelname, i, mapping_lookup, output_type)
+
+                rarefaction_legend_mat = save_single_ave_rarefaction_plots(
+                    raredata['xaxis'],
+                    raredata['series'], raredata[
+                        'error'], xmax, ymax, categories,
+                    labelname, imagetype, resolution, data_colors,
+                    colors, file_path, background_color, label_color,
+                    rarefaction_legend_mat, metric_name, mapping_lookup,
+                    output_type)
             elif output_type == "memory":
                 rarefaction_legend_mat, rare_plot_for_all = save_single_rarefaction_plots(
                     sample_dict,
@@ -973,31 +984,22 @@ def make_plots(background_color, label_color, rares, ymax, xmax,
                     labelname, i, mapping_lookup, output_type)
                 all_plots_single.append(rare_plot_for_all)
 
-    categories = [k for k in groups]
+                rarefaction_legend_mat, rare_plot_for_ave = save_single_ave_rarefaction_plots(
+                    raredata['xaxis'],
+                    raredata['series'], raredata[
+                        'error'], xmax, ymax, categories,
+                    labelname, imagetype, resolution, data_colors,
+                    colors, file_path, background_color, label_color,
+                    rarefaction_legend_mat, metric_name, mapping_lookup,
+                    output_type)
+                all_plots_ave.append(rare_plot_for_ave)
 
     # Create the rarefaction average plot and get updated legend information
     if output_type == "file_creation":
-        rarefaction_legend_mat = save_single_ave_rarefaction_plots(
-            raredata['xaxis'],
-            raredata['series'], raredata[
-                'error'], xmax, ymax, categories,
-            labelname, imagetype, resolution, data_colors,
-            colors, file_path, background_color, label_color,
-            rarefaction_legend_mat, metric_name, mapping_lookup, output_type)
-
         return rarefaction_data_mat, rarefaction_legend_mat
     elif output_type == "memory":
-        rarefaction_legend_mat, all_plots_ave = save_single_ave_rarefaction_plots(
-            raredata['xaxis'],
-            raredata['series'], raredata[
-                'error'], xmax, ymax, categories,
-            labelname, imagetype, resolution, data_colors,
-            colors, file_path, background_color, label_color,
-            rarefaction_legend_mat, metric_name, mapping_lookup, output_type)
-
-        return (
-            rarefaction_data_mat, rarefaction_legend_mat, all_plots_single, all_plots_ave
-        )
+        return (rarefaction_data_mat, rarefaction_legend_mat, all_plots_single,
+                all_plots_ave)
 
 
 HTML = '''
