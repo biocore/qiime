@@ -1262,7 +1262,7 @@ function show_hide_categories(SelObject){
 %s
 <div style="position:relative;clear:both;">
 <div style="position:relative;clear:both;display:none;" class="strong" id="nan_disclaimer">
-<b>If the lines for some categories do not extend all the way to the right end of the x-axis, that means that at least one of the samples in that category does not have that many samples.</b>
+<b>If the lines for some categories do not extend all the way to the right end of the x-axis, that means that at least one of the samples in that category does not have that many sequences.</b>
 </div>
 <br><br>
 <table id="rare_data" border="1px">
