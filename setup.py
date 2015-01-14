@@ -6,7 +6,7 @@ from stat import S_IEXEC
 from os import (chdir, getcwd, listdir, chmod, walk, rename, remove, chmod,
                 stat, devnull, environ)
 from os.path import join, abspath
-from sys import platform, argv
+from sys import platform, argv, exc_info
 from subprocess import call, Popen, PIPE
 from glob import glob
 from urllib import FancyURLopener
@@ -45,20 +45,36 @@ def build_denoiser():
 
     cwd = getcwd()
     denoiser_dir = join(cwd, 'qiime/support_files/denoiser/FlowgramAlignment')
-    chdir(denoiser_dir)
-    call(["make", "clean"])
-    call(["make"])
-    chdir(cwd)
-    print "Denoiser built."
+
+    try:
+        chdir(denoiser_dir)
+
+        stdout, stderr, return_value = system_call('make clean')
+
+        if return_value != 0:
+            print ("Unable to clean denoiser build directory.\nstdout:\n%s\n\nstderr:\n%s\n" %
+                   (stdout, stderr))
+            return
+
+        stdout, stderr, return_value = system_call('make')
+
+        if return_value != 0:
+            print ("Unable to build denoiser.\nstdout:\n%s\n\nstderr:\n%s\n" %
+                   (stdout, stderr))
+            return
+
+        print "Denoiser built."
+    finally:
+        chdir(cwd)
 
 # heavily based on lib.util.download_file from github.com/qiime/qiime-deploy
 
 
 class URLOpener(FancyURLopener):
-
     def http_error_default(self, url, fp, errcode, errmsg, headers):
-        msg = 'ERROR: Could not download %s\nIs the URL valid?' % url
-        raise IOError(msg)
+        raise IOError(
+            'Could not download %s\nPlease ensure the URL is valid and that '
+            'you have an active Internet connection.' % url)
 
 # heavily based on lib.util.download_file from github.com/qiime/qiime-deploy
 
@@ -110,21 +126,32 @@ def build_FastTree():
         return
 
     cwd = getcwd()
-    denoiser_dir = join(cwd, 'scripts')
-    chdir(denoiser_dir)
+    scripts = join(cwd, 'scripts')
 
-    # as suggested by the docs in FastTree.c
-    call(['gcc', '-Wall', '-O3', '-finline-functions', '-funroll-loops', '-o',
-          'FastTree', 'FastTree.c', '-lm'])
+    try:
+        chdir(scripts)
 
-    # remove the source
-    remove('FastTree.c')
-    chdir(cwd)
-    print "FastTree built."
+        # as suggested by the docs in FastTree.c
+        stdout, stderr, return_value = system_call(
+            'gcc -Wall -O3 -finline-functions -funroll-loops -o FastTree '
+            'FastTree.c -lm')
+
+        if return_value != 0:
+            print ("Unable to build FastTree.\nstdout:\n%s\n\nstderr:\n%s\n" %
+                   (stdout, stderr))
+            return
+
+        print "FastTree built."
+    finally:
+        # remove the source
+        remove('FastTree.c')
+        chdir(cwd)
 
 
 def build_SortMeRNA():
     """Download and build SortMeRNA then copy it to the scripts directory"""
+    # SortMeRNA's configure script doesn't correctly guess the C/C++ compilers
+    # to use on OS X. Try to figure that out here.
     if platform.lower() in ['darwin', 'macos']:
         cxx = 'clang++'
         cc = 'clang'
@@ -140,58 +167,61 @@ def build_SortMeRNA():
             print "%r not installed, so cannot build SortMeRNA." % compiler
             return
 
-    tempdir = mkdtemp()
-    if download_file('ftp://ftp.microbio.me/pub/sortmerna-2.0-no-db.tar.gz',
-                     tempdir, 'sortmerna-2.0-no-db.tar.gz'):
-        print "Could not download SortMeRNA, so cannot install it."
-        rmtree(tempdir)
-        return
-
     cwd = getcwd()
     scripts = join(cwd, 'scripts')
-    chdir(tempdir)
-
-    call(['tar', 'xzf', 'sortmerna-2.0-no-db.tar.gz'])
-    chdir('sortmerna-2.0')
-
     cxx_old = environ.get('CXX', '')
     cc_old = environ.get('CC', '')
 
-    environ['CXX'] = cxx
-    environ['CC'] = cc
+    try:
+        tempdir = mkdtemp()
+        if download_file('ftp://ftp.microbio.me/pub/sortmerna-2.0-no-db.tar.gz',
+                         tempdir, 'sortmerna-2.0-no-db.tar.gz'):
+            print "Could not download SortMeRNA, so cannot install it."
+            return
 
-    proc = Popen('bash build.sh',
-                 universal_newlines=True,
-                 shell=True,
-                 stdout=PIPE,
-                 stderr=PIPE)
-    stdout, stderr = proc.communicate()
-    return_value = proc.returncode
+        chdir(tempdir)
 
-    if return_value != 0:
-        raise ValueError("Unable to build SortMeRNA")
+        stdout, stderr, return_value = system_call(
+            'tar xzf sortmerna-2.0-no-db.tar.gz')
 
-    copy('sortmerna', scripts)
-    copy('indexdb_rna', scripts)
+        if return_value != 0:
+            print ("Unable to extract SortMeRNA archive.\nstdout:\n%s\n\nstderr:\n%s\n" %
+                   (stdout, stderr))
+            return
 
-    environ['CXX'] = cxx_old
-    environ['CC'] = cc_old
+        chdir('sortmerna-2.0')
 
-    # remove the source
-    rmtree(tempdir)
-    chdir(cwd)
-    print "SortMeRNA built."
+        environ['CXX'] = cxx
+        environ['CC'] = cc
+
+        stdout, stderr, return_value = system_call('bash build.sh')
+
+        if return_value != 0:
+            print ("Unable to build SortMeRNA.\nstdout:\n%s\n\nstderr:\n%s\n" %
+                   (stdout, stderr))
+            return
+
+        copy('sortmerna', scripts)
+        copy('indexdb_rna', scripts)
+        print "SortMeRNA built."
+    finally:
+        environ['CXX'] = cxx_old
+        environ['CC'] = cc_old
+
+        # remove the source
+        rmtree(tempdir)
+        chdir(cwd)
 
 
 def download_UCLUST():
     """Download the UCLUST executable and set it to the scripts directory"""
-
     if platform == 'darwin':
         URL = 'http://www.drive5.com/uclust/uclustq1.2.22_i86darwin64'
     elif platform == 'linux2':
         URL = 'http://www.drive5.com/uclust/uclustq1.2.22_i86linux64'
     else:
-        raise SystemError(("Platform not supported by UCLUST"))
+        print "Platform %r not supported by UCLUST" % platform
+        return
 
     return_value = download_file(URL, 'scripts/', 'uclust')
 
@@ -225,12 +255,46 @@ def app_available(app_name):
 
     return output
 
+
+def system_call(cmd, shell=True):
+    """Call cmd and return (stdout, stderr, return_value).
+
+    cmd can be either a string containing the command to be run, or a sequence
+    of strings that are the tokens of the command.
+
+    Please see Python's subprocess. Popen for a description of the shell
+    parameter and how cmd is interpreted differently based on its value.
+
+    This function is ported from qcli (previously qcli_system_call).
+    """
+    proc = Popen(cmd,
+                 shell=shell,
+                 universal_newlines=True,
+                 stdout=PIPE,
+                 stderr=PIPE)
+    # communicate pulls all stdout/stderr from the PIPEs to
+    # avoid blocking -- don't remove this line!
+    stdout, stderr = proc.communicate()
+    return_value = proc.returncode
+    return stdout, stderr, return_value
+
+
+def catch_install_errors(install_function, name):
+    try:
+        install_function()
+    except (KeyboardInterrupt, SystemExit):
+        raise
+    except:
+        print ("Skipping installation of %s due to failure while downloading, "
+               "building, or installing:\n%s\n" % (name, exc_info()[0]))
+
+
 # do not compile and build any of these if running under pip's egg_info
 if build_stack:
-    build_denoiser()
-    build_FastTree()
-    build_SortMeRNA()
-    download_UCLUST()
+    catch_install_errors(build_denoiser, 'denoiser')
+    catch_install_errors(download_UCLUST, 'UCLUST')
+    catch_install_errors(build_FastTree, 'FastTree')
+    catch_install_errors(build_SortMeRNA, 'SortMeRNA')
 
 # taken from PyNAST
 classes = """
