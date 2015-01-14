@@ -10,7 +10,6 @@ __version__ = "1.9.0-rc2"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
-from biom.parse import parse_biom_table
 from biom import load_table
 
 from qiime.util import make_option

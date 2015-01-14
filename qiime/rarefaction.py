@@ -32,11 +32,10 @@ class SingleRarefactionMaker(FunctionWithParams):
     def __init__(self, otu_path, depth):
         """ init a singlerarefactionmaker
 
-        otu_path has to be parseable when opened by parse_biom_table,
+        otu_path has to be a parseable BIOM table,
         we just ignore any rarefaction levels beyond any sample in the data
         """
         self.depth = depth
-        #self.otu_table = parse_biom_table(open(otu_path,'U'))
         self.otu_table = self.getBiomData(otu_path)
 
         self.max_num_taxa = -1

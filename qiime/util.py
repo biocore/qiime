@@ -39,7 +39,6 @@ from numpy.ma.extras import apply_along_axis
 
 from biom.util import compute_counts_per_sample_stats, biom_open, HAVE_H5PY
 from biom import load_table
-from biom.parse import parse_biom_table
 from biom.table import Table
 
 from cogent.parse.tree import DndParser
@@ -2122,7 +2121,7 @@ def sync_biom_and_mf(pmf, bt):
 
     Inputs:
      pmf - parsed mapping file from parse_mapping_file_to_dict (nested dict).
-     bt - parse biom table from parse_biom_table (biom table object).
+     bt - biom table object.
     Outputs are a bt and pmf that contain only shared samples and a set of
     samples that are not shared. If no samples are unshared this final output
     will be an empty set.

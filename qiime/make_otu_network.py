@@ -29,8 +29,7 @@ from random import choice, randrange
 from qiime.stats import G_2_by_2
 from qiime.colors import iter_color_groups, Color, data_colors
 from qiime.parse import parse_mapping_file
-from biom.parse import parse_biom_table
-from biom.util import biom_open
+from biom import load_table
 
 
 def get_sample_info(lines):
@@ -131,13 +130,7 @@ def get_connection_info(otu_table_fp, num_meta, meta_dict):
     sample_num_seq = defaultdict(int)
     con_list = []
 
-    with biom_open(otu_table_fp, 'U') as biom_file:
-        otu_table = parse_biom_table(biom_file)
-
-    # if lineages == []:
-    #    is_con = False
-    # else:
-    #    is_con = True
+    otu_table = load_table(otu_table_fp)
 
     is_con = False
     # This could be moved to OTU table sub-class
@@ -146,26 +139,16 @@ def get_connection_info(otu_table_fp, num_meta, meta_dict):
         is_con = True
 
     for otu_values, otu_id, otu_md in otu_table.iter(axis='observation'):
-    # for idx,l in enumerate(otu_table):
-    #    data = l
-
-        #to_otu = otu_ids[idx]
         con = ''
         if is_con:
-            #con = ':'.join(lineages[idx][:6])
             con = ':'.join(otu_md['taxonomy'][:6])
             con = con.replace(" ", "_")
             con = con.replace("\t", "_")
-        # Not required: otu_values (data) is always numpy vector
-        #counts = map(float,data)
         if con not in con_list:
             con_list.append(con)
-        #non_zero_counts = nonzero(counts)[0]
         non_zero_counts = otu_values.nonzero()[0]
         degree = len(non_zero_counts)
         weighted_degree = sum(otu_values)
-#        node_file_line = [to_otu,'','otu_node',str(degree),\
-#                          str(weighted_degree),con]
         node_file_line = [otu_id, '', 'otu_node', str(degree),
                           str(weighted_degree), con]
         node_file_line.extend(['otu'] * num_meta)
@@ -183,29 +166,20 @@ def get_connection_info(otu_table_fp, num_meta, meta_dict):
                 continue
             con_by_sample[s].update(samples[0:i])
             con_by_sample[s].update(samples[i + 1:])
-            #sample_num_seq[s] += float(data[non_zero_counts[i]])
             sample_num_seq[s] += float(otu_values[non_zero_counts[i]])
 
             edge_from.append(s)
-            # to.append(to_otu)
             to.append(otu_id)
             meta = meta_dict[s]
             meta[1] += 1
-            #data_num = str(data[non_zero_counts[i]])
             data_num = str(otu_values[non_zero_counts[i]])
-            # edge_file.append('\t'.join([s, to_otu, \
-            #                data_num, con, meta[0]]))
             edge_file.append('\t'.join([s, otu_id,
                                         data_num, con, meta[0]]))
-            #multi[to_otu].append((s,float(data[non_zero_counts[i]]), meta[0]))
             multi[otu_id].append(
                 (s, float(otu_values[non_zero_counts[i]]), meta[0]))
             if len(non_zero_counts) == 1:
-                #red_nodes[(sample_ids[non_zero_counts[0]],meta[0])] += degree
                 red_nodes[(sample_ids[non_zero_counts[0]], meta[0])] += degree
             else:
-                # red_edge_file.append('\t'.join([s, to_otu, \
-                #                    data_num, con, meta[0]]))
                 red_edge_file.append('\t'.join([s, otu_id,
                                                 data_num, con, meta[0]]))
 
