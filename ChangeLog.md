@@ -17,6 +17,7 @@ New scripts
 Features
 --------
 
+* Added SortMeRNA 2.0 to the default install.
 * ``split_otu_table.py`` now allows multiple fields to be passed to split a biom table, and optionally a mapping file. Check out the new documentation for the naming conventions (which have changed slightly) and an example.
 * Added new options to ``make_otu_heatmap.py``:
  * ``--color_scheme``, which allows users to choose from different color schemes [here](http://matplotlib.org/examples/color/colormaps_reference.html)
