@@ -18,7 +18,6 @@ from tempfile import mkstemp, mkdtemp
 from unittest import TestCase, main
 
 from biom.table import Table
-from biom.util import biom_open
 import numpy as np
 import numpy.testing as npt
 from skbio.util import remove_files
