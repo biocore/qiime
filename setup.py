@@ -251,6 +251,45 @@ def build_SUMACLUST():
         rmtree(tempdir)
         chdir(cwd)
 
+
+def build_swarm():
+    """Download and build swarm then copy it to the scripts directory"""
+    cwd = getcwd()
+    scripts = join(cwd, 'scripts')
+
+    try:
+        tempdir = mkdtemp()
+        if download_file('https://github.com/torognes/swarm/archive/1.2.19.tar.gz',
+                         tempdir, '1.2.19.tar.gz'):
+            print "Could not download swarm, so cannot install it."
+            return
+
+        chdir(tempdir)
+
+        stdout, stderr, return_value = system_call('tar xzf 1.2.19.tar.gz')
+
+        if return_value != 0:
+            print ("Unable to extract swarm archive.\nstdout:\n%s\n\nstderr:\n%s\n" %
+                   (stdout, stderr))
+            return
+
+        chdir('swarm-1.2.19')
+
+        stdout, stderr, return_value = system_call('make')
+
+        if return_value != 0:
+            print ("Unable to build swarm.\nstdout:\n%s\n\nstderr:\n%s\n" %
+                   (stdout, stderr))
+            return
+
+        copy('swarm', scripts)
+        print "swarm built."
+    finally:
+        # remove the source
+        rmtree(tempdir)
+        chdir(cwd)
+
+
 def download_UCLUST():
     """Download the UCLUST executable and set it to the scripts directory"""
     if platform == 'darwin':
@@ -334,6 +373,7 @@ if build_stack:
     catch_install_errors(build_FastTree, 'FastTree')
     catch_install_errors(build_SortMeRNA, 'SortMeRNA')
     catch_install_errors(build_SUMACLUST, 'SUMACLUST')
+    catch_install_errors(build_swarm, 'swarm')
 
 # taken from PyNAST
 classes = """
@@ -382,7 +422,8 @@ setup(name='qiime',
                 'qiime/denoiser', 'qiime/workflow', 'qiime_test_data'],
       scripts=glob('scripts/*py') + glob('scripts/FlowgramAli_4frame') +
       glob('scripts/FastTree') + glob('scripts/uclust') +
-      glob('scripts/indexdb_rna') + glob('scripts/sortmerna'),
+      glob('scripts/indexdb_rna') + glob('scripts/sortmerna') +
+      glob('scripts/sumaclust') + glob('scripts/swarm'),
       package_data={'qiime':
                     ['support_files/qiime_config',
                      'support_files/css/*css',
