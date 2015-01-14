@@ -51,3 +51,4 @@ scripts/FastTree
 scripts/uclust
 scripts/indexdb_rna
 scripts/sortmerna
+scripts/sumaclust

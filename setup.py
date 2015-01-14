@@ -213,6 +213,44 @@ def build_SortMeRNA():
         chdir(cwd)
 
 
+def build_SUMACLUST():
+    """Download and build SUMACLUST then copy it to the scripts directory"""
+    cwd = getcwd()
+    scripts = join(cwd, 'scripts')
+
+    try:
+        tempdir = mkdtemp()
+        if download_file('ftp://ftp.microbio.me/pub/QIIME-v1.9.0-dependencies/suma_package_V_1.0.00.tar.gz',
+                         tempdir, 'suma_package_V_1.0.00.tar.gz'):
+            print "Could not download SUMACLUST, so cannot install it."
+            return
+
+        chdir(tempdir)
+
+        stdout, stderr, return_value = system_call(
+            'tar xzf suma_package_V_1.0.00.tar.gz')
+
+        if return_value != 0:
+            print ("Unable to extract SUMACLUST archive.\nstdout:\n%s\n\nstderr:\n%s\n" %
+                   (stdout, stderr))
+            return
+
+        chdir('suma_package_V_1.0.00/sumaclust')
+
+        stdout, stderr, return_value = system_call('make')
+
+        if return_value != 0:
+            print ("Unable to build SUMACLUST.\nstdout:\n%s\n\nstderr:\n%s\n" %
+                   (stdout, stderr))
+            return
+
+        copy('sumaclust', scripts)
+        print "SUMACLUST built."
+    finally:
+        # remove the source
+        rmtree(tempdir)
+        chdir(cwd)
+
 def download_UCLUST():
     """Download the UCLUST executable and set it to the scripts directory"""
     if platform == 'darwin':
@@ -295,6 +333,7 @@ if build_stack:
     catch_install_errors(download_UCLUST, 'UCLUST')
     catch_install_errors(build_FastTree, 'FastTree')
     catch_install_errors(build_SortMeRNA, 'SortMeRNA')
+    catch_install_errors(build_SUMACLUST, 'SUMACLUST')
 
 # taken from PyNAST
 classes = """
