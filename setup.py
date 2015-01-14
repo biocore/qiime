@@ -283,6 +283,8 @@ def build_swarm():
             return
 
         copy('swarm', scripts)
+        copy('scripts/amplicon_contingency_table.py', scripts)
+        copy('scripts/swarm_breaker.py', scripts)
         print "swarm built."
     finally:
         # remove the source
