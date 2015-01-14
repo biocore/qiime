@@ -950,15 +950,13 @@ def make_plots(background_color, label_color, rares, ymax, xmax,
                             ((raredata['error'][i][j]))))
 
         # Create raw plots for each group in a category
-        fpath = output_dir
-
         if generate_per_sample_plots:
             if output_type == "file_creation":
                 rarefaction_legend_mat = save_single_rarefaction_plots(
                     sample_dict,
                     imagetype, metric_name,
                     sample_data_colors, sample_colors,
-                    fpath, background_color,
+                    output_dir, background_color,
                     label_color, resolution, ymax, xmax,
                     rarefaction_legend_mat, groups[i],
                     labelname, i, mapping_lookup, output_type)
@@ -967,34 +965,37 @@ def make_plots(background_color, label_color, rares, ymax, xmax,
                     sample_dict,
                     imagetype, metric_name,
                     sample_data_colors, sample_colors,
-                    fpath, background_color,
+                    output_dir, background_color,
                     label_color, resolution, ymax, xmax,
                     rarefaction_legend_mat, groups[i],
                     labelname, i, mapping_lookup, output_type)
                 all_plots_single.append(rare_plot_for_all)
 
-    categories = [k for k in groups]
+    all_plots_ave = {}
+    if generate_per_sample_plots:
+        # Create the rarefaction average plot and get updated legend information
+        categories = [k for k in groups]
 
-    # Create the rarefaction average plot and get updated legend information
+        if output_type == "file_creation":
+            rarefaction_legend_mat = save_single_ave_rarefaction_plots(
+                raredata['xaxis'],
+                raredata['series'], raredata[
+                    'error'], xmax, ymax, categories,
+                labelname, imagetype, resolution, data_colors,
+                colors, file_path, background_color, label_color,
+                rarefaction_legend_mat, metric_name, mapping_lookup, output_type)
+        elif output_type == "memory":
+            rarefaction_legend_mat, all_plots_ave = save_single_ave_rarefaction_plots(
+                raredata['xaxis'],
+                raredata['series'], raredata[
+                    'error'], xmax, ymax, categories,
+                labelname, imagetype, resolution, data_colors,
+                colors, file_path, background_color, label_color,
+                rarefaction_legend_mat, metric_name, mapping_lookup, output_type)
+
     if output_type == "file_creation":
-        rarefaction_legend_mat = save_single_ave_rarefaction_plots(
-            raredata['xaxis'],
-            raredata['series'], raredata[
-                'error'], xmax, ymax, categories,
-            labelname, imagetype, resolution, data_colors,
-            colors, file_path, background_color, label_color,
-            rarefaction_legend_mat, metric_name, mapping_lookup, output_type)
-
         return rarefaction_data_mat, rarefaction_legend_mat
     elif output_type == "memory":
-        rarefaction_legend_mat, all_plots_ave = save_single_ave_rarefaction_plots(
-            raredata['xaxis'],
-            raredata['series'], raredata[
-                'error'], xmax, ymax, categories,
-            labelname, imagetype, resolution, data_colors,
-            colors, file_path, background_color, label_color,
-            rarefaction_legend_mat, metric_name, mapping_lookup, output_type)
-
         return (
             rarefaction_data_mat, rarefaction_legend_mat, all_plots_single, all_plots_ave
         )
