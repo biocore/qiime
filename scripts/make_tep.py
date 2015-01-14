@@ -13,7 +13,6 @@ __email__ = "meganap@gmail.com"
 from os.path import split, splitext
 import os
 
-from biom.parse import parse_biom_table
 from biom import load_table
 
 from qiime.util import parse_command_line_parameters, make_option

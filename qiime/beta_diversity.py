@@ -36,8 +36,6 @@ warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
 
 from numpy import asarray
 import cogent.maths.distance_transform as distance_transform
-from biom.parse import parse_biom_table
-from biom.table import Table
 from biom import load_table
 
 from qiime.util import (FunctionWithParams, TreeMissingError,

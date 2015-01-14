@@ -13,7 +13,6 @@ __email__ = "justinak@gmail.com"
 from os.path import join, split, splitext
 
 from cogent.parse.tree import DndParser
-from biom.parse import parse_biom_table
 from biom import load_table
 
 from qiime.util import (add_filename_suffix, create_dir, get_options_lookup,

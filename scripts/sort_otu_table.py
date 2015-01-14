@@ -11,7 +11,6 @@ __version__ = "1.9.0-rc2"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
-from biom.parse import parse_biom_table
 from biom import load_table
 
 from qiime.parse import parse_mapping_file

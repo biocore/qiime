@@ -41,7 +41,7 @@ Some abbreviations that are used in this code are:
 pmf - parsed mapping file. Nested dict created by parse_mapping_file_to_dict
  which has as top level keys the sample IDs and then all assocaited metadata
  in a dictionary with the mapping file column headers as keys.
-bt - biom table object. Created with parse_biom_table.
+bt - biom table object.
 row - row is used in several places (eg. row_generator). The 'row' being
  returned is actually a list of arrays that comes from a single row, and a
  collection of grouped columns from the OTU table (for the group significance
