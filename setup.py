@@ -32,32 +32,8 @@ J. Gregory Caporaso, Justin Kuczynski, Jesse Stombaugh, Kyle Bittinger, Frederic
 Nature Methods, 2010.
 """
 
-doc_imports_failed = False
-try:
-    import sphinx
-except ImportError:
-    doc_imports_failed = True
-
 # if egg_info is passed as an argument do not build any of the dependencies
 build_stack = 'egg_info' not in argv
-
-
-def build_html():
-    """ Build the sphinx documentation
-
-    The code for building sphinx documentation is based on
-    PyCogent's setup.py.
-
-    """
-    cwd = getcwd()
-    doc_dir = join(cwd, 'doc')
-    chdir(doc_dir)
-    call(["make", "html"])
-    chdir(cwd)
-    index_html_path = join(abspath(doc_dir), '_build', 'html', 'index.html')
-    print "Local documentation built with Sphinx. " +\
-          "Open to following path with a web browser:\n%s" %\
-        index_html_path
 
 
 def build_denoiser():
@@ -321,9 +297,3 @@ setup(name='qiime',
                         'qiime-default-reference >= 0.1.1, < 0.2.0'],
       extras_require={'all': ['ipython[all]', 'sphinx >= 0.3']}
       )
-
-if build_stack:
-    if doc_imports_failed:
-        print "Sphinx not installed, so cannot build local html documentation."
-    else:
-        build_html()
