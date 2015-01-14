@@ -194,7 +194,7 @@ def main():
     try:
         resolution = int(resolution)
     except(ValueError):
-        option_parser.error('Inavlid resolution.')
+        option_parser.error('Invalid resolution.')
         exit(0)
 
     # output directory check
