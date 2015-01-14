@@ -267,9 +267,9 @@ setup(name='qiime',
       url='http://www.qiime.org',
       packages=['qiime', 'qiime/parallel', 'qiime/pycogent_backports',
                 'qiime/denoiser', 'qiime/workflow', 'qiime_test_data'],
-      scripts=glob('scripts/*py') + glob('scripts/ec2*') +
-      glob('scripts/FlowgramAli_4frame') + glob('scripts/FastTree') +
-      glob('scripts/uclust'),
+      scripts=glob('scripts/*py') + glob('scripts/FlowgramAli_4frame') +
+      glob('scripts/FastTree') + glob('scripts/uclust') +
+      glob('scripts/indexdb_rna') + glob('scripts/sortmerna'),
       package_data={'qiime':
                     ['support_files/qiime_config',
                      'support_files/css/*css',

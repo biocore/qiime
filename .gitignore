@@ -49,3 +49,5 @@ scripts/FlowgramAli_4frame
 # scripts that can be present after pip install -e .
 scripts/FastTree
 scripts/uclust
+scripts/indexdb_rna
+scripts/sortmerna
