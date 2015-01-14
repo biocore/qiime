@@ -38,10 +38,14 @@ build_stack = 'egg_info' not in argv
 
 def build_denoiser():
     """ Build the denoiser code binary """
+    if not app_available('ghc'):
+        print ("GHC not installed, so cannot build the denoiser binary "
+               "'FlowgramAli_4frame'.")
+        return
+
     cwd = getcwd()
     denoiser_dir = join(cwd, 'qiime/support_files/denoiser/FlowgramAlignment')
     chdir(denoiser_dir)
-    # make sure we compile the executable
     call(["make", "clean"])
     call(["make"])
     chdir(cwd)
@@ -96,6 +100,10 @@ def download_file(URL, dest_dir, local_file, num_retries=4):
 
 def build_FastTree():
     """Download and build FastTree then copy it to the scripts directory"""
+    if not app_available('gcc'):
+        print "GCC not installed, so cannot build FastTree."
+        return
+
     if download_file('http://www.microbesonline.org/fasttree/FastTree-2.1.3.c',
                      'scripts/', 'FastTree.c'):
         print 'Could not download FastTree, not installing it.'
@@ -117,10 +125,25 @@ def build_FastTree():
 
 def build_SortMeRNA():
     """Download and build SortMeRNA then copy it to the scripts directory"""
+    if platform.lower() in ['darwin', 'macos']:
+        cxx = 'clang++'
+        cc = 'clang'
+    elif platform.lower() in ['linux', 'linux2']:
+        cxx = 'g++'
+        cc = 'gcc'
+    else:
+        print "Unknown or unsupported platform %r, so cannot build SortMeRNA." % platform
+        return
+
+    for compiler in cxx, cc:
+        if not app_available(compiler):
+            print "%r not installed, so cannot build SortMeRNA." % compiler
+            return
+
     tempdir = mkdtemp()
     if download_file('ftp://ftp.microbio.me/pub/sortmerna-2.0-no-db.tar.gz',
                      tempdir, 'sortmerna-2.0-no-db.tar.gz'):
-        print 'Could not download SortMeRNA, not installing it.'
+        print "Could not download SortMeRNA, so cannot install it."
         rmtree(tempdir)
         return
 
@@ -134,14 +157,8 @@ def build_SortMeRNA():
     cxx_old = environ.get('CXX', '')
     cc_old = environ.get('CC', '')
 
-    if platform in ['Darwin', 'darwin', 'MacOS']:
-        environ['CXX'] = 'clang++'
-        environ['CC'] = 'clang'
-    elif platform in ['Linux', 'linux', 'linux2']:
-        environ['CXX'] = 'g++'
-        environ['CC'] = 'gcc'
-    else:
-        raise ValueError("Unknown platform: %s" % platform)
+    environ['CXX'] = cxx
+    environ['CC'] = cc
 
     proc = Popen('bash build.sh',
                  universal_newlines=True,
@@ -181,7 +198,9 @@ def download_UCLUST():
     # make the file an executable file
     if not return_value:
         chmod('scripts/uclust', stat('scripts/uclust').st_mode | S_IEXEC)
-    return return_value
+        print "UCLUST installed."
+    else:
+        print "UCLUST could not be installed."
 
 
 def app_available(app_name):
@@ -208,19 +227,10 @@ def app_available(app_name):
 
 # do not compile and build any of these if running under pip's egg_info
 if build_stack:
-    if app_available('ghc'):
-        build_denoiser()
-    else:
-        print "GHC not installed, so cannot build the Denoiser binary."
-
-    if app_available('gcc'):
-        build_FastTree()
-        build_SortMeRNA()
-    else:
-        print "GCC not installed, so cannot build FastTree or SortMeRNA"
-
-    if download_UCLUST():
-        print "UCLUST could not be installed."
+    build_denoiser()
+    build_FastTree()
+    build_SortMeRNA()
+    download_UCLUST()
 
 # taken from PyNAST
 classes = """
