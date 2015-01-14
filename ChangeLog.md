@@ -17,7 +17,6 @@ New scripts
 Features
 --------
 
-* Added SortMeRNA 2.0 to the default install.
 * ``split_otu_table.py`` now allows multiple fields to be passed to split a biom table, and optionally a mapping file. Check out the new documentation for the naming conventions (which have changed slightly) and an example.
 * Added new options to ``make_otu_heatmap.py``:
  * ``--color_scheme``, which allows users to choose from different color schemes [here](http://matplotlib.org/examples/color/colormaps_reference.html)
@@ -99,6 +98,7 @@ Usability enhancements
  * ``ACE`` is now ``ace``
  * ``chao1_confidence`` is now ``chao1_ci``
  * Added ``observed_otus``, which is equivalent to ``observed_species`` but is generally a more accurate name. ``observed_species`` is retained for backward-compatibility.
+* SortMeRNA 2.0, SUMACLUST 1.0.00, and swarm 1.2.19 are now installed automatically when QIIME is installed (e.g., via `pip install qiime`).
 
 Removal of outdated and unsupported functionality
 -------------------------------------------------
