@@ -1913,8 +1913,11 @@ class MetadataMap():
             extra_samples = set(sample_ids_to_keep) - set(self.sample_ids)
 
             if extra_samples:
-                raise ValueError("Could not find the following sample IDs in "
-                                 "metadata map: %s" % ', '.join(extra_samples))
+                extra_samples_formatted = ', '.join(
+                    map(lambda e: '"%s"' % e, extra_samples))
+                raise ValueError(
+                    "Could not find the following sample ID(s) in the "
+                    "metadata mapping file: %s" % extra_samples_formatted)
 
 
 class RExecutor(CommandLineApplication):
