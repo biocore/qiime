@@ -4,12 +4,14 @@ from __future__ import division
 from setuptools import setup
 from stat import S_IEXEC
 from os import (chdir, getcwd, listdir, chmod, walk, rename, remove, chmod,
-                stat, devnull)
+                stat, devnull, environ)
 from os.path import join, abspath
-from sys import platform, argv
-from subprocess import call
+from sys import platform, argv, exc_info
+from subprocess import call, Popen, PIPE
 from glob import glob
 from urllib import FancyURLopener
+from tempfile import mkdtemp
+from shutil import rmtree, copy
 import re
 
 __author__ = "QIIME development team"
@@ -30,53 +32,49 @@ J. Gregory Caporaso, Justin Kuczynski, Jesse Stombaugh, Kyle Bittinger, Frederic
 Nature Methods, 2010.
 """
 
-doc_imports_failed = False
-try:
-    import sphinx
-except ImportError:
-    doc_imports_failed = True
-
 # if egg_info is passed as an argument do not build any of the dependencies
 build_stack = 'egg_info' not in argv
 
 
-def build_html():
-    """ Build the sphinx documentation
-
-    The code for building sphinx documentation is based on
-    PyCogent's setup.py.
-
-    """
-    cwd = getcwd()
-    doc_dir = join(cwd, 'doc')
-    chdir(doc_dir)
-    call(["make", "html"])
-    chdir(cwd)
-    index_html_path = join(abspath(doc_dir), '_build', 'html', 'index.html')
-    print "Local documentation built with Sphinx. " +\
-          "Open to following path with a web browser:\n%s" %\
-        index_html_path
-
-
 def build_denoiser():
     """ Build the denoiser code binary """
+    if not app_available('ghc'):
+        print ("GHC not installed, so cannot build the denoiser binary "
+               "'FlowgramAli_4frame'.")
+        return
+
     cwd = getcwd()
     denoiser_dir = join(cwd, 'qiime/support_files/denoiser/FlowgramAlignment')
-    chdir(denoiser_dir)
-    # make sure we compile the executable
-    call(["make", "clean"])
-    call(["make"])
-    chdir(cwd)
-    print "Denoiser built."
+
+    try:
+        chdir(denoiser_dir)
+
+        stdout, stderr, return_value = system_call('make clean')
+
+        if return_value != 0:
+            print ("Unable to clean denoiser build directory.\nstdout:\n%s\n\nstderr:\n%s\n" %
+                   (stdout, stderr))
+            return
+
+        stdout, stderr, return_value = system_call('make')
+
+        if return_value != 0:
+            print ("Unable to build denoiser.\nstdout:\n%s\n\nstderr:\n%s\n" %
+                   (stdout, stderr))
+            return
+
+        print "Denoiser built."
+    finally:
+        chdir(cwd)
 
 # heavily based on lib.util.download_file from github.com/qiime/qiime-deploy
 
 
 class URLOpener(FancyURLopener):
-
     def http_error_default(self, url, fp, errcode, errmsg, headers):
-        msg = 'ERROR: Could not download %s\nIs the URL valid?' % url
-        raise IOError(msg)
+        raise IOError(
+            'Could not download %s\nPlease ensure the URL is valid and that '
+            'you have an active Internet connection.' % url)
 
 # heavily based on lib.util.download_file from github.com/qiime/qiime-deploy
 
@@ -118,41 +116,200 @@ def download_file(URL, dest_dir, local_file, num_retries=4):
 
 def build_FastTree():
     """Download and build FastTree then copy it to the scripts directory"""
+    if not app_available('gcc'):
+        print "GCC not installed, so cannot build FastTree."
+        return
+
     if download_file('http://www.microbesonline.org/fasttree/FastTree-2.1.3.c',
                      'scripts/', 'FastTree.c'):
         print 'Could not download FastTree, not installing it.'
         return
 
     cwd = getcwd()
-    denoiser_dir = join(cwd, 'scripts')
-    chdir(denoiser_dir)
+    scripts = join(cwd, 'scripts')
 
-    # as suggested by the docs in FastTree.c
-    call(['gcc', '-Wall', '-O3', '-finline-functions', '-funroll-loops', '-o',
-          'FastTree', 'FastTree.c', '-lm'])
+    try:
+        chdir(scripts)
 
-    # remove the source
-    remove('FastTree.c')
-    chdir(cwd)
-    print "FastTree built."
+        # as suggested by the docs in FastTree.c
+        stdout, stderr, return_value = system_call(
+            'gcc -Wall -O3 -finline-functions -funroll-loops -o FastTree '
+            'FastTree.c -lm')
+
+        if return_value != 0:
+            print ("Unable to build FastTree.\nstdout:\n%s\n\nstderr:\n%s\n" %
+                   (stdout, stderr))
+            return
+
+        print "FastTree built."
+    finally:
+        # remove the source
+        remove('FastTree.c')
+        chdir(cwd)
+
+
+def build_SortMeRNA():
+    """Download and build SortMeRNA then copy it to the scripts directory"""
+    # SortMeRNA's configure script doesn't correctly guess the C/C++ compilers
+    # to use on OS X. Try to figure that out here.
+    if platform.lower() in ['darwin', 'macos']:
+        cxx = 'clang++'
+        cc = 'clang'
+    elif platform.lower() in ['linux', 'linux2']:
+        cxx = 'g++'
+        cc = 'gcc'
+    else:
+        print "Unknown or unsupported platform %r, so cannot build SortMeRNA." % platform
+        return
+
+    for compiler in cxx, cc:
+        if not app_available(compiler):
+            print "%r not installed, so cannot build SortMeRNA." % compiler
+            return
+
+    cwd = getcwd()
+    scripts = join(cwd, 'scripts')
+    cxx_old = environ.get('CXX', '')
+    cc_old = environ.get('CC', '')
+
+    try:
+        tempdir = mkdtemp()
+        if download_file('ftp://ftp.microbio.me/pub/sortmerna-2.0-no-db.tar.gz',
+                         tempdir, 'sortmerna-2.0-no-db.tar.gz'):
+            print "Could not download SortMeRNA, so cannot install it."
+            return
+
+        chdir(tempdir)
+
+        stdout, stderr, return_value = system_call(
+            'tar xzf sortmerna-2.0-no-db.tar.gz')
+
+        if return_value != 0:
+            print ("Unable to extract SortMeRNA archive.\nstdout:\n%s\n\nstderr:\n%s\n" %
+                   (stdout, stderr))
+            return
+
+        chdir('sortmerna-2.0')
+
+        environ['CXX'] = cxx
+        environ['CC'] = cc
+
+        stdout, stderr, return_value = system_call('bash build.sh')
+
+        if return_value != 0:
+            print ("Unable to build SortMeRNA.\nstdout:\n%s\n\nstderr:\n%s\n" %
+                   (stdout, stderr))
+            return
+
+        copy('sortmerna', scripts)
+        copy('indexdb_rna', scripts)
+        print "SortMeRNA built."
+    finally:
+        environ['CXX'] = cxx_old
+        environ['CC'] = cc_old
+
+        # remove the source
+        rmtree(tempdir)
+        chdir(cwd)
+
+
+def build_SUMACLUST():
+    """Download and build SUMACLUST then copy it to the scripts directory"""
+    cwd = getcwd()
+    scripts = join(cwd, 'scripts')
+
+    try:
+        tempdir = mkdtemp()
+        if download_file('ftp://ftp.microbio.me/pub/QIIME-v1.9.0-dependencies/suma_package_V_1.0.00.tar.gz',
+                         tempdir, 'suma_package_V_1.0.00.tar.gz'):
+            print "Could not download SUMACLUST, so cannot install it."
+            return
+
+        chdir(tempdir)
+
+        stdout, stderr, return_value = system_call(
+            'tar xzf suma_package_V_1.0.00.tar.gz')
+
+        if return_value != 0:
+            print ("Unable to extract SUMACLUST archive.\nstdout:\n%s\n\nstderr:\n%s\n" %
+                   (stdout, stderr))
+            return
+
+        chdir('suma_package_V_1.0.00/sumaclust')
+
+        stdout, stderr, return_value = system_call('make')
+
+        if return_value != 0:
+            print ("Unable to build SUMACLUST.\nstdout:\n%s\n\nstderr:\n%s\n" %
+                   (stdout, stderr))
+            return
+
+        copy('sumaclust', scripts)
+        print "SUMACLUST built."
+    finally:
+        # remove the source
+        rmtree(tempdir)
+        chdir(cwd)
+
+
+def build_swarm():
+    """Download and build swarm then copy it to the scripts directory"""
+    cwd = getcwd()
+    scripts = join(cwd, 'scripts')
+
+    try:
+        tempdir = mkdtemp()
+        if download_file('https://github.com/torognes/swarm/archive/1.2.19.tar.gz',
+                         tempdir, '1.2.19.tar.gz'):
+            print "Could not download swarm, so cannot install it."
+            return
+
+        chdir(tempdir)
+
+        stdout, stderr, return_value = system_call('tar xzf 1.2.19.tar.gz')
+
+        if return_value != 0:
+            print ("Unable to extract swarm archive.\nstdout:\n%s\n\nstderr:\n%s\n" %
+                   (stdout, stderr))
+            return
+
+        chdir('swarm-1.2.19')
+
+        stdout, stderr, return_value = system_call('make')
+
+        if return_value != 0:
+            print ("Unable to build swarm.\nstdout:\n%s\n\nstderr:\n%s\n" %
+                   (stdout, stderr))
+            return
+
+        copy('swarm', scripts)
+        copy('scripts/amplicon_contingency_table.py', scripts)
+        copy('scripts/swarm_breaker.py', scripts)
+        print "swarm built."
+    finally:
+        # remove the source
+        rmtree(tempdir)
+        chdir(cwd)
 
 
 def download_UCLUST():
     """Download the UCLUST executable and set it to the scripts directory"""
-
     if platform == 'darwin':
         URL = 'http://www.drive5.com/uclust/uclustq1.2.22_i86darwin64'
     elif platform == 'linux2':
         URL = 'http://www.drive5.com/uclust/uclustq1.2.22_i86linux64'
     else:
-        raise SystemError(("Platform not supported by UCLUST"))
+        print "Platform %r not supported by UCLUST" % platform
+        return
 
     return_value = download_file(URL, 'scripts/', 'uclust')
 
     # make the file an executable file
     if not return_value:
         chmod('scripts/uclust', stat('scripts/uclust').st_mode | S_IEXEC)
-    return return_value
+        print "UCLUST installed."
+    else:
+        print "UCLUST could not be installed."
 
 
 def app_available(app_name):
@@ -177,20 +334,48 @@ def app_available(app_name):
 
     return output
 
+
+def system_call(cmd, shell=True):
+    """Call cmd and return (stdout, stderr, return_value).
+
+    cmd can be either a string containing the command to be run, or a sequence
+    of strings that are the tokens of the command.
+
+    Please see Python's subprocess. Popen for a description of the shell
+    parameter and how cmd is interpreted differently based on its value.
+
+    This function is ported from qcli (previously qcli_system_call).
+    """
+    proc = Popen(cmd,
+                 shell=shell,
+                 universal_newlines=True,
+                 stdout=PIPE,
+                 stderr=PIPE)
+    # communicate pulls all stdout/stderr from the PIPEs to
+    # avoid blocking -- don't remove this line!
+    stdout, stderr = proc.communicate()
+    return_value = proc.returncode
+    return stdout, stderr, return_value
+
+
+def catch_install_errors(install_function, name):
+    try:
+        install_function()
+    except (KeyboardInterrupt, SystemExit):
+        raise
+    except:
+        print ("Skipping installation of %s due to failure while downloading, "
+               "building, or installing:\n%s\n" % (name, exc_info()[0]))
+
+
 # do not compile and build any of these if running under pip's egg_info
 if build_stack:
-    if app_available('ghc'):
-        build_denoiser()
-    else:
-        print "GHC not installed, so cannot build the Denoiser binary."
-
-    if app_available('gcc'):
-        build_FastTree()
-    else:
-        print "GCC not installed, so cannot build FastTree"
-
-    if download_UCLUST():
-        print "UCLUST could not be installed."
+    catch_install_errors(build_denoiser, 'denoiser')
+    catch_install_errors(download_UCLUST, 'UCLUST')
+    catch_install_errors(build_FastTree, 'FastTree')
+    catch_install_errors(build_SortMeRNA, 'SortMeRNA')
+    catch_install_errors(build_SUMACLUST, 'SUMACLUST')
+    catch_install_errors(build_swarm, 'swarm')
 
 # taken from PyNAST
 classes = """
@@ -237,9 +422,10 @@ setup(name='qiime',
       url='http://www.qiime.org',
       packages=['qiime', 'qiime/parallel', 'qiime/pycogent_backports',
                 'qiime/denoiser', 'qiime/workflow', 'qiime_test_data'],
-      scripts=glob('scripts/*py') + glob('scripts/ec2*') +
-      glob('scripts/FlowgramAli_4frame') + glob('scripts/FastTree') +
-      glob('scripts/uclust'),
+      scripts=glob('scripts/*py') + glob('scripts/FlowgramAli_4frame') +
+      glob('scripts/FastTree') + glob('scripts/uclust') +
+      glob('scripts/indexdb_rna') + glob('scripts/sortmerna') +
+      glob('scripts/sumaclust') + glob('scripts/swarm'),
       package_data={'qiime':
                     ['support_files/qiime_config',
                      'support_files/css/*css',
@@ -267,9 +453,3 @@ setup(name='qiime',
                         'qiime-default-reference >= 0.1.1, < 0.2.0'],
       extras_require={'all': ['ipython[all]', 'sphinx >= 0.3']}
       )
-
-if build_stack:
-    if doc_imports_failed:
-        print "Sphinx not installed, so cannot build local html documentation."
-    else:
-        build_html()

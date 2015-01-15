@@ -1,2 +1,1 @@
 pick_otus:otu_picking_method sumaclust
-assign_taxonomy:assignment_method rdp

@@ -98,6 +98,7 @@ Usability enhancements
  * ``ACE`` is now ``ace``
  * ``chao1_confidence`` is now ``chao1_ci``
  * Added ``observed_otus``, which is equivalent to ``observed_species`` but is generally a more accurate name. ``observed_species`` is retained for backward-compatibility.
+* SortMeRNA 2.0, SUMACLUST 1.0.00, and swarm 1.2.19 are now installed automatically when QIIME is installed (e.g., via `pip install qiime`).
 
 Removal of outdated and unsupported functionality
 -------------------------------------------------

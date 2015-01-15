@@ -1,2 +1,1 @@
 pick_otus:threads 1
-assign_taxonomy:assignment_method rdp
