@@ -32,9 +32,9 @@ J. Gregory Caporaso, Justin Kuczynski, Jesse Stombaugh, Kyle Bittinger, Frederic
 Nature Methods, 2010.
 """
 
-# if egg_info is passed as an argument do not build any of the dependencies
-build_stack = 'egg_info' not in argv
-
+# don't build any of the non-Python dependencies if the following modes are
+# invoked
+build_stack = all([e not in argv for e in 'egg_info', 'sdist', 'register'])
 
 def build_denoiser():
     """ Build the denoiser code binary """

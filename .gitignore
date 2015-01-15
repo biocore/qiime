@@ -36,7 +36,7 @@ pip-log.txt
 .metadata
 build
 
-# compile denoiser files
+# compiled denoiser files
 qiime/support_files/denoiser/FlowgramAlignment/ADPCombinators.hi
 qiime/support_files/denoiser/FlowgramAlignment/ADPCombinators.o
 qiime/support_files/denoiser/FlowgramAlignment/FlowgramAli_4frame
