@@ -1897,26 +1897,11 @@ class RExecutor(CommandLineApplication):
         """
         return help_str
 
-    def __call__(self, command_args, script_name, output_dir=None,
-                 verbose=False):
+    def __call__(self, command_args, script_name, verbose=False):
         """Run the specified r script using the commands_args
 
             returns a CommandLineAppResult object
         """
-        input_handler = self.InputHandler
-        suppress_stdout = self.SuppressStdout
-        suppress_stderr = self.SuppressStderr
-        if suppress_stdout:
-            outfile = devnull
-        else:
-            outfilepath = FilePath(join(self.TmpDir, 'R.stdout'))
-            outfile = open(outfilepath, 'w')
-        if suppress_stderr:
-            errfile = devnull
-        else:
-            errfilepath = FilePath(join(self.TmpDir, 'R.stderr'))
-            errfile = open(errfilepath, 'w')
-
         self._R_script = script_name
         rscript = self._get_R_script_path()
         base_command = self._get_base_command()
@@ -1934,36 +1919,27 @@ class RExecutor(CommandLineApplication):
         )
 
         if self.HaltExec:
-            raise AssertionError("Halted exec with command:\n" + command)
+            raise AssertionError("Halted exec with command:\n%s" % command)
 
-        # run command, wait for output, get exit status
-        proc = Popen(command, shell=True, stdout=outfile, stderr=errfile)
-        proc.wait()
-        exit_status = proc.returncode
+        # run command
+        stdout, stderr, exit_status = qiime_system_call(command, shell=True)
 
         # Determine if error should be raised due to exit status of
         # appliciation
         if not self._accept_exit_status(exit_status):
             if exit_status == 2:
-                raise ApplicationError('R library not installed: \n' +
-                                       ''.join(open(errfilepath, 'r').readlines()) + '\n')
+                raise ApplicationError(
+                    'R library not installed:\nstdout:\n%s\nstderr:\n%s\n' %
+                    (stdout, stderr))
             else:
-                raise ApplicationError('Unacceptable application exit status: %s, command: %s'
-                                       % (str(exit_status), command) +
-                                       ' Program output: \n\n%s\n'
-                                       % (''.join(open(errfilepath, 'r').readlines())))
-        # open the stdout and stderr if not being suppressed
-        out = None
-        if not suppress_stdout:
-            out = open(outfilepath, "r")
-        err = None
-        if not suppress_stderr:
-            err = open(errfilepath, "r")
+                raise ApplicationError(
+                    'Unacceptable application exit status: %d\ncommand: %s\n'
+                    'stdout:\n%s\nstderr:\n%s\n' %
+                    (exit_status, command, stdout, stderr))
+
         if verbose:
-            msg = '\n\nCommand Executed: %s' % command + \
-                  ' \n\nR Command Output:\n%s' % \
-                  (''.join(open(errfilepath, 'r').readlines()))
-            print(msg)
+            print ('Command: %s\nstdout:\n%s\nstderr:\n%s\n' %
+                   (command, stdout, stderr))
 
     # The methods below were taken from supervised_learning.py
     def _get_R_script_dir(self):
