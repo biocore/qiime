@@ -1346,7 +1346,7 @@ def count_seqs_in_filepaths(fasta_filepaths, seq_counter=count_seqs):
         # if the file is actually fastq, use the fastq parser.
         # otherwise use the fasta parser
         if fasta_filepath.endswith('.fastq'):
-            parser = parse_fastq
+            parser = partial(parse_fastq, enforce_qual_range=False)
         elif fasta_filepath.endswith('.tre') or \
                 fasta_filepath.endswith('.ph') or \
                 fasta_filepath.endswith('.ntree'):
@@ -1531,60 +1531,6 @@ def subsample_fasta(input_fasta_fp,
 
     input_fasta.close()
     output_fasta.close()
-
-
-def subsample_fastq(input_fastq_fp,
-                    output_fp,
-                    percent_subsample):
-    """ Writes random percent_sample of sequences from input fastq filepath
-
-    input_fastq_fp: input fastq filepath
-    output_fp: output fasta filepath
-    percent_subsample: percent of sequences to write
-    """
-
-    input_fastq = open(input_fastq_fp, "U")
-    output_fastq = open(output_fp, "w")
-
-    for label, seq, qual in parse_fastq(input_fastq, strict=False):
-        if random() < percent_subsample:
-            output_fastq.write(
-                '@%s\n%s\n+%s\n%s\n' %
-                (label, seq, label, qual))
-
-    input_fastq.close()
-    output_fastq.close()
-
-
-def subsample_fastqs(input_fastq1_fp,
-                     output_fastq1_fp,
-                     input_fastq2_fp,
-                     output_fastq2_fp,
-                     percent_subsample):
-    """ Writes random percent_sample of sequences from input fastq filepath
-    """
-
-    input_fastq1 = open(input_fastq1_fp, "U")
-    output_fastq1 = open(output_fastq1_fp, "w")
-    input_fastq2 = open(input_fastq2_fp, "U")
-    output_fastq2 = open(output_fastq2_fp, "w")
-
-    for fastq1, fastq2 in izip(parse_fastq(input_fastq1, strict=False),
-                               parse_fastq(input_fastq2, strict=False)):
-        label1, seq1, qual1 = fastq1
-        label2, seq2, qual2 = fastq2
-        if random() < percent_subsample:
-            output_fastq1.write(
-                '@%s\n%s\n+%s\n%s\n' %
-                (label1, seq1, label1, qual1))
-            output_fastq2.write(
-                '@%s\n%s\n+%s\n%s\n' %
-                (label2, seq2, label2, qual2))
-
-    input_fastq1.close()
-    output_fastq1.close()
-    input_fastq2.close()
-    output_fastq2.close()
 
 
 def summarize_otu_sizes_from_otu_map(otu_map_f):

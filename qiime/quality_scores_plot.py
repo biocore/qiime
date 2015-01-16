@@ -19,7 +19,7 @@ from pylab import plot, savefig, xlabel, ylabel, text, \
     scatter, subplot
 from matplotlib.font_manager import fontManager, FontProperties
 from qiime.util import gzip_open
-from qiime.parse import parse_qual_score, parse_fastq_qual_score
+from qiime.parse import parse_qual_score
 
 
 def bin_qual_scores(qual_scores):

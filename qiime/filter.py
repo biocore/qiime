@@ -378,7 +378,8 @@ def filter_fastq(input_seqs_f, output_seqs_f, seqs_to_keep, negate=False,
         else:
             keep_seq = lambda x: not seqid_f(x)
 
-    for seq_id, seq, qual in parse_fastq(input_seqs_f):
+    for seq_id, seq, qual in parse_fastq(input_seqs_f,
+                                         enforce_qual_range=False):
         if keep_seq(seq_id):
             output_seqs_f.write(format_fastq_record(seq_id, seq, qual))
     output_seqs_f.close()
