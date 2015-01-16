@@ -790,15 +790,15 @@ class SplitLibrariesFastqTests(TestCase):
             "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"
         actual = quality_filter_sequence(header,
                                          sequence,
-                                         quality,
+                                         ascii_to_phred64(quality),
                                          max_bad_run_length=0,
                                          phred_quality_threshold=2,
                                          min_per_read_length=75,
                                          seq_max_N=0,
                                          filter_bad_illumina_qual_digit=True)
-        self.assertEqual(actual, (0,
+        np.testing.assert_equal(actual, (0,
                                   "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC",
-                                  "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"))
+                                  ascii_to_phred64("bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`")))
 
     def test_quality_filter_illumina_qual(self):
         """quality_filter_sequence functions as expected with bad illumina qual digit
@@ -811,15 +811,15 @@ class SplitLibrariesFastqTests(TestCase):
             "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"
         actual = quality_filter_sequence(header,
                                          sequence,
-                                         quality,
+                                         ascii_to_phred64(quality),
                                          max_bad_run_length=0,
                                          phred_quality_threshold=2,
                                          min_per_read_length=0.75,
                                          seq_max_N=0,
                                          filter_bad_illumina_qual_digit=True)
-        self.assertEqual(actual, (0,
+        np.testing.assert_equal(actual, (0,
                                   "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC",
-                                  "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"))
+                                  ascii_to_phred64("bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`")))
 
         # header with no qual data passes
         header = "990:2:4:11271:5323/0"
@@ -829,15 +829,15 @@ class SplitLibrariesFastqTests(TestCase):
             "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"
         actual = quality_filter_sequence(header,
                                          sequence,
-                                         quality,
+                                         ascii_to_phred64(quality),
                                          max_bad_run_length=0,
                                          phred_quality_threshold=2,
                                          min_per_read_length=75,
                                          seq_max_N=0,
                                          filter_bad_illumina_qual_digit=True)
-        self.assertEqual(actual, (0,
+        np.testing.assert_equal(actual, (0,
                                   "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC",
-                                  "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"))
+                                  ascii_to_phred64("bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`")))
 
         # header with no qual data passes (old barcode in header format)
         header = "HWI-6X_9267:1:1:4:1699#ACCACCC/1"
@@ -847,15 +847,15 @@ class SplitLibrariesFastqTests(TestCase):
             "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"
         actual = quality_filter_sequence(header,
                                          sequence,
-                                         quality,
+                                         ascii_to_phred64(quality),
                                          max_bad_run_length=0,
                                          phred_quality_threshold=2,
                                          min_per_read_length=75,
                                          seq_max_N=0,
                                          filter_bad_illumina_qual_digit=True)
-        self.assertEqual(actual, (0,
+        np.testing.assert_equal(actual, (0,
                                   "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC",
-                                  "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"))
+                                  ascii_to_phred64("bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`")))
 
         # bad qual fails filter
         header = "@HWI-ST753_50:6:1101:1138:1965#0/1"
@@ -865,15 +865,15 @@ class SplitLibrariesFastqTests(TestCase):
             "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"
         actual = quality_filter_sequence(header,
                                          sequence,
-                                         quality,
+                                         ascii_to_phred64(quality),
                                          max_bad_run_length=0,
                                          phred_quality_threshold=2,
                                          min_per_read_length=75,
                                          seq_max_N=0,
                                          filter_bad_illumina_qual_digit=True)
-        self.assertEqual(actual, (3,
+        np.testing.assert_equal(actual, (3,
                                   "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC",
-                                  "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"))
+                                  ascii_to_phred64("bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`")))
 
         # bad qual passes filter if filter turned off
         header = "@HWI-ST753_50:6:1101:1138:1965#0/1"
@@ -883,15 +883,15 @@ class SplitLibrariesFastqTests(TestCase):
             "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"
         actual = quality_filter_sequence(header,
                                          sequence,
-                                         quality,
+                                         ascii_to_phred64(quality),
                                          max_bad_run_length=0,
                                          phred_quality_threshold=2,
                                          min_per_read_length=75,
                                          seq_max_N=0,
                                          filter_bad_illumina_qual_digit=False)
-        self.assertEqual(actual, (0,
+        np.testing.assert_equal(actual, (0,
                                   "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC",
-                                  "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"))
+                                  ascii_to_phred64("bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`")))
 
         # good qual passes filter
         header = "@HWI-ST753_50:6:1101:1138:1965#1/1"
@@ -901,15 +901,15 @@ class SplitLibrariesFastqTests(TestCase):
             "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"
         actual = quality_filter_sequence(header,
                                          sequence,
-                                         quality,
+                                         ascii_to_phred64(quality),
                                          max_bad_run_length=0,
                                          phred_quality_threshold=2,
                                          min_per_read_length=75,
                                          seq_max_N=0,
                                          filter_bad_illumina_qual_digit=True)
-        self.assertEqual(actual, (0,
+        np.testing.assert_equal(actual, (0,
                                   "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC",
-                                  "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"))
+                                  ascii_to_phred64("bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`")))
 
     def test_quality_filter_sequence_fail_w_B(self):
         """quality_filter_sequence handles bad qual score as expected
@@ -920,10 +920,10 @@ class SplitLibrariesFastqTests(TestCase):
         sequence = \
             "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC"
         quality =  \
-            ascii_to_phred64("bbbbbbbbbbbbbbbbbbBbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`")
+            "bbbbbbbbbbbbbbbbbbBbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"
         actual = quality_filter_sequence(header,
                                          sequence,
-                                         quality,
+                                         ascii_to_phred64(quality),
                                          max_bad_run_length=0,
                                          phred_quality_threshold=2,
                                          min_per_read_length=75,
@@ -939,19 +939,19 @@ class SplitLibrariesFastqTests(TestCase):
         header = "990:2:4:11271:5323#1/1"
         sequence = \
             "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC"
-        quality =  \
+        quality = \
             "bbbbbbbbbbbbbbbbbbBbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"
         actual = quality_filter_sequence(header,
                                          sequence,
-                                         quality,
+                                         ascii_to_phred64(quality),
                                          max_bad_run_length=1,
                                          phred_quality_threshold=2,
                                          min_per_read_length=75,
                                          seq_max_N=0,
                                          filter_bad_illumina_qual_digit=True)
-        self.assertEqual(actual, (0,
+        np.testing.assert_equal(actual, (0,
                                   "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC",
-                                  "bbbbbbbbbbbbbbbbbbBbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"))
+                                  ascii_to_phred64("bbbbbbbbbbbbbbbbbbBbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`")))
 
         # changing threshold rescues read
         header = "990:2:4:11271:5323#1/1"
@@ -961,25 +961,25 @@ class SplitLibrariesFastqTests(TestCase):
             "bbbbbbbbbbbbbbbbbbBbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"
         actual = quality_filter_sequence(header,
                                          sequence,
-                                         quality,
+                                         ascii_to_phred64(quality),
                                          max_bad_run_length=0,
                                          phred_quality_threshold=1,
                                          min_per_read_length=75,
                                          seq_max_N=0,
                                          filter_bad_illumina_qual_digit=True)
-        self.assertEqual(actual, (0,
+        np.testing.assert_equal(actual, (0,
                                   "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC",
-                                  "bbbbbbbbbbbbbbbbbbBbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"))
+                                  ascii_to_phred64("bbbbbbbbbbbbbbbbbbBbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`")))
 
         # changing min_per_read_length_fraction rescues read
         header = "990:2:4:11271:5323#1/1"
         sequence = \
             "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC"
         quality =  \
-            ascii_to_phred64("bbbbbbbbbbbbbbbbbbBbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`")
+            "bbbbbbbbbbbbbbbbbbBbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"
         actual = quality_filter_sequence(header,
                                          sequence,
-                                         quality,
+                                         ascii_to_phred64(quality),
                                          max_bad_run_length=0,
                                          phred_quality_threshold=2,
                                          min_per_read_length=5,
@@ -1003,7 +1003,7 @@ class SplitLibrariesFastqTests(TestCase):
             "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"
         actual = quality_filter_sequence(header,
                                          sequence,
-                                         quality,
+                                         ascii_to_phred64(quality),
                                          max_bad_run_length=0,
                                          phred_quality_threshold=2,
                                          min_per_read_length=75,
@@ -1011,8 +1011,8 @@ class SplitLibrariesFastqTests(TestCase):
                                          filter_bad_illumina_qual_digit=True)
         expected = (2,
                     "GCACTCACCGCCCGTCACACCACGAAAGTNGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC",
-                    "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`")
-        self.assertEqual(actual, expected)
+                    ascii_to_phred64("bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"))
+        np.testing.assert_equal(actual, expected)
 
         # increasing max N rescues sequence
         header = "990:2:4:11271:5323#1/1"
@@ -1022,7 +1022,7 @@ class SplitLibrariesFastqTests(TestCase):
             "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"
         actual = quality_filter_sequence(header,
                                          sequence,
-                                         quality,
+                                         ascii_to_phred64(quality),
                                          max_bad_run_length=0,
                                          phred_quality_threshold=2,
                                          min_per_read_length=75,
@@ -1031,8 +1031,8 @@ class SplitLibrariesFastqTests(TestCase):
 
         expected = (0,
                     "GCACTCACCGCCCGTCACACCACGAAAGTNGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC",
-                    "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`")
-        self.assertEqual(actual, expected)
+                    ascii_to_phred64("bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"))
+        np.testing.assert_equal(actual, expected)
 
         # truncation of N rescues sequence (sequence is truncated when
         # the quality hits B, and the truncated sequence is above the
@@ -1041,10 +1041,10 @@ class SplitLibrariesFastqTests(TestCase):
         sequence = \
             "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTN"
         quality =  \
-            ascii_to_phred64("bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^B`")
+            "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^B`"
         actual = quality_filter_sequence(header,
                                          sequence,
-                                         quality,
+                                         ascii_to_phred64(quality),
                                          max_bad_run_length=0,
                                          phred_quality_threshold=2,
                                          min_per_read_length=50,
