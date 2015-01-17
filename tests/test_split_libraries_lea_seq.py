@@ -238,7 +238,8 @@ Total number seqs written: 6"""
                                                           min_reads_rand_bc,
                                                           output_dir,
                                                           min_diff_clusters,
-                                                          max_cluster_ratio)
+                                                          max_cluster_ratio,
+                                                          min_consensus)
 
         actual = fn_call_get_consensus['Sample1']['AGCTACGAGCTATTGC']
         expected = 'AAAAAAAAAAAAAAAAAAA^AAAAAAAAAAAAAAAAAA'
