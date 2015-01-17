@@ -22,6 +22,7 @@ from qiime.split_libraries_fastq import correct_barcode
 from qiime.util import get_qiime_temp_dir, qiime_system_call
 from burrito.util import ApplicationError
 from skbio.parse.sequences import parse_fasta, parse_fastq
+from skbio.io import read, register_reader
 from skbio.util import remove_files
 from skbio.sequence import DNASequence
 from brokit.uclust import get_clusters_from_fasta_filepath
@@ -50,8 +51,10 @@ class InvalidGolayBarcodeError(Exception):
 class BarcodeLenMismatchError(Exception):
     pass
 
+
 class NoConsensusSeqsError(Exception):
     pass
+
 
 def extract_primer(seq, possible_primers, min_idx=None, max_idx=None):
     """
@@ -105,7 +108,8 @@ def get_LEA_seq_consensus_seqs(fwd_read_f, rev_read_f,
                                min_reads_per_random_bc,
                                min_difference_clusters,
                                barcode_column,
-                               reverse_primer_column):
+                               reverse_primer_column,
+                               variant_fq):
     """
     Reads mapping file, input file, and other command line arguments
     fills dictionary called consensus_seq_lookup which will contain:
@@ -179,7 +183,8 @@ def get_LEA_seq_consensus_seqs(fwd_read_f, rev_read_f,
                                           bc_to_rev_primers,
                                           max_barcode_errors,
                                           fwd_length,
-                                          rev_length)
+                                          rev_length,
+                                          variant_fq)
 
     consensus_seq_lookup = get_consensus_seqs_lookup(random_bc_lookup,
                                                      random_bc_reads,
@@ -292,22 +297,12 @@ def get_consensus(fasta_tempfile, min_consensus):
     seqs = list()
     counts = list()
 
-    #temp_dir = get_qiime_temp_dir()
-    #fd_fas, fasta_tempfile_name = mkstemp(dir=temp_dir, suffix='.fas')
-    #close(fd_fas)
-
-    #with open(fasta_tempfile_name, 'w') as fasta_tempfile:
-    #    fasta_tempfile.write(fasta_seqs)
-    #fasta_tempfile.close()
-
-    #fasta_tempfile = open(fasta_tempfile_name, 'r')
-    for label, seq in parse_fasta(fasta_tempfile):
+    for seq_gen in read(fasta_tempfile, format='fasta'):
+        label = seq_gen.id
+        seq = seq_gen.sequence
         RE_output = search(r'\w+\|(\d+)', label)
         counts.append(int(RE_output.group(1)))
         seqs.append(seq)
-    #fasta_tempfile.close()
-
-    #remove_files([fasta_tempfile_name])
 
     length = len(seqs[0])
     number_of_seqs = len(seqs)
@@ -604,7 +599,8 @@ def read_fwd_rev_read(fwd_read_f,
                       bc_to_rev_primers,
                       max_barcode_errors,
                       fwd_length,
-                      rev_length):
+                      rev_length,
+                      variant_fq):
     """
     Reads fwd and rev read fastq files
     Parameters
@@ -664,13 +660,12 @@ def read_fwd_rev_read(fwd_read_f,
     qual_idx = 2
 
     for fwd_read, rev_read in izip(
-            parse_fastq(fwd_read_f, strict=False),
-            parse_fastq(rev_read_f, strict=False)):
-            # Confirm match between read headers.
+        read(fwd_read_f, format='fastq', variant='illumina1.3'),
+        read(rev_read_f, format='fastq', variant='illumina1.3')):
 
         input_seqs_count += 1
 
-        if fwd_read[header_idx] != rev_read[header_idx]:
+        if fwd_read.id != rev_read.id:
             raise PairedEndParseError(
                 "Headers of forward and reverse reads "
                 "do not match. Confirm that the forward "
@@ -678,10 +673,10 @@ def read_fwd_rev_read(fwd_read_f,
                 "provided have headers that match one "
                 "another.")
         else:
-            header = fwd_read[header_idx]
+            header = fwd_read.id
 
-        fwd_seq = fwd_read[seq_idx]
-        rev_seq = rev_read[seq_idx]
+        fwd_seq = fwd_read.sequence
+        rev_seq = rev_read.sequence
 
         #  Grab the barcode sequence. It is always at the very end of the
         #  forward read. Strip the barcode from the sequence.
