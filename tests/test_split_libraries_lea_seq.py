@@ -35,6 +35,7 @@ class WorkflowTests(TestCase):
     def setUp(self):
         """setup the test values"""
         # define test data
+        self.temp_dir = get_qiime_temp_dir()
         self.fasta_seqs_of_rand_bcs = fasta_seqs_of_rand_bcs
         self.fasta_seqs_for_cluster_ratio = fasta_seqs_for_cluster_ratio
         self.fasta_seqs_for_consensus = fasta_seqs_for_consensus
@@ -43,12 +44,43 @@ class WorkflowTests(TestCase):
         self.mapping_data = mapping_data
         self.fasta_seq_for_primer = fasta_seq_for_primer
         self.possible_primers = possible_primers
+
         self.fasta_seqs_for_consensus_tie_G_C = \
             fasta_seqs_for_consensus_tie_G_C
         self.fasta_seqs_for_consensus_unequal_length = \
             fasta_seqs_for_consensus_unequal_length
+        self.seqs_with_no_consensus = seqs_with_no_consensus
+
+        self.fasta_file_for_consensus_tie_G_C = NamedTemporaryFile(
+            delete=False,
+            mode='w',
+            dir=self.temp_dir)
+        self.fasta_file_for_consensus_tie_G_C_name = self.fasta_file_for_consensus_tie_G_C.name
+        self.fasta_file_for_consensus_tie_G_C.write(self.fasta_seqs_for_consensus_tie_G_C)
+        self.fasta_file_for_consensus_tie_G_C.close()
+        self.fasta_file_for_consensus_tie_G_C = open (self.fasta_file_for_consensus_tie_G_C_name, 'r')
+
+        self.fasta_file_for_consensus_unequal_length = NamedTemporaryFile(
+            delete=False,
+            mode='w',
+            dir=self.temp_dir)
+        self.fasta_file_for_consensus_unequal_length_name = self.fasta_file_for_consensus_unequal_length.name
+        self.fasta_file_for_consensus_unequal_length.write(self.fasta_seqs_for_consensus_unequal_length)
+        self.fasta_file_for_consensus_unequal_length.close()
+        self.fasta_file_for_consensus_unequal_length = open (self.fasta_file_for_consensus_unequal_length_name, 'r')
+
+        self.fasta_file_no_consensus = NamedTemporaryFile(
+            delete=False,
+            mode='w',
+            dir=self.temp_dir)
+        self.fasta_file_no_consensus_name = self.fasta_file_no_consensus.name
+        self.fasta_file_no_consensus.write(self.seqs_with_no_consensus)
+        self.fasta_file_no_consensus.close()
+        self.fasta_file_no_consensus = open (self.fasta_file_no_consensus_name, 'r')
+
+
         self.min_difference_in_clusters = min_difference_in_clusters
-        self.temp_dir = get_qiime_temp_dir()
+
         self.mapping_fp = NamedTemporaryFile(
             delete=False,
             mode='w',
@@ -57,7 +89,6 @@ class WorkflowTests(TestCase):
         self.mapping_fp_name = self.mapping_fp.name
         self.mapping_fp.close()
         self.mapping_fp = open(self.mapping_fp_name, 'r')
-        self.seqs_with_no_consensus = seqs_with_no_consensus
         self.false_primers = false_primers
         self.barcode_len = barcode_len
         self.barcode_correction_fn = barcode_correction_fn
@@ -74,7 +105,13 @@ class WorkflowTests(TestCase):
     def tearDown(self):
         """remove all the files after completing tests """
         self.mapping_fp.close()
-        remove_files([self.mapping_fp_name])
+        self.fasta_file_no_consensus.close()
+        self.fasta_file_for_consensus_tie_G_C.close()
+        self.fasta_file_for_consensus_unequal_length.close()
+        remove_files([self.mapping_fp_name, 
+                      self.fasta_file_no_consensus_name, 
+                      self.fasta_file_for_consensus_tie_G_C_name, 
+                      self.fasta_file_for_consensus_unequal_length_name])
 
     def test_select_unique_rand_bcs(self):
         actual = select_unique_rand_bcs(self.fasta_seqs_of_rand_bcs, 0.86)
@@ -82,7 +119,7 @@ class WorkflowTests(TestCase):
         self.assertEqual(actual, expected)
 
     def test_get_consensus(self):
-        actual = get_consensus(self.fasta_seqs_for_consensus_tie_G_C, 2)
+        actual = get_consensus(self.fasta_file_for_consensus_tie_G_C, 2)
         # at the last position, G and C have the same frequency
         # therefore the function is expected to return
         # consensus sequence with G, which is present in seq
@@ -97,11 +134,11 @@ class WorkflowTests(TestCase):
 
         # Sequences having unequal length:
         with self.assertRaises(SeqLengthMismatchError):
-            get_consensus(self.fasta_seqs_for_consensus_unequal_length, 2)
+            get_consensus(self.fasta_file_for_consensus_unequal_length, 2)
 
-        seqs_with_no_consensus = self.seqs_with_no_consensus
+        fasta_file_no_consensus = self.fasta_file_no_consensus
         with self.assertRaises(LowConsensusScoreError):
-            get_consensus(seqs_with_no_consensus, 6.6)
+            get_consensus(fasta_file_no_consensus, 6.6)
 
     def test_get_cluster_ratio(self):
         actual = get_cluster_ratio(
