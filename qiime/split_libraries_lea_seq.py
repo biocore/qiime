@@ -186,7 +186,8 @@ def get_LEA_seq_consensus_seqs(fwd_read_f, rev_read_f,
                                                      min_reads_per_random_bc,
                                                      output_dir,
                                                      min_difference_clusters,
-                                                     max_cluster_ratio)
+                                                     max_cluster_ratio,
+                                                     min_consensus)
 
     log_out = format_lea_seq_log(input_seqs_count,
                                  barcode_errors_exceed_max_count,
@@ -263,7 +264,7 @@ def get_cluster_ratio(fasta_seqs, min_difference_in_clusters):
         return 1
 
 
-def get_consensus(fasta_seqs, min_consensus):
+def get_consensus(fasta_tempfile, min_consensus):
     """
     Returns consensus sequence from a set of sequences
     input: fasta file, min_consensus
@@ -287,22 +288,22 @@ def get_consensus(fasta_seqs, min_consensus):
     seqs = list()
     counts = list()
 
-    temp_dir = get_qiime_temp_dir()
-    fd_fas, fasta_tempfile_name = mkstemp(dir=temp_dir, suffix='.fas')
-    close(fd_fas)
+    #temp_dir = get_qiime_temp_dir()
+    #fd_fas, fasta_tempfile_name = mkstemp(dir=temp_dir, suffix='.fas')
+    #close(fd_fas)
 
-    with open(fasta_tempfile_name, 'w') as fasta_tempfile:
-        fasta_tempfile.write(fasta_seqs)
-    fasta_tempfile.close()
+    #with open(fasta_tempfile_name, 'w') as fasta_tempfile:
+    #    fasta_tempfile.write(fasta_seqs)
+    #fasta_tempfile.close()
 
-    fasta_tempfile = open(fasta_tempfile_name, 'r')
+    #fasta_tempfile = open(fasta_tempfile_name, 'r')
     for label, seq in parse_fasta(fasta_tempfile):
         RE_output = search(r'\w+\|(\d+)', label)
         counts.append(int(RE_output.group(1)))
         seqs.append(seq)
-    fasta_tempfile.close()
+    #fasta_tempfile.close()
 
-    remove_files([fasta_tempfile_name])
+    #remove_files([fasta_tempfile_name])
 
     length = len(seqs[0])
     number_of_seqs = len(seqs)
@@ -469,7 +470,8 @@ def get_consensus_seqs_lookup(random_bc_lookup,
                               min_reads_per_random_bc,
                               output_dir,
                               min_difference_in_clusters,
-                              max_cluster_ratio):
+                              max_cluster_ratio,
+                              min_consensus):
     """
     Generates LEA-seq consensus sequence
     For each sample id, for each random barcode, consensus sequence is created
