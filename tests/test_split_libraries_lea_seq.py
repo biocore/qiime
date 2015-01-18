@@ -101,7 +101,8 @@ class WorkflowTests(TestCase):
         self.fasta_file_no_consensus_name = self.fasta_file_no_consensus.name
         self.fasta_file_no_consensus.write(self.seqs_with_no_consensus)
         self.fasta_file_no_consensus.close()
-        self.fasta_file_no_consensus = open(self.fasta_file_no_consensus_name, 'r')
+        self.fasta_file_no_consensus = open(
+            self.fasta_file_no_consensus_name, 'r')
 
         self.min_difference_in_clusters = min_difference_in_clusters
 

@@ -122,11 +122,11 @@ script_info['optional_options'] = [
                 help='header of reverse primer column'
                 '[default: %default]',
                 default='ReversePrimer'),
-    make_option('--fastq_variant', type='string',
-                help='format of fastq file. one of:'
-                'illumina1.3, illumina1.8, sanger, solexa'
+    make_option('--phred_offset', type='int',
+                help='What Phred offset to use when '
+                'converting qual score symbols to integers'
                 '[default: %default]',
-                default='illumina1.3'),
+                default=33),
 ]
 script_info['version'] = __version__
 
@@ -147,7 +147,7 @@ def main():
     min_diff_in_clusters = opts.min_difference_in_clusters
     barcode_column = opts.header_barcode_column
     reverse_primer_column = opts.reverse_primer_column
-    variant_fq = opts.fastq_variant
+    phred_offset = opts.phred_offset
     create_dir(output_dir)
     fwd_consensus_outfile = open(path.join(output_dir, "fwd.fna"), "w")
     rev_consensus_outfile = open(path.join(output_dir, "rev.fna"), "w")
@@ -215,7 +215,7 @@ def main():
                                            min_diff_in_clusters,
                                            barcode_column,
                                            reverse_primer_column,
-                                           variant_fq)
+                                           phred_offset)
 
     for sample_id in consensus_seq_lookup:
         for bc_index, rand_bc in enumerate(consensus_seq_lookup[sample_id]):

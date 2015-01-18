@@ -109,7 +109,7 @@ def get_LEA_seq_consensus_seqs(fwd_read_f, rev_read_f,
                                min_difference_clusters,
                                barcode_column,
                                reverse_primer_column,
-                               variant_fq):
+                               phred_offset):
     """
     Reads mapping file, input file, and other command line arguments
     fills dictionary called consensus_seq_lookup which will contain:
@@ -184,7 +184,7 @@ def get_LEA_seq_consensus_seqs(fwd_read_f, rev_read_f,
                                           max_barcode_errors,
                                           fwd_length,
                                           rev_length,
-                                          variant_fq)
+                                          phred_offset)
 
     consensus_seq_lookup = get_consensus_seqs_lookup(random_bc_lookup,
                                                      random_bc_reads,
@@ -600,7 +600,7 @@ def read_fwd_rev_read(fwd_read_f,
                       max_barcode_errors,
                       fwd_length,
                       rev_length,
-                      variant_fq):
+                      phred_offset):
     """
     Reads fwd and rev read fastq files
     Parameters
@@ -659,13 +659,13 @@ def read_fwd_rev_read(fwd_read_f,
     seq_idx = 1
     qual_idx = 2
 
-    for fwd_read, rev_read in izip(
-        read(fwd_read_f, format='fastq', variant='illumina1.3'),
-        read(rev_read_f, format='fastq', variant='illumina1.3')):
-
+    for fwd_read, rev_read in izip(parse_fastq(fwd_read_f, strict=False,
+                                   phred_offset=64), parse_fastq(rev_read_f,
+                                   strict=False, phred_offset=64)):
+        # confirm match between headers
         input_seqs_count += 1
 
-        if fwd_read.id != rev_read.id:
+        if fwd_read[header_idx] != rev_read[header_idx]:
             raise PairedEndParseError(
                 "Headers of forward and reverse reads "
                 "do not match. Confirm that the forward "
@@ -673,10 +673,10 @@ def read_fwd_rev_read(fwd_read_f,
                 "provided have headers that match one "
                 "another.")
         else:
-            header = fwd_read.id
+            header = fwd_read[header_idx]
 
-        fwd_seq = fwd_read.sequence
-        rev_seq = rev_read.sequence
+        fwd_seq = fwd_read[seq_idx]
+        rev_seq = rev_read[seq_idx]
 
         #  Grab the barcode sequence. It is always at the very end of the
         #  forward read. Strip the barcode from the sequence.
