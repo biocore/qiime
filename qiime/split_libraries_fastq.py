@@ -14,7 +14,7 @@ from itertools import izip, cycle
 from os.path import split, splitext, join
 from os import makedirs
 
-from numpy import log10, arange, histogram
+import numpy as np
 
 from skbio.parse.sequences import parse_fastq
 from skbio.sequence import DNA
@@ -55,24 +55,45 @@ def bad_chars_from_threshold(first_bad_char):
         bad_chars = list(get_illumina_qual_chars()[:first_bad_char_index + 1])
         return {}.fromkeys(bad_chars)
 
+def _contiguous_regions(condition):
+    """Finds contiguous True regions of the boolean array "condition". Returns
+    a 2D array where the first column is the start index of the region and the
+    second column is the end index.
+
+    This function was derived from SO:
+    http://stackoverflow.com/a/4495197/579416
+    """
+
+    # Find the indicies of changes in "condition"
+    d = np.diff(condition)
+    idx, = d.nonzero()
+
+    # We need to start things after the change in "condition". Therefore,
+    # we'll shift the index by 1 to the right.
+    idx += 1
+
+    if condition[0]:
+        # If the start of condition is True prepend a 0
+        idx = np.r_[0, idx]
+
+    if condition[-1]:
+        # If the end of condition is True, append the length of the array
+        idx = np.r_[idx, condition.size]
+
+    # Reshape the result into two columns
+    idx.shape = (-1,2)
+    return idx
 
 def read_qual_score_filter(seq, qual, max_run_length, threshold):
     """slices illumina sequence and quality line based on quality filter
     """
     last_good_slice_end_pos = 0
     bad_run_length = 0
-    for i in range(len(seq)):
-        if qual[i] <= threshold:
-            bad_run_length += 1
-        else:
-            bad_run_length = 0
-            last_good_slice_end_pos = i + 1
+    mask = qual <= threshold
+    for starts, ends in _contiguous_regions(mask):
+        if ends - starts > max_run_length:
+            return seq[:starts], qual[:starts]
 
-        if bad_run_length > max_run_length:
-            return seq[:last_good_slice_end_pos],\
-                qual[:last_good_slice_end_pos]
-
-    # There were no runs that were too bad for too long
     return seq, qual
 
 
@@ -413,8 +434,8 @@ def make_histograms(lengths, binwidth=10):
     max_len = max(lengths)
     floor = (min_len / binwidth) * binwidth
     ceil = ((max_len / binwidth) + 2) * binwidth
-    bins = arange(floor, ceil, binwidth)
-    hist, bin_edges = histogram(lengths, bins)
+    bins = np.arange(floor, ceil, binwidth)
+    hist, bin_edges = np.histogram(lengths, bins)
     return hist, bin_edges
 
 
