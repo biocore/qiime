@@ -658,8 +658,8 @@ def read_fwd_rev_read(fwd_read_f,
     qual_idx = 2
 
     for fwd_read, rev_read in izip(
-            parse_fastq(fwd_read_f, strict=False),
-            parse_fastq(rev_read_f, strict=False)):
+            parse_fastq(fwd_read_f, strict=False, enforce_qual_range=False),
+            parse_fastq(rev_read_f, strict=False, enforce_qual_range=False)):
             # Confirm match between read headers.
 
         input_seqs_count += 1

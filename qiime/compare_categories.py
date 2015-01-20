@@ -143,7 +143,7 @@ def compare_categories(dm_fp, map_fp, method, categories, num_perms, out_dir):
                 command_args[0] += ' -n %d' % num_perms
 
             rex = RExecutor(TmpDir=get_qiime_temp_dir())
-            rex(command_args, '%s.r' % method, output_dir=out_dir)
+            rex(command_args, '%s.r' % method)
         else:
             raise ValueError("Unrecognized method '%s'. Valid methods: %r"
                              % (method, methods))

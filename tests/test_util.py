@@ -2292,10 +2292,7 @@ class RExecutorTests(TestCase):
                 " -c DOB -o " + self.output_dir]
 
         rex = RExecutor(TmpDir=self.tmp_dir)
-        results = rex(args, "permdisp.r", self.output_dir)
-
-        self.files_to_remove.append(join(self.tmp_dir, 'R.stdout'))
-        self.files_to_remove.append(join(self.tmp_dir, 'R.stderr'))
+        results = rex(args, "permdisp.r")
 
         # Make sure an output file was created with something in it.
         results_fp = join(self.output_dir, 'permdisp_results.txt')

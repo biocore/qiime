@@ -747,21 +747,6 @@ def parse_qual_score(infile, value_cast_f=int):
     return id_to_qual
 
 
-def parse_fastq_qual_score(fastq_lines):
-    results = {}
-    first_header = fastq_lines.readline()
-    fastq_lines.seek(0)
-
-    if is_casava_v180_or_later(first_header):
-        ascii_to_phred_f = ascii_to_phred33
-    else:
-        ascii_to_phred_f = ascii_to_phred64
-
-    for header, seq, qual in parse_fastq(fastq_lines):
-        results[header] = asarray(qual, dtype=ascii_to_phred_f)
-    return results
-
-
 def MinimalQualParser(infile, value_cast_f=int, full_header=False):
     """Yield quality scores"""
     for rec in FastaFinder(infile):

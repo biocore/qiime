@@ -432,7 +432,8 @@ def extract_reads_from_interleaved(
     ffp = open(forward_fp, 'w')
     rfp = open(reverse_fp, 'w')
 
-    for label, seq, qual in parse_fastq(qiime_open(input_fp), strict=False):
+    for label, seq, qual in parse_fastq(qiime_open(input_fp), strict=False,
+                                        enforce_qual_range=False):
         fastq_string = format_fastq_record(label, seq, qual)
         if forward_id in label:
             ffp.write(fastq_string)

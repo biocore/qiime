@@ -71,7 +71,7 @@ def run_CSS(input_path, out_path, output_CSS_statistics):
     else:
         command_args = ['-i %s -o %s -s %s' % (input_path, out_path, output_CSS_statistics)]
     # instantiate the object
-    rsl = RExecutor()
+    rsl = RExecutor(TmpDir=get_qiime_temp_dir())
     # run the app
     app_result = rsl(command_args=command_args, script_name='CSS.r')
 
@@ -120,7 +120,7 @@ def run_DESeq2(input_path, out_path, DESeq_negatives_to_zero):
     else:
         command_args = ['-i %s -o %s' % (input_path, out_path)]
     # instantiate the object
-    rsl = RExecutor()
+    rsl = RExecutor(TmpDir=get_qiime_temp_dir())
     # run the app
     app_result = rsl(command_args=command_args, script_name='DESeq2.r')
 

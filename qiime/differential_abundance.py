@@ -93,7 +93,7 @@ def run_fitZIG(input_path, out_path, mapping_category, subcategory_1, subcategor
     # set options
     command_args = ['-i %s -o %s -c %s -x %s -y %s' % (input_path, out_path, mapping_category, subcategory_1, subcategory_2)]
     # instantiate the object
-    rsl = RExecutor()
+    rsl = RExecutor(TmpDir=get_qiime_temp_dir())
     # run the app
     app_result = rsl(command_args=command_args, script_name='fitZIG.r')
 
@@ -154,7 +154,7 @@ def run_DESeq2(input_path, out_path, mapping_category, subcategory_1, subcategor
     else:
         command_args = ['-i %s -o %s -c %s -x %s -y %s' % (input_path, out_path, mapping_category, subcategory_1, subcategory_2)]
     # instantiate the object
-    rsl = RExecutor()
+    rsl = RExecutor(TmpDir=get_qiime_temp_dir())
     # run the app
     app_result = rsl(command_args=command_args, script_name='DESeq2_nbinom.r')
 

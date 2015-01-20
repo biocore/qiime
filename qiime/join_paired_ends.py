@@ -48,8 +48,8 @@ def write_synced_barcodes_fastq(joined_fp, index_fp):
     fbc_fh = open(filtered_bc_outfile_path, 'w')
 
     # Set up iterators
-    index_fastq_iter = parse_fastq(ih, strict=False)
-    joined_fastq_iter = parse_fastq(jh, strict=False)
+    index_fastq_iter = parse_fastq(ih, strict=False, enforce_qual_range=False)
+    joined_fastq_iter = parse_fastq(jh, strict=False, enforce_qual_range=False)
     # Write barcodes / index reads that we observed within
     # the joined paired-ends. Warn if index and joined data
     # are not in order.
