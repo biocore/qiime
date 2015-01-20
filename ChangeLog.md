@@ -28,9 +28,11 @@ Features
 * Scripts that write an OTU table will now write BIOM files in HDF5 format if HDF5 is installed. This improves performance for very large OTU tables.
 * ``merge_mapping_files.py`` can now take an argument to convert the header names to upper case, so it will merge for example a category named `treatment` and another one named `TREATMENT` from two different mapping files.
 * The script ``make_distance_histograms.py`` has been removed. This functionality should be accessed through ``make_distance_boxplots.py``.
-* Beta support has been added for performing subsampled open reference OTU picking using SortMeRNA ([Bioinformatics](http://www.ncbi.nlm.nih.gov/pubmed/23071270)(for the closed-reference steps) and SumaClust ([In Preparation](http://metabarcoding.org/sumatra)) (for the open reference steps). This can be accessed with ``pick_open_reference_otus.py -m sortmerna_sumaclust``.
-* Beta support has been added for performing closed-reference OTU picking using SortMeRNA ([Bioinformatics](http://www.ncbi.nlm.nih.gov/pubmed/23071270). This can be accessed with ``pick_closed_reference_otus.py -p params.txt`` where params.txt includes the line ``pick_otus:otu_picking_method sortmerna``.
-* Beta support has been added for performing de novo OTU picking using SumaClust ([In Preparation](http://metabarcoding.org/sumatra)). This can be accessed with ``pick_de_novo_otus.py -p params.txt`` where params.txt includes the line ``pick_otus:otu_picking_method sumaclust``.
+* Beta support has been added for performing OTU picking with open source software:
+ * subsampled open reference OTU picking using SortMeRNA ([Kopylova et al. (2012)](http://www.ncbi.nlm.nih.gov/pubmed/23071270) (for the closed-reference steps) and [SumaClust](http://metabarcoding.org/sumatra) (for the open reference steps). This can be accessed with ``pick_open_reference_otus.py -m sortmerna_sumaclust``.
+ * closed-reference OTU picking using SortMeRNA ([Kopylova et al. (2012)](http://www.ncbi.nlm.nih.gov/pubmed/23071270). This can be accessed with ``pick_closed_reference_otus.py -p params.txt`` where params.txt includes the line ``pick_otus:otu_picking_method sortmerna``.
+ * de novo OTU picking using [SumaClust](http://metabarcoding.org/sumatra) or swarm ([Mahe et al. (2014)](https://peerj.com/articles/593/)). This can be accessed with ``pick_de_novo_otus.py -p params.txt`` where params.txt includes the line ``pick_otus:otu_picking_method sumaclust`` or ``pick_otus:otu_picking_method swarm``.
+ * sumaclust v1.0.00, swarm 1.2.19, and sortmerna 2.0 are now optional dependencies (see the [QIIME install docs](http://qiime.org/install/install.html) for details).
 * Renamed ``split_fasta_on_sample_ids_to_files.py`` to ``split_sequence_file_on_sample_ids.py``, which now supports splitting FASTQ files, as well. Added a parameter, ``--file_type``, which is used to specify the type of the input file.
 * Added ``--assign_taxonomy`` option to ``pick_closed_reference_otus.py`` to allow taxonomy assignment using a classifier, rather than the default of using the taxonomic assignment of the cluster centroid.
 * Added ``--suppress_taxonomy_assignment`` option to ``pick_closed_reference_otus.py``.
@@ -40,6 +42,50 @@ Features
 * Installing QIIME via ``pip install qiime`` now works out-of-the-box by providing a functioning QIIME minimal (base) install (see [#1696](https://github.com/biocore/qiime/issues/1696)).
 * ``cluster_jobs_fp`` in the QIIME config file now defaults to ``start_parallel_jobs.py``. ``seconds_to_sleep`` now defaults to 1.
 * Added ``--negate_sample_id_fp`` option to ``filter_samples_from_otu_table.py`` (see [#1117](https://github.com/biocore/qiime/issues/1117)).
+
+Usability enhancements
+----------------------
+
+* Simplified and improved QIIME install documentation.
+* Errors raised by scripts are easier to read and include a supplementary message on how to get help (see [#1794](https://github.com/biocore/qiime/issues/1794)).
+* QIIME is now easier to install! Removed ``qiime_scripts_dir``, ``python_exe_fp``, ``working_dir``, ``cloud_environment``, and ``template_alignment_lanemask_fp`` from the QIIME config file. If these values are present in your QIIME config file, they will be flagged as unrecognized by ``print_qiime_config.py -t`` and will be ignored by QIIME. QIIME will now use the ``python`` executable and QIIME scripts that are found in your ``PATH`` environment variable, and ``temp_dir`` will be used in place of ``working_dir`` (this value was used by some parts of parallel QIIME previously). ``filter_alignment.py`` will now use the 16S alignment Lane mask (Lane, D.J. 1991) by default if one is not provided via ``--lane_mask_fp``.
+* ``--tail_type`` option in ``compare_distance_matrices.py`` now accepts "two-sided" instead of "two sided" for specifying a two-sided alternative hypothesis. The new name is easier to specify via the command-line (quotes aren't needed because it is a single word).
+* ``print_qiime_config.py -t`` now tests a QIIME minimal (base) install instead of a QIIME full install. ``print_qiime_config.py -tf`` tests a QIIME full install.
+* Standardized use of underscores in option longnames. Affected scripts and options:
+ * ``scripts/demultiplex_fasta.py``
+   * `start-numbering-at` is now `start_numbering_at`
+ * ``scripts/denoiser.py``
+   * `low_cut-off` is now `low_cut_off`
+   * `high_cut-off` is now `high_cut_off`
+ * ``scripts/multiple_rarefactions.py``
+   * `num-reps` is now `num_reps`
+ * ``scripts/multiple_rarefactions_even_depth.py``
+   * `num-reps` is now `num_reps`
+ * ``scripts/parallel_multiple_rarefactions.py``
+   * `num-reps` is now `num_reps`
+ * ``scripts/plot_rank_abundance_graph.py``
+   * `no-legend` is now `no_legend`
+ * ``scripts/split_libraries.py``
+   * `min-seq-length` is now `min_seq_length`
+   * `max-seq-length` is now `max_seq_length`
+   * `trim-seq-length` is now `trim_seq_length`
+   * `min-qual-score` is now `min_qual_score`
+   * `keep-primer` is now `keep_primer`
+   * `keep-barcode` is now `keep_barcode`
+   * `max-ambig` is now `max_ambig`
+   * `max-homopolymer` is now `max_homopolymer`
+   * `max-primer-mismatch` is now `max_primer_mismatch`
+   * `barcode-type` is now `barcode_type`
+   * `dir-prefix` is now `dir_prefix`
+   * `max-barcode-errors` is now `max_barcode_errors`
+   * `start-numbering-at` is now `start_numbering_at`
+* Removed ``--output_dir`` optional option from ``make_otu_heatmap.py`` and replaced it with the required option ``--output_fp``.
+* The parameters ``--uclust_min_consensus_fraction`` and ``--uclust_similarity`` in ``*_assign_taxonomy_*`` scripts have been changed to ``--min_consensus_fraction`` and ``--similarity`` since both of these parameters apply to the SortMeRNA taxon assigner as well.
+* Several changes were made to ``alpha_diversity.py`` metric names:
+  * ``ACE`` is now ``ace``
+  * ``chao1_confidence`` is now ``chao1_ci``
+  * Added ``observed_otus``, which is equivalent to ``observed_species`` but is generally a more accurate name. ``observed_species`` is retained for backward-compatibility.
+* SortMeRNA 2.0, SUMACLUST 1.0.00, and swarm 1.2.19 are now installed automatically when QIIME is installed (e.g., via `pip install qiime`).
 
 Bug fixes
 ---------
@@ -56,50 +102,6 @@ Bug fixes
 * Fixed bug in ``make_rarefaction_plots.py`` where ``--generate_per_sample_plots`` wasn't working (see [#1475](https://github.com/biocore/qiime/issues/1475)).
 * Fixed bug that resulted in samples being mislabeled in ``make_otu_heatmap.py`` when one of the following options was passed: ``--category``, ``--map_fname``, ``--sample_tree``, or ``--suppress_column_clustering``. This is discussed in [#1790](https://github.com/biocore/qiime/issues/1790).
 
-Usability enhancements
-----------------------
-
-* Simplified and improved QIIME install documentation.
-* Errors raised by scripts are easier to read and include a supplementary message on how to get help (see [#1794](https://github.com/biocore/qiime/issues/1794)).
-* QIIME is now even easier to install! Removed ``qiime_scripts_dir``, ``python_exe_fp``, ``working_dir``, ``cloud_environment``, and ``template_alignment_lanemask_fp`` from the QIIME config file. If these values are present in your QIIME config file, they will be flagged as unrecognized by ``print_qiime_config.py -t`` and will be ignored by QIIME. QIIME will now use the ``python`` executable and QIIME scripts that are found in your ``PATH`` environment variable, and ``temp_dir`` will be used in place of ``working_dir`` (this value was used by some parts of parallel QIIME previously). ``filter_alignment.py`` will now use the 16S alignment Lane mask (Lane, D.J. 1991) by default if one is not provided via ``--lane_mask_fp``.
-* ``--tail_type`` option in ``compare_distance_matrices.py`` now accepts "two-sided" instead of "two sided" for specifying a two-sided alternative hypothesis. The new name is easier to specify via the command-line (quotes aren't needed because it is a single word).
-* ``print_qiime_config.py -t`` now tests a QIIME minimal (base) install instead of a QIIME full install. ``print_qiime_config.py -tf`` tests a QIIME full install.
-* Standardized use of underscores in option longnames. Affected scripts and options:
- * ``scripts/demultiplex_fasta.py``
-  * `start-numbering-at` is now `start_numbering_at`
- * ``scripts/denoiser.py``
-  * `low_cut-off` is now `low_cut_off`
-  * `high_cut-off` is now `high_cut_off`
- * ``scripts/multiple_rarefactions.py``
-  * `num-reps` is now `num_reps`
- * ``scripts/multiple_rarefactions_even_depth.py``
-  * `num-reps` is now `num_reps`
- * ``scripts/parallel_multiple_rarefactions.py``
-  * `num-reps` is now `num_reps`
- * ``scripts/plot_rank_abundance_graph.py``
-  * `no-legend` is now `no_legend`
- * ``scripts/split_libraries.py``
-  * `min-seq-length` is now `min_seq_length`
-  * `max-seq-length` is now `max_seq_length`
-  * `trim-seq-length` is now `trim_seq_length`
-  * `min-qual-score` is now `min_qual_score`
-  * `keep-primer` is now `keep_primer`
-  * `keep-barcode` is now `keep_barcode`
-  * `max-ambig` is now `max_ambig`
-  * `max-homopolymer` is now `max_homopolymer`
-  * `max-primer-mismatch` is now `max_primer_mismatch`
-  * `barcode-type` is now `barcode_type`
-  * `dir-prefix` is now `dir_prefix`
-  * `max-barcode-errors` is now `max_barcode_errors`
-  * `start-numbering-at` is now `start_numbering_at`
-* Removed ``--output_dir`` optional option from ``make_otu_heatmap.py`` and replaced it with the required option ``--output_fp``.
-* The parameters ``--uclust_min_consensus_fraction`` and ``--uclust_similarity`` in ``*_assign_taxonomy_*`` scripts have been changed to ``--min_consensus_fraction`` and ``--similarity`` since both of these parameters apply to the SortMeRNA taxon assigner as well.
-* Several changes were made to ``alpha_diversity.py`` metric names:
- * ``ACE`` is now ``ace``
- * ``chao1_confidence`` is now ``chao1_ci``
- * Added ``observed_otus``, which is equivalent to ``observed_species`` but is generally a more accurate name. ``observed_species`` is retained for backward-compatibility.
-* SortMeRNA 2.0, SUMACLUST 1.0.00, and swarm 1.2.19 are now installed automatically when QIIME is installed (e.g., via `pip install qiime`).
-
 Removal of outdated and unsupported functionality
 -------------------------------------------------
 
@@ -111,10 +113,6 @@ Removal of outdated and unsupported functionality
 * Fasttree v1.x is no longer supported by ``make_phylogeny.py`` (see [issue #1516](https://github.com/biocore/qiime/issues/1516)).
 * Removed ``submit_to_mgrast.py`` script (see [#1780](https://github.com/biocore/qiime/issues/1780)).
 * Removed ``make_otu_heatmap_html.py`` in favor of ``make_otu_heatmap.py`` (see discussion on [#1724](https://github.com/biocore/qiime/issues/1724)).
-
-Dependency changes
-------------------
-* sumaclust v1.0.00, swarm 1.2.19, and sortmerna 2.0 are now optional dependencies (see the [QIIME install docs](http://qiime.org/install/install.html) for details).
 
 Performance enhancements
 ------------------------
