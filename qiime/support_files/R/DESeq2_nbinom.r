@@ -62,9 +62,15 @@ if(is.null(opts$subcategory_2)) stop('Please supply a second subcategory.')
             res <- results(dds, contrast = c(mapping_category, subcategory_1, subcategory_2))
             resOrdered <- res[order(res$padj),]
             df1 <- data.frame(resOrdered)
-            df1 <- cbind(OTU = rownames(df1), df1)
-            write.table(df1, out_path, sep="\t", quote=F, row.names=F)
-            # # #add independent filtering?
+            sigotus = rownames(df1)
+            if (is.null(observation_metadata(foo))) {            
+            	df2 <- cbind(OTU = sigotus, df1)
+            } else {
+	            fullTaxonomyData = observation_metadata(foo)[sigotus,]
+				fullTaxonomyData = sapply(1:nrow(fullTaxonomyData), function(i){paste(format(fullTaxonomyData[i,]),collapse="; ")})
+	            df2 <- cbind(OTU = sigotus, df1, taxonomy = fullTaxonomyData)
+	        }
+            write.table(df2, out_path, sep="\t", quote=F, row.names=F)
             if (!is.null(DESeq2_diagnostic_plots)) {
 	            pdf(sprintf("%s", outfile_diagnostic))
 	            plotMA(res, ylim = c(-3,3))

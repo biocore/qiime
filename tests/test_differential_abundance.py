@@ -88,8 +88,8 @@ class RDifferentialAbundanceTests(TestCase):
     def test_metagenomeSeq_fitZIG_format(self):
         zig = open(self.tmp_otu_fp_fitZIG_out).readlines()
         #test header format
-        exp = 'Taxa\t+samples in group 0\t+samples in group 1\tcounts in group 0\tcounts in group 1\toddsRatio\tlower\tupper\tfisherP\tfisherAdjP\t(Intercept)\tMGS_categoryS2\tMGS_categoryS3\tscalingFactor\tpvalues\tadjPvalues'
-        self.assertEqual(zig[0].strip(), exp)
+        exp = 'OTU\t+samples in group 0\t+samples in group 1\tcounts in group 0\tcounts in group 1\toddsRatio\tlower\tupper\tfisherP\tfisherAdjP\t(Intercept)\tMGS_categoryS2\tMGS_categoryS3\tscalingFactor\tpvalues\tadjPvalues\ttaxonomy\n'
+        self.assertEqual(zig[0], exp)
 
         #test that fitZIG returns 25 features, it only returns the most important
         num_features_returned = len(zig) - 1
@@ -100,28 +100,33 @@ class RDifferentialAbundanceTests(TestCase):
         for line in zig[1:]:
             words = line.strip().split('\t')
             line_length = len(words)
-            self.assertEqual(line_length, 16)
+            self.assertEqual(line_length, 17)
             self.assertEqual(words[0] in test_OTU_IDs, True)
             self.assertEqual(is_float(words[1]), True)
 
         #test first five significant OTUs
-        exp = ['1487\t3\t13\t3\t54\t0\t0\t0.0814754160126085\t1.03417385089143e-07\t2.58543462722858e-06\t0.732914457135622\t2.35091578797182\t-0.358285072078857\t-28.0403903601361\t2.59620832179624e-05\t0.000649052080449059\n',
-               '193\t2\t10\t4\t25\t0.0308298124876527\t0.00223706309126031\t0.229093863501484\t3.241507131278e-05\t0.000135062797136583\t0.980060835463344\t2.05824256013173\t-0.393172554812399\t-43.9276179169663\t6.26549562011497e-05\t0.000783186952514372\n',
-               '979\t0\t10\t0\t20\t0\t0\t0.0956087104342576\t6.04991702771485e-07\t5.04159752309571e-06\t0.0855575301280384\t1.4678274119766\t0.00901541795158288\t-7.07862887279825\t0.000648824231851767\t0.00540686859876472\n',
-               '1314\t4\t0\t7\t0\tInf\t0.34924924266116\tInf\t0.277924541082436\t0.347405676353045\t0.412980602558517\t-1.25800421238268\t-0.711956542078996\t22.3778549863952\t0.00315666606837298\t0.0197291629273311\n',
-               '1351\t0\t6\t0\t12\t0\t0\t0.320469784786932\t0.000621585760904647\t0.00194245550282702\t0.106944586260241\t1.21145998904839\t0.0112690273007214\t-8.84809361558598\t0.00579444501011918\t0.0289722250505959\n']
+        exp = ['1487\t3\t13\t3\t54\t0\t0\t0.0814754160126085\t1.03417385089143e-07\t2.58543462722858e-06\t0.732914457135622\t2.35091578797182\t-0.358285072078857\t-28.0403903601361\t2.59620832179624e-05\t0.000649052080449059\tAy; other\n',
+               '193\t2\t10\t4\t25\t0.0308298124876527\t0.00223706309126031\t0.229093863501484\t3.241507131278e-05\t0.000135062797136583\t0.980060835463344\t2.05824256013173\t-0.393172554812399\t-43.9276179169663\t6.26549562011497e-05\t0.000783186952514372\tAe; other\n',
+               '979\t0\t10\t0\t20\t0\t0\t0.0956087104342576\t6.04991702771485e-07\t5.04159752309571e-06\t0.0855575301280384\t1.4678274119766\t0.00901541795158288\t-7.07862887279825\t0.000648824231851767\t0.00540686859876472\tAp; other\n',
+               '1314\t4\t0\t7\t0\tInf\t0.34924924266116\tInf\t0.277924541082436\t0.347405676353045\t0.412980602558517\t-1.25800421238268\t-0.711956542078996\t22.3778549863952\t0.00315666606837298\t0.0197291629273311\tAv; other\n',
+               '1351\t0\t6\t0\t12\t0\t0\t0.320469784786932\t0.000621585760904647\t0.00194245550282702\t0.106944586260241\t1.21145998904839\t0.0112690273007214\t-8.84809361558598\t0.00579444501011918\t0.0289722250505959\tAw; other\n']
         for a, e in zip(zig[1:6],exp):
-            af = map(float,a.split('\t'))
-            ef = map(float,e.split('\t'))
+            af = map(str,a.split('\t'))
+            ef = map(str,e.split('\t'))
             self.assertEqual(len(af), len(ef))
+            at = af.pop()
+            et = ef.pop()
+            self.assertEqual(at, et)
+            af = map(float,af)
+            ef = map(float,ef)
             for af_e, ef_e in zip(af, ef):
                 self.assertAlmostEqual(af_e, ef_e)
 
     def test_DESeq2_nbinom_format(self):
         nbinom = open(self.tmp_otu_fp_DESeq2_out).readlines()
         #test header format
-        exp = 'OTU\tbaseMean\tlog2FoldChange\tlfcSE\tstat\tpvalue\tpadj'
-        self.assertEqual(nbinom[0].strip(), exp)
+        exp = 'OTU\tbaseMean\tlog2FoldChange\tlfcSE\tstat\tpvalue\tpadj\ttaxonomy\n'
+        self.assertEqual(nbinom[0], exp)
 
         #test that all features in input biom table returned
         num_features_returned = len(nbinom) - 1
@@ -132,20 +137,25 @@ class RDifferentialAbundanceTests(TestCase):
         for line in nbinom[1:]:
             words = line.strip().split('\t')
             line_length = len(words)
-            self.assertEqual(line_length, 7)
+            self.assertEqual(line_length, 8)
             self.assertEqual(words[0] in test_OTU_IDs, True)
             self.assertEqual(is_float(words[1]), True)
 
         #test first five significant OTUs
-        exp=['1848\t119.050214384222\t2.9560510780622\t0.27609765938806\t10.706541607828\t9.48387951847218e-27\t2.84516385554165e-25\n',
-             '2096\t4.57782752174272\t-2.51043602053873\t0.534006762361075\t-4.7011315164606\t2.58723804969022e-06\t3.88085707453532e-05\n',
-             '2366\t3.63266497414694\t-2.21660628894061\t0.514240606913112\t-4.31044584799803\t1.62925724104894e-05\t0.000162925724104894\n',
-             '1088\t2.80571100244187\t-1.9610730170819\t0.485853003903793\t-4.03635050380428\t5.42890917069973e-05\t0.00040716818780248\n',
-             '3006\t2.62956013500845\t-1.73771036728344\t0.489095213973481\t-3.55290814065839\t0.000380997482497004\t0.00228598489498202\n']
+        exp=['1848\t119.050214384222\t2.9560510780622\t0.27609765938806\t10.706541607828\t9.48387951847218e-27\t2.84516385554165e-25\tBc; other\n',
+             '2096\t4.57782752174272\t-2.51043602053873\t0.534006762361075\t-4.7011315164606\t2.58723804969022e-06\t3.88085707453532e-05\tBg; other\n',
+             '2366\t3.63266497414694\t-2.21660628894061\t0.514240606913112\t-4.31044584799803\t1.62925724104894e-05\t0.000162925724104894\tBm; other\n',
+             '1088\t2.80571100244187\t-1.9610730170819\t0.485853003903793\t-4.03635050380428\t5.42890917069973e-05\t0.00040716818780248\tAs; other\n',
+             '3006\t2.62956013500845\t-1.73771036728344\t0.489095213973481\t-3.55290814065839\t0.000380997482497004\t0.00228598489498202\tBu; other\n']
         for a, e in zip(nbinom[1:6],exp):
-            af = map(float,a.split('\t'))
-            ef = map(float,e.split('\t'))
+            af = map(str,a.split('\t'))
+            ef = map(str,e.split('\t'))
             self.assertEqual(len(af), len(ef))
+            at = af.pop()
+            et = ef.pop()
+            self.assertEqual(at, et)
+            af = map(float,af)
+            ef = map(float,ef)
             for af_e, ef_e in zip(af, ef):
                 self.assertAlmostEqual(af_e, ef_e)
 
