@@ -296,9 +296,7 @@ def get_consensus(fasta_tempfile, min_consensus):
     seqs = list()
     counts = list()
 
-    for seq_gen in read(fasta_tempfile, format='fasta'):
-        label = seq_gen.id
-        seq = seq_gen.sequence
+    for label, seq in parse_fasta(fasta_tempfile):
         RE_output = search(r'\w+\|(\d+)', label)
         counts.append(int(RE_output.group(1)))
         seqs.append(seq)
