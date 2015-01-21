@@ -22,7 +22,6 @@ from qiime.split_libraries_fastq import correct_barcode
 from qiime.util import get_qiime_temp_dir, qiime_system_call
 from burrito.util import ApplicationError
 from skbio.parse.sequences import parse_fasta, parse_fastq
-from skbio.io import read, register_reader
 from skbio.util import remove_files
 from skbio.sequence import DNASequence
 from brokit.uclust import get_clusters_from_fasta_filepath
