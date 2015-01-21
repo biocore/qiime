@@ -35,20 +35,77 @@ class WorkflowTests(TestCase):
     def setUp(self):
         """setup the test values"""
         # define test data
+        self.temp_dir = get_qiime_temp_dir()
         self.fasta_seqs_of_rand_bcs = fasta_seqs_of_rand_bcs
         self.fasta_seqs_for_cluster_ratio = fasta_seqs_for_cluster_ratio
         self.fasta_seqs_for_consensus = fasta_seqs_for_consensus
-        self.fwd_read_data = fwd_read_data.split()
-        self.rev_read_data = rev_read_data.split()
+        self.fwd_read_data = fwd_read_data
+        self.rev_read_data = rev_read_data
+        self.variant_fq = 'illumina1.3'
+
+        self.fwd_read_fh = NamedTemporaryFile(
+            delete=False,
+            mode='w',
+            dir=self.temp_dir)
+        self.fwd_read_fh_name = self.fwd_read_fh.name
+        self.fwd_read_fh.write(self.fwd_read_data)
+        self.fwd_read_fh.close()
+        self.fwd_read_fh = open(self.fwd_read_fh_name, 'r')
+        self.rev_read_fh = NamedTemporaryFile(
+            delete=False,
+            mode='w',
+            dir=self.temp_dir)
+        self.rev_read_fh_name = self.rev_read_fh.name
+        self.rev_read_fh.write(self.rev_read_data)
+        self.rev_read_fh.close()
+        self.rev_read_fh = open(self.rev_read_fh_name, 'r')
+
         self.mapping_data = mapping_data
         self.fasta_seq_for_primer = fasta_seq_for_primer
         self.possible_primers = possible_primers
+
         self.fasta_seqs_for_consensus_tie_G_C = \
             fasta_seqs_for_consensus_tie_G_C
         self.fasta_seqs_for_consensus_unequal_length = \
             fasta_seqs_for_consensus_unequal_length
+        self.seqs_with_no_consensus = seqs_with_no_consensus
+
+        self.fasta_file_for_consensus_tie_G_C = NamedTemporaryFile(
+            delete=False,
+            mode='w',
+            dir=self.temp_dir)
+        self.fasta_file_for_consensus_tie_G_C_name = \
+            self.fasta_file_for_consensus_tie_G_C.name
+        self.fasta_file_for_consensus_tie_G_C.write(
+            self.fasta_seqs_for_consensus_tie_G_C)
+        self.fasta_file_for_consensus_tie_G_C.close()
+        self.fasta_file_for_consensus_tie_G_C = open(
+            self.fasta_file_for_consensus_tie_G_C_name, 'r')
+
+        self.fasta_file_for_consensus_unequal_length = NamedTemporaryFile(
+            delete=False,
+            mode='w',
+            dir=self.temp_dir)
+        self.fasta_file_for_consensus_unequal_length_name = \
+            self.fasta_file_for_consensus_unequal_length.name
+        self.fasta_file_for_consensus_unequal_length.write(
+            self.fasta_seqs_for_consensus_unequal_length)
+        self.fasta_file_for_consensus_unequal_length.close()
+        self.fasta_file_for_consensus_unequal_length = open(
+            self.fasta_file_for_consensus_unequal_length_name, 'r')
+
+        self.fasta_file_no_consensus = NamedTemporaryFile(
+            delete=False,
+            mode='w',
+            dir=self.temp_dir)
+        self.fasta_file_no_consensus_name = self.fasta_file_no_consensus.name
+        self.fasta_file_no_consensus.write(self.seqs_with_no_consensus)
+        self.fasta_file_no_consensus.close()
+        self.fasta_file_no_consensus = open(
+            self.fasta_file_no_consensus_name, 'r')
+
         self.min_difference_in_clusters = min_difference_in_clusters
-        self.temp_dir = get_qiime_temp_dir()
+
         self.mapping_fp = NamedTemporaryFile(
             delete=False,
             mode='w',
@@ -57,7 +114,7 @@ class WorkflowTests(TestCase):
         self.mapping_fp_name = self.mapping_fp.name
         self.mapping_fp.close()
         self.mapping_fp = open(self.mapping_fp_name, 'r')
-        self.seqs_with_no_consensus = seqs_with_no_consensus
+
         self.false_primers = false_primers
         self.barcode_len = barcode_len
         self.barcode_correction_fn = barcode_correction_fn
@@ -74,7 +131,14 @@ class WorkflowTests(TestCase):
     def tearDown(self):
         """remove all the files after completing tests """
         self.mapping_fp.close()
-        remove_files([self.mapping_fp_name])
+        self.fasta_file_no_consensus.close()
+        self.fasta_file_for_consensus_tie_G_C.close()
+        self.fasta_file_for_consensus_unequal_length.close()
+        remove_files([self.mapping_fp_name,
+                      self.fasta_file_no_consensus_name,
+                      self.fasta_file_for_consensus_tie_G_C_name,
+                      self.fasta_file_for_consensus_unequal_length_name,
+                      self.fwd_read_fh_name, self.rev_read_fh_name])
 
     def test_select_unique_rand_bcs(self):
         actual = select_unique_rand_bcs(self.fasta_seqs_of_rand_bcs, 0.86)
@@ -82,7 +146,7 @@ class WorkflowTests(TestCase):
         self.assertEqual(actual, expected)
 
     def test_get_consensus(self):
-        actual = get_consensus(self.fasta_seqs_for_consensus_tie_G_C, 2)
+        actual = get_consensus(self.fasta_file_for_consensus_tie_G_C, 2)
         # at the last position, G and C have the same frequency
         # therefore the function is expected to return
         # consensus sequence with G, which is present in seq
@@ -97,11 +161,11 @@ class WorkflowTests(TestCase):
 
         # Sequences having unequal length:
         with self.assertRaises(SeqLengthMismatchError):
-            get_consensus(self.fasta_seqs_for_consensus_unequal_length, 2)
+            get_consensus(self.fasta_file_for_consensus_unequal_length, 2)
 
-        seqs_with_no_consensus = self.seqs_with_no_consensus
+        fasta_file_no_consensus = self.fasta_file_no_consensus
         with self.assertRaises(LowConsensusScoreError):
-            get_consensus(seqs_with_no_consensus, 6.6)
+            get_consensus(fasta_file_no_consensus, 6.6)
 
     def test_get_cluster_ratio(self):
         actual = get_cluster_ratio(
@@ -133,8 +197,8 @@ class WorkflowTests(TestCase):
         barcode_column = 'BarcodeSequence'
         reverse_primer_column = 'ReversePrimer'
 
-        function_call, _ = get_LEA_seq_consensus_seqs(self.fwd_read_data,
-                                                      self.rev_read_data,
+        function_call, _ = get_LEA_seq_consensus_seqs(self.fwd_read_fh,
+                                                      self.rev_read_fh,
                                                       self.mapping_fp,
                                                       self.temp_dir,
                                                       barcode_type,
@@ -149,7 +213,8 @@ class WorkflowTests(TestCase):
                                                       min_reads_per_random_bc,
                                                       min_diff_in_clusters,
                                                       barcode_column,
-                                                      reverse_primer_column)
+                                                      reverse_primer_column,
+                                                      self.variant_fq)
 
         actual = function_call['Sample1']['AGCTACGAGCTATTGC']
         expected = 'AAAAAAAAAAAAAAAAAAA^AAAAAAAAAAAAAAAAAA'
@@ -196,8 +261,8 @@ Total number seqs written: 6"""
 
     def test_read_fwd_rev_read(self):
         expected_seqs_kept = 1
-        function_call = read_fwd_rev_read(self.fwd_read_data,
-                                          self.rev_read_data,
+        function_call = read_fwd_rev_read(self.fwd_read_fh,
+                                          self.rev_read_fh,
                                           self.bc_to_sid,
                                           self.barcode_len,
                                           self.barcode_correction_fn,
@@ -205,14 +270,15 @@ Total number seqs written: 6"""
                                           self.bc_to_rev_primers,
                                           self.max_barcode_errors,
                                           self.fwd_length,
-                                          self.rev_length)
+                                          self.rev_length,
+                                          self.variant_fq)
         actual_seqs_kept = function_call[-1]
         self.assertEqual(actual_seqs_kept, expected_seqs_kept)
 
     def test_get_consensus_seqs_lookup(self):
 
-        fn_call_fwd_rev_read = read_fwd_rev_read(self.fwd_read_data,
-                                                 self.rev_read_data,
+        fn_call_fwd_rev_read = read_fwd_rev_read(self.fwd_read_fh,
+                                                 self.rev_read_fh,
                                                  self.bc_to_sid,
                                                  self.barcode_len,
                                                  self.barcode_correction_fn,
@@ -220,7 +286,8 @@ Total number seqs written: 6"""
                                                  self.bc_to_rev_primers,
                                                  self.max_barcode_errors,
                                                  self.fwd_length,
-                                                 self.rev_length)
+                                                 self.rev_length,
+                                                 self.variant_fq)
 
         random_bc_lookup = fn_call_fwd_rev_read[0]
         random_bc_reads = fn_call_fwd_rev_read[1]
@@ -238,7 +305,8 @@ Total number seqs written: 6"""
                                                           min_reads_rand_bc,
                                                           output_dir,
                                                           min_diff_clusters,
-                                                          max_cluster_ratio)
+                                                          max_cluster_ratio,
+                                                          min_consensus)
 
         actual = fn_call_get_consensus['Sample1']['AGCTACGAGCTATTGC']
         expected = 'AAAAAAAAAAAAAAAAAAA^AAAAAAAAAAAAAAAAAA'
@@ -306,12 +374,12 @@ fasta_seqs_of_rand_bcs = [
 fwd_read_data = """@1____
 AGCTACGAGCTATTGCAGAGTTTGATCCTGGCTCAGAAAAAAAAAAAAAAAAAAACCGGCAG
 +
-$
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 """
 rev_read_data = """@1____
 CCGGCAGAGCTACGAGCTATTGCGGGCCGTGTCTCAGTAAAAAAAAAAAAAAAAAA
 +
-$
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 """
 mapping_data = """"#SampleID	BarcodeSequence	LinkerPrimerSequence	ReversePrimer	Description
 Sample1	CCGGCAG	AGAGTTTGATCCTGGCTCAG	GGGCCGTGTCTCAGT	Sample1	description"""
