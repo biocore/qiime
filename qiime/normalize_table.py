@@ -4,14 +4,18 @@ from __future__ import division
 
 from os.path import exists, splitext, join, isdir
 from os import makedirs, listdir, remove
-from qiime.util import RExecutor
+
+import tempfile
 from biom import load_table
+from qiime.util import RExecutor
+from qiime.util import get_qiime_temp_dir
+
 
 __author__ = "Sophie Weiss"
 __copyright__ = "Copyright 2014, The QIIME Project"
 __credits__ = ["Sophie Weiss", "Joseph Paulson"]
 __license__ = "GPL"
-__version__ = "1.9.0-rc1"
+__version__ = "1.9.0-rc2"
 __maintainer__ = "Sophie Weiss"
 __email__ = "sophie.sjw@gmail.com"
 
@@ -20,16 +24,18 @@ __email__ = "sophie.sjw@gmail.com"
 def normalize_CSS(input_path, out_path, output_CSS_statistics):
     """performs metagenomeSeq's CSS normalization on a single raw abundance OTU matrix
     """
-    base_fname, ext = splitext(input_path)
-    json_infile = base_fname+'_json.biom'
-    open(str(json_infile),'w').write(load_table(input_path).to_json('forR'))
+    tmp_bt = load_table(input_path) 
 
     if output_CSS_statistics:
         base_fname, ext = splitext(out_path)
         output_CSS_statistics = base_fname+'_CSS_statistics.txt'
-    
-    run_CSS(json_infile, out_path, output_CSS_statistics=output_CSS_statistics)
-    remove(json_infile)
+
+    with tempfile.NamedTemporaryFile(dir=get_qiime_temp_dir(),
+                                     prefix='QIIME-normalize-table-temp-table-',
+                                     suffix='.biom') as temp_fh:
+        temp_fh.write(tmp_bt.to_json('forR'))
+        temp_fh.flush()
+        run_CSS(temp_fh.name, out_path, output_CSS_statistics=output_CSS_statistics)
 
 
 def multiple_file_normalize_CSS(input_dir, output_dir, output_CSS_statistics):
@@ -42,20 +48,22 @@ def multiple_file_normalize_CSS(input_dir, output_dir, output_CSS_statistics):
 
     for fname in file_names:
         base_fname, ext = splitext(fname)
-        print base_fname
         original_fname = base_fname+'.biom'
-        json_fname = base_fname+'_json.biom'
         hdf5_infile = join(input_dir, original_fname)
-        json_infile = join(input_dir, json_fname)
-        open(str(json_infile),'w').write(load_table(hdf5_infile).to_json('forR'))
+        tmp_bt = load_table(hdf5_infile) 
         outfile = join(output_dir, 'CSS_'+base_fname+'.biom')
         if output_CSS_statistics:
             output_CSS_statistics = join(output_dir, 'CSS_statistics_'+base_fname+'.txt')
-        run_CSS(json_infile, outfile, output_CSS_statistics=output_CSS_statistics)
-        remove(json_infile)
 
-def run_CSS(input_path, out_path, output_CSS_statistics, HALT_EXEC=False):
-    """Run metagenomeSeq's fitZIG algorithm through Rscript
+        with tempfile.NamedTemporaryFile(dir=get_qiime_temp_dir(),
+                                         prefix='QIIME-normalize-table-temp-table-',
+                                         suffix='.biom') as temp_fh:
+            temp_fh.write(tmp_bt.to_json('forR'))
+            temp_fh.flush()
+            run_CSS(temp_fh.name, outfile, output_CSS_statistics=output_CSS_statistics)
+
+def run_CSS(input_path, out_path, output_CSS_statistics):
+    """Run metagenomeSeq's CSS algorithm through Rscript
     """
     # set options
     if not output_CSS_statistics:
@@ -63,25 +71,26 @@ def run_CSS(input_path, out_path, output_CSS_statistics, HALT_EXEC=False):
     else:
         command_args = ['-i %s -o %s -s %s' % (input_path, out_path, output_CSS_statistics)]
     # instantiate the object
-    rsl = RExecutor()
+    rsl = RExecutor(TmpDir=get_qiime_temp_dir())
     # run the app
     app_result = rsl(command_args=command_args, script_name='CSS.r')
 
     return app_result
 
 
-def normalize_DESeq(input_path, out_path, DESeq_negatives_to_zero):
-    """performs DESeqVS normalization on a single raw abundance OTU matrix
+def normalize_DESeq2(input_path, out_path, DESeq_negatives_to_zero):
+    """performs DESeq2VS normalization on a single raw abundance OTU matrix
     """
-    base_fname, ext = splitext(out_path)
-    json_infile = base_fname+'_json.biom'
-    open(str(json_infile),'w').write(load_table(input_path).to_json('forR'))
+    tmp_bt = load_table(input_path) 
+    with tempfile.NamedTemporaryFile(dir=get_qiime_temp_dir(),
+                                     prefix='QIIME-normalize-table-temp-table-',
+                                     suffix='.biom') as temp_fh:
+        temp_fh.write(tmp_bt.to_json('forR'))
+        temp_fh.flush()
+        run_DESeq2(temp_fh.name, out_path, DESeq_negatives_to_zero)
 
-    run_DESeq(json_infile, out_path, DESeq_negatives_to_zero)
-    remove(json_infile)
-
-def multiple_file_normalize_DESeq(input_dir, output_dir, DESeq_negatives_to_zero):
-    """performs DESeqVS normalization on a directory of raw abundance OTU matrices
+def multiple_file_normalize_DESeq2(input_dir, output_dir, DESeq_negatives_to_zero):
+    """performs DESeq2VS normalization on a directory of raw abundance OTU matrices
     """
     if not exists(output_dir):
         makedirs(output_dir)
@@ -91,17 +100,19 @@ def multiple_file_normalize_DESeq(input_dir, output_dir, DESeq_negatives_to_zero
     for fname in file_names:
         base_fname, ext = splitext(fname)
         original_fname = base_fname+'.biom'
-        json_fname = base_fname+'_json.biom'
         hdf5_infile = join(input_dir, original_fname)
-        json_infile = join(input_dir, json_fname)
-        open(str(json_infile),'w').write(load_table(hdf5_infile).to_json('forR'))
-        outfile = join(output_dir, 'DESeqVS_'+base_fname+'.biom')
+        tmp_bt = load_table(hdf5_infile) 
+        outfile = join(output_dir, 'DESeq2_'+base_fname+'.biom')
 
-        run_DESeq(json_infile, outfile, DESeq_negatives_to_zero)
-        remove(json_infile)
+        with tempfile.NamedTemporaryFile(dir=get_qiime_temp_dir(),
+                                         prefix='QIIME-normalize-table-temp-table-',
+                                         suffix='.biom') as temp_fh:
+            temp_fh.write(tmp_bt.to_json('forR'))
+            temp_fh.flush()
+            run_DESeq2(temp_fh.name, outfile, DESeq_negatives_to_zero)
 
-def run_DESeq(input_path, out_path, DESeq_negatives_to_zero, HALT_EXEC=False):
-    """Run metagenomeSeq's fitZIG algorithm through Rscript
+def run_DESeq2(input_path, out_path, DESeq_negatives_to_zero):
+    """Run DESeq2's variance stabilization algorithm through Rscript
     """
     # set options
     if DESeq_negatives_to_zero:
@@ -109,7 +120,7 @@ def run_DESeq(input_path, out_path, DESeq_negatives_to_zero, HALT_EXEC=False):
     else:
         command_args = ['-i %s -o %s' % (input_path, out_path)]
     # instantiate the object
-    rsl = RExecutor()
+    rsl = RExecutor(TmpDir=get_qiime_temp_dir())
     # run the app
     app_result = rsl(command_args=command_args, script_name='DESeq2.r')
 
@@ -118,7 +129,7 @@ def run_DESeq(input_path, out_path, DESeq_negatives_to_zero, HALT_EXEC=False):
 def algorithm_list():
     """ returns list of normalization algorithms from qiime.normalize_table
     """
-    return ['CSS', 'DESeq']
+    return ['CSS', 'DESeq2']
 
 if __name__ == "__main__":
     main()

@@ -7,7 +7,7 @@ Parallel launching script for SortMeRNA v 2.0
 
 from __future__ import division
 __license__ = "GPL"
-__version__ = "1.9.0-rc1"
+__version__ = "1.9.0-rc2"
 __maintainer__ = "Jenya Kopylov"
 __email__ = "jenya.kopylov@gmail.com"
 

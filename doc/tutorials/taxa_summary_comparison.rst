@@ -18,7 +18,7 @@ Please note that this tutorial does not attempt to cover every possible option t
 
 Input Files
 -----------
-You can obtain the files used in this tutorial `here <https://s3.amazonaws.com/s3-qiime_tutorial_files/taxa_summary_comparison_tutorial_data.zip>`_. The files are derived from the `overview tutorial <./tutorial.html>`_. The unzipped directory will contain two taxa summary files named :file:`ts_rdp_0.60.txt` and :file:`ts_rdp_0.80.txt`. These taxa summaries were constructed from the overview tutorial representative sequence set by assigning taxonomy to it using the RDP classifier with two different confidence levels (0.60 and 0.80). The gg_otus_4feb2011 97% representative set was used as training input to the RDP classifier.
+You can obtain the files used in this tutorial `here <ftp://ftp.microbio.me/qiime/tutorial_files/taxa_summary_comparison_tutorial_data.zip>`_. The files are derived from the `overview tutorial <./tutorial.html>`_. The unzipped directory will contain two taxa summary files named :file:`ts_rdp_0.60.txt` and :file:`ts_rdp_0.80.txt`. These taxa summaries were constructed from the overview tutorial representative sequence set by assigning taxonomy to it using the RDP classifier with two different confidence levels (0.60 and 0.80). The gg_otus_4feb2011 97% representative set was used as training input to the RDP classifier.
 
 Output Files
 ------------

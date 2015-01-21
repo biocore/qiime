@@ -4,7 +4,7 @@ __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Justin Kuczynski", "Rob Knight", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.9.0-rc1"
+__version__ = "1.9.0-rc2"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
@@ -18,7 +18,6 @@ from tempfile import mkstemp, mkdtemp
 from unittest import TestCase, main
 
 from biom.table import Table
-from biom.util import biom_open
 import numpy as np
 import numpy.testing as npt
 from skbio.util import remove_files

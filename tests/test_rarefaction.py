@@ -5,7 +5,7 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["justin kuczynski", "Rob Knight",
                "Jose Carlos Clemente Litran", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.9.0-rc1"
+__version__ = "1.9.0-rc2"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
@@ -19,9 +19,8 @@ from unittest import TestCase, main
 
 import numpy.testing as npt
 import numpy as np
+from biom import load_table
 from biom.table import Table, TableException
-from biom.parse import parse_biom_table
-from biom.util import biom_open
 
 from qiime.rarefaction import RarefactionMaker, get_rare_data
 from qiime.util import load_qiime_config, write_biom_table
@@ -101,15 +100,14 @@ class FunctionTests(TestCase):
         """rarefy_to_files should write valid files
 
         """
-        maker = RarefactionMaker(self.otu_table_fp, 0, 1, 1, 1)
+        maker = RarefactionMaker(self.otu_table_fp, 1, 2, 1, 1)
         maker.rarefy_to_files(
             self.rare_dir,
             include_full=True,
             include_lineages=False)
 
         fname = os.path.join(self.rare_dir, "rarefaction_1_0.biom")
-        with biom_open(fname, 'U') as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(fname)
 
         self.assertItemsEqual(
             otu_table.ids(),
@@ -120,15 +118,14 @@ class FunctionTests(TestCase):
         """rarefy_to_files should write valid files with some metadata on otus
 
         """
-        maker = RarefactionMaker(self.otu_table_meta_fp, 0, 1, 1, 1)
+        maker = RarefactionMaker(self.otu_table_meta_fp, 1, 2, 1, 1)
         maker.rarefy_to_files(
             self.rare_dir,
             include_full=True,
             include_lineages=False)
 
         fname = os.path.join(self.rare_dir, "rarefaction_1_0.biom")
-        with biom_open(fname, 'U') as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(fname)
 
         self.assertItemsEqual(
             otu_table.ids(),

@@ -8,7 +8,7 @@ __credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso",
                "Levi McCracken", "Damien Coy", "Yoshiki Vazquez Baeza",
                "Will Van Treuren", "Adam Robbins-Pianka"]
 __license__ = "GPL"
-__version__ = "1.9.0-rc1"
+__version__ = "1.9.0-rc2"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -39,7 +39,6 @@ from numpy.ma.extras import apply_along_axis
 
 from biom.util import compute_counts_per_sample_stats, biom_open, HAVE_H5PY
 from biom import load_table
-from biom.parse import parse_biom_table
 from biom.table import Table
 
 from cogent.parse.tree import DndParser
@@ -1347,7 +1346,7 @@ def count_seqs_in_filepaths(fasta_filepaths, seq_counter=count_seqs):
         # if the file is actually fastq, use the fastq parser.
         # otherwise use the fasta parser
         if fasta_filepath.endswith('.fastq'):
-            parser = parse_fastq
+            parser = partial(parse_fastq, enforce_qual_range=False)
         elif fasta_filepath.endswith('.tre') or \
                 fasta_filepath.endswith('.ph') or \
                 fasta_filepath.endswith('.ntree'):
@@ -1532,60 +1531,6 @@ def subsample_fasta(input_fasta_fp,
 
     input_fasta.close()
     output_fasta.close()
-
-
-def subsample_fastq(input_fastq_fp,
-                    output_fp,
-                    percent_subsample):
-    """ Writes random percent_sample of sequences from input fastq filepath
-
-    input_fastq_fp: input fastq filepath
-    output_fp: output fasta filepath
-    percent_subsample: percent of sequences to write
-    """
-
-    input_fastq = open(input_fastq_fp, "U")
-    output_fastq = open(output_fp, "w")
-
-    for label, seq, qual in parse_fastq(input_fastq, strict=False):
-        if random() < percent_subsample:
-            output_fastq.write(
-                '@%s\n%s\n+%s\n%s\n' %
-                (label, seq, label, qual))
-
-    input_fastq.close()
-    output_fastq.close()
-
-
-def subsample_fastqs(input_fastq1_fp,
-                     output_fastq1_fp,
-                     input_fastq2_fp,
-                     output_fastq2_fp,
-                     percent_subsample):
-    """ Writes random percent_sample of sequences from input fastq filepath
-    """
-
-    input_fastq1 = open(input_fastq1_fp, "U")
-    output_fastq1 = open(output_fastq1_fp, "w")
-    input_fastq2 = open(input_fastq2_fp, "U")
-    output_fastq2 = open(output_fastq2_fp, "w")
-
-    for fastq1, fastq2 in izip(parse_fastq(input_fastq1, strict=False),
-                               parse_fastq(input_fastq2, strict=False)):
-        label1, seq1, qual1 = fastq1
-        label2, seq2, qual2 = fastq2
-        if random() < percent_subsample:
-            output_fastq1.write(
-                '@%s\n%s\n+%s\n%s\n' %
-                (label1, seq1, label1, qual1))
-            output_fastq2.write(
-                '@%s\n%s\n+%s\n%s\n' %
-                (label2, seq2, label2, qual2))
-
-    input_fastq1.close()
-    output_fastq1.close()
-    input_fastq2.close()
-    output_fastq2.close()
 
 
 def summarize_otu_sizes_from_otu_map(otu_map_f):
@@ -1914,8 +1859,11 @@ class MetadataMap():
             extra_samples = set(sample_ids_to_keep) - set(self.sample_ids)
 
             if extra_samples:
-                raise ValueError("Could not find the following sample IDs in "
-                                 "metadata map: %s" % ', '.join(extra_samples))
+                extra_samples_formatted = ', '.join(
+                    map(lambda e: '"%s"' % e, extra_samples))
+                raise ValueError(
+                    "Could not find the following sample ID(s) in the "
+                    "metadata mapping file: %s" % extra_samples_formatted)
 
 
 class RExecutor(CommandLineApplication):
@@ -1949,26 +1897,11 @@ class RExecutor(CommandLineApplication):
         """
         return help_str
 
-    def __call__(self, command_args, script_name, output_dir=None,
-                 verbose=False):
+    def __call__(self, command_args, script_name, verbose=False):
         """Run the specified r script using the commands_args
 
             returns a CommandLineAppResult object
         """
-        input_handler = self.InputHandler
-        suppress_stdout = self.SuppressStdout
-        suppress_stderr = self.SuppressStderr
-        if suppress_stdout:
-            outfile = devnull
-        else:
-            outfilepath = FilePath(join(self.TmpDir, 'R.stdout'))
-            outfile = open(outfilepath, 'w')
-        if suppress_stderr:
-            errfile = devnull
-        else:
-            errfilepath = FilePath(join(self.TmpDir, 'R.stderr'))
-            errfile = open(errfilepath, 'w')
-
         self._R_script = script_name
         rscript = self._get_R_script_path()
         base_command = self._get_base_command()
@@ -1986,36 +1919,27 @@ class RExecutor(CommandLineApplication):
         )
 
         if self.HaltExec:
-            raise AssertionError("Halted exec with command:\n" + command)
+            raise AssertionError("Halted exec with command:\n%s" % command)
 
-        # run command, wait for output, get exit status
-        proc = Popen(command, shell=True, stdout=outfile, stderr=errfile)
-        proc.wait()
-        exit_status = proc.returncode
+        # run command
+        stdout, stderr, exit_status = qiime_system_call(command, shell=True)
 
         # Determine if error should be raised due to exit status of
         # appliciation
         if not self._accept_exit_status(exit_status):
             if exit_status == 2:
-                raise ApplicationError('R library not installed: \n' +
-                                       ''.join(open(errfilepath, 'r').readlines()) + '\n')
+                raise ApplicationError(
+                    'R library not installed:\nstdout:\n%s\nstderr:\n%s\n' %
+                    (stdout, stderr))
             else:
-                raise ApplicationError('Unacceptable application exit status: %s, command: %s'
-                                       % (str(exit_status), command) +
-                                       ' Program output: \n\n%s\n'
-                                       % (''.join(open(errfilepath, 'r').readlines())))
-        # open the stdout and stderr if not being suppressed
-        out = None
-        if not suppress_stdout:
-            out = open(outfilepath, "r")
-        err = None
-        if not suppress_stderr:
-            err = open(errfilepath, "r")
+                raise ApplicationError(
+                    'Unacceptable application exit status: %d\ncommand: %s\n'
+                    'stdout:\n%s\nstderr:\n%s\n' %
+                    (exit_status, command, stdout, stderr))
+
         if verbose:
-            msg = '\n\nCommand Executed: %s' % command + \
-                  ' \n\nR Command Output:\n%s' % \
-                  (''.join(open(errfilepath, 'r').readlines()))
-            print(msg)
+            print ('Command: %s\nstdout:\n%s\nstderr:\n%s\n' %
+                   (command, stdout, stderr))
 
     # The methods below were taken from supervised_learning.py
     def _get_R_script_dir(self):
@@ -2122,7 +2046,7 @@ def sync_biom_and_mf(pmf, bt):
 
     Inputs:
      pmf - parsed mapping file from parse_mapping_file_to_dict (nested dict).
-     bt - parse biom table from parse_biom_table (biom table object).
+     bt - biom table object.
     Outputs are a bt and pmf that contain only shared samples and a set of
     samples that are not shared. If no samples are unshared this final output
     will be an empty set.

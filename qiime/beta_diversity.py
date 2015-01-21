@@ -6,7 +6,7 @@ __credits__ = ["Justin Kuczynski", "Rob Knight", "Greg Caporaso",
                "Jose Carlos Clemente Litran", "Jai Ram Rideout",
                "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.9.0-rc1"
+__version__ = "1.9.0-rc2"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
@@ -36,8 +36,6 @@ warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
 
 from numpy import asarray
 import cogent.maths.distance_transform as distance_transform
-from biom.parse import parse_biom_table
-from biom.table import Table
 from biom import load_table
 
 from qiime.util import (FunctionWithParams, TreeMissingError,

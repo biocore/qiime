@@ -10,7 +10,7 @@ __credits__ = [
     "Greg Caporaso",
     "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.9.0-rc1"
+__version__ = "1.9.0-rc2"
 __maintainer__ = "Dan Knights"
 __email__ = "daniel.knights@colorado.edu"
 

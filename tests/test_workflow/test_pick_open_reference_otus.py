@@ -6,7 +6,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.9.0-rc1"
+__version__ = "1.9.0-rc2"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -19,8 +19,7 @@ from unittest import TestCase, main
 
 from skbio.tree import TreeNode
 from skbio.util import remove_files
-from biom import Table
-from biom.util import biom_open
+from biom import load_table
 
 from qiime.util import load_qiime_config, count_seqs, get_qiime_temp_dir
 from qiime.workflow.util import (call_commands_serially, no_status_updates,
@@ -139,8 +138,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             "PyNAST failures file doesn't exist")
 
         # all OTUs in final OTU table occur more than once
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         for row in otu_table.iter_data(axis='observation'):
             self.assertTrue(sum(row) >= 2,
                             "Singleton OTU detected in OTU table.")
@@ -191,8 +189,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # OTU table without singletons or pynast failures has same number of
         # otus as there are aligned sequences
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         self.assertEqual(len(otu_table.ids(axis='observation')),
                          num_align_seqs)
 
@@ -265,8 +262,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             "PyNAST failures file doesn't exist")
 
         # all OTUs in final OTU table occur more than once
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         for row in otu_table.iter_data(axis='observation'):
             self.assertTrue(sum(row) >= 2,
                             "Singleton OTU detected in OTU table.")
@@ -317,8 +313,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # OTU table without singletons or pynast failures has same number of
         # otus as there are aligned sequences
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         self.assertEqual(len(otu_table.ids(axis='observation')),
                          num_align_seqs)
 
@@ -403,8 +398,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             "rdp taxonomy assignment result doesn't exist")
 
         # all OTUs in final OTU table occur more than once
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         for row in otu_table.iter_data(axis='observation'):
             self.assertTrue(sum(row) >= 2,
                             "Singleton OTU detected in OTU table.")
@@ -455,8 +449,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # OTU table without singletons or pynast failures has same number of
         # otus as there are aligned sequences
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         self.assertEqual(len(otu_table.ids(axis='observation')),
                          num_align_seqs)
 
@@ -531,8 +524,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             "PyNAST failures file doesn't exist")
 
         # all OTUs in final OTU table occur more than once
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         for row in otu_table.iter_data(axis='observation'):
             self.assertTrue(sum(row) >= 2,
                             "Singleton OTU detected in OTU table.")
@@ -582,8 +574,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # OTU table without singletons or pynast failures has same number of
         # otus as there are aligned sequences
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         self.assertEqual(len(otu_table.ids(axis='observation')),
                          num_align_seqs)
 
@@ -664,8 +655,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             "PyNAST failures file doesn't exist")
 
         # all OTUs in final OTU table occur more than once
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         for row in otu_table.iter_data(axis='observation'):
             self.assertTrue(sum(row) >= 2,
                             "Singleton OTU detected in OTU table.")
@@ -734,8 +724,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # OTU table without singletons or pynast failures has same number of
         # otus as there are aligned sequences
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         self.assertEqual(len(otu_table.ids(axis='observation')),
                          num_align_seqs)
 
@@ -816,8 +805,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             "PyNAST failures file doesn't exist")
 
         # all OTUs in final OTU table occur more than once
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         for row in otu_table.iter_data(axis='observation'):
             self.assertTrue(sum(row) >= 2,
                             "Singleton OTU detected in OTU table.")
@@ -883,8 +871,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # OTU table without singletons or pynast failures has same number of
         # otus as there are aligned sequences
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         self.assertEqual(len(otu_table.ids(axis='observation')),
                          num_align_seqs)
 
@@ -973,8 +960,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             "PyNAST failures file doesn't exist")
 
         # all OTUs in final OTU table occur more than once
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         for row in otu_table.iter_data(axis='observation'):
             self.assertTrue(sum(row) >= 2,
                             "Singleton OTU detected in OTU table.")
@@ -1037,8 +1023,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # OTU table without singletons or pynast failures has same number of
         # otus as there are aligned sequences
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         self.assertEqual(len(otu_table.ids(axis='observation')),
                          num_align_seqs)
 
@@ -1172,8 +1157,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             "PyNAST failures file doesn't exist")
 
         # all OTUs in final OTU table occur more than once
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         for row in otu_table.iter_data(axis='observation'):
             self.assertTrue(sum(row) >= 2,
                             "Singleton OTU detected in OTU table.")
@@ -1225,8 +1209,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # OTU table without singletons or pynast failures has same number of
         # otus as there are aligned sequences
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         self.assertEqual(len(otu_table.ids(axis='observation')),
                          num_align_seqs)
 
@@ -1300,8 +1283,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             "PyNAST failures file doesn't exist")
 
         # all OTUs in final OTU table occur more than once
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         for row in otu_table.iter_data(axis='observation'):
             self.assertTrue(sum(row) >= 2,
                             "Singleton OTU detected in OTU table.")
@@ -1352,8 +1334,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # OTU table without singletons or pynast failures has same number of
         # otus as there are aligned sequences
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         self.assertEqual(len(otu_table.ids(axis='observation')),
                          num_align_seqs)
 
@@ -1432,8 +1413,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
             "PyNAST failures file doesn't exist")
 
         # all OTUs in final OTU table occur more than once
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         for row in otu_table.iter_data(axis='observation'):
             self.assertTrue(sum(row) >= 2,
                             "Singleton OTU detected in OTU table.")
@@ -1488,8 +1468,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
 
         # OTU table without singletons or pynast failures has same number of
         # otus as there are aligned sequences
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         self.assertEqual(len(otu_table.ids(axis='observation')),
                          num_align_seqs)
 
@@ -1592,8 +1571,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
                         "Iteration 1 OTU map with singletons doesn't exist")
 
         # all OTUs in final OTU table occur more than once
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         for row in otu_table.iter_data(axis='observation'):
             self.assertTrue(sum(row) >= 2,
                             "Singleton OTU detected in OTU table.")
@@ -1734,8 +1712,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
                         "Iteration 1 OTU map with singletons doesn't exist")
 
         # all OTUs in final OTU table occur more than once
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         for row in otu_table.iter_data(axis='observation'):
             self.assertTrue(sum(row) >= 2,
                             "Singleton OTU detected in OTU table.")
@@ -1876,8 +1853,7 @@ class PickSubsampledReferenceOtusThroughOtuTableTests(TestCase):
                         "Iteration 1 OTU map with singletons doesn't exist")
 
         # all OTUs in final OTU table occur more than once
-        with biom_open(otu_table_fp) as biom_file:
-            otu_table = Table.from_hdf5(biom_file)
+        otu_table = load_table(otu_table_fp)
         for row in otu_table.iter_data(axis='observation'):
             self.assertTrue(sum(row) >= 2,
                             "Singleton OTU detected in OTU table.")

@@ -6,7 +6,7 @@ __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jesse Stombaugh", "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
-__version__ = "1.9.0-rc1"
+__version__ = "1.9.0-rc2"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 
@@ -631,7 +631,7 @@ function show_hide_categories(SelObject){
 </table></div></div>
 <div style="position:relative;clear:both;">
 <div style="position:relative;clear:both;display:none;" class="strong" id="nan_disclaimer">
-<b>If the lines for some categories do not extend all the way to the right end of the x-axis, that means that at least one of the samples in that category does not have that many samples.</b>
+<b>If the lines for some categories do not extend all the way to the right end of the x-axis, that means that at least one of the samples in that category does not have that many sequences.</b>
 </div>
 <br><br>
 <table id="rare_data" border="1px">

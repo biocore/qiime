@@ -6,7 +6,7 @@ __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jens Reeder, Justin Kuczynski", "Daniel McDonald"]
 __license__ = "GPL"
-__version__ = "1.9.0-rc1"
+__version__ = "1.9.0-rc2"
 __maintainer__ = "Jose Clemente"
 __email__ = "jose.clemente@gmail.com"
 

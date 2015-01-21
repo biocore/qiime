@@ -7,7 +7,7 @@ __credits__ = ["Meg Pirrung", "Jesse Stombaugh", "Antonio Gonzalez Pena",
                "Will Van Treuren", "Yoshiki Vazquez Baeza", "Jai Ram Rideout",
                "Evan Bolyen"]
 __license__ = "GPL"
-__version__ = "1.9.0-rc1"
+__version__ = "1.9.0-rc2"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 
@@ -301,25 +301,6 @@ def ave_seqs_per_sample(matrix, seqs_per_samp, sampleIDs):
 
     return ave_ser
 
-'''
-#This function is currently not being used
-
-def is_max_category_ops(mapping, mapping_category):
-    """Count how many unique values there are for the supplied mapping \
-    category and return true if all values are unique"""
-
-    header = mapping[1]
-    map_min = mapping[0]
-    num_samples = len(map_min)
-    index = header.index(mapping_category)
-    seen = set()
-
-    for m in map_min:
-        seen.update([m[index]])
-
-    return (len(seen) == num_samples), len(seen)
-'''
-
 
 def make_error_series(rare_mat, groups, std_type):
     """Create mean and error bar series for the supplied mapping category"""
@@ -360,20 +341,6 @@ def make_error_series(rare_mat, groups, std_type):
             err_ser[o] = stddev.tolist()
 
     return collapsed_ser, err_ser, ops
-
-'''
-function is not used
-
-def get_overall_averages(rare_mat, sampleIDs):
-    """Make series of averages of all values of seqs/sample for each \
-    sampleID"""
-
-    overall_ave = dict();
-    for s in sampleIDs:
-        overall_ave[s] = mean(array(rare_mat[s]))
-
-    return overall_ave
-'''
 
 
 def save_rarefaction_data(rare_mat, xaxis, xmax,
@@ -574,15 +541,6 @@ def make_averages(color_prefs, data, background_color, label_color, rares,
         xmax = max(xaxisvals) + (xaxisvals[len(xaxisvals) - 1] -
                                  xaxisvals[len(xaxisvals) - 2])
 
-        '''
-        #get the overall average
-        #overall_average = get_overall_averages(rare_mat_ave, sampleIDs)
-
-        rarelines.append("#" + r + '\n')
-
-        for s in sampleIDs:
-            rarelines.append('%f'%overall_average[s] + '\n')
-        '''
         if not user_ymax:
             ymax = 0
             for i in range(len(groups_and_colors)):
@@ -992,15 +950,13 @@ def make_plots(background_color, label_color, rares, ymax, xmax,
                             ((raredata['error'][i][j]))))
 
         # Create raw plots for each group in a category
-        fpath = output_dir
-
         if generate_per_sample_plots:
             if output_type == "file_creation":
                 rarefaction_legend_mat = save_single_rarefaction_plots(
                     sample_dict,
                     imagetype, metric_name,
                     sample_data_colors, sample_colors,
-                    fpath, background_color,
+                    output_dir, background_color,
                     label_color, resolution, ymax, xmax,
                     rarefaction_legend_mat, groups[i],
                     labelname, i, mapping_lookup, output_type)
@@ -1009,34 +965,37 @@ def make_plots(background_color, label_color, rares, ymax, xmax,
                     sample_dict,
                     imagetype, metric_name,
                     sample_data_colors, sample_colors,
-                    fpath, background_color,
+                    output_dir, background_color,
                     label_color, resolution, ymax, xmax,
                     rarefaction_legend_mat, groups[i],
                     labelname, i, mapping_lookup, output_type)
                 all_plots_single.append(rare_plot_for_all)
 
-    categories = [k for k in groups]
+    all_plots_ave = {}
+    if generate_per_sample_plots:
+        # Create the rarefaction average plot and get updated legend information
+        categories = [k for k in groups]
 
-    # Create the rarefaction average plot and get updated legend information
+        if output_type == "file_creation":
+            rarefaction_legend_mat = save_single_ave_rarefaction_plots(
+                raredata['xaxis'],
+                raredata['series'], raredata[
+                    'error'], xmax, ymax, categories,
+                labelname, imagetype, resolution, data_colors,
+                colors, file_path, background_color, label_color,
+                rarefaction_legend_mat, metric_name, mapping_lookup, output_type)
+        elif output_type == "memory":
+            rarefaction_legend_mat, all_plots_ave = save_single_ave_rarefaction_plots(
+                raredata['xaxis'],
+                raredata['series'], raredata[
+                    'error'], xmax, ymax, categories,
+                labelname, imagetype, resolution, data_colors,
+                colors, file_path, background_color, label_color,
+                rarefaction_legend_mat, metric_name, mapping_lookup, output_type)
+
     if output_type == "file_creation":
-        rarefaction_legend_mat = save_single_ave_rarefaction_plots(
-            raredata['xaxis'],
-            raredata['series'], raredata[
-                'error'], xmax, ymax, categories,
-            labelname, imagetype, resolution, data_colors,
-            colors, file_path, background_color, label_color,
-            rarefaction_legend_mat, metric_name, mapping_lookup, output_type)
-
         return rarefaction_data_mat, rarefaction_legend_mat
     elif output_type == "memory":
-        rarefaction_legend_mat, all_plots_ave = save_single_ave_rarefaction_plots(
-            raredata['xaxis'],
-            raredata['series'], raredata[
-                'error'], xmax, ymax, categories,
-            labelname, imagetype, resolution, data_colors,
-            colors, file_path, background_color, label_color,
-            rarefaction_legend_mat, metric_name, mapping_lookup, output_type)
-
         return (
             rarefaction_data_mat, rarefaction_legend_mat, all_plots_single, all_plots_ave
         )
@@ -1304,7 +1263,7 @@ function show_hide_categories(SelObject){
 %s
 <div style="position:relative;clear:both;">
 <div style="position:relative;clear:both;display:none;" class="strong" id="nan_disclaimer">
-<b>If the lines for some categories do not extend all the way to the right end of the x-axis, that means that at least one of the samples in that category does not have that many samples.</b>
+<b>If the lines for some categories do not extend all the way to the right end of the x-axis, that means that at least one of the samples in that category does not have that many sequences.</b>
 </div>
 <br><br>
 <table id="rare_data" border="1px">

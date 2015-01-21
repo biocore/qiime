@@ -6,7 +6,7 @@ __copyright__ = "Copyright 2012, The QIIME project"
 __credits__ = ["Jai Ram Rideout", "Michael Dwan", "Logan Knecht",
                "Damien Coy", "Levi McCracken"]
 __license__ = "GPL"
-__version__ = "1.9.0-rc1"
+__version__ = "1.9.0-rc2"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 
@@ -143,7 +143,7 @@ def compare_categories(dm_fp, map_fp, method, categories, num_perms, out_dir):
                 command_args[0] += ' -n %d' % num_perms
 
             rex = RExecutor(TmpDir=get_qiime_temp_dir())
-            rex(command_args, '%s.r' % method, output_dir=out_dir)
+            rex(command_args, '%s.r' % method)
         else:
             raise ValueError("Unrecognized method '%s'. Valid methods: %r"
                              % (method, methods))

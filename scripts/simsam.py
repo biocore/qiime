@@ -6,14 +6,13 @@ __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Justin Kuczynski", "Jai Ram Rideout", "Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.9.0-rc1"
+__version__ = "1.9.0-rc2"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
 from os.path import join, split, splitext
 
 from cogent.parse.tree import DndParser
-from biom.parse import parse_biom_table
 from biom import load_table
 
 from qiime.util import (add_filename_suffix, create_dir, get_options_lookup,

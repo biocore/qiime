@@ -8,7 +8,7 @@ __credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso",
                "Antonio Gonzalez Pena", "Jai Ram Rideout", "Will Van Treuren",
                "Yoshiki Vazquez-Baeza", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.9.0-rc1"
+__version__ = "1.9.0-rc2"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -745,21 +745,6 @@ def parse_qual_score(infile, value_cast_f=int):
     """Load quality scores into dict."""
     id_to_qual = dict([rec for rec in MinimalQualParser(infile, value_cast_f)])
     return id_to_qual
-
-
-def parse_fastq_qual_score(fastq_lines):
-    results = {}
-    first_header = fastq_lines.readline()
-    fastq_lines.seek(0)
-
-    if is_casava_v180_or_later(first_header):
-        ascii_to_phred_f = ascii_to_phred33
-    else:
-        ascii_to_phred_f = ascii_to_phred64
-
-    for header, seq, qual in parse_fastq(fastq_lines):
-        results[header] = asarray(qual, dtype=ascii_to_phred_f)
-    return results
 
 
 def MinimalQualParser(infile, value_cast_f=int, full_header=False):

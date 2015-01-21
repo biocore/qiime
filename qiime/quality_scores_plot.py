@@ -6,7 +6,7 @@ __author__ = "William Walters"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["William Walters", "Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.9.0-rc1"
+__version__ = "1.9.0-rc2"
 __maintainer__ = "William Walters"
 __email__ = "William.A.Walters@colorado.edu"
 
@@ -19,7 +19,7 @@ from pylab import plot, savefig, xlabel, ylabel, text, \
     scatter, subplot
 from matplotlib.font_manager import fontManager, FontProperties
 from qiime.util import gzip_open
-from qiime.parse import parse_qual_score, parse_fastq_qual_score
+from qiime.parse import parse_qual_score
 
 
 def bin_qual_scores(qual_scores):

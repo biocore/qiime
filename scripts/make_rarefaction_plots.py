@@ -7,7 +7,7 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Meg Pirrung", "Jesse Stombaugh", "John Chase",
                "Jai Ram Rideout", "Evan Bolyen"]
 __license__ = "GPL"
-__version__ = "1.9.0-rc1"
+__version__ = "1.9.0-rc2"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 
@@ -52,7 +52,7 @@ script_info['script_usage'].append(("""Set Background Color:""",
 script_info[
     'script_usage'].append(("""Generate raw data without interactive webpages:""",
                             "The user can choose to not create an interactive webpage ('-w' option). "
-                            "This is for the case, where the user just wants the average plots and the"
+                            "This is for the case, where the user just wants the average plots and the "
                             "raw average data.",
                             """%prog -i alpha_div_collated/ -m Fasting_Map.txt -w"""))
 
@@ -118,7 +118,7 @@ script_info['optional_options'] = [
     options_lookup['output_dir'],
     make_option('--output_type', default='file_creation', type="choice",
                 help='Write the HTML output as one file, images embedded, or several. Options' +
-                ' are file_creation, multiple files, and memory. [default: %default]',
+                ' are "file_creation" and "memory". [default: %default]',
                 choices=['file_creation', 'memory']),
     make_option('--generate_per_sample_plots', action='store_true', help='generate per '
                 'sample plots for each of the metadata categories. This will allow you to '
@@ -194,7 +194,7 @@ def main():
     try:
         resolution = int(resolution)
     except(ValueError):
-        option_parser.error('Inavlid resolution.')
+        option_parser.error('Invalid resolution.')
         exit(0)
 
     # output directory check

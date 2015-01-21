@@ -17,7 +17,7 @@ __author__ = "Sophie Weiss"
 __copyright__ = "Copyright 2014, The QIIME Project"
 __credits__ = ["Sophie Weiss", "Joseph Paulson"]
 __license__ = "GPL"
-__version__ = "1.9.0-rc1"
+__version__ = "1.9.0-rc2"
 __maintainer__ = "Sophie Weiss"
 __email__ = "sophie.sjw@gmail.com"
 
@@ -93,7 +93,7 @@ def run_fitZIG(input_path, out_path, mapping_category, subcategory_1, subcategor
     # set options
     command_args = ['-i %s -o %s -c %s -x %s -y %s' % (input_path, out_path, mapping_category, subcategory_1, subcategory_2)]
     # instantiate the object
-    rsl = RExecutor()
+    rsl = RExecutor(TmpDir=get_qiime_temp_dir())
     # run the app
     app_result = rsl(command_args=command_args, script_name='fitZIG.r')
 
@@ -154,7 +154,7 @@ def run_DESeq2(input_path, out_path, mapping_category, subcategory_1, subcategor
     else:
         command_args = ['-i %s -o %s -c %s -x %s -y %s' % (input_path, out_path, mapping_category, subcategory_1, subcategory_2)]
     # instantiate the object
-    rsl = RExecutor()
+    rsl = RExecutor(TmpDir=get_qiime_temp_dir())
     # run the app
     app_result = rsl(command_args=command_args, script_name='DESeq2_nbinom.r')
 

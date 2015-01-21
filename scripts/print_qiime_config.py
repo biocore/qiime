@@ -7,7 +7,7 @@ __credits__ = ["Jens Reeder", "Dan Knights", "Antonio Gonzalez Pena",
                "Justin Kuczynski", "Jai Ram Rideout", "Greg Caporaso",
                "Emily TerAvest"]
 __license__ = "GPL"
-__version__ = "1.9.0-rc1"
+__version__ = "1.9.0-rc2"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -152,6 +152,16 @@ else:
         if e.startswith('SUMACLUST Version'):
             sumaclust_lib_version = e
             break
+
+if which('swarm') is None:
+    swarm_lib_version = "Not installed."
+else:
+    _, serr, return_value = qiime_system_call("swarm --version")
+    serr = serr.strip()
+    if serr:
+        swarm_lib_version = serr.split('\n')[0]
+    else:
+        swarm_lib_version = "Installed, but can't identify version."
 
 script_info = {}
 script_info['brief_description'] = ("Print and optionally test QIIME "
@@ -782,6 +792,7 @@ def main():
         ("burrito-fillings version", bfillings_lib_version),
         ("sortmerna version", sortmerna_lib_version),
         ("sumaclust version", sumaclust_lib_version),
+        ("swarm version", swarm_lib_version),
         ("gdata", gdata_installed)
     ]
 

@@ -5,7 +5,7 @@ __author__ = "William Walters"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["William Walters", "Daniel McDonald"]
 __license__ = "GPL"
-__version__ = "1.9.0-rc1"
+__version__ = "1.9.0-rc2"
 __maintainer__ = "William Walters"
 __email__ = "william.a.walters@gmail.com"
 
@@ -114,8 +114,8 @@ def extract_barcodes(fastq1,
     header_index = 0
 
     for read1_data, read2_data in izip(
-            parse_fastq(fastq1, strict=False),
-            parse_fastq(fastq2, strict=False)):
+            parse_fastq(fastq1, strict=False, enforce_qual_range=False),
+            parse_fastq(fastq2, strict=False, enforce_qual_range=False)):
         if not disable_header_match:
             if not check_header_match_f(read1_data[header_index],
                                         read2_data[header_index]):

@@ -5,7 +5,7 @@ __author__ = "Charudatta Navare"
 __copyright__ = "Copyright 2014, The QIIME Project"
 __credits__ = ["Charudatta Navare", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.9.0-rc1"
+__version__ = "1.9.0-rc2"
 __maintainer__ = "Charudatta Navare"
 __email__ = "charudatta.navare@gmail.com"
 
@@ -658,8 +658,8 @@ def read_fwd_rev_read(fwd_read_f,
     qual_idx = 2
 
     for fwd_read, rev_read in izip(
-            parse_fastq(fwd_read_f, strict=False),
-            parse_fastq(rev_read_f, strict=False)):
+            parse_fastq(fwd_read_f, strict=False, enforce_qual_range=False),
+            parse_fastq(rev_read_f, strict=False, enforce_qual_range=False)):
             # Confirm match between read headers.
 
         input_seqs_count += 1
