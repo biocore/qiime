@@ -50,7 +50,7 @@ if(is.null(opts$subcategory_2)) stop('Please supply a second subcategory.')
 				fullTaxonomyData = fData(MGS)[sigotus,]
 				fullTaxonomyData = sapply(1:nrow(fullTaxonomyData), function(i){paste(format(fullTaxonomyData[i,]),collapse="; ")})
 				res2 = cbind(OTU = sigotus, res,taxonomy = (fullTaxonomyData))
-				write.table(res2, out_path, sep="\t", quote=F, row.names=F)  #, col.names=F)
+				write.table(res2, out_path, sep="\t", quote=F, row.names=F) 
 			}
         }
         
