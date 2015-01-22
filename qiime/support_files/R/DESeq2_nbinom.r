@@ -66,9 +66,16 @@ if(is.null(opts$subcategory_2)) stop('Please supply a second subcategory.')
             if (is.null(observation_metadata(foo))) {            
             	df2 <- cbind(OTU = sigotus, df1)
             } else {
-	            fullTaxonomyData = observation_metadata(foo)[sigotus,]
-				fullTaxonomyData = sapply(1:nrow(fullTaxonomyData), function(i){paste(format(fullTaxonomyData[i,]),collapse="; ")})
-	            df2 <- cbind(OTU = sigotus, df1, taxonomy = fullTaxonomyData)
+            	# next few lines for taxonomy adapted from metagenomeSeq's biom2MRexperiment function
+	    		len = max(sapply(observation_metadata(foo),length))
+	    		taxa = as.matrix(sapply(observation_metadata(foo),function(i){i[1:len]}))
+	   			if(dim(taxa)[1]!=dim(x)[1]){
+	   				taxa=t(taxa)
+	   			}
+	   			rownames(taxa) = rownames(foo)
+	    		fullTaxonomyData = taxa[sigotus,]
+				fullTaxonomyData = sapply(1:nrow(fullTaxonomyData), function(i){paste(fullTaxonomyData[i,],collapse="; ")})	            
+				df2 <- cbind(OTU = sigotus, df1, taxonomy = fullTaxonomyData)
 	        }
             write.table(df2, out_path, sep="\t", quote=F, row.names=F)
             if (!is.null(DESeq2_diagnostic_plots)) {
