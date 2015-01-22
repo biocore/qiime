@@ -41,7 +41,6 @@ class WorkflowTests(TestCase):
         self.fasta_seqs_for_consensus = fasta_seqs_for_consensus
         self.fwd_read_data = fwd_read_data
         self.rev_read_data = rev_read_data
-        self.variant_fq = 'illumina1.3'
 
         self.fwd_read_fh = NamedTemporaryFile(
             delete=False,
@@ -213,8 +212,7 @@ class WorkflowTests(TestCase):
                                                       min_reads_per_random_bc,
                                                       min_diff_in_clusters,
                                                       barcode_column,
-                                                      reverse_primer_column,
-                                                      self.variant_fq)
+                                                      reverse_primer_column)
 
         actual = function_call['Sample1']['AGCTACGAGCTATTGC']
         expected = 'AAAAAAAAAAAAAAAAAAA^AAAAAAAAAAAAAAAAAA'
@@ -270,8 +268,7 @@ Total number seqs written: 6"""
                                           self.bc_to_rev_primers,
                                           self.max_barcode_errors,
                                           self.fwd_length,
-                                          self.rev_length,
-                                          self.variant_fq)
+                                          self.rev_length)
         actual_seqs_kept = function_call[-1]
         self.assertEqual(actual_seqs_kept, expected_seqs_kept)
 
@@ -286,8 +283,7 @@ Total number seqs written: 6"""
                                                  self.bc_to_rev_primers,
                                                  self.max_barcode_errors,
                                                  self.fwd_length,
-                                                 self.rev_length,
-                                                 self.variant_fq)
+                                                 self.rev_length)
 
         random_bc_lookup = fn_call_fwd_rev_read[0]
         random_bc_reads = fn_call_fwd_rev_read[1]

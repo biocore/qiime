@@ -107,8 +107,7 @@ def get_LEA_seq_consensus_seqs(fwd_read_f, rev_read_f,
                                min_reads_per_random_bc,
                                min_difference_clusters,
                                barcode_column,
-                               reverse_primer_column,
-                               phred_offset):
+                               reverse_primer_column):
     """
     Reads mapping file, input file, and other command line arguments
     fills dictionary called consensus_seq_lookup which will contain:
@@ -182,8 +181,7 @@ def get_LEA_seq_consensus_seqs(fwd_read_f, rev_read_f,
                                           bc_to_rev_primers,
                                           max_barcode_errors,
                                           fwd_length,
-                                          rev_length,
-                                          phred_offset)
+                                          rev_length)
 
     consensus_seq_lookup = get_consensus_seqs_lookup(random_bc_lookup,
                                                      random_bc_reads,
@@ -596,8 +594,7 @@ def read_fwd_rev_read(fwd_read_f,
                       bc_to_rev_primers,
                       max_barcode_errors,
                       fwd_length,
-                      rev_length,
-                      phred_offset):
+                      rev_length):
     """
     Reads fwd and rev read fastq files
     Parameters
@@ -656,9 +653,11 @@ def read_fwd_rev_read(fwd_read_f,
     seq_idx = 1
     qual_idx = 2
 
-    for fwd_read, rev_read in izip(
-        parse_fastq(fwd_read_f, strict=False, enforce_qual_range=False),
-        parse_fastq(rev_read_f, strict=False, enforce_qual_range=False)):
+    for fwd_read, rev_read in izip(parse_fastq(fwd_read_f, strict=False,
+                                   enforce_qual_range=False),
+                                   parse_fastq(rev_read_f,
+                                   strict=False,
+                                   enforce_qual_range=False)):
 
         # confirm match between headers
 
