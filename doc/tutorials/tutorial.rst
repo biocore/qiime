@@ -305,97 +305,95 @@ A PDF file is created as :file:`taxa_summary/otu_table_L3_heatmap.pdf`. The firs
 
 .. _compalphadivrarecurves:
 
-Compute Alpha Diversity within the Samples and Generate Rarefaction Curves
----------------------------------------------------------------------------
-Community ecologists typically describe the microbial diversity within their study. This diversity can be assessed within a sample (alpha diversity) or between a collection of samples (beta diversity). Here, we will determine the level of alpha diversity in our samples using a series of scripts from the QIIME pipeline.  To perform this analysis, we will use the :file:`alpha_rarefaction.py` workflow script. This script performs the following steps:
+Compute alpha diversity and generate alpha rarefaction plots
+------------------------------------------------------------
+Community ecologists typically describe the within-sample diversity for samples or categories of samples in their study. Here, we will determine the level of alpha diversity in our samples using QIIME's `alpha_rarefaction.py <../scripts/alpha_rarefaction.html>`_ workflow, which runs a series of QIIME scripts (listed below).  `alpha_rarefaction.py <../scripts/alpha_rarefaction.html>`_ performs the following steps:
 
-1. Generate rarefied OTU tables (for more information, refer to `multiple_rarefactions.py <../scripts/multiple_rarefactions.html>`_)
-2. Compute measures of alpha diversity for each rarefied OTU table (for more information, refer to `alpha_diversity.py <../scripts/alpha_diversity.html>`_)
-3. Collate alpha diversity results (for more information, refer to `collate_alpha.py <../scripts/collate_alpha.html>`_)
-4. Generate alpha rarefaction plots (for more information, refer to `make_rarefaction_plots.py <../scripts/make_rarefaction_plots.html>`_)
+1. Generate rarefied OTU tables (`multiple_rarefactions.py <../scripts/multiple_rarefactions.html>`_)
+2. Compute measures of alpha diversity for each rarefied OTU table (`alpha_diversity.py <../scripts/alpha_diversity.html>`_)
+3. Collate alpha diversity results (`collate_alpha.py <../scripts/collate_alpha.html>`_)
+4. Generate alpha rarefaction plots (`make_rarefaction_plots.py <../scripts/make_rarefaction_plots.html>`_)
 
-Although we could run this workflow with the (sensible) default parameters, this provides an excellent opportunity to illustrate the use of custom parameters. To see what measures of alpha diversity will be computed by default, type: ::
+Although we could run this workflow with the (sensible) default parameters, this provides an opportunity to illustrate the use of custom parameters. To see what measures of alpha diversity will be computed by default, type: ::
 
     alpha_diversity.py -h
 
-You should see, among other information:
+You should see, among other information::
 
-.. note ::
+    -m METRICS, --metrics=METRICS
+        Alpha-diversity metric(s) to use. A comma-separated
+        list should be provided when multiple metrics are
+        specified. [default: PD_whole_tree,chao1,observed_otus]
 
-  | -m METRICS, --metrics=METRICS
-  |      Alpha-diversity metric(s) to use. A comma-separated
-  |      list should be provided when multiple metrics are
-  |      specified. [default:
-  |      PD_whole_tree,chao1,observed_otus]
+which indicates that the metrics that will be used by default are ``PD_whole_tree``, ``chao1``, and ``observed_otus``. If we additionally wanted to compute Shannon Index, we could create a parameters file (which for the sake of this example we'll call `alpha_params.txt`) containing the following line::
 
-to also use the shannon index, create a custom parameters file by typing: ::
+    alpha_diversity:metrics shannon,PD_whole_tree,chao1,observed_otus
 
-    echo "alpha_diversity:metrics shannon,PD_whole_tree,chao1,observed_otus" > alpha_params.txt
+For more information on creating parameters files, see `here <../documentation/qiime_parameters_files.html>`_.
 
-Then run the workflow, which requires the OTU table (-i) and phylogenetic tree (-t) from `above`__, and the custom parameters file we just created:
+We can next run `alpha_rarefaction.py <../scripts/alpha_rarefaction.html>`_, which requires the OTU table (-i) and phylogenetic tree (-t) from `above`__, and the parameters file we just created:
 
 __ pickotusandrepseqs_
 
 ::
 
-    alpha_rarefaction.py -i otus/otu_table.biom -m Fasting_Map.txt -o wf_arare/ -p alpha_params.txt -t otus/rep_set.tre
+    alpha_rarefaction.py -i otus/otu_table.biom -m Fasting_Map.txt -o arare/ -p alpha_params.txt -t otus/rep_set.tre
 
 Descriptions of the steps involved in alpha_rarefaction.py follow:
 
 .. _rareotutable:
 
 Step 1. Rarify OTU Table
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^
 
-The directory :file:`wf_arare/rarefaction/` will contain many text files named :file:`rarefaction_##_#.txt`; the first set of numbers represents the number of sequences sampled, and the last number represents the iteration number. If you opened one of these files, you would find an OTU table where for each sample the sum of the counts equals the number of samples taken.
+The directory :file:`arare/rarefaction/` will contain many text files named :file:`rarefaction_##_#.txt`; the first set of numbers represents the number of sequences sampled, and the last number represents the iteration number. If you opened one of these files, you would find an OTU table where for each sample the sum of the counts equals the number of samples taken.
+
+To keep the results of `alpha_rarefaction.py <../scripts/alpha_rarefaction.html>`_ to a managable size, these results are deleted unless you pass the ``--retain_intermediate_files``.
 
 .. _computealphadiv:
 
-Step 2. Compute Alpha Diversity
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The rarefaction tables are the basis for calculating diversity metrics, which reflect the diversity within the sample based on the abundance of various taxa within a community. The QIIME pipeline allows users to conveniently calculate more than two dozen different diversity metrics. The full list of available metrics is available here: `alpha-diversity metrics <http://scikit-bio.org/math.diversity.alpha.html>`_. Every metric has different strengths and limitations - technical discussion of each metric is readily available online and in ecology textbooks, but it is beyond the scope of this document. By default, QIIME calculates three metrics:
+Step 2. Compute alpha diversity
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The rarefied tables are the basis for calculating alpha diversity metrics, which describe the richness and/or evenness of taxa in a single sample. QIIME allows users to calculate more than two dozen different diversity metrics. The full list of available metrics is available here: `alpha-diversity metrics <http://scikit-bio.org/math.diversity.alpha.html>`_. Every metric has different strengths and limitations - technical discussion of each metric is readily available online and in ecology textbooks, but it is beyond the scope of this document. By default, QIIME calculates three metrics:
 
 #. Chao1 metric estimates the species richness.
 #. The Observed OTUs (previously known as Observed Species) metric is simply the count of unique OTUs found in the sample.
 #. Phylogenetic Distance (PD_whole_tree) is the only phylogenetic metric used, and requires a phylogenetic tree.
 
-In addition, :file:`alpha_params.txt` specified above adds the shannon index to the list of alpha diversity measures calculated by QIIME.
+In addition, :file:`alpha_params.txt` specified above adds the Shannon Index to the list of alpha diversity measures calculated by QIIME.
 
-The result of this step produces several text files with the results of the alpha diversity computations performed on the rarefied OTU tables. The results are located in the :file:`wf_arare/alpha_div/` directory.
+The result of this step produces text files with the results of the alpha diversity computations performed on the rarefied OTU tables. The results are located in the :file:`arare/alpha_div/` directory.
+
+To keep the results of `alpha_rarefaction.py <../scripts/alpha_rarefaction.html>`_ to a managable size, these results are deleted unless you pass the ``--retain_intermediate_files``.
 
 .. _collateotutable:
 
-Step 3. Collate Rarified OTU Tables
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The output directory :file:`wf_arare/alpha_div/` will contain one text file :file:`alpha_rarefaction_##_#` for every file input from :file:`wf_arare/rarefaction/`, where the numbers represent the number of samples and iterations as before. The content of this tab delimited file is the calculated metrics for each sample. To collapse the individual files into a single combined table, the workflow uses the script `collate_alpha.py <../scripts/collate_alpha.html>`_.
+Step 3. Collate alpha diversity results
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The output directory :file:`arare/alpha_div/` will contain one text file :file:`alpha_rarefaction_##_#` for every file input from :file:`arare/rarefaction/`, where the numbers represent the number of samples and iterations as before. The content of this tab delimited file is the calculated metrics for each sample. To collapse the individual files into a single combined table, the workflow uses `collate_alpha.py <../scripts/collate_alpha.html>`_.
 
-In the newly created directory :file:`wf_arare/alpha_div_collated/`, there will be one matrix for every alpha diversity metric used. This matrix will contain the metric for every sample, arranged in ascending order from lowest number of sequences per sample to highest. A portion of the :file:`observed_otus.txt` file are shown below:
+In the output directory from :file:`arare/alpha_div_collated/`, there will be one file for every alpha diversity metric used. Each file will contain the alpha diversity measure for every sample, arranged in ascending order from lowest number of sequences per sample to highest. A portion of the :file:`observed_otus.txt` file are shown below::
 
-.. note::
-
-   * Sequences per sample   iteration   PC.354  PC.355  PC.356  PC.481  PC.593
-   * alpha_rarefaction_21_0.txt 21          0       14.0    16.0    18.0    18.0    13.0
-   * alpha_rarefaction_21_1.txt 21          1       15.0    17.0    18.0    20.0    12.0
-   * alpha_rarefaction_21_2.txt 21          2       15.0    16.0    21.0    19.0    13.0
-   * alpha_rarefaction_21_3.txt 21          3       10.0    19.0    18.0    21.0    13.0
-   * alpha_rarefaction_21_4.txt 21          4       14.0    18.0    16.0    15.0    12.0
-   * ...
+        sequences per sample	iteration	PC.636	PC.635	PC.356	PC.481	PC.354	PC.593	PC.355	PC.607	PC.634
+    alpha_rarefaction_10_0.txt	10	0	7.0	10.0	6.0	8.0	9.0	9.0	7.0	9.0	10.0
+    alpha_rarefaction_10_1.txt	10	1	8.0	9.0	10.0	8.0	9.0	6.0	8.0	10.0	9.0
+    alpha_rarefaction_10_2.txt	10	2	8.0	10.0	9.0	10.0	8.0	8.0	9.0	10.0	7.0
+    alpha_rarefaction_10_3.txt	10	3	8.0	9.0	7.0	10.0	6.0	9.0	7.0	10.0	7.0
+    alpha_rarefaction_10_4.txt	10	4	8.0	9.0	8.0	7.0	8.0	10.0	9.0	9.0	9.0
 
 .. _generaterarecurves:
 
-Step 4. Generate Rarefaction Curves
+Step 4. Generate alpha rarefaction plots
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-QIIME creates plots of alpha diversity vs. simulated sequencing effort, known as rarefaction plots, using the script `make_rarefaction_plots.py <../scripts/make_rarefaction_plots.html>`_. This script takes a mapping file and any number of rarefaction files generated by `collate_alpha.py <../scripts/collate_alpha.html>`_ and creates rarefaction curves. Each curve represents a sample and can be colored by the sample metadata supplied in the mapping file.
+QIIME creates plots of alpha diversity vs. simulated sequencing effort, known as rarefaction plots, using the script `make_rarefaction_plots.py <../scripts/make_rarefaction_plots.html>`_. This script takes a mapping file and any number files generated by `collate_alpha.py <../scripts/collate_alpha.html>`_, and creates alpha rarefaction curves. Each curve represents a sample and can be grouped by the sample metadata supplied in the mapping file.
 
-This step generates a :file:`wf_arare/alpha_rarefaction_plots/rarefaction_plots.html` that can be opened with a web browser, in addition to other files. The :file:`wf_arare/alpha_rarefaction_plots/average_tables/` folder, which contains the rarefaction averages for each diversity metric, so the user can optionally plot the rarefaction curves in another application, like MS Excel. The :file:`wf_arare/alpha_rarefaction_plots/average_plots/` folder contains the average plots for each metric and category and the :file:`wf_arare/alpha_rarefaction_plots/html_plots/` folder contains all the images used in the html page generated.
+This step generates a :file:`arare/alpha_rarefaction_plots/rarefaction_plots.html` that can be opened with a web browser, in addition to other files. The :file:`arare/alpha_rarefaction_plots/average_tables/` folder contains the diversity measure averages for each rarefied table, so the user can optionally plot the rarefaction curves in another application. The :file:`arare/alpha_rarefaction_plots/average_plots/` folder contains the average plots for each metric and category.
 
+Viewing alpha rarefaction plots
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+To view the alpha rarefaction plots, open the file :file:`arare/alpha_rarefaction_plots/rarefaction_plots.html`. Once the browser window is open,  select the metric `PD_whole_tree` and the category `Treatment`, to reveal a plot like the figure below. You can click on the triangle next to each label in the legend to see all the samples that contribute to that category. Below each plot is a table displaying average values for each measure of alpha diversity for each group of samples the specified category.
 
-
-Viewing Alpha Diversity Results
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-To view the rarefaction plots, open the file :file:`wf_arare/alpha_rarefaction_plots/rarefaction_plots.html` in a web browser, typically by double-clicking on it. Once the browser window is open,  select the metric `PD_whole_tree` and the category `Treatment`, to reveal a plot like the figure below. You can also turn on/off lines in the plot by (un)checking the box next to each label in the legend, or click on the triangle next to each label in the legend to see all the samples that contribute to that category. Below each plot is a table displaying average values for each measure of alpha diversity for each group of samples the specified category.
-
-.. image:: ../images/ rarecurve.png
+.. image:: ../images/rarecurve.png
    :align: center
 
 
