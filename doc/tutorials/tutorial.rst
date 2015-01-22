@@ -132,13 +132,13 @@ De novo OTU picking
 -------------------
 Here we will be running the `pick_de_novo_otus.py <../scripts/pick_de_novo_otus.html>`_ workflow, which runs a series of other scripts automatically. This workflow consists of the following steps:
 
-1. Picking OTUs (`pick_otus.py <../scripts/pick_otus.html>`_)
-2. Picking a representative sequence set, one sequence from each OTU (`pick_rep_set.py <../scripts/pick_rep_set.html>`_)
-3. Aligning the representative sequence set (`align_seqs.py <../scripts/align_seqs.html>`_)
-4. Assigning taxonomy to the representative sequence set (`assign_taxonomy.py <../scripts/assign_taxonomy.html>`_)
-5. Filtering the alignment prior to tree building - removing positions which are all gaps, or not useful for phylogenetic inference (`filter_alignment.py <../scripts/filter_alignment.html>`_)
-6. Building a phylogenetic tree  (`make_phylogeny.py <../scripts/make_phylogeny.html>`_)
-7. Building an OTU table (`make_otu_table.py <../scripts/make_otu_table.html>`_)
+1. Pick OTUs based on sequence similarity within the reads (`pick_otus.py <../scripts/pick_otus.html>`_)
+2. Pick a representative sequence for each OTU (`pick_rep_set.py <../scripts/pick_rep_set.html>`_)
+3. Assign taxonomy to OTU representative sequences (`assign_taxonomy.py <../scripts/assign_taxonomy.html>`_)
+4. Align OTU representative sequences (`align_seqs.py <../scripts/align_seqs.html>`_)
+5. Filter the alignment (`filter_alignment.py <../scripts/filter_alignment.html>`_)
+6. Build a phylogenetic tree  (`make_phylogeny.py <../scripts/make_phylogeny.html>`_)
+7. Make the OTU table (`make_otu_table.py <../scripts/make_otu_table.html>`_)
 
 Using the output from `split_libraries.py <../scripts/split_libraries.html>`_ (:file:`seqs.fna`), run the following command::
 
@@ -251,7 +251,7 @@ The summary shows that there are relatively few sequences in this tutorial examp
 
 .. _makeotunetwork:
 
-Make an OTU Network
+Make an OTU network
 -------------------
 To create an OTU network, using the following command::
 
@@ -310,7 +310,7 @@ A PDF file is created as :file:`taxa_summary/otu_table_L3_heatmap.pdf`. The firs
 
 Compute alpha diversity and generate alpha rarefaction plots
 ------------------------------------------------------------
-Community ecologists are often interested in computing the *within-sample* (or *alpha*) diversity for samples or groups of samples in their study. Here, we will determine the level of alpha diversity in our samples using QIIME's `alpha_rarefaction.py <../scripts/alpha_rarefaction.html>`_ workflow, which performs the following steps:
+Community ecologists are often interested in computing *alpha* (or the *within-sample*) diversity for samples or groups of samples in their study. Here, we will determine the level of alpha diversity in our samples using QIIME's `alpha_rarefaction.py <../scripts/alpha_rarefaction.html>`_ workflow, which performs the following steps:
 
 1. Generate rarefied OTU tables (`multiple_rarefactions.py <../scripts/multiple_rarefactions.html>`_)
 2. Compute measures of alpha diversity for each rarefied OTU table (`alpha_diversity.py <../scripts/alpha_diversity.html>`_)
@@ -346,17 +346,16 @@ Descriptions of the steps involved in `alpha_rarefaction.py <../scripts/alpha_ra
 
 .. _rareotutable:
 
-Step 1. Rarefy the OTU table
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
+Step 1. Generate rarefied OTU tables
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The directory :file:`arare/rarefaction/` will contain many text files named :file:`rarefaction_##_#.txt`; the first set of numbers represents the number of sequences sampled, and the last number represents the iteration number. If you opened one of these files, you would find an OTU table where for each sample the sum of the counts equals the number of samples taken.
 
 To keep the results of `alpha_rarefaction.py <../scripts/alpha_rarefaction.html>`_ to a manageable size, these results are deleted unless you pass the ``--retain_intermediate_files`` option to `alpha_rarefaction.py <../scripts/alpha_rarefaction.html>`_.
 
 .. _computealphadiv:
 
-Step 2. Compute alpha diversity
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Step 2. Compute measures of alpha diversity for each rarefied OTU table
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The rarefied tables are the basis for calculating alpha diversity metrics, which describe the richness and/or evenness of taxa in a single sample. QIIME allows users to calculate more than two dozen different diversity metrics. The full list of available metrics is available `here <http://scikit-bio.org/docs/latest/generated/skbio.diversity.alpha.html>`_. Each metric has different strengths and limitations. Technical discussion of each metric is readily available online and in ecology textbooks, but it is beyond the scope of this tutorial. By default, QIIME calculates three metrics: Chao1 (``chao1``), Observed OTUs (``observed_otus``, previously known as Observed Species), and Phylogenetic Diversity (``PD_whole_tree``). In addition, in the :file:`alpha_params.txt` file we added the Shannon Index (``shannon``) to the list of alpha diversity measures that we calculated here.
 
 The result of this step produces text files with the results of the alpha diversity computations performed on the rarefied OTU tables. The results are located in the :file:`arare/alpha_div/` directory.
@@ -398,69 +397,58 @@ To view the alpha rarefaction plots, open the file :file:`arare/alpha_rarefactio
 
 .. _compbetadivgenpcoa:
 
-Compute Beta Diversity and Generate Beta Diversity Plots
---------------------------------------------------------
-Beta diversity represents the explicit comparison of microbial (or other) communities based on their composition. Beta-diversity metrics thus assess the differences between microbial communities. The fundamental output of these comparisons is a square matrix where a "distance" or dissimilarity is calculated between every pair of community samples, reflecting the dissimilarity between those samples. The data in this distance matrix can be visualized with analyses such as Principal Coordinate Analysis (PCoA) and hierarchical clustering. Like alpha diversity, there are many possible metrics which can be calculated with the QIIME pipeline - the full list of options can be found here `beta diversity metrics <../scripts/beta_diversity_metrics.html>`_. Here, we will calculate beta diversity between our 9 microbial communities using the default beta diversity metrics of weighted and unweighted unifrac, which are phylogenetic measures used extensively in recent microbial community sequencing projects. To perform this analysis, we will use the `beta_diversity_through_plots.py <../scripts/beta_diversity_through_plots.html>`_ workflow script. This script performs the following steps:
+Compute beta diversity and generate ordination plots
+----------------------------------------------------
+In addition to *alpha* (or *within-sample*) diversity, community ecologists are often interested in computing *beta* (or the *between-sample*) diversity between all pairs of samples in their study.
 
-1. Rarify OTU table (for more information, refer to `single_rarefaction.py <../scripts/single_rarefaction.html>`_)
-2. Compute Beta Diversity (for more information, refer to `beta_diversity.py <../scripts/beta_diversity.html>`_)
-3. Generate Principal Coordinates (for more information, refer to `principal_coordinates.py <../scripts/principal_coordinates.html>`_)
-4. Generate Emperor PCoA plots (for more information, refer to `make_emperor.py <http://emperor.colorado.edu/>`_)
+Beta diversity represents the explicit comparison of microbial (or other) communities based on their composition. Beta diversity metrics thus assess the differences between microbial communities. The fundamental output of these comparisons is a square, hollow matrix where a "distance" or dissimilarity is calculated between every pair of community samples, reflecting the dissimilarity between those samples. The data in this distance matrix can be visualized with analyses such as Principal Coordinates Analysis (PCoA) and hierarchical clustering.
 
-To run the workflow, type the following command, which defines the input OTU table "-i" and tree file "-t" (from `pick_de_novo_otus.py <../scripts/pick_de_novo_otus.html>`_), the user-defined mapping file "-m", the output directory "-o", and the number of sequences per sample (sequencing depth) as 146: ::
+Like alpha diversity, there are many possible beta diversity metrics that can be calculated with QIIME. The full list of metrics can be viewed by running::
 
-    beta_diversity_through_plots.py -i otus/otu_table.biom -m Fasting_Map.txt -o wf_bdiv_even146/ -t otus/rep_set.tre -e 146
+    beta_diversity.py -s
 
-Descriptions of the steps involved in `beta_diversity_through_plots.py` follow:
+Here, we will calculate beta diversity between our 9 microbial communities using the default beta diversity metrics of weighted and unweighted UniFrac, which are phylogenetic measures used extensively in recent microbial community sequencing projects. To perform this analysis, we will use the `beta_diversity_through_plots.py <../scripts/beta_diversity_through_plots.html>`_ workflow, which performs the following steps:
+
+1. Rarefy OTU table to remove sample heterogeneity (`single_rarefaction.py <../scripts/single_rarefaction.html>`_)
+2. Compute beta diversity (`beta_diversity.py <../scripts/beta_diversity.html>`_)
+3. Run Principal Coordinates Analysis (`principal_coordinates.py <../scripts/principal_coordinates.html>`_)
+4. Generate Emperor PCoA plots (`make_emperor.py <http://emperor.colorado.edu/>`_)
+
+We can run the `beta_diversity_through_plots.py <../scripts/beta_diversity_through_plots.html>`_ workflow with the following command, which requires the OTU table (``-i``) and tree file (``-t``) from `above`__, the metadata mapping file (``-m``), and the number of sequences per sample (``-e``, even sampling depth):
+
+__ pickotusandrepseqs_
+
+::
+
+    beta_diversity_through_plots.py -i otus/otu_table.biom -m Fasting_Map.txt -o bdiv_even146 -t otus/rep_set.tre -e 146
+
+Descriptions of the steps involved in `beta_diversity_through_plots.py <../scripts/beta_diversity_through_plots.html>`_ follow:
 
 .. _compbetadiv:
 
-Step 1. Rarify OTU Table to Remove Sample Heterogeneity
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-To remove sample heterogeneity, we can perform rarefaction on our OTU table. Rarefaction is an ecological approach that allows users to standardize the data obtained from samples with different sequencing efforts, and to compare the OTU richness of the samples using this standardized platform. For instance, if one of your samples yielded 10,000 sequence counts, and another yielded only 1,000 counts, the species diversity within those samples may be much more influenced by sequencing effort than underlying biology. The approach of rarefaction is to randomly sample the same number of OTUs from each sample, and use this data to compare the communities at a given level of sampling effort.
+Step 1. Rarefy OTU table to remove sample heterogeneity
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+To remove sample heterogeneity, we can perform rarefaction on our OTU table. Rarefaction is an ecological approach that allows users to standardize the data obtained from samples with different sequencing efforts, and to compare the OTU richness of the samples using these standardized data. For instance, if one of your samples yielded 10,000 sequences, and another yielded only 1,000 sequences, the species diversity within those samples may be much more influenced by sequencing effort than the underlying biology. We use rarefaction to randomly subsample the same number of sequences from each sample in order to compare the communities at a given level of sampling effort (an *even sampling depth*).
 
-The 9 communities in the tutorial data contain the following numbers of sequences per sample (see perlibrarystats_):
+See the ``biom summarize-table`` section `above`__ for the number of sequences in each of the 9 communities.
 
-.. note ::
+__ perlibrarystats_
 
-    | Num samples: 9
-    |
-    | Seqs/sample summary:
-    |  Min: 146
-    |  Max: 150
-    |  Median: 148.0
-    |  Mean: 148.111111111
-    |  Std. dev.: 1.4487116456
-    |  Median Absolute Deviation: 1.0
-    |  Default even sampling depth in
-    |   core_qiime_analyses.py (just a suggestion): 146
-    |
-    | Seqs/sample detail:
-    |  PC.355: 146
-    |  PC.481: 146
-    |  PC.636: 147
-    |  PC.354: 148
-    |  PC.635: 148
-    |  PC.593: 149
-    |  PC.607: 149
-    |  PC.356: 150
-    |  PC.634: 150
+Since all samples have at least 146 sequences, a rarefaction level of 146 (specified by ``-e 146`` above) allows us to compare all 9 samples at equal sequencing depth. Any samples containing fewer than 146 sequences would have been removed from these beta diversity analyses.
 
-Because all samples have at least 146 sequences, a rarefaction level of 146 (specified by `-e 146` above), allows us to compare all 9 samples at equal sequencing depth. Any samples containing fewer than 146 sequences would have been removed from these beta diversity analyses.
-
-Step 2. Compute Beta Diversity
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Step 2. Compute beta diversity
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Beta-diversity metrics assess the differences between microbial communities. By default, QIIME calculates both weighted and unweighted unifrac, which are phylogenetically aware measures of beta diversity.
 
 The resulting distance matrices ( :file:`wf_bdiv_even146/unweighted_unifrac_dm.txt` and :file:`wf_bdiv_even146/weighted_unifrac_dm.txt`) are the basis for later analysis steps (principal coordinate analysis, hierarchical clustering, and distance histograms)
 
-Step 3. Generate Principal Coordinates
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Step 3. Run Principal Coordinates Analysis
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Principal Coordinate Analysis (PCoA) is a technique that helps to extract and visualize a few highly informative components of variation from complex, multidimensional data. This is a transformation that maps the samples present in the distance matrix to a new set of orthogonal axes such that a maximum amount of variation is explained by the first principal coordinate, the second largest amount of variation is explained by the second principal coordinate, etc. The principal coordinates can be plotted in two or three dimensions to provide an intuitive visualization of the data structure and look at differences between the samples, and look for similarities by sample category.
 
 The files :file:`wf_bdiv_even146/unweighted_unifrac_pc.txt` and :file:`wf_bdiv_even146/weighted_unifrac_pc.txt` list every sample in the first column, and the subsequent columns contain the value for the sample against the noted principal coordinate. At the bottom of each Principal Coordinate column, you will find the eigenvalue and percent of variation explained by the coordinate.
 
-Step 4. Generate Emperor PCoA Plots
+Step 4. Generate Emperor PCoA plots
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 `Emperor <http://emperor.colorado.edu/>` allows for the inspection of PCoA plots in three dimensions. html files are created in :file:`wf_bdiv_even146/unweighted_unifrac_emperor_pcoa_plot...` and :file:`wf_bdiv_even146/weighted_unifrac_emperor_pcoa_plot...` directories. For the "Treatment" column, all samples with the same "Treatment" will get the same color. For our tutorial, the five control samples are all red and the four Fast samples are all blue. This lets you easily visualize "clustering" by metadata category. The 3d visualization software allows you to rotate the axes to see the data from different perspectives. By default, the script will plot the first three dimensions in your file. Other combinations can be viewed using the "Axes" option in Emperor. The first 8 components can be viewed using the left bottom menu "Parallel" using a parallel coordinates plot.
 
