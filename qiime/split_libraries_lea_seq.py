@@ -51,8 +51,6 @@ class BarcodeLenMismatchError(Exception):
     pass
 
 
-class NoConsensusSeqsError(Exception):
-    pass
 
 
 def extract_primer(seq, possible_primers, min_idx=None, max_idx=None):
@@ -199,8 +197,6 @@ def get_LEA_seq_consensus_seqs(fwd_read_f, rev_read_f,
                                  primer_mismatch_count,
                                  seq_too_short_count,
                                  total_seqs_kept)
-    if consensus_seq_lookup is None:
-        raise NoConsensusSeqsError()
 
     return consensus_seq_lookup, log_out
 
@@ -582,7 +578,7 @@ def get_consensus_seqs_lookup(random_bc_lookup,
                 files_to_be_removed.append(fwd_fasta_tempfile_name)
                 files_to_be_removed.append(rev_fasta_tempfile_name)
                 remove_files(files_to_be_removed)
-                return consensus_seq_lookup
+    return consensus_seq_lookup
 
 
 def read_fwd_rev_read(fwd_read_f,
