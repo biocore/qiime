@@ -3,210 +3,174 @@
 ================================================================================
 454 Overview Tutorial: de novo OTU picking and diversity analyses using 454 data
 ================================================================================
+This tutorial explains how to apply de novo OTU picking and diversity analyses to 16S amplicon data using QIIME. We recommend first working through the `QIIME Illumina Overview Tutorial <./illumina_overview_tutorial.html>`_, which covers many of these analysis steps at a higher level. This tutorial provides additional detail on the steps that are being performed by the QIIME workflows.
 
-Introduction
--------------
-This tutorial explains how to use the **QIIME** (Quantitative Insights Into Microbial Ecology) Pipeline to process data from high-throughput 16S rRNA sequencing studies. If you have not already installed qiime, please see the section `Installing Qiime <../install/index.html>`_ first. The purpose of this pipeline is to provide a start-to-finish workflow, beginning with multiplexed sequence reads and finishing with taxonomic and phylogenetic profiles and comparisons of the samples in the study. With this information in hand, it is possible to determine biological and environmental factors that alter microbial community ecology in your experiment.
+As an example, we will use data from a study of the response of mouse gut microbial communities to fasting (`Crawford et al. (2009) <http://www.ncbi.nlm.nih.gov/pubmed/19549860>`_). To make this tutorial run quickly on a personal computer, we will use a subset of the data generated from 5 animals kept on the control *ad libitum* fed diet, and 4 animals fasted for 24 hours before sacrifice. At the end of our tutorial, we will be able to compare the community structure of control vs. fasted animals. In particular, we will be able to compare taxonomic profiles for each sample type and perform alpha and beta diversity analyses to look for community-level differences in the samples.
 
-As an example, we will use data from a study of the response of mouse gut microbial communities to fasting (Crawford et al., 2009). To make this tutorial run quickly on a personal computer, we will use a subset of the data generated from 5 animals kept on the control ad libitum fed diet, and 4 animals fasted for 24 hours before sacrifice. At the end of our tutorial, we will be able to compare the community structure of control vs. fasted animals. In particular, we will be able to compare taxonomic profiles for each sample type, differences in diversity metrics within the samples and between the groups, and perform comparative clustering analysis to look for overall differences in the samples.
+If you need help while working through the tutorial, please visit http://help.qiime.org.
 
-In this walkthrough, text like the following: ::
-
-    print_qiime_config.py
-
-denotes the command-line invocation of scripts. You can find full usage information for each script by passing the -h option (help) and/or by reading the full description in the `Documentation <../documentation/index.html>`_. Execute all tutorial commands from within the :file:`qiime_overview_tutorial` directory, which can be downloaded from here: `QIIME Overview Tutorial files <ftp://thebeast.colorado.edu/pub/qiime-files/qiime_overview_tutorial.zip>`_.
-
-To process our data, we will perform the following analyses, each of which is described in more detail below:
-
-* Filter the DNA sequence reads for quality and assign multiplexed reads to starting samples by nucleotide barcode .
-* Pick Operational Taxonomic Units (OTUs) based on sequence similarity within the reads, and pick a representative sequence from each OTU.
-* Assign the OTU to a taxonomic identity using reference databases.
-* Align the OTU sequences and create a phylogenetic tree.
-* Calculate diversity metrics for each sample and compare the types of communities, using the taxonomic and phylogenetic assignments.
-* Generate UPGMA and PCoA plots to visually depict the differences between the samples, and dynamically work with these graphs to generate publication quality figures.
-
-
-Essential Files
-----------------
-All the files you will need for this tutorial are here (ftp://thebeast.colorado.edu/pub/qiime-files/qiime_overview_tutorial.zip). Descriptions of these files are below.
+Obtaining the data
+------------------
+All the files you will need for this tutorial can be downloaded `here <ftp://ftp.microbio.me/pub/qiime-files/qiime_overview_tutorial.zip>`_. Descriptions of these files are below.
 
 Sequences (.fna)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^
 This is the 454-machine generated FASTA file. Using the Amplicon processing software on the 454 FLX standard, each region of the PTP plate will yield a fasta file of form :file:`1.TCA.454Reads.fna`, where "1" is replaced with the appropriate region number. For the purposes of this tutorial, we will use the fasta file :file:`Fasting_Example.fna`.
 
 Quality Scores (.qual)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
 This is the 454-machine generated quality score file, which contains a score for each base in each sequence included in the FASTA file. Like the fasta file mentioned above, the Amplicon processing software will generate one of these files for each region of the PTP plate, named :file:`1.TCA.454Reads.qual`, etc. For the purposes of this tutorial, we will use the quality scores file :file:`Fasting_Example.qual`.
 
 Mapping File (Tab-delimited .txt)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The mapping file is generated by the user. This file contains all of the information about the samples necessary to perform the data analysis. At a minimum, the mapping file should contain the name of each sample, the barcode sequence used for each sample, the linker/primer sequence used to amplify the sample, and a Description column. In general, you should also include in the mapping file any metadata that relates to the samples (for instance, health status or sampling site) and any additional information relating to specific samples that may be useful to have at hand when considering outliers (for example, what medications a patient was taking at time of sampling). Of note: the sample names may only contain alphanumeric characters (A-z) and the dot (.). Full format specifications can be found in the Documentation (`File Formats <../documentation/file_formats.html>`_).
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The mapping file is generated by the user. This file contains all of the information about the samples necessary to perform the data analysis. See `here <http://qiime.org/documentation/file_formats.html#metadata-mapping-files>`_ for more details about the mapping file format.
 
-For the purposes of this tutorial, we will use the mapping file :file:`Fasting_Map.txt`. The contents of the mapping file are shown here - as you can see, a nucleotide barcode sequence is provided for each of the 9 samples, as well as metadata related to treatment group and date of birth, and general run descriptions about the project. Fasting_Map.txt file contents:
+For the purposes of this tutorial, we will use the mapping file :file:`Fasting_Map.txt`. The contents of the mapping file are shown here - as you can see, a nucleotide barcode sequence is provided for each of the 9 samples, as well as metadata related to treatment group and date of birth, and general run descriptions about the project::
 
-.. note::
-
-   * #SampleID  BarcodeSequence LinkerPrimerSequence    Treatment DOB   Description
-   * #Example mapping file for the QIIME analysis package. These 9 samples are from a study of the effects of
-   * #exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).
-   * PC.354 AGCACGAGCCTA    YATGCTGCCTCCCGTAGGAGT   Control 20061218    Control_mouse__I.D._354
-   * PC.355 AACTCGTCGATG    YATGCTGCCTCCCGTAGGAGT   Control 20061218    Control_mouse__I.D._355
-   * PC.356 ACAGACCACTCA    YATGCTGCCTCCCGTAGGAGT   Control 20061126    Control_mouse__I.D._356
-   * PC.481 ACCAGCGACTAG    YATGCTGCCTCCCGTAGGAGT   Control 20070314    Control_mouse__I.D._481
-   * PC.593 AGCAGCACTTGT    YATGCTGCCTCCCGTAGGAGT   Control 20071210    Control_mouse__I.D._593
-   * PC.607 AACTGTGCGTAC    YATGCTGCCTCCCGTAGGAGT   Fast    20071112    Fasting_mouse__I.D._607
-   * PC.634 ACAGAGTCGGCT    YATGCTGCCTCCCGTAGGAGT   Fast    20080116    Fasting_mouse__I.D._634
-   * PC.635 ACCGCAGAGTCA    YATGCTGCCTCCCGTAGGAGT   Fast    20080116    Fasting_mouse__I.D._635
-   * PC.636 ACGGTGAGTGTC    YATGCTGCCTCCCGTAGGAGT   Fast    20080116    Fasting_mouse__I.D._636
-
+   #SampleID  BarcodeSequence LinkerPrimerSequence    Treatment DOB   Description
+   #Example mapping file for the QIIME analysis package. These 9 samples are from a study of the effects of
+   #exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).
+   PC.354 AGCACGAGCCTA    YATGCTGCCTCCCGTAGGAGT   Control 20061218    Control_mouse__I.D._354
+   PC.355 AACTCGTCGATG    YATGCTGCCTCCCGTAGGAGT   Control 20061218    Control_mouse__I.D._355
+   PC.356 ACAGACCACTCA    YATGCTGCCTCCCGTAGGAGT   Control 20061126    Control_mouse__I.D._356
+   PC.481 ACCAGCGACTAG    YATGCTGCCTCCCGTAGGAGT   Control 20070314    Control_mouse__I.D._481
+   PC.593 AGCAGCACTTGT    YATGCTGCCTCCCGTAGGAGT   Control 20071210    Control_mouse__I.D._593
+   PC.607 AACTGTGCGTAC    YATGCTGCCTCCCGTAGGAGT   Fast    20071112    Fasting_mouse__I.D._607
+   PC.634 ACAGAGTCGGCT    YATGCTGCCTCCCGTAGGAGT   Fast    20080116    Fasting_mouse__I.D._634
+   PC.635 ACCGCAGAGTCA    YATGCTGCCTCCCGTAGGAGT   Fast    20080116    Fasting_mouse__I.D._635
+   PC.636 ACGGTGAGTGTC    YATGCTGCCTCCCGTAGGAGT   Fast    20080116    Fasting_mouse__I.D._636
 
 .. _checkmapping:
 
-Check Mapping File
---------------------------------------------------------------------
-Before beginning with QIIME, you should ensure that your mapping file is formatted correctly with the `validate_mapping_file.py <../scripts/validate_mapping_file.html>`_ script. Type: ::
+Validate the mapping file
+-------------------------
+First, you should ensure that your mapping file is formatted correctly with the `validate_mapping_file.py <../scripts/validate_mapping_file.html>`_ script::
 
     validate_mapping_file.py -m Fasting_Map.txt -o mapping_output
 
-This utility will display a message indicating whether or not problems were found in the mapping file. A HTML file showing the location of errors and warnings will be generated in the output directory, and will also be written to the output to a log file. Errors will cause fatal problems with subsequent scripts and must be corrected before moving forward. Warnings will not cause fatal problems, but it is encouraged that you fix these problems as they are often indicative of typos in your mapping file, invalid characters, or other unintended errors that will impact downstream analysis. A :file:`corrected_mapping.txt` file will also be created in the output directory, which will have a copy of the mapping file with invalid characters replaced by underscores.
+This script will print a message indicating whether or not problems were found in the mapping file. An HTML file showing the location of errors and warnings will be generated in the output directory, and a plain text log file will also be created. Errors will cause fatal problems with subsequent scripts and must be corrected before moving forward. Warnings will not cause fatal problems, but it is encouraged that you fix these problems as they are often indicative of typos in your mapping file, invalid characters, or other unintended errors that will impact downstream analysis. A file ending with :file:`_corrected.txt` will also be created in the output directory, which will have a copy of the mapping file with invalid characters replaced by underscores.
 
-Reverse primers can be specified in the mapping file, for removal during the demultiplexing step.  This is not required, but it is STRONGLY recommended, as leaving in sequences following primers, such as sequencing adapters, can interfere with OTU picking and taxonomic assignment.
+Reverse primers can be specified in the mapping file, for removal during the demultiplexing step.  This is not required, but it is **strongly** recommended, as leaving in sequences following primers, such as sequencing adapters, can interfere with OTU picking and taxonomic assignment.
 
-An example mapping file with faux reverse primers specified, using the ReversePrimer field, is available here:  `reverse primer mapping file <../_static/Examples/File_Formats/Fasting_Map_reverse_primers.txt>`_.
+For example, a mapping file with reverse primers specified in the ``ReversePrimer`` column might look like::
 
-.. note::
-
-   * #SampleID  BarcodeSequence LinkerPrimerSequence    Treatment ReversePrimer   Description
-   * #Example mapping file for the QIIME analysis package. These 9 samples are from a study of the effects of
-   * #exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).
-   * PC.354 AGCACGAGCCTA    YATGCTGCCTCCCGTAGGAGT   Control GCGCACGGGTGAGTA    Control_mouse__I.D._354
-   * PC.355 AACTCGTCGATG    YATGCTGCCTCCCGTAGGAGT   Control GCGCACGGGTGAGTA    Control_mouse__I.D._355
-   * PC.356 ACAGACCACTCA    YATGCTGCCTCCCGTAGGAGT   Control GCGCACGGGTGAGTA    Control_mouse__I.D._356
-   * PC.481 ACCAGCGACTAG    YATGCTGCCTCCCGTAGGAGT   Control GCGCACGGGTGAGTA    Control_mouse__I.D._481
-   * PC.593 AGCAGCACTTGT    YATGCTGCCTCCCGTAGGAGT   Control GCGCACGGGTGAGTA    Control_mouse__I.D._593
-   * PC.607 AACTGTGCGTAC    YATGCTGCCTCCCGTAGGAGT   Fast    GCGCACGGGTGAGTA    Fasting_mouse__I.D._607
-   * PC.634 ACAGAGTCGGCT    YATGCTGCCTCCCGTAGGAGT   Fast    GCGCACGGGTGAGTA    Fasting_mouse__I.D._634
-   * PC.635 ACCGCAGAGTCA    YATGCTGCCTCCCGTAGGAGT   Fast    GCGCACGGGTGAGTA    Fasting_mouse__I.D._635
-   * PC.636 ACGGTGAGTGTC    YATGCTGCCTCCCGTAGGAGT   Fast    GCGCACGGGTGAGTA    Fasting_mouse__I.D._636
+   #SampleID  BarcodeSequence LinkerPrimerSequence    Treatment ReversePrimer   Description
+   #Example mapping file for the QIIME analysis package. These 9 samples are from a study of the effects of
+   #exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).
+   PC.354 AGCACGAGCCTA    YATGCTGCCTCCCGTAGGAGT   Control GCGCACGGGTGAGTA    Control_mouse__I.D._354
+   PC.355 AACTCGTCGATG    YATGCTGCCTCCCGTAGGAGT   Control GCGCACGGGTGAGTA    Control_mouse__I.D._355
+   PC.356 ACAGACCACTCA    YATGCTGCCTCCCGTAGGAGT   Control GCGCACGGGTGAGTA    Control_mouse__I.D._356
+   PC.481 ACCAGCGACTAG    YATGCTGCCTCCCGTAGGAGT   Control GCGCACGGGTGAGTA    Control_mouse__I.D._481
+   PC.593 AGCAGCACTTGT    YATGCTGCCTCCCGTAGGAGT   Control GCGCACGGGTGAGTA    Control_mouse__I.D._593
+   PC.607 AACTGTGCGTAC    YATGCTGCCTCCCGTAGGAGT   Fast    GCGCACGGGTGAGTA    Fasting_mouse__I.D._607
+   PC.634 ACAGAGTCGGCT    YATGCTGCCTCCCGTAGGAGT   Fast    GCGCACGGGTGAGTA    Fasting_mouse__I.D._634
+   PC.635 ACCGCAGAGTCA    YATGCTGCCTCCCGTAGGAGT   Fast    GCGCACGGGTGAGTA    Fasting_mouse__I.D._635
+   PC.636 ACGGTGAGTGTC    YATGCTGCCTCCCGTAGGAGT   Fast    GCGCACGGGTGAGTA    Fasting_mouse__I.D._636
 
 The reverse primers, like the forward primers, are written in 5'->3' direction.  In this case, these are not the true reverse primers used, but rather just a somewhat conserved site in the sequences used for this example.
 
-An example image of a the entire primer construct and amplicon is shown below, using QIIME nomenclature:
+The primer construct and amplicon used in `Crawford et al. (2009) <http://www.ncbi.nlm.nih.gov/pubmed/19549860>`_ is shown below, annotated using QIIME nomenclature:
 
 .. image:: ../images/ example_primer_construct.png
    :align: center
 
-454 sequencing, in most cases, generates sequences that begin at the BarcodeSequence, which is followed by the LinkerPrimerSequence, both of which are automatically removed during the demultiplexing step described below.  However, the ReversePrimer (i.e., the primer at the end of the read) is not removed by default, and needs to be specified.  The adapter sequence (Adapter B) does not match genomic data, such as 16S sequences, and as such it can disrupt analyses.
+454 sequencing, in most cases, generates sequences that begin at the ``BarcodeSequence``, which is followed by the ``LinkerPrimerSequence``, both of which are automatically removed during the demultiplexing step described below.  The ``ReversePrimer`` (i.e., the primer at the end of the read) is not removed by default but can be using the ``-z`` option to `split_libraries.py <../scripts/split_libraries.html>`_. The adapter sequence (Adapter B) is not a biological sequence, so must be removed if you suspect that it is contained within your reads. This can be achieved using the ``-z`` option to `split_libraries.py <../scripts/split_libraries.html>`_.
 
 .. _assignsamples:
 
-Assign Samples to Multiplex Reads
---------------------------------------------------------------------
-The next task is to assign the multiplexed reads to samples based on their nucleotide barcode. Also, this step performs quality filtering based on the characteristics of each sequence, removing any low quality or ambiguous reads. The script for this step is `split_libraries.py <../scripts/split_libraries.html>`_. A full description of parameters for this script are described in the `Documentation <../documentation/index.html>`_. For this tutorial, we will use default parameters (minimum quality score = 25, minimum/maximum length = 200/1000, no ambiguous bases allowed and no mismatches allowed in the primer sequence). Type: ::
+Demultiplex and quality filter reads
+------------------------------------
+The next task is to assign the multiplexed reads to samples based on their nucleotide barcode (this is known as *demultiplexing*). This step also performs quality filtering based on the characteristics of each sequence, removing any low quality or ambiguous reads. To perform these steps we'll use `split_libraries.py <../scripts/split_libraries.html>`_::
 
     split_libraries.py -m Fasting_Map.txt -f Fasting_Example.fna -q Fasting_Example.qual -o split_library_output
 
-This invocation will create three files in the new directory :file:`split_library_output/`:
+This will create three files in the new directory :file:`split_library_output/`:
 
-* :file:`split_library_log.txt` : This file contains the summary of splitting, including the number of reads detected for each sample and a brief summary of any reads that were removed due to quality considerations.
-* :file:`histograms.txt` : This tab delimited file shows the number of reads at regular size intervals before and after splitting the library.
+* :file:`split_library_log.txt` : This file contains the summary of demultiplexing and quality filtering, including the number of reads detected for each sample and a brief summary of any reads that were removed due to quality considerations.
+* :file:`histograms.txt` : This tab-delimited file shows the number of reads at regular size intervals before and after splitting the library.
 * :file:`seqs.fna` : This is a fasta formatted file where each sequence is renamed according to the sample it came from. The header line also contains the name of the read in the input fasta file and information on any barcode errors that were corrected.
 
-A few lines from the :file:`seqs.fna` file are shown below:
+A few lines from the :file:`seqs.fna` file are shown below::
 
-.. note::
+   >PC.634_1 FLP3FBN01ELBSX orig_bc=ACAGAGTCGGCT new_bc=ACAGAGTCGGCT bc_diffs=0
+   CTGGGCCGTGTCTCAGTCCCAATGTGGCCGTTTACCCTCTCAGGCCGGCTACGCATCATCGCC....
+   >PC.634_2 FLP3FBN01EG8AX orig_bc=ACAGAGTCGGCT new_bc=ACAGAGTCGGCT bc_diffs=0
+   TTGGACCGTGTCTCAGTTCCAATGTGGGGGCCTTCCTCTCAGAACCCCTATCCATCGAAGGCTT....
+   >PC.354_3 FLP3FBN01EEWKD orig_bc=AGCACGAGCCTA new_bc=AGCACGAGCCTA bc_diffs=0
+   TTGGGCCGTGTCTCAGTCCCAATGTGGCCGATCAGTCTCTTAACTCGGCTATGCATCATTGCCTT....
+   >PC.481_4 FLP3FBN01DEHK3 orig_bc=ACCAGCGACTAG new_bc=ACCAGCGACTAG bc_diffs=0
+   CTGGGCCGTGTCTCAGTCCCAATGTGGCCGTTCAACCTCTCAGTCCGGCTACTGATCGTCGACT....
 
-   * >PC.634_1 FLP3FBN01ELBSX orig_bc=ACAGAGTCGGCT new_bc=ACAGAGTCGGCT bc_diffs=0
-   * CTGGGCCGTGTCTCAGTCCCAATGTGGCCGTTTACCCTCTCAGGCCGGCTACGCATCATCGCC....
-   * >PC.634_2 FLP3FBN01EG8AX orig_bc=ACAGAGTCGGCT new_bc=ACAGAGTCGGCT bc_diffs=0
-   * TTGGACCGTGTCTCAGTTCCAATGTGGGGGCCTTCCTCTCAGAACCCCTATCCATCGAAGGCTT....
-   * >PC.354_3 FLP3FBN01EEWKD orig_bc=AGCACGAGCCTA new_bc=AGCACGAGCCTA bc_diffs=0
-   * TTGGGCCGTGTCTCAGTCCCAATGTGGCCGATCAGTCTCTTAACTCGGCTATGCATCATTGCCTT....
-   * >PC.481_4 FLP3FBN01DEHK3 orig_bc=ACCAGCGACTAG new_bc=ACCAGCGACTAG bc_diffs=0
-   * CTGGGCCGTGTCTCAGTCCCAATGTGGCCGTTCAACCTCTCAGTCCGGCTACTGATCGTCGACT....
-
-Reverse primer removal can be accomplished by adding the -z option.  An example command using the mapping file with reverse primers described above is this: ::
+Reverse primer removal can be accomplished by adding the ``-z`` option.  An example command using the mapping file with reverse primers described above::
 
     split_libraries.py -m Fasting_Map_reverse_primers.txt -f Fasting_Example.fna -q Fasting_Example.qual -z truncate_only -o split_library_output_revprimers/
 
-The following is the first several lines of the :file:`split_library_log.txt`
+The following is the first several lines of the :file:`split_library_log.txt`::
 
-.. note::
+   Number raw input seqs	1339
 
-   * Number raw input seqs	1339
-   *
-   * Length outside bounds of 200 and 1000	0
-   * Num ambiguous bases exceeds limit of 6	0
-   * Missing Qual Score	0
-   * Mean qual score below minimum of 25	1
-   * Max homopolymer run exceeds limit of 6	0
-   * Num mismatches in primer exceeds limit of 0: 1
-   *
-   * Number of sequences with identifiable barcode but without identifiable reverse primer: 961
-   * ...
+   Length outside bounds of 200 and 1000	0
+   Num ambiguous bases exceeds limit of 6	0
+   Missing Qual Score	0
+   Mean qual score below minimum of 25	1
+   Max homopolymer run exceeds limit of 6	0
+   Num mismatches in primer exceeds limit of 0: 1
 
-If the number of sequences where the reverse primer is not identifiable is high, you want to check the primer sequence to make sure it is in 5'->3' orientation, or increase the number of mismatches allowed with --reverse_primer_mismatches.
+   Number of sequences with identifiable barcode but without identifiable reverse primer: 961
+   ...
+
+If the number of sequences where the reverse primer is not identifiable is high, you should check the primer sequence to make sure it is in 5'->3' orientation, or increase the number of mismatches allowed with ``--reverse_primer_mismatches``.
 
 Data that are already demultiplexed can have reverse primers removed using the stand-alone script `truncate_reverse_primer.py <../scripts/truncate_reverse_primer.html>`_.
 
 .. _pickotusandrepseqs:
 
-Picking Operational Taxonomic Units (OTUs) through making OTU table
---------------------------------------------------------------------
+De novo OTU picking
+-------------------
+Here we will be running the `pick_de_novo_otus.py <../scripts/pick_de_novo_otus.html>`_ workflow, which runs a series of other scripts automatically. This workflow consists of the following steps:
 
-Here we will be running the `pick_de_novo_otus.py <../scripts/pick_de_novo_otus.html>`_ workflow, which performs a series of small steps by calling a series of other scripts automatically. This workflow consists of the following steps:
+1. Picking OTUs (`pick_otus.py <../scripts/pick_otus.html>`_)
+2. Picking a representative sequence set, one sequence from each OTU (`pick_rep_set.py <../scripts/pick_rep_set.html>`_)
+3. Aligning the representative sequence set (`align_seqs.py <../scripts/align_seqs.html>`_)
+4. Assigning taxonomy to the representative sequence set (`assign_taxonomy.py <../scripts/assign_taxonomy.html>`_)
+5. Filtering the alignment prior to tree building - removing positions which are all gaps, or not useful for phylogenetic inference (`filter_alignment.py <../scripts/filter_alignment.html>`_)
+6. Building a phylogenetic tree  (`make_phylogeny.py <../scripts/make_phylogeny.html>`_)
+7. Building an OTU table (`make_otu_table.py <../scripts/make_otu_table.html>`_)
 
-1. Picking OTUs (for more information, refer to `pick_otus.py <../scripts/pick_otus.html>`_)
-2. Picking a representative sequence set, one sequence from each OTU (for more information, refer to `pick_rep_set.py <../scripts/pick_rep_set.html>`_)
-3. Aligning the representative sequence set (for more information, refer to `align_seqs.py <../scripts/align_seqs.html>`_)
-4. Assigning taxonomy to the representative sequence set (for more information, refer to `assign_taxonomy.py <../scripts/assign_taxonomy.html>`_)
-5. Filtering the alignment prior to tree building - removing positions which are all gaps, or not useful for phylogenetic inference (for more information, refer to `filter_alignment.py <../scripts/filter_alignment.html>`_)
-6. Building a phylogenetic tree  (for more information, refer to `make_phylogeny.py <../scripts/make_phylogeny.html>`_)
-7. Building an OTU table (for more information, refer to `make_otu_table.py <../scripts/make_otu_table.html>`_)
-
-
-Using the output from split_libraries.py (the seqs.fna file), run the following command: ::
+Using the output from `split_libraries.py <../scripts/split_libraries.html>`_ (:file:`seqs.fna`), run the following command::
 
     pick_de_novo_otus.py -i split_library_output/seqs.fna -o otus
 
-Optionally, we could denoise the sequences based on clustering the flowgram sequences. For a single library/sff file we can simply use the workflow script `pick_de_novo_otuss.py <../scripts/pick_de_novo_otus.html>`_, by providing the script with the sff file and the metadata mapping file. For multiple sff files refer to the special purpose tutorial `Denoising of 454 Data Sets <denoising_454_data.html>`_.
+If you're interested in denoising 454 data, refer to the `denoising tutorial <./denoising_454_data.html>`_.
 
-
-The results of `pick_de_novo_otus.py` are in :file:`otus/`, and a description of the steps performed and the results follow:
+The results of `pick_de_novo_otus.py <../scripts/pick_de_novo_otus.html>`_ are in :file:`otus/`, and a description of the steps performed and the results follow:
 
 .. _pickotusseqsim:
 
-Step 1. Pick OTUs based on Sequence Similarity within the Reads
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-At this step, all of the sequences from all of the samples will be clustered into Operational Taxonomic Units (OTUs) based on their sequence similarity. OTUs in QIIME are clusters of sequences, frequently intended to represent some degree of taxonomic relatedness. For example, when sequences are clustered at 97% sequence similarity with uclust, each resulting cluster is typically thought of as representing a species. This model and the current techniques for picking OTUs are known to be flawed, however, in that 97% OTUs do not match what humans have called species for many microbes. Determining exactly how OTUs should be defined, and what they represent, is an active area of research.
-
-`pick_de_novo_otus.py` assigns sequences to OTUs at 97% similarity by default. Further information on how to view and change default behavior will be discussed later.
-
+Step 1. Pick OTUs based on sequence similarity within the reads
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+At this step, all of the sequences from all of the samples will be clustered into Operational Taxonomic Units (OTUs) based on their sequence similarity. OTUs in QIIME are clusters of sequences, frequently intended to represent some degree of taxonomic relatedness. For example, when sequences are clustered at 97% sequence similarity, each resulting cluster is typically thought of as representing a species. This model and the current techniques for picking OTUs are known to be flawed, however, in that 97% OTUs do not match what humans have called species for many microbes. Determining exactly how OTUs should be defined, and what they represent, is an active area of research. See `here <otu_picking.html>`_ for more information about OTU picking with QIIME.
 
 .. _pickrepseqsforotu:
 
-Step 2. Pick Representative Sequences for each OTU
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Step 2. Pick a representative sequence for each OTU
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Since each OTU may be made up of many related sequences, we will pick a representative sequence from each OTU for downstream analysis. This representative sequence will be used for taxonomic identification of the OTU and phylogenetic alignment. QIIME uses the OTU file created above and extracts a representative sequence from the fasta file by one of several methods.
 
-In the :file:`otus/rep_set/` directory, QIIME has created two new files - the log file :file:`seqs_rep_set.log` and the fasta file :file:`seqs_rep_set.fasta` containing one representative sequence for each OTU. In this fasta file, the sequence has been renamed by the OTU, and the additional information on the header line reflects the sequence used as the representative:
+In the :file:`otus/rep_set/` directory, QIIME has a fasta file :file:`seqs_rep_set.fasta` containing one representative sequence for each OTU. In this fasta file, the sequence has been renamed with the OTU identifier, and the additional information on the header line reflects the sequence used as the representative::
 
-.. note::
-
-   * >0 PC.636_424
-   * CTGGGCCGTATCTCAGTCCCAATGTGGCCGGTCGACCTCTC....
-   * >1 PC.481_321
-   * TTGGGCCGTGTCTCAGTCCCAATGTGGCCGTCCGCCCTCTC....
+   >0 PC.636_424
+   CTGGGCCGTATCTCAGTCCCAATGTGGCCGGTCGACCTCTC....
+   >1 PC.481_321
+   TTGGGCCGTGTCTCAGTCCCAATGTGGCCGTCCGCCCTCTC....
 
 .. _assigntax:
 
-Step 3. Assign Taxonomy
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-A primary goal of the QIIME pipeline is to assign taxonomy to high-throughput sequencing reads. This provides information on the microbial taxa found in the samples. By default, QIIME uses the uclust consensus taxonomy classifier to attempt to assign taxonomy to each representative sequence resulting from step 2.
+Step 3. Assign taxonomy to OTU representative sequences
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Next, taxonomy will be assigned to each representative sequence. By default, QIIME uses the uclust consensus taxonomy classifier to attempt to assign taxonomy to each representative sequence resulting from step 2.
 
-In the directory :file:`otus/uclust_assigned_taxonomy/`, there will be a log file and a text file. The text file (which we refer to as an observation or OTU metadata file) contains a line for each OTU considered, followed by the taxonomic assignment, the fraction of uclust hits that contained this taxonomic assignment, and the number of uclust hits that were found. For some OTUs, the assignment may be as specific as a bacterial species, while others may not be assignable at all (and will therefore be labeled as *Unassigned*). Below are the first few lines of an observation metadata file containing the results of uclust taxonomic assignment. ::
-
+In the directory :file:`otus/uclust_assigned_taxonomy/`, there will be a log file and a text file. The text file (which we refer to as an observation or OTU metadata file) contains a line for each OTU, followed by the taxonomic assignment, the fraction of uclust hits that contained this taxonomic assignment, and the number of uclust hits that were found. For some OTUs, the assignment may be as specific as a bacterial species, while others may not be assignable at all (and will therefore be labeled as *Unassigned*). Below are the first few lines of an observation metadata file containing the results of uclust taxonomic assignment::
 
 	denovo367	k__Bacteria; p__Bacteroidetes; c__Bacteroidia; o__Bacteroidales; f__S24-7; g__; s__	1.00	3
 	denovo366	k__Bacteria; p__Firmicutes; c__Clostridia; o__Clostridiales; f__; g__; s__	1.00	3
@@ -216,137 +180,127 @@ In the directory :file:`otus/uclust_assigned_taxonomy/`, there will be a log fil
 
 .. _alignotuseq:
 
-Step 4. Align OTU Sequences
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Alignment of the sequences and phylogeny inference is necessary only if phylogenetic tools such as UniFrac_ will be subsequently invoked. Alignments can either be generated de novo using programs such as MUSCLE, or through assignment to an existing alignment with tools like PyNAST_. For small studies such as this tutorial, either method is possible. However, for studies involving many sequences (roughly, more than 1000), the de novo aligners are very slow and assignment with PyNAST_ is preferred. Since this is one of the most computationally intensive bottlenecks in the pipeline, large studies benefit greatly from parallelization of this task (described in detail in the `Documentation <../documentation/index.html>`_):  When using PyNAST_ as an aligner (the default), QIIME must know the location of  a template alignment. Most QIIME installations use the greengenes file 'core_set_aligned.fasta.imputed' by default.
-
+Step 4. Align OTU representative sequences
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Alignment of the OTU representative sequences and phylogeny inference is necessary only if phylogenetic metrics such as UniFrac_ will be subsequently invoked. Alignments can either be generated de novo using programs such as MUSCLE, or through alignment to an existing alignment with tools like PyNAST_. For small studies such as this tutorial, either method is possible. However, for studies involving many sequences (roughly, more than 1000), de novo aligners are very slow and alignment with PyNAST_ is necessary. Since alignment is one of the most computationally intensive bottlenecks in the pipeline, large studies benefit greatly from parallelization of this task, which is possible with PyNAST_.
 
 After aligning the sequences, a log file and an alignment file are created in the directory :file:`otus/pynast_aligned_seqs/`.
 
 .. _filteraln:
 
-Step 5. Filter Alignment
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Before inferring a phylogenetic tree relating the sequences, it is beneficial to filter the sequence alignment to removed columns comprised of only gaps, and locations known to be excessively variable. QIIME uses a 16S alignment Lane mask (Lane, D.J. 1991) by default. After filtering, a filtered alignment file is created in the directory :file:`otus/pynast_aligned_seqs/`.
+Step 5. Filter the alignment
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Before inferring a phylogenetic tree relating the sequences, it is beneficial to filter the sequence alignment to remove columns comprised of only gaps, and locations known to be excessively variable. QIIME uses a 16S alignment Lane mask (Lane, D.J. 1991) by default. After filtering, a filtered alignment file is created in the directory :file:`otus/pynast_aligned_seqs/`.
 
 .. _maketree:
 
-Step 6. Make Phylogenetic Tree
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Step 6. Build a phylogenetic tree
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The filtered alignment file produced in the directory :file:`otus/pynast_aligned_seqs/` is then used to build a phylogenetic tree using a tree-building program.
 
-The Newick format tree file is written to :file:`rep_set.tre`, which is located in the :file:`otus/` directory . This file can be viewed in a tree visualization software, and is necessary for UniFrac_ diversity measurements and other phylogenetically aware analyses (described below). The tree obtained can be visualized with programs such as FigTree, which was used to visualize the phylogenetic tree obtained from :file:`rep_set.tre`.
+The Newick format tree file is written to :file:`rep_set.tre`, which is located in the :file:`otus/` directory . This file can be viewed in tree visualization software, and is necessary for UniFrac_ diversity measurements and other phylogenetically-aware analyses (described below). The tree obtained can be visualized with programs such as `FigTree <http://tree.bio.ed.ac.uk/software/figtree/>`_, which was used to visualize the phylogenetic tree stored in :file:`rep_set.tre`:
 
 .. image:: ../images/ tree.png
    :align: center
 
-
 .. _makeotutable:
 
-Step 7. Make OTU Table
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Using taxonomic assignments (step 3) and the OTU map (step 1) QIIME assembles a readable matrix of OTU abundance in each sample with meaningful taxonomic identifiers for each OTU.
+Step 7. Make the OTU table
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+Using taxonomic assignments (step 3) and the OTU map (step 1) QIIME assembles a table of OTU abundances in each sample with taxonomic identifiers for each OTU.
 
-The result of this step is :file:`otu_table.biom`, which is located in the :file:`otus/` directory. For more information about the OTU table format, which relies on the biom-format, please go here: `biom-format <http://biom-format.org/documentation/biom_format.html>`_
-
+The result of this step is :file:`otu_table.biom`, which is located in the :file:`otus/` directory. For more information about the OTU table format, which is stored in the BIOM format, please see `here <http://biom-format.org>`_.
 
 .. _perlibrarystats:
 
-View statistics of the OTU table
---------------------------------------------------------------------
-To view the number of sequence reads which were assigned to the otu table (otus/otu_table.biom), type::
+Summarize the OTU table
+-----------------------
+To view summary statistics of the OTU table, run::
 
-    biom summarize-table -i otus/otu_table.biom -o otus/otu_table_summary.txt
+    biom summarize-table -i otus/otu_table.biom
 
-Open the output file :file:`otus/otu_table_summary.txt`, which contains a summary of the OTU table. The summary shows that there are relatively few sequences in this tutorial example, but the sequences present are fairly evenly distributed among the 9 microbial communities.
+The summary shows that there are relatively few sequences in this tutorial example, but the sequences present are fairly evenly distributed among the 9 microbial communities::
 
-.. note ::
+    Num samples: 9
+    Num observations: 419
+    Total count: 1337
+    Table density (fraction of non-zero values): 0.168
 
-    | Num samples: 9
-    |
-    | Seqs/sample summary:
-    |  Min: 146
-    |  Max: 150
-    |  Median: 148.0
-    |  Mean: 148.111111111
-    |  Std. dev.: 1.4487116456
-    |  Median Absolute Deviation: 1.0
-    |  Default even sampling depth in
-    |   core_qiime_analyses.py (just a suggestion): 146
-    |
-    | Seqs/sample detail:
-    |  PC.355: 146
-    |  PC.481: 146
-    |  PC.636: 147
-    |  PC.354: 148
-    |  PC.635: 148
-    |  PC.593: 149
-    |  PC.607: 149
-    |  PC.356: 150
-    |  PC.634: 150
+    Counts/sample summary:
+     Min: 146.0
+     Max: 150.0
+     Median: 149.000
+     Mean: 148.556
+     Std. dev.: 1.257
+     Sample Metadata Categories:
+     Observation Metadata Categories: taxonomy
 
-
-.. _makeheatmap:
-
-Make OTU Heatmap
---------------------------------------------------------------------
-The QIIME pipeline includes a very useful utility to generate images of the OTU table. The script is `make_otu_heatmap.py <../scripts/make_otu_heatmap.html>`_. Type::
-
-    make_otu_heatmap.py -i otus/otu_table.biom -o otu_heatmap.pdf
-
-A PDF file is created in the current working directory called :file:`otu_heatmap.pdf`. You can open this file with any PDF viewer, and this will allow you to visualize differences in abundances of OTUs on a per-sample basis (this can also be ordered by sample metadata category if you pass the `-c` flag).
+    Counts/sample detail:
+     PC.481: 146.0
+     PC.355: 147.0
+     PC.636: 148.0
+     PC.607: 149.0
+     PC.635: 149.0
+     PC.593: 149.0
+     PC.354: 149.0
+     PC.634: 150.0
+     PC.356: 150.0
 
 .. _makeotunetwork:
 
-Make OTU Network
-----------------------------------------------
-An alternative to viewing the OTU table as a heatmap is to create an OTU network, using the following command.::
+Make an OTU Network
+-------------------
+An alternative to viewing the OTU table as a heatmap is to create an OTU network, using the following command::
 
-    make_otu_network.py -m Fasting_Map.txt -i otus/otu_table.biom -o otus/OTU_Network
+    make_otu_network.py -m Fasting_Map.txt -i otus/otu_table.biom -o otus/
 
-To visualize the network, we use the Cytoscape_ program (which you can run by calling cytoscape from the command line -- you may need to call this beginning either with a capital or lowercase 'C' depending on your version of Cytoscape), where each red circle represents a sample and each white square represents an OTU. The lines represent the OTUs present in a particular sample (blue for controls and green for fasting). For more information about opening the files in Cytoscape_ please refer to `Making Cytoscape Networks <../tutorials/making_cytoscape_networks.html>`_.
+To visualize the network, we use the Cytoscape_ program (which you can run by calling cytoscape from the command line -- you may need to call this beginning either with a capital or lowercase 'C' depending on your version of Cytoscape), where each red circle represents a sample and each white square represents an OTU. The lines represent the OTUs present in a particular sample (blue for controls and green for fasting). For more information about opening the files in Cytoscape_ please refer to `Making Cytoscape Networks <./making_cytoscape_networks.html>`_.
 
 .. image:: ../images/ network.png
    :align: center
 
 .. _summarizetaxa:
 
-Summarize Communities by Taxonomic Composition
-----------------------------------------------------------------------------
-You can group OTUs by samples or categories (when "-c" option is passed) by different taxonomic levels (division, class, family, etc.) with the workflow script `summarize_taxa_through_plots.py <../scripts/summarize_taxa_through_plots.html>`_. Note that this process depends directly on the method used to assign taxonomic information to OTUS (see `Assigning Taxonomy`__ above). Type:
+Summarize communities by taxonomic composition
+----------------------------------------------
+You can group OTUs by different taxonomic levels (phylum, class, family, etc.) with the workflow script `summarize_taxa_through_plots.py <../scripts/summarize_taxa_through_plots.html>`_. Note that this process depends directly on the method used to assign taxonomic information to OTUS (see `Assigning Taxonomy`__ above).
 
 __ assigntax_
 
-::
+Run::
 
-    summarize_taxa_through_plots.py -i otus/otu_table.biom -o wf_taxa_summary -m Fasting_Map.txt
+    summarize_taxa_through_plots.py -i otus/otu_table.biom -o taxa_summary -m Fasting_Map.txt
 
-The script will generate a new table grouping sequences by taxonomic assignment at various levels, for example the phylum level table at: :file:`wf_taxa_summary/otu_table_L3.txt`. The value of each *i,j* entry in the matrix is the count of the number of times all OTUs belonging to the taxon *i* (for example, Phylum Actinobacteria) were found in the sequences for sample *j*.
+The script will generate a new table grouping sequences by taxonomic assignment at various levels, for example the class level table at :file:`taxa_summary/otu_table_L3.txt`. The value of each *i,j* entry in the matrix is the count of the number of times all OTUs belonging to the taxon *i* (for example, *Actinobacteria*) were found in the sequences for sample *j*::
 
-.. note::
-
-   | #Full OTU Counts
-   | Taxon              PC.354 PC.355   PC.356  PC.481  PC.593  PC.607  PC.634  PC.635  PC.636
-   | Root;Bacteria;Actinobacteria   0.0 0.0 0.0 1.0 0.0 2.0 3.0 1.0     1.0
-   | Root;Bacteria;Bacteroidetes    7.0 38.0    15.0    19.0    30.0    40.0    86.0    54.0    90.0
-   | Root;Bacteria;Deferribacteres  0.0 0.0 0.0 0.0 0.0 3.0 5.0 2.0 7.0
-   | Root;Bacteria;Firmicutes   136.0   102.0   115.0   117.0   65.0    66.0    37.0    63.0    34.0
-   | Root;Bacteria;Other        5.0 6.0 18.0    9.0 49.0    35.0    14.0    27.0    14.0
-   | Root;Bacteria;Proteobacteria   0.0 0.0 0.0 0.0 5.0 3.0 2.0 0.0 1.0
-   | Root;Bacteria;TM7      0.0 0.0 0.0 0.0 0.0 0.0 2.0 0.0 0.0
-   | Root;Bacteria;Verrucomicrobia  0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0
-   | Root;Other         0.0 0.0 2.0 0.0 0.0 0.0 0.0 1.0 0.0
+    #OTU ID	PC.636	PC.635 PC.356	PC.481	PC.354 PC.593	PC.355	PC.607 PC.634
+    Unassigned;Other;Other 0.027027027027 0.00671140939597 0.0133333333333 0.00684931506849	0.0 0.00671140939597 0.00680272108844 0.0134228187919	0.02
+    k__Bacteria;Other;Other	0.0 0.0	0.0	0.0	0.0	0.0	0.0 0.00671140939597	0.0
+    k__Bacteria;p__Actinobacteria;c__Coriobacteriia 0.00675675675676	0.0	0.0 0.00684931506849	0.0	0.0	0.0 0.0134228187919 0.0133333333333
+    k__Bacteria;p__Bacteroidetes;c__Bacteroidia 0.675675675676 0.530201342282	0.2 0.143835616438 0.0805369127517 0.389261744966 0.285714285714 0.288590604027	0.64
+    k__Bacteria;p__Deferribacteres;c__Deferribacteres 0.0472972972973 0.0134228187919	0.0	0.0	0.0 0.0	0.0	0.0201342281879 0.0333333333333
+    k__Bacteria;p__Firmicutes;c__Bacilli	0.027027027027	0.0 0.0933333333333 0.089041095890 0.107382550336 0.0335570469799 0.0136054421769 0.00671140939597	0.02
+    k__Bacteria;p__Firmicutes;c__Clostridia	0.195945945946 0.436241610738 0.686666666667 0.712328767123 0.798657718121 0.389261744966 0.69387755102 0.469798657718 0.213333333333
+    k__Bacteria;p__Firmicutes;c__Erysipelotrichi 0.0135135135135 0.00671140939597	0.0 0.0342465753425 0.0134228187919 0.147651006711	0.0 0.154362416107 0.0266666666667
 
 .. _maketaxacharts:
 
-To view the resulting charts, open the area or bar chart html file located in the  :file:`wf_taxa_summary/taxa_summary_plots` folder. The following chart shows the taxa assignments for each sample as an area chart. You can mouseover the plot to see which taxa are contributing to the percentage shown.
+To view the resulting charts, open the area or bar chart html file located in the :file:`taxa_summary/taxa_summary_plots` folder. The following chart shows the taxa assignments for each sample as a bar chart. You can mouseover the plot to see which taxa are contributing to the percentage shown:
 
-.. image:: ../images/areachart1.png
+.. image:: ../images/ barchart1.png
    :align: center
 
-The following chart shows the taxa assignments for each sample as a bar chart.
+.. _makeheatmap:
 
-.. image:: ../images/barchart1.png
+Make a taxonomy heatmap
+-----------------------
+QIIME supports generating heatmap images of BIOM tables (e.g., OTU table or the taxonomy tables generated in the previous step) with `make_otu_heatmap.py <../scripts/make_otu_heatmap.html>`_. Let's create a heatmap illustrating class-level abundances on a per-sample basis, where samples are sorted by whether they are from control or fasted mice::
+
+    make_otu_heatmap.py -i taxa_summary/otu_table_L3.biom -o taxa_summary/otu_table_L3_heatmap.pdf -c Treatment -m Fasting_Map.txt
+
+A PDF file is created as :file:`taxa_summary/otu_table_L3_heatmap.pdf`. The first four samples are from fasted mice and the last five are from controls. This clearly illustrates class-level differences in the taxonomic composition of the samples:
+
+.. image:: ../images/ heatmap.png
    :align: center
 
 .. _compalphadivrarecurves:
