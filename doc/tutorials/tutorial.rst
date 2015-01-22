@@ -348,23 +348,17 @@ Step 1. Rarify OTU Table
 
 The directory :file:`arare/rarefaction/` will contain many text files named :file:`rarefaction_##_#.txt`; the first set of numbers represents the number of sequences sampled, and the last number represents the iteration number. If you opened one of these files, you would find an OTU table where for each sample the sum of the counts equals the number of samples taken.
 
-To keep the results of `alpha_rarefaction.py <../scripts/alpha_rarefaction.html>`_ to a managable size, these results are deleted unless you pass the ``--retain_intermediate_files``.
+To keep the results of `alpha_rarefaction.py <../scripts/alpha_rarefaction.html>`_ to a managable size, these results are deleted unless you pass the ``--retain_intermediate_files`` to `alpha_rarefaction.py <../scripts/alpha_rarefaction.html>`_.
 
 .. _computealphadiv:
 
 Step 2. Compute alpha diversity
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The rarefied tables are the basis for calculating alpha diversity metrics, which describe the richness and/or evenness of taxa in a single sample. QIIME allows users to calculate more than two dozen different diversity metrics. The full list of available metrics is available here: `alpha-diversity metrics <http://scikit-bio.org/math.diversity.alpha.html>`_. Every metric has different strengths and limitations - technical discussion of each metric is readily available online and in ecology textbooks, but it is beyond the scope of this document. By default, QIIME calculates three metrics:
-
-#. Chao1 metric estimates the species richness.
-#. The Observed OTUs (previously known as Observed Species) metric is simply the count of unique OTUs found in the sample.
-#. Phylogenetic Distance (PD_whole_tree) is the only phylogenetic metric used, and requires a phylogenetic tree.
-
-In addition, :file:`alpha_params.txt` specified above adds the Shannon Index to the list of alpha diversity measures calculated by QIIME.
+The rarefied tables are the basis for calculating alpha diversity metrics, which describe the richness and/or evenness of taxa in a single sample. QIIME allows users to calculate more than two dozen different diversity metrics. The full list of available metrics is available here: `alpha-diversity metrics <http://scikit-bio.org/docs/latest/generated/skbio.diversity.alpha.html>`_. Each metric has different strengths and limitations. Technical discussion of each metric is readily available online and in ecology textbooks, but it is beyond the scope of this document. By default, QIIME calculates three metrics: Chao1 (``chao1``), Observed OTUs (``observed_otus``, previously known as Observed Species), and Phylogenetic Distance (``PD_whole_tree``). In addition, in the :file:`alpha_params.txt` we specified we added the Shannon Index (``shannon``) to the list of alpha diversity measures that we calculated here.
 
 The result of this step produces text files with the results of the alpha diversity computations performed on the rarefied OTU tables. The results are located in the :file:`arare/alpha_div/` directory.
 
-To keep the results of `alpha_rarefaction.py <../scripts/alpha_rarefaction.html>`_ to a managable size, these results are deleted unless you pass the ``--retain_intermediate_files``.
+To keep the results of `alpha_rarefaction.py <../scripts/alpha_rarefaction.html>`_ to a managable size, these results are deleted unless you pass the ``--retain_intermediate_files`` to `alpha_rarefaction.py <../scripts/alpha_rarefaction.html>`_.
 
 .. _collateotutable:
 
