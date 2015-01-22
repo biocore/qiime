@@ -574,31 +574,7 @@ The resulting html file :file:`3d_biplot/index.html` shows a biplot like this:
 
 Running Workflow Scripts in Parallel
 -----------------------------------------------
-To run the workflow scripts in parallel, pass the "-a" option to each of the scripts, and optionally the "-O" option to specify the number of parallel jobs to start. If running on a quad-core computer, you can set the number of jobs to start as 4 for one of the workflow scripts as follows:
-
-::
-
-    pick_de_novo_otus.py -i split_library_output/seqs.fna -o otus -a -O 4
-
-
-Running the QIIME Tutorial Shell Scripts
------------------------------------------------
-The commands in this tutorial are present as a shell script along with the other tutorial files, which can be run via the terminal. To run the shell scripts, you may need to allow all users to execute them, using the following commands::
-
-    chmod a+x ./qiime_tutorial_commands_serial.sh
-    chmod a+x ./qiime_tutorial_commands_parallel.sh
-
-To run the QIIME tutorial in serial::
-
-    ./qiime_tutorial_commands_serial.sh
-
-To run the QIIME tutorial in parallel::
-
-    ./qiime_tutorial_commands_parallel.sh
-
-References
-------------
-Crawford, P. A., Crowley, J. R., Sambandam, N., Muegge, B. D., Costello, E. K., Hamady, M., et al. (2009). Regulation of myocardial ketone body metabolism by the gut microbiota during nutrient deprivation. Proc Natl Acad Sci U S A, 106(27), 11276-11281.
+Most of QIIME's workflows can be run in parallel. For information on how to use parallel QIIME, see `here <parallel_qiime.html>`_.
 
 .. _Cytoscape: http://www.cytoscape.org/
 .. _PyNAST: http://qiime.org/pynast/
