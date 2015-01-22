@@ -13,6 +13,11 @@ Obtaining the data
 ------------------
 All the files you will need for this tutorial can be downloaded `here <ftp://ftp.microbio.me/pub/qiime-files/qiime_overview_tutorial.zip>`_. Descriptions of these files are below.
 
+Open a terminal and use the ``cd`` command to move to the directory where you downloaded the tutorial data. Next, unzip the tutorial data and move into the unzipped directory that is created::
+
+    unzip qiime_overview_tutorial.zip
+    cd qiime_overview_tutorial
+
 Sequences (.fna)
 ^^^^^^^^^^^^^^^^
 This is the 454-machine generated FASTA file. Using the Amplicon processing software on the 454 FLX standard, each region of the PTP plate will yield a fasta file of form :file:`1.TCA.454Reads.fna`, where "1" is replaced with the appropriate region number. For the purposes of this tutorial, we will use the fasta file :file:`Fasting_Example.fna`.
@@ -101,27 +106,25 @@ A few lines from the :file:`seqs.fna` file are shown below::
    >PC.481_4 FLP3FBN01DEHK3 orig_bc=ACCAGCGACTAG new_bc=ACCAGCGACTAG bc_diffs=0
    CTGGGCCGTGTCTCAGTCCCAATGTGGCCGTTCAACCTCTCAGTCCGGCTACTGATCGTCGACT....
 
+The first several lines of the :file:`split_library_log.txt` file are shown below::
+
+   Number raw input seqs   1339
+
+   Length outside bounds of 200 and 1000   0
+   Num ambiguous bases exceeds limit of 6  0
+   Missing Qual Score      0
+   Mean qual score below minimum of 25     1
+   Max homopolymer run exceeds limit of 6  0
+   Num mismatches in primer exceeds limit of 0: 1
+   ...
+
 Reverse primer removal can be accomplished by adding the ``-z`` option.  An example command using the mapping file with reverse primers described above::
 
-    split_libraries.py -m Fasting_Map_reverse_primers.txt -f Fasting_Example.fna -q Fasting_Example.qual -z truncate_only -o split_library_output_revprimers/
-
-The following is the first several lines of the :file:`split_library_log.txt`::
-
-   Number raw input seqs	1339
-
-   Length outside bounds of 200 and 1000	0
-   Num ambiguous bases exceeds limit of 6	0
-   Missing Qual Score	0
-   Mean qual score below minimum of 25	1
-   Max homopolymer run exceeds limit of 6	0
-   Num mismatches in primer exceeds limit of 0: 1
-
-   Number of sequences with identifiable barcode but without identifiable reverse primer: 961
-   ...
+    split_libraries.py -m Fasting_Map_reverse_primers.txt -f Fasting_Example.fna -q Fasting_Example.qual -z truncate_only -o split_library_output_revprimers
 
 If the number of sequences where the reverse primer is not identifiable is high, you should check the primer sequence to make sure it is in 5'->3' orientation, or increase the number of mismatches allowed with ``--reverse_primer_mismatches``.
 
-Data that are already demultiplexed can have reverse primers removed using the stand-alone script `truncate_reverse_primer.py <../scripts/truncate_reverse_primer.html>`_.
+Data that are already demultiplexed can have reverse primers removed using the standalone script `truncate_reverse_primer.py <../scripts/truncate_reverse_primer.html>`_.
 
 .. _pickotusandrepseqs:
 
@@ -250,9 +253,9 @@ The summary shows that there are relatively few sequences in this tutorial examp
 
 Make an OTU Network
 -------------------
-An alternative to viewing the OTU table as a heatmap is to create an OTU network, using the following command::
+To create an OTU network, using the following command::
 
-    make_otu_network.py -m Fasting_Map.txt -i otus/otu_table.biom -o otus/
+    make_otu_network.py -m Fasting_Map.txt -i otus/otu_table.biom -o otus
 
 To visualize the network, we use the Cytoscape_ program (which you can run by calling cytoscape from the command line -- you may need to call this beginning either with a capital or lowercase 'C' depending on your version of Cytoscape), where each red circle represents a sample and each white square represents an OTU. The lines represent the OTUs present in a particular sample (blue for controls and green for fasting). For more information about opening the files in Cytoscape_ please refer to `Making Cytoscape Networks <./making_cytoscape_networks.html>`_.
 
@@ -263,15 +266,15 @@ To visualize the network, we use the Cytoscape_ program (which you can run by ca
 
 Summarize communities by taxonomic composition
 ----------------------------------------------
-You can group OTUs by different taxonomic levels (phylum, class, family, etc.) with the workflow script `summarize_taxa_through_plots.py <../scripts/summarize_taxa_through_plots.html>`_. Note that this process depends directly on the method used to assign taxonomic information to OTUS (see `Assigning Taxonomy`__ above).
+You can group OTUs by different taxonomic levels (phylum, class, family, etc.) with the workflow script `summarize_taxa_through_plots.py <../scripts/summarize_taxa_through_plots.html>`_. Note that this process depends directly on the method used to assign taxonomic information to OTUS (see `Assigning Taxonomy`__ above):
 
 __ assigntax_
 
-Run::
+::
 
     summarize_taxa_through_plots.py -i otus/otu_table.biom -o taxa_summary -m Fasting_Map.txt
 
-The script will generate a new table grouping sequences by taxonomic assignment at various levels, for example the class level table at :file:`taxa_summary/otu_table_L3.txt`. The value of each *i,j* entry in the matrix is the count of the number of times all OTUs belonging to the taxon *i* (for example, *Actinobacteria*) were found in the sequences for sample *j*::
+The script will generate new tables at various taxonomic levels (we'll refer to these as *taxonomy tables*, which are different than *OTU tables*). For example, the class-level table is located at :file:`taxa_summary/otu_table_L3.txt`. Each taxonomy table contains the relative abundances of taxa within each sample::
 
     #OTU ID	PC.636	PC.635 PC.356	PC.481	PC.354 PC.593	PC.355	PC.607 PC.634
     Unassigned;Other;Other 0.027027027027 0.00671140939597 0.0133333333333 0.00684931506849	0.0 0.00671140939597 0.00680272108844 0.0134228187919	0.02
@@ -285,7 +288,7 @@ The script will generate a new table grouping sequences by taxonomic assignment 
 
 .. _maketaxacharts:
 
-To view the resulting charts, open the area or bar chart html file located in the :file:`taxa_summary/taxa_summary_plots` folder. The following chart shows the taxa assignments for each sample as a bar chart. You can mouseover the plot to see which taxa are contributing to the percentage shown:
+To view the resulting charts, open the area or bar chart html file located in the :file:`taxa_summary/taxa_summary_plots` folder. The following chart shows the taxonomic assignments for each sample as a bar chart. You can mouse-over the plot to see which taxa are contributing to the percentage shown:
 
 .. image:: ../images/ barchart1.png
    :align: center
@@ -294,7 +297,7 @@ To view the resulting charts, open the area or bar chart html file located in th
 
 Make a taxonomy heatmap
 -----------------------
-QIIME supports generating heatmap images of BIOM tables (e.g., OTU table or the taxonomy tables generated in the previous step) with `make_otu_heatmap.py <../scripts/make_otu_heatmap.html>`_. Let's create a heatmap illustrating class-level abundances on a per-sample basis, where samples are sorted by whether they are from control or fasted mice::
+QIIME supports generating heatmap images of BIOM tables (e.g., OTU tables or the taxonomy tables generated in the previous step) with `make_otu_heatmap.py <../scripts/make_otu_heatmap.html>`_. Let's create a heatmap illustrating class-level abundances on a per-sample basis, where samples are sorted by whether they are from control or fasted mice::
 
     make_otu_heatmap.py -i taxa_summary/otu_table_L3.biom -o taxa_summary/otu_table_L3_heatmap.pdf -c Treatment -m Fasting_Map.txt
 
@@ -307,14 +310,14 @@ A PDF file is created as :file:`taxa_summary/otu_table_L3_heatmap.pdf`. The firs
 
 Compute alpha diversity and generate alpha rarefaction plots
 ------------------------------------------------------------
-Community ecologists typically describe the within-sample diversity for samples or categories of samples in their study. Here, we will determine the level of alpha diversity in our samples using QIIME's `alpha_rarefaction.py <../scripts/alpha_rarefaction.html>`_ workflow, which runs a series of QIIME scripts (listed below).  `alpha_rarefaction.py <../scripts/alpha_rarefaction.html>`_ performs the following steps:
+Community ecologists are often interested in computing the *within-sample* (or *alpha*) diversity for samples or groups of samples in their study. Here, we will determine the level of alpha diversity in our samples using QIIME's `alpha_rarefaction.py <../scripts/alpha_rarefaction.html>`_ workflow, which performs the following steps:
 
 1. Generate rarefied OTU tables (`multiple_rarefactions.py <../scripts/multiple_rarefactions.html>`_)
 2. Compute measures of alpha diversity for each rarefied OTU table (`alpha_diversity.py <../scripts/alpha_diversity.html>`_)
 3. Collate alpha diversity results (`collate_alpha.py <../scripts/collate_alpha.html>`_)
 4. Generate alpha rarefaction plots (`make_rarefaction_plots.py <../scripts/make_rarefaction_plots.html>`_)
 
-Although we could run this workflow with the (sensible) default parameters, this provides an opportunity to illustrate the use of custom parameters. To see what measures of alpha diversity will be computed by default, type: ::
+Although we could run this workflow with the (sensible) default parameters, this provides an opportunity to illustrate the use of custom parameters in a QIIME workflow. To see what measures of alpha diversity will be computed by default, run::
 
     alpha_diversity.py -h
 
@@ -325,40 +328,40 @@ You should see, among other information::
         list should be provided when multiple metrics are
         specified. [default: PD_whole_tree,chao1,observed_otus]
 
-which indicates that the metrics that will be used by default are ``PD_whole_tree``, ``chao1``, and ``observed_otus``. If we additionally wanted to compute Shannon Index, we could create a parameters file (which for the sake of this example we'll call `alpha_params.txt`) containing the following line::
+which indicates that the metrics that will be used by default are ``PD_whole_tree``, ``chao1``, and ``observed_otus``. If we additionally wanted to compute Shannon Index, we could create a parameters file (which for the sake of this example we'll call :file:`alpha_params.txt`) containing the following line::
 
     alpha_diversity:metrics shannon,PD_whole_tree,chao1,observed_otus
 
 For more information on creating parameters files, see `here <../documentation/qiime_parameters_files.html>`_.
 
-We can next run `alpha_rarefaction.py <../scripts/alpha_rarefaction.html>`_, which requires the OTU table (-i) and phylogenetic tree (-t) from `above`__, and the parameters file we just created:
+We can next run `alpha_rarefaction.py <../scripts/alpha_rarefaction.html>`_, which requires the OTU table (``-i``) and phylogenetic tree (``-t``) from `above`__, and the parameters file we just created:
 
 __ pickotusandrepseqs_
 
 ::
 
-    alpha_rarefaction.py -i otus/otu_table.biom -m Fasting_Map.txt -o arare/ -p alpha_params.txt -t otus/rep_set.tre
+    alpha_rarefaction.py -i otus/otu_table.biom -m Fasting_Map.txt -o arare -p alpha_params.txt -t otus/rep_set.tre
 
-Descriptions of the steps involved in alpha_rarefaction.py follow:
+Descriptions of the steps involved in `alpha_rarefaction.py <../scripts/alpha_rarefaction.html>`_ follow:
 
 .. _rareotutable:
 
-Step 1. Rarify OTU Table
-^^^^^^^^^^^^^^^^^^^^^^^^
+Step 1. Rarefy the OTU table
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The directory :file:`arare/rarefaction/` will contain many text files named :file:`rarefaction_##_#.txt`; the first set of numbers represents the number of sequences sampled, and the last number represents the iteration number. If you opened one of these files, you would find an OTU table where for each sample the sum of the counts equals the number of samples taken.
 
-To keep the results of `alpha_rarefaction.py <../scripts/alpha_rarefaction.html>`_ to a managable size, these results are deleted unless you pass the ``--retain_intermediate_files`` to `alpha_rarefaction.py <../scripts/alpha_rarefaction.html>`_.
+To keep the results of `alpha_rarefaction.py <../scripts/alpha_rarefaction.html>`_ to a manageable size, these results are deleted unless you pass the ``--retain_intermediate_files`` option to `alpha_rarefaction.py <../scripts/alpha_rarefaction.html>`_.
 
 .. _computealphadiv:
 
 Step 2. Compute alpha diversity
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The rarefied tables are the basis for calculating alpha diversity metrics, which describe the richness and/or evenness of taxa in a single sample. QIIME allows users to calculate more than two dozen different diversity metrics. The full list of available metrics is available here: `alpha-diversity metrics <http://scikit-bio.org/docs/latest/generated/skbio.diversity.alpha.html>`_. Each metric has different strengths and limitations. Technical discussion of each metric is readily available online and in ecology textbooks, but it is beyond the scope of this document. By default, QIIME calculates three metrics: Chao1 (``chao1``), Observed OTUs (``observed_otus``, previously known as Observed Species), and Phylogenetic Distance (``PD_whole_tree``). In addition, in the :file:`alpha_params.txt` we specified we added the Shannon Index (``shannon``) to the list of alpha diversity measures that we calculated here.
+The rarefied tables are the basis for calculating alpha diversity metrics, which describe the richness and/or evenness of taxa in a single sample. QIIME allows users to calculate more than two dozen different diversity metrics. The full list of available metrics is available `here <http://scikit-bio.org/docs/latest/generated/skbio.diversity.alpha.html>`_. Each metric has different strengths and limitations. Technical discussion of each metric is readily available online and in ecology textbooks, but it is beyond the scope of this tutorial. By default, QIIME calculates three metrics: Chao1 (``chao1``), Observed OTUs (``observed_otus``, previously known as Observed Species), and Phylogenetic Diversity (``PD_whole_tree``). In addition, in the :file:`alpha_params.txt` file we added the Shannon Index (``shannon``) to the list of alpha diversity measures that we calculated here.
 
 The result of this step produces text files with the results of the alpha diversity computations performed on the rarefied OTU tables. The results are located in the :file:`arare/alpha_div/` directory.
 
-To keep the results of `alpha_rarefaction.py <../scripts/alpha_rarefaction.html>`_ to a managable size, these results are deleted unless you pass the ``--retain_intermediate_files`` to `alpha_rarefaction.py <../scripts/alpha_rarefaction.html>`_.
+To keep the results of `alpha_rarefaction.py <../scripts/alpha_rarefaction.html>`_ to a manageable size, these results are deleted unless you pass the ``--retain_intermediate_files`` option to `alpha_rarefaction.py <../scripts/alpha_rarefaction.html>`_.
 
 .. _collateotutable:
 
@@ -366,7 +369,7 @@ Step 3. Collate alpha diversity results
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The output directory :file:`arare/alpha_div/` will contain one text file :file:`alpha_rarefaction_##_#` for every file input from :file:`arare/rarefaction/`, where the numbers represent the number of samples and iterations as before. The content of this tab delimited file is the calculated metrics for each sample. To collapse the individual files into a single combined table, the workflow uses `collate_alpha.py <../scripts/collate_alpha.html>`_.
 
-In the output directory from :file:`arare/alpha_div_collated/`, there will be one file for every alpha diversity metric used. Each file will contain the alpha diversity measure for every sample, arranged in ascending order from lowest number of sequences per sample to highest. A portion of the :file:`observed_otus.txt` file are shown below::
+In the output directory :file:`arare/alpha_div_collated/`, there will be one file for every alpha diversity metric used. Each file will contain the alpha diversity measure for every sample, arranged in ascending order from lowest number of sequences per sample to highest. A portion of the :file:`observed_otus.txt` file are shown below::
 
         sequences per sample	iteration	PC.636	PC.635	PC.356	PC.481	PC.354	PC.593	PC.355	PC.607	PC.634
     alpha_rarefaction_10_0.txt	10	0	7.0	10.0	6.0	8.0	9.0	9.0	7.0	9.0	10.0
@@ -379,13 +382,15 @@ In the output directory from :file:`arare/alpha_div_collated/`, there will be on
 
 Step 4. Generate alpha rarefaction plots
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-QIIME creates plots of alpha diversity vs. simulated sequencing effort, known as rarefaction plots, using the script `make_rarefaction_plots.py <../scripts/make_rarefaction_plots.html>`_. This script takes a mapping file and any number files generated by `collate_alpha.py <../scripts/collate_alpha.html>`_, and creates alpha rarefaction curves. Each curve represents a sample and can be grouped by the sample metadata supplied in the mapping file.
+QIIME creates plots of alpha diversity vs. simulated sequencing effort, known as rarefaction plots, using the script `make_rarefaction_plots.py <../scripts/make_rarefaction_plots.html>`_. This script takes a mapping file and any number of files generated by `collate_alpha.py <../scripts/collate_alpha.html>`_, and creates alpha rarefaction curves. Each curve represents a sample and can be grouped by the sample metadata supplied in the mapping file.
 
-This step generates a :file:`arare/alpha_rarefaction_plots/rarefaction_plots.html` that can be opened with a web browser, in addition to other files. The :file:`arare/alpha_rarefaction_plots/average_tables/` folder contains the diversity measure averages for each rarefied table, so the user can optionally plot the rarefaction curves in another application. The :file:`arare/alpha_rarefaction_plots/average_plots/` folder contains the average plots for each metric and category.
+This step generates a :file:`arare/alpha_rarefaction_plots/rarefaction_plots.html` file that can be opened with a web browser, in addition to other files. The :file:`arare/alpha_rarefaction_plots/average_plots/` folder contains the average plots for each metric and category.
+
+The :file:`arare/alpha_rarefaction_plots/average_tables/` folder contains the diversity measure averages for each rarefied table, so the user can optionally plot the rarefaction curves in another application. To keep the results of `make_rarefaction_plots.py <../scripts/make_rarefaction_plots.html>`_ to a manageable size, these results are not generated unless you pass the ``--generate_average_tables`` option to `make_rarefaction_plots.py <../scripts/make_rarefaction_plots.html>`_.
 
 Viewing alpha rarefaction plots
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-To view the alpha rarefaction plots, open the file :file:`arare/alpha_rarefaction_plots/rarefaction_plots.html`. Once the browser window is open,  select the metric `PD_whole_tree` and the category `Treatment`, to reveal a plot like the figure below. You can click on the triangle next to each label in the legend to see all the samples that contribute to that category. Below each plot is a table displaying average values for each measure of alpha diversity for each group of samples the specified category.
+To view the alpha rarefaction plots, open the file :file:`arare/alpha_rarefaction_plots/rarefaction_plots.html`. Once the browser window is open,  select the metric `PD_whole_tree` and the category `Treatment`, to reveal a plot like the figure below. You can click on the triangle next to each label in the legend to see all the samples that contribute to that category. Below each plot is a table displaying average values for each measure of alpha diversity for each group of samples in the specified category.
 
 .. image:: ../images/rarecurve.png
    :align: center
