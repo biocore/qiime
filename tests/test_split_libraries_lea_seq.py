@@ -274,7 +274,7 @@ class WorkflowTests(TestCase):
         get_cons_expected = 'AAAAAAAAAACAAAAAAAA^AAAAAAAAAATAAAAATA'
         self.assertEqual(get_cons_actual, get_cons_expected)
         # this call tests the third condition of if loop
-        # in the function get_consensus_seq_lookup
+        # in the function get_consensus_seq_lookup.
         # i.e. calls the get_consensus function, as the cluster ratio
         # between max_cluster/second_best_cluster in the get_cons_fwd_read_data
         # (and get_cons_rev_read_data) is 2/1 ( < 2.5)
@@ -284,10 +284,10 @@ class WorkflowTests(TestCase):
         get_cons_expected = 'AAAAAAAAAATAAAAAAAA^TTAAAAAAAAAAAAGAAAA'
         self.assertEqual(get_cons_actual, get_cons_expected)
 
-        if len(fn_call) <= 1:
-            raise Exception("The get_consensus_seqs_lookup function"
-                            "has returned early, without completing"
-                            "the three for loops.")
+        self.assertFalse(len(fn_call) <= 1,
+                         msg="The get_consensus_seqs_lookup function "
+                         "has returned early, without completing "
+                         "the three 'for' loops.")
 
     def test_format_lea_seq_log(self):
         actual = format_lea_seq_log(1, 2, 3, 4, 5, 6)
