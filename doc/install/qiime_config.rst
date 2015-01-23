@@ -13,9 +13,9 @@ The values that you can set in your *qiime config* file are listed below. Defini
 - ``assign_taxonomy_reference_seqs_fp`` : reference database to use with assign_taxonomy.py (and parallel versions), if you prefer to not use the default
 - ``blastmat_dir`` : directory where BLAST substitution matrices are stored
 - ``blastall_fp`` : path to ``blastall`` executable
-- ``cluster_jobs_fp`` : path to your *cluster jobs* file. This file is described in :doc:`../tutorials/parallel_qiime`.
+- ``cluster_jobs_fp`` : path to your *cluster jobs* file. This file is described in detail in :doc:`../tutorials/parallel_qiime`.
 - ``denoiser_min_per_core`` : minimum number of flowgrams to denoise per core in parallel denoiser runs
-- ``jobs_to_start`` : default number of jobs to start when running QIIME in parallel.
+- ``jobs_to_start`` : default number of jobs to start when running QIIME in parallel. This value is described in detail in :doc:`../tutorials/parallel_qiime`.
 - ``pick_otus_reference_seqs_fp`` : reference database to use with all OTU picking scripts and workflows, if you prefer to not use the default
 - ``pynast_template_alignment_blastdb`` : template alignment to use with PyNAST as a pre-formatted BLAST database, if you prefer to not have a BLAST database constructed from the fasta filepath provided for ``pynast_template_alignment_fp``
 - ``pynast_template_alignment_fp`` : template alignment to use with PyNAST as a fasta file, if you prefer to not use the default
@@ -23,7 +23,7 @@ The values that you can set in your *qiime config* file are listed below. Defini
 - ``seconds_to_sleep`` : number of seconds to wait when checking whether parallel jobs have completed
 - ``slurm_memory`` : amount of memory in megabytes to request per CPU, when using ``start_parallel_jobs_slurm.py``; will default to slurm's default
 - ``slurm_queue`` : queue to submit jobs to, when using ``start_parallel_jobs_slurm.py``; will default to slurm's default
-- ``temp_dir`` : directory for storing temporary files created by QIIME scripts. when a script completes successfully, any temporary files that it created are cleaned up. If you're working in a cluster environment, this directory must be shared across all of the worker nodes that QIIME jobs may be running on.
+- ``temp_dir`` : directory for storing temporary files created by QIIME scripts. When a script completes successfully, any temporary files that it created are cleaned up. If you're working in a cluster environment, this directory must be shared across all of the worker nodes that QIIME jobs may be running on. This directory is described in detail in :doc:`../tutorials/parallel_qiime`.
 - ``topiaryexplorer_project_dir`` : directory where TopiaryExplorer is installed
 - ``torque_queue`` : default queue to submit jobs to when using ``start_parallel_jobs_torque.py``
 
