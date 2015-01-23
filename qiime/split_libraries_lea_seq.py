@@ -186,7 +186,8 @@ def get_LEA_seq_consensus_seqs(fwd_read_f, rev_read_f,
                                                      min_reads_per_random_bc,
                                                      output_dir,
                                                      min_difference_clusters,
-                                                     max_cluster_ratio)
+                                                     max_cluster_ratio,
+                                                     min_consensus)
 
     log_out = format_lea_seq_log(input_seqs_count,
                                  barcode_errors_exceed_max_count,
@@ -232,8 +233,8 @@ def get_cluster_ratio(fasta_seqs, min_difference_in_clusters):
     command = "uclust --usersort --input {} --uc {} --id 0.98".format(
         fasta_tempfile_name, uclust_tempfile_name)
     # In the function, I am calling uclust a large number of times.
-    # Initially I was using bfillings.get_clusters_from_fasta_filepath
-    # but due to issue (biocore/bfillings#31), I have temporarily
+    # Initially I was using from bfillings.get_clusters_from_fasta_filepath
+    # but due to issue (biocore/bfillingss#31), I have temporarily
     # reverted to qiime_system_call.
 
     count_lookup = defaultdict(int)
@@ -252,7 +253,7 @@ def get_cluster_ratio(fasta_seqs, min_difference_in_clusters):
 
     sorted_counts_in_clusters = sorted(
         count_lookup.iteritems(),
-        key=lambda x: x[1])
+        key=lambda x: x[1], reverse=True)
     try:
         max_cluster_count = \
             float(str(sorted_counts_in_clusters[0][1]))
@@ -263,7 +264,7 @@ def get_cluster_ratio(fasta_seqs, min_difference_in_clusters):
         return 1
 
 
-def get_consensus(fasta_seqs, min_consensus):
+def get_consensus(fasta_tempfile, min_consensus):
     """
     Returns consensus sequence from a set of sequences
     input: fasta file, min_consensus
@@ -287,22 +288,10 @@ def get_consensus(fasta_seqs, min_consensus):
     seqs = list()
     counts = list()
 
-    temp_dir = get_qiime_temp_dir()
-    fd_fas, fasta_tempfile_name = mkstemp(dir=temp_dir, suffix='.fas')
-    close(fd_fas)
-
-    with open(fasta_tempfile_name, 'w') as fasta_tempfile:
-        fasta_tempfile.write(fasta_seqs)
-    fasta_tempfile.close()
-
-    fasta_tempfile = open(fasta_tempfile_name, 'r')
     for label, seq in parse_fasta(fasta_tempfile):
         RE_output = search(r'\w+\|(\d+)', label)
         counts.append(int(RE_output.group(1)))
         seqs.append(seq)
-    fasta_tempfile.close()
-
-    remove_files([fasta_tempfile_name])
 
     length = len(seqs[0])
     number_of_seqs = len(seqs)
@@ -469,7 +458,8 @@ def get_consensus_seqs_lookup(random_bc_lookup,
                               min_reads_per_random_bc,
                               output_dir,
                               min_difference_in_clusters,
-                              max_cluster_ratio):
+                              max_cluster_ratio,
+                              min_consensus):
     """
     Generates LEA-seq consensus sequence
     For each sample id, for each random barcode, consensus sequence is created
@@ -565,8 +555,8 @@ def get_consensus_seqs_lookup(random_bc_lookup,
                 # otherwise call get_consensus function
                 if fwd_cluster_ratio == 0 or rev_cluster_ratio == 0:
                     consensus_seq = "No consensus"
-                elif (fwd_cluster_ratio < max_cluster_ratio
-                        and rev_cluster_ratio < max_cluster_ratio):
+                elif (fwd_cluster_ratio > max_cluster_ratio
+                        and rev_cluster_ratio > max_cluster_ratio):
                     consensus_seq = majority_seq
                 else:
                     fwd_fasta_tempfile = open(fwd_fasta_tempfile_name, 'r')
@@ -586,7 +576,11 @@ def get_consensus_seqs_lookup(random_bc_lookup,
                 files_to_be_removed.append(fwd_fasta_tempfile_name)
                 files_to_be_removed.append(rev_fasta_tempfile_name)
                 remove_files(files_to_be_removed)
-                return consensus_seq_lookup
+
+    # return the entire defaultdict 'consensus_seq_lookup
+    # which has consensus sequence for each sample id,
+    # and for each random barcode.
+    return consensus_seq_lookup
 
 
 def read_fwd_rev_read(fwd_read_f,
@@ -657,10 +651,13 @@ def read_fwd_rev_read(fwd_read_f,
     seq_idx = 1
     qual_idx = 2
 
-    for fwd_read, rev_read in izip(
-            parse_fastq(fwd_read_f, strict=False, enforce_qual_range=False),
-            parse_fastq(rev_read_f, strict=False, enforce_qual_range=False)):
-            # Confirm match between read headers.
+    for fwd_read, rev_read in izip(parse_fastq(fwd_read_f, strict=False,
+                                   enforce_qual_range=False),
+                                   parse_fastq(rev_read_f,
+                                   strict=False,
+                                   enforce_qual_range=False)):
+
+        # confirm match between headers
 
         input_seqs_count += 1
 
