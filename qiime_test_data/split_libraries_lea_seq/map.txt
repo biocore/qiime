@@ -1,2 +1,3 @@
 #SampleID	BarcodeSequence	LinkerPrimerSequence	ReversePrimer	Description
-Sample1	CCGGCAG	AGAGTTTGATCCTGGCTCAG	GGGCCGTGTCTCAGT	Sample1 description
+name_a	CTCAATG	AGAGTTTGATCCTGGCTCAG	GGGCCGTGTCTCAGT	Sample2 description
+name_b	CCGGCAG	AGAGTTTGATCCTGGCTCAG	GGGCCGTGTCTCAGT	Sample1 description

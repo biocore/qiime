@@ -142,7 +142,6 @@ def main():
     min_diff_in_clusters = opts.min_difference_in_clusters
     barcode_column = opts.header_barcode_column
     reverse_primer_column = opts.reverse_primer_column
-
     create_dir(output_dir)
     fwd_consensus_outfile = open(path.join(output_dir, "fwd.fna"), "w")
     rev_consensus_outfile = open(path.join(output_dir, "rev.fna"), "w")
@@ -166,6 +165,16 @@ def main():
         option_parser.error("--max_barcode_errors must be greater than or "
                             "equal to zero. You provided %.4f." %
                             max_barcode_errors)
+
+    if min_diff_in_clusters < 0 or min_diff_in_clusters > 1:
+        option_parser.error("--min_difference_in_clusters must be "
+                            "between 0 to 1. You provided %.4f." %
+                            min_diff_in_clusters)
+
+    if min_difference_in_bcs < 0 or min_difference_in_bcs > 1:
+        option_parser.error("--min_difference_in_bcs must be between 0 to 1."
+                            " You provided %.4f." %
+                            min_difference_in_bcs)
 
     if barcode_len < 1:
         option_parser.error("Invalid barcode length: %d. Must be greater "
