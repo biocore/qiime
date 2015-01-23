@@ -51,8 +51,6 @@ class BarcodeLenMismatchError(Exception):
     pass
 
 
-
-
 def extract_primer(seq, possible_primers, min_idx=None, max_idx=None):
     """
     Given possible primers, extracts primers from
@@ -255,7 +253,7 @@ def get_cluster_ratio(fasta_seqs, min_difference_in_clusters):
 
     sorted_counts_in_clusters = sorted(
         count_lookup.iteritems(),
-        key=lambda x: x[1])
+        key=lambda x: x[1], reverse=True)
     try:
         max_cluster_count = \
             float(str(sorted_counts_in_clusters[0][1]))
@@ -557,8 +555,8 @@ def get_consensus_seqs_lookup(random_bc_lookup,
                 # otherwise call get_consensus function
                 if fwd_cluster_ratio == 0 or rev_cluster_ratio == 0:
                     consensus_seq = "No consensus"
-                elif (fwd_cluster_ratio < max_cluster_ratio
-                        and rev_cluster_ratio < max_cluster_ratio):
+                elif (fwd_cluster_ratio > max_cluster_ratio
+                        and rev_cluster_ratio > max_cluster_ratio):
                     consensus_seq = majority_seq
                 else:
                     fwd_fasta_tempfile = open(fwd_fasta_tempfile_name, 'r')
@@ -578,6 +576,10 @@ def get_consensus_seqs_lookup(random_bc_lookup,
                 files_to_be_removed.append(fwd_fasta_tempfile_name)
                 files_to_be_removed.append(rev_fasta_tempfile_name)
                 remove_files(files_to_be_removed)
+
+    # return the entire defaultdict 'consensus_seq_lookup
+    # which has consensus sequence for each sample id,
+    # and for each random barcode.
     return consensus_seq_lookup
 
 
