@@ -257,7 +257,7 @@ To create an OTU network, using the following command::
 
     make_otu_network.py -m Fasting_Map.txt -i otus/otu_table.biom -o otus
 
-To visualize the network, we use the Cytoscape_ program (which you can run by calling cytoscape from the command line -- you may need to call this beginning either with a capital or lowercase 'C' depending on your version of Cytoscape), where each red circle represents a sample and each white square represents an OTU. The lines represent the OTUs present in a particular sample (blue for controls and green for fasting). For more information about opening the files in Cytoscape_ please refer to `Making Cytoscape Networks <./making_cytoscape_networks.html>`_.
+To visualize the network, we use the Cytoscape_ program (which you can run by calling cytoscape from the command line -- you may need to call this beginning either with a capital or lowercase 'C' depending on your version of Cytoscape_), where each red circle represents a sample and each white square represents an OTU. The lines represent the OTUs present in a particular sample (blue for controls and green for fasting). For more information about opening the files in Cytoscape_ please refer to `Making Cytoscape Networks <./making_cytoscape_networks.html>`_.
 
 .. image:: ../images/ network.png
    :align: center
@@ -407,7 +407,7 @@ Like alpha diversity, there are many possible beta diversity metrics that can be
 
     beta_diversity.py -s
 
-Here, we will calculate beta diversity between our 9 microbial communities using the default beta diversity metrics of weighted and unweighted UniFrac, which are phylogenetic measures used extensively in recent microbial community sequencing projects. To perform this analysis, we will use the `beta_diversity_through_plots.py <../scripts/beta_diversity_through_plots.html>`_ workflow, which performs the following steps:
+Here, we will calculate beta diversity between our 9 microbial communities using the default beta diversity metrics of weighted and unweighted UniFrac_, which are phylogenetic measures used extensively in recent microbial community sequencing projects. To perform this analysis, we will use the `beta_diversity_through_plots.py <../scripts/beta_diversity_through_plots.html>`_ workflow, which performs the following steps:
 
 1. Rarefy OTU table to remove sample heterogeneity (`single_rarefaction.py <../scripts/single_rarefaction.html>`_)
 2. Compute beta diversity (`beta_diversity.py <../scripts/beta_diversity.html>`_)
@@ -438,7 +438,7 @@ Since all samples have at least 146 sequences, a rarefaction level of 146 (speci
 
 Step 2. Compute beta diversity
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Beta diversity metrics assess the differences between microbial communities. By default, QIIME calculates both weighted and unweighted UniFrac, which are phylogenetically-aware measures of beta diversity.
+Beta diversity metrics assess the differences between microbial communities. By default, QIIME calculates both weighted and unweighted UniFrac_, which are phylogenetically-aware measures of beta diversity.
 
 The resulting distance matrices (:file:`bdiv_even146/unweighted_unifrac_dm.txt` and :file:`bdiv_even146/weighted_unifrac_dm.txt`) are the basis for further analyses and visualizations (e.g., Principal Coordinates Analysis and hierarchical clustering).
 
@@ -446,7 +446,7 @@ Step 3. Run Principal Coordinates Analysis
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Principal Coordinates Analysis (PCoA) is a technique that helps to extract and visualize a few highly-informative components of variation from complex, multidimensional data. This is a transformation that maps the samples present in the distance matrix to a new set of orthogonal axes such that a maximum amount of variation is explained by the first principal coordinate, the second largest amount of variation is explained by the second principal coordinate, etc. The principal coordinates can be plotted in two or three dimensions to provide an intuitive visualization of differences between samples.
 
-The files :file:`bdiv_even146/unweighted_unifrac_pc.txt` and :file:`bdiv_even146/weighted_unifrac_pc.txt` contain the results of PCoA applied to the unweighed and weighted UniFrac distance matrices, respectively.
+The files :file:`bdiv_even146/unweighted_unifrac_pc.txt` and :file:`bdiv_even146/weighted_unifrac_pc.txt` contain the results of PCoA applied to the unweighed and weighted UniFrac_ distance matrices, respectively.
 
 Step 4. Generate Emperor PCoA plots
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -460,107 +460,97 @@ Step 4. Generate Emperor PCoA plots
 
 .. _jackbd:
 
-Jackknifed Beta Diversity and Hierarchical Clustering
-------------------------------------------------------
-This workflow uses jackknife replicates to estimate the uncertainty in PCoA plots and hierarchical clustering of microbial communities. Many of the same concepts relevant to beta diversity and PCoA are used here. For this analysis we use the script `jackknifed_beta_diversity.py`, which performs the following steps:
+Jackknifed beta diversity and hierarchical clustering
+-----------------------------------------------------
+The `jackknifed_beta_diversity.py <../scripts/jackknifed_beta_diversity.html>`_ workflow uses jackknife replicates to estimate the uncertainty in PCoA plots and hierarchical clustering of microbial communities. Many of the same concepts relevant to beta diversity and PCoA are used here. `jackknifed_beta_diversity.py <../scripts/jackknifed_beta_diversity.html>`_ performs the following steps:
 
-  1) Compute the beta diversity distance matrix from the full OTU table (and tree, if applicable) (for more information, refer to `beta_diversity.py <../scripts/beta_diversity.html>`_)
-  2) Build UPGMA tree from full distance matrix; (for more information, refer to `upgma_cluster.py <../scripts/upgma_cluster.html>`_)
-  3) Build rarefied OTU tables (for more information, refer to `multiple_rarefactions_even_depth.py <../scripts/multiple_rarefactions_even_depth.html>`_)
-  4) Compute distance matrices for rarefied OTU tables (for more information, refer to `beta_diversity.py <../scripts/beta_diversity.html>`_) <../scripts/beta_diversity.html>`_)
-  5) Build UPGMA trees from rarefied distance matrices (for more information, refer to `upgma_cluster.py <../scripts/upgma_cluster.html>`_)
-  6) Compare rarefied UPGMA trees and determine jackknife support for tree nodes. (for more information, refer to `tree_compare.py <../scripts/tree_compare.html>`_ and `consensus_tree.py <../scripts/consensus_tree.html>`_)
-  7) Compute principal coordinates on each rarefied distance matrix (for more information, refer to `principal_coordinates.py <../scripts/principal_coordinates.html>`_)
-  8) Compare rarefied principal coordinates plots from each rarefied distance matrix (for more information, refer to `make_emperor.py <http://emperor.colorado.edu/>`
+1. Compute beta diversity distance matrix from full OTU table and tree, if applicable (`beta_diversity.py <../scripts/beta_diversity.html>`_)
+2. Build UPGMA tree from full distance matrix (`upgma_cluster.py <../scripts/upgma_cluster.html>`_)
+3. Build rarefied OTU tables (`multiple_rarefactions_even_depth.py <../scripts/multiple_rarefactions_even_depth.html>`_)
+4. Compute distance matrices from rarefied OTU tables (`beta_diversity.py <../scripts/beta_diversity.html>`_) <../scripts/beta_diversity.html>`_)
+5. Build UPGMA trees from rarefied distance matrices (`upgma_cluster.py <../scripts/upgma_cluster.html>`_)
+6. Compare rarefied UPGMA trees and determine jackknife support for tree nodes (`tree_compare.py <../scripts/tree_compare.html>`_ and `consensus_tree.py <../scripts/consensus_tree.html>`_)
+7. Compute PCoA on each rarefied distance matrix (`principal_coordinates.py <../scripts/principal_coordinates.html>`_)
+8. Compare rarefied PCoA plots from each rarefied distance matrix (`make_emperor.py <http://emperor.colorado.edu/>`_)
 
+We can run the workflow with the following command::
 
-To run the analysis, type the following:
+    jackknifed_beta_diversity.py -i otus/otu_table.biom -t otus/rep_set.tre -m Fasting_Map.txt -o jack -e 110
 
-::
-
-    jackknifed_beta_diversity.py -i otus/otu_table.biom -t otus/rep_set.tre -m Fasting_Map.txt -o wf_jack -e 110
+Descriptions of the steps involved in `jackknifed_beta_diversity.py <../scripts/jackknifed_beta_diversity.html>`_ follow:
 
 .. _hiarchclust:
 
-Steps 1 and 2. UPGMA Clustering
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Unweighted Pair Group Method with Arithmetic mean (UPGMA) is type of hierarchical clustering method using average linkage and can be used to interpret the distance matrix produced by `beta_diversity.py <../scripts/beta_diversity.html>`_.
+Steps 1 and 2. UPGMA clustering
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Unweighted Pair Group Method with Arithmetic mean (UPGMA) is a type of hierarchical clustering method that uses average linkage. It can be used to interpret the distance matrix produced by `beta_diversity.py <../scripts/beta_diversity.html>`_.
 
-The output is a file that can be opened with tree viewing software, such as FigTree.
+The output can be opened with tree viewing software, such as FigTree:
 
 .. image:: ../images/ UPGMAbytreatment.png
    :align: center
    :width: 700px
 
-This tree shows the relationship among the 9 samples, and reveals that the 4 samples from the guts of fasting mice cluster together (PC.6xx, fasting data is in :file:`Fasting_Map.txt`).
+This tree shows the relationship among the 9 samples, and reveals that the 4 samples from the guts of fasted mice cluster together (PC.6xx, fasting data is in :file:`Fasting_Map.txt`).
 
 .. _jacksupport:
 
-Steps 3, 4 and 5. Perform Jackknifing Support
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-To measure the robustness of this result to sequencing effort, we perform a jackknifing analysis, wherein a smaller number of sequences are chosen at random from each sample, and the resulting UPGMA tree from this subset of data is compared with the tree representing the entire available data set. This process is repeated with many random subsets of data, and the tree nodes which prove more consistent across jackknifed datasets are deemed more robust.
+Steps 3, 4, and 5. Perform jackknifing support
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+To measure the robustness of our results to sequencing effort, we perform a jackknifing analysis, wherein a smaller number of sequences are chosen at random from each sample, and the resulting UPGMA tree from this subset of data is compared with the tree representing the entire data set. This process is repeated with many random subsets of data, and the tree nodes which prove more consistent across jackknifed datasets are deemed more robust.
 
-First the jackknifed OTU tables must be generated, by subsampling the full available data set. In this tutorial, each sample contains between 146 and 150 sequences, as shown with `biom summarize-table`__:
+First, the jackknifed OTU tables must be generated by subsampling the full data set. In this tutorial, each sample contains between 146 and 150 sequences, as shown with `biom summarize-table`__.
 
 __ perlibrarystats_
 
-.. note::
+To ensure that a random subset of sequences is selected from each sample, we chose to select 110 sequences from each sample (75% of the smallest sample, though this value is only a guideline), which is designated by the ``-e`` option when running the workflow (see above).
 
-    | Num samples: 9
-    |
-    | Seqs/sample summary:
-    |  Min: 146
-    |  Max: 150
-    |  ...
+More jackknife replicates provide a better estimate of the variability expected in beta diversity results, but at the cost of longer computational time. By default, QIIME generates 10 jackknife replicates of the available data. Each replicate is a simulation of a smaller sequencing effort (110 sequences in each sample, as defined above).
 
-To ensure that a random subset of sequences is selected from each sample, we chose to select 110 sequences from each sample (75% of the smallest sample, though this value is only a guideline), which is designated by the "-e" option when running the workflow script (see above).
-
-More jackknife replicates provide a better estimate of the variability expected in beta diversity results, but at the cost of longer computational time. By default, QIIME generates 10 jackknife replicates of the available data. Each replicate is a simulation of a smaller sequencing effort (110 sequences in each sample, as defined below).
-
-The workflow then calculates the distance matrix for each jackknifed dataset, but now in batch mode, which results in two sets of 10 distance matrix files written to the :file:`wf_jack/unweighted_unifrac/rare_dm/` and :file:`wf_jack/weighted_unifrac/rare_dm/` directories. Each of those is then used as the basis for hierarchical clustering with UPGMA, written to the :file:`wf_jack/unweighted_unifrac/rare_upgma/` and :file:`wf_jack/weighted_unifrac/rare_upgma/` directories.
+The workflow then computes a distance matrix for each jackknifed dataset, which results in 10 distance matrix files written to the :file:`jack/unweighted_unifrac/rare_dm/` directory and 10 distance matrices written to the :file:`jack/weighted_unifrac/rare_dm/` directory. Each set of 10 distance matrices is then used as input to hierarchical clustering with UPGMA, with the output written to the :file:`jack/unweighted_unifrac/rare_upgma/` and :file:`jack/weighted_unifrac/rare_upgma/` directories.
 
 .. _compjackclustertree:
 
-Step 6. Compare Jackknifed Trees
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-UPGMA clustering of the 10 distance matrix files results in 10 hierarchical clusters of the 9 mouse microbial communities, each  hierarchical cluster based on a random sub-sample of the available sequence data.
+Step 6. Compare rarefied UPGMA trees and determine jackknife support for tree nodes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UPGMA clustering of the 10 distance matrices results in 10 hierarchical clusters of the 9 mouse microbial communities, with each hierarchical cluster being based on a random subsample of the available sequence data.
 
-This compares the UPGMA clustering based on all available data with the jackknifed UPGMA results. Three files are written to :file:`wf_jack/unweighted_unifrac/upgma_cmp/` and :file:`wf_jack/weighted_unifrac/upgma_cmp/`:
+This step of the workflow compares the UPGMA clustering based on the full data set with the jackknifed UPGMA results. Three files are written to :file:`jack/unweighted_unifrac/upgma_cmp/` and :file:`jack/weighted_unifrac/upgma_cmp/`:
 
-    * :file:`master_tree.tre`, which is virtually identical to :file:`jackknife_named_nodes.tre` but each internal node of the UPGMA clustering is assigned a unique name
+    * :file:`master_tree.tre`, which is identical to :file:`jackknife_named_nodes.tre` but each internal node of the UPGMA clustering is assigned a unique name
     * :file:`jackknife_named_nodes.tre`
-    * :file:`jackknife_support.txt` explains how frequently a given internal node had the same set of descendant samples in the jackknifed UPGMA clusters as it does in the UPGMA cluster using the full available data.  A value of 0.5 indicates that half of the jackknifed data sets support that node, while 1.0 indicates perfect support.
+    * :file:`jackknife_support.txt` explains how frequently a given internal node had the same set of descendant samples in the jackknifed UPGMA clusters as it does in the UPGMA cluster using the full data set. A value of 0.5 indicates that half of the jackknifed data sets support that node, while 1.0 indicates perfect support.
 
 .. _comppcoa:
 
-Steps 7 and 8. Compare Principal Coordinates plots
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The jackknifed replicate PCoA plots can be compared to assess the degree of variation from one replicate to the next. QIIME displays this variation by displaying confidence ellipsoids around the samples represented in a PCoA plot. The resulting plots are present in :file:`wf_jack/unweighted_unifrac/emperor_pcoa_plots`, as well as the corresponding :file:`weighted_unifrac/` location. An example is shown below:
+Steps 7 and 8. Compare PCoA plots
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The jackknifed replicate PCoA plots can be compared to assess the degree of variation from one replicate to the next. Emperor displays this variation by displaying confidence ellipsoids around the samples represented in a PCoA plot. The resulting plots are in :file:`jack/unweighted_unifrac/emperor_pcoa_plots` and :file:`jack/weighted_unifrac/emperor_pcoa_plots`:
 
 .. image:: ../images/ jackpcoa.png
    :align: center
-   :width: 700px
+   :width: 900px
 
 .. _genboottree:
 
-Generate Bootstrapped Tree
+Generate bootstrapped tree
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 :file:`jackknife_named_nodes.tre` can be viewed with FigTree or another tree-viewing program. However, as an example, we can visualize the bootstrapped tree using QIIME's `make_bootstrapped_tree.py <../scripts/make_bootstrapped_tree.html>`_, as follows::
 
-    make_bootstrapped_tree.py -m wf_jack/unweighted_unifrac/upgma_cmp/master_tree.tre -s wf_jack/unweighted_unifrac/upgma_cmp/jackknife_support.txt -o wf_jack/unweighted_unifrac/upgma_cmp/jackknife_named_nodes.pdf
+    make_bootstrapped_tree.py -m jack/unweighted_unifrac/upgma_cmp/master_tree.tre -s jack/unweighted_unifrac/upgma_cmp/jackknife_support.txt -o jack/unweighted_unifrac/upgma_cmp/jackknife_named_nodes.pdf
 
-The resulting pdf shows the tree with internal nodes colored, red for 75-100% support, yellow for 50-75%, green for 25-50%, and blue for < 25% support. Although UPGMA shows that PC.354 and PC.593 cluster together and PC.481 with PC.6xx cluster together, we can not have high confidence in that result. However, there is excellent jackknife support for all fasted samples (PC.6xx) which are clustering together, separate from the non-fasted (PC.35x) samples.
+The resulting PDF shows the tree with internal nodes colored, red for 75-100% support, yellow for 50-75%, green for 25-50%, and blue for < 25% support. Although UPGMA shows that PC.354 and PC.593 cluster together and PC.481 and PC.6xx cluster together, we cannot have high confidence in this result. However, there is excellent jackknife support for all fasted samples (PC.6xx) clustering separate from the non-fasted samples.
 
 .. image:: ../images/ boottree.png
    :align: center
 
-Generate 3D Bi-Plots
+Generate 3-D biplots
 ^^^^^^^^^^^^^^^^^^^^
-One can add taxa from the taxon summary files in the folder :file:`wf_taxa_summary/` to a 3D principal coordinates plot using Emperor's `make_emperor.py <http://emperor.colorado.edu/>`_. The coordinates of a given taxon are plotted as a weighted average of the coordinates of all samples, where the weights are the relative abundances of the taxon in the samples. The size of the sphere representing a taxon is proportional to the mean relative abundance of the taxon across all samples. The following example creates a biplot displaying the 5 most abundant phylum-level taxa::
+We can add taxa from the taxonomy tables in the :file:`taxa_summary/` directory to a 3-D PCoA plot using Emperor's `make_emperor.py <http://emperor.colorado.edu/>`_. The coordinates of a given taxon are plotted as a weighted average of the coordinates of all samples, where the weights are the relative abundances of the taxon in the samples. The size of the sphere representing a taxon is proportional to the mean relative abundance of the taxon across all samples. The following command creates a biplot displaying the 5 most abundant class-level taxa::
 
-    make_emperor.py -i wf_bdiv_even146/unweighted_unifrac_pc.txt -m Fasting_Map.txt -t wf_taxa_summary/otu_table_L3.txt --n_taxa_to_keep 5 -o 3d_biplot
+    make_emperor.py -i bdiv_even146/unweighted_unifrac_pc.txt -m Fasting_Map.txt -t taxa_summary/otu_table_L3.txt --n_taxa_to_keep 5 -o biplots
 
-The resulting html file :file:`3d_biplot/index.html` shows a biplot like this:
+The resulting html file :file:`biplots/index.html` shows a biplot similar to this:
 
 .. image:: ../images/ biplot.png
    :align: center
