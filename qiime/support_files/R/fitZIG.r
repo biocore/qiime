@@ -42,7 +42,16 @@ if(is.null(opts$subcategory_2)) stop('Please supply a second subcategory.')
             mod = model.matrix(~MGS_category)
             settings = zigControl(maxit=1, verbose=FALSE)
             fit = fitZig(obj=MGS, mod=mod, control=settings)
-            MRfulltable(fit, number = nrow(assayData(MGS)$counts), file=out_path, group=3)
+            if (is.null(observation_metadata(foo))) {
+            	MRfulltable(fit, number = nrow(assayData(MGS)$counts), group=3, file=out_path)
+            } else {
+				res = MRfulltable(fit, number = nrow(assayData(MGS)$counts), group=3)
+				sigotus = rownames(res)
+				fullTaxonomyData = fData(MGS)[sigotus,]
+				fullTaxonomyData = sapply(1:nrow(fullTaxonomyData), function(i){paste(format(fullTaxonomyData[i,]),collapse="; ")})
+				res2 = cbind(OTU = sigotus, res,taxonomy = (fullTaxonomyData))
+				write.table(res2, out_path, sep="\t", quote=F, row.names=F) 
+			}
         }
         
 fitZIG(opts$input_path, opts$out_path, opts$mapping_category, opts$subcategory_1, opts$subcategory_2)
