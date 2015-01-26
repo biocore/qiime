@@ -42,6 +42,7 @@ Features
 * Installing QIIME via ``pip install qiime`` now works out-of-the-box by providing a functioning QIIME minimal (base) install (see [#1696](https://github.com/biocore/qiime/issues/1696)).
 * ``cluster_jobs_fp`` in the QIIME config file now defaults to ``start_parallel_jobs.py``. ``seconds_to_sleep`` now defaults to 1.
 * Added ``--negate_sample_id_fp`` option to ``filter_samples_from_otu_table.py`` (see [#1117](https://github.com/biocore/qiime/issues/1117)).
+* Added ``--percent_variation_below_one`` flag to ``make_2d_plots.py`` for when the percent variation is actually below 1 and not a relative measure.
 
 Usability enhancements
 ----------------------
