@@ -154,7 +154,7 @@ For joining paired end reads, with ``join_paired_ends.py`` and ``multiple_join_p
 * ea-utils 1.1.2-537 (`web <https://code.google.com/p/ea-utils/>`_) (license: MIT)
 * SeqPrep v1.1 (`src <https://github.com/jstjohn/SeqPrep>`_) (license: MIT)
 
-For improved performance with large BIOM files, or if you're working with BIOM format 2.x files:
+For improved performance with large BIOM files, or if you're working with BIOM format 2.x files (see `here <../documentation/file_formats.html#biom-file-format-versions>`_ for more details):
 
 * HDF5 (`web_hdf5 <http://www.hdfgroup.org/HDF5/>`_)
 * h5py (`web_h5py <http://www.h5py.org>`_; this can be installed with ``pip install h5py`` after HDF5 has been installed)
