@@ -9,13 +9,12 @@
 ===================
 QIIME Documentation
 ===================
-These pages provide references on different features of QIIME. If you're instead looking for tutorials to guide you through different types of analyses, you should refer to the `QIIME tutorials <../tutorials/index.html>`_.
+
+These pages document various aspects of QIIME, including scripts, file formats, and parameters files. If you're instead looking for tutorials to guide you through different types of analyses, you should refer to the `QIIME tutorials <../tutorials/index.html>`_.
 
 .. toctree::
    :maxdepth: 2
 
-   biom_format
-   file_formats
    ../scripts/index
+   file_formats
    qiime_parameters_files
-   table_objects
