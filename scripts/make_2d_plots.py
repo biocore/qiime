@@ -145,7 +145,7 @@ script_info['optional_options'] = [
         default=False),
     make_option('--pct_variation_below_one',
                 action="store_true",
-                help='Allow the percent variation explained by the axis to be below one. '
+                help='Allow the percent variation explained by the axes to be below one. '
                 'The default behaivor is to multiply by 100 all values if PC1 is < 1.0 '
                 '[default: %default]', default=False),
     options_lookup['output_dir']
