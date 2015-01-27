@@ -143,6 +143,11 @@ script_info['optional_options'] = [
         action='store_true',
         help='Generate the scree plot [default: %default]',
         default=False),
+    make_option('--pct_variation_below_one',
+                action="store_true",
+                help='Allow the percent variation explained by the axes to be below one. '
+                'The default behaivor is to multiply by 100 all values if PC1 is < 1.0 '
+                '[default: %default]', default=False),
     options_lookup['output_dir']
 ]
 script_info['option_label'] = {'coord_fname': 'Principal coordinates filepath',
@@ -230,7 +235,7 @@ def main():
     if action:
         action(
             prefs, data, html_dir_path, data_dir_path, filename, background_color,
-            label_color, opts.scree)
+            label_color, opts.scree, opts.pct_variation_below_one)
 
 
 if __name__ == "__main__":
