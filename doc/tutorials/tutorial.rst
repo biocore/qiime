@@ -409,10 +409,10 @@ Like alpha diversity, there are many possible beta diversity metrics that can be
 
 Here, we will calculate beta diversity between our 9 microbial communities using the default beta diversity metrics of weighted and unweighted UniFrac_, which are phylogenetic measures used extensively in recent microbial community sequencing projects. To perform this analysis, we will use the `beta_diversity_through_plots.py <../scripts/beta_diversity_through_plots.html>`_ workflow, which performs the following steps:
 
-1. Rarefy OTU table to remove sample heterogeneity (`single_rarefaction.py <../scripts/single_rarefaction.html>`_)
+1. Rarefy OTU table to remove sampling depth heterogeneity (`single_rarefaction.py <../scripts/single_rarefaction.html>`_)
 2. Compute beta diversity (`beta_diversity.py <../scripts/beta_diversity.html>`_)
 3. Run Principal Coordinates Analysis (`principal_coordinates.py <../scripts/principal_coordinates.html>`_)
-4. Generate Emperor PCoA plots (`make_emperor.py <http://emperor.colorado.edu/>`_)
+4. Generate Emperor PCoA plots (`make_emperor.py <http://biocore.github.io/emperor/>`_)
 
 We can run the `beta_diversity_through_plots.py <../scripts/beta_diversity_through_plots.html>`_ workflow with the following command, which requires the OTU table (``-i``) and tree file (``-t``) from `above`__, the metadata mapping file (``-m``), and the number of sequences per sample (``-e``, even sampling depth):
 
@@ -426,9 +426,9 @@ Descriptions of the steps involved in `beta_diversity_through_plots.py <../scrip
 
 .. _compbetadiv:
 
-Step 1. Rarefy OTU table to remove sample heterogeneity
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-To remove sample heterogeneity, we can perform rarefaction on our OTU table. Rarefaction is an ecological approach that allows users to standardize the data obtained from samples with different sequencing efforts, and to compare the OTU richness of the samples using these standardized data. For instance, if one of your samples yielded 10,000 sequences, and another yielded only 1,000 sequences, the species diversity within those samples may be much more influenced by sequencing effort than the underlying biology. We use rarefaction to randomly subsample the same number of sequences from each sample in order to compare the communities at a given level of sampling effort (an *even sampling depth*).
+Step 1. Rarefy OTU table to remove sampling depth heterogeneity
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+To remove sampling depth heterogeneity, we can perform rarefaction on our OTU table. Rarefaction is an ecological approach that allows users to standardize the data obtained from samples with different sequencing efforts, and to compare the OTU richness of the samples using these standardized data. For instance, if one of your samples yielded 10,000 sequences, and another yielded only 1,000 sequences, the species diversity within those samples may be much more influenced by sequencing effort than the underlying biology. We use rarefaction to randomly subsample the same number of sequences from each sample in order to compare the communities at a given level of sampling effort (an *even sampling depth*).
 
 See the ``biom summarize-table`` section `above`__ for the number of sequences in each of the 9 communities.
 
@@ -444,13 +444,13 @@ The resulting distance matrices (:file:`bdiv_even146/unweighted_unifrac_dm.txt` 
 
 Step 3. Run Principal Coordinates Analysis
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Principal Coordinates Analysis (PCoA) is a technique that helps to extract and visualize a few highly-informative components of variation from complex, multidimensional data. This is a transformation that maps the samples present in the distance matrix to a new set of orthogonal axes such that a maximum amount of variation is explained by the first principal coordinate, the second largest amount of variation is explained by the second principal coordinate, etc. The principal coordinates can be plotted in two or three dimensions to provide an intuitive visualization of differences between samples.
+Principal Coordinates Analysis (PCoA) is a technique that helps to extract and visualize a few highly-informative components of variation from complex, multidimensional data. This is a transformation that maps the samples present in the distance matrix to a new set of orthogonal axes such that a maximum amount of variation is explained by the first principal coordinate, the second largest amount of variation is explained by the second principal coordinate, etc. The principal coordinates can be plotted in two or three dimensions to provide an intuitive visualization of differences between samples. For more information on PCoA and other ordination techniques, see `here <http://ordination.okstate.edu/>`_.
 
 The files :file:`bdiv_even146/unweighted_unifrac_pc.txt` and :file:`bdiv_even146/weighted_unifrac_pc.txt` contain the results of PCoA applied to the unweighed and weighted UniFrac_ distance matrices, respectively.
 
 Step 4. Generate Emperor PCoA plots
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-`Emperor <http://emperor.colorado.edu/>`_ allows for the visualization of PCoA plots in three dimensions. HTML files are created in :file:`bdiv_even146/unweighted_unifrac_emperor_pcoa_plot` and :file:`bdiv_even146/weighted_unifrac_emperor_pcoa_plot` directories. For the ``Treatment`` column in the mapping file, all samples with the same treatment (control or fasted) will get the same color. By default, the five control samples are colored red and the four fasted samples are colored blue (colors, and many other plot settings, can be customized in Emperor). This allows you to easily visualize "clustering" by metadata category. The 3-D visualization software allows you to rotate the axes to see the data from different perspectives. By default, Emperor will plot the first three principal coordinates. Other combinations can be viewed using the "Axes" option in Emperor. The first 8 components can be viewed using the left bottom menu "Parallel" using a parallel coordinates plot.
+`Emperor <http://biocore.github.io/emperor/>`_ allows for the visualization of PCoA plots in three dimensions. HTML files are created in :file:`bdiv_even146/unweighted_unifrac_emperor_pcoa_plot` and :file:`bdiv_even146/weighted_unifrac_emperor_pcoa_plot` directories. For the ``Treatment`` column in the mapping file, all samples with the same treatment (control or fasted) will get the same color. By default, the five control samples are colored red and the four fasted samples are colored blue (colors, and many other plot settings, can be customized in Emperor). This allows you to easily visualize "clustering" by metadata category. The 3-D visualization software allows you to rotate the axes to see the data from different perspectives. By default, Emperor will plot the first three principal coordinates. Other combinations can be viewed using the "Axes" option in Emperor. All 8 components can be viewed using the left bottom menu "Parallel" using a parallel coordinates plot.
 
 .. image:: ../images/ pcoa1.png
    :align: center
@@ -467,11 +467,11 @@ The `jackknifed_beta_diversity.py <../scripts/jackknifed_beta_diversity.html>`_ 
 1. Compute beta diversity distance matrix from full OTU table and tree, if applicable (`beta_diversity.py <../scripts/beta_diversity.html>`_)
 2. Build UPGMA tree from full distance matrix (`upgma_cluster.py <../scripts/upgma_cluster.html>`_)
 3. Build rarefied OTU tables (`multiple_rarefactions_even_depth.py <../scripts/multiple_rarefactions_even_depth.html>`_)
-4. Compute distance matrices from rarefied OTU tables (`beta_diversity.py <../scripts/beta_diversity.html>`_) <../scripts/beta_diversity.html>`_)
+4. Compute distance matrices from rarefied OTU tables (`beta_diversity.py <../scripts/beta_diversity.html>`_)
 5. Build UPGMA trees from rarefied distance matrices (`upgma_cluster.py <../scripts/upgma_cluster.html>`_)
 6. Compare rarefied UPGMA trees and determine jackknife support for tree nodes (`tree_compare.py <../scripts/tree_compare.html>`_ and `consensus_tree.py <../scripts/consensus_tree.html>`_)
 7. Compute PCoA on each rarefied distance matrix (`principal_coordinates.py <../scripts/principal_coordinates.html>`_)
-8. Compare rarefied PCoA plots from each rarefied distance matrix (`make_emperor.py <http://emperor.colorado.edu/>`_)
+8. Compare rarefied PCoA plots from each rarefied distance matrix (`make_emperor.py <http://biocore.github.io/emperor/>`_)
 
 We can run the workflow with the following command::
 
@@ -546,7 +546,7 @@ The resulting PDF shows the tree with internal nodes colored, red for 75-100% su
 
 Generate 3-D biplots
 ^^^^^^^^^^^^^^^^^^^^
-We can add taxa from the taxonomy tables in the :file:`taxa_summary/` directory to a 3-D PCoA plot using Emperor's `make_emperor.py <http://emperor.colorado.edu/>`_. The coordinates of a given taxon are plotted as a weighted average of the coordinates of all samples, where the weights are the relative abundances of the taxon in the samples. The size of the sphere representing a taxon is proportional to the mean relative abundance of the taxon across all samples. The following command creates a biplot displaying the 5 most abundant class-level taxa::
+We can add taxa from the taxonomy tables in the :file:`taxa_summary/` directory to a 3-D PCoA plot using Emperor's `make_emperor.py <http://biocore.github.io/emperor/>`_. The coordinates of a given taxon are plotted as a weighted average of the coordinates of all samples, where the weights are the relative abundances of the taxon in the samples. The size of the sphere representing a taxon is proportional to the mean relative abundance of the taxon across all samples. The following command creates a biplot displaying the 5 most abundant class-level taxa::
 
     make_emperor.py -i bdiv_even146/unweighted_unifrac_pc.txt -m Fasting_Map.txt -t taxa_summary/otu_table_L3.txt --n_taxa_to_keep 5 -o biplots
 
@@ -560,5 +560,5 @@ Running Workflow Scripts in Parallel
 Most of QIIME's workflows can be run in parallel. For information on how to use parallel QIIME, see `here <parallel_qiime.html>`_.
 
 .. _Cytoscape: http://www.cytoscape.org/
-.. _PyNAST: http://qiime.org/pynast/
-.. _Unifrac: http://bmf2.colorado.edu/unifrac/index.psp
+.. _PyNAST: http://biocore.github.io/pynast/
+.. _Unifrac: http://www.ncbi.nlm.nih.gov/pubmed/16332807
