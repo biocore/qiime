@@ -2014,6 +2014,27 @@ class MetadataMapTests(TestCase):
                 self.assertEqual(obs_elements[exp_i],
                                  exp_elements[obs_i])
 
+    def test_str_missing_required_headers(self):
+        # missing required headers at beginning
+        mdm = MetadataMap.parseMetadataMap([
+            "#SampleID\tFoo\n",
+            "a\tbar\n",
+            "b\tbaz\n"
+        ])
+
+        with self.assertRaises(ValueError):
+            str(mdm)
+
+        # missing required headers at end
+        mdm = MetadataMap.parseMetadataMap([
+            "#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tFoo\n",
+            "a\tA\tAAA\tbar\n",
+            "b\tC\tAAA\tbaz\n"
+        ])
+
+        with self.assertRaises(ValueError):
+            str(mdm)
+
     def test_merge_mapping_file(self):
         """merge_mapping_file: functions with default parameters
         """

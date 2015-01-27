@@ -1674,6 +1674,10 @@ class MetadataMap():
             # skip the SampleID required header, since we get that from the
             # dict we are currently iterating over
             for header in self.req_header_prefix[1:]:
+                if header not in data:
+                    raise ValueError(
+                        "Metadata mapping file is missing required column %r."
+                        % header)
                 current_data.append(data[header])
 
             # Get the optional columns; allow for None in these columns
@@ -1685,6 +1689,10 @@ class MetadataMap():
 
             # get the last required columns
             for header in self.req_header_suffix:
+                if header not in data:
+                    raise ValueError(
+                        "Metadata mapping file is missing required column %r."
+                        % header)
                 current_data.append(data[header])
 
             output_lines.append('\t'.join([str(x) for x in current_data]))
