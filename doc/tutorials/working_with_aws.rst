@@ -71,8 +71,8 @@ You can get data into and out of your running EC2 instance with a graphical tool
 
 You will likely want to compress your files for each transfer. You can do this with the tar/gzip commands, or with a tool like WinZip on Windows. See :ref:`unix_commands` for help with these commands.
 
-Working with command line tools
--------------------------------
+Working with command line file transfer tools
+---------------------------------------------
 The primary tool for moving data into and out of your EC2 instance is ``scp``.
 
 To copy data into your EC2 instance you'll need to know that path to your key file, and the Public IP Address for your EC2 instance.
