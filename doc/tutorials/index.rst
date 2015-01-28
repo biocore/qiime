@@ -41,7 +41,6 @@ The QIIME development team is very interested in incorporating community-contrib
    predicting_mislabeled_samples
    filtering_contamination_otus
    chaining_otu_pickers
-   processing_jgi_fastq_data
 
 **Analyzing diversity**
 
