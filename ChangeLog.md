@@ -12,7 +12,7 @@ New scripts
 * ``differential_abundance.py``: Supplements ``group_significance.py`` to support metagenomeSeq's fitZIG algorithm and DESeq2's negative binomial algorithm.  The input for this is an unnormalized, raw BIOM table.
 * ``normalize_table.py``: Adds support for BIOM table normalization algorithms in addition to rarefaction. Supported methods are metagenomeSeq's CSS and DESeq's variance stabilizing transformation.
 * ``start_parallel_jobs_slurm.py``: Allows for parallel job submission using [slurm](https://computing.llnl.gov/linux/slurm/).
-* ``split_libraries_lea_seq.py``: Allows for demultiplexing of sequences using the LEA-Seq protocol, described in [Faith et al. (2013)](http://www.sciencemag.org/content/341/6141/1237439).
+* ``split_libraries_lea_seq.py``: Allows for demultiplexing of sequences using the LEA-Seq protocol, described in [Faith et al. (2013)](http://www.sciencemag.org/content/341/6141/1237439). This script should be considered to be in **beta testing status**.
 
 Features
 --------
