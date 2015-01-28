@@ -114,6 +114,7 @@ Removal of outdated and unsupported functionality
 * Fasttree v1.x is no longer supported by ``make_phylogeny.py`` (see [issue #1516](https://github.com/biocore/qiime/issues/1516)).
 * Removed ``submit_to_mgrast.py`` script (see [#1780](https://github.com/biocore/qiime/issues/1780)).
 * Removed ``make_otu_heatmap_html.py`` in favor of ``make_otu_heatmap.py`` (see discussion on [#1724](https://github.com/biocore/qiime/issues/1724)).
+* Removed ``-m``/``--include_html_counts`` option from the ``plot_taxa_summary.py`` script as the behavior was no longer useful or accurate.
 
 Performance enhancements
 ------------------------
