@@ -76,6 +76,8 @@ If you do not have pip, the easiest way to install it is by running::
 
 **Note:** You may need to prefix the above commands with ``sudo`` if you do not have permission to place files in the default locations. You will also need an active Internet connection.
 
+These commands install QIIME and all of its Python dependencies. ``pip install qiime`` will also attempt to install some non-Python dependencies, including uclust, FastTree, SortMeRNA, SUMACLUST, and swarm. If any of the non-Python dependencies cannot be installed, they will be skipped and you'll need to install them manually if you need to use them. See below for links to where you can obtain these dependencies if any of them fail to install with ``pip``.
+
 Alternatives to pip install qiime
 ---------------------------------
 
