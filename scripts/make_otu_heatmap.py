@@ -157,9 +157,8 @@ def main():
     obs_md = otu_table.metadata(axis='observation')
     # create reference to the observation metadata for the first
     # observation for convenient lookup
-    obs_md_0 = obs_md[0]
     obs_md_labels = []
-    if (obs_md is None or obs_md_category not in obs_md_0):
+    if (obs_md is None or obs_md_category not in obs_md[0]):
         obs_md_labels = [['']] * len(otu_table.ids(axis='observation'))
     else:
         for _, _, md in otu_table.iter(axis='observation'):
