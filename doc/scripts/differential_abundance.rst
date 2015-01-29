@@ -17,7 +17,7 @@ differentially abundant OTUs identified by these (metagenomeSeq zero-inflated Ga
 or ZIG, and DESeq2 negative binomial Wald test) techniques with caution, as they assume a
 distribution and are therefore parametric tests.  Parametric tests can do poorly if
 the assumptions about the data are not met.  These tests are also newer techniques
-that are less well tested compared to rarefying with a `group_signficance.py <./group_signficance.html>`_ test.  
+that are less well tested compared to rarefying with a `group_significance.py <./group_significance.html>`_ test.  
 
 The input is a raw (not normalized, not rarefied) matrix having uneven column sums.
 With these techniques, we would still recommend removing low depth samples (e.g. below

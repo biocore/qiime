@@ -75,8 +75,8 @@ script_info['output_description'] = (
     "which the relative abundances or raw counts will be added to the "
     "existing rows for each sample. The addition of the taxonomic information "
     "to the mapping file allows for taxonomic coloration of Principal "
-    "coordinates plots in the 3d viewer. As described in the make_emperor.py "
-    "section, principal coordinates plots can be dynamically colored based on "
+    "coordinates plots in Emperor. As described in the Emperor "
+    "documentation, principal coordinates plots can be dynamically colored based on "
     "any of the metadata columns in the mapping file. Dynamic coloration of "
     "the plots by the relative abundances of each taxonomic group can help to "
     "distinguish which taxonomic groups are driving the clustering patterns.")

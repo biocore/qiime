@@ -29,7 +29,7 @@ The mapping file relates barcodes in the FASTA file to each sample and their rel
 
 Each column header MUST contain alphanumeric (a-z, A-Z and 1-9) and/or underscore ("_") characters only, where the header MUST start with letter. All other characters (e.g. $, \*, \^, etc) are not supported at this time and use of those characters may cause problems downstream in the QIIME pipeline.
 
-Currently, the user has the ability to define their own column headers, however; QIIME will be adopting the MIMARKS standard, therefore all column headings MUST correspond the proper MIMARKS nomenclature (http://gensc.org/gc_wiki/index.php/MIMARKS). The following details the current mapping file guidelines:
+Currently, the user has the ability to define their own column headers, however; QIIME will be adopting the MIMARKS standard, therefore all column headings MUST correspond the proper MIMARKS nomenclature (http://wiki.gensc.org/index.php?title=MIMARKS). The following details the current mapping file guidelines:
 
 1. The first column header must be "#SampleID", and the data in this column must contain unique (short and meaningful) sample identifiers containing only alphanumeric and period (".") characters. Leading and trailing spaces will raise a warning when using `validate_mapping_file.py <../scripts/validate_mapping_file.html>`_.
 2. The second column header must be "BarcodeSequence", where each value in that column corresponds to the barcode used for each sample.  Only IUPAC DNA characters are acceptable. Leading and trailing spaces will raise a warning when using `validate_mapping_file.py <../scripts/validate_mapping_file.html>`_.

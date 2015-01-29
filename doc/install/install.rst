@@ -120,7 +120,7 @@ Alignment, tree-building, taxonomy assignment, OTU picking, and other data gener
 * mothur 1.25.0 (`src_mothur <http://www.mothur.org/w/images/6/6d/Mothur.1.25.0.zip>`_) (license: GPL)
 * clearcut v1.0.9 (`src_clearcut <http://www.mothur.org/w/images/9/91/Clearcut.source.zip>`_)
 * raxml 7.3.0 (`src_raxml <ftp://thebeast.colorado.edu/pub/QIIME-v1.5.0-dependencies/stamatak-standard-RAxML-5_7_2012.tgz>`_)
-* infernal 1.0.2 (`src_infernal <ftp://selab.janelia.org/pub/software/infernal/infernal.tar.gz>`_) (license: GPL)
+* infernal 1.0.2 (`src_infernal <ftp://selab.janelia.org/pub/software/infernal/infernal-1.0.2.tar.gz>`_) (license: GPL)
 * cdbtools (`src_cdbtools <ftp://occams.dfci.harvard.edu/pub/bio/tgi/software/cdbfasta/cdbfasta.tar.gz>`_)
 * muscle 3.8.31 (`src_muscle <http://www.drive5.com/muscle/downloads.htm>`_) (Public domain)
 * rtax 0.984 (`src_rtax <http://static.davidsoergel.com/rtax-0.984.tgz>`_) (license: BSD)
