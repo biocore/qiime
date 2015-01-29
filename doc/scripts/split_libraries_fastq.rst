@@ -23,11 +23,11 @@
 		The sequence read fastq files (comma-separated if more than one)
 	-o, `-`-output_dir
 		Directory to store output files
-	-m, `-`-mapping_fps
-		Metadata mapping files (comma-separated if more than one)
 	
 	**[OPTIONAL]**
 		
+	-m, `-`-mapping_fps
+		Metadata mapping files (comma-separated if more than one) [default: None]
 	-b, `-`-barcode_read_fps
 		The barcode read fastq files (comma-separated if more than one) [default: None]
 	`-`-store_qual_scores
@@ -61,7 +61,7 @@
 	`-`-max_barcode_errors
 		Maximum number of errors in barcode [default: 1.5]
 	`-`-phred_offset
-		The ascii offset to use when decoding phred scores - warning: in most cases you don't need to pass this value [default: determined automatically]
+		The ascii offset to use when decoding phred scores (either 33 or 64). Warning: in most cases you don't need to pass this value [default: determined automatically]
 
 
 **Output:**
@@ -91,18 +91,12 @@
 
 ::
 
-	split_libraries_fastq.py -i lane1_read1.fastq.gz --sample_id my.sample -o slout_single_sample_q20/ -m map_not_multiplexed.txt  -q 19 --barcode_type 'not-barcoded'
-
-**Quality filter (at Phred >= Q20) one non-multiplexed lane of Illumina fastq data and write results to ./slout_single_sample_q20.:**
-
-::
-
-	split_libraries_fastq.py -i lane1_read1.fastq.gz --sample_id my.sample.1 -o slout_single_sample_q20/ -m map_not_multiplexed.txt -q 19 --barcode_type 'not-barcoded'
+	split_libraries_fastq.py -i lane1_read1.fastq.gz --sample_id my.sample.1 -o slout_single_sample_q20/ -q 19 --barcode_type 'not-barcoded'
 
 **Quality filter (at Phred >= Q20) two non-multiplexed lanes of Illumina fastq data with different samples in each and write results to ./slout_not_multiplexed_q20.:**
 
 ::
 
-	split_libraries_fastq.py -i lane1_read1.fastq.gz,lane2_read1.fastq.gz --sample_id my.sample.1,my.sample.2 -o slout_not_multiplexed_q20/ -m map_not_multiplexed.txt -q 19 --barcode_type 'not-barcoded'
+	split_libraries_fastq.py -i lane1_read1.fastq.gz,lane2_read1.fastq.gz --sample_id my.sample.1,my.sample.2 -o slout_not_multiplexed_q20/ -q 19 --barcode_type 'not-barcoded'
 
 

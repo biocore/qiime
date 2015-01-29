@@ -7,7 +7,7 @@
 
 **Description:**
 
-E.g. makes 3 fasta records from a weighted input fasta file containing the following record: 
+E.g. makes 3 fasta records from a weighted input fasta file containing the following record:
 >goodsample1_12_3 bc_val=20
 AATGCTTGTCACATCGATGC
 

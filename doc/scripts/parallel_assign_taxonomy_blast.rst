@@ -27,15 +27,15 @@ This script performs like the `assign_taxonomy.py <./assign_taxonomy.html>`_ scr
 	**[OPTIONAL]**
 		
 	-r, `-`-reference_seqs_fp
-		Ref seqs to blast against.  Must provide either --blast_db or --reference_seqs_db for assignment with blast [default: /Users/caporaso/data/gg_13_5_otus/rep_set/97_otus.fasta]
+		Ref seqs to blast against.  Must provide either --blast_db or --reference_seqs_db for assignment with blast [default: /Users/jairideout/.virtualenvs/qiime/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set/97_otus.fasta]
 	-b, `-`-blast_db
 		Database to blast against.  Must provide either --blast_db or --reference_seqs_db for assignment with blast [default: None]
 	-e, `-`-e_value
 		Maximum e-value to record an assignment, only used for blast method [default: 0.001]
 	-B, `-`-blastmat_dir
-		Full path to directory containing blastmat file [default: /Applications/blast-2.2.22/data/]
+		Full path to directory containing blastmat file [default: None]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 2]
+		Number of jobs to start [default: 1]
 	-R, `-`-retain_temp_files
 		Retain temporary files after runs complete (useful for debugging) [default: False]
 	-S, `-`-suppress_submit_jobs
@@ -51,7 +51,7 @@ This script performs like the `assign_taxonomy.py <./assign_taxonomy.html>`_ scr
 	-Z, `-`-seconds_to_sleep
 		Number of seconds to sleep between checks for run  completion when polling runs [default: 1]
 	-t, `-`-id_to_taxonomy_fp
-		Full path to id_to_taxonomy mapping file [default: /Users/caporaso/data/gg_13_5_otus/taxonomy/97_otu_taxonomy.txt]
+		Full path to id_to_taxonomy mapping file [default: /Users/jairideout/.virtualenvs/qiime/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/taxonomy/97_otu_taxonomy.txt]
 
 
 **Output:**

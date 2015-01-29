@@ -49,9 +49,9 @@ This script creates an html file of rarefaction plots based on the supplied coll
 	-o, `-`-output_dir
 		Path to the output directory
 	`-`-output_type
-		Write the HTML output as one file, images embedded, or several. Options are file_creation, multiple files, and memory. [default: file_creation]
+		Write the HTML output as one file, images embedded, or several. Options are "file_creation" and "memory". [default: file_creation]
 	`-`-generate_per_sample_plots
-		Generate per sample plots for each of the metadata categories. This will allow you to show/hide samples from the plots but will required a larger processing time. In general, this practice is useful only for small datasets. [default: False]
+		Generate per sample plots for each of the metadata categories. This will allow you to show/hide samples from the plots but will require a longer processing time. In general, this option is useful only for small datasets. [default: False]
 	`-`-generate_average_tables
 		Generate average tables of results. A summary of the metrics and alpha diversity measurements. [default: False]
 
@@ -95,10 +95,18 @@ Alternatively, you can set the plot background '-k'
 
 **Generate raw data without interactive webpages:**
 
-The user can choose to not create an interactive webpage ('-w' option). This is for the case, where the user just wants the average plots and theraw average data.
+The user can choose to not create an interactive webpage ('-w' option). This is for the case, where the user just wants the average plots and the raw average data.
 
 ::
 
 	make_rarefaction_plots.py -i alpha_div_collated/ -m Fasting_Map.txt -w
+
+**Generate average tables and per-sample plots:**
+
+Pass --generate_average_tables and --generate_per_sample_plots to generate average tables of results as tab-separated text and per-sample plots for each of the metadata categories
+
+::
+
+	make_rarefaction_plots.py -i alpha_div_collated/ -m Fasting_Map.txt --generate_average_tables --generate_per_sample_plots
 
 

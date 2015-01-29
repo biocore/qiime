@@ -19,13 +19,13 @@ from qcli import parse_command_line_parameters, make_option
 
 
 script_info = {}
-script_info[
-    'brief_description'] = """Demultiplexes Low-Error Amplicon Sequencing
- (LEA-Seq) data"""
-script_info[
-    'script_description'] = """Implements Low-Error Amplicon Sequencing
-(LEA-Seq) method,described in: Faith, Jeremiah J., et al.
+script_info['brief_description'] = "Demultiplexes Low-Error Amplicon Sequencing (LEA-Seq) data"
+script_info['script_description'] = """
+Implements Low-Error Amplicon Sequencing (LEA-Seq) method, described in:
+
+Faith, Jeremiah J., et al.
 The long-term stability of the human gut microbiota.Science 341.6141 (2013).
+
 This method is based on redundant sequencing of a set of linear PCR template
 extensions of 16S rRNA genes. The oligonucleotide primer that is used for
 PCR template extensions is labeled with a random barcode

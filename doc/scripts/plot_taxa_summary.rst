@@ -53,8 +53,6 @@ This script automates the construction of pie, bar and area charts showing the b
 		Make every nth label larger than the other lables. This is for large area and bar charts where the font on the x-axis is small. This requires an integer value greater than 0. [default: 0]
 	-s, `-`-include_html_legend
 		Include HTML legend. If present, the writing of the legend in the html page is included. [default: False]
-	-m, `-`-include_html_counts
-		Include HTML counts. If present, the writing of the counts in the html table is included [default: False]
 	-a, `-`-label_type
 		Label type ("numeric" or "categorical").  If the label type is defined as numeric, the x-axis will be scaled accordingly. Otherwise the x-values will treated categorically and be evenly spaced [default: categorical].
 

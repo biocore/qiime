@@ -60,15 +60,15 @@ All paired-end joining software will return a joined / merged / assembled paired
 
 1. fastq-join will output fastq-formatted files as:
 
-   - "*.join": assembled / joined reads output
-   - "*.un1": unassembled / unjoined reads1 output
-   - "*.un2": unassembled / unjoined reads2 output
+   - "\*.join": assembled / joined reads output
+   - "\*.un1": unassembled / unjoined reads1 output
+   - "\*.un2": unassembled / unjoined reads2 output
 
 2. SeqPrep will output fastq-formatted gzipped files as:
 
-   - "*_assembled.gz": unassembled / unjoined reads1 output
-   - "*_unassembled_R1.gz": unassembled / unjoined reads1 output
-   - "*_unassembled_R2.gz": unassembled / unjoined reads2 output
+   - "\*_assembled.gz": unassembled / unjoined reads1 output
+   - "\*_unassembled_R1.gz": unassembled / unjoined reads1 output
+   - "\*_unassembled_R2.gz": unassembled / unjoined reads2 output
 
 3. If a barcode / index file is provided via the '-b' option, an updated
    barcodes file will be output as:

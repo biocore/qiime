@@ -36,7 +36,7 @@ Using barcodes and/or data from fasta labels provided in a mapping file, will de
 		Directory prefix for output files [default: .]
 	-e, `-`-max_barcode_errors
 		Maximum number of errors in barcode.  If using generic barcodes every 0.5 specified counts as a primer mismatch. [default: 1.5]
-	-n, `-`-start-numbering-at
+	-n, `-`-start_numbering_at
 		Seq id to use for the first sequence [default: 1]
 	`-`-retain_unassigned_reads
 		Retain sequences which can not be demultiplexed in a seperate output sequence file [default: False]

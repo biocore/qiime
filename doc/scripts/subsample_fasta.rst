@@ -22,7 +22,7 @@ Subsample the seqs.fna file, randomly select 5% of the sequences:
 	-i, `-`-input_fasta_fp
 		Path to the input fasta file
 	-p, `-`-percent_subsample
-		Specify the percentage of sequences to subsample
+		Specify the percentage (as a fraction between 0 and 1) of sequences to subsample
 	
 	**[OPTIONAL]**
 		

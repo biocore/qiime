@@ -31,13 +31,15 @@
 	`-`-output_mapping_fp
 		Path to write filtered mapping file [default: filtered mapping file is not written]
 	`-`-sample_id_fp
-		Path to file listing sample ids to keep [default: None]
+		Path to file listing sample ids to keep. Valid formats for the file are: 1) any white space, newline, or tab delimited list of samples, 2) a mapping file with samples in the first column [default: None]
 	-s, `-`-valid_states
 		String describing valid states (e.g. 'Treatment:Fasting') [default: None]
 	-n, `-`-min_count
 		The minimum total observation count in a sample for that sample to be retained [default: 0]
 	-x, `-`-max_count
 		The maximum total observation count in a sample for that sample to be retained [default: infinity]
+	`-`-negate_sample_id_fp
+		Discard samples specified in --sample_id_fp instead of keeping them [default: False]
 
 
 **Output:**
@@ -77,12 +79,20 @@ Filter samples from the table, keeping samples where the value for 'Treatment' i
 
 	filter_samples_from_otu_table.py -i otu_table.biom -o otu_table_not_control.biom -m map.txt -s 'Treatment:*,!Control'
 
-**List-based filtering:**
+**ID-based filtering:**
 
-Filter samples where the id is listed in samples_to_keep.txt
+Keep samples where the id is listed in ids.txt
 
 ::
 
-	filter_samples_from_otu_table.py -i otu_table.biom -o otu_table_samples_to_keep.biom --sample_id_fp samples_to_keep.txt
+	filter_samples_from_otu_table.py -i otu_table.biom -o filtered_otu_table.biom --sample_id_fp ids.txt
+
+**ID-based filtering (negation):**
+
+Discard samples where the id is listed in ids.txt
+
+::
+
+	filter_samples_from_otu_table.py -i otu_table.biom -o filtered_otu_table.biom --sample_id_fp ids.txt --negate_sample_id_fp
 
 

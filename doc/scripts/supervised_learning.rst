@@ -15,11 +15,11 @@ Outputs:
     * confusion_matrix.txt: confusion matrix for hold-out predictions.
     * summary.txt: a summary of the results, including the expected         generalization error of the classifier
     * feature_importance_scores.txt: a list of discriminative OTUs with their         associated importance scores (if available)
-    
+
 It is recommended that you remove low-depth samples and rare OTUs before running this script. This can drastically reduce the run-time, and in many circumstances will not hurt performance. It is also recommended to perform rarefaction to control for sampling effort before running this script. For example, to rarefy at depth 200, then remove OTUs present in < 10 samples run:
 
-`single_rarefaction.py <./single_rarefaction.html>`_ -i otu_table_filtered.txt -d 200 -o otu_table_rarefied200.txt
-`filter_otus_from_otu_table.py <./filter_otus_from_otu_table.html>`_ -i otu_table_rarefied200.txt -s 10
+`single_rarefaction.py <./single_rarefaction.html>`_ -i otu_table.biom -d 200 -o otu_table_rarefied200.biom
+`filter_otus_from_otu_table.py <./filter_otus_from_otu_table.html>`_ -i otu_table_rarefied200.biom -s 10 -o otu_table_rarefied200.present10.biom
 
 For an overview of the application of supervised classification to microbiota, see PubMed ID 21039646.
 

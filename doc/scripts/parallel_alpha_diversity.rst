@@ -45,7 +45,7 @@ This script performs like the `alpha_diversity.py <./alpha_diversity.html>`_ scr
 	-Z, `-`-seconds_to_sleep
 		Number of seconds to sleep between checks for run  completion when polling runs [default: 1]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 2]
+		Number of jobs to start [default: 1]
 
 
 **Output:**
@@ -55,10 +55,10 @@ The resulting output will be the same number of files as supplied by the user. T
 
 **Example:**
 
-Apply the observed_species, chao1, PD_whole_tree metrics (-m) to all otu tables in rarefied_otu_tables/ (-i) and write the resulting output files to adiv/ (-o, will be created if it doesn't exist). Use the rep_set.tre (-t) to compute phylogenetic diversity metrics. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).
+Apply the observed_OTUs, chao1, PD_whole_tree metrics (-m) to all otu tables in rarefied_otu_tables/ (-i) and write the resulting output files to adiv/ (-o, will be created if it doesn't exist). Use the rep_set.tre (-t) to compute phylogenetic diversity metrics. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).
 
 ::
 
-	parallel_alpha_diversity.py -i $PWD/rarefied_otu_tables -o $PWD/adiv -m observed_species,chao1,PD_whole_tree -t $PWD/rep_set.tre
+	parallel_alpha_diversity.py -i $PWD/rarefied_otu_tables -o $PWD/adiv -m observed_otus,chao1,PD_whole_tree -t $PWD/rep_set.tre
 
 

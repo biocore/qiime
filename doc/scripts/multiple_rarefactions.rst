@@ -32,7 +32,7 @@ To perform bootstrap, jackknife, and rarefaction analyses, the otu table must be
 	
 	**[OPTIONAL]**
 		
-	-n, `-`-num-reps
+	-n, `-`-num_reps
 		The number of iterations at each step. [default: 10]
 	`-`-lineages_included
 		Retain taxonomic (lineage) information for each OTU. Note: this will only work if lineage information is in the input OTU table. [default: False]

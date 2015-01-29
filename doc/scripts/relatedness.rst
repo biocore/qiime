@@ -27,7 +27,7 @@ This script calculates NRI and NTI from a path to a Newick formatted tree and a 
 	**[OPTIONAL]**
 		
 	-i, `-`-iters
-		Number of iterations to use for sampling tips without replacement (null model 2 community sampling, see see http://bodegaphylo.wikispot.org/Community_Phylogenetics). [default: 1000]
+		Number of iterations to use for sampling tips without replacement (null model 2 community sampling, see http://bodegaphylo.wikispot.org/Community_Phylogenetics [default: 1000]
 	-m, `-`-methods
 		Comma-separated list of metrics to calculate. [default: nri,nti]
 	-o, `-`-output_fp

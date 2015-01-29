@@ -152,7 +152,7 @@ script_info['script_usage'].append(
      """%prog -i seqs.fna -m usearch --word_length 64 --suppress_reference_chimera_detection --minsize 2 -o usearch_qf_results_no_ref_chim_detection/"""))
 
 script_info['script_usage'].append(
-    ("Use de novo OTU-picker Swarm: ",
+    ("Use de novo OTU-picker Swarm:",
      "Using the seqs.fna file generated from split_libraries.py and "
      "outputting the results to the directory \"$PWD/picked_otus_swarm/\", "
      "while using default parameters (resolution = 1) ",
