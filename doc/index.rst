@@ -72,6 +72,6 @@ If you use QIIME for any published research, please include the following citati
 	J Gregory Caporaso, Justin Kuczynski, Jesse Stombaugh, Kyle Bittinger, Frederic D Bushman, Elizabeth K Costello, Noah Fierer, Antonio Gonzalez Pena, Julia K Goodrich, Jeffrey I Gordon, Gavin A Huttley, Scott T Kelley, Dan Knights, Jeremy E Koenig, Ruth E Ley, Catherine A Lozupone, Daniel McDonald, Brian D Muegge, Meg Pirrung, Jens Reeder, Joel R Sevinsky, Peter J Turnbaugh, William A Walters, Jeremy Widmann, Tanya Yatsunenko, Jesse Zaneveld and Rob Knight; Nature Methods, 2010; doi:10.1038/nmeth.f.303
 
 
-You can find the `QIIME paper here <http://www.nature.com/nmeth/journal/v7/n5/full/nmeth.f.303.html>`_, and the data presented in this paper can be found `here <http://bmf.colorado.edu/QIIME/QIIME_NM_2010.tgz>`_.
+You can find the `QIIME paper here <http://www.nature.com/nmeth/journal/v7/n5/full/nmeth.f.303.html>`_, and the data presented in this paper can be found `here <ftp://ftp.microbio.me/qiime/QIIME_NM_2010.tgz>`_.
 
 .. _PyCogent: http://www.pycogent.org
