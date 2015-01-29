@@ -54,9 +54,7 @@ After installing QIIME, you should move on to the `QIIME Illumina Overview Tutor
 
 Contact Us
 ==========
-The only way to get help with QIIME is to search or ask questions in the `QIIME Forum <http://groups.google.com/group/qiime-forum>`_. This is a public space for users to ask questions, search previous questions and answers, and share any tips they've found. The QIIME Developers moderate this forum, and we aim to respond to questions within one working day.
-
-Before requesting help with QIIME `review this discussion <http://groups.google.com/group/qiime-forum/browse_thread/thread/67e2ab4af75655ae>`_ to get information on what data to send to help us answer your question as quickly as possible.
+To get help with using QIIME, please visit http://help.qiime.org.
 
 Users can also submit bug reports and feature requests via our `GitHub issue tracker <https://github.com/biocore/qiime/issues>`_.
 
