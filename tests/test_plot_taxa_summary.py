@@ -21,7 +21,7 @@ from os import remove, mkdir, removedirs, listdir
 from qiime.plot_taxa_summary import (make_pie_chart, make_img_name,
                                      get_counts, write_html_file,
                                      make_HTML_table, get_fracs, make_all_charts,
-                                     make_area_bar_chart, make_legend)
+                                     make_area_bar_chart, make_legend, DATA_HTML)
 
 
 class TopLevelTests(TestCase):
@@ -103,7 +103,7 @@ the appropriate location')
                               self.prefs, self.color_prefs, 'black', 'white',
                               'pie', self.generate_image_type, self.plot_width,
                               self.plot_height, self.bar_width, self.dpi,
-                              'file.txt', 0, 'categorical', False, False)
+                              'file.txt', 0, 'categorical', False)
 
         self.assertEqual(len(img_data), 8)
 
@@ -113,7 +113,7 @@ the appropriate location')
                               self.prefs, self.color_prefs, 'black', 'white',
                               'area', self.generate_image_type, self.plot_width,
                               self.plot_height, self.bar_width, self.dpi,
-                              'file.txt', 0, 'categorical', False, False)
+                              'file.txt', 0, 'categorical', False)
 
         self.assertEqual(len(img_data), 2)
 
@@ -123,7 +123,7 @@ the appropriate location')
                               self.prefs, self.color_prefs, 'black', 'white',
                               'bar', self.generate_image_type, self.plot_width,
                               self.plot_height, self.bar_width, self.dpi,
-                              'file.txt', 0, 'categorical', False, False)
+                              'file.txt', 0, 'categorical', False)
 
         self.assertEqual(len(img_data), 2)
 
@@ -136,22 +136,20 @@ the appropriate location')
 
         # test the pie charts
         exp_all_counts = [DATA_HTML % (
-            "4", (4.0 / 10) * 100, 'a<br>g', 'h', 'h', "a;g;h"),
+            (4.0 / 10) * 100.0, 'a<br>g', 'h', 'h', "a;g;h"),
             DATA_HTML % (
-                '3',
                 (3.0 / 10) * 100,
                 'd<br>e',
                 'f',
                 'f',
                 "d;e;f"),
             DATA_HTML % (
-                '2',
                 (2.0 / 10) * 100,
                 'd<br>e',
                 'i',
                 'i',
                 "d;e;i"),
-            DATA_HTML % ('1', (1.0 / 10) * 100, 'a<br>b', 'c', 'c', "a;b;c")]
+            DATA_HTML % ((1.0 / 10) * 100, 'a<br>b', 'c', 'c', "a;b;c")]
 
         fracs_labels_other, fracs_labels, all_counts, other_cat, red, other_frac \
             = get_fracs(self.counts1, 5, 10, 'pie')
@@ -254,7 +252,7 @@ the appropriate location')
                                    'Test1',
                                    self.generate_image_type, self.plot_width,
                                    self.plot_height, self.bar_width, self.dpi, 0,
-                                   'categorical', False, False)
+                                   'categorical', False)
 
         self.assertEqual(len(img_data), 2)
 
@@ -269,7 +267,7 @@ the appropriate location')
                                    'Test1',
                                    self.generate_image_type, self.plot_width,
                                    self.plot_height, self.bar_width, self.dpi, 0,
-                                   'categorical', False, False)
+                                   'categorical', False)
 
         self.assertEqual(len(img_data), 2)
 
@@ -284,7 +282,7 @@ the appropriate location')
                                    'Test1',
                                    self.generate_image_type, self.plot_width,
                                    self.plot_height, self.bar_width, self.dpi, 0,
-                                   'categorical', False, False)
+                                   'categorical', False)
 
         self.assertEqual(len(img_data), 2)
         self._paths_to_clean_up = ["/tmp/qiimewebfiles/charts/" + f
@@ -332,7 +330,7 @@ the appropriate location')
                                                      self.color_prefs, "black", "white", "area",
                                                      self.generate_image_type, self.plot_width,
                                                      self.plot_height, self.bar_width,
-                                                     self.dpi, 0, 'categorical', False, False,
+                                                     self.dpi, 0, 'categorical', False,
                                                      "area_chart")
 
         self.assertTrue(exists(filename1), 'The png file was not created in \
@@ -349,7 +347,7 @@ the appropriate location')
                                                      self.color_prefs, "black", "white", "bar",
                                                      self.generate_image_type, self.plot_width,
                                                      self.plot_height, self.bar_width, self.dpi,
-                                                     0, 'categorical', False, False, "bar_chart",
+                                                     0, 'categorical', False, "bar_chart",
                                                      self.props)
 
         self.assertTrue(exists(filename4), 'The png file was not created in \
@@ -373,13 +371,6 @@ the appropriate location')
 the appropriate location')
 
         self._paths_to_clean_up = [filename1]
-
-
-# expected results for the unit testing
-DATA_HTML = """<tr class=normal><td>%s</td> <td nowrap>%.2f%%</td>\
-<td class="normal" ><a onmouseover="return overlib('<b>Taxonomy:</b><br>%s<br>\
-<a href=javascript:gg(\\'%s\\');>%s</a> ',STICKY,MOUSEOFF,RIGHT);" \
-onmouseout="return nd();">%s</a></td></tr>"""
 
 
 # run tests if called from command line

@@ -92,13 +92,13 @@ function gg(targetq)
 """
 
 DATA_TABLE_HTML = """
-<table cellpadding=2 cellspacing=2 border=0><tr class=ntitle> <td valign=bottom class=header>Count</td> \
+<table cellpadding=2 cellspacing=2 border=0><tr class=ntitle> \
 <td valign=bottom  class=header nowrap>Pct</td> <td valign=bottom class=header \
 nowrap>Taxonomy</td></tr>
 %s
 </table>"""
 
-DATA_HTML = """<tr class=normal><td>%s</td> <td nowrap>%.2f%%</td>\
+DATA_HTML = """<tr class=normal><td nowrap>%.2f%%</td>\
 <td class="normal" ><a onmouseover="return overlib('<b>Taxonomy:</b><br>%s<br>\
 <a href=javascript:gg(\\'%s\\');>%s</a> ',STICKY,MOUSEOFF,RIGHT);" \
 onmouseout="return nd();">%s</a></td></tr>"""
@@ -428,7 +428,7 @@ def make_area_bar_chart(
         background_color, label_color, chart_type,
         generate_image_type,
         plot_width, plot_height, bar_width, dpi, resize_nth_label,
-        label_type, include_html_legend, include_html_counts,
+        label_type, include_html_legend,
         file_prefix=None, props={},
         others_key="All Other Categories",
         others_color="#eeeeee", should_capitalize=True):
@@ -732,7 +732,6 @@ def get_fracs(counts, num_categories, total, chart_type, sort_data=True):
         if chart_type == 'pie':
             all_counts.append(
                 DATA_HTML % (
-                    n,
                     frac * 100,
                     for_overlib,
                     tax,
@@ -769,7 +768,7 @@ def make_HTML_table(l, other_frac, total, red, other_cat, fracs_labels_other,
                     prefs, pref_colors, background_color, label_color, chart_type,
                     label, generate_image_type,
                     plot_width, plot_height, bar_width, dpi, resize_nth_label,
-                    label_type, include_html_legend, include_html_counts):
+                    label_type, include_html_legend):
     """Makes the HTML table for one set of charts """
     img_data = []
 
@@ -858,7 +857,7 @@ def make_HTML_table(l, other_frac, total, red, other_cat, fracs_labels_other,
                                    generate_image_type,
                                    plot_width, plot_height, bar_width, dpi,
                                    resize_nth_label, label_type,
-                                   include_html_legend, include_html_counts,
+                                   include_html_legend,
                                    props={'title': title})
 
         all_taxons.extend(area)
@@ -873,7 +872,7 @@ def get_counts(label, colorby, num_categories, dir_path, level, color_data,
                prefs, pref_colors, background_color, label_color, chart_type,
                generate_image_type, plot_width, plot_height,
                bar_width, dpi, raw_fpath, resize_nth_label, label_type,
-               include_html_legend, include_html_counts):
+               include_html_legend):
     """gets all the counts for one input file"""
 
     img_data = []
@@ -908,8 +907,7 @@ def get_counts(label, colorby, num_categories, dir_path, level, color_data,
                             background_color, label_color, chart_type,
                             label, generate_image_type, plot_width,
                             plot_height, bar_width, dpi, resize_nth_label,
-                            label_type, include_html_legend,
-                            include_html_counts))
+                            label_type, include_html_legend))
 
         if colorby is not None:
             # in the case the user specifies only certain samples we need to
@@ -943,8 +941,7 @@ def get_counts(label, colorby, num_categories, dir_path, level, color_data,
                                                 chart_type, l.strip(
                                                 ), generate_image_type,
                                                 plot_width, plot_height, bar_width, dpi,
-                                                resize_nth_label, label_type, include_html_legend,
-                                                include_html_counts))
+                                                resize_nth_label, label_type, include_html_legend))
 
     # if making an area/bar chart we do not make per sample images, instead
     # we make a total chart only
@@ -1016,25 +1013,17 @@ def get_counts(label, colorby, num_categories, dir_path, level, color_data,
             'style=\"text-align:center;border-color:white;' +\
             'border-style:groove;\">' + \
             '<tr class=\"ntitle\"><td class=\"header\" colspan="2"></td><td' +\
-            ' valign=\"bottom\" class=\"header\" colspan="2">Total</td>'
+            ' valign=\"bottom\" class=\"header\">Total</td>'
 
         ct_head_row = '<tr class=ntitle>' + \
             '<td valign=\"bottom\" ' + \
             'class=\"header\">Legend</td><td ' + \
             'valign=\"bottom\" class=\"header\">Taxonomy</td>' + \
-            '<td class=\"header\">count</td><td class=\"header\">%</td>'
+            '<td class=\"header\">%</td>'
 
-        if not include_html_counts:
-            # list all samples in the header
-            for i in area_plot_sample_ids:
-                data_html_str += '<td valign=bottom class=header>%s</td>' % (i)
-                ct_head_row += '<td class=\"header\">%</td>'
-        else:
-            # list all samples in the header
-            for i in area_plot_sample_ids:
-                data_html_str += '<td colspan=\"2\" valign=\"bottom\" class=\"header\">%s</td>'\
-                    % (i)
-                ct_head_row += '<td class=\"header\">count</td><td class=\"header\">%</td>'
+        for i in area_plot_sample_ids:
+            data_html_str += '<td valign=bottom class=header>%s</td>' % (i)
+            ct_head_row += '<td class=\"header\">%</td>'
 
         data_html_str += '</tr>'
         ct_head_row += '</tr>'
@@ -1050,40 +1039,23 @@ def get_counts(label, colorby, num_categories, dir_path, level, color_data,
                  split_label[-1].replace(' ', '&nbsp;'))
             joined_label = ';'.join(split_label).replace('"', '')
             row_sum = sum([float(i) for i in data_table[ct]])
-            data_html_str += "<tr><td class=\"normal\" bgcolor=\"%s\">&nbsp;&nbsp;</td><td style=\"text-align:left;\" class=\"normal\">%s</td><td class=\"normal\">%5.0f</td><td class=\"normal\">%5.1f&#37;</td>"\
+            data_html_str += "<tr><td class=\"normal\" bgcolor=\"%s\">&nbsp;&nbsp;</td><td style=\"text-align:left;\" class=\"normal\">%s</td><td class=\"normal\">%5.1f&#37;</td>"\
                 % (data_colors[pref_colors[tax]].toHex(), joined_label,
-                   row_sum, row_sum / table_sum * 100)
+                   row_sum / table_sum * 100)
 
             # add the percent taxa for each sample
             for i, per_tax in enumerate(data_table[ct]):
                 if float(per_tax) > 0:
-                    if not include_html_counts:
-                        data_html_str += '<td class=\"normal\" style=\"border-color:%s;\">%5.1f&#37;</td>' %\
-                            (data_colors[pref_colors[tax]].toHex(),
-                             (float(per_tax) / total_sums[i] * 100))
-                    else:
-                        data_html_str += '<td class=\"normal\" style=\"border-color:%s;\">%5.0f</td><td class=\"normal\" style=\"border-color:%s;\">%5.1f&#37;</td>' %\
-                            (data_colors[
-                                pref_colors[tax]].toHex(), float(per_tax),
-                             data_colors[pref_colors[tax]].toHex(),
-                             (float(per_tax) / total_sums[i] * 100))
+                    data_html_str += '<td class=\"normal\" style=\"border-color:%s;\">%5.1f&#37;</td>' %\
+                        (data_colors[pref_colors[tax]].toHex(),
+                         (float(per_tax) / total_sums[i] * 100))
                 else:
-                    if not include_html_counts:
-                        data_html_str += '<td class=\"normal\">%5.1f&#37;</td>' % \
-                            (float(per_tax) / total_sums[i] * 100)
-                    else:
-                        data_html_str += '<td class=\"normal\">%5.0f</td><td class=\"normal\">%5.1f&#37;</td>' % \
-                            (float(per_tax), float(per_tax)
-                             / total_sums[i] * 100)
+                    data_html_str += '<td class=\"normal\">%5.1f&#37;</td>' % \
+                        (float(per_tax) / total_sums[i] * 100)
 
             data_html_str += '</tr>'
 
         data_html_str += '</table>'
-
-        if include_html_counts:
-            # add a note on the counts since they can be relative or absolute
-            # values
-            data_html_str += '<p><em>NOTE: the counts displayed pertain to either relative or absolute values depending on your selection from summarize_taxa.py. For relative values, the numbers are converted to integer, so counts below 0.5 appear as 0. Also, if you chose to display numeric data, the table headers may not be in the same order as the plot.</em></p>'
 
         # make sure that the taxa array is in the proper order
         for i in range(len(area_plot_taxa_arr) - 1):
@@ -1098,7 +1070,7 @@ def get_counts(label, colorby, num_categories, dir_path, level, color_data,
                                         prefs, pref_colors, background_color, label_color, chart_type,
                                         label, generate_image_type,
                                         plot_width, plot_height, bar_width, dpi, resize_nth_label,
-                                        label_type, include_html_legend, include_html_counts))
+                                        label_type, include_html_legend))
         img_data.append(data_html_str)
 
     return img_data
@@ -1108,7 +1080,7 @@ def make_all_charts(data, dir_path, filename, num_categories, colorby, args,
                     color_data, prefs, background_color, label_color,
                     chart_type, generate_image_type, plot_width, plot_height,
                     bar_width, dpi, resize_nth_label, label_type,
-                    include_html_legend, include_html_counts):
+                    include_html_legend):
     """Generate interactive charts in one HTML file"""
 
     # iterate over the preferences and assign colors according to taxonomy
@@ -1163,8 +1135,7 @@ def make_all_charts(data, dir_path, filename, num_categories, colorby, args,
                         background_color,
                         label_color, chart_type, generate_image_type,
                         plot_width, plot_height, bar_width, dpi, raw_fpath,
-                        resize_nth_label, label_type, include_html_legend,
-                        include_html_counts))
+                        resize_nth_label, label_type, include_html_legend))
 
     # generate html filepath
     outpath = os.path.join(dir_path, '%s_charts.html' % chart_type)
