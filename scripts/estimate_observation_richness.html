@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="exclude_seqs_by_blast.py – Exclude contaminated sequences using BLAST" href="exclude_seqs_by_blast.html" />
+    <link rel="prev" title="distance_matrix_from_mapping.py – Calculate the pairwise dissimilarity on one column of a mappping file" href="distance_matrix_from_mapping.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="exclude_seqs_by_blast.html" title="exclude_seqs_by_blast.py – Exclude contaminated sequences using BLAST"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="distance_matrix_from_mapping.html" title="distance_matrix_from_mapping.py – Calculate the pairwise dissimilarity on one column of a mappping file"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -88,10 +99,11 @@ be sure to cite the Colwell et al. (2012) paper, as well as QIIME (see
 <p>In addition to Colwell et al. (2012), the following resources were extremely
 useful while implementing and testing these estimators, so it is appropriate to
 also acknowledge them here:</p>
-<blockquote>
-<div>Hsieh et al. (2013)
-Shen et al. (2003)
-Colwell (2013)</div></blockquote>
+<ul class="simple">
+<li>Hsieh et al. (2013)</li>
+<li>Shen et al. (2003)</li>
+<li>Colwell (2013)</li>
+</ul>
 <p>References:</p>
 <p>Chao, A., N. J. Gotelli, T. C. Hsieh, E. L. Sander, K. H. Ma, R. K. Colwell, and A. M. Ellison 2013. Rarefaction and extrapolation with Hill numbers: a unified framework for sampling and estimation in biodiversity studies, Ecological Monographs (under revision).</p>
 <p>Colwell, R. K. 2013. EstimateS: Statistical estimation of species richness and shared species from samples. Version 9. User&#8217;s Guide and application published at: <a class="reference external" href="http://purl.oclc.org/estimates">http://purl.oclc.org/estimates</a>.</p>
@@ -114,7 +126,7 @@ Colwell (2013)</div></blockquote>
 <dt>-m, <cite>-</cite>-min</dt>
 <dd>The number of individuals (e.g. sequences) per sample to start performing estimations at [default: 1]</dd>
 <dt>-x, <cite>-</cite>-max</dt>
-<dd>The number of individuals (e.g. sequences) per sample to stop performing estimations at. By default, the base sample size will be used, which is defined in Chao et al. (2013) as &#8220;double the smallest reference sample size or the maximum reference sample size, whichever is larger&#8221; [default: base sample size]</dd>
+<dd>The number of individuals (e.g. sequences) per sample to stop performing estimations at. By default, the base sample size will be used, which is defined in Chao et al. (2013) as &#8220;double the smallest reference sample size or the maximum reference sample size, whichever is larger [default: base sample size]</dd>
 <dt>-n, <cite>-</cite>-num_steps</dt>
 <dd>The number of steps to make between -m/&#8211;min and -x/&#8211;max. Increasing this number will result in smoother curves, but will also increase the amount of time needed to run the script. Note that the reference sample size for each sample will be included if it does not fall within the min/max/num_steps range [default: 10]</dd>
 <dt>-c, <cite>-</cite>-confidence_level</dt>
@@ -126,7 +138,8 @@ Colwell (2013)</div></blockquote>
 directory. Other output formats may be added in the future.</p>
 <p><strong>Interpolation and extrapolation of richness:</strong></p>
 <p>Estimate the richness of each sample in the input BIOM table using the default sampling depth range, which includes interpolation and extrapolation.</p>
-<div class="highlight-python"><pre>estimate_observation_richness.py -i otu_table.biom -o estimates_out</pre>
+<div class="highlight-python"><div class="highlight"><pre>estimate_observation_richness.py -i otu_table.biom -o estimates_out
+</pre></div>
 </div>
 </div>
 
@@ -139,17 +152,27 @@ directory. Other output formats may be added in the future.</p>
 
     
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="distance_matrix_from_mapping.html"
+                        title="previous chapter"><em>distance_matrix_from_mapping.py</em> &#8211; Calculate the pairwise dissimilarity on one column of a mappping file</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="exclude_seqs_by_blast.html"
+                        title="next chapter"><em>exclude_seqs_by_blast.py</em> &#8211; Exclude contaminated sequences using BLAST</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -173,16 +196,24 @@ directory. Other output formats may be added in the future.</p>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="exclude_seqs_by_blast.html" title="exclude_seqs_by_blast.py – Exclude contaminated sequences using BLAST"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="distance_matrix_from_mapping.html" title="distance_matrix_from_mapping.py – Calculate the pairwise dissimilarity on one column of a mappping file"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Tutorials" href="index.html" />
+    <link rel="next" title="Performing Procrustes Analysis" href="procrustes_analysis.html" />
+    <link rel="prev" title="Making Cytoscape Networks" href="making_cytoscape_networks.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,14 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="procrustes_analysis.html" title="Performing Procrustes Analysis"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="making_cytoscape_networks.html" title="Making Cytoscape Networks"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Tutorials</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -71,19 +81,24 @@
 <div class="section" id="running-the-script">
 <h2>Running the script<a class="headerlink" href="#running-the-script" title="Permalink to this headline">¶</a></h2>
 <p>To run supervised classification on the <a class="reference external" href="./tutorial.html">QIIME tutorial</a> data set, where the &#8220;Treatment&#8221; metadata column gives the class labels:</p>
-<div class="highlight-python"><pre>supervised_learning.py -i otu_table.biom -m Fasting_Map.txt -c Treatment -o ml -v</pre>
+<div class="highlight-python"><div class="highlight"><pre>supervised_learning.py -i otu_table.biom -m Fasting_Map.txt -c Treatment -o ml -v
+</pre></div>
 </div>
 <p>All of the result files described above will be contained in the folder <tt class="file docutils literal"><span class="pre">ml</span></tt>. The <cite>-v</cite> flag causes verbose output, including a trace of the classifier&#8217;s progress while it is running. This runs Random Forests with the default setting of 500 trees. For larger data sets, the expected generalization error may decrease slightly if more trees are used. You can run random forests with 1,000 trees with the following:</p>
-<div class="highlight-python"><pre>supervised_learning.py -i otu_table.biom -m Fasting_Map.txt -c Treatment -o ml -v --ntree 1000</pre>
+<div class="highlight-python"><div class="highlight"><pre>supervised_learning.py -i otu_table.biom -m Fasting_Map.txt -c Treatment -o ml -v --ntree 1000
+</pre></div>
 </div>
 <p>Both of these example build a single random forests classifier, and use &#8220;out-of-bag&#8221; predictions (that is, each tree in the forest makes predictions about samples that were absent from its bootstrapped set of samples) to estimate the generalization error. If you have a very small data set you may wish to perform leave-one-out cross validation, in which the class label for each sample is predicted using a separate random forests classifier trained on the other n-1 samples:</p>
-<div class="highlight-python"><pre>supervised_learning.py -i otu_table.biom -m Fasting_Map.txt -c Treatment -o ml -v -e loo</pre>
+<div class="highlight-python"><div class="highlight"><pre>supervised_learning.py -i otu_table.biom -m Fasting_Map.txt -c Treatment -o ml -v -e loo
+</pre></div>
 </div>
 <p>To obtain more robust estimates of the generalization error and feature importances (including standard deviations), you can run the script with 5-fold or 10-fold cross validation:</p>
-<div class="highlight-python"><pre>supervised_learning.py -i otu_table.biom -m Fasting_Map.txt -c Treatment -o ml -v -e cv5</pre>
+<div class="highlight-python"><div class="highlight"><pre>supervised_learning.py -i otu_table.biom -m Fasting_Map.txt -c Treatment -o ml -v -e cv5
+</pre></div>
 </div>
 <p>or</p>
-<div class="highlight-python"><pre>supervised_learning.py -i otu_table.biom -m Fasting_Map.txt -c Treatment -o ml -v -e cv10</pre>
+<div class="highlight-python"><div class="highlight"><pre>supervised_learning.py -i otu_table.biom -m Fasting_Map.txt -c Treatment -o ml -v -e cv10
+</pre></div>
 </div>
 </div>
 <div class="section" id="cautions">
@@ -128,17 +143,27 @@
 </ul>
 
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="index.html">Tutorials</a><br /></li>
+    <li><a href="../scripts/index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="making_cytoscape_networks.html"
+                        title="previous chapter">Making Cytoscape Networks</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="procrustes_analysis.html"
+                        title="next chapter">Performing Procrustes Analysis</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -162,16 +187,23 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="procrustes_analysis.html" title="Performing Procrustes Analysis"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="making_cytoscape_networks.html" title="Making Cytoscape Networks"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Tutorials</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

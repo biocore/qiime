@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Tutorials" href="index.html" />
+    <link rel="next" title="Using Remote Mapping Files" href="remote_mapping_files.html" />
+    <link rel="prev" title="Working with QIIME on Amazon Web Services EC2" href="working_with_aws.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,14 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="remote_mapping_files.html" title="Using Remote Mapping Files"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="working_with_aws.html" title="Working with QIIME on Amazon Web Services EC2"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Tutorials</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -56,40 +66,79 @@
             
   <div class="section" id="using-parallel-qiime">
 <span id="parallel-qiime"></span><h1>Using parallel QIIME<a class="headerlink" href="#using-parallel-qiime" title="Permalink to this headline">¶</a></h1>
-<p>Some steps in QIIME can be run in parallel, either directly or though workflow scripts that wrap them. Some of the individual steps that can be run in parallel are assignment of taxonomy with BLAST (<a class="reference internal" href="../scripts/parallel_assign_taxonomy_blast.html"><em>parallel_assign_taxonomy_blast.py &#8211; Parallel taxonomy assignment using BLAST</em></a>) or the RDP classifier (<a class="reference internal" href="../scripts/parallel_assign_taxonomy_rdp.html"><em>parallel_assign_taxonomy_rdp.py &#8211; Parallel taxonomy assignment using RDP</em></a>), sequence alignment with PyNAST (<a class="reference internal" href="../scripts/parallel_align_seqs_pynast.html"><em>parallel_align_seqs_pynast.py &#8211; Parallel sequence alignment using PyNAST</em></a>), computation of alpha diversity (<a class="reference internal" href="../scripts/parallel_alpha_diversity.html"><em>parallel_alpha_diversity.py &#8211; Parallel alpha diversity</em></a>) and beta diversity (<a class="reference internal" href="../scripts/parallel_beta_diversity.html"><em>parallel_beta_diversity.py &#8211; Parallel beta diversity</em></a>), and reference-based OTU picking (<a class="reference internal" href="../scripts/parallel_pick_otus_uclust_ref.html"><em>parallel_pick_otus_uclust_ref.py &#8211; Parallel pick otus using uclust_ref</em></a>). To find a complete list of the parallel QIIME scripts, see the scripts beginning with the name <tt class="docutils literal"><span class="pre">parallel</span></tt> on <a class="reference internal" href="../scripts/index.html"><em>the script index</em></a>. The workflow scripts that wrap these steps allow you to run them in parallel by passing the <tt class="docutils literal"><span class="pre">-a</span></tt> parameter.</p>
+<p>Some scripts in QIIME can be run in parallel, either directly or through workflow scripts that wrap them. Some of the individual scripts that can be run in parallel are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference internal" href="../scripts/parallel_assign_taxonomy_blast.html"><em>parallel_assign_taxonomy_blast.py &#8211; Parallel taxonomy assignment using BLAST</em></a></li>
+<li><a class="reference internal" href="../scripts/parallel_assign_taxonomy_rdp.html"><em>parallel_assign_taxonomy_rdp.py &#8211; Parallel taxonomy assignment using RDP</em></a></li>
+<li><a class="reference internal" href="../scripts/parallel_align_seqs_pynast.html"><em>parallel_align_seqs_pynast.py &#8211; Parallel sequence alignment using PyNAST</em></a></li>
+<li><a class="reference internal" href="../scripts/parallel_alpha_diversity.html"><em>parallel_alpha_diversity.py &#8211; Parallel alpha diversity</em></a></li>
+<li><a class="reference internal" href="../scripts/parallel_beta_diversity.html"><em>parallel_beta_diversity.py &#8211; Parallel beta diversity</em></a></li>
+<li><a class="reference internal" href="../scripts/parallel_pick_otus_uclust_ref.html"><em>parallel_pick_otus_uclust_ref.py &#8211; Parallel pick otus using uclust_ref</em></a></li>
+</ul>
+</div></blockquote>
+<p>To find a complete list of the parallel QIIME scripts, see the scripts beginning with the name <tt class="docutils literal"><span class="pre">parallel</span></tt> on <a class="reference internal" href="../scripts/index.html"><em>the script index</em></a>. The workflow scripts that wrap these scripts allow you to run them in parallel by passing the <tt class="docutils literal"><span class="pre">-a</span></tt> parameter.</p>
 <div class="section" id="how-parallel-qiime-works">
 <h2>How parallel QIIME works<a class="headerlink" href="#how-parallel-qiime-works" title="Permalink to this headline">¶</a></h2>
-<p>The parallel steps in QIIME are designed to reduce the wall time of computationally expensive steps and make use of as many as possible of the types of parallel systems that biologists are frequently working with. This includes multi-core/multi-processor systems without queueing systems (e.g., laptop or desktop machines, or single AWS cloud instances) or with queueing systems (e.g., local compute clusters or AWS clusters built with <a class="reference external" href="http://star.mit.edu/cluster/">StarCluster</a>).</p>
-<p>QIIME achieves support of parallelization in these different environments by working on the assumption that a list of commands can be generated which are then submitted (somehow) to run on the system. The <cite>somehow</cite> could, for example, be simply by issuing one system call per command on a system with no job queueing or by creating a PBS job file per command and submitting those via  <tt class="docutils literal"><span class="pre">qsub</span></tt> on a cluster running torque. A parallel QIIME script thus builds a list of commands that should be run, and passes that list to the user&#8217;s <cite>cluster jobs</cite> script. The <cite>cluster jobs</cite> script is either one of several that ship with QIIME, or one that the user writes to customize how jobs are submitted in their environment.</p>
+<p>The parallel scripts in QIIME are designed to reduce the wall time of computationally expensive steps by making use of many types of parallel systems that biologists frequently work with. Parallel QIIME supports multi-core/multi-processor systems without queueing systems (e.g., laptop or desktop machines, or single AWS cloud instances) or systems with queueing systems (e.g., local compute clusters or AWS clusters built with <a class="reference external" href="http://star.mit.edu/cluster/">StarCluster</a>).</p>
+<p>QIIME supports parallelization in these different environments by assuming that a list of commands can be generated which are then submitted (somehow) to run on the system. The <cite>somehow</cite> could, for example, be simply issuing a single system call per command on a system with no job queueing, or by creating a PBS job file per command and submitting those via <tt class="docutils literal"><span class="pre">qsub</span></tt> on a cluster running torque. A parallel QIIME script thus builds a list of commands that should be run, and passes that list to the user&#8217;s <cite>cluster jobs</cite> script. The <cite>cluster jobs</cite> script is either one of several that ship with QIIME, or one that the user writes to customize how jobs are submitted in their environment.</p>
 <p>The <cite>cluster jobs</cite> scripts that ship with QIIME are:</p>
 <blockquote>
 <div><ul class="simple">
 <li><a class="reference internal" href="../scripts/start_parallel_jobs.html"><em>start_parallel_jobs.py &#8211; Starts multiple jobs in parallel on multicore or multiprocessor systems.</em></a></li>
 <li><a class="reference internal" href="../scripts/start_parallel_jobs_torque.html"><em>start_parallel_jobs_torque.py &#8211; Starts multiple jobs in parallel on torque/qsub based multiprocessor systems.</em></a></li>
 <li><a class="reference internal" href="../scripts/start_parallel_jobs_sc.html"><em>start_parallel_jobs_sc.py &#8211; Starts parallel jobs on Sun GridEngine queueing systems.</em></a></li>
+<li><a class="reference internal" href="../scripts/start_parallel_jobs_slurm.html"><em>start_parallel_jobs_slurm.py &#8211; Starts multiple jobs in parallel on slurm based multiprocessor systems.</em></a></li>
 </ul>
 </div></blockquote>
 </div>
-<div class="section" id="enabling-parallel-runs-in-qiime">
-<h2>Enabling parallel runs in QIIME<a class="headerlink" href="#enabling-parallel-runs-in-qiime" title="Permalink to this headline">¶</a></h2>
-<p>By default, QIIME is configured to run parallel jobs on systems without a queueing system (e.g., your laptop, desktop, or single AWS instance), where you tell a parallel QIIME script how many jobs should be submitted. If you&#8217;re working on one of these types of systems, you&#8217;ll call one of  QIIME&#8217;s parallel scripts or pass <tt class="docutils literal"><span class="pre">-a</span></tt> to one of QIIME&#8217;s workflow scripts to run in parallel. You&#8217;ll also pass <tt class="docutils literal"><span class="pre">-O</span></tt> with the number of jobs to run. For example, to run <tt class="docutils literal"><span class="pre">pick_closed_reference_otus.py</span></tt> via four parallel jobs, you can do the following:</p>
-<div class="highlight-python"><pre>pick_closed_reference_otus.py -a -O 4 ...</pre>
+<div class="section" id="enabling-parallel-qiime">
+<h2>Enabling parallel QIIME<a class="headerlink" href="#enabling-parallel-qiime" title="Permalink to this headline">¶</a></h2>
+<p>By default, QIIME is configured to run parallel jobs on systems without a queueing system (e.g., your laptop, desktop, or single AWS instance), where you tell a parallel QIIME script how many jobs should be submitted. If you&#8217;re working on one of these types of systems, you&#8217;ll either run one of  QIIME&#8217;s parallel scripts directly or pass <tt class="docutils literal"><span class="pre">-a</span></tt> to one of QIIME&#8217;s workflow scripts to run in parallel. You&#8217;ll also pass <tt class="docutils literal"><span class="pre">-O</span></tt> with the number of parallel jobs to run. For example, to run the <a class="reference external" href="../scripts/pick_closed_reference_otus.html">pick_closed_reference_otus.py</a> workflow with four parallel jobs:</p>
+<div class="highlight-python"><div class="highlight"><pre>pick_closed_reference_otus.py -a -O 4 ...
+</pre></div>
 </div>
 <p>where <tt class="docutils literal"><span class="pre">...</span></tt> is replaced with the remaining parameters to the script.</p>
-<p>You can specify a default number of jobs via the <tt class="docutils literal"><span class="pre">jobs_to_start</span></tt> parameter in <tt class="docutils literal"><span class="pre">qiime_config</span></tt> (see <a class="reference internal" href="../install/qiime_config.html"><em>Setting up your qiime_config file</em></a> for help with setting up your <tt class="docutils literal"><span class="pre">qiime_config</span></tt> file) to avoid having to pass <tt class="docutils literal"><span class="pre">-O</span></tt>. The default value for <tt class="docutils literal"><span class="pre">jobs_to_start</span></tt> is <tt class="docutils literal"><span class="pre">1</span></tt>, corresponding to no parallelization (hence your having to pass <tt class="docutils literal"><span class="pre">-O</span></tt> to use parallel QIIME unless you&#8217;ve overridden the default). You should modify the <tt class="docutils literal"><span class="pre">jobs_to_start</span></tt> value to one that makes sense for your environment. For example, if you are running on a dual-core laptop, you probably want to specify <tt class="docutils literal"><span class="pre">2</span></tt>. (Note that this will likely prevent you from doing anything else with your laptop while QIIME is running in parallel.) If you&#8217;re running on an 8 processor machine, you&#8217;d want to set <tt class="docutils literal"><span class="pre">jobs_to_start</span></tt> to a maximum of <tt class="docutils literal"><span class="pre">8</span></tt>, but <tt class="docutils literal"><span class="pre">7</span></tt> might be better if you&#8217;d like to reserve one processor for other work while running parallel QIIME. Note that setting <tt class="docutils literal"><span class="pre">jobs_to_start</span></tt> to a value that is too high (e.g., <tt class="docutils literal"><span class="pre">5</span></tt> on a quad-core system) will cause your job to take longer to complete than if you specify a value that makes sense for your environment. Finally, you can always override your default <tt class="docutils literal"><span class="pre">jobs_to_start</span></tt> value by passing <tt class="docutils literal"><span class="pre">-O</span></tt> to a parallel script: you are just setting that default value in <tt class="docutils literal"><span class="pre">qiime_config</span></tt>.</p>
-<p>If you are running in a more complex environment (e.g, a cluster) you&#8217;ll need to determine if one of the QIIME <cite>cluster jobs</cite> scripts will work for you, or whether you&#8217;ll need to write a custom <cite>cluster jobs</cite> script (discussed below). In either of these cases, you&#8217;ll overwrite the <tt class="docutils literal"><span class="pre">cluster_jobs_fp</span></tt> value in your <tt class="docutils literal"><span class="pre">qiime_config</span></tt> file to be the full path to the <cite>cluster jobs</cite> script that QIIME should use, or just the name of the script if it is in a directory in your <tt class="docutils literal"><span class="pre">$PATH</span></tt> environment variable.</p>
+<p>The following subsections describe how to set up parallel QIIME for your specific environment through your QIIME config file. See <a class="reference internal" href="../install/qiime_config.html"><em>Setting up your qiime config file</em></a> for help with setting up your QIIME config file.</p>
+<div class="section" id="default-number-of-parallel-jobs">
+<h3>Default number of parallel jobs<a class="headerlink" href="#default-number-of-parallel-jobs" title="Permalink to this headline">¶</a></h3>
+<p>You can specify a default number of parallel jobs via the <tt class="docutils literal"><span class="pre">jobs_to_start</span></tt> parameter in your QIIME config file to avoid having to pass <tt class="docutils literal"><span class="pre">-O</span></tt> each time you run a parallel script or workflow. The default value for <tt class="docutils literal"><span class="pre">jobs_to_start</span></tt> is <tt class="docutils literal"><span class="pre">1</span></tt>, corresponding to no parallelization (hence your having to pass <tt class="docutils literal"><span class="pre">-O</span></tt> to use parallel QIIME unless you&#8217;ve overridden the default). You should modify the <tt class="docutils literal"><span class="pre">jobs_to_start</span></tt> value to one that makes sense for your environment. For example, if you are running on a dual-core laptop, you probably want to specify <tt class="docutils literal"><span class="pre">2</span></tt>. (Note that this will likely prevent you from doing anything else with your laptop while QIIME is running in parallel.) If you&#8217;re running on an 8 processor machine, you&#8217;d want to set <tt class="docutils literal"><span class="pre">jobs_to_start</span></tt> to a maximum of <tt class="docutils literal"><span class="pre">8</span></tt>, but <tt class="docutils literal"><span class="pre">7</span></tt> might be better if you&#8217;d like to reserve one processor for other work while running parallel QIIME. Note that setting <tt class="docutils literal"><span class="pre">jobs_to_start</span></tt> to a value that is too high (e.g., <tt class="docutils literal"><span class="pre">5</span></tt> on a quad-core system) will cause your job to take longer to complete than if you specify a value that makes sense for your environment. Finally, you can always override your default <tt class="docutils literal"><span class="pre">jobs_to_start</span></tt> value by passing <tt class="docutils literal"><span class="pre">-O</span></tt> to a parallel script: you are just setting the <em>default</em> value in your QIIME config file.</p>
+</div>
+<div class="section" id="default-cluster-jobs-script">
+<h3>Default cluster jobs script<a class="headerlink" href="#default-cluster-jobs-script" title="Permalink to this headline">¶</a></h3>
+<p>If you are running in a more complex environment (e.g, a cluster), you&#8217;ll need to determine if one of the QIIME <cite>cluster jobs</cite> scripts will work for you or whether you&#8217;ll need to write a custom <cite>cluster jobs</cite> script (discussed below). In either of these cases, you&#8217;ll set the <tt class="docutils literal"><span class="pre">cluster_jobs_fp</span></tt> value in your QIIME config file to be the absolute path to the <cite>cluster jobs</cite> script that QIIME should use, or just the name of the script if it is in a directory in your <tt class="docutils literal"><span class="pre">$PATH</span></tt> environment variable.</p>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
-<p class="last">Before starting parallel jobs with QIIME, you should run <tt class="docutils literal"><span class="pre">print_qiime_config.py</span> <span class="pre">-t</span></tt> to confirm that the changes you&#8217;ve made in <tt class="docutils literal"><span class="pre">qiime_config</span></tt> have been recognized by QIIME. This is very important as it allows you to ensure that the correct <tt class="docutils literal"><span class="pre">cluster_jobs_fp</span></tt> is being used in your environment (and therefore that you&#8217;re not about to issue 100 <tt class="docutils literal"><span class="pre">system</span></tt> calls on the head node of your cluster, which would likely make your system administrator very angry - you&#8217;ve been warned!).</p>
+<p class="last">Before starting parallel jobs with QIIME, you should run <tt class="docutils literal"><span class="pre">print_qiime_config.py</span> <span class="pre">-t</span></tt> to confirm that the changes you&#8217;ve made in your QIIME config have been recognized by QIIME. This is very important as it allows you to ensure that the correct <tt class="docutils literal"><span class="pre">cluster_jobs_fp</span></tt> is being used in your environment (and therefore that you&#8217;re not about to issue 100 system calls on the head node of your cluster, which would likely make your system administrator very angry - you&#8217;ve been warned!).</p>
 </div>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
-<p class="last">If you&#8217;re using the QIIME workflow scripts in parallel mode (i.e., with the <tt class="docutils literal"><span class="pre">-a</span></tt> parameter), and submitting the workflow command as a job to the queueing system, that job must be able to submit other jobs to the queue. In other words, worker jobs on the cluster must have sufficent permission to submit jobs.</p>
+<p class="last">If you&#8217;re using the QIIME workflow scripts in parallel mode (i.e., with the <tt class="docutils literal"><span class="pre">-a</span></tt> parameter), and submitting the workflow command as a job to the queueing system, that job must be able to submit other jobs to the queue. In other words, worker jobs on the cluster must have sufficient permission to submit jobs.</p>
+</div>
+</div>
+<div class="section" id="specifying-a-temporary-directory">
+<h3>Specifying a temporary directory<a class="headerlink" href="#specifying-a-temporary-directory" title="Permalink to this headline">¶</a></h3>
+<p>You may specify a temporary directory in your QIIME config file by setting the <tt class="docutils literal"><span class="pre">temp_dir</span></tt> value. QIIME scripts use this temporary directory to store temporary files, which are cleaned up after the script completes. When setting up parallel QIIME to work in your environment, the temporary directory must meet the following requirements:</p>
+<blockquote>
+<div><ul>
+<li><p class="first">If you’re working in a cluster environment, the temporary directory must be shared across all of the worker nodes that QIIME jobs may be running on.</p>
+</li>
+<li><p class="first">If you&#8217;re working in a multi-user environment (e.g., a cluster or a server with more than one person running QIIME), the temporary directory must be unique to each user. There are several ways to accomplish this. For example, each user can create their own QIIME config file that points to their temporary directory. On a system with many users, it may be desirable to instead create a system-wide QIIME config file (specified via <tt class="docutils literal"><span class="pre">$QIIME_CONFIG_FP</span></tt>) that uses <tt class="docutils literal"><span class="pre">$USER</span></tt> in the path to the temporary directory. For example, you could add the following line to the system-wide QIIME config file:</p>
+<div class="highlight-python"><div class="highlight"><pre>temp_dir /tmp/$USER
+</pre></div>
+</div>
+</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="additional-customization-of-parallel-qiime">
+<h3>Additional customization of parallel QIIME<a class="headerlink" href="#additional-customization-of-parallel-qiime" title="Permalink to this headline">¶</a></h3>
+<p>There are additional values that may be specified in the QIIME config file to further customize your parallel QIIME environment. These values are described in <a class="reference internal" href="../install/qiime_config.html"><em>Setting up your qiime config file</em></a>.</p>
 </div>
 </div>
 <div class="section" id="writing-a-cluster-jobs-script-specific-to-your-parallel-environment">
 <h2>Writing a cluster jobs script specific to your parallel environment<a class="headerlink" href="#writing-a-cluster-jobs-script-specific-to-your-parallel-environment" title="Permalink to this headline">¶</a></h2>
-<p>To make QIIME parallelization useful in different computing environments users can provide a script which can start jobs on their system, referred to here as a <cite>cluster jobs</cite> script. The <cite>cluster jobs</cite> script takes exactly two parameters:</p>
+<p>To make parallel QIIME usable in different computing environments, users may provide a custom script which can start jobs on their system, referred to here as a <cite>cluster jobs</cite> script. The <cite>cluster jobs</cite> script takes exactly two parameters:</p>
 <blockquote>
 <div><ol class="arabic simple">
 <li>A single file which lists the commands to be run (referred to as a <cite>jobs list</cite> file), with one command per line.</li>
@@ -97,21 +146,23 @@
 </ol>
 </div></blockquote>
 <p>The lines in an example <cite>jobs list</cite> file might be:</p>
-<div class="highlight-python"><pre>pick_otus.py -i inseqs_file1.fasta
+<div class="highlight-python"><div class="highlight"><pre>pick_otus.py -i inseqs_file1.fasta
 pick_otus.py -i inseqs_file2.fasta
-pick_otus.py -i inseqs_file3.fasta</pre>
+pick_otus.py -i inseqs_file3.fasta
+</pre></div>
 </div>
 <p>If passed to your <cite>cluster jobs</cite> script, this should start three separate jobs corresponding to each of the commands.</p>
-<p>The call to the <cite>cluster jobs</cite> script from QIIME&#8217;s parallel scripts looks like the following (so your script must adhere to this interface):</p>
-<div class="highlight-python"><pre>CLUSTER_JOBS_FP -ms job_list.txt JOB_ID</pre>
+<p>The call to the <cite>cluster jobs</cite> script from within QIIME&#8217;s parallel scripts looks like the following (so your script must adhere to this interface):</p>
+<div class="highlight-python"><div class="highlight"><pre>CLUSTER_JOBS_FP -ms job_list.txt JOB_ID
+</pre></div>
 </div>
-<p>where <tt class="docutils literal"><span class="pre">CLUSTER_JOBS_FP</span></tt> is the path to your <cite>cluster jobs</cite> script and is passed to the parallel scripts via the <tt class="docutils literal"><span class="pre">-U</span></tt> parameter (or you can define it with the <tt class="docutils literal"><span class="pre">cluster_jobs_fp</span></tt> variable in your <tt class="docutils literal"><span class="pre">qiime_config</span></tt>). <tt class="docutils literal"><span class="pre">JOB_ID</span></tt> is intended to be used as a prefix by the <cite>cluster jobs</cite> script when creating a unique identifier for each job. The same <tt class="docutils literal"><span class="pre">JOB_ID</span></tt> is also used by the QIIME parallel scripts when creating names for temporary files and directories, but your script does not necessarily need to do anything with this information if it&#8217;s not useful to you. The <tt class="docutils literal"><span class="pre">-ms</span></tt> indicates that the <cite>job files</cite> should be made (<tt class="docutils literal"><span class="pre">-m</span></tt>) and submitted (<tt class="docutils literal"><span class="pre">-s</span></tt>).</p>
-<p>Once you have written a <cite>cluster jobs</cite> script for your specific environment that can be called via the above interface, running QIIME jobs in parallel should be straight-forward. The parallel variants of the scripts use the same parameters as the serial versions of the scripts, with some additional options in the parallel scripts.</p>
+<p>where <tt class="docutils literal"><span class="pre">CLUSTER_JOBS_FP</span></tt> is the path to your <cite>cluster jobs</cite> script and is passed to the parallel scripts via the <tt class="docutils literal"><span class="pre">-U</span></tt> parameter (or you can define it with the <tt class="docutils literal"><span class="pre">cluster_jobs_fp</span></tt> variable in your QIIME config file, as described above). <tt class="docutils literal"><span class="pre">JOB_ID</span></tt> is intended to be used as a prefix by the <cite>cluster jobs</cite> script when creating a unique identifier for each job. The same <tt class="docutils literal"><span class="pre">JOB_ID</span></tt> is also used by the QIIME parallel scripts when creating names for temporary files and directories, but your script does not necessarily need to do anything with this information if it&#8217;s not useful to you. The <tt class="docutils literal"><span class="pre">-ms</span></tt> indicates that the <cite>job files</cite> should be made (<tt class="docutils literal"><span class="pre">-m</span></tt>) and submitted (<tt class="docutils literal"><span class="pre">-s</span></tt>).</p>
+<p>Once you have written a <cite>cluster jobs</cite> script for your specific environment that can be called via the above interface, running QIIME jobs in parallel should be straightforward. The parallel variants of the scripts use the same parameters as the serial versions of the scripts, with some additional options related to parallel execution.</p>
 </div>
 <div class="section" id="the-poller-and-figuring-out-what-the-poller-is-waiting-for">
 <h2>The poller (and figuring out what the poller is waiting for)<a class="headerlink" href="#the-poller-and-figuring-out-what-the-poller-is-waiting-for" title="Permalink to this headline">¶</a></h2>
-<p>Most of the parallel QIIME scripts end by collating results to look like those generated by the non-parallel variant of the script. The <cite>QIIME poller</cite> is used to determine when all of the individual jobs are complete and at that time initiate the collation process. The poller determines when all jobs are completed by reading a <tt class="docutils literal"><span class="pre">check_run_complete_file</span></tt> that is generated by the parallel script, and which contains the paths to all of the expected output files. When all of the filepaths listed in the <tt class="docutils literal"><span class="pre">check_run_complete_file</span></tt> exist, the poller concludes that all jobs have finished and the collation process can begin.</p>
-<p>Sometimes one of the parallel jobs will fail and its output files will not be written to the expected location. This will cause the poller to wait indefinitely. You can use the <tt class="docutils literal"><span class="pre">identify_missing_files.py</span></tt> script to identify which files the poller is still waiting on by calling it with the path to the <tt class="docutils literal"><span class="pre">check_run_complete_file</span></tt>. The <tt class="docutils literal"><span class="pre">check_run_complete_file</span></tt> will be called <tt class="docutils literal"><span class="pre">expected_out_files.txt</span></tt> and found in a temporary directory under the output directory for the parallel script. If you determine that the poller is still waiting on some files and you think that the job(s) that would generate those files are no longer running, you can identify the command that failed by looking for the missing output file name(s) in the <cite>jobs list</cite> file (also under the output directory for the parallel script, and having a filename ending with <tt class="docutils literal"><span class="pre">_jobs.txt</span></tt>), and re-running those specific commands. In the future we hope to improve parallel job failure recovery in QIIME as we realize that this is fairly tedious.</p>
+<p>Most of the parallel QIIME scripts end by collating results to look like those generated by the non-parallel variant of the script. The <cite>QIIME poller</cite> is used to determine when all of the individual jobs are complete and at that time initiate the collation process. The poller determines when all jobs are completed by reading a <tt class="docutils literal"><span class="pre">check_run_complete_file</span></tt> that is generated by the parallel script, containing the paths to all of the expected output files. When all of the paths listed in the <tt class="docutils literal"><span class="pre">check_run_complete_file</span></tt> exist, the poller concludes that all jobs have finished and the collation process can begin.</p>
+<p>Sometimes one of the parallel jobs will fail and its output files will not be written to the expected location. This will cause the poller to wait indefinitely. You can use the <a class="reference external" href="../scripts/identify_missing_files.html">identify_missing_files.py</a> script to identify which files the poller is still waiting on by running it with the path to the <tt class="docutils literal"><span class="pre">check_run_complete_file</span></tt>. The <tt class="docutils literal"><span class="pre">check_run_complete_file</span></tt> will be called <tt class="docutils literal"><span class="pre">expected_out_files.txt</span></tt> and found in a temporary directory under the output directory for the parallel script. If you determine that the poller is still waiting on some files and you think that the job(s) that would generate those files are no longer running, you can identify the command that failed by looking for the missing output file name(s) in the <cite>jobs list</cite> file (also under the output directory for the parallel script, and having a filename ending with <tt class="docutils literal"><span class="pre">_jobs.txt</span></tt>), and re-running those specific commands. In the future we hope to improve parallel job failure recovery in QIIME as we realize that this is fairly tedious.</p>
 </div>
 </div>
 
@@ -127,7 +178,13 @@ pick_otus.py -i inseqs_file3.fasta</pre>
   <ul>
 <li><a class="reference internal" href="#">Using parallel QIIME</a><ul>
 <li><a class="reference internal" href="#how-parallel-qiime-works">How parallel QIIME works</a></li>
-<li><a class="reference internal" href="#enabling-parallel-runs-in-qiime">Enabling parallel runs in QIIME</a></li>
+<li><a class="reference internal" href="#enabling-parallel-qiime">Enabling parallel QIIME</a><ul>
+<li><a class="reference internal" href="#default-number-of-parallel-jobs">Default number of parallel jobs</a></li>
+<li><a class="reference internal" href="#default-cluster-jobs-script">Default cluster jobs script</a></li>
+<li><a class="reference internal" href="#specifying-a-temporary-directory">Specifying a temporary directory</a></li>
+<li><a class="reference internal" href="#additional-customization-of-parallel-qiime">Additional customization of parallel QIIME</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#writing-a-cluster-jobs-script-specific-to-your-parallel-environment">Writing a cluster jobs script specific to your parallel environment</a></li>
 <li><a class="reference internal" href="#the-poller-and-figuring-out-what-the-poller-is-waiting-for">The poller (and figuring out what the poller is waiting for)</a></li>
 </ul>
@@ -135,17 +192,27 @@ pick_otus.py -i inseqs_file3.fasta</pre>
 </ul>
 
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="index.html">Tutorials</a><br /></li>
+    <li><a href="../scripts/index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="working_with_aws.html"
+                        title="previous chapter">Working with QIIME on Amazon Web Services EC2</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="remote_mapping_files.html"
+                        title="next chapter">Using Remote Mapping Files</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -169,16 +236,23 @@ pick_otus.py -i inseqs_file3.fasta</pre>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="remote_mapping_files.html" title="Using Remote Mapping Files"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="working_with_aws.html" title="Working with QIIME on Amazon Web Services EC2"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Tutorials</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

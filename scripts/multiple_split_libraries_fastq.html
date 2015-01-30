@@ -1,0 +1,231 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>multiple_split_libraries_fastq.py – Run split_libraries_fastq.py on multiple files. &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.9.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="neighbor_joining.py – Build a neighbor joining tree comparing samples" href="neighbor_joining.html" />
+    <link rel="prev" title="multiple_rarefactions_even_depth.py – Perform multiple rarefactions on a single otu table, at one depth of sequences/sample" href="multiple_rarefactions_even_depth.html" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="neighbor_joining.html" title="neighbor_joining.py – Build a neighbor joining tree comparing samples"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="multiple_rarefactions_even_depth.html" title="multiple_rarefactions_even_depth.py – Perform multiple rarefactions on a single otu table, at one depth of sequences/sample"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="multiple-split-libraries-fastq"></span><div class="section" id="multiple-split-libraries-fastq-py-run-split-libraries-fastq-py-on-multiple-files">
+<span id="index-0"></span><h1><em>multiple_split_libraries_fastq.py</em> &#8211; Run split_libraries_fastq.py on multiple files.<a class="headerlink" href="#multiple-split-libraries-fastq-py-run-split-libraries-fastq-py-on-multiple-files" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>This script runs <a class="reference external" href="./split_libraries_fastq.html">split_libraries_fastq.py</a> on data that are already demultiplexed
+(split up according to sample, with one sample per file). The script supports
+the following types of input:</p>
+<ul class="simple">
+<li>a directory containing many files, where each file is named on a per-sample
+basis (with different prefixes before the read number)</li>
+<li>a directory containing many directories, where each directory is named on a
+per-sample basis</li>
+</ul>
+<p>This script assumes that the leading characters before the read indicator
+(see &#8211;read_indicator) are matched between the read, barcode, and mapping files.
+For example, sample1_L001_R1_001.fastq.gz, sample1_L001_I1_001.fastq.gz,
+sample1_L001_mapping_001.txt would be matched up if &#8220;R1&#8221; is the read indicator,
+&#8220;I1&#8221; is the barcode indicator, and &#8220;mapping&#8221; is the mapping file indicator.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">multiple_split_libraries_fastq.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-input_dir</dt>
+<dd>Input directory of directories or fastq files.</dd>
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>Output directory to write <a class="reference external" href="./split_libraries_fastq.html">split_libraries_fastq.py</a> results</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-m, <cite>-</cite>-demultiplexing_method</dt>
+<dd>Method for demultiplexing. Can either be &#8220;sampleid_by_file&#8221; or &#8220;mapping_barcode_files&#8221;. With the sampleid_by_file option, each fastq file (and/or directory name) will be used to generate the &#8211;sample_ids value passed to <a class="reference external" href="./split_libraries_fastq.html">split_libraries_fastq.py</a>. The mapping_barcode_files option will search for barcodes and mapping files that match the input read files [default: sampleid_by_file]</dd>
+<dt>-p, <cite>-</cite>-parameter_fp</dt>
+<dd>Path to the parameter file, which specifies changes to the default behavior of <a class="reference external" href="./split_libraries_fastq.html">split_libraries_fastq.py</a>. See <a class="reference external" href="http://www.qiime.org/documentation/file_formats.html#qiime-parameters">http://www.qiime.org/documentation/file_formats.html#qiime-parameters</a> [default: <a class="reference external" href="./split_libraries_fastq.html">split_libraries_fastq.py</a> defaults will be used]</dd>
+<dt><cite>-</cite>-read_indicator</dt>
+<dd>Substring to search for to indicate read files [default: _R1_]</dd>
+<dt><cite>-</cite>-barcode_indicator</dt>
+<dd>Substring to search for to indicate barcode files [default: _I1_]</dd>
+<dt><cite>-</cite>-mapping_indicator</dt>
+<dd>Substring to search for to indicate mapping files [default: _mapping_]</dd>
+<dt><cite>-</cite>-mapping_extensions</dt>
+<dd>Comma-separated list of file extensions used to identify mapping files. Only applies when &#8211;demultiplexing_method is &#8220;mapping_barcode_files&#8221; [default: txt,tsv]</dd>
+<dt><cite>-</cite>-sampleid_indicator</dt>
+<dd>Text in fastq filename before this value will be used as output sample ids [default: _]</dd>
+<dt><cite>-</cite>-include_input_dir_path</dt>
+<dd>Include the input directory name in the output sample id name. Useful in cases where the file names are repeated in input folders [default: False]</dd>
+<dt><cite>-</cite>-remove_filepath_in_name</dt>
+<dd>Disable inclusion of the input filename in the output sample id names. Must use &#8211;include_input_dir_path if this option is enabled [default: False]</dd>
+<dt><cite>-</cite>-leading_text</dt>
+<dd>Leading text to add to each <a class="reference external" href="./split_libraries_fastq.html">split_libraries_fastq.py</a> command [default: no leading text added]</dd>
+<dt><cite>-</cite>-trailing_text</dt>
+<dd>Trailing text to add to each <a class="reference external" href="./split_libraries_fastq.html">split_libraries_fastq.py</a> command [default: no trailing text added]</dd>
+<dt>-w, <cite>-</cite>-print_only</dt>
+<dd>Print the commands but don&#8217;t call them &#8211; useful for debugging [default: False]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>The output of running <a class="reference external" href="./split_libraries_fastq.html">split_libraries_fastq.py</a> on many input files. See script description for more details.</p>
+<p><strong>Example 1:</strong></p>
+<p>Process an input folder of folders, with options specified to pair up reads, barcodes, and mapping files. A qiime_parameters.txt file is included to use the parameter split_libraries_fastq:barcode_type 12</p>
+<div class="highlight-python"><div class="highlight"><pre>multiple_split_libraries_fastq.py -i input_folders -o output_folder --demultiplexing_method mapping_barcode_files --read_indicator reads --barcode_indicator barcode --mapping_indicator mapping -p qiime_parameters.txt
+</pre></div>
+</div>
+<p><strong>Example 2:</strong></p>
+<p>Process an input folder of files, with the option specified to generate sample ids using the filenames (default behavior is to use all text before the first underscore as the sample id)</p>
+<div class="highlight-python"><div class="highlight"><pre>multiple_split_libraries_fastq.py -i input_files -o output_folder --demultiplexing_method sampleid_by_file
+</pre></div>
+</div>
+<p><strong>Example 3:</strong></p>
+<p>Process an input folder of folders, with an option specified to use the folder names as the sample ids. In this case, the fastq filenames themselves are not included, only the folder names are used.</p>
+<div class="highlight-python"><div class="highlight"><pre>multiple_split_libraries_fastq.py -i input_folders_no_barcodes -o output_folder --demultiplexing_method sampleid_by_file --include_input_dir_path --remove_filepath_in_name
+</pre></div>
+</div>
+<p><strong>Example 4:</strong></p>
+<p>To see what commands would be executed by the script without actually running them, use the following command:</p>
+<div class="highlight-python"><div class="highlight"><pre>multiple_split_libraries_fastq.py -i input_files -o output_folder -w
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="multiple_rarefactions_even_depth.html"
+                        title="previous chapter"><em>multiple_rarefactions_even_depth.py</em> &#8211; Perform multiple rarefactions on a single otu table, at one depth of sequences/sample</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="neighbor_joining.html"
+                        title="next chapter"><em>neighbor_joining.py</em> &#8211; Build a neighbor joining tree comparing samples</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="neighbor_joining.html" title="neighbor_joining.py – Build a neighbor joining tree comparing samples"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="multiple_rarefactions_even_depth.html" title="multiple_rarefactions_even_depth.py – Perform multiple rarefactions on a single otu table, at one depth of sequences/sample"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

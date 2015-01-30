@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="pick_rep_set.py – Pick representative set of sequences" href="pick_rep_set.html" />
+    <link rel="prev" title="pick_open_reference_otus.py – Perform open-reference OTU picking" href="pick_open_reference_otus.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="pick_rep_set.html" title="pick_rep_set.py – Pick representative set of sequences"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pick_open_reference_otus.html" title="pick_open_reference_otus.py – Perform open-reference OTU picking"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -74,6 +85,9 @@
 <ol class="arabic simple" start="8">
 <li>usearch61 (Edgar, RC 2010, version v6.1.544), creates &#8220;seeds&#8221; of sequences which generate clusters based on percent identity.</li>
 <li>usearch61_ref (Edgar, RC 2010, version v6.1.544), as usearch61, but takes a reference database to use as seeds.  New clusters can be toggled on or off.</li>
+<li>sumaclust (Mercier, C. et al., 2014, version 1.0), creates &#8220;seeds&#8221; of sequences which generate clusters based on similarity threshold.</li>
+<li>sortmerna_v2 (Kopylova, E. et al., 2012), takes a reference database to use as seeds.</li>
+<li>swarm (Mahe, F. et al., 2014), creates &#8220;seeds&#8221; of sequences which generate clusters based on a resolution threshold.</li>
 </ol>
 <p>Chimera checking with usearch 6.X is implemented in <a class="reference external" href="./identify_chimeric_seqs.html">identify_chimeric_seqs.py</a>.  Chimera checking should be done first with usearch 6.X, and the filtered resulting fasta file can then be clustered.</p>
 <p>The primary inputs for <a class="reference external" href="./pick_otus.html">pick_otus.py</a> are:</p>
@@ -95,7 +109,7 @@
 <p><strong>[OPTIONAL]</strong></p>
 <dl class="last docutils">
 <dt>-m, <cite>-</cite>-otu_picking_method</dt>
-<dd>Method for picking OTUs.  Valid choices are: mothur, trie, uclust_ref, usearch, usearch_ref, blast, usearch61, usearch61_ref, prefix_suffix, cdhit, uclust. The mothur method requires an input file of aligned sequences.  usearch will enable the usearch quality filtering pipeline. [default: uclust]</dd>
+<dd>Method for picking OTUs.  Valid choices are: sortmerna, mothur, trie, uclust_ref, usearch, usearch_ref, blast, usearch61, usearch61_ref, sumaclust, swarm, prefix_suffix, cdhit, uclust. The mothur method requires an input file of aligned sequences.  usearch will enable the usearch quality filtering pipeline. [default: uclust]</dd>
 <dt>-c, <cite>-</cite>-clustering_algorithm</dt>
 <dd>Clustering algorithm for mothur otu picking method.  Valid choices are: furthest, nearest, average. [default: furthest]</dd>
 <dt>-M, <cite>-</cite>-max_cdhit_memory</dt>
@@ -103,15 +117,35 @@
 <dt>-o, <cite>-</cite>-output_dir</dt>
 <dd>Path to store result file [default: ./&lt;OTU_METHOD&gt;_picked_otus/]</dd>
 <dt>-r, <cite>-</cite>-refseqs_fp</dt>
-<dd>Path to reference sequences to search against when using -m blast, -m uclust_ref, -m usearch_ref, or -m usearch61_ref [default: None]</dd>
+<dd>Path to reference sequences to search against when using -m blast, -m sortmerna, -m uclust_ref, -m usearch_ref, or -m usearch61_ref [default: /Users/jairideout/.virtualenvs/qiime/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set/97_otus.fasta]</dd>
 <dt>-b, <cite>-</cite>-blast_db</dt>
 <dd>Pre-existing database to blast against when using -m blast [default: None]</dd>
-<dt><cite>-</cite>-min_aligned_percent</dt>
-<dd>Minimum percent of query sequence that can be aligned to consider a hit (BLAST OTU picker only) [default: 0.5]</dd>
-<dt>-s, <cite>-</cite>-similarity</dt>
-<dd>Sequence similarity threshold (for blast, cdhit, uclust, uclust_ref, usearch, usearch_ref, usearch61, or usearch61_ref) [default: 0.97]</dd>
-<dt>-e, <cite>-</cite>-max_e_value</dt>
+<dt>-e, <cite>-</cite>-max_e_value_blast</dt>
 <dd>Max E-value when clustering with BLAST [default: 1e-10]</dd>
+<dt><cite>-</cite>-sortmerna_db</dt>
+<dd>Pre-existing database to search against when using -m sortmerna [default: None]</dd>
+<dt><cite>-</cite>-sortmerna_e_value</dt>
+<dd>Maximum E-value when clustering [default = 1]</dd>
+<dt><cite>-</cite>-sortmerna_coverage</dt>
+<dd>Mininum percent query coverage (of an alignment) to consider a hit, expressed as a fraction between 0 and 1 [default: 0.97]</dd>
+<dt><cite>-</cite>-sortmerna_tabular</dt>
+<dd>Output alignments in the Blast tabular format with two additional columns including the CIGAR string and the percent query coverage [default: False]</dd>
+<dt><cite>-</cite>-sortmerna_best_N_alignments</dt>
+<dd>Must be set together with &#8211;sortmerna_tabular. This option specifies how many alignments per read will be written [default: 1]</dd>
+<dt><cite>-</cite>-sortmerna_max_pos</dt>
+<dd>The maximum number of positions per seed to store  in the indexed database [default: 10000]</dd>
+<dt><cite>-</cite>-min_aligned_percent</dt>
+<dd>Minimum percent of query sequence that can be aligned to consider a hit, expressed as a fraction between 0 and 1 (BLAST OTU picker only) [default: 0.5]</dd>
+<dt>-s, <cite>-</cite>-similarity</dt>
+<dd>Sequence similarity threshold (for blast, cdhit, uclust, uclust_ref, usearch, usearch_ref, usearch61, usearch61_ref, sumaclust or sortmerna [default: 0.97]</dd>
+<dt><cite>-</cite>-sumaclust_exact</dt>
+<dd>A sequence is assigned to the best matching seed rather than the first matching seed passing the similarity threshold [default: False]</dd>
+<dt><cite>-</cite>-sumaclust_l</dt>
+<dd>Reference sequence length if the shortest [default: True]</dd>
+<dt><cite>-</cite>-denovo_otu_id_prefix</dt>
+<dd>OTU identifier prefix (string) for the de novo OTU pickers (sumaclust, swarm and uclust) [default: denovo, OTU ids are ascendingintegers]</dd>
+<dt><cite>-</cite>-swarm_resolution</dt>
+<dd>Maximum number of differences allowed between two amplicons, meaning that two amplicons will be grouped if they have integer (or less) differences (see Swarm manual at <a class="reference external" href="https://github.com/torognes/swarm">https://github.com/torognes/swarm</a> for more details). [default: 1]</dd>
 <dt>-q, <cite>-</cite>-trie_reverse_seqs</dt>
 <dd>Reverse seqs before picking OTUs with the Trie OTU picker for suffix (rather than prefix) collapsing [default: False]</dd>
 <dt>-n, <cite>-</cite>-prefix_prefilter_length</dt>
@@ -135,23 +169,21 @@
 <dt>-C, <cite>-</cite>-suppress_new_clusters</dt>
 <dd>Suppress creation of new clusters using seqs that don&#8217;t match reference when using -m uclust_ref, -m usearch61_ref, or -m usearch_ref [default: False]</dd>
 <dt><cite>-</cite>-max_accepts</dt>
-<dd>Max_accepts value to uclust, uclust_ref, usearch61, and usearch61_ref.  By default, will use value suggested by method (uclust: 20, usearch61: 1) [default: default]</dd>
+<dd>Max_accepts value to uclust, uclust_ref, usearch61, and usearch61_ref.  By default, will use value suggested by method (uclust: 1, usearch61: 1) [default: default]</dd>
 <dt><cite>-</cite>-max_rejects</dt>
-<dd>Max_rejects value for uclust, uclust_ref, usearch61, and usearch61_ref.  With default settings, will use value recommended by clustering method used (uclust: 500, usearch61: 8 for usearch_fast_cluster option, 32 for reference and smallmem options) [default: default]</dd>
+<dd>Max_rejects value for uclust, uclust_ref, usearch61, and usearch61_ref.  With default settings, will use value recommended by clustering method used (uclust: 8, usearch61: 8 for usearch_fast_cluster option, 32 for reference and smallmem options) [default: default]</dd>
 <dt><cite>-</cite>-stepwords</dt>
-<dd>Stepwords value to uclust and uclust_ref [default: 20]</dd>
+<dd>Stepwords value to uclust and uclust_ref [default: 8]</dd>
 <dt><cite>-</cite>-word_length</dt>
-<dd>Word length value for uclust, uclust_ref, and usearch, usearch_ref, usearch61, and usearch61_ref. With default setting, will use the setting recommended by the method (uclust: 12, usearch: 64, usearch61: 8).  int value can be supplied to override this setting. [default: default]</dd>
-<dt><cite>-</cite>-uclust_otu_id_prefix</dt>
-<dd>OTU identifier prefix (string) for the de novo uclust OTU picker and for new clusters when uclust_ref is used without -C [default: denovo, OTU ids are ascending integers]</dd>
+<dd>Word length value for uclust, uclust_ref, and usearch, usearch_ref, usearch61, and usearch61_ref. With default setting, will use the setting recommended by the method (uclust: 8, usearch: 64, usearch61: 8).  int value can be supplied to override this setting. [default: default]</dd>
 <dt><cite>-</cite>-suppress_uclust_stable_sort</dt>
 <dd>Don&#8217;t pass &#8211;stable-sort to uclust [default: False]</dd>
-<dt><cite>-</cite>-suppress_uclust_prefilter_exact_match</dt>
-<dd>Don&#8217;t collapse exact matches before calling uclust [default: False]</dd>
+<dt><cite>-</cite>-suppress_prefilter_exact_match</dt>
+<dd>Don&#8217;t collapse exact matches before calling sortmerna, sumaclust or uclust [default: False]</dd>
 <dt>-d, <cite>-</cite>-save_uc_files</dt>
 <dd>Enable preservation of intermediate uclust (.uc) files that are used to generate clusters via uclust.  Also enables preservation of all intermediate files created by usearch  and usearch61. [default: True]</dd>
 <dt>-j, <cite>-</cite>-percent_id_err</dt>
-<dd>Percent identity threshold for cluster error detection with usearch. [default: 0.97]</dd>
+<dd>Percent identity threshold for cluster error detection with usearch, expressed as a fraction between 0 and 1. [default: 0.97]</dd>
 <dt>-g, <cite>-</cite>-minsize</dt>
 <dd>Minimum cluster size for size filtering with usearch. [default: 4]</dd>
 <dt>-a, <cite>-</cite>-abundance_skew</dt>
@@ -187,7 +219,7 @@
 <dt><cite>-</cite>-sizeorder</dt>
 <dd>Enable size based preference in clustering with usearch61. Requires that &#8211;usearch61_sort_method be abundance. [default: False]</dd>
 <dt><cite>-</cite>-threads</dt>
-<dd>Specify number of threads per core to be used for  usearch61 commands that utilize multithreading. By default, will calculate the number of cores to utilize so a single thread will be used per CPU. Specify a fractional number, e.g. 1.0 for 1 thread per core, or 0.5 for a single thread on a two core CPU. Only applies to usearch61. [default: one_per_cpu]</dd>
+<dd>Specify number of threads (1 thread per core) to be used for usearch61, sortmerna, sumaclust and swarm commands that utilize multithreading. [default: 1]</dd>
 </dl>
 </div>
 <p><strong>Output:</strong></p>
@@ -227,58 +259,78 @@
 <p>The resulting .log file contains a list of parameters passed to the <a class="reference external" href="./pick_otus.html">pick_otus.py</a> script along with the output location of the resulting .txt file.</p>
 <p><strong>Example (uclust method, default):</strong></p>
 <p>Using the seqs.fna file generated from <a class="reference external" href="./split_libraries.html">split_libraries.py</a> and outputting the results to the directory &#8220;picked_otus_default/&#8221;, while using default parameters (0.97 sequence similarity, no reverse strand matching):</p>
-<div class="highlight-python"><pre>pick_otus.py -i seqs.fna -o picked_otus_default</pre>
+<div class="highlight-python"><div class="highlight"><pre>pick_otus.py -i seqs.fna -o picked_otus_default
+</pre></div>
 </div>
 <p>To change the percent identity to a lower value, such as 90%, and also enable reverse strand matching, the command would be the following:</p>
-<div class="highlight-python"><pre>pick_otus.py -i seqs.fna -o picked_otus_90_percent_rev/ -s 0.90 -z</pre>
+<div class="highlight-python"><div class="highlight"><pre>pick_otus.py -i seqs.fna -o picked_otus_90_percent_rev/ -s 0.90 -z
+</pre></div>
 </div>
 <p><strong>Uclust Reference-based OTU picking example:</strong></p>
 <p>uclust_ref can be passed via -m to pick OTUs against a reference set where sequences within the similarity threshold to a reference sequence will cluster to an OTU defined by that reference sequence, and sequences outside of the similarity threshold to a reference sequence will form new clusters. OTU identifiers will be set to reference sequence identifiers when sequences cluster to reference sequences, and &#8216;qiime_otu_&lt;integer&gt;&#8217; for new OTUs. Creation of new clusters can be suppressed by passing -C, in which case sequences outside of the similarity threshold to any reference sequence will be listed as failures in the log file, and not included in any OTU.</p>
-<div class="highlight-python"><pre>pick_otus.py -i seqs.fna -r refseqs.fasta -m uclust_ref --uclust_otu_id_prefix qiime_otu_</pre>
+<div class="highlight-python"><div class="highlight"><pre>pick_otus.py -i seqs.fna -r refseqs.fasta -m uclust_ref --denovo_otu_id_prefix qiime_otu_
+</pre></div>
 </div>
 <p><strong>Example (cdhit method):</strong></p>
 <p>Using the seqs.fna file generated from <a class="reference external" href="./split_libraries.html">split_libraries.py</a> and outputting the results to the directory &#8220;cdhit_picked_otus/&#8221;, while using default parameters (0.97 sequence similarity, no prefix filtering):</p>
-<div class="highlight-python"><pre>pick_otus.py -i seqs.fna -m cdhit -o cdhit_picked_otus/</pre>
+<div class="highlight-python"><div class="highlight"><pre>pick_otus.py -i seqs.fna -m cdhit -o cdhit_picked_otus/
+</pre></div>
 </div>
 <p>Currently the cd-hit OTU picker allows for users to perform a pre-filtering step, so that highly similar sequences are clustered prior to OTU picking. This works by collapsing sequences which begin with an identical n-base prefix, where n is specified by the -n parameter. A commonly used value here is 100 (e.g., -n 100). So, if using this filter with -n 100, all sequences which are identical in their first 100 bases will be clustered together, and only one representative sequence from each cluster will be passed to cd-hit. This is used to greatly decrease the run-time of cd-hit-based OTU picking when working with very large sequence collections, as shown by the following command:</p>
-<div class="highlight-python"><pre>pick_otus.py -i seqs.fna -m cdhit -o cdhit_picked_otus_filter/ -n 100</pre>
+<div class="highlight-python"><div class="highlight"><pre>pick_otus.py -i seqs.fna -m cdhit -o cdhit_picked_otus_filter/ -n 100
+</pre></div>
 </div>
 <p>Alternatively, if the user would like to collapse identical sequences, or those which are subsequences of other sequences prior to OTU picking, they can use the trie prefiltering (&#8220;-t&#8221;) option as shown by the following command.</p>
 <p>Note: It is highly recommended to use one of the prefiltering methods when analyzing large datasets (&gt;100,000 seqs) to reduce run-time.</p>
-<div class="highlight-python"><pre>pick_otus.py -i seqs.fna -m cdhit -o cdhit_picked_otus_trie_prefilter/ -t</pre>
+<div class="highlight-python"><div class="highlight"><pre>pick_otus.py -i seqs.fna -m cdhit -o cdhit_picked_otus_trie_prefilter/ -t
+</pre></div>
 </div>
 <p><strong>BLAST OTU-Picking Example:</strong></p>
 <p>OTUs can be picked against a reference database using the BLAST OTU picker. This is useful, for example, when different regions of the SSU RNA have sequenced and a sequence similarity based approach like cd-hit therefore wouldn&#8217;t work. When using the BLAST OTU picking method, the user must supply either a reference set of sequences or a reference database to compare against. The OTU identifiers resulting from this step will be the sequence identifiers in the reference database. This allows for use of a pre-existing tree in downstream analyses, which again is useful in cases where different regions of the 16s gene have been sequenced.</p>
 <p>The following command can be used to blast against a reference sequence set, using the default E-value and sequence similarity (0.97) parameters:</p>
-<div class="highlight-python"><pre>pick_otus.py -i seqs.fna -o blast_picked_otus/ -m blast -r refseqs.fasta</pre>
+<div class="highlight-python"><div class="highlight"><pre>pick_otus.py -i seqs.fna -o blast_picked_otus/ -m blast -r refseqs.fasta
+</pre></div>
 </div>
 <p>If you already have a pre-built BLAST database, you can pass the database prefix as shown by the following command:</p>
-<div class="highlight-python"><pre>pick_otus.py -i seqs.fna -o blast_picked_otus_prebuilt_db/ -m blast -b refseqs.fasta</pre>
+<div class="highlight-python"><div class="highlight"><pre>pick_otus.py -i seqs.fna -o blast_picked_otus_prebuilt_db/ -m blast -b refseqs.fasta
+</pre></div>
 </div>
 <p>If the user would like to change the sequence similarity (&#8220;-s&#8221;) and/or the E-value (&#8220;-e&#8221;) for the blast method, they can use the following command:</p>
-<div class="highlight-python"><pre>pick_otus.py -i seqs.fna -o blast_picked_otus_90_percent/ -m blast -r refseqs.fasta -s 0.90 -e 1e-30</pre>
+<div class="highlight-python"><div class="highlight"><pre>pick_otus.py -i seqs.fna -o blast_picked_otus_90_percent/ -m blast -r refseqs.fasta -s 0.90 -e 1e-30
+</pre></div>
 </div>
 <p><strong>Prefix-suffix OTU Picking Example:</strong></p>
 <p>OTUs can be picked by collapsing sequences which begin and/or end with identical bases (i.e., identical prefixes or suffixes).  This OTU picker is currently likely to be of limited use on its own, but will be very useful in collapsing very similar sequences in a chained OTU picking strategy that is currently in development. For example, the user will be able to pick OTUs with this method, followed by representative set picking, and then re-pick OTUs on their representative set. This will allow for highly similar sequences to be collapsed, followed by running a slower OTU picker. This ability to chain OTU pickers is not yet supported in QIIME. The following command illustrates how to pick OTUs by collapsing sequences which are identical in their first 50 and last 25 bases:</p>
-<div class="highlight-python"><pre>pick_otus.py -i seqs.fna -o prefix_suffix_picked_otus/ -m prefix_suffix -p 50 -u 25</pre>
+<div class="highlight-python"><div class="highlight"><pre>pick_otus.py -i seqs.fna -o prefix_suffix_picked_otus/ -m prefix_suffix -p 50 -u 25
+</pre></div>
 </div>
 <p><strong>Mothur OTU Picking Example:</strong></p>
 <p>The Mothur program (<a class="reference external" href="http://www.mothur.org/">http://www.mothur.org/</a>) provides three clustering algorithms for OTU formation: furthest-neighbor (complete linkage), average-neighbor (group average), and nearest-neighbor (single linkage). Details on the algorithms may be found on the Mothur website and publications (Schloss et al., 2009). However, the running times of Mothur&#8217;s clustering algorithms scale with the number of sequences squared, so the program may not be feasible for large data sets.</p>
 <p>The following command may be used to create OTUs based on a furthest-neighbor algorithm (the default setting) using aligned sequences as input:</p>
-<div class="highlight-python"><pre>pick_otus.py -i seqs.aligned.fna -o mothur_picked_otus/ -m mothur</pre>
+<div class="highlight-python"><div class="highlight"><pre>pick_otus.py -i seqs.aligned.fna -o mothur_picked_otus/ -m mothur
+</pre></div>
 </div>
 <p>If you prefer to use a nearest-neighbor algorithm instead, you may specify this with the &#8216;-c&#8217; flag:</p>
-<div class="highlight-python"><pre>pick_otus.py -i seqs.aligned.fna -o mothur_picked_otus_nn/ -m mothur -c nearest</pre>
+<div class="highlight-python"><div class="highlight"><pre>pick_otus.py -i seqs.aligned.fna -o mothur_picked_otus_nn/ -m mothur -c nearest
+</pre></div>
 </div>
 <p>The sequence similarity parameter may also be specified. For example, the following command may be used to create OTUs at the level of 90% similarity:</p>
-<div class="highlight-python"><pre>pick_otus.py -i seqs.aligned.fna -o mothur_picked_otus_90_percent/ -m mothur -s 0.90</pre>
+<div class="highlight-python"><div class="highlight"><pre>pick_otus.py -i seqs.aligned.fna -o mothur_picked_otus_90_percent/ -m mothur -s 0.90
+</pre></div>
 </div>
 <p><strong>usearch :</strong></p>
 <p>Usearch (<a class="reference external" href="http://www.drive5.com/usearch/">http://www.drive5.com/usearch/</a>) provides clustering, chimera checking, and quality filtering. The following command specifies a minimum cluster size of 2 to be used during cluster size filtering:</p>
-<div class="highlight-python"><pre>pick_otus.py -i seqs.fna -m usearch --word_length 64 --db_filepath refseqs.fasta -o usearch_qf_results/ --minsize 2</pre>
+<div class="highlight-python"><div class="highlight"><pre>pick_otus.py -i seqs.fna -m usearch --word_length 64 --db_filepath refseqs.fasta -o usearch_qf_results/ --minsize 2
+</pre></div>
 </div>
 <p><strong>usearch example where reference-based chimera detection is disabled, and minimum cluster size filter is reduced from default (4) to 2:</strong></p>
-<div class="highlight-python"><pre>pick_otus.py -i seqs.fna -m usearch --word_length 64 --suppress_reference_chimera_detection --minsize 2 -o usearch_qf_results_no_ref_chim_detection/</pre>
+<div class="highlight-python"><div class="highlight"><pre>pick_otus.py -i seqs.fna -m usearch --word_length 64 --suppress_reference_chimera_detection --minsize 2 -o usearch_qf_results_no_ref_chim_detection/
+</pre></div>
+</div>
+<p><strong>Use de novo OTU-picker Swarm:</strong></p>
+<p>Using the seqs.fna file generated from <a class="reference external" href="./split_libraries.html">split_libraries.py</a> and outputting the results to the directory &#8220;$PWD/picked_otus_swarm/&#8221;, while using default parameters (resolution = 1)</p>
+<div class="highlight-python"><div class="highlight"><pre>pick_otus.py -i $PWD/seqs.fna -m swarm -o $PWD/picked_otus_swarm
+</pre></div>
 </div>
 </div>
 
@@ -291,17 +343,27 @@
 
     
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pick_open_reference_otus.html"
+                        title="previous chapter"><em>pick_open_reference_otus.py</em> &#8211; Perform open-reference OTU picking</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pick_rep_set.html"
+                        title="next chapter"><em>pick_rep_set.py</em> &#8211; Pick representative set of sequences</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -325,16 +387,24 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="pick_rep_set.html" title="pick_rep_set.py – Pick representative set of sequences"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pick_open_reference_otus.html" title="pick_open_reference_otus.py – Perform open-reference OTU picking"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

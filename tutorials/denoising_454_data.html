@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Tutorials" href="index.html" />
+    <link rel="next" title="Chimera checking sequences with QIIME" href="chimera_checking.html" />
+    <link rel="prev" title="Working with BIOM tables in QIIME" href="working_with_biom_tables.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,14 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="chimera_checking.html" title="Chimera checking sequences with QIIME"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="working_with_biom_tables.html" title="Working with BIOM tables in QIIME"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Tutorials</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -60,13 +70,14 @@
 <p>If there are multiple, large 454 runs, follow this tutorial to denoise the data set and analyze it with QIIME. In short, each 454 run needs to be preprocessed with <a class="reference external" href="../scripts/split_libraries.html">split_libraries.py</a> and denoised separately. Afterwards the output files are combined for OTU picking. We will show an example with two 454 runs (<tt class="file docutils literal"><span class="pre">run1.sff</span></tt> and <tt class="file docutils literal"><span class="pre">run2.sff</span></tt>).</p>
 <p><strong>Data preparation:</strong></p>
 <p>From the raw, binary sff file, three files need to be generated for each run with the sffinfo tool from 454. You should have this tool if you have a 454 sequencer. Otherwise ask the sequencing facility for the files:</p>
-<div class="highlight-python"><pre>sffinfo    run_1.sff &gt; run_1.sff.txt
+<div class="highlight-python"><div class="highlight"><pre>sffinfo    run_1.sff &gt; run_1.sff.txt
 sffinfo -s run_1.sff &gt; run_1.fasta
 sffinfo -q run_1.sff &gt; run_1.qual
 
 sffinfo    run_2.sff &gt; run_2.sff.txt
 sffinfo -s run_2.sff &gt; run_2.fasta
-sffinfo -q run_2.sff &gt; run_2.qual</pre>
+sffinfo -q run_2.sff &gt; run_2.qual
+</pre></div>
 </div>
 <p>Note that the qiime since package v1.2 has a replacement for the sfftools.
 It&#8217;s slower but fully functional.</p>
@@ -80,8 +91,9 @@ the following use the -h option.</p>
 <p>Prior to denoising, each read has to be assigned to one barcode/sample
 and low quality reads need to be filtered out. This can be done using
 <a class="reference external" href="../scripts/split_libraries.html">split_libraries.py</a>. An example command would be:</p>
-<div class="highlight-python"><pre>split_libraries.py -o run1 -f run1.fasta -q run1.qual -m run1_mapping.txt -w 50 -g -r -l 150 -L 350
-split_libraries.py -o run2 -f run2.fasta -q run2.qual -m run2_mapping.txt -w 50 -g -r -l 150 -L 350 -n 1000000</pre>
+<div class="highlight-python"><div class="highlight"><pre>split_libraries.py -o run1 -f run1.fasta -q run1.qual -m run1_mapping.txt -w 50 -g -r -l 150 -L 350
+split_libraries.py -o run2 -f run2.fasta -q run2.qual -m run2_mapping.txt -w 50 -g -r -l 150 -L 350 -n 1000000
+</pre></div>
 </div>
 <p>This step has to be done separately for each 454 pool, following the usual guidelines for running several data sets through <a class="reference external" href="../scripts/split_libraries.html">split_libraries.py</a>. Note that all options to <a class="reference external" href="../scripts/split_libraries.html">split_libraries.py</a> that truncate the sequences on the 3&#8217; end should not be used as they do not affect the sff.txt files used for denoising. This includes the <tt class="docutils literal"><span class="pre">-x</span></tt>, <tt class="docutils literal"><span class="pre">-z</span> <span class="pre">truncate_only</span></tt>, and <tt class="docutils literal"><span class="pre">-w</span></tt> without <tt class="docutils literal"><span class="pre">-g</span></tt> options. We recommend though to use the <tt class="docutils literal"><span class="pre">-w</span> <span class="pre">50</span> <span class="pre">-g</span></tt> combination to discard reads of bad quality.
 Also, do not use the <a class="reference external" href="../scripts/truncate_fasta_qual_files.html">truncate_fasta_qual_files.py</a> script if you plan to denoise your data.
@@ -98,16 +110,18 @@ can be provided with a mapping file that has an empty field for the BarcodeSeque
 </div>
 <p>Note that fields must be separated by a single tab. For the empty barcode there must be two
 tabs between SampleID and the primer sequence. Use QIIME&#8217;s
-<a class="reference external" href="../scripts/check_id_map.html">check_id_map.py</a> to test for validity. Then, use
+<a class="reference external" href="../scripts/validate_mapping_file.html">validate_mapping_file.py</a> to test for validity. Then, use
 <a class="reference external" href="../scripts/split_libraries.html">split_libraries.py</a> as usual, but with
 option -b 0.</p>
 <p><strong>Flowgram clustering (aka denoising)</strong></p>
 <p>Each run will be denoised using its quality filtered output of <a class="reference external" href="../scripts/split_libraries.html">split_libraries.py</a> and the initial <tt class="file docutils literal"><span class="pre">.sff.txt</span></tt> file. All flowgrams without a match in the provided <a class="reference external" href="../scripts/split_libraries.html">split_libraries.py</a> FASTA file are removed. The sequencing primer will be extracted from the metadata mapping file:</p>
-<div class="highlight-python"><pre>denoise_wrapper.py -v -i run1.sff.txt -f run1/seqs.fna -o run1/denoised/ -m run1_mapping.txt
-denoise_wrapper.py -v -i run2.sff.txt -f run2/seqs.fna -o run2/denoised/ -m run2_mapping.txt</pre>
+<div class="highlight-python"><div class="highlight"><pre>denoise_wrapper.py -v -i run1.sff.txt -f run1/seqs.fna -o run1/denoised/ -m run1_mapping.txt
+denoise_wrapper.py -v -i run2.sff.txt -f run2/seqs.fna -o run2/denoised/ -m run2_mapping.txt
+</pre></div>
 </div>
 <p>Denoising large data sets is computationally demanding. While smaller data sets (&lt; 50,000 sequences) can be run on one single machine within an hour, a typical 454 run with 400,000 sequences after quality filtering requires up to a day on a 24 core cluster. If the denoiser is set up properly on your cluster or multi-core machine, it can be started in parallel mode using the option -n:</p>
-<div class="highlight-python"><pre>denoise_wrapper.py -v -i run1.sff.txt -f run1/seqs.fna -o run1/denoised/ -m run1_mapping.txt -n 24</pre>
+<div class="highlight-python"><div class="highlight"><pre>denoise_wrapper.py -v -i run1.sff.txt -f run1/seqs.fna -o run1/denoised/ -m run1_mapping.txt -n 24
+</pre></div>
 </div>
 <p>The output files of this step is stored in directory <tt class="file docutils literal"><span class="pre">run1/</span></tt> and <tt class="file docutils literal"><span class="pre">run2/</span></tt>, respectively:</p>
 <blockquote>
@@ -127,13 +141,16 @@ but occasionally it might make sense to remove the low confidence singletons.
 <p>The final step in a denoising run usually is the re-integration of the data into the QIIME pipeline. Since the denoiser uses flowgram similarity for clustering there is no guaranteed sequence (dis)-similarity between cluster centroids. In order to create the usual species-level OTUs at 97% sequence similarity, you must inflate the denoiser results and then run one of QIIME&#8217;s OTU pickers on the combined denoiser output.</p>
 <p>Inflating denoiser results refers to process of creating a new fasta file of denoised sequences where each centroid sequence is written <cite>n</cite> times, where <cite>n</cite> is the cluster size, and each singleton is written once. Flowgram identifiers are mapped to sequence identifiers using the original input file.</p>
 <p>To inflate the results of a single denoiser run call:</p>
-<div class="highlight-python"><pre>inflate_denoiser_output.py -c centroids.fna -s singletons.fna -f seqs.fna -d denoiser_mapping.txt -o denoised_seqs.fna</pre>
+<div class="highlight-python"><div class="highlight"><pre>inflate_denoiser_output.py -c centroids.fna -s singletons.fna -f seqs.fna -d denoiser_mapping.txt -o denoised_seqs.fna
+</pre></div>
 </div>
 <p>To inflate the results from independent denoise_wrapper.py runs, pass all of the centroid, singleton, input fasta files, and denoiser maps:</p>
-<div class="highlight-python"><pre>inflate_denoiser_output.py -c centroids1.fna,centroids2.fna -s singletons1.fna,singletons2.fna -f seqs1.fna,seqs2.fna -d denoiser_mapping1.txt,denoiser_mapping2.txt -o denoised_seqs.fna</pre>
+<div class="highlight-python"><div class="highlight"><pre>inflate_denoiser_output.py -c centroids1.fna,centroids2.fna -s singletons1.fna,singletons2.fna -f seqs1.fna,seqs2.fna -d denoiser_mapping1.txt,denoiser_mapping2.txt -o denoised_seqs.fna
+</pre></div>
 </div>
 <p>Your denoised sequences can now be fed directly into QIIME at the OTU picking stage. The next step will be to run one of the OTU pickers or OTU picking workflow scripts (e.g., <a class="reference external" href="../scripts/pick_otus.html">pick_otus.py</a>, <a class="reference external" href="../scripts/pick_de_novo_otus.html">pick_de_novo_otus.py</a>, <a class="reference external" href="../scripts/pick_closed_reference_otus.html">pick_closed_reference_otus.py</a>, or <a class="reference external" href="../scripts/pick_open_reference_otus.html">pick_open_reference_otus.py</a>,. At the OTU picking stage it is very important that you allow for the abundance presorting, which is currently in place for the uclust OTU picker only. We therefore don&#8217;t recommend using other OTU pickers, and <strong>do not pass the -D/&#8211;suppress_presort_by_abundance_uclust option to pick_otus.py</strong>. If possible, it is worth using uclust with <tt class="docutils literal"><span class="pre">--optimal</span></tt> to assure the best possible choice of OTUs.:</p>
-<div class="highlight-python"><pre>pick_otus.py -s 0.97 -i denoised_seqs.fna -m uclust --optimal</pre>
+<div class="highlight-python"><div class="highlight"><pre>pick_otus.py -s 0.97 -i denoised_seqs.fna -m uclust --optimal
+</pre></div>
 </div>
 <p>Passing <tt class="docutils literal"><span class="pre">--optimal</span></tt> may be prohibitively compute-intensive for large analyses however (for example, greater than a single 454 FLX run). The default QIIME pick_otus.py parameters are likely to be sufficient.</p>
 <p>Notes:</p>
@@ -154,7 +171,8 @@ groups reads based on common prefixes. For a full FLX run this will
 usually take less than an hour on a standard computer and requires
 less than 1 GB of memory.</p>
 <p>Example command:</p>
-<div class="highlight-python"><pre>denoiser_preprocess.py -i 454Reads.sff.txt -f seqs.fna -o example_pp -s -v -p CATGCTGCCTCCCGTAGGAGT</pre>
+<div class="highlight-python"><div class="highlight"><pre>denoiser_preprocess.py -i 454Reads.sff.txt -f seqs.fna -o example_pp -s -v -p CATGCTGCCTCCCGTAGGAGT
+</pre></div>
 </div>
 <p>Several files are stored in the specified output directory. To see the
 clustering stastics check the file <tt class="file docutils literal"><span class="pre">preprocess.log</span></tt> in the output
@@ -167,7 +185,8 @@ the next step.</p>
 <p>This is the main clustering step and the computationally most expensive one.
 Flowgrams are clustered based on their similarity.</p>
 <p>Example command:</p>
-<div class="highlight-python"><pre>denoiser.py -i 454Reads.sff.txt -p example_pp -v -o example_denoised</pre>
+<div class="highlight-python"><div class="highlight"><pre>denoiser.py -i 454Reads.sff.txt -p example_pp -v -o example_denoised
+</pre></div>
 </div>
 <p>The preprocessing information in <tt class="file docutils literal"><span class="pre">example_pp</span></tt> is used and the output is
 stored in a randomly named, new direcory in <tt class="file docutils literal"><span class="pre">example_denoised</span></tt>. Note, that
@@ -178,7 +197,8 @@ many cpus. If you have a multi-core system or cluster available and
 set up the required job submission script (<tt class="file docutils literal"><span class="pre">cluster_jobs_fp</span></tt> in your qiime config)
 the following command will distribute the computation over 24
 cpus:</p>
-<div class="highlight-python"><pre>denoiser.py -i 454Reads.sff.txt -p example_pp -v -o example_denoised -c -n 24</pre>
+<div class="highlight-python"><div class="highlight"><pre>denoiser.py -i 454Reads.sff.txt -p example_pp -v -o example_denoised -c -n 24
+</pre></div>
 </div>
 <p>Make sure the output directory is shared by all cluster
 nodes. Depending on the complexity of the data this step might take up
@@ -280,7 +300,8 @@ For very large data sets(&gt;1 FLX plate), this is the recommended way to go. Wh
 <p>A: No, this is expected. The denoising procedure (and this also holds for Chris Quince&#8217;s Pyronoise) technically do not remove any reads from the input set. This is the task of the initial quality filtering, which we suggest to do using Qiime&#8217;s split_libraries.py. The denoising is basically a clustering approach on the flowgram level, i.e. all reads that look similar enough on the flowgram level are clustered and only the centroid of each cluster is reported in the output file (either in centroids.fasta if the cluster has more than one member or otherwise in singletons.fasta). You can think of the centroids as OTUs on the flowgram level. Since flowgram similarity does not correlate perfectly with sequence-similarity, we usually don&#8217;t call them OTUs, but only after an extra OTU picking step with, say, cd-hit or uclust on the denoised sequences.</p>
 <p>Q: So where are all the sequences then?</p>
 <p>A: If you look at the file denoiser_mapping.txt, e.g. like this:</p>
-<div class="highlight-python"><pre>wc denoiser_mapping.txt</pre>
+<div class="highlight-python"><div class="highlight"><pre>wc denoiser_mapping.txt
+</pre></div>
 </div>
 <p>you should see that the number in the middle of the output (i.e. the number of words) is about the number of sequences in your input set. (Sometimes, the denoiser discards a few additional reads due to quality issues that were not captured by split_libraries.py). All reads that are in this mapping file can and will be used e.g. in the downstream Qiime analysis. The first number in the wc output gives the number of lines on the files, which corresponds to the number of clusters after denoising.</p>
 <p>Q: Can I cluster at different sequence/flowgram similarity thresholds?</p>
@@ -295,7 +316,8 @@ The <tt class="docutils literal"><span class="pre">high_cut_off</span></tt> is u
 <p>Q: Denoising on the clusters &#8220;hangs&#8221; after a while. What is going on?</p>
 <p>A: If not provided with already preprocessed data via the -p option, the denoiser.py script automatically starts the preprocessing phase (cluster phase I in the paper) on one CPU on the cluster. This preprocessing takes from a few minutes for partial GS FLX runs to an hour or more for large Titanium runs. After this step, the parallel cluster phase II starts. First, all requested workers are started one-by-one. Depending on your queueing system and the number of jobs this might take from few seconds to several minutes. If one or more of the jobs are not started by the queueing system, all submitted jobs will block and wait. This is most likely the state your process is in if nothing seems to happen. We know this is not optimally and already thinking about a better solution for the future. In the meantime, make sure you only request as many jobs as you can safely run in your queue and monitor (qstat) the startup phase to see if all jobs are properly scheduled. If you finf that you requested to many CPUs and need to restart, simply kill the master process (denoiser.py) and it should bring down all but the last submitted jobs. The last job might need to be killed by hand.
 Once all workers are succesfully started, you can monitor the progress by following the log file in verbose mode (toggled by the -v option):</p>
-<div class="highlight-python"><pre>tail -f denoiser.log</pre>
+<div class="highlight-python"><div class="highlight"><pre>tail -f denoiser.log
+</pre></div>
 </div>
 <p>Q: How and why can I run the preprocessing step separately?</p>
 <p>A: If you call denoiser.py without the -p option (or via its wrapper denoise_wrapper.py in QIIME) the preprocessing step (cluster phase I) is implicitly called. You can explicitly run the preprocessing step via the script preprocess.py and provide the output directory to denoiser.py using the -p option. Reasons for running the steps separately could be:</p>
@@ -317,17 +339,27 @@ Once all workers are succesfully started, you can monitor the progress by follow
 
     
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="index.html">Tutorials</a><br /></li>
+    <li><a href="../scripts/index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="working_with_biom_tables.html"
+                        title="previous chapter">Working with BIOM tables in QIIME</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="chimera_checking.html"
+                        title="next chapter">Chimera checking sequences with QIIME</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -351,16 +383,23 @@ Once all workers are succesfully started, you can monitor the progress by follow
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="chimera_checking.html" title="Chimera checking sequences with QIIME"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="working_with_biom_tables.html" title="Working with BIOM tables in QIIME"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Tutorials</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

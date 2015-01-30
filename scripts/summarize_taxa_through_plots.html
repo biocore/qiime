@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="supervised_learning.py – Run supervised classification using OTUs as predictors and a mapping file category as class labels." href="supervised_learning.html" />
+    <link rel="prev" title="summarize_taxa.py – Summarize taxa and store results in a new table or appended to an existing mapping file." href="summarize_taxa.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="supervised_learning.html" title="supervised_learning.py – Run supervised classification using OTUs as predictors and a mapping file category as class labels."
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="summarize_taxa.html" title="summarize_taxa.py – Summarize taxa and store results in a new table or appended to an existing mapping file."
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -88,11 +99,13 @@
 <p><strong>Output:</strong></p>
 <p>The results of this script is a folder (specified by -o) containing taxonomy summary files (at different levels) and a folder containing taxonomy summary plots. Additionally, if a mapping_catgory is supplied there will be a summarized OTU table. The primary interface for this output are the OUTPUT_DIR/taxa_summary_plots/*html files which are interactive plots that can be opened in a web browser (see the mouse-overs for interactivity).</p>
 <p><strong>Plot taxa summaries for all samples:</strong></p>
-<div class="highlight-python"><pre>summarize_taxa_through_plots.py -o taxa_summary -i otu_table.biom -m Fasting_Map.txt</pre>
+<div class="highlight-python"><div class="highlight"><pre>summarize_taxa_through_plots.py -o taxa_summary -i otu_table.biom -m Fasting_Map.txt
+</pre></div>
 </div>
 <p><strong>Plot taxa summaries on a categorical basis:</strong></p>
 <p>Alternatively, the user can supply a mapping_category, where the OTU is summarized based on a sample metadata category:</p>
-<div class="highlight-python"><pre>summarize_taxa_through_plots.py -o taxa_summary_by_treatment -i otu_table.biom -m Fasting_Map.txt -c Treatment</pre>
+<div class="highlight-python"><div class="highlight"><pre>summarize_taxa_through_plots.py -o taxa_summary_by_treatment -i otu_table.biom -m Fasting_Map.txt -c Treatment
+</pre></div>
 </div>
 </div>
 
@@ -105,17 +118,27 @@
 
     
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="summarize_taxa.html"
+                        title="previous chapter"><em>summarize_taxa.py</em> &#8211; Summarize taxa and store results in a new table or appended to an existing mapping file.</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="supervised_learning.html"
+                        title="next chapter"><em>supervised_learning.py</em> &#8211; Run supervised classification using OTUs as predictors and a mapping file category as class labels.</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -139,16 +162,24 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="supervised_learning.html" title="supervised_learning.py – Run supervised classification using OTUs as predictors and a mapping file category as class labels."
+             >next</a> |</li>
+        <li class="right" >
+          <a href="summarize_taxa.html" title="summarize_taxa.py – Summarize taxa and store results in a new table or appended to an existing mapping file."
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

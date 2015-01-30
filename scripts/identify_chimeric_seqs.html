@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="identify_missing_files.py – This script checks for the existence of expected files in parallel runs." href="identify_missing_files.html" />
+    <link rel="prev" title="group_significance.py – Compare OTU frequencies across sample groups" href="group_significance.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="identify_missing_files.html" title="identify_missing_files.py – This script checks for the existence of expected files in parallel runs."
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="group_significance.html" title="group_significance.py – Compare OTU frequencies across sample groups"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -121,11 +132,11 @@ We suggest to use the pynast aligned representative sequences as input.</p>
 <dt><cite>-</cite>-usearch61_mindiffs</dt>
 <dd>Minimum number of diffs in a segment. Increasing this value tends to reduce the number of false positives while reducing sensitivity to very low-divergence chimeras. Must be &gt; 0.[default: 3]</dd>
 <dt><cite>-</cite>-usearch61_mindiv</dt>
-<dd>Minimum divergence, i.e. 100% - identity between the query and closest reference database sequence. Expressed as a percentage, so the default is 0.8%, which allows chimeras that are up to 99.2% similar to a reference sequence. This value is chosen to improve sensitivity to very low-divergence chimeras.  Must be &gt; 0.[default: 0.8]</dd>
+<dd>Minimum divergence, i.e. 100% - identity between the query and closest reference database sequence. Expressed as a percentage, so the default is 0.8, which allows chimeras that are up to 99.2% similar to a reference sequence. This value is chosen to improve sensitivity to very low-divergence chimeras.  Must be &gt; 0.[default: 0.8]</dd>
 <dt><cite>-</cite>-usearch61_abundance_skew</dt>
 <dd>Abundance skew setting for de novo chimera detection with usearch61. Must be &gt; 0. [default: 2.0]</dd>
 <dt><cite>-</cite>-percent_id_usearch61</dt>
-<dd>Percent identity threshold for clustering with usearch61. [default: 0.97]</dd>
+<dd>Percent identity threshold for clustering with usearch61, expressed as a fraction between 0 and 1. [default: 0.97]</dd>
 <dt><cite>-</cite>-minlen</dt>
 <dd>Minimum length of sequence allowed for usearch61 [default: 64]</dd>
 <dt><cite>-</cite>-word_length</dt>
@@ -163,15 +174,18 @@ We suggest to use the pynast aligned representative sequences as input.</p>
 </table>
 <p>The sequence would be considered chimeric at a depth of 3 (Methanobacteriales vs. Halobacteriales), but non-chimeric at a depth of 2 (all Euryarchaeota).</p>
 <p>blast_fragments begins with the assumption that a sequence is non-chimeric, and looks for evidence to the contrary. This is important when, for example, no taxonomy assignment can be made because no blast result is returned. If a sequence is split into three fragments, and only one returns a blast hit, that sequence would be considered non-chimeric. This is because there is no evidence (i.e., contradictory blast assignments) for the sequence being chimeric. This script can be run by the following command, where the resulting data is written to the directory &#8220;identify_chimeras/&#8221; and using default parameters (e.g. chimera detection method (&#8220;-m blast_fragments&#8221;), number of fragments (&#8220;-n 3&#8221;), taxonomy depth (&#8220;-d 4&#8221;) and maximum E-value (&#8220;-e 1e-30&#8221;)):</p>
-<div class="highlight-python"><pre>identify_chimeric_seqs.py -i repr_set_seqs.fasta -t taxonomy_assignment.txt -r ref_seq_set.fna -m blast_fragments -o chimeric_seqs_blast.txt</pre>
+<div class="highlight-python"><div class="highlight"><pre>identify_chimeric_seqs.py -i repr_set_seqs.fasta -t taxonomy_assignment.txt -r ref_seq_set.fna -m blast_fragments -o chimeric_seqs_blast.txt
+</pre></div>
 </div>
 <p><strong>ChimeraSlayer Example:</strong></p>
 <p>Identify chimeric sequences using the ChimeraSlayer algorithm against a user provided reference data base. The input sequences need to be provided in aligned (Py)Nast format. The reference data base needs to be provided as aligned FASTA (-a). Note that the reference database needs to be the same that was used to build the alignment of the input sequences!</p>
-<div class="highlight-python"><pre>identify_chimeric_seqs.py -m ChimeraSlayer -i repr_set_seqs_aligned.fasta -a ref_seq_set_aligned.fasta -o chimeric_seqs_cs.txt</pre>
+<div class="highlight-python"><div class="highlight"><pre>identify_chimeric_seqs.py -m ChimeraSlayer -i repr_set_seqs_aligned.fasta -a ref_seq_set_aligned.fasta -o chimeric_seqs_cs.txt
+</pre></div>
 </div>
 <p><strong>usearch61 Example:</strong></p>
 <p>Identify chimeric sequences using the usearch61 algorithm against a user provided reference data base.  The input sequences should be the demultiplexed (not clustered rep set!) sequences, such as those output from <a class="reference external" href="./split_libraries.html">split_libraries.py</a>. The input sequences need to be provided as unaligned fasta in the same orientation as the query sequences.</p>
-<div class="highlight-python"><pre>identify_chimeric_seqs.py -m usearch61 -i seqs.fna -r ref_sequences.fasta -o usearch61_chimera_checking/</pre>
+<div class="highlight-python"><div class="highlight"><pre>identify_chimeric_seqs.py -m usearch61 -i seqs.fna -r ref_sequences.fasta -o usearch61_chimera_checking/
+</pre></div>
 </div>
 </div>
 
@@ -184,17 +198,27 @@ We suggest to use the pynast aligned representative sequences as input.</p>
 
     
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="group_significance.html"
+                        title="previous chapter"><em>group_significance.py</em> &#8211; Compare OTU frequencies across sample groups</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="identify_missing_files.html"
+                        title="next chapter"><em>identify_missing_files.py</em> &#8211; This script checks for the existence of expected files in parallel runs.</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -218,16 +242,24 @@ We suggest to use the pynast aligned representative sequences as input.</p>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="identify_missing_files.html" title="identify_missing_files.py – This script checks for the existence of expected files in parallel runs."
+             >next</a> |</li>
+        <li class="right" >
+          <a href="group_significance.html" title="group_significance.py – Compare OTU frequencies across sample groups"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

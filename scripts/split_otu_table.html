@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>split_otu_table.py – Split in a single OTU table into one OTU table per value in a specified field of the mapping file. &mdash; Homepage</title>
+    <title>split_otu_table.py – Split a biom table into one table per combination of values found in the specified fields in the mapping file. &mdash; Homepage</title>
     
     <link rel="stylesheet" href="../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="split_otu_table_by_taxonomy.py – Script to split a single OTU table into multiple tables based on the taxonomy at some user-specified depth." href="split_otu_table_by_taxonomy.html" />
+    <link rel="prev" title="split_libraries_lea_seq.py – Demultiplexes Low-Error Amplicon Sequencing (LEA-Seq) data" href="split_libraries_lea_seq.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="split_otu_table_by_taxonomy.html" title="split_otu_table_by_taxonomy.py – Script to split a single OTU table into multiple tables based on the taxonomy at some user-specified depth."
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="split_libraries_lea_seq.html" title="split_libraries_lea_seq.py – Demultiplexes Low-Error Amplicon Sequencing (LEA-Seq) data"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -54,28 +65,64 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <span class="target" id="split-otu-table"></span><div class="section" id="split-otu-table-py-split-in-a-single-otu-table-into-one-otu-table-per-value-in-a-specified-field-of-the-mapping-file">
-<span id="index-0"></span><h1><em>split_otu_table.py</em> &#8211; Split in a single OTU table into one OTU table per value in a specified field of the mapping file.<a class="headerlink" href="#split-otu-table-py-split-in-a-single-otu-table-into-one-otu-table-per-value-in-a-specified-field-of-the-mapping-file" title="Permalink to this headline">¶</a></h1>
+  <span class="target" id="split-otu-table"></span><div class="section" id="split-otu-table-py-split-a-biom-table-into-one-table-per-combination-of-values-found-in-the-specified-fields-in-the-mapping-file">
+<span id="index-0"></span><h1><em>split_otu_table.py</em> &#8211; Split a biom table into one table per combination of values found in the specified fields in the mapping file.<a class="headerlink" href="#split-otu-table-py-split-a-biom-table-into-one-table-per-combination-of-values-found-in-the-specified-fields-in-the-mapping-file" title="Permalink to this headline">¶</a></h1>
 <p><strong>Description:</strong></p>
+<p>This script splits a biom table based on the cartesian product of the values
+found in the mapping fields specified. It accepts any number of mapping fields
+to split on. As an example assume the following was your mapping file data:</p>
+<p>SampleID       Color       Habitat       Age
+S1             Red         Stream        10
+S2             Blue        Stream        20
+S3             Blue        Lake          30
+S4             Red         Stream        30</p>
+<p>If we wanted to split a corresponding biom table by the &#8216;Color&#8217; and &#8216;Habitat&#8217;
+fields simultanesouly, we would return 3 biom tables with the following samples
+corresponding to the following groups:</p>
+<p>(S1, S4): (Red, Stream)
+(S2): (Blue, Stream)
+(S3): (Blue, Lake)</p>
+<p>Combinations which would result in no samples &#8211; in our example (Red, Lake) &#8211;
+are excluded and do not produce (empty) biom tables. The script optionally
+produces split mapping files as well.</p>
+<p>The naming convention for split files is (assuming two fields):</p>
+<p>input_table.biom -&gt; input_table__field1_value1_field2_value2__.biom
+input_mapping.txt -&gt; input_mapping__field1_value1_field2_value2__.txt</p>
+<p>So, from our example above:</p>
+<dl class="docutils">
+<dt>input_table.biom -&gt; (input_table__Color_Red_Habitat_Stream__.biom,</dt>
+<dd>input_table__Color_Blue_Habitat_Stream__.biom,
+input_table__Color_Blue_Habitat_Lake__.biom)</dd>
+</dl>
 <p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">split_otu_table.py</span> <span class="pre">[options]</span></tt></p>
 <p><strong>Input Arguments:</strong></p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p><strong>[REQUIRED]</strong></p>
-<dl class="last docutils">
-<dt>-i, <cite>-</cite>-otu_table_fp</dt>
-<dd>The input otu table</dd>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-biom_table_fp</dt>
+<dd>The input biom table file path.</dd>
 <dt>-m, <cite>-</cite>-mapping_fp</dt>
-<dd>The mapping file path</dd>
-<dt>-f, <cite>-</cite>-mapping_field</dt>
-<dd>Mapping column to split otu table on</dd>
+<dd>The mapping file path.</dd>
+<dt>-f, <cite>-</cite>-fields</dt>
+<dd>Mapping columns to split biom table on, comma separated.</dd>
 <dt>-o, <cite>-</cite>-output_dir</dt>
-<dd>The output directory</dd>
+<dd>File path to the output directory to be created.</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt><cite>-</cite>-suppress_mapping_file_output</dt>
+<dd>Do not write out split mapping files.</dd>
 </dl>
 </div>
 <p><strong>Output:</strong></p>
 <p>Split otu_table.biom into per-study OTU tables, and store the results in ./per_study_otu_tables/</p>
-<div class="highlight-python"><pre>split_otu_table.py -i otu_table.biom -m Fasting_Map.txt -f Treatment -o per_study_otu_tables</pre>
+<div class="highlight-python"><div class="highlight"><pre>split_otu_table.py -i otu_table.biom -m Fasting_Map.txt -f Treatment -o per_study_otu_tables
+</pre></div>
+</div>
+<p>Split otu_table.biom into multiple biom tables based on the Treatment and Color of the samples</p>
+<div class="highlight-python"><div class="highlight"><pre>split_otu_table.py -i otu_table.biom -m Fasting_Map.txt -f Treatment,Color -o ./per_study_otu_tables/
+</pre></div>
 </div>
 </div>
 
@@ -88,17 +135,27 @@
 
     
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="split_libraries_lea_seq.html"
+                        title="previous chapter"><em>split_libraries_lea_seq.py</em> &#8211; Demultiplexes Low-Error Amplicon Sequencing (LEA-Seq) data</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="split_otu_table_by_taxonomy.html"
+                        title="next chapter"><em>split_otu_table_by_taxonomy.py</em> &#8211; Script to split a single OTU table into multiple tables based on the taxonomy at some user-specified depth.</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -122,16 +179,24 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="split_otu_table_by_taxonomy.html" title="split_otu_table_by_taxonomy.py – Script to split a single OTU table into multiple tables based on the taxonomy at some user-specified depth."
+             >next</a> |</li>
+        <li class="right" >
+          <a href="split_libraries_lea_seq.html" title="split_libraries_lea_seq.py – Demultiplexes Low-Error Amplicon Sequencing (LEA-Seq) data"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="Installing QIIME" href="index.html" />
+    <link rel="next" title="Setting up your qiime config file" href="qiime_config.html" />
+    <link rel="prev" title="QIIME Virtual Box" href="virtual_box.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,14 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="qiime_config.html" title="Setting up your qiime config file"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="virtual_box.html" title="QIIME Virtual Box"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Installing QIIME</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -56,23 +66,26 @@
             
   <div class="section" id="upgrading-to-the-latest-version-of-qiime">
 <span id="upgrade"></span><h1>Upgrading to the latest version of QIIME<a class="headerlink" href="#upgrading-to-the-latest-version-of-qiime" title="Permalink to this headline">¶</a></h1>
-<p>This page describes various ways to upgrade your QIIME installation to a new version.</p>
-<p>For a detailed history of the most notable changes between versions see the <a class="reference external" href="https://github.com/qiime/qiime/blob/master/ChangeLog.md">QIIME ChangeLog</a>. This points to the most recent version, so will usually also give a preview of the changes that are coming in the next version of QIIME.</p>
-<div class="section" id="linux-users">
-<h2>Linux users<a class="headerlink" href="#linux-users" title="Permalink to this headline">¶</a></h2>
-<p>If you have QIIME installed on a Linux machine, the easiest way to upgrade is by using the <a class="reference external" href="https://github.com/qiime/qiime-deploy">qiime-deploy</a> tool. The <a class="reference external" href="https://github.com/qiime/qiime-deploy">qiime-deploy</a> website has instructions for how to upgrade an existing installation.</p>
-</div>
-<div class="section" id="virtual-machine-vm-users">
-<h2>Virtual Machine (VM) users<a class="headerlink" href="#virtual-machine-vm-users" title="Permalink to this headline">¶</a></h2>
+<p>This page describes various ways to upgrade your QIIME installation to a new version. For a description of the changes between versions, see the <a class="reference external" href="https://github.com/biocore/qiime/blob/master/ChangeLog.md">QIIME ChangeLog</a>.</p>
+<div class="section" id="if-you-re-using-a-qiime-virtual-machine">
+<h2>If you&#8217;re using a QIIME virtual machine<a class="headerlink" href="#if-you-re-using-a-qiime-virtual-machine" title="Permalink to this headline">¶</a></h2>
 <p>If you run QIIME from within a virtual machine, you can either download the latest QIIME image or upgrade an existing one (e.g. to keep your settings, files, etc.) by following the <a class="reference internal" href="virtual_box.html#virtual-box"><em>QIIME Virtual Box</em></a> install instructions.</p>
-</div>
-<div class="section" id="amazon-web-services-aws-users">
-<h2>Amazon Web Services (AWS) users<a class="headerlink" href="#amazon-web-services-aws-users" title="Permalink to this headline">¶</a></h2>
 <p>If you run QIIME using the AWS EC2 service, visit <a class="reference external" href="http://qiime.org/home_static/dataFiles.html">this page</a> for the latest QIIME AMI.</p>
 </div>
-<div class="section" id="mac-os-x-users-native-qiime-installation">
-<h2>Mac OS X users / Native QIIME installation<a class="headerlink" href="#mac-os-x-users-native-qiime-installation" title="Permalink to this headline">¶</a></h2>
-<p>If you run QIIME on Mac OS X or have a native install (e.g. you are not using <a class="reference external" href="https://github.com/qiime/qiime-deploy">qiime-deploy</a> to install QIIME on Linux), you will need to manually upgrade the versions of QIIME&#8217;s dependencies that have changed. To see a complete list of required dependency versions, please see <a class="reference external" href="install.html">this page</a>. For a list of dependency versions that have changed between QIIME releases, please see the <a class="reference external" href="https://github.com/qiime/qiime/blob/master/ChangeLog.md">QIIME ChangeLog</a>.</p>
+<div class="section" id="if-you-re-using-macqiime">
+<h2>If you&#8217;re using MacQIIME<a class="headerlink" href="#if-you-re-using-macqiime" title="Permalink to this headline">¶</a></h2>
+<p>See the backup/install instructions on the <a class="reference external" href="http://www.wernerlab.org/software/macqiime/macqiime-installation">MacQIIME website</a>.</p>
+</div>
+<div class="section" id="if-you-ve-done-a-qiime-native-minimal-base-install">
+<h2>If you&#8217;ve done a QIIME native minimal (base) install<a class="headerlink" href="#if-you-ve-done-a-qiime-native-minimal-base-install" title="Permalink to this headline">¶</a></h2>
+<p>Just:</p>
+<p><tt class="docutils literal"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--upgrade</span> <span class="pre">qiime</span></tt></p>
+</div>
+<div class="section" id="if-you-ve-done-a-qiime-native-full-install">
+<h2>If you&#8217;ve done a QIIME native full install<a class="headerlink" href="#if-you-ve-done-a-qiime-native-full-install" title="Permalink to this headline">¶</a></h2>
+<p>First, upgrade the base install of QIIME with:</p>
+<p><tt class="docutils literal"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--upgrade</span> <span class="pre">qiime</span></tt></p>
+<p>Then, you&#8217;ll want to review the dependencies listed in the <a class="reference external" href="install.html#installing-qiime-natively-with-a-full-install">QIIME full install instructions</a>, and add or upgrade any packages whose dependency versions have changed. If you have QIIME installed on a Linux machine, the easiest way to upgrade is by using the <a class="reference external" href="https://github.com/qiime/qiime-deploy">qiime-deploy</a> tool. The <a class="reference external" href="https://github.com/qiime/qiime-deploy">qiime-deploy</a> website has instructions for how to upgrade an existing installation.</p>
 </div>
 </div>
 
@@ -87,26 +100,36 @@
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Upgrading to the latest version of QIIME</a><ul>
-<li><a class="reference internal" href="#linux-users">Linux users</a></li>
-<li><a class="reference internal" href="#virtual-machine-vm-users">Virtual Machine (VM) users</a></li>
-<li><a class="reference internal" href="#amazon-web-services-aws-users">Amazon Web Services (AWS) users</a></li>
-<li><a class="reference internal" href="#mac-os-x-users-native-qiime-installation">Mac OS X users / Native QIIME installation</a></li>
+<li><a class="reference internal" href="#if-you-re-using-a-qiime-virtual-machine">If you&#8217;re using a QIIME virtual machine</a></li>
+<li><a class="reference internal" href="#if-you-re-using-macqiime">If you&#8217;re using MacQIIME</a></li>
+<li><a class="reference internal" href="#if-you-ve-done-a-qiime-native-minimal-base-install">If you&#8217;ve done a QIIME native minimal (base) install</a></li>
+<li><a class="reference internal" href="#if-you-ve-done-a-qiime-native-full-install">If you&#8217;ve done a QIIME native full install</a></li>
 </ul>
 </li>
 </ul>
 
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="../scripts/index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="virtual_box.html"
+                        title="previous chapter">QIIME Virtual Box</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="qiime_config.html"
+                        title="next chapter">Setting up your qiime config file</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -130,16 +153,23 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="qiime_config.html" title="Setting up your qiime config file"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="virtual_box.html" title="QIIME Virtual Box"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" >Installing QIIME</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

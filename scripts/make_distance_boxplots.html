@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="make_distance_comparison_plots.py – Creates plots comparing distances between sample groupings" href="make_distance_comparison_plots.html" />
+    <link rel="prev" title="make_bootstrapped_tree.py – Make bootstrapped tree" href="make_bootstrapped_tree.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="make_distance_comparison_plots.html" title="make_distance_comparison_plots.py – Creates plots comparing distances between sample groupings"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="make_bootstrapped_tree.html" title="make_bootstrapped_tree.py – Make bootstrapped tree"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -125,7 +136,7 @@ the accompanying tutorial, which can be found at
 <dt><cite>-</cite>-color_individual_within_by_field</dt>
 <dd>Field in the the mapping file to color the individual &#8220;within&#8221; boxes by. A legend will be provided to match boxplot colors to field states. A one-to-one mapping must exist between the field to be colored and the field to color by, otherwise the coloring will be ambiguous. If this option is supplied, &#8211;box_color will be ignored. If &#8211;suppress_individual_within is supplied, this option will be ignored [default: None]</dd>
 <dt><cite>-</cite>-sort</dt>
-<dd>Sort boxplots by increasing median. If no sorting is applied, boxplots will be grouped logically as follows: all within, all between, individual within, and individual between [default: False]</dd>
+<dd>If &#8220;median&#8221;, sort boxplots by increasing median. If &#8220;alphabetical&#8221;, sort boxplots alphabetically by their labels. If this option is not supplied (the default), boxplots will be grouped logically as follows: all within, all between, individual within, and individual between [default: None]</dd>
 </dl>
 </div>
 <p><strong>Output:</strong></p>
@@ -135,19 +146,28 @@ tests can optionally be written into tab-delimited files (one file per field)
 that are most easily viewed in a spreadsheet program such as Microsoft Excel.</p>
 <p><strong>Compare distances between Fast and Control samples:</strong></p>
 <p>This example will generate an image with boxplots for all within and all between distances for the field Treatment, and will also include plots for individual within (e.g. Control vs. Control, Fast vs. Fast) and individual between (e.g. Control vs. Fast). The generated plot PDF and signifiance testing results will be written to the output directory &#8216;out1&#8217;.</p>
-<div class="highlight-python"><pre>make_distance_boxplots.py -d unweighted_unifrac_dm.txt -m Fasting_Map.txt -f "Treatment" -o out1</pre>
+<div class="highlight-python"><div class="highlight"><pre>make_distance_boxplots.py -d unweighted_unifrac_dm.txt -m Fasting_Map.txt -f &quot;Treatment&quot; -o out1
+</pre></div>
 </div>
 <p><strong>Only plot individual field value distances:</strong></p>
 <p>This example will generate a PNG of all individual field value distances (within and between) for the Treatment field.</p>
-<div class="highlight-python"><pre>make_distance_boxplots.py -d unweighted_unifrac_dm.txt -m Fasting_Map.txt -f "Treatment" -o out2 -g png --suppress_all_within --suppress_all_between</pre>
+<div class="highlight-python"><div class="highlight"><pre>make_distance_boxplots.py -d unweighted_unifrac_dm.txt -m Fasting_Map.txt -f &quot;Treatment&quot; -o out2 -g png --suppress_all_within --suppress_all_between
+</pre></div>
 </div>
 <p><strong>Save raw data:</strong></p>
 <p>This example will generate an SVG image of the boxplots and also output the plotting data to a tab-delimited file.</p>
-<div class="highlight-python"><pre>make_distance_boxplots.py -d unweighted_unifrac_dm.txt -m Fasting_Map.txt -f "Treatment" -o out3 -g svg --save_raw_data</pre>
+<div class="highlight-python"><div class="highlight"><pre>make_distance_boxplots.py -d unweighted_unifrac_dm.txt -m Fasting_Map.txt -f &quot;Treatment&quot; -o out3 -g svg --save_raw_data
+</pre></div>
 </div>
 <p><strong>Suppress significance tests:</strong></p>
 <p>This example will only generate a plot and skip the significance testing step. This can be useful if you are operating on a large dataset and are not interested in performing the statistical tests (or at least not initially).</p>
-<div class="highlight-python"><pre>make_distance_boxplots.py -d unweighted_unifrac_dm.txt -m Fasting_Map.txt -f "Treatment" -o out4 --suppress_significance_tests</pre>
+<div class="highlight-python"><div class="highlight"><pre>make_distance_boxplots.py -d unweighted_unifrac_dm.txt -m Fasting_Map.txt -f &quot;Treatment&quot; -o out4 --suppress_significance_tests
+</pre></div>
+</div>
+<p><strong>Sort boxplots:</strong></p>
+<p>To sort the boxplots by increasing median, supply the &#8211;sort option.</p>
+<div class="highlight-python"><div class="highlight"><pre>make_distance_boxplots.py -d unweighted_unifrac_dm.txt -m Fasting_Map.txt -f &quot;Treatment&quot; -o out5 --sort median
+</pre></div>
 </div>
 </div>
 
@@ -160,17 +180,27 @@ that are most easily viewed in a spreadsheet program such as Microsoft Excel.</p
 
     
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="make_bootstrapped_tree.html"
+                        title="previous chapter"><em>make_bootstrapped_tree.py</em> &#8211; Make bootstrapped tree</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="make_distance_comparison_plots.html"
+                        title="next chapter"><em>make_distance_comparison_plots.py</em> &#8211; Creates plots comparing distances between sample groupings</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -194,16 +224,24 @@ that are most easily viewed in a spreadsheet program such as Microsoft Excel.</p
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="make_distance_comparison_plots.html" title="make_distance_comparison_plots.py – Creates plots comparing distances between sample groupings"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="make_bootstrapped_tree.html" title="make_bootstrapped_tree.py – Make bootstrapped tree"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

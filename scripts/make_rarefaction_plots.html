@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="make_tep.py – Makes TopiaryExplorer project file" href="make_tep.html" />
+    <link rel="prev" title="make_qiime_py_file.py – Create python file" href="make_qiime_py_file.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="make_tep.html" title="make_tep.py – Makes TopiaryExplorer project file"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="make_qiime_py_file.html" title="make_qiime_py_file.py – Create python file"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -93,9 +104,9 @@
 <dt>-o, <cite>-</cite>-output_dir</dt>
 <dd>Path to the output directory</dd>
 <dt><cite>-</cite>-output_type</dt>
-<dd>Write the HTML output as one file, images embedded, or several. Options are file_creation, multiple files, and memory. [default: file_creation]</dd>
+<dd>Write the HTML output as one file, images embedded, or several. Options are &#8220;file_creation&#8221; and &#8220;memory&#8221;. [default: file_creation]</dd>
 <dt><cite>-</cite>-generate_per_sample_plots</dt>
-<dd>Generate per sample plots for each of the metadata categories. This will allow you to show/hide samples from the plots but will required a larger processing time. In general, this practice is useful only for small datasets. [default: False]</dd>
+<dd>Generate per sample plots for each of the metadata categories. This will allow you to show/hide samples from the plots but will require a longer processing time. In general, this option is useful only for small datasets. [default: False]</dd>
 <dt><cite>-</cite>-generate_average_tables</dt>
 <dd>Generate average tables of results. A summary of the metrics and alpha diversity measurements. [default: False]</dd>
 </dl>
@@ -104,23 +115,33 @@
 <p>The result of this script produces a folder and within that folder there is a sub-folder containing image files. Within the main folder, there is an html file.</p>
 <p><strong>Default Example:</strong></p>
 <p>For generated rarefaction plots using the default parameters, including the mapping file and one rarefaction file, you can use the following command:</p>
-<div class="highlight-python"><pre>make_rarefaction_plots.py -i alpha_div_collated/ -m Fasting_Map.txt</pre>
+<div class="highlight-python"><div class="highlight"><pre>make_rarefaction_plots.py -i alpha_div_collated/ -m Fasting_Map.txt
+</pre></div>
 </div>
 <p><strong>Specify Image Type and Resolution:</strong></p>
 <p>Optionally, you can change the resolution (&#8216;-d&#8217;) and the type of image created (&#8216;-i&#8217;), by using the following command:</p>
-<div class="highlight-python"><pre>make_rarefaction_plots.py -i alpha_div_collated/ -m Fasting_Map.txt -d 180 -g pdf</pre>
+<div class="highlight-python"><div class="highlight"><pre>make_rarefaction_plots.py -i alpha_div_collated/ -m Fasting_Map.txt -d 180 -g pdf
+</pre></div>
 </div>
 <p><strong>Use Prefs File:</strong></p>
 <p>You can also supply a preferences file &#8216;-p&#8217;, as follows</p>
-<div class="highlight-python"><pre>make_rarefaction_plots.py -i alpha_div_collated/ -m Fasting_Map.txt -d 180 -p prefs.txt</pre>
+<div class="highlight-python"><div class="highlight"><pre>make_rarefaction_plots.py -i alpha_div_collated/ -m Fasting_Map.txt -d 180 -p prefs.txt
+</pre></div>
 </div>
 <p><strong>Set Background Color:</strong></p>
 <p>Alternatively, you can set the plot background &#8216;-k&#8217;</p>
-<div class="highlight-python"><pre>make_rarefaction_plots.py -i alpha_div_collated/ -m Fasting_Map.txt -k black</pre>
+<div class="highlight-python"><div class="highlight"><pre>make_rarefaction_plots.py -i alpha_div_collated/ -m Fasting_Map.txt -k black
+</pre></div>
 </div>
 <p><strong>Generate raw data without interactive webpages:</strong></p>
-<p>The user can choose to not create an interactive webpage (&#8216;-w&#8217; option). This is for the case, where the user just wants the average plots and theraw average data.</p>
-<div class="highlight-python"><pre>make_rarefaction_plots.py -i alpha_div_collated/ -m Fasting_Map.txt -w</pre>
+<p>The user can choose to not create an interactive webpage (&#8216;-w&#8217; option). This is for the case, where the user just wants the average plots and the raw average data.</p>
+<div class="highlight-python"><div class="highlight"><pre>make_rarefaction_plots.py -i alpha_div_collated/ -m Fasting_Map.txt -w
+</pre></div>
+</div>
+<p><strong>Generate average tables and per-sample plots:</strong></p>
+<p>Pass &#8211;generate_average_tables and &#8211;generate_per_sample_plots to generate average tables of results as tab-separated text and per-sample plots for each of the metadata categories</p>
+<div class="highlight-python"><div class="highlight"><pre>make_rarefaction_plots.py -i alpha_div_collated/ -m Fasting_Map.txt --generate_average_tables --generate_per_sample_plots
+</pre></div>
 </div>
 </div>
 
@@ -133,17 +154,27 @@
 
     
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="make_qiime_py_file.html"
+                        title="previous chapter"><em>make_qiime_py_file.py</em> &#8211; Create python file</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="make_tep.html"
+                        title="next chapter"><em>make_tep.py</em> &#8211; Makes TopiaryExplorer project file</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -167,16 +198,24 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="make_tep.html" title="make_tep.py – Makes TopiaryExplorer project file"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="make_qiime_py_file.html" title="make_qiime_py_file.py – Create python file"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="beta_diversity_through_plots.py – A workflow script for computing beta diversity distance matrices and generating PCoA plots" href="beta_diversity_through_plots.html" />
+    <link rel="prev" title="assign_taxonomy.py – Assign taxonomy to each sequence" href="assign_taxonomy.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="beta_diversity_through_plots.html" title="beta_diversity_through_plots.py – A workflow script for computing beta diversity distance matrices and generating PCoA plots"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="assign_taxonomy.html" title="assign_taxonomy.py – Assign taxonomy to each sequence"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -85,15 +96,18 @@
 <p>Each file in the input directory should be an otu table, and the output of <a class="reference external" href="./beta_diversity.html">beta_diversity.py</a> is a folder containing text files, each a distance matrix between samples corresponding to an input otu table.</p>
 <p><strong>Single File Beta Diversity (non-phylogenetic):</strong></p>
 <p>To perform beta diversity (using e.g. euclidean distance) on a single OTU table, where the results are output to beta_div/, use the following command:</p>
-<div class="highlight-python"><pre>beta_diversity.py -i otu_table.biom -m euclidean -o beta_div</pre>
+<div class="highlight-python"><div class="highlight"><pre>beta_diversity.py -i otu_table.biom -m euclidean -o beta_div
+</pre></div>
 </div>
 <p><strong>Single File Beta Diversity (phylogenetic):</strong></p>
 <p>In the case that you would like to perform beta diversity using a phylogenetic metric (e.g. weighted_unifrac), you can use the following command:</p>
-<div class="highlight-python"><pre>beta_diversity.py -i otu_table.biom -m weighted_unifrac -o beta_div/ -t rep_set.tre</pre>
+<div class="highlight-python"><div class="highlight"><pre>beta_diversity.py -i otu_table.biom -m weighted_unifrac -o beta_div/ -t rep_set.tre
+</pre></div>
 </div>
 <p><strong>Multiple File (batch) Beta Diversity (phylogenetic):</strong></p>
 <p>To perform beta diversity on multiple OTU tables (e.g., resulting files from <a class="reference external" href="./multiple_rarefactions.html">multiple_rarefactions.py</a>), specify an input directory (e.g. otu_tables/) as shown by the following command:</p>
-<div class="highlight-python"><pre>beta_diversity.py -i otu_tables/ -m weighted_unifrac -o beta_div/ -t rep_set.tre</pre>
+<div class="highlight-python"><div class="highlight"><pre>beta_diversity.py -i otu_tables/ -m weighted_unifrac -o beta_div/ -t rep_set.tre
+</pre></div>
 </div>
 </div>
 
@@ -106,17 +120,27 @@
 
     
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="assign_taxonomy.html"
+                        title="previous chapter"><em>assign_taxonomy.py</em> &#8211; Assign taxonomy to each sequence</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="beta_diversity_through_plots.html"
+                        title="next chapter"><em>beta_diversity_through_plots.py</em> &#8211; A workflow script for computing beta diversity distance matrices and generating PCoA plots</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -140,16 +164,24 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="beta_diversity_through_plots.html" title="beta_diversity_through_plots.py – A workflow script for computing beta diversity distance matrices and generating PCoA plots"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="assign_taxonomy.html" title="assign_taxonomy.py – Assign taxonomy to each sequence"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="join_paired_ends.py – Joins paired-end Illumina reads." href="join_paired_ends.html" />
+    <link rel="prev" title="inflate_denoiser_output.py – Inflate denoiser results so they can be passed directly to OTU pickers." href="inflate_denoiser_output.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="join_paired_ends.html" title="join_paired_ends.py – Joins paired-end Illumina reads."
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="inflate_denoiser_output.html" title="inflate_denoiser_output.py – Inflate denoiser results so they can be passed directly to OTU pickers."
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -88,14 +99,15 @@
 <dt>-a, <cite>-</cite>-parallel</dt>
 <dd>Run in parallel where available [default: False]</dd>
 <dt>-O, <cite>-</cite>-jobs_to_start</dt>
-<dd>Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 2]</dd>
+<dd>Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 1]</dd>
 </dl>
 </div>
 <p><strong>Output:</strong></p>
-<p>This scripts results in several distance matrices (from <a class="reference external" href="./beta_diversity.html">beta_diversity.py</a>), several rarified otu tables (from <a class="reference external" href="./multiple_rarefactions.html">multiple_rarefactions.py</a>) several UPGMA trees (from <a class="reference external" href="./upgma_cluster.html">upgma_cluster.py</a>), a supporting file and newick tree with support values (from <a class="reference external" href="./tree_compare.html">tree_compare.py</a>), and 2D and 3D PCoA plots.</p>
+<p>This scripts results in several distance matrices (from <a class="reference external" href="./beta_diversity.html">beta_diversity.py</a>), several rarified OTU tables (from <a class="reference external" href="./multiple_rarefactions_even_depth.html">multiple_rarefactions_even_depth.py</a>), several UPGMA trees (from <a class="reference external" href="./upgma_cluster.html">upgma_cluster.py</a>), a supporting file and newick tree with support values (from <a class="reference external" href="./tree_compare.html">tree_compare.py</a>), and 2D and 3D PCoA plots.</p>
 <p><strong>Example:</strong></p>
 <p>These steps are performed by the following command: Compute beta diversity distance matrix from otu table (and tree, if applicable); build rarefied OTU tables by evenly sampling to the specified depth (-e); build UPGMA tree from full distance matrix; compute distance matrics for rarefied OTU tables; build UPGMA trees from rarefied OTU table distance matrices; build a consensus tree from the rarefied UPGMA trees; compare rarefied OTU table distance matrix UPGMA trees to either (full or consensus) tree for jackknife support of tree nodes; perform principal coordinates analysis on distance matrices generated from rarefied OTU tables; generate 2D and 3D PCoA plots with jackknifed support.</p>
-<div class="highlight-python"><pre>jackknifed_beta_diversity.py -i otu_table.biom -o bdiv_jk100 -e 100 -m Fasting_Map.txt -t rep_set.tre</pre>
+<div class="highlight-python"><div class="highlight"><pre>jackknifed_beta_diversity.py -i otu_table.biom -o bdiv_jk100 -e 100 -m Fasting_Map.txt -t rep_set.tre
+</pre></div>
 </div>
 </div>
 
@@ -108,17 +120,27 @@
 
     
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="inflate_denoiser_output.html"
+                        title="previous chapter"><em>inflate_denoiser_output.py</em> &#8211; Inflate denoiser results so they can be passed directly to OTU pickers.</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="join_paired_ends.html"
+                        title="next chapter"><em>join_paired_ends.py</em> &#8211; Joins paired-end Illumina reads.</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -142,16 +164,24 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="join_paired_ends.html" title="join_paired_ends.py – Joins paired-end Illumina reads."
+             >next</a> |</li>
+        <li class="right" >
+          <a href="inflate_denoiser_output.html" title="inflate_denoiser_output.py – Inflate denoiser results so they can be passed directly to OTU pickers."
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

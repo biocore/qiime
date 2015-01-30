@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Tutorials" href="index.html" />
+    <link rel="next" title="Denoising and chimera detection usage differences in QIIME" href="denoising_and_chimera_detection_usage_comparison.html" />
+    <link rel="prev" title="Chimera checking sequences with QIIME" href="chimera_checking.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,14 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="denoising_and_chimera_detection_usage_comparison.html" title="Denoising and chimera detection usage differences in QIIME"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="chimera_checking.html" title="Chimera checking sequences with QIIME"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Tutorials</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -64,7 +74,8 @@
 <div class="section" id="basic-usage">
 <span id="basicuse"></span><h2>Basic usage<a class="headerlink" href="#basic-usage" title="Permalink to this headline">¶</a></h2>
 <p>To use usearch_qf in QIIME, you will need a FASTA file resulting from split_libraries.py. In this tutorial we will use data from the main QIIME tutorial, so our input file will be <tt class="file docutils literal"><span class="pre">seqs.fna</span></tt>. From the directory where this file is located, type:</p>
-<div class="highlight-python"><pre>pick_otus.py -i seqs.fna -m usearch --db_filepath=/path/to/gold.fa -o usearch_qf_results/ --word_length 64</pre>
+<div class="highlight-python"><div class="highlight"><pre>pick_otus.py -i seqs.fna -m usearch --db_filepath=/path/to/gold.fa -o usearch_qf_results/ --word_length 64
+</pre></div>
 </div>
 <p>where <tt class="file docutils literal"><span class="pre">/path/to/gold.fa</span></tt> specifies the full path to the location of the reference set that will be used when doing chimera checking. A copy of this file can be found <a class="reference external" href="http://drive5.com/otupipe/gold.tz">here</a> (remember to uncompress the file). After executing this command, several files will be created in the <tt class="file docutils literal"><span class="pre">usearch_qf_results/</span></tt> directory. The only file that you will need at this point is <tt class="file docutils literal"><span class="pre">usearch_qf_results/seqs_otus.txt</span></tt> (the OTU map file), which can then be used to pick a set of representative sequences with <a class="reference external" href="../scripts/pick_rep_set.html">pick_rep_set.py</a> as you would do after running <tt class="file docutils literal"><span class="pre">pick_otus.py</span></tt> with default options (i.e. using uclust).  The word length is the optimized value for the mock community results <a class="reference external" href="http://www.drive5.com/usearch/perf/mock_results.html">http://www.drive5.com/usearch/perf/mock_results.html</a>.</p>
 </div>
@@ -198,17 +209,27 @@ Assume there are 4 sequences (A, B, C, D) before chimera checking and &#8220;<em
 </ul>
 
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="index.html">Tutorials</a><br /></li>
+    <li><a href="../scripts/index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="chimera_checking.html"
+                        title="previous chapter">Chimera checking sequences with QIIME</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="denoising_and_chimera_detection_usage_comparison.html"
+                        title="next chapter">Denoising and chimera detection usage differences in QIIME</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -232,16 +253,23 @@ Assume there are 4 sequences (A, B, C, D) before chimera checking and &#8220;<em
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="denoising_and_chimera_detection_usage_comparison.html" title="Denoising and chimera detection usage differences in QIIME"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="chimera_checking.html" title="Chimera checking sequences with QIIME"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Tutorials</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

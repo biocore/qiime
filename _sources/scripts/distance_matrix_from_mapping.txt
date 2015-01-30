@@ -29,7 +29,7 @@ As this is a univariate procedure only one metric is supported: d = c-b.
 	**[OPTIONAL]**
 		
 	-o, `-`-output_fp
-		Output directory. One will be created if it doesn't exist. [default=map_distance_matrix.txt]
+		Output path to store the distance matrix. [default=map_distance_matrix.txt]
 
 
 **Output:**

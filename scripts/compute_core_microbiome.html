@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="compute_taxonomy_ratios.py – Compute the log ratio abundance of specified taxonomic groups." href="compute_taxonomy_ratios.html" />
+    <link rel="prev" title="compare_trajectories.py – Run analysis of volatility using a variety of algorithms" href="compare_trajectories.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="compute_taxonomy_ratios.html" title="compute_taxonomy_ratios.py – Compute the log ratio abundance of specified taxonomic groups."
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="compare_trajectories.html" title="compare_trajectories.py – Run analysis of volatility using a variety of algorithms"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -86,10 +97,12 @@
 </div>
 <p><strong>Output:</strong></p>
 <p>Identify the core OTUs in otu_table.biom, defined as the OTUs that are present in at least 50% of the samples. Write the list of core OTUs to a text file, and a new BIOM file containing only the core OTUs.</p>
-<div class="highlight-python"><pre>compute_core_microbiome.py -i otu_table.biom -o otu_table_core</pre>
+<div class="highlight-python"><div class="highlight"><pre>compute_core_microbiome.py -i otu_table.biom -o otu_table_core
+</pre></div>
 </div>
 <p>Identify the core OTUs in otu_table.biom, defined as the OTUs that are present in all of the samples in the &#8216;Fast&#8217; treatment (as specified in the mapping file). Write the list of core OTUs to a text file.</p>
-<div class="highlight-python"><pre>compute_core_microbiome.py -i otu_table.biom -o otu_table_core_fast --mapping_fp map.txt --valid_states "Treatment:Fast"</pre>
+<div class="highlight-python"><div class="highlight"><pre>compute_core_microbiome.py -i otu_table.biom -o otu_table_core_fast --mapping_fp map.txt --valid_states &quot;Treatment:Fast&quot;
+</pre></div>
 </div>
 </div>
 
@@ -102,17 +115,27 @@
 
     
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="compare_trajectories.html"
+                        title="previous chapter"><em>compare_trajectories.py</em> &#8211; Run analysis of volatility using a variety of algorithms</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="compute_taxonomy_ratios.html"
+                        title="next chapter"><em>compute_taxonomy_ratios.py</em> &#8211; Compute the log ratio abundance of specified taxonomic groups.</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -136,16 +159,24 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="compute_taxonomy_ratios.html" title="compute_taxonomy_ratios.py – Compute the log ratio abundance of specified taxonomic groups."
+             >next</a> |</li>
+        <li class="right" >
+          <a href="compare_trajectories.html" title="compare_trajectories.py – Run analysis of volatility using a variety of algorithms"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

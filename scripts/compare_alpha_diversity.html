@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="compare_categories.py – Analyzes statistical significance of sample groupings using distance matrices" href="compare_categories.html" />
+    <link rel="prev" title="collate_alpha.py – Collate alpha diversity results" href="collate_alpha.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="compare_categories.html" title="compare_categories.py – Analyzes statistical significance of sample groupings using distance matrices"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="collate_alpha.html" title="collate_alpha.py – Collate alpha diversity results"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -136,19 +147,23 @@ and includes the means and standard deviations of the two groups&#8217; alpha di
 along with the results of the two-sample t-test.</p>
 <p><strong>Comparing alpha diversities:</strong></p>
 <p>The following command takes the following input: a mapping file (which associaties each sample with a number of characteristics), alpha diversity metric (the results of collate_alpha for an alpha diverity metric, like PD_whole_tree), depth (the rarefaction depth to use for comparison), category (the category in the mapping file to determine which samples to compare to each other), and output filepath (a path to the output file to be created). A nonparametric two sample t-test is run to compare the alpha diversities using the default number of Monte Carlo permutations (999).</p>
-<div class="highlight-python"><pre>compare_alpha_diversity.py -i PD_whole_tree.txt -m mapping.txt -c Treatment -d 100 -o Treatment_PD100</pre>
+<div class="highlight-python"><div class="highlight"><pre>compare_alpha_diversity.py -i PD_whole_tree.txt -m mapping.txt -c Treatment -d 100 -o Treatment_PD100
+</pre></div>
 </div>
 <p><strong>Comparing alpha diversities:</strong></p>
 <p>Similar to above, but performs comparisons for two categories.</p>
-<div class="highlight-python"><pre>compare_alpha_diversity.py -i PD_whole_tree.txt -m mapping.txt -c Treatment,DOB -d 100 -o Treatment_DOB_PD100</pre>
+<div class="highlight-python"><div class="highlight"><pre>compare_alpha_diversity.py -i PD_whole_tree.txt -m mapping.txt -c Treatment,DOB -d 100 -o Treatment_DOB_PD100
+</pre></div>
 </div>
 <p><strong>Parametric t-test:</strong></p>
 <p>The following command runs a parametric two sample t-test using the t-distribution instead of Monte Carlo permutations at rarefaction depth 100.</p>
-<div class="highlight-python"><pre>compare_alpha_diversity.py -i PD_whole_tree.txt -m mapping.txt -c Treatment -d 100 -o PD_d100_parametric -t parametric</pre>
+<div class="highlight-python"><div class="highlight"><pre>compare_alpha_diversity.py -i PD_whole_tree.txt -m mapping.txt -c Treatment -d 100 -o PD_d100_parametric -t parametric
+</pre></div>
 </div>
 <p><strong>Parametric t-test:</strong></p>
 <p>The following command runs a parametric two sample t-test using the t-distribution instead of Monte Carlo permutations at the greatest depth available.</p>
-<div class="highlight-python"><pre>compare_alpha_diversity.py -i PD_whole_tree.txt -m mapping.txt -c Treatment -o PD_dmax_parametric -t parametric</pre>
+<div class="highlight-python"><div class="highlight"><pre>compare_alpha_diversity.py -i PD_whole_tree.txt -m mapping.txt -c Treatment -o PD_dmax_parametric -t parametric
+</pre></div>
 </div>
 </div>
 
@@ -161,17 +176,27 @@ along with the results of the two-sample t-test.</p>
 
     
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="collate_alpha.html"
+                        title="previous chapter"><em>collate_alpha.py</em> &#8211; Collate alpha diversity results</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="compare_categories.html"
+                        title="next chapter"><em>compare_categories.py</em> &#8211; Analyzes statistical significance of sample groupings using distance matrices</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -195,16 +220,24 @@ along with the results of the two-sample t-test.</p>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="compare_categories.html" title="compare_categories.py – Analyzes statistical significance of sample groupings using distance matrices"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="collate_alpha.html" title="collate_alpha.py – Collate alpha diversity results"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

@@ -14,7 +14,7 @@ Please note that this tutorial does not attempt to cover every possible option t
 
 Input Files
 -----------
-You can obtain the files used in this tutorial `here <https://s3.amazonaws.com/s3-qiime_tutorial_files/88_soils.zip>`_. The files are taken from a study (Lauber et al., 2009) where 88 soil samples were collected at various regions around the world. pH was recorded for each of the soil samples. Using `distance_matrix_from_mapping.py <../scripts/distance_matrix_from_mapping.html>`_, we created a distance matrix containing differences in pH between each pair of samples. Throughout this tutorial, we will explore various ways of comparing these matrices for correlation.
+You can obtain the files used in this tutorial `here <ftp://ftp.microbio.me/qiime/tutorial_files/88_soils.zip>`_. The files are taken from a study (Lauber et al., 2009) where 88 soil samples were collected at various regions around the world. pH was recorded for each of the soil samples. Using `distance_matrix_from_mapping.py <../scripts/distance_matrix_from_mapping.html>`_, we created a distance matrix containing differences in pH between each pair of samples. Throughout this tutorial, we will explore various ways of comparing these matrices for correlation.
 
 Output Files
 ------------

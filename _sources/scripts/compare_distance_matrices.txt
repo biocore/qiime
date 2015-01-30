@@ -43,7 +43,7 @@ For more information and examples pertaining to this script, please refer to the
 	-s, `-`-sample_id_map_fp
 		Map of original sample ids to new sample ids [default: None]
 	-t, `-`-tail_type
-		The type of tail test to perform when calculating the p-value. Valid options: [two sided, less, greater] Two sided is a two-tailed test, while less tests for r statistics less than the observed r statistic, and greater tests for r statistics greater than the observed r statistic. Only applies when method is mantel [default: two sided]
+		The type of tail test to perform when calculating the p-value. Valid options: [two-sided, less, greater]. "two-sided" is a two-tailed test, while "less" tests for r statistics less than the observed r statistic, and "greater" tests for r statistics greater than the observed r statistic. Only applies when method is mantel [default: two-sided]
 	-a, `-`-alpha
 		The value of alpha to use when denoting significance in the correlogram plot. Only applies when method is mantel_corr
 	-g, `-`-image_type

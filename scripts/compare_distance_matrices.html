@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="compare_taxa_summaries.py – Compares taxa summary files" href="compare_taxa_summaries.html" />
+    <link rel="prev" title="compare_categories.py – Analyzes statistical significance of sample groupings using distance matrices" href="compare_categories.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="compare_taxa_summaries.html" title="compare_taxa_summaries.py – Compares taxa summary files"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="compare_categories.html" title="compare_categories.py – Analyzes statistical significance of sample groupings using distance matrices"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -82,7 +93,7 @@
 <dt>-s, <cite>-</cite>-sample_id_map_fp</dt>
 <dd>Map of original sample ids to new sample ids [default: None]</dd>
 <dt>-t, <cite>-</cite>-tail_type</dt>
-<dd>The type of tail test to perform when calculating the p-value. Valid options: [two sided, less, greater] Two sided is a two-tailed test, while less tests for r statistics less than the observed r statistic, and greater tests for r statistics greater than the observed r statistic. Only applies when method is mantel [default: two sided]</dd>
+<dd>The type of tail test to perform when calculating the p-value. Valid options: [two-sided, less, greater]. &#8220;two-sided&#8221; is a two-tailed test, while &#8220;less&#8221; tests for r statistics less than the observed r statistic, and &#8220;greater&#8221; tests for r statistics greater than the observed r statistic. Only applies when method is mantel [default: two-sided]</dd>
 <dt>-a, <cite>-</cite>-alpha</dt>
 <dd>The value of alpha to use when denoting significance in the correlogram plot. Only applies when method is mantel_corr</dd>
 <dt>-g, <cite>-</cite>-image_type</dt>
@@ -99,15 +110,18 @@
 <p>Mantel Correlogram: Two files are created in the output directory: a text file containing information about the distance classes, their associated Mantel statistics and p-values, etc. and an image of the correlogram plot.</p>
 <p><strong>Partial Mantel:</strong></p>
 <p>Performs a partial Mantel test on two distance matrices, using a third matrix as a control. Runs 99 permutations to calculate the p-value.</p>
-<div class="highlight-python"><pre>compare_distance_matrices.py --method partial_mantel -i weighted_unifrac_dm.txt,unweighted_unifrac_dm.txt -c PH_dm.txt -o partial_mantel_out -n 99</pre>
+<div class="highlight-python"><div class="highlight"><pre>compare_distance_matrices.py --method partial_mantel -i weighted_unifrac_dm.txt,unweighted_unifrac_dm.txt -c PH_dm.txt -o partial_mantel_out -n 99
+</pre></div>
 </div>
 <p><strong>Mantel:</strong></p>
 <p>Performs a Mantel test on all pairs of four distance matrices, including 999 permutations for each test.</p>
-<div class="highlight-python"><pre>compare_distance_matrices.py --method mantel -i weighted_unifrac_dm.txt,unweighted_unifrac_dm.txt,weighted_unifrac_even100_dm.txt,unweighted_unifrac_even100_dm.txt -o mantel_out -n 999</pre>
+<div class="highlight-python"><div class="highlight"><pre>compare_distance_matrices.py --method mantel -i weighted_unifrac_dm.txt,unweighted_unifrac_dm.txt,weighted_unifrac_even100_dm.txt,unweighted_unifrac_even100_dm.txt -o mantel_out -n 999
+</pre></div>
 </div>
 <p><strong>Mantel Correlogram:</strong></p>
 <p>This example computes a Mantel correlogram on two distance matrices using 999 permutations in each Mantel test. Output is written to the mantel_correlogram_out directory.</p>
-<div class="highlight-python"><pre>compare_distance_matrices.py --method mantel_corr -i unweighted_unifrac_dm.txt,PH_dm.txt -o mantel_correlogram_out -n 999</pre>
+<div class="highlight-python"><div class="highlight"><pre>compare_distance_matrices.py --method mantel_corr -i unweighted_unifrac_dm.txt,PH_dm.txt -o mantel_correlogram_out -n 999
+</pre></div>
 </div>
 </div>
 
@@ -120,17 +134,27 @@
 
     
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="compare_categories.html"
+                        title="previous chapter"><em>compare_categories.py</em> &#8211; Analyzes statistical significance of sample groupings using distance matrices</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="compare_taxa_summaries.html"
+                        title="next chapter"><em>compare_taxa_summaries.py</em> &#8211; Compares taxa summary files</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -154,16 +178,24 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="compare_taxa_summaries.html" title="compare_taxa_summaries.py – Compares taxa summary files"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="compare_categories.html" title="compare_categories.py – Analyzes statistical significance of sample groupings using distance matrices"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

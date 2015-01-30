@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="plot_semivariogram.py – Fits a model between two distance matrices and plots the result" href="plot_semivariogram.html" />
+    <link rel="prev" title="pick_rep_set.py – Pick representative set of sequences" href="pick_rep_set.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="plot_semivariogram.html" title="plot_semivariogram.py – Fits a model between two distance matrices and plots the result"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pick_rep_set.html" title="pick_rep_set.py – Pick representative set of sequences"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -75,7 +86,7 @@
 <dl class="last docutils">
 <dt>-a, <cite>-</cite>-absolute_counts</dt>
 <dd>Plot absolute abundance values instead of relative [default: False]</dd>
-<dt>-n, <cite>-</cite>-no-legend</dt>
+<dt>-n, <cite>-</cite>-no_legend</dt>
 <dd>Do not draw a legend [default: False]</dd>
 <dt>-x, <cite>-</cite>-x_linear_scale</dt>
 <dd>Draw x axis in linear scale [default: False]</dd>
@@ -88,15 +99,18 @@
 <p><strong>Output:</strong></p>
 <p><strong>Single graph example:</strong></p>
 <p>Plot the rank-abundance curve of one sample using a linear scale for the x_axis:</p>
-<div class="highlight-python"><pre>plot_rank_abundance_graph.py -i otu_table.biom  -s 'PC.354' -x -v -o single_plot.pdf</pre>
+<div class="highlight-python"><div class="highlight"><pre>plot_rank_abundance_graph.py -i otu_table.biom  -s &#39;PC.354&#39; -x -v -o single_plot.pdf
+</pre></div>
 </div>
 <p><strong>multiple graph example:</strong></p>
 <p>Plot the rank-abundance curve of several samples:</p>
-<div class="highlight-python"><pre>plot_rank_abundance_graph.py -i otu_table.biom  -s 'PC.354,PC.481,PC.636' -x -v -o multi_plot.pdf</pre>
+<div class="highlight-python"><div class="highlight"><pre>plot_rank_abundance_graph.py -i otu_table.biom  -s &#39;PC.354,PC.481,PC.636&#39; -x -v -o multi_plot.pdf
+</pre></div>
 </div>
 <p><strong>multiple graph example:</strong></p>
 <p>Plot the rank-abundance curve of all samples in an OTU table:</p>
-<div class="highlight-python"><pre>plot_rank_abundance_graph.py -i otu_table.biom  -s '*' -x -f eps -v -o all_plot.eps</pre>
+<div class="highlight-python"><div class="highlight"><pre>plot_rank_abundance_graph.py -i otu_table.biom  -s &#39;*&#39; -x -f eps -v -o all_plot.eps
+</pre></div>
 </div>
 </div>
 
@@ -109,17 +123,27 @@
 
     
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pick_rep_set.html"
+                        title="previous chapter"><em>pick_rep_set.py</em> &#8211; Pick representative set of sequences</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="plot_semivariogram.html"
+                        title="next chapter"><em>plot_semivariogram.py</em> &#8211; Fits a model between two distance matrices and plots the result</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -143,16 +167,24 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="plot_semivariogram.html" title="plot_semivariogram.py – Fits a model between two distance matrices and plots the result"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pick_rep_set.html" title="pick_rep_set.py – Pick representative set of sequences"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

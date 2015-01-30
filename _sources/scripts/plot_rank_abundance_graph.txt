@@ -30,7 +30,7 @@ Plot a set of rank-abundance graphs from an OTU table and a set of sample names.
 		
 	-a, `-`-absolute_counts
 		Plot absolute abundance values instead of relative [default: False]
-	-n, `-`-no-legend
+	-n, `-`-no_legend
 		Do not draw a legend [default: False]
 	-x, `-`-x_linear_scale
 		Draw x axis in linear scale [default: False]

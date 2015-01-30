@@ -1,0 +1,211 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Extracting Barcodes from fastq data for compatibility with split_libraries_fastq.py &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.8.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="extracting-barcodes-from-fastq-data-for-compatibility-with-split-libraries-fastq-py">
+<span id="extracting-barcodes"></span><h1>Extracting Barcodes from fastq data for compatibility with <cite>split_libraries_fastq.py</cite><a class="headerlink" href="#extracting-barcodes-from-fastq-data-for-compatibility-with-split-libraries-fastq-py" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>To use barcode demultiplexing with <a class="reference external" href="../scripts/split_libraries_fastq.html">split_libraries_fastq.py</a>, one must supply a fastq file with the barcodes, and another fastq file with the reads (the labels must match between these files). Please see <a class="reference external" href="./processing_illumina_data.html#fastq-format">this</a> for more details.</p>
+<p>In some cases, alternative data formats are generated due to how primer constructs are designed, or reads are processed before using them in QIIME. If one&#8217;s data matches the examples below, <a class="reference external" href="../scripts/extract_barcodes.html">extract_barcodes.py</a> can be used to reformat the barcode and read file(s) into a format compatible with <a class="reference external" href="../scripts/split_libraries_fastq.html">split_libraries_fastq.py</a>.</p>
+</div>
+<div class="section" id="processing-a-single-fastq-file-that-starts-with-the-barcode-sequence">
+<h2>Processing a single fastq file that starts with the barcode sequence<a class="headerlink" href="#processing-a-single-fastq-file-that-starts-with-the-barcode-sequence" title="Permalink to this headline">¶</a></h2>
+<p>In this example, there is a single fastq file, and the first 10 base pairs of the fastq file (in_seqs.fastq) are the barcode</p>
+<p>Example of raw data for the file in_seqs.fastq:</p>
+<div class="highlight-python"><pre>@M10_68:1:1:28680:29475#0/1
+AACGAAAGGCAGTTTTGGAAGTAGGCGAATTAGGGTAACGCATATAGGATGCTAATACAACGTGAATGAAGTACTGCATCTATGTCACCAGCTTATTACAGCAGCTTGTCATACATGGCCGTACAGGAAACACACATCATAGCATCACACGA
++
+BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+@M10_68:1:1:19607:29475#0/1
+GACATAAGGGTGGTTAGTATACCGGCAAGGACGGGGTTACTAGTGACGTCCTTCCCCGTATGCCGGGCAATAATGTTTATGTTGGTTTCATGGTTTGGTCTAACTTTACCGCTACTAAATGCTGCGGATTGGTTTCGCTGAATCAGATTATT
++
+Z__c\JQ`cc[[_[bfff[[`Qbdge_YYOOHO^cF[FUb_VHMHV`T`dBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+@M10_68:1:1:22962:29475#0/1
+TAATCGAGCTCAACGCCCTGCATACGAAAAGACAGAATCTCTTGCAAGATGTTGGTGCGGTTAGCCAGCTGCTTATGGAAGCCAAGCATTGGGGATTGAGAAAGAGTAGAAATGCCACAAGCCTCAATAGCAGGTTTAAGAGCCTCGATACG
++
+JJY````JO[`bab`b`bbaaaaa`\`a`OVT``]]`aa^aI\HMMMWWHHNNNGLL\`________\Z^]]^^^^^^GX]\QTXXZ[YZ^^XZ[Z^\Z^GW\^^\\^^^VZ\Y^^^^\\\\[^[\\\^VWYWWXWWZYZW^[X^\\Z^[TQ</pre>
+</div>
+<p>An example command to parse out the barcodes and the reads (with barcodes removed) to the output directory parsed_barcodes follows:</p>
+<div class="highlight-python"><pre>extract_barcodes.py -f in_seqs.fastq --bc1_len 10 -o parsed_barcodes/ --input_type barcode_single_end</pre>
+</div>
+<p>In the output directory, there should be a <tt class="docutils literal"><span class="pre">barcodes.fastq</span></tt> file with matching labels to the above file that contains the first 10 bases of the reads and the corresponding quality scores, and a <tt class="docutils literal"><span class="pre">reads.fastq</span></tt> containing the remaining bases and quality scores.</p>
+<p>If one wanted to reverse complement the barcode before writing it, this command could be used:</p>
+<div class="highlight-python"><pre>extract_barcodes.py -f in_seqs.fastq --bc1_len 10 --rev_comp_bc1 -o parsed_barcodes/ --input_type barcode_single_end</pre>
+</div>
+</div>
+<div class="section" id="processing-two-fastq-files-that-each-start-with-part-of-a-barcode">
+<h2>Processing two fastq files that each start with part of a barcode<a class="headerlink" href="#processing-two-fastq-files-that-each-start-with-part-of-a-barcode" title="Permalink to this headline">¶</a></h2>
+<p>In this example, there are two reads, reads1.fastq and reads2.fastq. reads1.fastq starts with 6 bases of a barcode, and reads2.fastq has the remaining 8 bases of this barcode, which need to be pulled from the sequences and combined in an output <tt class="docutils literal"><span class="pre">barcodes.fastq</span></tt> file:</p>
+<div class="highlight-python"><pre>extract_barcodes.py --input_type barcode_paired_end -f reads1.fastq -r reads2.fastq --bc1_len 6 --bc2_len 8 -o parsed_barcodes/</pre>
+</div>
+<p>To change the order of the barcodes written, simply change the values/files of the <tt class="docutils literal"><span class="pre">-f</span></tt>, <tt class="docutils literal"><span class="pre">-r</span></tt>, <tt class="docutils literal"><span class="pre">--bc1_len</span></tt>, and <tt class="docutils literal"><span class="pre">--bc2_len</span></tt> parameters:</p>
+<div class="highlight-python"><pre>extract_barcodes.py --input_type barcode_paired_end -f reads2.fastq -r reads1.fastq --bc1_len 8 --bc2_len 6 -o parsed_barcodes/</pre>
+</div>
+<p>The barcodes can each be reverse complemented before writing via the <tt class="docutils literal"><span class="pre">--rev_comp_bc1</span></tt> and <tt class="docutils literal"><span class="pre">--rev_comp_bc2</span></tt> parameters.</p>
+<p>In some sequencing reactions, the orientation of the reads is random, so in the reads1.fastq and reads2.fastq example above, there would be a mixture of amplicons in different orientations. One solution is to attempt to orient the reads by looking for the forward and reverse primers in the sequences, and selectively writing out reads that match the orientation of the forward primer to reads1 and reads that match the reverse primer to reads2. One must supply a metadata mapping file that contains the LinkerPrimerSequence and ReversePrimer fields (all primers should be written in 5&#8217;-&gt;3&#8217; orientation). See <a class="reference external" href="../documentation/file_formats.html#metadata-mapping-files">metadata mapping file format</a> for more information. An example command to attempt read orientation:</p>
+<div class="highlight-python"><pre>extract_barcodes.py --input_type barcode_paired_end -m mapping_file.txt -a -f reads1.fastq -r reads2.fastq --bc1_len 6 --bc2_len 8 -o parsed_barcodes/</pre>
+</div>
+<p>In addition to the normal <tt class="docutils literal"><span class="pre">barcodes.fastq</span></tt>, <tt class="docutils literal"><span class="pre">reads1.fastq</span></tt>, and <tt class="docutils literal"><span class="pre">reads2.fastq</span></tt> files, there will be additional files labeled as <tt class="docutils literal"><span class="pre">_not_oriented.fastq</span></tt> where the primers could not be found. These are all written and have the barcodes processed in the order that the files were supplied in.</p>
+<p>With paired sequences, one could run into issues of labels not matching-this can be suppressed with the <tt class="docutils literal"><span class="pre">--disable_header_match</span></tt> option, but one should be careful about making sure the reads are actually matched up if this option is used.</p>
+</div>
+<div class="section" id="two-index-barcode-reads-and-two-fastq-reads">
+<h2>Two index/barcode reads and two fastq reads<a class="headerlink" href="#two-index-barcode-reads-and-two-fastq-reads" title="Permalink to this headline">¶</a></h2>
+<p>This situation can be treated as a special case of paired-end reads. One could supply the index files (labeled as index1.fastq, index2.fastq) and use the <tt class="docutils literal"><span class="pre">--input_type</span> <span class="pre">barcode_paired_end</span></tt>:</p>
+<div class="highlight-python"><pre>extract_barcodes.py --input_type barcode_paired_end -f index1.fastq -r index2.fastq --bc1_len 6 --bc2_len 6 -o parsed_barcodes/</pre>
+</div>
+<p>The output <tt class="docutils literal"><span class="pre">barcodes.fastq</span></tt> file would be used for downstream processing, and the reads1 and reads2 files could be ignored.</p>
+</div>
+<div class="section" id="processing-a-single-stitched-read-that-contains-barcodes-on-each-end">
+<h2>Processing a single stitched read that contains barcodes on each end<a class="headerlink" href="#processing-a-single-stitched-read-that-contains-barcodes-on-each-end" title="Permalink to this headline">¶</a></h2>
+<p>In this case, a single stitched fastq file (reads.fastq) is present that contains 6 base pair barcodes on each end. We can write the barcodes and the stitched read (sans barcodes) to the output directory parsed_barcodes with this command:</p>
+<div class="highlight-python"><pre>extract_barcodes.py --input_type barcode_paired_stitched -f reads.fastq --bc1_len 6 --bc2_len 6 -o parsed_barcodes/</pre>
+</div>
+<p>To switch the order of the barcodes (i.e., the barcode at the end of the read is written first), the <tt class="docutils literal"><span class="pre">--switch_bc_order</span></tt> option could be enabled. The barcodes can individually, or both, be reverse complemented in the same manner as described above. Additionally, one can attempt to orient the sequences as described in the paired-end read example. In this case, the orientation process will reverse complement the stitched reads to try and match the orientation of the forward primers.</p>
+</div>
+<div class="section" id="barcodes-in-fastq-labels">
+<h2>Barcodes in fastq labels<a class="headerlink" href="#barcodes-in-fastq-labels" title="Permalink to this headline">¶</a></h2>
+<p>In some cases, sequencing centers will put the barcode sequences in the fastq labels before handing it off. It is important to look for the character immediately in front of the barcode and the length of the barcode:</p>
+<div class="highlight-python"><pre>@MCIC-SOLEXA_0051_FC:1:1:4065:1039#CGATGT/1
+NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN
++MCIC-SOLEXA_0051_FC:1:1:4065:1039#CGATGT/1
+KPPPQWWWWWQQ________BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB</pre>
+</div>
+<p>In this case, the &#8220;#&#8221; character is before the barcode, and the barcodes are 6 base pairs in length. To parse this example file, called in_seqs.fastq, this example command could be used:</p>
+<div class="highlight-python"><pre>extract_barcodes.py --input_type barcode_in_label --char_delineator "#" -f in_seqs.fastq --bc1_len 6 -o parsed_barcodes/</pre>
+</div>
+<p>A second fastq file could be passed (<tt class="docutils literal"><span class="pre">-r</span></tt>) if one had paired files with barcodes in the labels, and the parameters for changing barcode lengths or reverse complementing barcodes all apply.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Extracting Barcodes from fastq data for compatibility with <cite>split_libraries_fastq.py</cite></a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#processing-a-single-fastq-file-that-starts-with-the-barcode-sequence">Processing a single fastq file that starts with the barcode sequence</a></li>
+<li><a class="reference internal" href="#processing-two-fastq-files-that-each-start-with-part-of-a-barcode">Processing two fastq files that each start with part of a barcode</a></li>
+<li><a class="reference internal" href="#two-index-barcode-reads-and-two-fastq-reads">Two index/barcode reads and two fastq reads</a></li>
+<li><a class="reference internal" href="#processing-a-single-stitched-read-that-contains-barcodes-on-each-end">Processing a single stitched read that contains barcodes on each end</a></li>
+<li><a class="reference internal" href="#barcodes-in-fastq-labels">Barcodes in fastq labels</a></li>
+</ul>
+</li>
+</ul>
+
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

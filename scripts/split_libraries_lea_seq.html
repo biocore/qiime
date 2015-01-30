@@ -1,0 +1,217 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>split_libraries_lea_seq.py – Demultiplexes Low-Error Amplicon Sequencing (LEA-Seq) data &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.9.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="split_otu_table.py – Split a biom table into one table per combination of values found in the specified fields in the mapping file." href="split_otu_table.html" />
+    <link rel="prev" title="split_libraries_fastq.py – This script performs demultiplexing of Fastq sequence data where barcodes and sequences are contained in two separate fastq files (common on Illumina runs)." href="split_libraries_fastq.html" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="split_otu_table.html" title="split_otu_table.py – Split a biom table into one table per combination of values found in the specified fields in the mapping file."
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="split_libraries_fastq.html" title="split_libraries_fastq.py – This script performs demultiplexing of Fastq sequence data where barcodes and sequences are contained in two separate fastq files (common on Illumina runs)."
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="split-libraries-lea-seq"></span><div class="section" id="split-libraries-lea-seq-py-demultiplexes-low-error-amplicon-sequencing-lea-seq-data">
+<span id="index-0"></span><h1><em>split_libraries_lea_seq.py</em> &#8211; Demultiplexes Low-Error Amplicon Sequencing (LEA-Seq) data<a class="headerlink" href="#split-libraries-lea-seq-py-demultiplexes-low-error-amplicon-sequencing-lea-seq-data" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>Implements Low-Error Amplicon Sequencing (LEA-Seq) method, described in:</p>
+<p>Faith, Jeremiah J., et al.
+The long-term stability of the human gut microbiota.Science 341.6141 (2013).</p>
+<p>This method is based on redundant sequencing of a set of linear PCR template
+extensions of 16S rRNA genes. The oligonucleotide primer that is used for
+PCR template extensions is labeled with a random barcode
+5&#8217; to the universal 16S rRNA primer sequence. This PCR pool is then
+amplified with exponential PCR, using primers that specifically
+amplify only the linear PCR molecules. An index primer is added to
+the amplicons along with a primer specific for each sample.
+This exponential PCR pool is then sequenced redundantly (20x coverage).
+The resulting sequences are separated by sample, using the index sequence.
+The amplicon sequences within each sample are separated by the random
+barcodes. The large number of reads for each barcode helps to create an
+error-corrected consensus sequence for the initial template molecule.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">split_libraries_lea_seq.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-sequence_read_fps</dt>
+<dd>The forward and reverse sequence read fastq files (comma-separated)</dd>
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>Directory to store output files</dd>
+<dt>-m, <cite>-</cite>-mapping_fp</dt>
+<dd>Metadata mapping file</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-b, <cite>-</cite>-barcode_type</dt>
+<dd>The type of barcode used. This can be an integer, e.g. 6 for length 6 barcodes, or golay_12 for golay error-correcting barcodes. Error correction will only be applied for golay_12 barcodes [default: golay_12]</dd>
+<dt><cite>-</cite>-max_barcode_errors</dt>
+<dd>The maximum allowable number of errors in the barcode if passing &#8211;barcode_type golay_12 [default: 1.5]</dd>
+<dt><cite>-</cite>-min_consensus</dt>
+<dd>Threshold for consensus score: the minimum score allowable at any position in sequence. where the score is calulated as: occurence of base in consensus sequence/ total sequences[default: 6.6]</dd>
+<dt><cite>-</cite>-max_cluster_ratio</dt>
+<dd>Threshold for cluster ratio: the maximum allowable cluster ratio above which you need to find the consensus sequence for the given sequences.[default: 2.5]</dd>
+<dt><cite>-</cite>-min_difference_in_bcs</dt>
+<dd>Threshold for selecting unique barcodes: Barcodes that are more similar to each other than this value will be discarded.[default: 0.86]</dd>
+<dt><cite>-</cite>-fwd_length</dt>
+<dd>Removes phasing from forward readby truncating it to standard length for the region[default: 64]</dd>
+<dt><cite>-</cite>-rev_length</dt>
+<dd>Removes phasing from reverse readby truncating it to standard length for the region[default: 77]</dd>
+<dt><cite>-</cite>-min_difference_in_clusters</dt>
+<dd>The percent identity threshold while using uclust to cluster sequence reads, which is helpfulin measuring quality of sequencing.[default: 0.98]</dd>
+<dt><cite>-</cite>-min_reads_per_random_bc</dt>
+<dd>Minimum number of reads per randombarcode, attempts to remove random barcodes that are sequencing errors of true barcodesmight be useful in saving memory and time[default: 1]</dd>
+<dt><cite>-</cite>-header_barcode_column</dt>
+<dd>Header of barcode column[default: BarcodeSequence]</dd>
+<dt><cite>-</cite>-reverse_primer_column</dt>
+<dd>Header of reverse primer column[default: ReversePrimer]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>The split_libraries_lea_seq.py generates: A fasta file called seqs.fna which contains error corrected consensus sequence for the template DNA</p>
+<p><strong>General Example: Specify forward read and reverse read fasta files, use the metadata mapping file map.txt,and output the data to output_dir:</strong></p>
+<p>output_dir</p>
+<div class="highlight-python"><div class="highlight"><pre>split_libraries_lea_seq.py -i fwd_read.fq,rev_read.fq -m map.txt -o output --b 7
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="split_libraries_fastq.html"
+                        title="previous chapter"><em>split_libraries_fastq.py</em> &#8211; This script performs demultiplexing of Fastq sequence data where barcodes and sequences are contained in two separate fastq files (common on Illumina runs).</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="split_otu_table.html"
+                        title="next chapter"><em>split_otu_table.py</em> &#8211; Split a biom table into one table per combination of values found in the specified fields in the mapping file.</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="split_otu_table.html" title="split_otu_table.py – Split a biom table into one table per combination of values found in the specified fields in the mapping file."
+             >next</a> |</li>
+        <li class="right" >
+          <a href="split_libraries_fastq.html" title="split_libraries_fastq.py – This script performs demultiplexing of Fastq sequence data where barcodes and sequences are contained in two separate fastq files (common on Illumina runs)."
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

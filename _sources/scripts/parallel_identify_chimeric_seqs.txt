@@ -25,7 +25,7 @@ This script works like the `identify_chimeric_seqs.py <./identify_chimeric_seqs.
 	**[OPTIONAL]**
 		
 	-a, `-`-aligned_reference_seqs_fp
-		Path to (Py)Nast aligned reference sequences. REQUIRED when method ChimeraSlayer [default: /Users/caporaso/data/greengenes_core_sets/core_set_aligned_imputed.fasta_11_8_07.no_dots]
+		Path to (Py)Nast aligned reference sequences. REQUIRED when method ChimeraSlayer [default: /Users/jairideout/.virtualenvs/qiime/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set_aligned/85_otus.fasta]
 	-t, `-`-id_to_taxonomy_fp
 		Path to tab-delimited file mapping sequences to assigned taxonomy. Each assigned taxonomy is provided as a comma-separated list. [default: None; REQUIRED when method is blast_fragments]
 	-r, `-`-reference_seqs_fp
@@ -45,7 +45,7 @@ This script works like the `identify_chimeric_seqs.py <./identify_chimeric_seqs.
 	-o, `-`-output_fp
 		Path to store output [default: derived from input_seqs_fp]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 2]
+		Number of jobs to start [default: 1]
 	-R, `-`-retain_temp_files
 		Retain temporary files after runs complete (useful for debugging) [default: False]
 	-S, `-`-suppress_submit_jobs

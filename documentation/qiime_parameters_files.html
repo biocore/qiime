@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME File Formats" href="index.html" />
+    <link rel="next" title="QIIME Developer Notes" href="../developer/index.html" />
+    <link rel="prev" title="Input Files" href="file_formats.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,14 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="../developer/index.html" title="QIIME Developer Notes"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="file_formats.html" title="Input Files"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME File Formats</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -64,41 +74,41 @@
 <div class="section" id="format">
 <h2>Format<a class="headerlink" href="#format" title="Permalink to this headline">¶</a></h2>
 <p>The parameters file is a text file with one parameter setting per line. Blank lines or lines beginning with a <tt class="docutils literal"><span class="pre">#</span></tt> are ignored. A parameter setting is defined as <tt class="docutils literal"><span class="pre">script_name:parameter_name</span></tt>, followed by whitespace (space or tab), and then the value. For example:</p>
-<div class="highlight-python"><pre>pick_otus:otu_picking_method    uclust</pre>
+<div class="highlight-python"><div class="highlight"><pre>pick_otus:otu_picking_method    uclust
+</pre></div>
 </div>
 <p>This indicates that the <tt class="docutils literal"><span class="pre">--otu_picking_method</span></tt> will be set to <tt class="docutils literal"><span class="pre">uclust</span></tt> when calling <tt class="docutils literal"><span class="pre">pick_otus.py</span></tt>. To get information on what a parameter in the <tt class="docutils literal"><span class="pre">qiime_parameters.txt</span></tt> file is, you should call the script name followed by <tt class="docutils literal"><span class="pre">-h</span></tt> to access the usage information for that script. In the above example, you could call:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">pick_otus</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">h</span>
 </pre></div>
 </div>
 <p>Flag options (i.e., those that don&#8217;t take a value, like the <tt class="docutils literal"><span class="pre">--enable_rev_strand_match</span></tt> option to <tt class="docutils literal"><span class="pre">pick_otus.py</span></tt>) are specified by passing <tt class="docutils literal"><span class="pre">True</span></tt> or <tt class="docutils literal"><span class="pre">False</span></tt> after the whitespace. For example:</p>
-<div class="highlight-python"><pre>pick_otus:enable_rev_strand_match       True</pre>
+<div class="highlight-python"><div class="highlight"><pre>pick_otus:enable_rev_strand_match       True
+</pre></div>
 </div>
 <p>If a parameter is not followed by an option, it will not be passed to the script resulting in the default value being used instead. For example:</p>
-<div class="highlight-python"><pre>pick_otus:similarity</pre>
+<div class="highlight-python"><div class="highlight"><pre>pick_otus:similarity
+</pre></div>
 </div>
 <p>This results in no <tt class="docutils literal"><span class="pre">--similarity</span></tt> parameter being passed to <tt class="docutils literal"><span class="pre">pick_otus.py</span></tt>. Alternatively, you can delete this line from your parameters file.</p>
 <p>Note that when specifying parameters, you must specify their <cite>long form</cite> name, not their single-letter abbreviation. For example, if a parameter is defined as follows:</p>
-<div class="highlight-python"><pre>-s SIMILARITY, --similarity=SIMILARITY
+<div class="highlight-python"><div class="highlight"><pre>-s SIMILARITY, --similarity=SIMILARITY
                       Sequence similarity threshold (for blast, cdhit,
-                      uclust, uclust_ref, or usearch) [default: 0.97]</pre>
+                      uclust, uclust_ref, or usearch) [default: 0.97]
+</pre></div>
 </div>
 <p>You would pass this as <tt class="docutils literal"><span class="pre">pick_otus:similarity</span></tt>, NOT as <tt class="docutils literal"><span class="pre">pick_otus:s</span></tt>. The latter will not work!</p>
 <p>Some workflow scripts, such as <a class="reference external" href="../scripts/core_diversity_analyses.html">core_diversity_analyses.py</a>, run commands found in the <a class="reference external" href="http://biom-format.org">biom-format</a> package as part of their workflow. These commands are a bit different than QIIME scripts because they are of the form <tt class="docutils literal"><span class="pre">biom</span> <span class="pre">&lt;subcommand&gt;</span></tt> (e.g., <tt class="docutils literal"><span class="pre">biom</span> <span class="pre">summarize-table</span></tt>). In order to control these biom-format commands using a QIIME parameters file, you must reference the command name and the subcommand name, <strong>separated by a dash</strong>. For example, to control the behavior of <tt class="docutils literal"><span class="pre">biom</span> <span class="pre">summarize-table</span></tt>, your QIIME parameters file might look like:</p>
-<div class="highlight-python"><pre>biom-summarize-table:qualitative        True</pre>
+<div class="highlight-python"><div class="highlight"><pre>biom-summarize-table:qualitative        True
+</pre></div>
 </div>
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<p>Below are some commonly used parameter files.</p>
-<p>Run OTU picking with uclust&#8217;s default parameters (rather than QIIME&#8217;s default parameters, which are more conservative but <em>much</em> slower). Also, enable reverse strand matching so reads in opposite orientations match one another (i.e., uclust&#8217;s <tt class="docutils literal"><span class="pre">--rev</span></tt> parameter). This information can be saved to a text file and passed to <a class="reference external" href="../scripts/pick_de_novo_otus.html">pick_de_novo_otus.py</a>, <a class="reference external" href="../scripts/pick_closed_reference_otus.html">pick_closed_reference_otus.py</a>, <a class="reference external" href="../scripts/pick_open_reference_otus.html">pick_open_reference_otus.py</a>, or <a class="reference external" href="../scripts/core_diversity_analyses.html">core_diversity_analyses.py</a>.</p>
-<div class="highlight-python"><pre>pick_otus:enable_rev_strand_match True
-pick_otus:max_accepts 1
-pick_otus:max_rejects 8
-pick_otus:stepwords 8
-pick_otus:word_length 8</pre>
-</div>
-<p>Run beta diversity with Unweighted UniFrac, Weighted UniFrac, Bray-Curtis, and Euclidean distance metrics. This can be used with <a class="reference external" href="../scripts/beta_diversity_through_plots.html">beta_diversity_through_plots.py</a> and <a class="reference external" href="../scripts/core_diversity_analyses.html">core_diversity_analyses.py</a>.</p>
-<div class="highlight-python"><pre>beta_diversity:metrics  bray_curtis,euclidean,unweighted_unifrac,weighted_unifrac</pre>
+<p>Below is a commonly used parameter file.</p>
+<p>Run beta diversity with Unweighted UniFrac, Weighted UniFrac, Bray-Curtis, and Euclidean distance metrics, and alpha diversity with Observed Species and Chao1. This can be used with <a class="reference external" href="../scripts/beta_diversity_through_plots.html">beta_diversity_through_plots.py</a>, <a class="reference external" href="../scripts/alpha_rarefaction.html">alpha_rarefaction.py</a>, and <a class="reference external" href="../scripts/core_diversity_analyses.html">core_diversity_analyses.py</a>.</p>
+<div class="highlight-python"><div class="highlight"><pre>beta_diversity:metrics  bray_curtis,euclidean,unweighted_unifrac,weighted_unifrac
+alpha_diversity:metrics observed_species,chao1
+</pre></div>
 </div>
 </div>
 <div class="section" id="workflow-scripts">
@@ -145,17 +155,27 @@ pick_otus:word_length 8</pre>
 </ul>
 
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="index.html">Documentation</a><br /></li>
-	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="../scripts/index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="file_formats.html"
+                        title="previous chapter">Input Files</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../developer/index.html"
+                        title="next chapter">QIIME Developer Notes</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -179,16 +199,23 @@ pick_otus:word_length 8</pre>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="../developer/index.html" title="QIIME Developer Notes"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="file_formats.html" title="Input Files"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" >QIIME File Formats</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

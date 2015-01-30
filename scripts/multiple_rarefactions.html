@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="multiple_rarefactions_even_depth.py – Perform multiple rarefactions on a single otu table, at one depth of sequences/sample" href="multiple_rarefactions_even_depth.html" />
+    <link rel="prev" title="multiple_join_paired_ends.py – Run join_paired_ends.py on multiple files." href="multiple_join_paired_ends.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="multiple_rarefactions_even_depth.html" title="multiple_rarefactions_even_depth.py – Perform multiple rarefactions on a single otu table, at one depth of sequences/sample"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="multiple_join_paired_ends.html" title="multiple_join_paired_ends.py – Run join_paired_ends.py on multiple files."
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -77,7 +88,7 @@
 </dl>
 <p><strong>[OPTIONAL]</strong></p>
 <dl class="last docutils">
-<dt>-n, <cite>-</cite>-num-reps</dt>
+<dt>-n, <cite>-</cite>-num_reps</dt>
 <dd>The number of iterations at each step. [default: 10]</dd>
 <dt><cite>-</cite>-lineages_included</dt>
 <dd>Retain taxonomic (lineage) information for each OTU. Note: this will only work if lineage information is in the input OTU table. [default: False]</dd>
@@ -91,7 +102,8 @@
 <p>The result of <a class="reference external" href="./multiple_rarefactions.html">multiple_rarefactions.py</a> consists of a number of biom files, which depend on the minimum/maximum number of sequences per samples, steps and iterations. The files have the same otu table format as the input otu_table.biom, and are named in the following way: rarefaction_100_0.biom, where &#8220;100&#8221; corresponds to the sequences per sample and &#8220;0&#8221; the iteration.</p>
 <p><strong>Generate rarefied OTU tables:</strong></p>
 <p>Generate rarefied OTU tables beginning with 10 (-m) sequences/sample through 140 (-x) sequences per sample in steps of of 10 (-s), performing 2 iterations at each sampling depth (-n). All resulting OTU tables will be written to &#8216;rarefied_otu_tables&#8217; (-o). Any sample containing fewer sequences in the input file than the requested number of sequences per sample is removed from the output rarefied otu table.</p>
-<div class="highlight-python"><pre>multiple_rarefactions.py -i otu_table.biom -m 10 -x 140 -s 10 -n 2 -o rarefied_otu_tables/</pre>
+<div class="highlight-python"><div class="highlight"><pre>multiple_rarefactions.py -i otu_table.biom -m 10 -x 140 -s 10 -n 2 -o rarefied_otu_tables/
+</pre></div>
 </div>
 </div>
 
@@ -104,17 +116,27 @@
 
     
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="multiple_join_paired_ends.html"
+                        title="previous chapter"><em>multiple_join_paired_ends.py</em> &#8211; Run join_paired_ends.py on multiple files.</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="multiple_rarefactions_even_depth.html"
+                        title="next chapter"><em>multiple_rarefactions_even_depth.py</em> &#8211; Perform multiple rarefactions on a single otu table, at one depth of sequences/sample</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -138,16 +160,24 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="multiple_rarefactions_even_depth.html" title="multiple_rarefactions_even_depth.py – Perform multiple rarefactions on a single otu table, at one depth of sequences/sample"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="multiple_join_paired_ends.html" title="multiple_join_paired_ends.py – Run join_paired_ends.py on multiple files."
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

@@ -53,7 +53,7 @@ Example:
 
 Note that fields must be separated by a single tab. For the empty barcode there must be two
 tabs between SampleID and the primer sequence. Use QIIME's
-`check_id_map.py <../scripts/check_id_map.html>`_ to test for validity. Then, use
+`validate_mapping_file.py <../scripts/validate_mapping_file.html>`_ to test for validity. Then, use
 `split_libraries.py <../scripts/split_libraries.html>`_ as usual, but with
 option -b 0.
 

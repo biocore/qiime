@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="parallel_beta_diversity.py – Parallel beta diversity" href="parallel_beta_diversity.html" />
+    <link rel="prev" title="parallel_assign_taxonomy_rdp.py – Parallel taxonomy assignment using RDP" href="parallel_assign_taxonomy_rdp.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="parallel_beta_diversity.html" title="parallel_beta_diversity.py – Parallel beta diversity"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="parallel_assign_taxonomy_rdp.html" title="parallel_assign_taxonomy_rdp.py – Parallel taxonomy assignment using RDP"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -72,17 +83,17 @@
 <p><strong>[OPTIONAL]</strong></p>
 <dl class="last docutils">
 <dt>-t, <cite>-</cite>-id_to_taxonomy_fp</dt>
-<dd>Full path to id_to_taxonomy mapping file [default: /Users/caporaso/data/gg_13_5_otus/taxonomy/97_otu_taxonomy.txt]</dd>
+<dd>Full path to id_to_taxonomy mapping file [default: /Users/jairideout/.virtualenvs/qiime/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/taxonomy/97_otu_taxonomy.txt]</dd>
 <dt>-r, <cite>-</cite>-reference_seqs_fp</dt>
-<dd>Ref seqs to search against. [default: /Users/caporaso/data/gg_13_5_otus/rep_set/97_otus.fasta]</dd>
-<dt><cite>-</cite>-uclust_min_consensus_fraction</dt>
+<dd>Ref seqs to search against. [default: /Users/jairideout/.virtualenvs/qiime/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set/97_otus.fasta]</dd>
+<dt><cite>-</cite>-min_consensus_fraction</dt>
 <dd>Minimum fraction of database hits that must have a specific taxonomic assignment to assign that taxonomy to a query [default: 0.51]</dd>
-<dt><cite>-</cite>-uclust_similarity</dt>
-<dd>Minimum percent similarity to consider a database match a hit [default: 0.9]</dd>
+<dt><cite>-</cite>-similarity</dt>
+<dd>Minimum percent similarity to consider a database match a hit, expressed as a fraction between 0 and 1 [default: 0.9]</dd>
 <dt><cite>-</cite>-uclust_max_accepts</dt>
 <dd>Number of database hits to consider when making an assignment [default: 3]</dd>
 <dt>-O, <cite>-</cite>-jobs_to_start</dt>
-<dd>Number of jobs to start [default: 2]</dd>
+<dd>Number of jobs to start [default: 1]</dd>
 <dt>-R, <cite>-</cite>-retain_temp_files</dt>
 <dd>Retain temporary files after runs complete (useful for debugging) [default: False]</dd>
 <dt>-S, <cite>-</cite>-suppress_submit_jobs</dt>
@@ -103,7 +114,8 @@
 <p>Mapping of sequence identifiers to taxonomy and quality information.</p>
 <p><strong>Example:</strong></p>
 <p>Assign taxonomy to all sequences in the input file (-i) using the uclust consensus taxonomy assigner and write the results (-o) to $PWD/uclust_assigned_taxonomy/. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).</p>
-<div class="highlight-python"><pre>parallel_assign_taxonomy_uclust.py -i $PWD/inseqs.fasta -o $PWD/uclust_assigned_taxonomy/</pre>
+<div class="highlight-python"><div class="highlight"><pre>parallel_assign_taxonomy_uclust.py -i $PWD/inseqs.fasta -o $PWD/uclust_assigned_taxonomy/
+</pre></div>
 </div>
 </div>
 
@@ -116,17 +128,27 @@
 
     
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="parallel_assign_taxonomy_rdp.html"
+                        title="previous chapter"><em>parallel_assign_taxonomy_rdp.py</em> &#8211; Parallel taxonomy assignment using RDP</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="parallel_beta_diversity.html"
+                        title="next chapter"><em>parallel_beta_diversity.py</em> &#8211; Parallel beta diversity</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -150,16 +172,24 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="parallel_beta_diversity.html" title="parallel_beta_diversity.py – Parallel beta diversity"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="parallel_assign_taxonomy_rdp.html" title="parallel_assign_taxonomy_rdp.py – Parallel taxonomy assignment using RDP"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

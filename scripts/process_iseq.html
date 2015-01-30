@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="process_qseq.py – Given a directory of per-swath qseq files, this script generates a single fastq per lane." href="process_qseq.html" />
+    <link rel="prev" title="print_qiime_config.py – Print and optionally test QIIME configuration details" href="print_qiime_config.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="process_qseq.html" title="process_qseq.py – Given a directory of per-swath qseq files, this script generates a single fastq per lane."
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="print_qiime_config.html" title="print_qiime_config.py – Print and optionally test QIIME configuration details"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -80,10 +91,12 @@
 </div>
 <p><strong>Output:</strong></p>
 <p>Generate fastq files from lanes 1 and 2 (read 1 data) where barcodes are contained as the first tweleve bases of the sequences.</p>
-<div class="highlight-python"><pre>process_qseq.py -i ./s_1_1_sequence.txt,./s_2_1_sequence.txt -b 12 -o ./fastq/</pre>
+<div class="highlight-python"><div class="highlight"><pre>process_qseq.py -i ./s_1_1_sequence.txt,./s_2_1_sequence.txt -b 12 -o ./fastq/
+</pre></div>
 </div>
 <p>Generate fastq files from the gzipped lanes 1 and 2 (read 1 data) where barcodes are contained as the first tweleve bases of the sequences.</p>
-<div class="highlight-python"><pre>process_qseq.py -i ./s_1_1_sequence.txt.gz,./s_2_1_sequence.txt.gz -b 12 -o ./fastq/</pre>
+<div class="highlight-python"><div class="highlight"><pre>process_qseq.py -i ./s_1_1_sequence.txt.gz,./s_2_1_sequence.txt.gz -b 12 -o ./fastq/
+</pre></div>
 </div>
 </div>
 
@@ -96,17 +109,27 @@
 
     
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="print_qiime_config.html"
+                        title="previous chapter"><em>print_qiime_config.py</em> &#8211; Print and optionally test QIIME configuration details</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="process_qseq.html"
+                        title="next chapter"><em>process_qseq.py</em> &#8211; Given a directory of per-swath qseq files, this script generates a single fastq per lane.</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -130,16 +153,24 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="process_qseq.html" title="process_qseq.py – Given a directory of per-swath qseq files, this script generates a single fastq per lane."
+             >next</a> |</li>
+        <li class="right" >
+          <a href="print_qiime_config.html" title="print_qiime_config.py – Print and optionally test QIIME configuration details"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

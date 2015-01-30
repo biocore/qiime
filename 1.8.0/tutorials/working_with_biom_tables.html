@@ -1,0 +1,203 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Working with BIOM tables in QIIME &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.8.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="working-with-biom-tables-in-qiime">
+<span id="working-with-biom-tables"></span><h1>Working with BIOM tables in QIIME<a class="headerlink" href="#working-with-biom-tables-in-qiime" title="Permalink to this headline">¶</a></h1>
+<p>The Biological Observation Matrix (or BIOM, canonically pronounced <em>biome</em>) table is the core data type for downstream analyses in QIIME. It is a matrix of counts of observations on a per-sample basis. Most commonly, the observations are OTUs or taxa, and the samples are the unit of sampling in a study (e.g., a microbiome sample from the skin of one individual at one time point). These tables are often referred to as OTU tables in QIIME (but really an OTU table is one type of a BIOM table). To learn more about the BIOM format, you should review the <a class="reference external" href="http://biom-format.org/">documentation for the BIOM format</a>.</p>
+<p>This document covers some of the tools commonly used in QIIME for manipulating or summarizing BIOM tables. Some of this code is in QIIME, and some is in the BIOM project, but since the BIOM project is a core dependency of QIIME users won&#8217;t necessarily know which is which. This document is intended to point users toward information on a number of scripts in QIIME. See the <tt class="docutils literal"><span class="pre">script</span> <span class="pre">help</span> <span class="pre">pages</span> <span class="pre">&lt;../scripts/index.html&gt;`_</span> <span class="pre">or</span> <span class="pre">call</span> <span class="pre">a</span> <span class="pre">script</span> <span class="pre">with</span> <span class="pre">the</span> <span class="pre">``-h</span></tt> parameter to get information about how to work with it.</p>
+<div class="section" id="filtering">
+<h2>Filtering<a class="headerlink" href="#filtering" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="even-sampling-rarefaction">
+<h3>Even sampling (rarefaction)<a class="headerlink" href="#even-sampling-rarefaction" title="Permalink to this headline">¶</a></h3>
+<p>The <a class="reference external" href="../scripts/single_rarefaction.html">single_rarefaction.py</a> script allows the user to randomly subsample each of their samples to an equal count. This is essential for many diversity analyses, which assume that the count of observations for each sample is equal. <a class="reference external" href="../scripts/multiple_rarefactions.html">multiple_rarefactions.py</a> is a variant on this script which allows the user to generate rarified OTU tables at a range of different sampling depths (it is the equivalent of running <a class="reference external" href="../scripts/single_rarefaction.html">single_rarefaction.py</a> multiple times at different depths). <a class="reference external" href="../scripts/multiple_rarefactions_even_depth.html">multiple_rarefactions_even_depth.py</a> is another variant which allows the user to create many replicate subsampled OTU tables at a single depth.</p>
+</div>
+<div class="section" id="filtering-observations-otus">
+<h3>Filtering observations/OTUs<a class="headerlink" href="#filtering-observations-otus" title="Permalink to this headline">¶</a></h3>
+<p>To filter observations (usually OTUs in QIIME) from a BIOM table based on their abundance, the number of samples they appear in, or by providing a list of OTUs that you want to remove (e.g., chimeric OTUs) or retain, you can use <a class="reference external" href="../scripts/filter_otus_from_otu_table.html">filter_otus_from_otu_table.py</a>. You can find additional discussion of filtering observations in <a class="reference internal" href="filtering_contamination_otus.html#filtering-contamination-otus"><em>Filtering contaminant or category specific OTUs from OTU tables</em></a>.</p>
+</div>
+<div class="section" id="filtering-samples">
+<h3>Filtering samples<a class="headerlink" href="#filtering-samples" title="Permalink to this headline">¶</a></h3>
+<p>To filter samples from a BIOM table based on their total observation count, metadata associated with the samples, or by providing a list of samples you want to retain you can use <a class="reference external" href="../scripts/filter_samples_from_otu_table.html">filter_samples_from_otu_table.py</a>. See <a class="reference internal" href="metadata_description.html#metadata-description"><em>Describing samples based on their metadata</em></a> for information on how to specify which samples to retain or remove based on metadata.</p>
+</div>
+<div class="section" id="filtering-taxa">
+<h3>Filtering taxa<a class="headerlink" href="#filtering-taxa" title="Permalink to this headline">¶</a></h3>
+<p>To filter observations (usually OTUs in QIIME) from a BIOM table based on their taxonomic assignments, you can use <a class="reference external" href="../scripts/filter_taxa_from_otu_table.html">filter_taxa_from_otu_table.py</a>.</p>
+</div>
+</div>
+<div class="section" id="splitting-and-merging">
+<h2>Splitting and merging<a class="headerlink" href="#splitting-and-merging" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="splitting-by-sample-metadata">
+<h3>Splitting by sample metadata<a class="headerlink" href="#splitting-by-sample-metadata" title="Permalink to this headline">¶</a></h3>
+<p>To split a single BIOM table into multiple BIOM tables, each containing data on a subset of the samples based on their value for some sample metadata field (i.e., in the mapping file), you can use <a class="reference external" href="../scripts/split_otu_table.html">split_otu_table.py</a>. For example, if you have a field in your mapping file called <tt class="docutils literal"><span class="pre">BodySite</span></tt> with values <tt class="docutils literal"><span class="pre">Gut</span></tt>, <tt class="docutils literal"><span class="pre">Skin</span></tt>, and <tt class="docutils literal"><span class="pre">Tongue</span></tt>, calling <tt class="docutils literal"><span class="pre">split_otu_table.py</span> <span class="pre">-f</span> <span class="pre">BodySite</span></tt> will result in three BIOM tables, one each containing the samples at each body site.</p>
+</div>
+<div class="section" id="splitting-by-taxonomy">
+<h3>Splitting by taxonomy<a class="headerlink" href="#splitting-by-taxonomy" title="Permalink to this headline">¶</a></h3>
+<p>To split a single BIOM table into multiple BIOM tables, each containing data on a subset of the observations/OTUs based on their taxonomy, you can use <a class="reference external" href="../scripts/split_otu_table_by_taxonomy.html">split_otu_table_by_taxonomy.py</a>. Here you will specify some taxonomic level, and an OTU table will be generated for each different taxonomic group at that level. This is useful, for example, to create per-domain or per-phylum OTU tables.</p>
+</div>
+<div class="section" id="merging">
+<h3>Merging<a class="headerlink" href="#merging" title="Permalink to this headline">¶</a></h3>
+<p>To combine multiple BIOM tables into a single BIOM table, you can use <a class="reference external" href="../scripts/merge_otu_tables.html">merge_otu_tables.py</a>. The main thing that you need to watch out for here is that the OTU ids and sample ids are compatible in each of the tables. If they are overlapping (e.g., you have <tt class="docutils literal"><span class="pre">OTU1</span></tt> in more than one table), their counts will be summed.</p>
+</div>
+</div>
+<div class="section" id="miscellaneous">
+<h2>Miscellaneous<a class="headerlink" href="#miscellaneous" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="summarizing">
+<h3>Summarizing<a class="headerlink" href="#summarizing" title="Permalink to this headline">¶</a></h3>
+<p>To summarize the information in a BIOM file, you can call <a class="reference external" href="http://biom-format.org/documentation/summarizing_biom_tables.html">biom summarize-table</a>. This will provide you with information including the number of samples in the BIOM table, the number of observations/OTUs in the BIOM table, and a summary of the total counts observed in each sample.</p>
+</div>
+<div class="section" id="adding-metadata">
+<h3>Adding metadata<a class="headerlink" href="#adding-metadata" title="Permalink to this headline">¶</a></h3>
+<p>To add either sample or observation metadata to a BIOM file, you can call <a class="reference external" href="http://biom-format.org/documentation/adding_metadata.html">biom add-metadata</a>. Sample metadata would be the information that is stored in your mapping file. It&#8217;s useful to write this information to the BIOM file so all data and metadata can be stored in the same location for archiving or publication. In QIIME, observation metadata will often be the taxonomy associated with each OTU.</p>
+</div>
+<div class="section" id="sorting-samples">
+<h3>Sorting samples<a class="headerlink" href="#sorting-samples" title="Permalink to this headline">¶</a></h3>
+<p>To sort the samples in the BIOM table based on some metadata about the samples (e.g, pH or time) or based on their order in a file, you can call <a class="reference external" href="../scripts/sort_otu_table.html">sort_otu_table.py</a>. This can be useful if you&#8217;re using the BIOM table with some code downstream that will plot some information about the samples in the order that they appear in the BIOM table.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Working with BIOM tables in QIIME</a><ul>
+<li><a class="reference internal" href="#filtering">Filtering</a><ul>
+<li><a class="reference internal" href="#even-sampling-rarefaction">Even sampling (rarefaction)</a></li>
+<li><a class="reference internal" href="#filtering-observations-otus">Filtering observations/OTUs</a></li>
+<li><a class="reference internal" href="#filtering-samples">Filtering samples</a></li>
+<li><a class="reference internal" href="#filtering-taxa">Filtering taxa</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#splitting-and-merging">Splitting and merging</a><ul>
+<li><a class="reference internal" href="#splitting-by-sample-metadata">Splitting by sample metadata</a></li>
+<li><a class="reference internal" href="#splitting-by-taxonomy">Splitting by taxonomy</a></li>
+<li><a class="reference internal" href="#merging">Merging</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#miscellaneous">Miscellaneous</a><ul>
+<li><a class="reference internal" href="#summarizing">Summarizing</a></li>
+<li><a class="reference internal" href="#adding-metadata">Adding metadata</a></li>
+<li><a class="reference internal" href="#sorting-samples">Sorting samples</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

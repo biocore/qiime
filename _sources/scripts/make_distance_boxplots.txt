@@ -85,7 +85,7 @@ http://qiime.org/tutorials/creating_distance_comparison_plots.html.
 	`-`-color_individual_within_by_field
 		Field in the the mapping file to color the individual "within" boxes by. A legend will be provided to match boxplot colors to field states. A one-to-one mapping must exist between the field to be colored and the field to color by, otherwise the coloring will be ambiguous. If this option is supplied, --box_color will be ignored. If --suppress_individual_within is supplied, this option will be ignored [default: None]
 	`-`-sort
-		Sort boxplots by increasing median. If no sorting is applied, boxplots will be grouped logically as follows: all within, all between, individual within, and individual between [default: False]
+		If "median", sort boxplots by increasing median. If "alphabetical", sort boxplots alphabetically by their labels. If this option is not supplied (the default), boxplots will be grouped logically as follows: all within, all between, individual within, and individual between [default: None]
 
 
 **Output:**
@@ -129,5 +129,13 @@ This example will only generate a plot and skip the significance testing step. T
 ::
 
 	make_distance_boxplots.py -d unweighted_unifrac_dm.txt -m Fasting_Map.txt -f "Treatment" -o out4 --suppress_significance_tests
+
+**Sort boxplots:**
+
+To sort the boxplots by increasing median, supply the --sort option.
+
+::
+
+	make_distance_boxplots.py -d unweighted_unifrac_dm.txt -m Fasting_Map.txt -f "Treatment" -o out5 --sort median
 
 

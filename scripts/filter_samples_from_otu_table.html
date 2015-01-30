@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="filter_taxa_from_otu_table.py – Filter taxa from an OTU table" href="filter_taxa_from_otu_table.html" />
+    <link rel="prev" title="filter_otus_from_otu_table.py – Filter OTUs from an OTU table based on their observation counts or identifier." href="filter_otus_from_otu_table.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="filter_taxa_from_otu_table.html" title="filter_taxa_from_otu_table.py – Filter taxa from an OTU table"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="filter_otus_from_otu_table.html" title="filter_otus_from_otu_table.py – Filter OTUs from an OTU table based on their observation counts or identifier."
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -75,35 +86,47 @@
 <dt><cite>-</cite>-output_mapping_fp</dt>
 <dd>Path to write filtered mapping file [default: filtered mapping file is not written]</dd>
 <dt><cite>-</cite>-sample_id_fp</dt>
-<dd>Path to file listing sample ids to keep [default: None]</dd>
+<dd>Path to file listing sample ids to keep. Valid formats for the file are: 1) any white space, newline, or tab delimited list of samples, 2) a mapping file with samples in the first column [default: None]</dd>
 <dt>-s, <cite>-</cite>-valid_states</dt>
 <dd>String describing valid states (e.g. &#8216;Treatment:Fasting&#8217;) [default: None]</dd>
 <dt>-n, <cite>-</cite>-min_count</dt>
 <dd>The minimum total observation count in a sample for that sample to be retained [default: 0]</dd>
 <dt>-x, <cite>-</cite>-max_count</dt>
 <dd>The maximum total observation count in a sample for that sample to be retained [default: infinity]</dd>
+<dt><cite>-</cite>-negate_sample_id_fp</dt>
+<dd>Discard samples specified in &#8211;sample_id_fp instead of keeping them [default: False]</dd>
 </dl>
 </div>
 <p><strong>Output:</strong></p>
 <p><strong>Abundance filtering (low coverage):</strong></p>
 <p>Filter samples with fewer than 150 observations from the otu table.</p>
-<div class="highlight-python"><pre>filter_samples_from_otu_table.py -i otu_table.biom -o otu_table_no_low_coverage_samples.biom -n 150</pre>
+<div class="highlight-python"><div class="highlight"><pre>filter_samples_from_otu_table.py -i otu_table.biom -o otu_table_no_low_coverage_samples.biom -n 150
+</pre></div>
 </div>
 <p><strong>Abundance filtering (high coverage):</strong></p>
 <p>Filter samples with greater than 149 observations from the otu table.</p>
-<div class="highlight-python"><pre>filter_samples_from_otu_table.py -i otu_table.biom -o otu_table_no_high_coverage_samples.biom -x 149</pre>
+<div class="highlight-python"><div class="highlight"><pre>filter_samples_from_otu_table.py -i otu_table.biom -o otu_table_no_high_coverage_samples.biom -x 149
+</pre></div>
 </div>
 <p><strong>Metadata-based filtering (positive):</strong></p>
 <p>Filter samples from the table, keeping samples where the value for &#8216;Treatment&#8217; in the mapping file is &#8216;Control&#8217;</p>
-<div class="highlight-python"><pre>filter_samples_from_otu_table.py -i otu_table.biom -o otu_table_control_only.biom -m map.txt -s 'Treatment:Control'</pre>
+<div class="highlight-python"><div class="highlight"><pre>filter_samples_from_otu_table.py -i otu_table.biom -o otu_table_control_only.biom -m map.txt -s &#39;Treatment:Control&#39;
+</pre></div>
 </div>
 <p><strong>Metadata-based filtering (negative):</strong></p>
 <p>Filter samples from the table, keeping samples where the value for &#8216;Treatment&#8217; in the mapping file is not &#8216;Control&#8217;</p>
-<div class="highlight-python"><pre>filter_samples_from_otu_table.py -i otu_table.biom -o otu_table_not_control.biom -m map.txt -s 'Treatment:*,!Control'</pre>
+<div class="highlight-python"><div class="highlight"><pre>filter_samples_from_otu_table.py -i otu_table.biom -o otu_table_not_control.biom -m map.txt -s &#39;Treatment:*,!Control&#39;
+</pre></div>
 </div>
-<p><strong>List-based filtering:</strong></p>
-<p>Filter samples where the id is listed in samples_to_keep.txt</p>
-<div class="highlight-python"><pre>filter_samples_from_otu_table.py -i otu_table.biom -o otu_table_samples_to_keep.biom --sample_id_fp samples_to_keep.txt</pre>
+<p><strong>ID-based filtering:</strong></p>
+<p>Keep samples where the id is listed in ids.txt</p>
+<div class="highlight-python"><div class="highlight"><pre>filter_samples_from_otu_table.py -i otu_table.biom -o filtered_otu_table.biom --sample_id_fp ids.txt
+</pre></div>
+</div>
+<p><strong>ID-based filtering (negation):</strong></p>
+<p>Discard samples where the id is listed in ids.txt</p>
+<div class="highlight-python"><div class="highlight"><pre>filter_samples_from_otu_table.py -i otu_table.biom -o filtered_otu_table.biom --sample_id_fp ids.txt --negate_sample_id_fp
+</pre></div>
 </div>
 </div>
 
@@ -116,17 +139,27 @@
 
     
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="filter_otus_from_otu_table.html"
+                        title="previous chapter"><em>filter_otus_from_otu_table.py</em> &#8211; Filter OTUs from an OTU table based on their observation counts or identifier.</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="filter_taxa_from_otu_table.html"
+                        title="next chapter"><em>filter_taxa_from_otu_table.py</em> &#8211; Filter taxa from an OTU table</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -150,16 +183,24 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="filter_taxa_from_otu_table.html" title="filter_taxa_from_otu_table.py – Filter taxa from an OTU table"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="filter_otus_from_otu_table.html" title="filter_otus_from_otu_table.py – Filter OTUs from an OTU table based on their observation counts or identifier."
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

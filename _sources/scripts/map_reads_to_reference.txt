@@ -35,15 +35,15 @@
 	-e, `-`-evalue
 		Max e-value to consider a match [default: 1e-10]
 	-s, `-`-min_percent_id
-		Min percent id to consider a match [default: 0.75]
+		Min percent id to consider a match, expressed as a fraction between 0 and 1 [default: 0.75]
 	`-`-genetic_code
 		ID of genetic code to use for DNA translations (please see http://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi) Only valid with -m blat. [default: 11]
 	`-`-max_diff
 		MaxDiff to consider a match (applicable for -m bwa-short) -- see the aln section of "man bwa" for details [default (defined by bwa): 0.04]
 	`-`-queryalnfract
-		Min percent of the query seq that must match to consider a match (usearch only) [default: 0.35]
+		Min percent of the query seq that must match to consider a match, expressed as a fraction between 0 and 1 (usearch only) [default: 0.35]
 	`-`-targetalnfract
-		Min percent of the target/reference seq that must match to consider a match (usearch only) [default: 0.0]
+		Min percent of the target/reference seq that must match to consider a match, expressed as a fraction between 0 and 1 (usearch only) [default: 0.0]
 	`-`-max_accepts
 		Max_accepts value (usearch only) [default: 1]
 	`-`-max_rejects

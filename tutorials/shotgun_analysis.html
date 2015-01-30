@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Tutorials" href="index.html" />
+    <link rel="next" title="Getting started with the command line" href="unix_commands.html" />
+    <link rel="prev" title="Tracking the source of microbes with SourceTracker" href="source_tracking.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,14 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="unix_commands.html" title="Getting started with the command line"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="source_tracking.html" title="Tracking the source of microbes with SourceTracker"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Tutorials</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -66,15 +76,18 @@
 </div>
 <p>QIIME can perform translated search to assign nucleic acid sequence reads to a reference database containing protein sequences. We presently support assignment using <tt class="docutils literal"><span class="pre">usearch</span></tt> and <tt class="docutils literal"><span class="pre">blat</span></tt>, and are actively working on additional methods. Our preferred method is currently <tt class="docutils literal"><span class="pre">blat</span></tt> as it supports comparison against large reference collections free of charge. While 32-bit <tt class="docutils literal"><span class="pre">usearch</span></tt> is free for academic and non-profit use, protein reference databases frequently require 64-bit <tt class="docutils literal"><span class="pre">usearch</span></tt>, which is not free (even for non-profit or academic users, as of this writing). The following steps illustrate how to do read assignment with <tt class="docutils literal"><span class="pre">blat</span></tt>, but <tt class="docutils literal"><span class="pre">usearch</span></tt> can be used in any of these steps by substituting <tt class="docutils literal"><span class="pre">-m</span> <span class="pre">blat</span></tt> for <tt class="docutils literal"><span class="pre">-m</span> <span class="pre">usearch</span></tt>.</p>
 <p>This tutorial is based on Guerrero Negro microbial mat metagenome data. This data was generated on Sanger, and contains approximately 120k sequences. You should begin by obtaining that data with the following command:</p>
-<div class="highlight-python"><pre>curl -O https://s3.amazonaws.com/s3-qiime_tutorial_files/shotgun_analysis_gn.tgz</pre>
+<div class="highlight-python"><div class="highlight"><pre>curl -O ftp://ftp.microbio.me/qiime/tutorial_files/shotgun_analysis_gn.tgz
+</pre></div>
 </div>
 <p>See below for the relevant references for this data set.</p>
 <p>Begin by unzipping the resulting file and changing into that directory:</p>
-<div class="highlight-python"><pre>tar -xvzf shotgun_analysis_gn.tgz
-cd shotgun_analysis_gn</pre>
+<div class="highlight-python"><div class="highlight"><pre>tar -xvzf shotgun_analysis_gn.tgz
+cd shotgun_analysis_gn
+</pre></div>
 </div>
 <p>Because this tutorial can take a long time to run, we provide the output from all steps for review. If you&#8217;d like to run the steps yourself, either remove or rename the <tt class="docutils literal"><span class="pre">blat_mapped</span></tt> directory:</p>
-<div class="highlight-python"><pre>mv blat_mapped blat_mapped_original</pre>
+<div class="highlight-python"><div class="highlight"><pre>mv blat_mapped blat_mapped_original
+</pre></div>
 </div>
 <div class="section" id="reference-databases">
 <h2>Reference databases<a class="headerlink" href="#reference-databases" title="Permalink to this headline">¶</a></h2>
@@ -83,29 +96,34 @@ cd shotgun_analysis_gn</pre>
 <div class="section" id="defining-environment-variables-for-use-in-this-tutorial">
 <h2>Defining environment variables for use in this tutorial<a class="headerlink" href="#defining-environment-variables-for-use-in-this-tutorial" title="Permalink to this headline">¶</a></h2>
 <p>Begin by defining some environment variables to easily refer to the reference sequences and associated metadata. In the QIIME Virtual Machines, this would look like this:</p>
-<div class="highlight-python"><pre>export QIIME_DIR=$HOME/qiime_software
+<div class="highlight-python"><div class="highlight"><pre>export QIIME_DIR=$HOME/qiime_software
 export reference_seqs=$QIIME_DIR/img-qiime-***/gene_aa_seqs.faa
-export reference_md=$QIIME_DIR/img-qiime-***/gene_ko_pathway.txt</pre>
+export reference_md=$QIIME_DIR/img-qiime-***/gene_ko_pathway.txt
+</pre></div>
 </div>
 <p>where <tt class="docutils literal"><span class="pre">img-qiime-***</span></tt> will be specific to the version of the reference dataset you downloaded from the <a class="reference external" href="http://qiime.org/home_static/dataFiles.html">QIIME resources page</a>.</p>
 </div>
 <div class="section" id="assigning-nucleotide-reads-to-protein-reference-sequences">
 <h2>Assigning nucleotide reads to protein reference sequences<a class="headerlink" href="#assigning-nucleotide-reads-to-protein-reference-sequences" title="Permalink to this headline">¶</a></h2>
 <p>The script used for assigning nucleotide reads to protein reference sequences is <tt class="docutils literal"><span class="pre">map_reads_to_reference.py</span></tt>, and the parallel version, <tt class="docutils literal"><span class="pre">parallel_map_reads_to_reference.py</span></tt>. You can run this as follows:</p>
-<div class="highlight-python"><pre>map_reads_to_reference.py -s 0.55 -i seqs.fna -o blat_mapped/ -r $reference_seqs -t $reference_md -m blat</pre>
+<div class="highlight-python"><div class="highlight"><pre>map_reads_to_reference.py -s 0.55 -i seqs.fna -o blat_mapped/ -r $reference_seqs -t $reference_md -m blat
+</pre></div>
 </div>
 <p>Or to run in parallel on four processors (<tt class="docutils literal"><span class="pre">-O</span></tt>), you could run:</p>
-<div class="highlight-python"><pre>parallel_map_reads_to_reference.py -s 0.55 -i seqs.fna -o blat_mapped/ -r $reference_seqs -t $reference_md -O 4 -m blat -T</pre>
+<div class="highlight-python"><div class="highlight"><pre>parallel_map_reads_to_reference.py -s 0.55 -i seqs.fna -o blat_mapped/ -r $reference_seqs -t $reference_md -O 4 -m blat -T
+</pre></div>
 </div>
 <p>Several output files will be generated during this process. Most important for downstream analysis is <tt class="docutils literal"><span class="pre">observation_table.biom</span></tt>, the <a class="reference external" href="http://www.biom-format.org">BIOM file</a>, which contains the sample-by-gene count matrix. This file, along with your metadata mapping file, is central for down-stream analyses. (Note that running in parallel without the -T flag requires an additional step to create the .biom file).</p>
 </div>
 <div class="section" id="computing-beta-diversity-and-generating-pcoa-plots">
 <h2>Computing beta diversity and generating PCoA plots<a class="headerlink" href="#computing-beta-diversity-and-generating-pcoa-plots" title="Permalink to this headline">¶</a></h2>
 <p>Next we show how to compute beta diversity between samples and generate principal coordinate plots. For this step you&#8217;ll use <tt class="docutils literal"><span class="pre">beta_diversity_through_plots.py</span></tt> with a parameters file that specifies what beta diversity metrics you&#8217;ll use. The tutorial data contains a parameters file (<tt class="docutils literal"><span class="pre">shotgun_bdiv_params.txt</span></tt>) that can be used here. That file contains the following line:</p>
-<div class="highlight-python"><pre>beta_diversity:metrics bray_curtis</pre>
+<div class="highlight-python"><div class="highlight"><pre>beta_diversity:metrics bray_curtis
+</pre></div>
 </div>
 <p>which specifies that we want to compute Bray-Curtis distances between the samples. You can run this as follows:</p>
-<div class="highlight-python"><pre>beta_diversity_through_plots.py -i blat_mapped/observation_table.biom -e 2159 -o blat_mapped/bdiv_even2159/ -p shotgun_bdiv_params.txt -m map.txt</pre>
+<div class="highlight-python"><div class="highlight"><pre>beta_diversity_through_plots.py -i blat_mapped/observation_table.biom -e 2159 -o blat_mapped/bdiv_even2159/ -p shotgun_bdiv_params.txt -m map.txt
+</pre></div>
 </div>
 <p>This step will create an output directory (<tt class="docutils literal"><span class="pre">blat_mapped/bdiv_even2159/</span></tt>). To view interactive 3D PCoA plots you can open <tt class="docutils literal"><span class="pre">blat_mapped/bdiv_even2159/bray_curtis_3d_continuous/bray_curtis_pc_3D_PCoA_plots.html</span></tt>.</p>
 <a class="reference internal image-reference" href="../_images/shotgun_analysis_gn_pcoa.png"><img alt="../_images/shotgun_analysis_gn_pcoa.png" src="../_images/shotgun_analysis_gn_pcoa.png" style="height: 300px;" /></a>
@@ -114,16 +132,18 @@ export reference_md=$QIIME_DIR/img-qiime-***/gene_ko_pathway.txt</pre>
 <div class="section" id="collapsing-functions-for-computation-of-beta-diversity">
 <h2>Collapsing functions for computation of beta diversity<a class="headerlink" href="#collapsing-functions-for-computation-of-beta-diversity" title="Permalink to this headline">¶</a></h2>
 <p>One thing that can be useful in comparing samples is to collapse genes by their metadata categories so, for example, all counts of genes in the same level 3 EC category are collapsed to a single category, and then compute beta diversity. This gives a coarser view of the data by collapsing related genes to observations of functions (rather than observations of specific genes). This can be achieved with the following steps:</p>
-<div class="highlight-python"><pre>summarize_taxa.py -i blat_mapped/observation_table.biom -o blat_mapped/ko_tables/ -L 2,3,4 -a
-biom convert -i blat_mapped/ko_tables/observation_table_L3.txt -o blat_mapped/ko_tables/observation_table_L3.biom --table-type "function table"
-beta_diversity_through_plots.py -i blat_mapped/ko_tables/observation_table_L3.biom -e 2159 -o blat_mapped/bdiv_l3_even2159/ -p shotgun_bdiv_params.txt -m map.txt</pre>
+<div class="highlight-python"><div class="highlight"><pre>summarize_taxa.py -i blat_mapped/observation_table.biom -o blat_mapped/ko_tables/ -L 2,3,4 -a
+biom convert -i blat_mapped/ko_tables/observation_table_L3.txt -o blat_mapped/ko_tables/observation_table_L3.biom --table-type &quot;function table&quot;
+beta_diversity_through_plots.py -i blat_mapped/ko_tables/observation_table_L3.biom -e 2159 -o blat_mapped/bdiv_l3_even2159/ -p shotgun_bdiv_params.txt -m map.txt
+</pre></div>
 </div>
 </div>
 <div class="section" id="generating-summaries-of-samples-by-ko-category">
 <h2>Generating summaries of samples by KO category<a class="headerlink" href="#generating-summaries-of-samples-by-ko-category" title="Permalink to this headline">¶</a></h2>
 <p>Finally, you may want to generate summaries of the samples based on their KO composition. We first sort the BIOM table so samples will be ordered by the <tt class="docutils literal"><span class="pre">Layer</span></tt> metadata field (corresponding to depth in the microbial mat). We can then generate area and box plots showing the Level 2, 3, and 4 composition of each metagenome:</p>
-<div class="highlight-python"><pre>sort_otu_table.py -i blat_mapped/observation_table.biom -o blat_mapped/observation_table.Layer_sorted.biom -m map.txt -s Layer
-summarize_taxa_through_plots.py -i blat_mapped/observation_table.Layer_sorted.biom -o blat_mapped/ko_summary_plots</pre>
+<div class="highlight-python"><div class="highlight"><pre>sort_otu_table.py -i blat_mapped/observation_table.biom -o blat_mapped/observation_table.Layer_sorted.biom -m map.txt -s Layer
+summarize_taxa_through_plots.py -i blat_mapped/observation_table.Layer_sorted.biom -o blat_mapped/ko_summary_plots
+</pre></div>
 </div>
 <a class="reference internal image-reference" href="../_images/shotgun_analysis_gn_ec_summary.png"><img alt="../_images/shotgun_analysis_gn_ec_summary.png" src="../_images/shotgun_analysis_gn_ec_summary.png" style="height: 400px;" /></a>
 <a class="reference internal image-reference" href="../_images/shotgun_analysis_gn_ec_summary_legend.png"><img alt="../_images/shotgun_analysis_gn_ec_summary_legend.png" src="../_images/shotgun_analysis_gn_ec_summary_legend.png" style="height: 400px;" /></a>
@@ -132,10 +152,11 @@ summarize_taxa_through_plots.py -i blat_mapped/observation_table.Layer_sorted.bi
 <div class="section" id="a-note-on-input-data">
 <h2>A note on input data<a class="headerlink" href="#a-note-on-input-data" title="Permalink to this headline">¶</a></h2>
 <p>This tutorial assumes that data is provided in post-split-libraries format, as with the <tt class="docutils literal"><span class="pre">seqs.fna</span></tt> file used here. If you obtain Illumina data in fastq files with one sample/metagenome per fasta file, you can use <tt class="docutils literal"><span class="pre">split_libraries_fastq.py</span></tt> in <tt class="docutils literal"><span class="pre">not-barcoded</span></tt> mode, and then concatenate the resulting files. For example:</p>
-<div class="highlight-python"><pre>split_libraries_fastq.py -i lane1_read1.fastq.gz --sample_id sample.1 -o sample.1.slout/ -m map_not_multiplexed.txt --barcode_type 'not-barcoded'
-split_libraries_fastq.py -i lane2_read1.fastq.gz --sample_id sample.2 -o sample.2.slout/ -m map_not_multiplexed.txt --barcode_type 'not-barcoded'
+<div class="highlight-python"><div class="highlight"><pre>split_libraries_fastq.py -i lane1_read1.fastq.gz --sample_id sample.1 -o sample.1.slout/ -m map_not_multiplexed.txt --barcode_type &#39;not-barcoded&#39;
+split_libraries_fastq.py -i lane2_read1.fastq.gz --sample_id sample.2 -o sample.2.slout/ -m map_not_multiplexed.txt --barcode_type &#39;not-barcoded&#39;
 ...
-cat sample.1.slout/seqs.fna sample.2.slout/seqs.fna &gt;&gt; seqs.fna</pre>
+cat sample.1.slout/seqs.fna sample.2.slout/seqs.fna &gt;&gt; seqs.fna
+</pre></div>
 </div>
 <p>Where <tt class="docutils literal"><span class="pre">...</span></tt> indicates that you should run this for each of your input fastq files (which can be provided as fastq or fastq.gz).</p>
 </div>
@@ -171,17 +192,27 @@ cat sample.1.slout/seqs.fna sample.2.slout/seqs.fna &gt;&gt; seqs.fna</pre>
 </ul>
 
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="index.html">Tutorials</a><br /></li>
+    <li><a href="../scripts/index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="source_tracking.html"
+                        title="previous chapter">Tracking the source of microbes with SourceTracker</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="unix_commands.html"
+                        title="next chapter">Getting started with the command line</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -205,16 +236,23 @@ cat sample.1.slout/seqs.fna sample.2.slout/seqs.fna &gt;&gt; seqs.fna</pre>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="unix_commands.html" title="Getting started with the command line"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="source_tracking.html" title="Tracking the source of microbes with SourceTracker"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Tutorials</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="make_bipartite_network.py – This script makes a bipartite network connecting samples to observations. It is most suitable for visualization with cytoscape." href="make_bipartite_network.html" />
+    <link rel="prev" title="load_remote_mapping_file.py – Downloads and saves a remote mapping file" href="load_remote_mapping_file.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="make_bipartite_network.html" title="make_bipartite_network.py – This script makes a bipartite network connecting samples to observations. It is most suitable for visualization with cytoscape."
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="load_remote_mapping_file.html" title="load_remote_mapping_file.py – Downloads and saves a remote mapping file"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -85,6 +96,8 @@
 <dd>Used only when plotting ellipsoids for jackknifed beta diversity  (i.e. using a directory of coord files instead of a single coord file). These coordinates will be the center of each ellipisoid. [default: None; arbitrarily chosen PC matrix will define the center point]</dd>
 <dt><cite>-</cite>-scree</dt>
 <dd>Generate the scree plot [default: False]</dd>
+<dt><cite>-</cite>-pct_variation_below_one</dt>
+<dd>Allow the percent variation explained by the axes to be below one. The default behaivor is to multiply by 100 all values if PC1 is &lt; 1.0 [default: False]</dd>
 <dt>-o, <cite>-</cite>-output_dir</dt>
 <dd>Path to the output directory</dd>
 </dl>
@@ -93,31 +106,38 @@
 <p>This script generates an output folder, which contains several files. To best view the 2D plots, it is recommended that the user views the _pcoa_2D.html file.</p>
 <p><strong>Default Example:</strong></p>
 <p>If you just want to use the default output, you can supply the principal coordinates file (i.e., resulting file from <a class="reference external" href="./principal_coordinates.html">principal_coordinates.py</a>), where the default coloring will be based on the SampleID as follows:</p>
-<div class="highlight-python"><pre>make_2d_plots.py -i unweighted_unifrac_pc.txt -m Fasting_Map.txt</pre>
+<div class="highlight-python"><div class="highlight"><pre>make_2d_plots.py -i unweighted_unifrac_pc.txt -m Fasting_Map.txt
+</pre></div>
 </div>
 <p><strong>Output Directory Usage:</strong></p>
 <p>If you want to give an specific output directory (e.g. &#8220;2d_plots&#8221;), use the following code.</p>
-<div class="highlight-python"><pre>make_2d_plots.py -i unweighted_unifrac_pc.txt -m Fasting_Map.txt -o 2d_plots/</pre>
+<div class="highlight-python"><div class="highlight"><pre>make_2d_plots.py -i unweighted_unifrac_pc.txt -m Fasting_Map.txt -o 2d_plots/
+</pre></div>
 </div>
 <p><strong>Mapping File Usage:</strong></p>
 <p>Additionally, the user can supply their mapping file (&#8216;-m&#8217;) and a specific category to color by (&#8216;-b&#8217;) or any combination of categories. When using the -b option, the user can specify the coloring for multiple mapping labels, where each mapping label is separated by a comma, for example: -b &#8216;mapping_column1,mapping_column2&#8217;. The user can also combine mapping labels and color by the combined label that is created by inserting an &#8216;&amp;&amp;&#8217; between the input columns, for example: -b &#8216;mapping_column1&amp;&amp;mapping_column2&#8217;.If the user wants to color by specific mapping labels, they can use the following code:</p>
-<div class="highlight-python"><pre>make_2d_plots.py -i unweighted_unifrac_pc.txt -m Fasting_Map.txt -b 'Treatment'</pre>
+<div class="highlight-python"><div class="highlight"><pre>make_2d_plots.py -i unweighted_unifrac_pc.txt -m Fasting_Map.txt -b &#39;Treatment&#39;
+</pre></div>
 </div>
 <p><strong>Scree plot Usage:</strong></p>
 <p>A scree plot can tell you how many axes are likely to be important and help determine how many &#8216;real&#8217; underlying gradients there might be in your data as well as their relative &#8216;strength&#8217;. If you want to generate a scree plot, use the following code.</p>
-<div class="highlight-python"><pre>make_2d_plots.py -i unweighted_unifrac_pc.txt -m Fasting_Map.txt --scree</pre>
+<div class="highlight-python"><div class="highlight"><pre>make_2d_plots.py -i unweighted_unifrac_pc.txt -m Fasting_Map.txt --scree
+</pre></div>
 </div>
 <p><strong>Color by all categories:</strong></p>
 <p>If the user would like to color all categories in their metadata mapping file, they should not pass -b. Color by all is the default behavior.</p>
-<div class="highlight-python"><pre>make_2d_plots.py -i unweighted_unifrac_pc.txt -m Fasting_Map.txt</pre>
+<div class="highlight-python"><div class="highlight"><pre>make_2d_plots.py -i unweighted_unifrac_pc.txt -m Fasting_Map.txt
+</pre></div>
 </div>
 <p><strong>Prefs File:</strong></p>
 <p>The user can supply a prefs file to color by, as follows:</p>
-<div class="highlight-python"><pre>make_2d_plots.py -i unweighted_unifrac_pc.txt -m Fasting_Map.txt -p prefs.txt</pre>
+<div class="highlight-python"><div class="highlight"><pre>make_2d_plots.py -i unweighted_unifrac_pc.txt -m Fasting_Map.txt -p prefs.txt
+</pre></div>
 </div>
 <p><strong>Jackknifed Principal Coordinates (w/ confidence intervals):</strong></p>
 <p>If you have created jackknifed PCoA files, you can pass the folder containing those files, instead of a single file.  The user can also specify the opacity of the ellipses around each point &#8216;&#8211;ellipsoid_opacity&#8217;, which is a value from 0-1. Currently there are two metrics &#8216;&#8211;ellipsoid_method&#8217; that can be used for generating the ellipsoids, which are &#8216;IQR&#8217; and &#8216;sdev&#8217;. The user can specify all of these options as follows:</p>
-<div class="highlight-python"><pre>make_2d_plots.py -i pcoa/ -m Fasting_Map.txt -b 'Treatment&amp;&amp;DOB' --ellipsoid_opacity=0.5 --ellipsoid_method=IQR</pre>
+<div class="highlight-python"><div class="highlight"><pre>make_2d_plots.py -i pcoa/ -m Fasting_Map.txt -b &#39;Treatment&amp;&amp;DOB&#39; --ellipsoid_opacity=0.5 --ellipsoid_method=IQR
+</pre></div>
 </div>
 </div>
 
@@ -130,17 +150,27 @@
 
     
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="load_remote_mapping_file.html"
+                        title="previous chapter"><em>load_remote_mapping_file.py</em> &#8211; Downloads and saves a remote mapping file</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="make_bipartite_network.html"
+                        title="next chapter"><em>make_bipartite_network.py</em> &#8211; This script makes a bipartite network connecting samples to observations. It is most suitable for visualization with cytoscape.</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -164,16 +194,24 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="make_bipartite_network.html" title="make_bipartite_network.py – This script makes a bipartite network connecting samples to observations. It is most suitable for visualization with cytoscape."
+             >next</a> |</li>
+        <li class="right" >
+          <a href="load_remote_mapping_file.html" title="load_remote_mapping_file.py – Downloads and saves a remote mapping file"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

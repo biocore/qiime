@@ -26,6 +26,8 @@ A wrapper for the `align_seqs.py <./align_seqs.html>`_ PyNAST option, intended t
 	
 	**[OPTIONAL]**
 		
+	-t, `-`-template_fp
+		Filepath for template alignment [default: /Users/jairideout/.virtualenvs/qiime/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set_aligned/85_otus.fasta]
 	-a, `-`-pairwise_alignment_method
 		Method to use for pairwise alignments [default: uclust]
 	-d, `-`-blast_db
@@ -33,9 +35,9 @@ A wrapper for the `align_seqs.py <./align_seqs.html>`_ PyNAST option, intended t
 	-e, `-`-min_length
 		Minimum sequence length to include in alignment [default: 75% of the median input sequence length]
 	-p, `-`-min_percent_id
-		Minimum percent sequence identity to closest blast hit to include sequence in alignment [default: 75.0]
+		Minimum percent sequence identity to closest blast hit to include sequence in alignment, expressed as a real number between 0 and 100 [default: 75.0]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 2]
+		Number of jobs to start [default: 1]
 	-R, `-`-retain_temp_files
 		Retain temporary files after runs complete (useful for debugging) [default: False]
 	-S, `-`-suppress_submit_jobs
@@ -50,8 +52,6 @@ A wrapper for the `align_seqs.py <./align_seqs.html>`_ PyNAST option, intended t
 		Job prefix [default: descriptive prefix + random chars]
 	-Z, `-`-seconds_to_sleep
 		Number of seconds to sleep between checks for run  completion when polling runs [default: 1]
-	-t, `-`-template_fp
-		Filepath for template against [default: /Users/caporaso/data/greengenes_core_sets/core_set_aligned_imputed.fasta_11_8_07.no_dots]
 
 
 **Output:**

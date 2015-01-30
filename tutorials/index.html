@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,9 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="next" title="OTU picking strategies in QIIME" href="otu_picking.html" />
+    <link rel="prev" title="Setting up your qiime config file" href="../install/qiime_config.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,6 +46,12 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="otu_picking.html" title="OTU picking strategies in QIIME"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../install/qiime_config.html" title="Setting up your qiime config file"
+             accesskey="P">previous</a> |</li>
         <li><a href="../index.html">Home</a> &raquo;</li> 
       </ul>
     </div>
@@ -56,15 +64,15 @@
             
   <div class="section" id="qiime-tutorials">
 <span id="index-tutorials"></span><h1>QIIME Tutorials<a class="headerlink" href="#qiime-tutorials" title="Permalink to this headline">¶</a></h1>
-<p>The QIIME tutorials are documents that illustrate how to use various features of the QIIME. We recommend that all users begin with the <a class="reference external" href="./tutorial.html">QIIME overview tutorial</a> which takes the user through a full analysis of sequencing data. After you&#8217;ve begun analyzing your own data, you&#8217;ll want to move on to the special-purpose tutorials as needed.</p>
-<p>The QIIME development team is very interested in incorporating community-contributed tutorials. Please contact the <a class="reference external" href="http://groups.google.com/group/qiime-forum">QIIME Forum</a> if you&#8217;re interested in contributing.</p>
+<p>The QIIME tutorials illustrate how to use various features of QIIME. We recommend that all users begin with either the <a class="reference external" href="./illumina_overview_tutorial.html">QIIME Illumina Overview Tutorial</a> or the <a class="reference external" href="./tutorial.html">QIIME 454 Overview Tutorial</a>. These tutorials take the user through a full analysis of sequencing data. After you&#8217;ve begun analyzing your own data, you&#8217;ll want to move on to the special-purpose tutorials as needed.</p>
+<p>The QIIME development team is very interested in incorporating community-contributed tutorials. Please see the <a class="reference external" href="https://github.com/biocore/qiime/blob/master/CONTRIBUTING.md">contributing to QIIME guidelines</a> if you&#8217;re interested in contributing.</p>
 <p><strong>Getting started: Sequence processing through OTU tables and phylogenetic trees</strong></p>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="otu_picking.html">OTU picking strategies in QIIME</a></li>
 <li class="toctree-l1"><a class="reference internal" href="illumina_overview_tutorial.html">Illumina Overview Tutorial (an IPython Notebook): open reference OTU picking and core diversity analyses</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">454 Overview Tutorial: de novo OTU picking and diversity analyses using 454 data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="open_reference_illumina_processing.html">Discussion of subsampled open reference OTU picking in QIIME</a></li>
+<li class="toctree-l1"><a class="reference internal" href="open_reference_illumina_processing.html">Discussion of subsampled open-reference OTU picking in QIIME</a></li>
 <li class="toctree-l1"><a class="reference internal" href="fungal_its_analysis.html">Fungal ITS analysis tutorial (an IPython Notebook): open-reference OTU picking</a></li>
 <li class="toctree-l1"><a class="reference internal" href="processing_illumina_data.html">Preparing raw Illumina data in different formats for use with QIIME</a></li>
 <li class="toctree-l1"><a class="reference internal" href="processing_18S_data.html">Analysis of 18S data</a></li>
@@ -88,7 +96,6 @@
 <li class="toctree-l1"><a class="reference internal" href="predicting_mislabeled_samples.html">Predicting Mislabeled Samples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="filtering_contamination_otus.html">Filtering contaminant or category specific OTUs from OTU tables</a></li>
 <li class="toctree-l1"><a class="reference internal" href="chaining_otu_pickers.html">Multi-step OTU picking</a></li>
-<li class="toctree-l1"><a class="reference internal" href="extracting_barcodes_from_fastq_data.html">Extracting Barcodes from fastq data for compatibility with <cite>split_libraries_fastq.py</cite></a></li>
 </ul>
 </div>
 <p><strong>Analyzing diversity</strong></p>
@@ -113,7 +120,7 @@
 <p><strong>Other</strong></p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="unix_commands.html">Basic Unix/Linux/OS X commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="unix_commands.html">Getting started with the command line</a></li>
 <li class="toctree-l1"><a class="reference internal" href="working_with_aws.html">Working with QIIME on Amazon Web Services EC2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="parallel_qiime.html">Using parallel QIIME</a></li>
 <li class="toctree-l1"><a class="reference internal" href="remote_mapping_files.html">Using Remote Mapping Files</a></li>
@@ -131,17 +138,27 @@
 
     
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="#">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="#">Tutorials</a><br /></li>
+    <li><a href="../scripts/index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../install/qiime_config.html"
+                        title="previous chapter">Setting up your qiime config file</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="otu_picking.html"
+                        title="next chapter">OTU picking strategies in QIIME</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -165,16 +182,22 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="otu_picking.html" title="OTU picking strategies in QIIME"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../install/qiime_config.html" title="Setting up your qiime config file"
+             >previous</a> |</li>
         <li><a href="../index.html">Home</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

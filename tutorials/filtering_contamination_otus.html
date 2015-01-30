@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Tutorials" href="index.html" />
+    <link rel="next" title="Multi-step OTU picking" href="chaining_otu_pickers.html" />
+    <link rel="prev" title="Predicting Mislabeled Samples" href="predicting_mislabeled_samples.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,14 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="chaining_otu_pickers.html" title="Multi-step OTU picking"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="predicting_mislabeled_samples.html" title="Predicting Mislabeled Samples"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Tutorials</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -58,7 +68,7 @@
 <span id="filtering-contamination-otus"></span><h1>Filtering contaminant or category specific OTUs from OTU tables<a class="headerlink" href="#filtering-contaminant-or-category-specific-otus-from-otu-tables" title="Permalink to this headline">¶</a></h1>
 <p>This tutorial explains how to use several QIIME scripts to filter all OTUs that belong to a particular category of samples. This would be used, for example, if you ran blank control samples and want to remove any OTUs observed in these samples as likely contamination.</p>
 <p>To accomplish this task several scripts are used to first generate an OTU table of target OTUs to remove, then filter those OTUs from the original OTU table, and finally to perform a clean-up step to remove the control samples that would now have zero sequences associated with them.</p>
-<p>The OTU table and mapping file (generated from the QIIME tutorial data set) are available <a class="reference external" href="https://s3.amazonaws.com/s3-qiime_tutorial_files/filtering_otus_tutorial_data.zip">here</a>.</p>
+<p>The OTU table and mapping file (generated from the QIIME tutorial data set) are available <a class="reference external" href="ftp://ftp.microbio.me/qiime/tutorial_files/filtering_otus_tutorial_data.zip">here</a>.</p>
 <p>Once these files are downloaded and extracted, open a terminal and change to the directory of the extracted files to begin processing.</p>
 <div class="section" id="filtering-out-samples-according-to-run">
 <h2>Filtering out samples according to run<a class="headerlink" href="#filtering-out-samples-according-to-run" title="Permalink to this headline">¶</a></h2>
@@ -83,10 +93,12 @@
 </ul>
 </div>
 <p>To create per-run OTU tables containing, use the following command:</p>
-<div class="highlight-python"><pre>split_otu_table.py -i otu_table.biom -m map.txt -f Run_Number -o split_otu_tables/</pre>
+<div class="highlight-python"><div class="highlight"><pre>split_otu_table.py -i otu_table.biom -m map.txt -f Run_Number -o split_otu_tables/
+</pre></div>
 </div>
 <p>One can observe the initial sequences/sample in the run 1 OTU table:</p>
-<div class="highlight-python"><pre>biom summarize-table -i split_otu_tables/otu_table_1.biom -o split_otu_tables/otu_table_1_summary.txt</pre>
+<div class="highlight-python"><div class="highlight"><pre>biom summarize-table -i split_otu_tables/otu_table_1.biom -o split_otu_tables/otu_table_1_summary.txt
+</pre></div>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -117,22 +129,28 @@
 <h3>Filtering OTUs observed in the control blanks from the experimental samples<a class="headerlink" href="#filtering-otus-observed-in-the-control-blanks-from-the-experimental-samples" title="Permalink to this headline">¶</a></h3>
 <p>We will only examine run 1 in this example, but if you&#8217;re working with multiple runs of data you would apply this step for each run. Note that if you don&#8217;t have multiple runs, you would continue with <tt class="docutils literal"><span class="pre">otu_table.biom</span></tt> at this stage, rather than <tt class="docutils literal"><span class="pre">split_otu_tables/otu_table_1.biom</span></tt>.</p>
 <p>Create an OTU table with the just the blank control samples:</p>
-<div class="highlight-python"><pre>filter_samples_from_otu_table.py -i split_otu_tables/otu_table_1.biom -o otu_table_run1_blank_samples.biom -m map.txt -s "Sample_Type:Control_Blank"</pre>
+<div class="highlight-python"><div class="highlight"><pre>filter_samples_from_otu_table.py -i split_otu_tables/otu_table_1.biom -o otu_table_run1_blank_samples.biom -m map.txt -s &quot;Sample_Type:Control_Blank&quot;
+</pre></div>
 </div>
 <p>Filter out OTU ids that have zero counts, as we only want the OTUs with positive counts from the Control_Blank samples:</p>
-<div class="highlight-python"><pre>filter_otus_from_otu_table.py -i otu_table_run1_blank_samples.biom -o filtered_otu_table_blank_samples.biom -n 1</pre>
+<div class="highlight-python"><div class="highlight"><pre>filter_otus_from_otu_table.py -i otu_table_run1_blank_samples.biom -o filtered_otu_table_blank_samples.biom -n 1
+</pre></div>
 </div>
 <p>Then create a tab separated version of this OTU table:</p>
-<div class="highlight-python"><pre>biom convert -b -i filtered_otu_table_blank_samples.biom -o otus_to_remove.txt</pre>
+<div class="highlight-python"><div class="highlight"><pre>biom convert -b -i filtered_otu_table_blank_samples.biom -o otus_to_remove.txt
+</pre></div>
 </div>
 <p>Filter out OTU ids from the run 1 OTU table that were determined to be present in the Control_Blank samples:</p>
-<div class="highlight-python"><pre>filter_otus_from_otu_table.py -i split_otu_tables/otu_table_1.biom -o otu_table_1_minus_contaminants.biom -e otus_to_remove.txt</pre>
+<div class="highlight-python"><div class="highlight"><pre>filter_otus_from_otu_table.py -i split_otu_tables/otu_table_1.biom -o otu_table_1_minus_contaminants.biom -e otus_to_remove.txt
+</pre></div>
 </div>
 <p>The otu_table_1_minus_contaminants.biom file now has two samples with zero sequences associated with it.  These can be removed to get a final OTU table:</p>
-<div class="highlight-python"><pre>filter_samples_from_otu_table.py -i otu_table_1_minus_contaminants.biom -o final_otu_table_1_minus_contaminants.biom -n 1</pre>
+<div class="highlight-python"><div class="highlight"><pre>filter_samples_from_otu_table.py -i otu_table_1_minus_contaminants.biom -o final_otu_table_1_minus_contaminants.biom -n 1
+</pre></div>
 </div>
 <p>The final OTU table sequences/sample summary can be displayed now, sans OTUs from the Control_Blank samples:</p>
-<div class="highlight-python"><pre>biom summarize-table -i final_otu_table_1_minus_contaminants.biom -o final_otu_table_1_minus_contaminants_summary.txt</pre>
+<div class="highlight-python"><div class="highlight"><pre>biom summarize-table -i final_otu_table_1_minus_contaminants.biom -o final_otu_table_1_minus_contaminants_summary.txt
+</pre></div>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -182,17 +200,27 @@
 </ul>
 
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="index.html">Tutorials</a><br /></li>
+    <li><a href="../scripts/index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="predicting_mislabeled_samples.html"
+                        title="previous chapter">Predicting Mislabeled Samples</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="chaining_otu_pickers.html"
+                        title="next chapter">Multi-step OTU picking</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -216,16 +244,23 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="chaining_otu_pickers.html" title="Multi-step OTU picking"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="predicting_mislabeled_samples.html" title="Predicting Mislabeled Samples"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Tutorials</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

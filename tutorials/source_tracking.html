@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Tutorials" href="index.html" />
+    <link rel="next" title="Analysis of shotgun sequencing data" href="shotgun_analysis.html" />
+    <link rel="prev" title="Performing Procrustes Analysis" href="procrustes_analysis.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,14 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="shotgun_analysis.html" title="Analysis of shotgun sequencing data"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="procrustes_analysis.html" title="Performing Procrustes Analysis"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Tutorials</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -63,7 +73,7 @@
 </div>
 <div class="section" id="tutorial-data">
 <h2>Tutorial data<a class="headerlink" href="#tutorial-data" title="Permalink to this headline">¶</a></h2>
-<p>You can obtain the files used in this tutorial <a class="reference external" href="https://s3.amazonaws.com/s3-qiime_tutorial_files/sourcetracker_tutorial_files.tgz">here</a>. These are derived from <a class="reference external" href="http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0054703">Hewitt et al., 2013</a>, where samples were collected from various surfaces in two different Neonatal Intensive Care Units (NICUs). The 16S rRNA was sequenced from these samples, and compared against pre-existing data sets using SourceTracker in order to predict the likely origin of the microbial contaminants on each NICU surface.</p>
+<p>You can obtain the files used in this tutorial <a class="reference external" href="ftp://ftp.microbio.me/qiime/tutorial_files/sourcetracker_tutorial_files.tgz">here</a>. These are derived from <a class="reference external" href="http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0054703">Hewitt et al., 2013</a>, where samples were collected from various surfaces in two different Neonatal Intensive Care Units (NICUs). The 16S rRNA was sequenced from these samples, and compared against pre-existing data sets using SourceTracker in order to predict the likely origin of the microbial contaminants on each NICU surface.</p>
 <p>This tutorial begins with an OTU table. For information on various ways to generate OTU tables with QIIME, see <a class="reference internal" href="otu_picking.html#otu-picking"><em>OTU picking strategies in QIIME</em></a>.</p>
 </div>
 <div class="section" id="test-usage">
@@ -73,10 +83,12 @@
 </pre></div>
 </div>
 <p>You should see the following line in the output if SourceTracker is properly installed:</p>
-<div class="highlight-python"><pre>sourcetracker is installed ... ok</pre>
+<div class="highlight-python"><div class="highlight"><pre>sourcetracker is installed ... ok
+</pre></div>
 </div>
 <p>For information on interacting with SourceTracker, run the following command to get SourceTracker&#8217;s help text:</p>
-<div class="highlight-python"><pre>R --slave --vanilla --args -h &lt; $SOURCETRACKER_PATH/sourcetracker_for_qiime.r</pre>
+<div class="highlight-python"><div class="highlight"><pre>R --slave --vanilla --args -h &lt; $SOURCETRACKER_PATH/sourcetracker_for_qiime.r
+</pre></div>
 </div>
 <p>(The <tt class="docutils literal"><span class="pre">$SOURCETRACKER_PATH</span></tt> environment variable referenced here will be defined if SourceTracker is correctly installed.)</p>
 </div>
@@ -84,14 +96,16 @@
 <h2>Filter OTUs present in less than 1% of the samples from the OTU table<a class="headerlink" href="#filter-otus-present-in-less-than-1-of-the-samples-from-the-otu-table" title="Permalink to this headline">¶</a></h2>
 <p>First we filter OTUs that are present in very few samples, as we consider these unlikely to provide useful source tracking information. We define <em>very few samples</em> here as less than 1% of the samples, which in our case is roughly 7 samples. This value should be determined on a per-study basis (so you shouldn&#8217;t just use 7 on your own data). You can find the total number of samples in your OTU table by running the <tt class="docutils literal"><span class="pre">biom</span> <span class="pre">summarize-table</span></tt> command on it.</p>
 <p>To filter the OTU table, run the following command:</p>
-<div class="highlight-python"><pre>filter_otus_from_otu_table.py -i otu_table.biom -o filtered_otu_table.biom -s 7</pre>
+<div class="highlight-python"><div class="highlight"><pre>filter_otus_from_otu_table.py -i otu_table.biom -o filtered_otu_table.biom -s 7
+</pre></div>
 </div>
 <p>This command will create an output file named <tt class="docutils literal"><span class="pre">filtered_otu_table.biom</span></tt>, which only contains OTUs that appear in at least 7 samples. To see how many OTUs were filtered in this process, you can run the <tt class="docutils literal"><span class="pre">biom</span> <span class="pre">summarize-table</span></tt> command and compare <em>Num observations</em> for <tt class="docutils literal"><span class="pre">otu_table.biom</span></tt> and <tt class="docutils literal"><span class="pre">filtered_otu_table.biom</span></tt>. It&#8217;s not uncommon to filter a large percentage (e.g., greater than 50%) of your OTUs using this process.</p>
 </div>
 <div class="section" id="convert-table-from-biom-to-tab-separated-text-format">
 <h2>Convert table from BIOM to tab-separated text format<a class="headerlink" href="#convert-table-from-biom-to-tab-separated-text-format" title="Permalink to this headline">¶</a></h2>
 <p>SourceTracker does not work with the <a class="reference external" href="http://www.biom-format.org">BIOM format</a>, so the OTU table needs to be converted to tab-separated text format. You can do that with the following command:</p>
-<div class="highlight-python"><pre>biom convert -i filtered_otu_table.biom -o filtered_otu_table.txt -b</pre>
+<div class="highlight-python"><div class="highlight"><pre>biom convert -i filtered_otu_table.biom -o filtered_otu_table.txt -b
+</pre></div>
 </div>
 <p>This creates a file named <tt class="docutils literal"><span class="pre">filtered_otu_table.txt</span></tt>.</p>
 </div>
@@ -100,7 +114,8 @@
 <p>To use SourceTracker, your mapping must contain two columns titled <tt class="docutils literal"><span class="pre">SourceSink</span></tt>, and <tt class="docutils literal"><span class="pre">Env</span></tt>, which define whether each sample should be treated as a source or a sink, and describe the sample type, respectively. These columns can be added to your mapping file by opening it in Excel or as a Google Spreadsheet and adding the new columns.</p>
 <p>In the tutorial data set the sources include <tt class="docutils literal"><span class="pre">Outdoor</span> <span class="pre">Air</span></tt>, <tt class="docutils literal"><span class="pre">Human</span> <span class="pre">Skin</span></tt>, and <tt class="docutils literal"><span class="pre">Human</span> <span class="pre">Mouth</span></tt>. Each row that represents a sample taken from one of these should be labeled <tt class="docutils literal"><span class="pre">source</span></tt> in the <tt class="docutils literal"><span class="pre">SourceSink</span></tt> column. Likewise the sink samples (including <tt class="docutils literal"><span class="pre">NICU</span> <span class="pre">Incubator</span></tt>, <tt class="docutils literal"><span class="pre">NICU</span> <span class="pre">BabyBedside</span></tt> here) should be labeled <tt class="docutils literal"><span class="pre">sink</span></tt> in the <tt class="docutils literal"><span class="pre">SourceSink</span></tt> column. Each row in the <tt class="docutils literal"><span class="pre">Env</span></tt> column should contain a description of the corresponding sample type, for example <tt class="docutils literal"><span class="pre">Outdoor</span> <span class="pre">Air</span></tt>, <tt class="docutils literal"><span class="pre">Human</span> <span class="pre">Skin</span></tt>, and <tt class="docutils literal"><span class="pre">NICU</span> <span class="pre">BabyBedside</span></tt>. Any sample that should not be used in the SourceTracker analysis should contain <tt class="docutils literal"><span class="pre">NA</span></tt> in the <tt class="docutils literal"><span class="pre">SourceSink</span></tt> and <tt class="docutils literal"><span class="pre">Env</span></tt> columns. These steps have all been completed in the mapping file used in this tutorial (<tt class="docutils literal"><span class="pre">map.txt</span></tt>). You can review that file as you prepare a mapping file for your own analyses.</p>
 <p>You can run SourceTracker with the following command:</p>
-<div class="highlight-python"><pre>R --slave --vanilla --args -i filtered_otu_table.txt -m map.txt -o sourcetracker_out &lt; $SOURCETRACKER_PATH/sourcetracker_for_qiime.r</pre>
+<div class="highlight-python"><div class="highlight"><pre>R --slave --vanilla --args -i filtered_otu_table.txt -m map.txt -o sourcetracker_out &lt; $SOURCETRACKER_PATH/sourcetracker_for_qiime.r
+</pre></div>
 </div>
 <p>This will take a few minutes to run. Once it&#8217;s complete, you can open <tt class="docutils literal"><span class="pre">sourcetracker_out/sink_predictions_pie_NICU</span> <span class="pre">BabyBedside.pdf</span></tt> to view an example of the output. That file should look like this:</p>
 <img alt="../_images/sink_predictions_pie_NICU_BabyBedside.png" class="align-center" src="../_images/sink_predictions_pie_NICU_BabyBedside.png" />
@@ -136,17 +151,27 @@
 </ul>
 
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="index.html">Tutorials</a><br /></li>
+    <li><a href="../scripts/index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="procrustes_analysis.html"
+                        title="previous chapter">Performing Procrustes Analysis</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="shotgun_analysis.html"
+                        title="next chapter">Analysis of shotgun sequencing data</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -170,16 +195,23 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="shotgun_analysis.html" title="Analysis of shotgun sequencing data"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="procrustes_analysis.html" title="Performing Procrustes Analysis"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Tutorials</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

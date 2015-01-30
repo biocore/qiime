@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Tutorials" href="index.html" />
+    <link rel="next" title="Creating Distance Comparison Plots" href="creating_distance_comparison_plots.html" />
+    <link rel="prev" title="Multi-step OTU picking" href="chaining_otu_pickers.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,14 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="creating_distance_comparison_plots.html" title="Creating Distance Comparison Plots"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="chaining_otu_pickers.html" title="Multi-step OTU picking"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Tutorials</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -63,7 +73,7 @@
 </div>
 <div class="section" id="input-files">
 <h2>Input Files<a class="headerlink" href="#input-files" title="Permalink to this headline">¶</a></h2>
-<p>You can obtain the files used in this tutorial <a class="reference external" href="https://s3.amazonaws.com/s3-qiime_tutorial_files/keyboard.zip">here</a>. The files are taken from a study (Fierer et al., 2010) where samples were collected from the fingertips of three individuals and the keys of their keyboards. Researchers found that an individual&#8217;s fingertip samples clustered very closely with his or her corresponding keyboard samples. These results have potential application in the field of forensic science. Throughout this tutorial, we will explore various ways of determining whether the clustering of fingertip and keyboard samples is statistically significant by analyzing the groups of samples.</p>
+<p>You can obtain the files used in this tutorial <a class="reference external" href="ftp://ftp.microbio.me/qiime/tutorial_files/keyboard.zip">here</a>. The files are taken from a study (Fierer et al., 2010) where samples were collected from the fingertips of three individuals and the keys of their keyboards. Researchers found that an individual&#8217;s fingertip samples clustered very closely with his or her corresponding keyboard samples. These results have potential application in the field of forensic science. Throughout this tutorial, we will explore various ways of determining whether the clustering of fingertip and keyboard samples is statistically significant by analyzing the groups of samples.</p>
 </div>
 <div class="section" id="output-files">
 <h2>Output Files<a class="headerlink" href="#output-files" title="Permalink to this headline">¶</a></h2>
@@ -74,25 +84,27 @@
 <p>adonis is a nonparametric statistical method that takes a QIIME distance matrix file such as a UniFrac distance matrix, a mapping file, and a category in the mapping file to determine sample grouping from. It computes an R<sup>2</sup> value (effect size) which shows the percentage of variation explained by the supplied mapping file category, as well as a p-value to determine the statistical significance.</p>
 <p>adonis creates a set by first identifying the relevant centroids of the data and then calculating the squared deviations from these points. After that, significance tests are performed using F-tests based on sequential sums of squares from permutations of the raw data.</p>
 <p>Suppose we wanted to determine whether the samples grouped by host individual (i.e. person) are statistically significant. Run the following command:</p>
-<div class="highlight-python"><pre>compare_categories.py --method adonis -i unweighted_unifrac_dm.txt -m map.txt -c HOST_SUBJECT_ID -o adonis_out -n 999</pre>
+<div class="highlight-python"><div class="highlight"><pre>compare_categories.py --method adonis -i unweighted_unifrac_dm.txt -m map.txt -c HOST_SUBJECT_ID -o adonis_out -n 999
+</pre></div>
 </div>
 <p>When broken down the command syntax means:</p>
-<div class="highlight-python"><pre>compare_categories.py - This is the script being run.
+<div class="highlight-python"><div class="highlight"><pre>compare_categories.py - This is the script being run.
 
---method adonis - This is the method to perform, in this case it's 'adonis'.
+--method adonis - This is the method to perform, in this case it&#39;s &#39;adonis&#39;.
 
 -i unweighted_unifrac_dm.txt - This is the unweighted UniFrac distance matrix being passed in for this statistical test.
 
 -m map.txt - This is the metadata mapping file associated with this data set.
 
--c HOST_SUBJECT_ID - This specifies the category in the metadata mapping file to analyze. In this case it's 'HOST_SUBJECT_ID'.
+-c HOST_SUBJECT_ID - This specifies the category in the metadata mapping file to analyze. In this case it&#39;s &#39;HOST_SUBJECT_ID&#39;.
 
--o adonis_out - This specifies the output directory to place the results of this method in. In this case it's 'adonis_out'.
+-o adonis_out - This specifies the output directory to place the results of this method in. In this case it&#39;s &#39;adonis_out&#39;.
 
--n 999 - This specifies the number of permutations that will be used to calculate the p-value.</pre>
+-n 999 - This specifies the number of permutations that will be used to calculate the p-value.
+</pre></div>
 </div>
 <p>This command will create a new output directory named <tt class="file docutils literal"><span class="pre">adonis_out</span></tt>, which will contain a single text file called <tt class="file docutils literal"><span class="pre">adonis_results.txt</span></tt>. Open up <tt class="file docutils literal"><span class="pre">adonis_results.txt</span></tt> to see the results of the test:</p>
-<div class="highlight-python"><pre>Call:
+<div class="highlight-python"><div class="highlight"><pre>Call:
 adonis(formula = as.dist(qiime.data$distmat) ~ qiime.data$map[[opts$category]],      permutations = opts$num_permutations)
 
 Terms added sequentially (first to last)
@@ -106,7 +118,8 @@ qiime.data$map[[opts$category]] ***
 Residuals
 Total
 ---
-Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</pre>
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+</pre></div>
 </div>
 <p>The p-value of 0.001 indicates that at an alpha of 0.05, the grouping of samples by individual is statistically significant. The R<sup>2</sup> value indicates that approximately 33% of the variation in distances is explained by this grouping. These results confirm the results obtained by the original researchers of this study.</p>
 </div>
@@ -118,26 +131,29 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</pre>
 <p>R = (rb-rw)/(N(N-1)/4)</p>
 <p>where rb is the mean rank of all distances between groups and rw is the mean rank of all distances within groups. An R value near +1 means that there is dissimilarity between the groups, while an R value near 0 indicates no significant dissimilarity between the groups (<a class="reference external" href="http://folk.uio.no/ohammer/past/multivar.html">http://folk.uio.no/ohammer/past/multivar.html</a>).</p>
 <p>We will attempt to answer the same question posed in the adonis section (above). Run the following command:</p>
-<div class="highlight-python"><pre>compare_categories.py --method anosim -i unweighted_unifrac_dm.txt -m map.txt -c HOST_SUBJECT_ID -o anosim_out -n 999</pre>
+<div class="highlight-python"><div class="highlight"><pre>compare_categories.py --method anosim -i unweighted_unifrac_dm.txt -m map.txt -c HOST_SUBJECT_ID -o anosim_out -n 999
+</pre></div>
 </div>
 <p>When broken down the command syntax means:</p>
-<div class="highlight-python"><pre>compare_categories.py - This is the script being run.
+<div class="highlight-python"><div class="highlight"><pre>compare_categories.py - This is the script being run.
 
---method anosim - This is the method to perform, in this case it's 'anosim'.
+--method anosim - This is the method to perform, in this case it&#39;s &#39;anosim&#39;.
 
 -i unweighted_unifrac_dm.txt - This is the unweighted UniFrac distance matrix being passed in for this statistical test.
 
 -m map.txt - This is the metadata mapping file associated with this data set.
 
--c HOST_SUBJECT_ID - This specifies the category in the metadata mapping file to analyze. In this case it's 'HOST_SUBJECT_ID'.
+-c HOST_SUBJECT_ID - This specifies the category in the metadata mapping file to analyze. In this case it&#39;s &#39;HOST_SUBJECT_ID&#39;.
 
--o anosim_out - This specifies the output directory to place the results of this method in. In this case it's 'anosim_out'.
+-o anosim_out - This specifies the output directory to place the results of this method in. In this case it&#39;s &#39;anosim_out&#39;.
 
--n 999 - This specifies the number of permutations that will be used to calculate the p-value.</pre>
+-n 999 - This specifies the number of permutations that will be used to calculate the p-value.
+</pre></div>
 </div>
 <p>This command will create a new output directory named <tt class="file docutils literal"><span class="pre">anosim_out</span></tt>, which will contain a single text file called <tt class="file docutils literal"><span class="pre">anosim_results.txt</span></tt>. Open up <tt class="file docutils literal"><span class="pre">anosim_results.txt</span></tt> to see the results of the test:</p>
-<div class="highlight-python"><pre>Method Name     R-value P-value
-ANOSIM  0.794026410205  0.001</pre>
+<div class="highlight-python"><div class="highlight"><pre>Method Name     R-value P-value
+ANOSIM  0.794026410205  0.001
+</pre></div>
 </div>
 <p>The p-value of 0.001 indicates that at an alpha of 0.05, the grouping of samples by individual is statistically significant. The R value of 0.794 is fairly close to +1, indicating that the grouping of samples based on individual is strong. These results confirm the results obtained by the original researchers of this study, as well as our results when we applied adonis to this dataset (above).</p>
 </div>
@@ -169,17 +185,27 @@ ANOSIM  0.794026410205  0.001</pre>
 </ul>
 
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="index.html">Tutorials</a><br /></li>
+    <li><a href="../scripts/index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="chaining_otu_pickers.html"
+                        title="previous chapter">Multi-step OTU picking</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="creating_distance_comparison_plots.html"
+                        title="next chapter">Creating Distance Comparison Plots</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -203,16 +229,23 @@ ANOSIM  0.794026410205  0.001</pre>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="creating_distance_comparison_plots.html" title="Creating Distance Comparison Plots"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="chaining_otu_pickers.html" title="Multi-step OTU picking"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Tutorials</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

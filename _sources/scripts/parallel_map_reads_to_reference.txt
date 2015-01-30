@@ -35,19 +35,19 @@
 	-e, `-`-evalue
 		Max e-value to consider a match [default: 1e-10]
 	-s, `-`-min_percent_id
-		Min percent id to consider a match [default: 0.75]
+		Min percent id to consider a match, expressed as a fraction between 0 and 1 [default: 0.75]
 	`-`-max_diff
 		MaxDiff to consider a match (applicable for -m bwa) -- see the aln section of "man bwa" for details [default (defined by bwa): 0.04]
 	`-`-queryalnfract
-		Min percent of the query seq that must match to consider a match (usearch only) [default: 0.35]
+		Min percent of the query seq that must match to consider a match, expressed as a fraction between 0 and 1 (usearch only) [default: 0.35]
 	`-`-targetalnfract
-		Min percent of the target/reference seq that must match to consider a match (usearch only) [default: 0.0]
+		Min percent of the target/reference seq that must match to consider a match, expressed as a fraction between 0 and 1 (usearch only) [default: 0.0]
 	`-`-max_accepts
 		Max_accepts value (usearch only) [default: 1]
 	`-`-max_rejects
 		Max_rejects value to (usearch only) [default: 32]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 2]
+		Number of jobs to start [default: 1]
 	-R, `-`-retain_temp_files
 		Retain temporary files after runs complete (useful for debugging) [default: False]
 	-S, `-`-suppress_submit_jobs

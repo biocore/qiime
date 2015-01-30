@@ -7,9 +7,9 @@
 
 **Description:**
 
-A FASTA file of sequences, can be screened to remove chimeras (sequences generated due to the PCR amplification of multiple templates or parent sequences). QIIME currently includes a taxonomy-assignment-based approach, blast_fragments, for identifying sequences as chimeric and the ChimeraSlayer algorithm. 
+A FASTA file of sequences, can be screened to remove chimeras (sequences generated due to the PCR amplification of multiple templates or parent sequences). QIIME currently includes a taxonomy-assignment-based approach, blast_fragments, for identifying sequences as chimeric and the ChimeraSlayer algorithm.
 
-1. Blast_fragments approach: 
+1. Blast_fragments approach:
 
 The reference sequences (-r) and id-to-taxonomy map (-t) provided are the same format as those provided to `assign_taxonomy.py <./assign_taxonomy.html>`_. The reference sequences are in fasta format, and the id-to-taxonomy map contains tab-separated lines where the first field is a sequence identifier, and the second field is the taxonomy separated by semi-colons (e.g., Archaea;Euryarchaeota;Methanobacteriales;Methanobacterium). The reference collection should be derived from a chimera-checked database (such as the full greengenes database), and filtered to contain only sequences at, for example, a maximum of 97% sequence identity.
 
@@ -77,11 +77,11 @@ usearch61 performs both de novo (abundance based) chimera and reference based de
 	`-`-usearch61_mindiffs
 		Minimum number of diffs in a segment. Increasing this value tends to reduce the number of false positives while reducing sensitivity to very low-divergence chimeras. Must be > 0.[default: 3]
 	`-`-usearch61_mindiv
-		Minimum divergence, i.e. 100% - identity between the query and closest reference database sequence. Expressed as a percentage, so the default is 0.8%, which allows chimeras that are up to 99.2% similar to a reference sequence. This value is chosen to improve sensitivity to very low-divergence chimeras.  Must be > 0.[default: 0.8]
+		Minimum divergence, i.e. 100% - identity between the query and closest reference database sequence. Expressed as a percentage, so the default is 0.8, which allows chimeras that are up to 99.2% similar to a reference sequence. This value is chosen to improve sensitivity to very low-divergence chimeras.  Must be > 0.[default: 0.8]
 	`-`-usearch61_abundance_skew
 		Abundance skew setting for de novo chimera detection with usearch61. Must be > 0. [default: 2.0]
 	`-`-percent_id_usearch61
-		Percent identity threshold for clustering with usearch61. [default: 0.97]
+		Percent identity threshold for clustering with usearch61, expressed as a fraction between 0 and 1. [default: 0.97]
 	`-`-minlen
 		Minimum length of sequence allowed for usearch61 [default: 64]
 	`-`-word_length

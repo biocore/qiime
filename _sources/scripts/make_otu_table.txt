@@ -28,6 +28,8 @@ The script `make_otu_table.py <./make_otu_table.html>`_ tabulates the number of 
 		
 	-t, `-`-taxonomy
 		Path to taxonomy assignment, containing the assignments of taxons to sequences (i.e., resulting txt file from `assign_taxonomy.py <./assign_taxonomy.html>`_) [default: None]
+	-m, `-`-mapping_fp
+		The mapping filepath
 	-e, `-`-exclude_otus_fp
 		Path to a file listing OTU identifiers that should not be included in the OTU table (e.g., the output of `identify_chimeric_seqs.py <./identify_chimeric_seqs.html>`_) or a fasta file where seq ids should be excluded (e.g., failures fasta file from `align_seqs.py <./align_seqs.html>`_)
 
@@ -60,5 +62,13 @@ Make an OTU table, excluding the sequences listed in chimeric_seqs.txt
 ::
 
 	make_otu_table.py -i otu_map.txt -o otu_table_non_chimeric.biom -e chimeric_seqs.txt
+
+**Make OTU table, passing a mapping file with sample metadata:**
+
+Make an OTU table from an OTU map (i.e., result from `pick_otus.py <./pick_otus.html>`_). Write the output file to otu_table.biom.
+
+::
+
+	make_otu_table.py -i otu_map.txt -t tax_assignments.txt -o otu_table.biom -m mapping_file.txt
 
 

@@ -1,0 +1,178 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>summarize_taxa.py – Summarize taxa and store results in a new table or appended to an existing mapping file. &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.8.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="summarize-taxa"></span><div class="section" id="summarize-taxa-py-summarize-taxa-and-store-results-in-a-new-table-or-appended-to-an-existing-mapping-file">
+<span id="index-0"></span><h1><em>summarize_taxa.py</em> &#8211; Summarize taxa and store results in a new table or appended to an existing mapping file.<a class="headerlink" href="#summarize-taxa-py-summarize-taxa-and-store-results-in-a-new-table-or-appended-to-an-existing-mapping-file" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>The <a class="reference external" href="./summarize_taxa.html">summarize_taxa.py</a> script provides summary information of the representation of taxonomic groups within each sample. It takes an OTU table that contains taxonomic information as input. The taxonomic level for which the summary information is provided is designated with the -L option. The meaning of this level will depend on the format of the taxon strings that are returned from the taxonomy assignment step. The taxonomy strings that are most useful are those that standardize the taxonomic level with the depth in the taxonomic strings. For instance, for the RDP classifier taxonomy, Level 2 = Domain (e.g. Bacteria), 3 = Phylum (e.g. Firmicutes), 4 = Class (e.g. Clostridia), 5 = Order (e.g. Clostridiales), 6 = Family (e.g. Clostridiaceae), and 7 = Genus (e.g. Clostridium). By default, the relative abundance of each taxonomic group will be reported, but the raw counts can be returned if -a is passed.</p>
+<p>By default, taxa summary tables will be output in both classic (tab-separated) and BIOM formats. The BIOM-formatted taxa summary tables can be used as input to other QIIME scripts that accept BIOM files.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">summarize_taxa.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-otu_table_fp</dt>
+<dd>Input OTU table filepath [REQUIRED]</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-L, <cite>-</cite>-level</dt>
+<dd>Taxonomic level to summarize by. [default: 2,3,4,5,6]</dd>
+<dt>-m, <cite>-</cite>-mapping</dt>
+<dd>Input metadata mapping filepath. If supplied, then the taxon information will be added to this file. This option is  useful for coloring PCoA plots by taxon abundance or to  perform statistical tests of taxon/mapping associations.</dd>
+<dt><cite>-</cite>-md_identifier</dt>
+<dd>The relevant observation metadata key [default: taxonomy]</dd>
+<dt><cite>-</cite>-md_as_string</dt>
+<dd>Metadata is included as string [default: metadata is included as list]</dd>
+<dt>-d, <cite>-</cite>-delimiter</dt>
+<dd>Delimiter separating taxonomy levels. [default: ;]</dd>
+<dt>-r, <cite>-</cite>-relative_abundance</dt>
+<dd>DEPRECATED: please use -a/&#8211;absolute_abundance to disable relative abundance [default: ]</dd>
+<dt>-a, <cite>-</cite>-absolute_abundance</dt>
+<dd>If present, the absolute abundance of the lineage in  each sample is reported. By default, this script uses relative abundance [default: False]</dd>
+<dt>-l, <cite>-</cite>-lower_percentage</dt>
+<dd>If present, OTUs having higher absolute abundance are trimmed. To remove OTUs that make up more than 5% of the total dataset you would pass 0.05. [default: None]</dd>
+<dt>-u, <cite>-</cite>-upper_percentage</dt>
+<dd>If present, OTUs having lower absolute abundance are trimmed. To remove the OTUs that makes up less than 45% of the total dataset you would pass 0.45. [default: None]</dd>
+<dt>-t, <cite>-</cite>-transposed_output</dt>
+<dd>If present, the output will be written transposed from the regular output. This is helpful in cases when you want to use Site Painter to visualize your data [default: False]</dd>
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>Path to the output directory</dd>
+<dt><cite>-</cite>-suppress_classic_table_output</dt>
+<dd>If present, the classic (TSV) format taxon table will not be created in the output directory. This option is ignored if -m/&#8211;mapping is present [default: False]</dd>
+<dt><cite>-</cite>-suppress_biom_table_output</dt>
+<dd>If present, the BIOM-formatted taxon table will not be created in the output directory. This option is ignored if -m/&#8211;mapping is present [default: False]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>There are two possible output formats depending on whether or not a mapping file is provided with the -m option. If a mapping file is not provided, a table is returned where the taxonomic groups are each in a row and there is a column for each sample. If a mapping file is provided, the summary information will be appended to this file. Specifically, a new column will be made for each taxonomic group to which the relative abundances or raw counts will be added to the existing rows for each sample. The addition of the taxonomic information to the mapping file allows for taxonomic coloration of Principal coordinates plots in the 3d viewer. As described in the <a class="reference external" href="./make_emperor.html">make_emperor.py</a> section, principal coordinates plots can be dynamically colored based on any of the metadata columns in the mapping file. Dynamic coloration of the plots by the relative abundances of each taxonomic group can help to distinguish which taxonomic groups are driving the clustering patterns.</p>
+<p><strong>Examples:</strong></p>
+<p>Summarize taxa based at taxonomic levels 2, 3, 4, 5, and 6, and write resulting taxa tables to the directory &#8221;./tax&#8221;</p>
+<div class="highlight-python"><pre>summarize_taxa.py -i otu_table.biom -o ./tax</pre>
+</div>
+<p><strong>Examples:</strong></p>
+<p>Summarize taxa based at taxonomic levels 2, 3, 4, 5, and 6, and write resulting mapping files to the directory &#8221;./tax&#8221;</p>
+<div class="highlight-python"><pre>summarize_taxa.py -i otu_table.biom -o tax_mapping/ -m Fasting_Map.txt</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>
