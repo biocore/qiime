@@ -787,7 +787,7 @@ class SortMeRNATaxonAssignerTests(TestCase):
 
         self.assertRaises(ValueError,
                           q,
-                          seq_path=self.input_seqs_fp) 
+                          seq_path=self.input_seqs_fp)
 
     def test_SortMeRNATaxonAssigner_call_(self):
         """SortMeRNATaxonAssigner __call__ should return
@@ -808,7 +808,7 @@ class SortMeRNATaxonAssignerTests(TestCase):
 
         actual = p(self.input_seqs_fp)
 
-        self.assertEqual(actual, expected)      
+        self.assertEqual(actual, expected)
 
     def test_parse_id_to_taxonomy_file(self):
         """SortMeRNATaxonAssigner parsing taxonomy files functions
@@ -839,7 +839,7 @@ class SortMeRNATaxonAssignerTests(TestCase):
             's3': [['Archaea', 'Crenarchaeota', 'uncultured', 'uncultured'],
                    ['Archaea', 'Crenarchaeota', 'uncultured', 'uncultured']],
             's2': [['Archaea', 'Euryarchaeota', 'Methanomicrobiales', 'Methanomicrobium et rel.']],
-            's1': [['Archaea', 'Euryarchaeota', 'Halobacteriales', 'uncultured']], 
+            's1': [['Archaea', 'Euryarchaeota', 'Halobacteriales', 'uncultured']],
             's6': [[]],
             's5': [['Archaea', 'Crenarchaeota', 'uncultured', 'uncultured'],
                    ['Archaea', 'Crenarchaeota', 'uncultured', 'uncultured']],
@@ -864,7 +864,7 @@ class SortMeRNATaxonAssignerTests(TestCase):
             's3': [['Archaea', 'Crenarchaeota', 'uncultured', 'uncultured'],
                    ['Archaea', 'Crenarchaeota', 'uncultured', 'uncultured']],
             's2': [['Archaea', 'Euryarchaeota', 'Methanomicrobiales', 'Methanomicrobium et rel.']],
-            's1': [['Archaea', 'Euryarchaeota', 'Halobacteriales', 'uncultured']], 
+            's1': [['Archaea', 'Euryarchaeota', 'Halobacteriales', 'uncultured']],
             's6': [[]],
             's5': [['Archaea', 'Crenarchaeota', 'uncultured', 'uncultured'],
                    ['Archaea', 'Crenarchaeota', 'uncultured', 'uncultured']],
@@ -985,14 +985,14 @@ class SortMeRNATaxonAssignerTests(TestCase):
 
 # SortMeRNA's Blast tabular output
 blast_tabular_fp = """s1\tAY800210\t100\t902\t0\t0\t1\t902\t1\t902\t0\t1567\t902M\t100
-s1\tEU883771\t73\t825\t167\t61\t78\t902\t1\t802\t4.52e-127\t444\t77S48M1D4M1I27M1I3M2D5M1I23M3D35M1I152M1D10M1D4M1I7M1D1M1D5M1D3M1I65M1D58M1D5M1I30M1D42M1I4M1D48M3I1M6I3M6I2M1I3M1I2M4I2M9I89M1I4M1D13M1D3M1I23M2D2M2I57M\t91.5    
-s2\tEU883771\t100\t908\t0\t0\t1\t908\t1\t908\t0\t1577\t908M\t100 
-s2\tAY800210\t72.7\t794\t167\t61\t1\t794\t78\t894\t6.84e-123\t430\t48M1I4M1D27M1D3M2I5M1D23M3I35M1D152M1I10M1I4M1D7M1I1M1I5M1I3M1D65M1I58M1I5M1D30M1I42M1D4M1I48M3D1M6D3M6D2M1D3M1D2M4D2M9D89M1D4M1I13M1I3M1D23M2I2M2D49M114S\t87.4    
-s3\tEF503699\t100\t900\t0\t0\t1\t900\t1\t900\t0\t1563\t900M\t100 
-s3\tEF503697\t91\t848\t49\t30\t12\t859\t10\t883\t0\t1140\t11S34M1D40M1D562M1I7M1D37M1D20M1D3M1I3M1D7M1D3M1D12M1D11M2D10M1D4M1D11M1D5M1D4M1D4M1D11M2D7M1D6M1D5M1D9M1D5M3D14M2D12M41S\t94.2    
-s4\tDQ260310\t100\t900\t0\t0\t1\t900\t1\t900\t0\t1563\t900M\t100 
-s5\tEF503697\t100\t900\t0\t0\t1\t900\t1\t900\t0\t1563\t900M\t100 
-s5\tEF503699\t91\t874\t49\t30\t10\t883\t12\t859\t0\t1140\t9S34M1I40M1I562M1D7M1I37M1I20M1I3M1D3M1I7M1I3M1I12M1I11M2I10M1I4M1I11M1I5M1I4M1I4M1I11M2I7M1I6M1I5M1I9M1I5M3I14M2I12M17S\t97.1    
+s1\tEU883771\t73\t825\t167\t61\t78\t902\t1\t802\t4.52e-127\t444\t77S48M1D4M1I27M1I3M2D5M1I23M3D35M1I152M1D10M1D4M1I7M1D1M1D5M1D3M1I65M1D58M1D5M1I30M1D42M1I4M1D48M3I1M6I3M6I2M1I3M1I2M4I2M9I89M1I4M1D13M1D3M1I23M2D2M2I57M\t91.5
+s2\tEU883771\t100\t908\t0\t0\t1\t908\t1\t908\t0\t1577\t908M\t100
+s2\tAY800210\t72.7\t794\t167\t61\t1\t794\t78\t894\t6.84e-123\t430\t48M1I4M1D27M1D3M2I5M1D23M3I35M1D152M1I10M1I4M1D7M1I1M1I5M1I3M1D65M1I58M1I5M1D30M1I42M1D4M1I48M3D1M6D3M6D2M1D3M1D2M4D2M9D89M1D4M1I13M1I3M1D23M2I2M2D49M114S\t87.4
+s3\tEF503699\t100\t900\t0\t0\t1\t900\t1\t900\t0\t1563\t900M\t100
+s3\tEF503697\t91\t848\t49\t30\t12\t859\t10\t883\t0\t1140\t11S34M1D40M1D562M1I7M1D37M1D20M1D3M1I3M1D7M1D3M1D12M1D11M2D10M1D4M1D11M1D5M1D4M1D4M1D11M2D7M1D6M1D5M1D9M1D5M3D14M2D12M41S\t94.2
+s4\tDQ260310\t100\t900\t0\t0\t1\t900\t1\t900\t0\t1563\t900M\t100
+s5\tEF503697\t100\t900\t0\t0\t1\t900\t1\t900\t0\t1563\t900M\t100
+s5\tEF503699\t91\t874\t49\t30\t10\t883\t12\t859\t0\t1140\t9S34M1I40M1I562M1D7M1I37M1I20M1I3M1D3M1I7M1I3M1I12M1I11M2I10M1I4M1I11M1I5M1I4M1I4M1I11M2I7M1I6M1I5M1I9M1I5M3I14M2I12M17S\t97.1
 s6\t*\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t*\t0
 """
 
@@ -1795,7 +1795,7 @@ rdp_test1_log_file_contents = \
 Application:RDP classfier
 Citation:Wang, Q, G. M. Garrity, J. M. Tiedje, and J. R. Cole. 2007. Naive Bayesian Classifier for Rapid Assignment of rRNA Sequences into the New Bacterial Taxonomy. Appl Environ Microbiol. 73(16):5261-7.
 Taxonomy:RDP
-Confidence:0.8
+Confidence:0.5
 id_to_taxonomy_fp:None
 reference_sequences_fp:None
 training_data_properties_fp:None
