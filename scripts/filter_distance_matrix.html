@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="filter_fasta.py – This script can be applied to remove sequences from a fasta or fastq file based on input criteria." href="filter_fasta.html" />
+    <link rel="prev" title="filter_alignment.py – Filter sequence alignment by removing highly variable regions" href="filter_alignment.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="filter_fasta.html" title="filter_fasta.py – This script can be applied to remove sequences from a fasta or fastq file based on input criteria."
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="filter_alignment.html" title="filter_alignment.py – Filter sequence alignment by removing highly variable regions"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -85,13 +96,16 @@
 </div>
 <p><strong>Output:</strong></p>
 <p>Filter samples ids listed in sample_id_list.txt from dm.txt</p>
-<div class="highlight-python"><pre>filter_distance_matrix.py -i dm.txt -o dm_out_sample_list.txt --sample_id_fp sample_id_list.txt</pre>
+<div class="highlight-python"><div class="highlight"><pre>filter_distance_matrix.py -i dm.txt -o dm_out_sample_list.txt --sample_id_fp sample_id_list.txt
+</pre></div>
 </div>
 <p>Filter samples ids in otu_table.biom from dm.txt</p>
-<div class="highlight-python"><pre>filter_distance_matrix.py -i dm.txt -o dm_out_otu_table.txt -t otu_table.biom</pre>
+<div class="highlight-python"><div class="highlight"><pre>filter_distance_matrix.py -i dm.txt -o dm_out_otu_table.txt -t otu_table.biom
+</pre></div>
 </div>
 <p>Filter samples ids where DOB is 20061218 in Fasting_Map.txt. (Run &#8220;<a class="reference external" href="./filter_samples_from_otu_table.html">filter_samples_from_otu_table.py</a> -h&#8221; for additional information on how metadata filtering can be specified.)</p>
-<div class="highlight-python"><pre>filter_distance_matrix.py -i dm.txt -o dm_out_mapping_file.txt -m Fasting_Map.txt -s "DOB:20061218"</pre>
+<div class="highlight-python"><div class="highlight"><pre>filter_distance_matrix.py -i dm.txt -o dm_out_mapping_file.txt -m Fasting_Map.txt -s &quot;DOB:20061218&quot;
+</pre></div>
 </div>
 </div>
 
@@ -104,17 +118,27 @@
 
     
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="filter_alignment.html"
+                        title="previous chapter"><em>filter_alignment.py</em> &#8211; Filter sequence alignment by removing highly variable regions</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="filter_fasta.html"
+                        title="next chapter"><em>filter_fasta.py</em> &#8211; This script can be applied to remove sequences from a fasta or fastq file based on input criteria.</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -138,16 +162,24 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="filter_fasta.html" title="filter_fasta.py – This script can be applied to remove sequences from a fasta or fastq file based on input criteria."
+             >next</a> |</li>
+        <li class="right" >
+          <a href="filter_alignment.html" title="filter_alignment.py – Filter sequence alignment by removing highly variable regions"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

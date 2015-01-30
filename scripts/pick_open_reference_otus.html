@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>pick_open_reference_otus.py – &mdash; Homepage</title>
+    <title>pick_open_reference_otus.py – Perform open-reference OTU picking &mdash; Homepage</title>
     
     <link rel="stylesheet" href="../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="pick_otus.py – OTU picking" href="pick_otus.html" />
+    <link rel="prev" title="pick_de_novo_otus.py – A workflow for de novo OTU picking, taxonomy assignment, phylogenetic tree construction, and OTU table construction." href="pick_de_novo_otus.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="pick_otus.html" title="pick_otus.py – OTU picking"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pick_de_novo_otus.html" title="pick_de_novo_otus.py – A workflow for de novo OTU picking, taxonomy assignment, phylogenetic tree construction, and OTU table construction."
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -54,9 +65,136 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <span class="target" id="pick-open-reference-otus"></span><div class="section" id="pick-open-reference-otus-py">
-<span id="index-0"></span><h1><em>pick_open_reference_otus.py</em> &#8211;<a class="headerlink" href="#pick-open-reference-otus-py" title="Permalink to this headline">¶</a></h1>
+  <span class="target" id="pick-open-reference-otus"></span><div class="section" id="pick-open-reference-otus-py-perform-open-reference-otu-picking">
+<span id="index-0"></span><h1><em>pick_open_reference_otus.py</em> &#8211; Perform open-reference OTU picking<a class="headerlink" href="#pick-open-reference-otus-py-perform-open-reference-otu-picking" title="Permalink to this headline">¶</a></h1>
 <p><strong>Description:</strong></p>
+<p>This script is broken down into 4 possible OTU picking steps, and 2 steps
+involving the creation of OTU tables and trees. The commands for each step are
+described below, including what the input and resulting output files are.
+Additionally, the optional specified parameters of this script that can be passed
+are referenced.</p>
+<p>Step 1) Prefiltering and picking closed reference OTUs
+The first step is an optional prefiltering of the input fasta file to remove
+sequences that do not hit the reference database with a given sequence
+identity (PREFILTER_PERCENT_ID). This step can take a very long time, so is
+disabled by default. The prefilter parameters can be changed with the options:
+&#8211;prefilter_refseqs_fp
+&#8211;prefilter_percent_id
+This filtering is accomplished by picking closed reference OTUs at the specified
+prefilter percent id to produce:
+prefilter_otus/seqs_otus.log
+prefilter_otus/seqs_otus.txt
+prefilter_otus/seqs_failures.txt
+prefilter_otus/seqs_clusters.uc
+Next, the seqs_failures.txt file is used to remove these failed sequences from
+the original input fasta file to produce:
+prefilter_otus/prefiltered_seqs.fna
+This prefiltered_seqs.fna file is then considered to contain the reads
+of the marker gene of interest, rather than spurious reads such as host
+genomic sequence or sequencing artifacts.</p>
+<p>If prefiltering is applied, this step progresses with the prefiltered_seqs.fna.
+Otherwise it progresses with the input file. The Step 1 closed reference OTU
+picking is done against the supplied reference database. This command produces:
+step1_otus/_clusters.uc
+step1_otus/_failures.txt
+step1_otus/_otus.log
+step1_otus/_otus.txt</p>
+<p>The representative sequence for each of the Step 1 picked OTUs are selected to
+produce:
+step1_otus/step1_rep_set.fna</p>
+<p>Next, the sequences that failed to hit the reference database in Step 1 are
+filtered from the Step 1 input fasta file to produce:
+step1_otus/failures.fasta</p>
+<p>Then the failures.fasta file is randomly subsampled to PERCENT_SUBSAMPLE of
+the sequences to produce:
+step1_otus/subsampled_failures.fna.
+Modifying PERCENT_SUBSAMPLE can have a big effect on run time for this workflow,
+but will not alter the final OTUs.</p>
+<p>Step 2) The subsampled_failures.fna are next clustered de novo, and each cluster
+centroid is then chosen as a &#8220;new reference sequence&#8221; for use as the reference
+database in Step 3, to produce:
+step2_otus/subsampled_seqs_clusters.uc
+step2_otus/subsampled_seqs_otus.log
+step2_otus/subsampled_seqs_otus.txt
+step2_otus/step2_rep_set.fna</p>
+<p>Step 3) Pick Closed Reference OTUs against Step 2 de novo OTUs
+Closed reference OTU picking is performed using the failures.fasta file created
+in Step 1 against the &#8216;reference&#8217; de novo database created in Step 2 to produce:
+step3_otus/failures_seqs_clusters.uc
+step3_otus/failures_seqs_failures.txt
+step3_otus/failures_seqs_otus.log
+step3_otus/failures_seqs_otus.txt</p>
+<p>Assuming the user has NOT passed the &#8211;suppress_step4 flag:
+The sequences which failed to hit the reference database in Step 3 are removed
+from the Step 3 input fasta file to produce:
+step3_otus/failures_failures.fasta</p>
+<p>Step 4) Additional de novo OTU picking
+It is assumed by this point that the majority of sequences have been assigned
+to an OTU, and thus the sequence count of failures_failures.fasta is small
+enough that de novo OTU picking is computationally feasible. However, depending
+on the sequences being used, it might be that the failures_failures.fasta file
+is still prohibitively large for de novo clustering, and the jobs might take
+too long to finish. In this case it is likely that the user would want to pass
+the &#8211;suppress_step4 flag to avoid this additional de novo step.</p>
+<p>A final round of de novo OTU picking is done on the failures_failures.fasta file
+to produce:
+step4_otus/failures_failures_cluster.uc
+step4_otus/failures_failures_otus.log
+step4_otus/failures_failures_otus.txt</p>
+<p>A representative sequence for each cluster is chosen to produce:
+step4_otus/step4_rep_set.fna</p>
+<p>Step 5) Produce the final OTU map and rep set
+If Step 4 is completed, the OTU maps from Step 1, Step 3, and Step 4 are
+concatenated to produce:
+final_otu_map.txt</p>
+<p>If Step 4 was not completed, the OTU maps from Steps 1 and Step 3 are
+concatenated together to produce:
+final_otu_map.txt</p>
+<p>Next, the minimum specified OTU size required to keep an OTU is specified with
+the &#8211;min_otu_size flag. For example, if the user left the &#8211;min_otu_size as the
+default value of 2, requiring each OTU to contain at least 2 sequences, the any
+OTUs which failed to meet this criteria would be removed from the
+final_otu_map.txt to produce:
+final_otu_map_mc2.txt</p>
+<p>If &#8211;min_otu_size 10 was passed, it would produce:
+final_otu_map_mc10.txt</p>
+<p>The final_otu_map_mc2.txt is used to build the final representative set:
+rep_set.fna</p>
+<p>Step 6) Making the OTU tables and trees
+An OTU table is built using the final_otu_map_mc2.txt file to produce:
+otu_table_mc2.biom</p>
+<p>As long as the &#8211;suppress_taxonomy_assignment flag is NOT passed,
+then taxonomy will be assigned to each of the representative sequences
+in the final rep_set produced in Step 5, producing:
+rep_set_tax_assignments.log
+rep_set_tax_assignments.txt
+This taxonomic metadata is then added to the otu_table_mc2.biom to produce:
+otu_table_mc_w_tax.biom</p>
+<p>As long as the &#8211;suppress_align_and_tree is NOT passed, then the rep_set.fna
+file will be used to align the sequences and build the phylogenetic tree,
+which includes the de novo OTUs. Any sequences that fail to align are
+omitted from the OTU table and tree to produce:
+otu_table_mc_no_pynast_failures.biom
+rep_set.tre</p>
+<p>If both &#8211;suppress_taxonomy_assignment and &#8211;suppress_align_and_tree are
+NOT passed, the script will produce:
+otu_table_mc_w_tax_no_pynast_failures.biom</p>
+<p>It is important to remember that with a large workflow script like this that
+the user can jump into intermediate steps. For example, imagine that for some
+reason the script was interrupted on Step 2, and the user did not want to go
+through the process of re-picking OTUs as was done in Step 1. They can simply
+rerun the script and pass in the:
+&#8211;step_1_otu_map_fp
+&#8211;step1_failures_fasta_fp
+parameters, and the script will continue with Steps 2 - 4.</p>
+<p><strong>Note:</strong> If most or all of your sequences are failing to hit the reference
+during the prefiltering or closed-reference OTU picking steps, your sequences
+may be in the reverse orientation with respect to your reference database. To
+address this, you should add the following line to your parameters file
+(creating one, if necessary) and pass this file as -p:</p>
+<p>pick_otus:enable_rev_strand_match True</p>
+<p>Be aware that this doubles the amount of memory used in these steps of the
+workflow.</p>
 <p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">pick_open_reference_otus.py</span> <span class="pre">[options]</span></tt></p>
 <p><strong>Input Arguments:</strong></p>
 <div class="admonition note">
@@ -65,8 +203,6 @@
 <dl class="docutils">
 <dt>-i, <cite>-</cite>-input_fps</dt>
 <dd>The input sequences filepath or comma-separated list of filepaths</dd>
-<dt>-r, <cite>-</cite>-reference_fp</dt>
-<dd>The reference sequences</dd>
 <dt>-o, <cite>-</cite>-output_dir</dt>
 <dd>The output directory</dd>
 </dl>
@@ -74,6 +210,8 @@
 <dl class="last docutils">
 <dt>-m, <cite>-</cite>-otu_picking_method</dt>
 <dd>The OTU picking method to use for reference and de novo steps. Passing usearch61, for example, means that usearch61 will be used for the de novo steps and usearch61_ref will be used for reference steps. [default: uclust]</dd>
+<dt>-r, <cite>-</cite>-reference_fp</dt>
+<dd>The reference sequences [default: /Users/jairideout/.virtualenvs/qiime/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set/97_otus.fasta]</dd>
 <dt>-p, <cite>-</cite>-parameter_fp</dt>
 <dd>Path to the parameter file, which specifies changes to the default behavior. See <a class="reference external" href="http://www.qiime.org/documentation/file_formats.html#qiime-parameters">http://www.qiime.org/documentation/file_formats.html#qiime-parameters</a> . [if omitted, default values will be used]</dd>
 <dt><cite>-</cite>-prefilter_refseqs_fp</dt>
@@ -85,15 +223,17 @@
 <dt>-a, <cite>-</cite>-parallel</dt>
 <dd>Run in parallel where available [default: False]</dd>
 <dt>-O, <cite>-</cite>-jobs_to_start</dt>
-<dd>Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 2]</dd>
+<dd>Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 1]</dd>
 <dt>-s, <cite>-</cite>-percent_subsample</dt>
-<dd>Percent of failure sequences to include in the subsample to cluster de novo (larger numbers should give more comprehensive results but will be slower) [default:0.001]</dd>
+<dd>Percent of failure sequences to include in the subsample to cluster de novo, expressed as a fraction between 0 and 1 (larger numbers should give more comprehensive results but will be slower) [default:0.001]</dd>
 <dt><cite>-</cite>-prefilter_percent_id</dt>
-<dd>Sequences are pre-clustered at this percent id against the reference and any reads which fail to hit are discarded (a quality filter); pass 0.0 to disable [default:0.60]</dd>
+<dd>Sequences are pre-clustered at this percent id (expressed as a fraction between 0 and 1) against the reference and any reads which fail to hit are discarded (a quality filter); pass 0.0 to disable [default:0.0]</dd>
 <dt><cite>-</cite>-step1_otu_map_fp</dt>
-<dd>Reference OTU picking OTU map  (to avoid rebuilding if one has already been built)</dd>
+<dd>Reference OTU picking OTU map, to avoid rebuilding if one has already been built. This must be an OTU map generated by this workflow, not (for example) <a class="reference external" href="./pick_closed_reference_otus.html">pick_closed_reference_otus.py</a>.</dd>
 <dt><cite>-</cite>-step1_failures_fasta_fp</dt>
-<dd>Reference OTU picking failures fasta filepath  (to avoid rebuilding if one has already been built)</dd>
+<dd>Reference OTU picking failures fasta filepath, to avoid rebuilding if one has already been built. This must be a failures file generated by this workflow, not (for example) <a class="reference external" href="./pick_closed_reference_otus.html">pick_closed_reference_otus.py</a>.</dd>
+<dt><cite>-</cite>-minimum_failure_threshold</dt>
+<dd>The minimum number of sequences that must fail to hit the reference for subsampling to be performed. If fewer than this number of sequences fail to hit the reference, the de novo clustering step will run serially rather than invoking the subsampled open reference approach to improve performance. [default: 100000]</dd>
 <dt><cite>-</cite>-suppress_step4</dt>
 <dd>Suppress the final de novo OTU picking step  (may be necessary for extremely large data sets) [default: False]</dd>
 <dt><cite>-</cite>-min_otu_size</dt>
@@ -105,20 +245,29 @@
 </dl>
 </div>
 <p><strong>Output:</strong></p>
+<p>Run the subsampled open-reference OTU picking workflow on seqs1.fna using refseqs.fna as the reference collection and using sortmerna and sumaclust as the OTU picking methods. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will genenerally look like /home/ubuntu/my_analysis/</p>
+<div class="highlight-python"><div class="highlight"><pre>pick_open_reference_otus.py -i $PWD/seqs1.fna -r $PWD/refseqs.fna -o $PWD/ucrss_sortmerna_sumaclust/ -p $PWD/ucrss_smr_suma_params.txt -m sortmerna_sumaclust
+</pre></div>
+</div>
 <p>Run the subsampled open-reference OTU picking workflow on seqs1.fna using refseqs.fna as the reference collection. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/</p>
-<div class="highlight-python"><pre>pick_open_reference_otus.py -i $PWD/seqs1.fna -r $PWD/refseqs.fna -o $PWD/ucrss/ -s 0.1 -p $PWD/ucrss_params.txt</pre>
+<div class="highlight-python"><div class="highlight"><pre>pick_open_reference_otus.py -i $PWD/seqs1.fna -r $PWD/refseqs.fna -o $PWD/ucrss/ -s 0.1 -p $PWD/ucrss_params.txt
+</pre></div>
 </div>
 <p>Run the subsampled open-reference OTU picking workflow on seqs1.fna using refseqs.fna as the reference collection and using usearch61 and usearch61_ref as the OTU picking methods. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/</p>
-<div class="highlight-python"><pre>pick_open_reference_otus.py -i $PWD/seqs1.fna -r $PWD/refseqs.fna -o $PWD/ucrss_usearch/ -s 0.1 -p $PWD/ucrss_params.txt -m usearch61</pre>
+<div class="highlight-python"><div class="highlight"><pre>pick_open_reference_otus.py -i $PWD/seqs1.fna -r $PWD/refseqs.fna -o $PWD/ucrss_usearch/ -s 0.1 -p $PWD/ucrss_params.txt -m usearch61
+</pre></div>
 </div>
 <p>Run the subsampled open-reference OTU picking workflow in iterative mode on seqs1.fna and seqs2.fna using refseqs.fna as the initial reference collection. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/</p>
-<div class="highlight-python"><pre>pick_open_reference_otus.py -i $PWD/seqs1.fna,$PWD/seqs2.fna -r $PWD/refseqs.fna -o $PWD/ucrss_iter/ -s 0.1 -p $PWD/ucrss_params.txt</pre>
+<div class="highlight-python"><div class="highlight"><pre>pick_open_reference_otus.py -i $PWD/seqs1.fna,$PWD/seqs2.fna -r $PWD/refseqs.fna -o $PWD/ucrss_iter/ -s 0.1 -p $PWD/ucrss_params.txt
+</pre></div>
 </div>
 <p>Run the subsampled open-reference OTU picking workflow in iterative mode on seqs1.fna and seqs2.fna using refseqs.fna as the initial reference collection. This is useful if you&#8217;re working with marker genes that do not result in useful alignment (e.g., fungal ITS). ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/</p>
-<div class="highlight-python"><pre>pick_open_reference_otus.py -i $PWD/seqs1.fna,$PWD/seqs2.fna -r $PWD/refseqs.fna -o $PWD/ucrss_iter_no_tree/ -s 0.1 -p $PWD/ucrss_params.txt --suppress_align_and_tree</pre>
+<div class="highlight-python"><div class="highlight"><pre>pick_open_reference_otus.py -i $PWD/seqs1.fna,$PWD/seqs2.fna -r $PWD/refseqs.fna -o $PWD/ucrss_iter_no_tree/ -s 0.1 -p $PWD/ucrss_params.txt --suppress_align_and_tree
+</pre></div>
 </div>
 <p>Run the subsampled open-reference OTU picking workflow in iterative mode on seqs1.fna and seqs2.fna using refseqs.fna as the initial reference collection, suppressing assignment of taxonomy. This is useful if you&#8217;re working with a reference collection without associated taxonomy. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/</p>
-<div class="highlight-python"><pre>pick_open_reference_otus.py -i $PWD/seqs1.fna,$PWD/seqs2.fna -r $PWD/refseqs.fna -o $PWD/ucrss_iter_no_tax/ -s 0.1 -p $PWD/ucrss_params.txt --suppress_taxonomy_assignment</pre>
+<div class="highlight-python"><div class="highlight"><pre>pick_open_reference_otus.py -i $PWD/seqs1.fna,$PWD/seqs2.fna -r $PWD/refseqs.fna -o $PWD/ucrss_iter_no_tax/ -s 0.1 -p $PWD/ucrss_params.txt --suppress_taxonomy_assignment
+</pre></div>
 </div>
 </div>
 
@@ -131,17 +280,27 @@
 
     
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pick_de_novo_otus.html"
+                        title="previous chapter"><em>pick_de_novo_otus.py</em> &#8211; A workflow for de novo OTU picking, taxonomy assignment, phylogenetic tree construction, and OTU table construction.</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pick_otus.html"
+                        title="next chapter"><em>pick_otus.py</em> &#8211; OTU picking</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -165,16 +324,24 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="pick_otus.html" title="pick_otus.py – OTU picking"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pick_de_novo_otus.html" title="pick_de_novo_otus.py – A workflow for de novo OTU picking, taxonomy assignment, phylogenetic tree construction, and OTU table construction."
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

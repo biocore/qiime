@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="compare_distance_matrices.py – Computes Mantel correlation tests between sets of distance matrices" href="compare_distance_matrices.html" />
+    <link rel="prev" title="compare_alpha_diversity.py – This script compares alpha diversities based on a two-sample t-test using either parametric or non-parametric (Monte Carlo) methods." href="compare_alpha_diversity.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="compare_distance_matrices.html" title="compare_distance_matrices.py – Computes Mantel correlation tests between sets of distance matrices"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="compare_alpha_diversity.html" title="compare_alpha_diversity.py – This script compares alpha diversities based on a two-sample t-test using either parametric or non-parametric (Monte Carlo) methods."
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -59,7 +70,7 @@
 <p><strong>Description:</strong></p>
 <p>This script allows for the analysis of the strength and statistical
 significance of sample groupings using a distance matrix as the primary input.
-Several statistical methods are available: adonis, ANOSIM, BEST, Moran&#8217;s I,
+Several statistical methods are available: adonis, ANOSIM, BIO-ENV, Moran&#8217;s I,
 MRPP, PERMANOVA, PERMDISP, and db-RDA.</p>
 <p>Note: R&#8217;s vegan and ape packages are used to compute many of these methods, and
 for the ones that are not, their implementations are based on the
@@ -87,13 +98,17 @@ between those groups. For example, you might test whether &#8216;Control&#8217; 
 significantly different from &#8216;Fast&#8217; samples. Since ANOSIM is nonparametric,
 significance is determined through permutations. See vegan::anosim for more
 details.</p>
-<p>BEST - This method looks at the numerical environmental variables relating
-samples in a distance matrix. For instance, given a UniFrac distance matrix and
-pH and latitude (or any other number of variables) in soil samples, BEST will
-rank them in order of which best explain patterns in the communities. This
-method will only accept categories that are numerical (continuous or discrete).
-This is currently the only method in this script that accepts more than one
-category (via -c). See vegan::bioenv for more details.</p>
+<p>BIO-ENV - Finds subsets of variables whose Euclidean distances (after scaling
+the variables) are maximally rank-correlated with the distance matrix. For
+example, the distance matrix might contain UniFrac distances between
+communities, and the variables might be numeric environmental variables (e.g.,
+pH and latitude). Correlation between the community distance matrix and
+Euclidean environmental distance matrix is computed using Spearman&#8217;s rank
+correlation coefficient (rho). This method will only accept categories that are
+numerical (continuous or discrete). This is currently the only method in the
+script that accepts more than one category (via -c). See vegan::bioenv for more
+details. This method is also known as BEST (previously called BIO-ENV) in the
+PRIMER-E software package.</p>
 <p>Moran&#8217;s I - This method uses the numerical (e.g. geographical) data supplied to
 identify what type of spatial configuration occurs in the samples. For example,
 are they dispersed, clustered, or of no distinctly noticeable configuration
@@ -137,13 +152,13 @@ the accompanying tutorial, which can be found at
 <p><strong>[REQUIRED]</strong></p>
 <dl class="docutils">
 <dt><cite>-</cite>-method</dt>
-<dd>The statistical method to use. Valid options: adonis, anosim, best, morans_i, mrpp, permanova, permdisp, dbrda</dd>
+<dd>The statistical method to use. Valid options: adonis, anosim, bioenv, morans_i, mrpp, permanova, permdisp, dbrda</dd>
 <dt>-i, <cite>-</cite>-input_dm</dt>
 <dd>The input distance matrix. WARNING: Only symmetric, hollow distance matrices may be used as input. Asymmetric distance matrices, such as those obtained by the UniFrac Gain metric (i.e. <a class="reference external" href="./beta_diversity.html">beta_diversity.py</a> -m unifrac_g), should not be used as input</dd>
 <dt>-m, <cite>-</cite>-mapping_file</dt>
 <dd>The metadata mapping file</dd>
 <dt>-c, <cite>-</cite>-categories</dt>
-<dd>A comma-delimited list of categories from the mapping file. Note: all methods except for BEST take just a single category. If multiple categories are provided, only the first will be used</dd>
+<dd>A comma-delimited list of categories from the mapping file. Note: all methods except for BIO-ENV accept just a single category. If multiple categories are provided, only the first will be used</dd>
 <dt>-o, <cite>-</cite>-output_dir</dt>
 <dd>Path to the output directory</dd>
 </dl>
@@ -165,11 +180,13 @@ these methods, including what information is included in the output files.</p>
 text file and a PDF of the ordination plot.</p>
 <p><strong>adonis example:</strong></p>
 <p>Runs the adonis statistical method on a distance matrix and mapping file using the Treatment category and 999 permutations, writing the output to the &#8216;adonis_out&#8217; directory.</p>
-<div class="highlight-python"><pre>compare_categories.py --method adonis -i unweighted_unifrac_dm.txt -m Fasting_Map.txt -c Treatment -o adonis_out -n 999</pre>
+<div class="highlight-python"><div class="highlight"><pre>compare_categories.py --method adonis -i unweighted_unifrac_dm.txt -m Fasting_Map.txt -c Treatment -o adonis_out -n 999
+</pre></div>
 </div>
 <p><strong>ANOSIM example:</strong></p>
 <p>Runs the ANOSIM statistical method on a distance matrix and mapping file using the Treatment category and 99 permutations, writing the output to the &#8216;anosim_out&#8217; directory.</p>
-<div class="highlight-python"><pre>compare_categories.py --method anosim -i unweighted_unifrac_dm.txt -m Fasting_Map.txt -c Treatment -o anosim_out -n 99</pre>
+<div class="highlight-python"><div class="highlight"><pre>compare_categories.py --method anosim -i unweighted_unifrac_dm.txt -m Fasting_Map.txt -c Treatment -o anosim_out -n 99
+</pre></div>
 </div>
 </div>
 
@@ -182,17 +199,27 @@ text file and a PDF of the ordination plot.</p>
 
     
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="compare_alpha_diversity.html"
+                        title="previous chapter"><em>compare_alpha_diversity.py</em> &#8211; This script compares alpha diversities based on a two-sample t-test using either parametric or non-parametric (Monte Carlo) methods.</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="compare_distance_matrices.html"
+                        title="next chapter"><em>compare_distance_matrices.py</em> &#8211; Computes Mantel correlation tests between sets of distance matrices</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -216,16 +243,24 @@ text file and a PDF of the ordination plot.</p>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="compare_distance_matrices.html" title="compare_distance_matrices.py – Computes Mantel correlation tests between sets of distance matrices"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="compare_alpha_diversity.html" title="compare_alpha_diversity.py – This script compares alpha diversities based on a two-sample t-test using either parametric or non-parametric (Monte Carlo) methods."
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

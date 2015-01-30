@@ -1,0 +1,168 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>simsam.py – Simulate samples for each sample in an OTU table, using a phylogenetic tree. &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.8.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="simsam"></span><div class="section" id="simsam-py-simulate-samples-for-each-sample-in-an-otu-table-using-a-phylogenetic-tree">
+<span id="index-0"></span><h1><em>simsam.py</em> &#8211; Simulate samples for each sample in an OTU table, using a phylogenetic tree.<a class="headerlink" href="#simsam-py-simulate-samples-for-each-sample-in-an-otu-table-using-a-phylogenetic-tree" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<blockquote>
+<div>This script makes n samples related to each sample in an input otu table</div></blockquote>
+<p>An input OTU table with 3 samples and n=2 will result in an output OTU table with 6 samples total: 3 clusters of 2 related samples.</p>
+<p>To simulate each of the new samples, this script uses a sample in the input OTU table, and for each OTU in that sample the script
+traverses rootward on the tree a distance specified by &#8216;-d&#8217; to a point x. It then randomly selects a tip that decends from x,
+(call that new tip &#8216;o2&#8217;), and reassigns all observations of the original OTU to the tip/OTU &#8216;o2&#8217;.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">simsam.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-otu_table</dt>
+<dd>The input otu table</dd>
+<dt>-t, <cite>-</cite>-tree_file</dt>
+<dd>Tree file</dd>
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>Path to the output directory</dd>
+<dt>-d, <cite>-</cite>-dissim</dt>
+<dd>Dissimilarity between nodes up the tree, as a single value or comma-separated list of values</dd>
+<dt>-n, <cite>-</cite>-num</dt>
+<dd>Number of simulated samples per input sample, as a single value or comma-separated list of values</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-m, <cite>-</cite>-mapping_fp</dt>
+<dd>The mapping filepath. If provided, an output mapping file containing the replicated sample IDs (with all other metadata columns copied over) will also be created [default: None]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>The output directory will contain an OTU table with samples named:
+&#8216;original_sample_0, original_sample_1 ...&#8217;</p>
+<p>If a mapping file is provided via -m, an output mapping file containing the
+replicated sample IDs (with all other metadata columns copied over) will also
+be created.</p>
+<p>Create an OTU table with 3 related samples for each sample in otu_table.biom with dissimilarities of 0.001.</p>
+<div class="highlight-python"><pre>simsam.py -i otu_table.biom -t rep_set.tre -o simsam_out1 -d .001 -n 3</pre>
+</div>
+<p>Create OTU tables with 2, 3 and 4 related samples for each sample in otu_table.biom with dissimilarities of 0.001 and 0.01. Additionally create new mapping files with metadata for each of the new samples for use in downstream analyses.</p>
+<div class="highlight-python"><pre>simsam.py -i otu_table.biom -t rep_set.tre -o simsam_out2 -d .001,.01 -n 2,3,4 -m map.txt</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

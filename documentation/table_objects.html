@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>biom-format table objects &mdash; Homepage</title>
+    <title>BIOM format API &mdash; Homepage</title>
     
     <link rel="stylesheet" href="../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -54,14 +54,9 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="biom-format-table-objects">
-<span id="table-objects"></span><h1>biom-format table objects<a class="headerlink" href="#biom-format-table-objects" title="Permalink to this headline">¶</a></h1>
-<p>As of 1.4.0-dev, QIIME began using rich <tt class="docutils literal"><span class="pre">Table</span></tt> objects from the <a class="reference external" href="http://www.biom-format.org">biom-format project</a> to store OTU tables. The objects simplify many programming tasks associated with OTU tables. Full documentation of the biom-format <tt class="docutils literal"><span class="pre">Table</span></tt> objects can be found <a class="reference external" href="http://www.biom-format.org/documentation/table_objects.html">here</a>.</p>
-<div class="section" id="motivation-for-the-objects">
-<h2>Motivation for the objects<a class="headerlink" href="#motivation-for-the-objects" title="Permalink to this headline">¶</a></h2>
-<p>Prior to QIIME 1.4.0-dev, all OTU tables used a dense representation in memory. OTU tables tend to be highly &#8220;sparse&#8221;, or contain a significant number of entries with zero counts. These zero counts consume a dramatic amount of memory as the tables grow in size. Because of this, the QIIME team began investigating sparse matrix representations that only store the nonzero values.</p>
-<p>We decided early on to couple the support of the sparse data representation with rich objects that express the complex OTU table datatype. The refactoring comes with two specific benefits: a common API (application programming interface) that allows the developers easier access to common OTU table functionality, and an abstraction from the underlying matrix data.</p>
-</div>
+  <div class="section" id="biom-format-api">
+<span id="table-objects"></span><h1>BIOM format API<a class="headerlink" href="#biom-format-api" title="Permalink to this headline">¶</a></h1>
+<p>For more information about the BIOM format API, please visit <a class="reference external" href="http://biom-format.org">http://biom-format.org</a>.</p>
 </div>
 
 
@@ -72,24 +67,20 @@
         <div class="sphinxsidebarwrapper">
 
     
-  <h3><a href="../index.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">biom-format table objects</a><ul>
-<li><a class="reference internal" href="#motivation-for-the-objects">Motivation for the objects</a></li>
-</ul>
-</li>
-</ul>
 
-
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="index.html">Documentation</a><br /></li>
-	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="../scripts/index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
 <div id="searchbox" style="display: none">
@@ -119,12 +110,12 @@
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

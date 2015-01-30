@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="extract_reads_from_interleaved_file.py – Extract reads from an interleaved file." href="extract_reads_from_interleaved_file.html" />
+    <link rel="prev" title="exclude_seqs_by_blast.py – Exclude contaminated sequences using BLAST" href="exclude_seqs_by_blast.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="extract_reads_from_interleaved_file.html" title="extract_reads_from_interleaved_file.py – Extract reads from an interleaved file."
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="exclude_seqs_by_blast.html" title="exclude_seqs_by_blast.py – Exclude contaminated sequences using BLAST"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -98,22 +109,28 @@
 <p><strong>Output:</strong></p>
 <p>In the output directory, there will be fastq files (barcode file, and one or two reads files)</p>
 <p><strong>Parse barcodes of 12 base pairs from the beginning of a single read. Will create an output fastq file of the barcodes and an output file of the reads supplied with the barcodes removed.:</strong></p>
-<div class="highlight-python"><pre>extract_barcodes.py -f inseqs.fastq -c barcode_single_end --bc1_len 12 -o processed_seqs</pre>
+<div class="highlight-python"><div class="highlight"><pre>extract_barcodes.py -f inseqs.fastq -c barcode_single_end --bc1_len 12 -o processed_seqs
+</pre></div>
 </div>
 <p><strong>Parse barcodes of 12 base pairs from the beginning of a single read, reverse complement the barcodes before writing. Will create an output fastq file of the barcodes and an output file of the reads supplied with the barcodes removed:</strong></p>
-<div class="highlight-python"><pre>extract_barcodes.py -f inseqs.fastq -c barcode_single_end --bc1_len 12 -o processed_seqs --rev_comp_bc1</pre>
+<div class="highlight-python"><div class="highlight"><pre>extract_barcodes.py -f inseqs.fastq -c barcode_single_end --bc1_len 12 -o processed_seqs --rev_comp_bc1
+</pre></div>
 </div>
 <p><strong>Parse barcodes of 6 base pairs from the beginning of paired reads. Will create an output fastq file of the barcodes and an output file of each of the reads supplied with the barcodes removed. The order of the barcodes written is determined by the order of the files passed (-f is written first, followed by -r):</strong></p>
-<div class="highlight-python"><pre>extract_barcodes.py -f inseqs_R1.fastq -r inseqs_R2.fastq -c barcode_paired_end --bc1_len 6 --bc2_len 6 -o processed_seqs</pre>
+<div class="highlight-python"><div class="highlight"><pre>extract_barcodes.py -f inseqs_R1.fastq -r inseqs_R2.fastq -c barcode_paired_end --bc1_len 6 --bc2_len 6 -o processed_seqs
+</pre></div>
 </div>
 <p><strong>Parse barcodes of 6 base pairs from the beginning of paired reads, attempt to orient reads based upon detection of forward and reverse primers in the mapping file. Will create an output fastq file of the barcodes and an output file of each of the reads supplied with the barcodes removed. The order of the barcodes written is determined by the order of the files passed (-f is written first, followed by -r):</strong></p>
-<div class="highlight-python"><pre>extract_barcodes.py -f inseqs_R1.fastq -r inseqs_R2.fastq -c barcode_paired_end --map_fp mapping_data.txt --attempt_read_orientation --bc1_len 6 --bc2_len 6 -o processed_seqs</pre>
+<div class="highlight-python"><div class="highlight"><pre>extract_barcodes.py -f inseqs_R1.fastq -r inseqs_R2.fastq -c barcode_paired_end --map_fp mapping_data.txt --attempt_read_reorientation --bc1_len 6 --bc2_len 6 -o processed_seqs
+</pre></div>
 </div>
 <p><strong>Parse barcodes of 6 base pairs from the beginning, 8 base pairs at the end of a stitched read. Will create an output fastq file of the barcodes and an output fastq file of the stitched read supplied with the barcodes removed. The barcode at the beginning of the stitched read is written first, followed by the barcode at the end, unless reversed by the &#8211;switch_bc_order option is used:</strong></p>
-<div class="highlight-python"><pre>extract_barcodes.py -f inseqs_R1.fastq -c barcode_paired_stitched --bc1_len 6 --bc2_len 8 -o processed_seqs</pre>
+<div class="highlight-python"><div class="highlight"><pre>extract_barcodes.py -f inseqs_R1.fastq -c barcode_paired_stitched --bc1_len 6 --bc2_len 8 -o processed_seqs
+</pre></div>
 </div>
 <p><strong>Parse barcodes of 12 base pairs from labels of the input fastq file. Example label (note that the desired character preceding the barcode is &#8216;#&#8217;): &#64;MCIC-SOLEXA_0051_FC:1:1:14637:1026#CGATGTGATTTC/1 This will create an output fastq file of the barcodes (no other sequence are written). A second file with barcodes in the label can be passed with -r, and if this is done, the combined barcodes from -f and -r will be written together:</strong></p>
-<div class="highlight-python"><pre>extract_barcodes.py -f inseqs_R1.fastq -c barcode_in_label --char_delineator '#' --bc1_len 12 -o processed_seqs</pre>
+<div class="highlight-python"><div class="highlight"><pre>extract_barcodes.py -f inseqs_R1.fastq -c barcode_in_label --char_delineator &#39;#&#39; --bc1_len 12 -o processed_seqs
+</pre></div>
 </div>
 </div>
 
@@ -126,17 +143,27 @@
 
     
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="exclude_seqs_by_blast.html"
+                        title="previous chapter"><em>exclude_seqs_by_blast.py</em> &#8211; Exclude contaminated sequences using BLAST</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="extract_reads_from_interleaved_file.html"
+                        title="next chapter"><em>extract_reads_from_interleaved_file.py</em> &#8211; Extract reads from an interleaved file.</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -160,16 +187,24 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="extract_reads_from_interleaved_file.html" title="extract_reads_from_interleaved_file.py – Extract reads from an interleaved file."
+             >next</a> |</li>
+        <li class="right" >
+          <a href="exclude_seqs_by_blast.html" title="exclude_seqs_by_blast.py – Exclude contaminated sequences using BLAST"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

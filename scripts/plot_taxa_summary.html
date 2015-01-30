@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="poller.py – Poller for parallel QIIME scripts." href="poller.html" />
+    <link rel="prev" title="plot_semivariogram.py – Fits a model between two distance matrices and plots the result" href="plot_semivariogram.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="poller.html" title="poller.py – Poller for parallel QIIME scripts."
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="plot_semivariogram.html" title="plot_semivariogram.py – Fits a model between two distance matrices and plots the result"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -97,8 +108,6 @@
 <dd>Make every nth label larger than the other lables. This is for large area and bar charts where the font on the x-axis is small. This requires an integer value greater than 0. [default: 0]</dd>
 <dt>-s, <cite>-</cite>-include_html_legend</dt>
 <dd>Include HTML legend. If present, the writing of the legend in the html page is included. [default: False]</dd>
-<dt>-m, <cite>-</cite>-include_html_counts</dt>
-<dd>Include HTML counts. If present, the writing of the counts in the html table is included [default: False]</dd>
 <dt>-a, <cite>-</cite>-label_type</dt>
 <dd>Label type (&#8220;numeric&#8221; or &#8220;categorical&#8221;).  If the label type is defined as numeric, the x-axis will be scaled accordingly. Otherwise the x-values will treated categorically and be evenly spaced [default: categorical].</dd>
 </dl>
@@ -107,16 +116,20 @@
 <p>The script generates an output folder, which contains several files. For each pie chart there is a png and a pdf file. The best way to view all of the pie charts is by opening up the file taxonomy_summary_pie_chart.html.</p>
 <p><strong>Examples:</strong></p>
 <p>If you wish to run the code using default parameters, you must supply a counts file (phylum.txt) along with the taxon level label (Phylum), the type(s) of charts to produce, and an output directory, by using the following command:</p>
-<div class="highlight-python"><pre>plot_taxa_summary.py -i phylum.txt -l phylum -c pie,bar,area -o phylum_charts/</pre>
+<div class="highlight-python"><div class="highlight"><pre>plot_taxa_summary.py -i phylum.txt -l phylum -c pie,bar,area -o phylum_charts/
+</pre></div>
 </div>
 <p>If you want to make charts for multiple levels at a time (phylum.txt,class.txt,genus.txt) use the following command:</p>
-<div class="highlight-python"><pre>plot_taxa_summary.py -i phylum.txt,class.txt,genus.txt -l Phylum,Class,Genus -c pie,bar,area -o phylum_class_genus_charts/</pre>
+<div class="highlight-python"><div class="highlight"><pre>plot_taxa_summary.py -i phylum.txt,class.txt,genus.txt -l Phylum,Class,Genus -c pie,bar,area -o phylum_class_genus_charts/
+</pre></div>
 </div>
 <p>Additionally, if you would like to display on a set number of taxa (&#8220;-n 10&#8221;) in the pie charts, you can use the following command:</p>
-<div class="highlight-python"><pre>plot_taxa_summary.py -i class.txt -l Class -c pie -n 10 -o class_pie_n10_charts/</pre>
+<div class="highlight-python"><div class="highlight"><pre>plot_taxa_summary.py -i class.txt -l Class -c pie -n 10 -o class_pie_n10_charts/
+</pre></div>
 </div>
 <p>If you would like to display generate pie charts for specific samples, i.e. sample &#8216;PC.636&#8217; and sample &#8216;PC.635&#8217; that are in the counts file header, you can use the following command:</p>
-<div class="highlight-python"><pre>plot_taxa_summary.py -i class.txt -l Class -b PC.636,PC.635 -o sample_charts/</pre>
+<div class="highlight-python"><div class="highlight"><pre>plot_taxa_summary.py -i class.txt -l Class -b PC.636,PC.635 -o sample_charts/
+</pre></div>
 </div>
 </div>
 
@@ -129,17 +142,27 @@
 
     
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="plot_semivariogram.html"
+                        title="previous chapter"><em>plot_semivariogram.py</em> &#8211; Fits a model between two distance matrices and plots the result</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="poller.html"
+                        title="next chapter"><em>poller.py</em> &#8211; Poller for parallel QIIME scripts.</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -163,16 +186,24 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="poller.html" title="poller.py – Poller for parallel QIIME scripts."
+             >next</a> |</li>
+        <li class="right" >
+          <a href="plot_semivariogram.html" title="plot_semivariogram.py – Fits a model between two distance matrices and plots the result"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

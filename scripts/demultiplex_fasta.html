@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="denoise_wrapper.py – Denoise a flowgram file" href="denoise_wrapper.html" />
+    <link rel="prev" title="cytoscape_usage – Visualizing Results with Cytoscape" href="cytoscape_usage.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="denoise_wrapper.html" title="denoise_wrapper.py – Denoise a flowgram file"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="cytoscape_usage.html" title="cytoscape_usage – Visualizing Results with Cytoscape"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -81,7 +92,7 @@
 <dd>Directory prefix for output files [default: .]</dd>
 <dt>-e, <cite>-</cite>-max_barcode_errors</dt>
 <dd>Maximum number of errors in barcode.  If using generic barcodes every 0.5 specified counts as a primer mismatch. [default: 1.5]</dd>
-<dt>-n, <cite>-</cite>-start-numbering-at</dt>
+<dt>-n, <cite>-</cite>-start_numbering_at</dt>
 <dd>Seq id to use for the first sequence [default: 1]</dd>
 <dt><cite>-</cite>-retain_unassigned_reads</dt>
 <dd>Retain sequences which can not be demultiplexed in a seperate output sequence file [default: False]</dd>
@@ -103,27 +114,33 @@
 </ol>
 <p><strong>Standard Example:</strong></p>
 <p>Using a single 454 run, which contains a single FASTA, QUAL, and mapping file while using default parameters and outputting the data into the Directory &#8220;demultiplexed_output&#8221;:</p>
-<div class="highlight-python"><pre>demultiplex_fasta.py -m Mapping_File_golay.txt -f 1.TCA.454Reads.fna -q 1.TCA.454Reads.qual -o demultiplexed_output/</pre>
+<div class="highlight-python"><div class="highlight"><pre>demultiplex_fasta.py -m Mapping_File_golay.txt -f 1.TCA.454Reads.fna -q 1.TCA.454Reads.qual -o demultiplexed_output/
+</pre></div>
 </div>
 <p>For the case where there are multiple FASTA and QUAL files, the user can run the following command as long as there are not duplicate barcodes listed in the mapping file:</p>
-<div class="highlight-python"><pre>demultiplex_fasta.py -m Mapping_File_golay.txt -f 1.TCA.454Reads.fna,2.TCA.454Reads.fna -q 1.TCA.454Reads.qual,2.TCA.454Reads.qual -o demultiplexed_output_comma_separated/</pre>
+<div class="highlight-python"><div class="highlight"><pre>demultiplex_fasta.py -m Mapping_File_golay.txt -f 1.TCA.454Reads.fna,2.TCA.454Reads.fna -q 1.TCA.454Reads.qual,2.TCA.454Reads.qual -o demultiplexed_output_comma_separated/
+</pre></div>
 </div>
 <p><strong>Duplicate Barcode Example:</strong></p>
 <p>An example of this situation would be a study with 1200 samples. You wish to have 400 samples per run, so you split the analysis into three runs with and reuse barcodes (you only have 600). After initial analysis you determine a small subset is underrepresented (&lt;500 sequences per samples) and you boost the number of sequences per sample for this subset by running a fourth run. Since the same sample IDs are in more than one run, it is likely that some sequences will be assigned the same unique identifier by demultiplex_fasta.py when it is run separately on the four different runs, each with their own barcode file. This will cause a problem in file concatenation of the four different runs into a single large file. To avoid this, you can use the &#8216;-n&#8217; parameter which defines a start index for demultiplex_fasta.py fasta label enumeration. From experience, most 454 runs (when combining both files for a single plate) will have 350,000 to 650,000 sequences. Thus, if Run 1 for demultiplex_fasta.py uses &#8216;-n 1000000&#8217;, Run 2 uses &#8216;-n 2000000&#8217;, etc., then you are guaranteed to have unique identifiers after concatenating the results of multiple 454 runs. With newer technologies you will just need to make sure that your start index spacing is greater than the potential number of sequences.</p>
 <p>To run demultiplex_fasta.py, you will need two or more (depending on the number of times the barcodes were reused) separate mapping files (one for each Run, for example one Run1 and another one for Run2), then you can run demultiplex_fasta.py using the FASTA and mapping file for Run1 and FASTA and mapping file for Run2. Once you have independently run demultiplex_fasta on each file, followed by quality filtering, you can concatenate (cat) the sequence files generated. You can also concatenate the mapping files, since the barcodes are not necessary for downstream analyses, unless the same sample ids are found in multiple mapping files.</p>
 <p>Run demultiplex_fasta.py on Run 1:</p>
-<div class="highlight-python"><pre>demultiplex_fasta.py -m Mapping_File1.txt -f 1.TCA.454Reads.fna -q 1.TCA.454Reads.qual -o demultiplexed_output_Run1/ -n 1000000</pre>
+<div class="highlight-python"><div class="highlight"><pre>demultiplex_fasta.py -m Mapping_File1.txt -f 1.TCA.454Reads.fna -q 1.TCA.454Reads.qual -o demultiplexed_output_Run1/ -n 1000000
+</pre></div>
 </div>
 <p>Run demultiplex_fasta on Run 2:</p>
-<div class="highlight-python"><pre>demultiplex_fasta.py -m Mapping_File2.txt -f 2.TCA.454Reads.fna -q 2.TCA.454Reads.qual -o demultiplexed_output_Run2/ -n 2000000</pre>
+<div class="highlight-python"><div class="highlight"><pre>demultiplex_fasta.py -m Mapping_File2.txt -f 2.TCA.454Reads.fna -q 2.TCA.454Reads.qual -o demultiplexed_output_Run2/ -n 2000000
+</pre></div>
 </div>
 <p><strong>Barcode Decoding Example:</strong></p>
 <p>The standard barcode types supported by demultiplex_fasta.py are golay (Length: 12 NTs) and hamming (Length: 8 NTs). For situations where the barcodes are of a different length than golay and hamming, the user can define a generic barcode type &#8220;-b&#8221; as an integer, where the integer is the length of the barcode used in the study.</p>
 <p>For the case where the generic 8 base pair barcodes were used, you can use the following command:</p>
-<div class="highlight-python"><pre>demultiplex_fasta.py -m Mapping_File_8bp_barcodes.txt -f 1.TCA.454Reads.fna -q 1.TCA.454Reads.qual -o demultiplexed_output_8bp_barcodes/ -b 8</pre>
+<div class="highlight-python"><div class="highlight"><pre>demultiplex_fasta.py -m Mapping_File_8bp_barcodes.txt -f 1.TCA.454Reads.fna -q 1.TCA.454Reads.qual -o demultiplexed_output_8bp_barcodes/ -b 8
+</pre></div>
 </div>
 <p>To use the run prefix at the beginning of the fasta label for demultiplexing, there has to be a field in the mapping file labeled &#8220;run_prefix&#8221;, and can be used by the following command:</p>
-<div class="highlight-python"><pre>demultiplex_fasta.py -m Mapping_File_run_prefix.txt -f 1.TCA.454Reads.fna -q 1.TCA.454Reads.qual -o demultiplexed_output_run_prefix/ -j run_prefix</pre>
+<div class="highlight-python"><div class="highlight"><pre>demultiplex_fasta.py -m Mapping_File_run_prefix.txt -f 1.TCA.454Reads.fna -q 1.TCA.454Reads.qual -o demultiplexed_output_run_prefix/ -j run_prefix
+</pre></div>
 </div>
 </div>
 
@@ -136,17 +153,27 @@
 
     
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="cytoscape_usage.html"
+                        title="previous chapter"><em>cytoscape_usage</em> &#8211; Visualizing Results with Cytoscape</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="denoise_wrapper.html"
+                        title="next chapter"><em>denoise_wrapper.py</em> &#8211; Denoise a flowgram file</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -170,16 +197,24 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="denoise_wrapper.html" title="denoise_wrapper.py – Denoise a flowgram file"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="cytoscape_usage.html" title="cytoscape_usage – Visualizing Results with Cytoscape"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

@@ -1,0 +1,188 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>plot_taxa_summary.py – Make taxaonomy summary charts based on taxonomy assignment &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.8.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="plot-taxa-summary"></span><div class="section" id="plot-taxa-summary-py-make-taxaonomy-summary-charts-based-on-taxonomy-assignment">
+<span id="index-0"></span><h1><em>plot_taxa_summary.py</em> &#8211; Make taxaonomy summary charts based on taxonomy assignment<a class="headerlink" href="#plot-taxa-summary-py-make-taxaonomy-summary-charts-based-on-taxonomy-assignment" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>This script automates the construction of pie, bar and area charts showing the breakdown of taxonomy by given levels. The script creates an html file for each chart type for easy visualization. It uses the taxonomy or category counts from <a class="reference external" href="./summarize_taxa.html">summarize_taxa.py</a> for combined samples by level (-i) and user specified labels for each file passed in (-l). Output will be written to the user specified folder (-o) the, where the default is the current working directory. The user can also specify the number of categories displayed for within a single pie chart, where the rest are grouped together as the &#8216;other category&#8217; using the (-n) option, default is 20.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">plot_taxa_summary.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-counts_fname</dt>
+<dd>Input comma-separated list of summarized taxa filepaths (i.e results from <a class="reference external" href="./summarize_taxa.html">summarize_taxa.py</a>) [REQUIRED]</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-l, <cite>-</cite>-labels</dt>
+<dd>Comma-separated list of taxonomic levels (e.g. Phylum,Class,Order)  [default=None]</dd>
+<dt>-n, <cite>-</cite>-num_categories</dt>
+<dd>The maximum number of taxonomies to show in each pie chart. All additional taxonomies are grouped into an &#8220;other&#8221; category. NOTE: this functionality only applies to the pie charts. [default: 20]</dd>
+<dt>-o, <cite>-</cite>-dir_path</dt>
+<dd>Output directory</dd>
+<dt>-b, <cite>-</cite>-colorby</dt>
+<dd>This is the categories to color by in the plots from the metadata mapping file. The categories must match the name of a  column header in the mapping file exactly and multiple categories can be list by comma separating them without spaces. [default=None]</dd>
+<dt>-p, <cite>-</cite>-prefs_path</dt>
+<dd>Input user-generated preferences filepath. NOTE: This is a file with a dictionary containing preferences for the analysis. The key taxonomy_coloring is used for the coloring. [default: None]</dd>
+<dt>-k, <cite>-</cite>-background_color</dt>
+<dd>This is the background color to use in the plots (black or white) [default: white]</dd>
+<dt>-d, <cite>-</cite>-dpi</dt>
+<dd>This is the resolution of the plot. [default: 80]</dd>
+<dt>-x, <cite>-</cite>-x_width</dt>
+<dd>This is the width of the x-axis to use in the plots. [default: 12]</dd>
+<dt>-y, <cite>-</cite>-y_height</dt>
+<dd>This is the height of the y-axis to use in the plots. [default: 6]</dd>
+<dt>-w, <cite>-</cite>-bar_width</dt>
+<dd>This the width of the bars in the bar graph and should be a number between 0 and 1. NOTE: this only applies to the bar charts. [default: 0.75]</dd>
+<dt>-t, <cite>-</cite>-type_of_file</dt>
+<dd>This is the type of image to produce (i.e. pdf,svg,png). [default: pdf]</dd>
+<dt>-c, <cite>-</cite>-chart_type</dt>
+<dd>This is the type of chart to plot (i.e. pie, bar or area). The user has the ability to plot multiple types, by using a comma-separated list (e.g. area,pie) [default: area,bar]</dd>
+<dt>-r, <cite>-</cite>-resize_nth_label</dt>
+<dd>Make every nth label larger than the other lables. This is for large area and bar charts where the font on the x-axis is small. This requires an integer value greater than 0. [default: 0]</dd>
+<dt>-s, <cite>-</cite>-include_html_legend</dt>
+<dd>Include HTML legend. If present, the writing of the legend in the html page is included. [default: False]</dd>
+<dt>-m, <cite>-</cite>-include_html_counts</dt>
+<dd>Include HTML counts. If present, the writing of the counts in the html table is included [default: False]</dd>
+<dt>-a, <cite>-</cite>-label_type</dt>
+<dd>Label type (&#8220;numeric&#8221; or &#8220;categorical&#8221;).  If the label type is defined as numeric, the x-axis will be scaled accordingly. Otherwise the x-values will treated categorically and be evenly spaced [default: categorical].</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>The script generates an output folder, which contains several files. For each pie chart there is a png and a pdf file. The best way to view all of the pie charts is by opening up the file taxonomy_summary_pie_chart.html.</p>
+<p><strong>Examples:</strong></p>
+<p>If you wish to run the code using default parameters, you must supply a counts file (phylum.txt) along with the taxon level label (Phylum), the type(s) of charts to produce, and an output directory, by using the following command:</p>
+<div class="highlight-python"><pre>plot_taxa_summary.py -i phylum.txt -l phylum -c pie,bar,area -o phylum_charts/</pre>
+</div>
+<p>If you want to make charts for multiple levels at a time (phylum.txt,class.txt,genus.txt) use the following command:</p>
+<div class="highlight-python"><pre>plot_taxa_summary.py -i phylum.txt,class.txt,genus.txt -l Phylum,Class,Genus -c pie,bar,area -o phylum_class_genus_charts/</pre>
+</div>
+<p>Additionally, if you would like to display on a set number of taxa (&#8220;-n 10&#8221;) in the pie charts, you can use the following command:</p>
+<div class="highlight-python"><pre>plot_taxa_summary.py -i class.txt -l Class -c pie -n 10 -o class_pie_n10_charts/</pre>
+</div>
+<p>If you would like to display generate pie charts for specific samples, i.e. sample &#8216;PC.636&#8217; and sample &#8216;PC.635&#8217; that are in the counts file header, you can use the following command:</p>
+<div class="highlight-python"><pre>plot_taxa_summary.py -i class.txt -l Class -b PC.636,PC.635 -o sample_charts/</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

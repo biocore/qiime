@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>categorized_dist_scatterplot.py – makes a figure representing average distances between samples, broken down by categories. I call it a ‘categorized distance scatterplot’ &mdash; Homepage</title>
+    <title>categorized_dist_scatterplot.py – Create a categorized distance scatterplot representing average distances between samples, broken down by categories &mdash; Homepage</title>
     
     <link rel="stylesheet" href="../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="clean_raxml_parsimony_tree.py – Remove duplicate tips from Raxml Tree" href="clean_raxml_parsimony_tree.html" />
+    <link rel="prev" title="blast_wrapper.py – Blast Interface" href="blast_wrapper.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="clean_raxml_parsimony_tree.html" title="clean_raxml_parsimony_tree.py – Remove duplicate tips from Raxml Tree"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="blast_wrapper.html" title="blast_wrapper.py – Blast Interface"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -54,10 +65,10 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <span class="target" id="categorized-dist-scatterplot"></span><div class="section" id="categorized-dist-scatterplot-py-makes-a-figure-representing-average-distances-between-samples-broken-down-by-categories-i-call-it-a-categorized-distance-scatterplot">
-<span id="index-0"></span><h1><em>categorized_dist_scatterplot.py</em> &#8211; makes a figure representing average distances between samples, broken down by categories. I call it a &#8216;categorized distance scatterplot&#8217;<a class="headerlink" href="#categorized-dist-scatterplot-py-makes-a-figure-representing-average-distances-between-samples-broken-down-by-categories-i-call-it-a-categorized-distance-scatterplot" title="Permalink to this headline">¶</a></h1>
+  <span class="target" id="categorized-dist-scatterplot"></span><div class="section" id="categorized-dist-scatterplot-py-create-a-categorized-distance-scatterplot-representing-average-distances-between-samples-broken-down-by-categories">
+<span id="index-0"></span><h1><em>categorized_dist_scatterplot.py</em> &#8211; Create a categorized distance scatterplot representing average distances between samples, broken down by categories<a class="headerlink" href="#categorized-dist-scatterplot-py-create-a-categorized-distance-scatterplot-representing-average-distances-between-samples-broken-down-by-categories" title="Permalink to this headline">¶</a></h1>
 <p><strong>Description:</strong></p>
-<p>makes a figure representing average distances between samples, broken down by categories. I call it a &#8216;categorized distance scatterplot&#8217;. See script usage for more details. The mapping file specifies the relavent data - if you have e.g. &#8216;N/A&#8217; values or samples you don&#8217;t want included, first use <a class="reference external" href="./filter_samples_from_otu_table.html">filter_samples_from_otu_table.py</a> to remove unwanted samples from the mapping file, and thus the analysis. Note that the resulting plot will include only samples in both the mapping file AND the distance matrix.</p>
+<p>Create a figure representing average distances between samples, broken down by categories. I call it a &#8216;categorized distance scatterplot&#8217;. See script usage for more details. The mapping file specifies the relevant data - if you have e.g. &#8216;N/A&#8217; values or samples you don&#8217;t want included, first use <a class="reference external" href="./filter_samples_from_otu_table.html">filter_samples_from_otu_table.py</a> to remove unwanted samples from the mapping file, and thus the analysis. Note that the resulting plot will include only samples in both the mapping file AND the distance matrix.</p>
 <p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">categorized_dist_scatterplot.py</span> <span class="pre">[options]</span></tt></p>
 <p><strong>Input Arguments:</strong></p>
 <div class="admonition note">
@@ -87,11 +98,13 @@
 <p>a figure and the text dat for that figure</p>
 <p><strong>Canonical Example:</strong></p>
 <p>Split samples by country. Within each country compare each child to all adults. Plot the average distance from that child to all adults, vs. the age of that child</p>
-<div class="highlight-python"><pre>python categorized_dist_scatterplot.py -m map.txt -d unifrac_distance.txt -c Country -p AgeCategory:Child -s AgeCategory:Adult -a AgeYears -o fig1.png</pre>
+<div class="highlight-python"><div class="highlight"><pre>python categorized_dist_scatterplot.py -m map.txt -d unifrac_distance.txt -c Country -p AgeCategory:Child -s AgeCategory:Adult -a AgeYears -o fig1.png
+</pre></div>
 </div>
 <p><strong>Example 2:</strong></p>
 <p>Same as above, but compares Child with all other categories (e.g.: NA, Infant, etc.)</p>
-<div class="highlight-python"><pre>python categorized_dist_scatterplot.py -m map.txt -d unifrac_distance.txt -c Country -p AgeCategory:Child -a AgeYears -o fig1.svg</pre>
+<div class="highlight-python"><div class="highlight"><pre>python categorized_dist_scatterplot.py -m map.txt -d unifrac_distance.txt -c Country -p AgeCategory:Child -a AgeYears -o fig1.svg
+</pre></div>
 </div>
 </div>
 
@@ -104,17 +117,27 @@
 
     
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="blast_wrapper.html"
+                        title="previous chapter"><em>blast_wrapper.py</em> &#8211; Blast Interface</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="clean_raxml_parsimony_tree.html"
+                        title="next chapter"><em>clean_raxml_parsimony_tree.py</em> &#8211; Remove duplicate tips from Raxml Tree</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -138,16 +161,24 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="clean_raxml_parsimony_tree.html" title="clean_raxml_parsimony_tree.py – Remove duplicate tips from Raxml Tree"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="blast_wrapper.html" title="blast_wrapper.py – Blast Interface"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

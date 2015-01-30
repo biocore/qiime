@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="pick_closed_reference_otus.py – Closed-reference OTU picking/Shotgun UniFrac workflow." href="pick_closed_reference_otus.html" />
+    <link rel="prev" title="parallel_pick_otus_uclust_ref.py – Parallel pick otus using uclust_ref" href="parallel_pick_otus_uclust_ref.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="pick_closed_reference_otus.html" title="pick_closed_reference_otus.py – Closed-reference OTU picking/Shotgun UniFrac workflow."
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="parallel_pick_otus_uclust_ref.html" title="parallel_pick_otus_uclust_ref.py – Parallel pick otus using uclust_ref"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -92,7 +103,7 @@
 <dt><cite>-</cite>-sizeorder</dt>
 <dd>Enable size based preference in clustering with usearch61. Requires that &#8211;usearch61_sort_method be abundance. [default: False]</dd>
 <dt>-O, <cite>-</cite>-jobs_to_start</dt>
-<dd>Number of jobs to start [default: 2]</dd>
+<dd>Number of jobs to start [default: 1]</dd>
 <dt>-R, <cite>-</cite>-retain_temp_files</dt>
 <dd>Retain temporary files after runs complete (useful for debugging) [default: False]</dd>
 <dt>-S, <cite>-</cite>-suppress_submit_jobs</dt>
@@ -112,7 +123,8 @@
 <p><strong>Output:</strong></p>
 <p><strong>Example:</strong></p>
 <p>Pick OTUs by searching $PWD/inseqs.fasta against $PWD/refseqs.fasta with reference-based usearch and write the output to the $PWD/usearch_ref_otus/ directory. This is a closed-reference OTU picking process. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).</p>
-<div class="highlight-python"><pre>parallel_pick_otus_usearch61_ref.py -i $PWD/seqs.fna -r $PWD/refseqs.fna -o $PWD/usearch_ref_otus/</pre>
+<div class="highlight-python"><div class="highlight"><pre>parallel_pick_otus_usearch61_ref.py -i $PWD/seqs.fna -r $PWD/refseqs.fna -o $PWD/usearch_ref_otus/
+</pre></div>
 </div>
 </div>
 
@@ -125,17 +137,27 @@
 
     
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="parallel_pick_otus_uclust_ref.html"
+                        title="previous chapter"><em>parallel_pick_otus_uclust_ref.py</em> &#8211; Parallel pick otus using uclust_ref</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pick_closed_reference_otus.html"
+                        title="next chapter"><em>pick_closed_reference_otus.py</em> &#8211; Closed-reference OTU picking/Shotgun UniFrac workflow.</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -159,16 +181,24 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="pick_closed_reference_otus.html" title="pick_closed_reference_otus.py – Closed-reference OTU picking/Shotgun UniFrac workflow."
+             >next</a> |</li>
+        <li class="right" >
+          <a href="parallel_pick_otus_uclust_ref.html" title="parallel_pick_otus_uclust_ref.py – Parallel pick otus using uclust_ref"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

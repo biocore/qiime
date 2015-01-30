@@ -7,7 +7,7 @@
 
 **Description:**
 
-This script generates a preferences (prefs) file, which can be passed to `make_distance_histograms.py <./make_distance_histograms.html>`_, `make_2d_plots.py <./make_2d_plots.html>`_ and `make_3d_plots.py <./make_3d_plots.html>`_. The prefs file allows for defining the monte_carlo distance, gradient coloring of continuous values in the 2D and 3D plots, the ball size scale for all the samples and the color of the arrow and the line of the arrow for the procrustes analysis. Currently there is only one color gradient: red to blue.
+This script generates a preferences (prefs) file, which can be passed to `make_2d_plots.py <./make_2d_plots.html>`_. The prefs file allows for defining the monte_carlo distance, gradient coloring of continuous values in the 2D plots, the ball size scale for all the samples and the color of the arrow and the line of the arrow for the procrustes analysis. Currently there is only one color gradient: red to blue.
 
 
 **Usage:** :file:`make_prefs_file.py [options]`
@@ -44,7 +44,7 @@ This script generates a preferences (prefs) file, which can be passed to `make_d
 
 **Output:**
 
-The result of this script is a text file, containing coloring preferences to be used by `make_distance_histograms.py <./make_distance_histograms.html>`_, `make_2d_plots.py <./make_2d_plots.html>`_ and `make_3d_plots.py <./make_3d_plots.html>`_.
+The result of this script is a text file, containing coloring preferences to be used by `make_2d_plots.py <./make_2d_plots.html>`_.
 
 
 **Examples:**

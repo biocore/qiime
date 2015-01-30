@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Tutorials" href="index.html" />
+    <link rel="next" title="Using usearch quality filtering with QIIME" href="usearch_quality_filter.html" />
+    <link rel="prev" title="Denoising of 454 Data Sets" href="denoising_454_data.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,14 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="usearch_quality_filter.html" title="Using usearch quality filtering with QIIME"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="denoising_454_data.html" title="Denoising of 454 Data Sets"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Tutorials</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -61,14 +71,17 @@
 <p>This document describes how to chimera check sequences with QIIME via ChimeraSlayer, and subsequently exclude chimeric sequences when building your tree and OTU table so they will not be included in downstream analyses. (Note that because we recommend applying chimera checking after OTU and representative sequence picking, for the purposes of this document <cite>chimeric sequence</cite> should be considered synonymous to <cite>chimeric OTU</cite>.)</p>
 <p>ChimeraSlayer requires aligned sequences, you should apply chimera checking after you&#8217;ve aligned your sequences with PyNAST, but before you apply the lanemask filtering to your alignment.</p>
 <p>Applying ChimeraSlayer is done as follows:</p>
-<div class="highlight-python"><pre>identify_chimeric_seqs.py -m ChimeraSlayer -i rep_set_aligned.fasta -a reference_set_aligned.fasta -o chimeric_seqs.txt</pre>
+<div class="highlight-python"><div class="highlight"><pre>identify_chimeric_seqs.py -m ChimeraSlayer -i rep_set_aligned.fasta -a reference_set_aligned.fasta -o chimeric_seqs.txt
+</pre></div>
 </div>
 <p>Before building your phylogenetic tree, you should now remove chimeric sequences from your alignment using your chimeric sequence list (<tt class="docutils literal"><span class="pre">chimeric_seqs.txt</span></tt> in this example) and the alignment to as follows:</p>
-<div class="highlight-python"><pre>filter_fasta.py -f rep_set_aligned.fasta -o non_chimeric_rep_set_aligned.fasta -s chimeric_seqs.txt -n</pre>
+<div class="highlight-python"><div class="highlight"><pre>filter_fasta.py -f rep_set_aligned.fasta -o non_chimeric_rep_set_aligned.fasta -s chimeric_seqs.txt -n
+</pre></div>
 </div>
 <p>Don&#8217;t forget to pass the <tt class="docutils literal"><span class="pre">-n</span></tt> parameter to <tt class="docutils literal"><span class="pre">filter_fasta.py</span></tt> &#8211; this tells <tt class="docutils literal"><span class="pre">filter_fasta.py</span></tt> to discard the sequences you&#8217;ve passed via <tt class="docutils literal"><span class="pre">-s</span></tt>, rather than to keep only those sequences. Then pass the resulting subalignment (<tt class="docutils literal"><span class="pre">non_chimeric_rep_set_aligned.fasta</span></tt>) in the downstream steps <tt class="docutils literal"><span class="pre">filter_alignment.py</span></tt> prior to tree-building.</p>
 <p>You&#8217;ll also need to exclude the chimeric sequences at the <tt class="docutils literal"><span class="pre">make_otu_table.py</span></tt> step. To do that, you pass the chimeric sequence list to <tt class="docutils literal"><span class="pre">make_otu_table.py</span></tt> via the <tt class="docutils literal"><span class="pre">-e</span></tt> parameter:</p>
-<div class="highlight-python"><pre>make_otu_table.py -i otu_map.txt -o otu_table.biom -e chimeric_seqs.txt -t taxonomy.txt</pre>
+<div class="highlight-python"><div class="highlight"><pre>make_otu_table.py -i otu_map.txt -o otu_table.biom -e chimeric_seqs.txt -t taxonomy.txt
+</pre></div>
 </div>
 <p>This will cause the chimeric sequences to be excluded from all downstream analysis that you&#8217;ll be performing, as the OTU table is always the input provided (for example to beta diversity, alpha rarefaction, etc.).</p>
 </div>
@@ -98,13 +111,16 @@
 </ul>
 </div>
 <p>An example step by step process for removing chimeras with USEARCH 6.1 starts as follows, using the seqs.fna file (output of <tt class="docutils literal"><span class="pre">split_libraries.py</span></tt>) as the input sequence file:</p>
-<div class="highlight-python"><pre>identify_chimeric_seqs.py -i seqs.fna -m usearch61 -o usearch_checked_chimeras/ -r gg_97_otus_4feb2011.fasta</pre>
+<div class="highlight-python"><div class="highlight"><pre>identify_chimeric_seqs.py -i seqs.fna -m usearch61 -o usearch_checked_chimeras/ -r gg_97_otus_4feb2011.fasta
+</pre></div>
 </div>
 <p>Next, filter the input seqs.fna file by passing the chimeras.txt file created in the previous step and specifying that these should be removed with the -n option:</p>
-<div class="highlight-python"><pre>filter_fasta.py -f seqs.fna -o seqs_chimeras_filtered.fna -s usearch_checked_chimeras/chimeras.txt -n</pre>
+<div class="highlight-python"><div class="highlight"><pre>filter_fasta.py -f seqs.fna -o seqs_chimeras_filtered.fna -s usearch_checked_chimeras/chimeras.txt -n
+</pre></div>
 </div>
 <p>Finally, use the <tt class="docutils literal"><span class="pre">pick_otus.py</span></tt> to cluster these sequences using usearch61:</p>
-<div class="highlight-python"><pre>pick_otus.py -m usearch61 -i seqs_chimeras_filtered.fna -o usearch61_picked_otus/</pre>
+<div class="highlight-python"><div class="highlight"><pre>pick_otus.py -m usearch61 -i seqs_chimeras_filtered.fna -o usearch61_picked_otus/
+</pre></div>
 </div>
 <p>The remainder of the processing is the same as described in the main <a class="reference external" href="./tutorial.html#step-2-pick-representative-sequences-for-each-otu">tutorial</a>.</p>
 </div>
@@ -128,17 +144,27 @@
 </ul>
 
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="index.html">Tutorials</a><br /></li>
+    <li><a href="../scripts/index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="denoising_454_data.html"
+                        title="previous chapter">Denoising of 454 Data Sets</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="usearch_quality_filter.html"
+                        title="next chapter">Using usearch quality filtering with QIIME</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -162,16 +188,23 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="usearch_quality_filter.html" title="Using usearch quality filtering with QIIME"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="denoising_454_data.html" title="Denoising of 454 Data Sets"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Tutorials</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

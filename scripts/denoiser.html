@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="denoiser_preprocess.py – Run phase of denoiser algorithm: prefix clustering" href="denoiser_preprocess.html" />
+    <link rel="prev" title="denoise_wrapper.py – Denoise a flowgram file" href="denoise_wrapper.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="denoiser_preprocess.html" title="denoiser_preprocess.py – Run phase of denoiser algorithm: prefix clustering"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="denoise_wrapper.html" title="denoise_wrapper.py – Denoise a flowgram file"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -94,17 +105,17 @@
 <dt>-b, <cite>-</cite>-bail_out</dt>
 <dd>Stop clustering in phase II with clusters smaller or equal than BAILde [default: 1]</dd>
 <dt><cite>-</cite>-percent_id</dt>
-<dd>Sequence similarity clustering threshold [default: 0.97]</dd>
-<dt><cite>-</cite>-low_cut-off</dt>
+<dd>Sequence similarity clustering threshold, expressed as a fraction between 0 and 1 [default: 0.97]</dd>
+<dt><cite>-</cite>-low_cut_off</dt>
 <dd>Low clustering threshold for phase II [default: 3.75]</dd>
-<dt><cite>-</cite>-high_cut-off</dt>
+<dt><cite>-</cite>-high_cut_off</dt>
 <dd>High clustering threshold for phase III [default: 4.5]</dd>
 <dt><cite>-</cite>-low_memory</dt>
 <dd>Use slower, low memory method [default: False]</dd>
 <dt>-e, <cite>-</cite>-error_profile</dt>
-<dd>Path to error profile [default= /Users/caporaso/code/qiime/qiime/support_files/denoiser/Data/FLX_error_profile.dat]</dd>
+<dd>Path to error profile [default= &lt;qiime-install-path&gt;/qiime/support_files/denoiser/Data/FLX_error_profile.dat]</dd>
 <dt><cite>-</cite>-titanium</dt>
-<dd>Shortcut for -e /Users/caporaso/code/qiime/qiime/support_files/denoiser/Data//Titanium_error_profile.dat &#8211;low_cut-off=4 &#8211;high_cut_off=5 . Warning: overwrites all previous cut-off values [DEFAULT: False]</dd>
+<dd>Shortcut for -e &lt;qiime-install-path&gt;/qiime/support_files/denoiser/Data//Titanium_error_profile.dat &#8211;low_cut_off=4 &#8211;high_cut_off=5 . Warning: overwrites all previous cut-off values [DEFAULT: False]</dd>
 </dl>
 </div>
 <p><strong>Output:</strong></p>
@@ -118,25 +129,29 @@
 <p>Note that the centroids and singleton files are disjoint. For most downstream analyses one wants to cat the two files.</p>
 <p>Run denoiser on flowgrams in 454Reads.sff.txt with read-to-barcode mapping in seqs.fna,
 put results into Outdir, log progress in Outdir/denoiser.log</p>
-<div class="highlight-python"><pre>denoiser.py -i 454Reads.sff.txt -f seqs.fna -v -o Outdir</pre>
+<div class="highlight-python"><div class="highlight"><pre>denoiser.py -i 454Reads.sff.txt -f seqs.fna -v -o Outdir
+</pre></div>
 </div>
 <p><strong>Multiple sff.txt files:</strong></p>
 <p>Run denoiser on two flowgram files in 454Reads_1.sff.txt and 454Reads_2.sff.txt
 with read-to-barcode mapping in seqs.fna, put results into Outdir,
 log progress in Outdir/denoiser.log</p>
-<div class="highlight-python"><pre>denoiser.py -i 454Reads_1.sff.txt,454Reads_2.sff.txt -f seqs.fna -v -o Outdir</pre>
+<div class="highlight-python"><div class="highlight"><pre>denoiser.py -i 454Reads_1.sff.txt,454Reads_2.sff.txt -f seqs.fna -v -o Outdir
+</pre></div>
 </div>
 <p><strong>Denoise multiple library separately:</strong></p>
 <p>Run denoiser on flowgrams in 454Reads.sff.txt with read-to-barcode mapping in seqs.fna,
 split input files into libraries and process each library separately,
 put results into Outdir, log progress in Outdir/denoiser.log</p>
-<div class="highlight-python"><pre>denoiser.py -S -i 454Reads.sff.txt -f seqs.fna -v -o Outdir</pre>
+<div class="highlight-python"><div class="highlight"><pre>denoiser.py -S -i 454Reads.sff.txt -f seqs.fna -v -o Outdir
+</pre></div>
 </div>
 <p><strong>Resuming a failed run:</strong></p>
 <p>Resume a previous denoiser run from breakpoint stored in Outdir_from_failed_run/checkpoints/checkpoint100.pickle.
 The checkpoint option requires the -p or &#8211;preprocess option, which usually can be set to the output dir of the failed run.
 All other arguments must be identical to the failed run.</p>
-<div class="highlight-python"><pre>denoiser.py -i 454Reads.sff.txt -f seqs.fna -v -o Outdir_resumed -p Outdir_from_failed_run --checkpoint Outdir_from_failed_run/checkpoints/checkpoint100.pickle</pre>
+<div class="highlight-python"><div class="highlight"><pre>denoiser.py -i 454Reads.sff.txt -f seqs.fna -v -o Outdir_resumed -p Outdir_from_failed_run --checkpoint Outdir_from_failed_run/checkpoints/checkpoint100.pickle
+</pre></div>
 </div>
 </div>
 
@@ -149,17 +164,27 @@ All other arguments must be identical to the failed run.</p>
 
     
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="denoise_wrapper.html"
+                        title="previous chapter"><em>denoise_wrapper.py</em> &#8211; Denoise a flowgram file</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="denoiser_preprocess.html"
+                        title="next chapter"><em>denoiser_preprocess.py</em> &#8211; Run phase of denoiser algorithm: prefix clustering</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -183,16 +208,24 @@ All other arguments must be identical to the failed run.</p>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="denoiser_preprocess.html" title="denoiser_preprocess.py – Run phase of denoiser algorithm: prefix clustering"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="denoise_wrapper.html" title="denoise_wrapper.py – Denoise a flowgram file"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

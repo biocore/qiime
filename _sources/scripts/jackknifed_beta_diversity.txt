@@ -43,12 +43,12 @@ To directly measure the robustness of individual UPGMA clusters and clusters in 
 	-a, `-`-parallel
 		Run in parallel where available [default: False]
 	-O, `-`-jobs_to_start
-		Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 2]
+		Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 1]
 
 
 **Output:**
 
-This scripts results in several distance matrices (from `beta_diversity.py <./beta_diversity.html>`_), several rarified otu tables (from `multiple_rarefactions.py <./multiple_rarefactions.html>`_) several UPGMA trees (from `upgma_cluster.py <./upgma_cluster.html>`_), a supporting file and newick tree with support values (from `tree_compare.py <./tree_compare.html>`_), and 2D and 3D PCoA plots.
+This scripts results in several distance matrices (from `beta_diversity.py <./beta_diversity.html>`_), several rarified OTU tables (from `multiple_rarefactions_even_depth.py <./multiple_rarefactions_even_depth.html>`_), several UPGMA trees (from `upgma_cluster.py <./upgma_cluster.html>`_), a supporting file and newick tree with support values (from `tree_compare.py <./tree_compare.html>`_), and 2D and 3D PCoA plots.
 
 
 **Example:**

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>print_qiime_config.py – Print out the qiime config settings. &mdash; Homepage</title>
+    <title>print_qiime_config.py – Print and optionally test QIIME configuration details &mdash; Homepage</title>
     
     <link rel="stylesheet" href="../_static/default.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="process_iseq.py – Given a directory of per-swath qseq files, this script generates a single fastq per lane." href="process_iseq.html" />
+    <link rel="prev" title="print_metadata_stats.py – Count the number of samples associated to a category value" href="print_metadata_stats.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="process_iseq.html" title="process_iseq.py – Given a directory of per-swath qseq files, this script generates a single fastq per lane."
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="print_metadata_stats.html" title="print_metadata_stats.py – Count the number of samples associated to a category value"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -54,10 +65,10 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <span class="target" id="print-qiime-config"></span><div class="section" id="print-qiime-config-py-print-out-the-qiime-config-settings">
-<span id="index-0"></span><h1><em>print_qiime_config.py</em> &#8211; Print out the qiime config settings.<a class="headerlink" href="#print-qiime-config-py-print-out-the-qiime-config-settings" title="Permalink to this headline">¶</a></h1>
+  <span class="target" id="print-qiime-config"></span><div class="section" id="print-qiime-config-py-print-and-optionally-test-qiime-configuration-details">
+<span id="index-0"></span><h1><em>print_qiime_config.py</em> &#8211; Print and optionally test QIIME configuration details<a class="headerlink" href="#print-qiime-config-py-print-and-optionally-test-qiime-configuration-details" title="Permalink to this headline">¶</a></h1>
 <p><strong>Description:</strong></p>
-<p>A simple scripts that prints out the qiime config settings and does some sanity checks.</p>
+<p>Print QIIME configuration details and optionally perform tests of the QIIME base or full install.</p>
 <p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">print_qiime_config.py</span> <span class="pre">[options]</span></tt></p>
 <p><strong>Input Arguments:</strong></p>
 <div class="admonition note">
@@ -67,21 +78,28 @@
 <dt>-t, <cite>-</cite>-test</dt>
 <dd>Test the QIIME install and configuration [default: False]</dd>
 <dt>-b, <cite>-</cite>-qiime_base_install</dt>
-<dd>If passed, report only on dependencies required for the QIIME base install [default: False]</dd>
+<dd>SUPPRESSHELP</dd>
+<dt>-f, <cite>-</cite>-qiime_full_install</dt>
+<dd>If passed, report on dependencies required for the QIIME full install. To perform tests of the QIIME full install, you must also pass -t. [default: False]</dd>
 <dt><cite>-</cite>-haiku</dt>
 <dd>SUPPRESSHELP</dd>
 </dl>
 </div>
 <p><strong>Output:</strong></p>
-<p>This prints the qiime_config to stdout.</p>
+<p>Prints QIIME configuration details to standard output.</p>
 <p><strong>Example 1:</strong></p>
-<p>Print qiime config settings:</p>
+<p>Print basic QIIME configuration details:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">print_qiime_config</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 <p><strong>Example 2:</strong></p>
-<p>Print and check qiime config settings for sanity:</p>
+<p>Print basic QIIME configuration details and test the base QIIME installation:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">print_qiime_config</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">t</span>
+</pre></div>
+</div>
+<p><strong>Example 3:</strong></p>
+<p>Print basic QIIME configuration details and test the full QIIME installation:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">print_qiime_config</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">tf</span>
 </pre></div>
 </div>
 </div>
@@ -95,17 +113,27 @@
 
     
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="print_metadata_stats.html"
+                        title="previous chapter"><em>print_metadata_stats.py</em> &#8211; Count the number of samples associated to a category value</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="process_iseq.html"
+                        title="next chapter"><em>process_iseq.py</em> &#8211; Given a directory of per-swath qseq files, this script generates a single fastq per lane.</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -129,16 +157,24 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="process_iseq.html" title="process_iseq.py – Given a directory of per-swath qseq files, this script generates a single fastq per lane."
+             >next</a> |</li>
+        <li class="right" >
+          <a href="print_metadata_stats.html" title="print_metadata_stats.py – Count the number of samples associated to a category value"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

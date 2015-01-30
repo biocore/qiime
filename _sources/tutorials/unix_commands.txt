@@ -1,112 +1,24 @@
 .. _unix_commands:
 
-=============================================
-Basic Unix/Linux/OS X commands
-=============================================
+=====================================
+Getting started with the command line
+=====================================
 
-This document covers some very basic unix commands that will be useful working with QIIME. There are a lot of good resources on the web and in books. A few good ones are:
-
- * `The Command Line Crash Course <http://cli.learncodethehardway.org/book/>`_ (free online book)
- * `Unix Power Tools <http://oreilly.com/catalog/9780596003302>`_ (book)
- * `Practical Computing for Biologists <http://practicalcomputing.org/>`_ (book; also covers python programming and other relevant topics)
- * `Learning the Shell <http://www.linuxcommand.org/learning_the_shell.php>`_ (free online book on Linux/Unix)
- * `Mac OS X UNIX Tutorial for Beginners <http://acad.coloradocollege.edu/dept/pc/SciCompLab/UnixTutorial/>`_ (free online book on Mac OS)
-
-
-cd : change directory
-========================
-
-Change to ``data``::
-
-	cd data
-
-Change to your home directory::
-
-	cd
-
-Change to one directory higher (e.g. if you're in ``/home/greg/data/`` change to ``/home/greg/``)::
-
-	cd ..
-
-mv: move/rename file or directory
-=================================
-
-Rename ``old_filename`` to ``new_filename``::
-
-	mv old_filename new_filename
-
-curl: pull a file from a remote location
-========================================
-
-Pull the greengenes reference OTU file (4feb2011) and write it to a file with the same name::
-
-	curl http://greengenes.lbl.gov/Download/Sequence_Data/Fasta_data_files/Caporaso_Reference_OTUs/gg_otus_4feb2011.tgz > gg_otus_4feb2011.tgz
-
-cp: copy a file
-===============
-
-Copy ``my_file.txt`` to ``my_file.txt.backup``::
-
-	cp my_file.txt my_file.txt.backup
-
-Compress a directory to a tgz file
-==================================
-
-Compress the ``my_data/`` directory into a single file::
-
-	tar -czf my_data.tgz my_data/
-
-Uncompress a tgz file into the current directory
-================================================
-
-Expand the my_data.tgz file::
-
-	tar -xzf my_data.tgz
-
-Uncompress a zip file
-=====================
-
-Uncompress the QIIME tutorial data::
-
-	unzip ftp://thebeast.colorado.edu/pub/QIIME-v1.5.0-dependencies/qiime_tutorial-v1.5.0.zip
-
-Working with files
-==================
-
-Print the first 10 lines of my_file.txt to screen::
-
-	head -n 10 my_file.txt
-
-Print the last 10 lines of my_file.txt to screen::
-
-	tail -n 10 my_file.txt
-
-Print all of the my_file.txt to screen::
-
-	cat my_file.txt
-
-Open my_file.txt for editing with the pico text editor (`go here for help with pico <http://www.uic.edu/depts/accc/software/pine/pico.html>`_)::
-
-	pico my_file.txt
-
-View the file interactively in read-only mode. The stop viewing the file hit ``q``::
-
-	less my_file.txt
+If you're new to the command line it can seem daunting, but it's not as hard as it seems. We recommend the `Unix Shell lessons from Software Carpentry <http://software-carpentry.org/lessons.html>`_ for getting started. `Software Carpentry <http://software-carpentry.org/>`_ also offers frequent hands-on workshops on scientific computing skills that cover many topics that will make using QIIME easier.
 
 Ensuring that long jobs keep running despite loss of network connection
 =======================================================================
 
-When you start a job via ``ssh`` on AWS, that job will stay running only as long as your network connection is active. So, if you lose your network connection (e.g., if you need to close your laptop) you job will stop running. This can also happen accidentally, so it's a good idea to follow these steps for all long jobs.
+When you start a job on a remote server (e.g., where you are connected over ``ssh``), that job will stay running only as long as your ssh connection is active. So, if you lose your network connection (e.g., if you close your laptop or your wifi connection drops) your job will stop running. This commonly happens accidentally, so it's a good idea to follow these steps for all long-running jobs.
 
-To get around these issues you can use the ``screen`` command. These steps illustrate basic usage of ``screen``. To start a screen session to safely run commands::
+To avoid having your jobs stop running if your ssh connection becomes inactive, you can use the ``screen`` command. These steps illustrate basic usage of ``screen``. To start a screen session to safely run commands::
 
 	screen
 
-You'll need to hit ``enter``.  Then enter your commands, and you can safely close the terminal window, disconnect from the network, close your computer, etc. When you come back you'll need to log into the instance again. You can then type::
+This will start a *screen session*, which looks identical to your normal command line session. You can run your commands now, and safely close the terminal window, terminate your ssh session, close your computer, etc. When you come back you'll need to ssh into the server again. After doing that, you can then type::
 
 	screen -r
 
-and you'll see that the command is still running (or may have completed).
+to return to the *screen session* where your command was running.
 
-You can find additional `details on screen here <http://www.ibm.com/developerworks/aix/library/au-gnu_screen/>`_.
-
+You can find additional `details on screen here <http://www.rackaid.com/blog/linux-screen-tutorial-and-how-to/>`_.

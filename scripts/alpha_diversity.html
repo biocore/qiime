@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="alpha_rarefaction.py – A workflow script for performing alpha rarefaction" href="alpha_rarefaction.html" />
+    <link rel="prev" title="align_seqs.py – Align sequences using a variety of alignment methods" href="align_seqs.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="alpha_rarefaction.html" title="alpha_rarefaction.py – A workflow script for performing alpha rarefaction"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="align_seqs.html" title="align_seqs.py – Align sequences using a variety of alignment methods"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -57,7 +68,15 @@
   <span class="target" id="alpha-diversity"></span><div class="section" id="alpha-diversity-py-calculate-alpha-diversity-on-each-sample-in-an-otu-table-using-a-variety-of-alpha-diversity-metrics">
 <span id="index-0"></span><h1><em>alpha_diversity.py</em> &#8211; Calculate alpha diversity on each sample in an otu table, using a variety of alpha diversity metrics<a class="headerlink" href="#alpha-diversity-py-calculate-alpha-diversity-on-each-sample-in-an-otu-table-using-a-variety-of-alpha-diversity-metrics" title="Permalink to this headline">¶</a></h1>
 <p><strong>Description:</strong></p>
-<p>This script calculates alpha diversity, or within-sample diversity, using an otu table. The QIIME pipeline allows users to conveniently calculate more than two dozen different diversity metrics. The full list of available metrics is available by passing the option -s to the script <a class="reference external" href="./alpha_diversity.html">alpha_diversity.py</a>, and documentation of those metrics can be found at <a class="reference external" href="http://qiime.org/scripts/alpha_diversity_metrics.html">http://qiime.org/scripts/alpha_diversity_metrics.html</a>. Every metric has different strengths and limitations - technical discussion of each metric is readily available online and in ecology textbooks, but is beyond the scope of this document.</p>
+<p>This script calculates alpha diversity, or within-sample diversity, using an
+OTU table. The QIIME pipeline allows users to conveniently calculate more than
+two dozen different diversity metrics. The full list of available metrics is
+available by passing the -s option to this script.</p>
+<p>Documentation of the metrics can be found at
+<a class="reference external" href="http://scikit-bio.org/docs/latest/generated/skbio.diversity.alpha.html">http://scikit-bio.org/docs/latest/generated/skbio.diversity.alpha.html</a>.
+Every metric has different strengths and limitations - technical discussion of
+each metric is readily available online and in ecology textbooks, but is beyond
+the scope of this document.</p>
 <p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">alpha_diversity.py</span> <span class="pre">[options]</span></tt></p>
 <p><strong>Input Arguments:</strong></p>
 <div class="admonition note">
@@ -69,7 +88,7 @@
 <dt>-o, <cite>-</cite>-output_path</dt>
 <dd>Output filepath to store alpha diversity metric(s) for each sample in a tab-separated format or output directory when batch processing. [default: None]</dd>
 <dt>-m, <cite>-</cite>-metrics</dt>
-<dd>Alpha-diversity metric(s) to use. A comma-separated list should be provided when multiple metrics are specified. [default: PD_whole_tree,chao1,observed_species]</dd>
+<dd>Alpha-diversity metric(s) to use. A comma-separated list should be provided when multiple metrics are specified. [default: PD_whole_tree,chao1,observed_otus]</dd>
 <dt>-s, <cite>-</cite>-show_metrics</dt>
 <dd>Show the available alpha-diversity metrics and exit.</dd>
 <dt>-t, <cite>-</cite>-tree_path</dt>
@@ -81,16 +100,16 @@
 <p>Example Output:</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="14%" />
-<col width="17%" />
-<col width="31%" />
-<col width="38%" />
+<col width="15%" />
+<col width="18%" />
+<col width="33%" />
+<col width="33%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head"></th>
 <th class="head">simpson</th>
 <th class="head">PD_whole_tree</th>
-<th class="head">observed_species</th>
+<th class="head">observed_otus</th>
 </tr>
 </thead>
 <tbody valign="top">
@@ -143,19 +162,23 @@
 </table>
 <p><strong>Single File Alpha Diversity Example (non-phylogenetic):</strong></p>
 <p>To perform alpha diversity (e.g. chao1) on a single OTU table, where the results are output to &#8220;alpha_div.txt&#8221;, you can use the following command:</p>
-<div class="highlight-python"><pre>alpha_diversity.py -i otu_table.biom -m chao1 -o adiv_chao1.txt</pre>
+<div class="highlight-python"><div class="highlight"><pre>alpha_diversity.py -i otu_table.biom -m chao1 -o adiv_chao1.txt
+</pre></div>
 </div>
 <p><strong>Single File Alpha Diversity Example (phylogenetic):</strong></p>
 <p>In the case that you would like to perform alpha diversity using a phylogenetic metric (e.g. PD_whole_tree), you can use the following command:</p>
-<div class="highlight-python"><pre>alpha_diversity.py -i otu_table.biom -m PD_whole_tree -o adiv_pd.txt -t rep_set.tre</pre>
+<div class="highlight-python"><div class="highlight"><pre>alpha_diversity.py -i otu_table.biom -m PD_whole_tree -o adiv_pd.txt -t rep_set.tre
+</pre></div>
 </div>
 <p><strong>Single File Alpha Diversity Example with multiple metrics:</strong></p>
 <p>You can use the following idiom to run multiple metrics at once (comma-separated):</p>
-<div class="highlight-python"><pre>alpha_diversity.py -i otu_table.biom -m chao1,PD_whole_tree -o adiv_chao1_pd.txt -t rep_set.tre</pre>
+<div class="highlight-python"><div class="highlight"><pre>alpha_diversity.py -i otu_table.biom -m chao1,PD_whole_tree -o adiv_chao1_pd.txt -t rep_set.tre
+</pre></div>
 </div>
 <p><strong>Multiple File (batch) Alpha Diversity:</strong></p>
 <p>To perform alpha diversity on multiple OTU tables (e.g.: rarefied otu tables resulting from <a class="reference external" href="./multiple_rarefactions.html">multiple_rarefactions.py</a>), specify an input directory instead of a single otu table, and an output directory (e.g. &#8220;alpha_div_chao1_PD/&#8221;) as shown by the following command:</p>
-<div class="highlight-python"><pre>alpha_diversity.py -i otu_tables/ -m chao1,PD_whole_tree -o adiv_chao1_pd/ -t rep_set.tre</pre>
+<div class="highlight-python"><div class="highlight"><pre>alpha_diversity.py -i otu_tables/ -m chao1,PD_whole_tree -o adiv_chao1_pd/ -t rep_set.tre
+</pre></div>
 </div>
 </div>
 
@@ -168,17 +191,27 @@
 
     
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="align_seqs.html"
+                        title="previous chapter"><em>align_seqs.py</em> &#8211; Align sequences using a variety of alignment methods</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="alpha_rarefaction.html"
+                        title="next chapter"><em>alpha_rarefaction.py</em> &#8211; A workflow script for performing alpha rarefaction</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -202,16 +235,24 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="alpha_rarefaction.html" title="alpha_rarefaction.py – A workflow script for performing alpha rarefaction"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="align_seqs.html" title="align_seqs.py – Align sequences using a variety of alignment methods"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

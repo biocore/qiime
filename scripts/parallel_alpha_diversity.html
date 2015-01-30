@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="parallel_assign_taxonomy_blast.py – Parallel taxonomy assignment using BLAST" href="parallel_assign_taxonomy_blast.html" />
+    <link rel="prev" title="parallel_align_seqs_pynast.py – Parallel sequence alignment using PyNAST" href="parallel_align_seqs_pynast.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="parallel_assign_taxonomy_blast.html" title="parallel_assign_taxonomy_blast.py – Parallel taxonomy assignment using BLAST"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="parallel_align_seqs_pynast.html" title="parallel_align_seqs_pynast.py – Parallel sequence alignment using PyNAST"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -90,14 +101,15 @@
 <dt>-Z, <cite>-</cite>-seconds_to_sleep</dt>
 <dd>Number of seconds to sleep between checks for run  completion when polling runs [default: 1]</dd>
 <dt>-O, <cite>-</cite>-jobs_to_start</dt>
-<dd>Number of jobs to start [default: 2]</dd>
+<dd>Number of jobs to start [default: 1]</dd>
 </dl>
 </div>
 <p><strong>Output:</strong></p>
 <p>The resulting output will be the same number of files as supplied by the user. The resulting files are tab-delimited text files, where the columns correspond to alpha diversity metrics and the rows correspond to samples and their calculated diversity measurements.</p>
 <p><strong>Example:</strong></p>
-<p>Apply the observed_species, chao1, PD_whole_tree metrics (-m) to all otu tables in rarefied_otu_tables/ (-i) and write the resulting output files to adiv/ (-o, will be created if it doesn&#8217;t exist). Use the rep_set.tre (-t) to compute phylogenetic diversity metrics. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).</p>
-<div class="highlight-python"><pre>parallel_alpha_diversity.py -i $PWD/rarefied_otu_tables -o $PWD/adiv -m observed_species,chao1,PD_whole_tree -t $PWD/rep_set.tre</pre>
+<p>Apply the observed_OTUs, chao1, PD_whole_tree metrics (-m) to all otu tables in rarefied_otu_tables/ (-i) and write the resulting output files to adiv/ (-o, will be created if it doesn&#8217;t exist). Use the rep_set.tre (-t) to compute phylogenetic diversity metrics. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).</p>
+<div class="highlight-python"><div class="highlight"><pre>parallel_alpha_diversity.py -i $PWD/rarefied_otu_tables -o $PWD/adiv -m observed_otus,chao1,PD_whole_tree -t $PWD/rep_set.tre
+</pre></div>
 </div>
 </div>
 
@@ -110,17 +122,27 @@
 
     
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="parallel_align_seqs_pynast.html"
+                        title="previous chapter"><em>parallel_align_seqs_pynast.py</em> &#8211; Parallel sequence alignment using PyNAST</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="parallel_assign_taxonomy_blast.html"
+                        title="next chapter"><em>parallel_assign_taxonomy_blast.py</em> &#8211; Parallel taxonomy assignment using BLAST</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -144,16 +166,24 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="parallel_assign_taxonomy_blast.html" title="parallel_assign_taxonomy_blast.py – Parallel taxonomy assignment using BLAST"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="parallel_align_seqs_pynast.html" title="parallel_align_seqs_pynast.py – Parallel sequence alignment using PyNAST"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

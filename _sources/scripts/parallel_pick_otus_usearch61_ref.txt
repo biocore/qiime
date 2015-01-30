@@ -47,7 +47,7 @@ This script works like the `pick_otus.py <./pick_otus.html>`_ script, but is int
 	`-`-sizeorder
 		Enable size based preference in clustering with usearch61. Requires that --usearch61_sort_method be abundance. [default: False]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 2]
+		Number of jobs to start [default: 1]
 	-R, `-`-retain_temp_files
 		Retain temporary files after runs complete (useful for debugging) [default: False]
 	-S, `-`-suppress_submit_jobs

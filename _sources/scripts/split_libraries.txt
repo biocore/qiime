@@ -33,31 +33,31 @@ Sequences from samples that are not found in the mapping file (no corresponding 
 		Names of qual files, comma-delimited [default: None]
 	-r, `-`-remove_unassigned
 		DEPRECATED: pass --retain_unassigned_reads to keep unassigned reads  [default: None]
-	-l, `-`-min-seq-length
+	-l, `-`-min_seq_length
 		Minimum sequence length, in nucleotides [default: 200]
-	-L, `-`-max-seq-length
+	-L, `-`-max_seq_length
 		Maximum sequence length, in nucleotides [default: 1000]
-	-t, `-`-trim-seq-length
+	-t, `-`-trim_seq_length
 		Calculate sequence lengths after trimming primers and barcodes [default: False]
-	-s, `-`-min-qual-score
+	-s, `-`-min_qual_score
 		Min average qual score allowed in read [default: 25]
-	-k, `-`-keep-primer
+	-k, `-`-keep_primer
 		Do not remove primer from sequences
-	-B, `-`-keep-barcode
+	-B, `-`-keep_barcode
 		Do not remove barcode from sequences
-	-a, `-`-max-ambig
+	-a, `-`-max_ambig
 		Maximum number of ambiguous bases [default: 6]
-	-H, `-`-max-homopolymer
+	-H, `-`-max_homopolymer
 		Maximum length of homopolymer run [default: 6]
-	-M, `-`-max-primer-mismatch
+	-M, `-`-max_primer_mismatch
 		Maximum number of primer mismatches [default: 0]
-	-b, `-`-barcode-type
+	-b, `-`-barcode_type
 		Barcode type, hamming_8, golay_12, variable_length (will disable any barcode correction if variable_length set), or a number representing the length of the barcode, such as -b 4.  [default: golay_12]
-	-o, `-`-dir-prefix
+	-o, `-`-dir_prefix
 		Directory prefix for output files [default: .]
-	-e, `-`-max-barcode-errors
+	-e, `-`-max_barcode_errors
 		Maximum number of errors in barcode [default: 1.5]
-	-n, `-`-start-numbering-at
+	-n, `-`-start_numbering_at
 		Seq id to use for the first sequence [default: 1]
 	`-`-retain_unassigned_reads
 		Retain sequences which are Unassigned in the output sequence file[default: False]

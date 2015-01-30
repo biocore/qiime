@@ -46,9 +46,10 @@ http://qiime.org for details).
 In addition to Colwell et al. (2012), the following resources were extremely
 useful while implementing and testing these estimators, so it is appropriate to
 also acknowledge them here:
-    Hsieh et al. (2013)
-    Shen et al. (2003)
-    Colwell (2013)
+
+- Hsieh et al. (2013)
+- Shen et al. (2003)
+- Colwell (2013)
 
 References:
 
@@ -83,7 +84,7 @@ Shen T-J, Chao A, Lin C- F. Predicting the number of new species in further taxo
 	-m, `-`-min
 		The number of individuals (e.g. sequences) per sample to start performing estimations at [default: 1]
 	-x, `-`-max
-		The number of individuals (e.g. sequences) per sample to stop performing estimations at. By default, the base sample size will be used, which is defined in Chao et al. (2013) as "double the smallest reference sample size or the maximum reference sample size, whichever is larger" [default: base sample size]
+		The number of individuals (e.g. sequences) per sample to stop performing estimations at. By default, the base sample size will be used, which is defined in Chao et al. (2013) as "double the smallest reference sample size or the maximum reference sample size, whichever is larger [default: base sample size]
 	-n, `-`-num_steps
 		The number of steps to make between -m/--min and -x/--max. Increasing this number will result in smoother curves, but will also increase the amount of time needed to run the script. Note that the reference sample size for each sample will be included if it does not fall within the min/max/num_steps range [default: 10]
 	-c, `-`-confidence_level

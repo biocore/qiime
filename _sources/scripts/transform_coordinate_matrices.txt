@@ -27,7 +27,7 @@ This script transforms two or more coordinate matrices (e.g., the output of `pri
 	**[OPTIONAL]**
 		
 	-r, `-`-random_trials
-		Number of random permutations of matrix2 to perform.  [default: (no Monte Carlo analysis performed)]
+		Number of random permutations of matrix2 to perform. [default: (no Monte Carlo analysis performed)]
 	-d, `-`-num_dimensions
 		Number of dimensions to include in output matrices [default: 3]
 	-s, `-`-sample_id_map_fps

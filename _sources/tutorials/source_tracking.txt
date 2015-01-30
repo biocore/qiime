@@ -12,7 +12,7 @@ This tutorial does not attempt to cover every possible usage of SourceTracker. I
 
 Tutorial data
 -------------
-You can obtain the files used in this tutorial `here <https://s3.amazonaws.com/s3-qiime_tutorial_files/sourcetracker_tutorial_files.tgz>`_. These are derived from `Hewitt et al., 2013 <http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0054703>`_, where samples were collected from various surfaces in two different Neonatal Intensive Care Units (NICUs). The 16S rRNA was sequenced from these samples, and compared against pre-existing data sets using SourceTracker in order to predict the likely origin of the microbial contaminants on each NICU surface.
+You can obtain the files used in this tutorial `here <ftp://ftp.microbio.me/qiime/tutorial_files/sourcetracker_tutorial_files.tgz>`_. These are derived from `Hewitt et al., 2013 <http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0054703>`_, where samples were collected from various surfaces in two different Neonatal Intensive Care Units (NICUs). The 16S rRNA was sequenced from these samples, and compared against pre-existing data sets using SourceTracker in order to predict the likely origin of the microbial contaminants on each NICU surface.
 
 This tutorial begins with an OTU table. For information on various ways to generate OTU tables with QIIME, see :ref:`otu_picking`.
 
@@ -34,7 +34,7 @@ For information on interacting with SourceTracker, run the following command to 
 
 Filter OTUs present in less than 1% of the samples from the OTU table
 ---------------------------------------------------------------------
-First we filter OTUs that are present in very few samples, as we consider these unlikely to provide useful source tracking information. We define *very few samples* here as less than 1% of the samples, which in our case is roughly 7 samples. This value should be determined on a per-study basis (so you shouldn't just use 7 on your own data). You can find the total number of samples in your OTU table by running the ``biom summarize-table`` command on it. 
+First we filter OTUs that are present in very few samples, as we consider these unlikely to provide useful source tracking information. We define *very few samples* here as less than 1% of the samples, which in our case is roughly 7 samples. This value should be determined on a per-study basis (so you shouldn't just use 7 on your own data). You can find the total number of samples in your OTU table by running the ``biom summarize-table`` command on it.
 
 To filter the OTU table, run the following command::
 
@@ -53,7 +53,7 @@ This creates a file named ``filtered_otu_table.txt``.
 Run SourceTracker
 -----------------
 
-To use SourceTracker, your mapping must contain two columns titled ``SourceSink``, and ``Env``, which define whether each sample should be treated as a source or a sink, and describe the sample type, respectively. These columns can be added to your mapping file by opening it in Excel or as a Google Spreadsheet and adding the new columns. 
+To use SourceTracker, your mapping must contain two columns titled ``SourceSink``, and ``Env``, which define whether each sample should be treated as a source or a sink, and describe the sample type, respectively. These columns can be added to your mapping file by opening it in Excel or as a Google Spreadsheet and adding the new columns.
 
 In the tutorial data set the sources include ``Outdoor Air``, ``Human Skin``, and ``Human Mouth``. Each row that represents a sample taken from one of these should be labeled ``source`` in the ``SourceSink`` column. Likewise the sink samples (including ``NICU Incubator``, ``NICU BabyBedside`` here) should be labeled ``sink`` in the ``SourceSink`` column. Each row in the ``Env`` column should contain a description of the corresponding sample type, for example ``Outdoor Air``, ``Human Skin``, and ``NICU BabyBedside``. Any sample that should not be used in the SourceTracker analysis should contain ``NA`` in the ``SourceSink`` and ``Env`` columns. These steps have all been completed in the mapping file used in this tutorial (``map.txt``). You can review that file as you prepare a mapping file for your own analyses.
 

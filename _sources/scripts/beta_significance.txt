@@ -7,7 +7,7 @@
 
 **Description:**
 
-The tests are conducted on each pair of samples present in the input otu table. See the unifrac tutorial online for more details (http://bmf2.colorado.edu/unifrac/tutorial.psp)
+The tests are conducted on each pair of samples present in the input otu table. See the unifrac tutorial online for more details (http://unifrac.colorado.edu/)
 
 
 **Usage:** :file:`beta_significance.py [options]`

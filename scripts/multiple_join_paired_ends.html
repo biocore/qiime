@@ -1,0 +1,236 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>multiple_join_paired_ends.py – Run join_paired_ends.py on multiple files. &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.9.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="multiple_rarefactions.py – Perform multiple subsamplings/rarefactions on an otu table" href="multiple_rarefactions.html" />
+    <link rel="prev" title="multiple_extract_barcodes.py – Run extract_barcodes.py on multiple files." href="multiple_extract_barcodes.html" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="multiple_rarefactions.html" title="multiple_rarefactions.py – Perform multiple subsamplings/rarefactions on an otu table"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="multiple_extract_barcodes.html" title="multiple_extract_barcodes.py – Run extract_barcodes.py on multiple files."
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="multiple-join-paired-ends"></span><div class="section" id="multiple-join-paired-ends-py-run-join-paired-ends-py-on-multiple-files">
+<span id="index-0"></span><h1><em>multiple_join_paired_ends.py</em> &#8211; Run join_paired_ends.py on multiple files.<a class="headerlink" href="#multiple-join-paired-ends-py-run-join-paired-ends-py-on-multiple-files" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>This script runs <a class="reference external" href="./join_paired_ends.html">join_paired_ends.py</a> on data that are already demultiplexed
+(split up according to sample, with one sample per pair of files). The script
+supports the following types of input:</p>
+<ul class="simple">
+<li>a directory containing many files, where each file is named on a per-sample
+basis</li>
+<li>a directory containing many directories, where each directory is named on a
+per-sample basis</li>
+</ul>
+<p>The script assumes that the leading/trailing characters before/after the read
+number indicator (see &#8211;read1_indicator) are matched between forward and
+reverse reads. For example:</p>
+<ul class="simple">
+<li>S0_L001_R1_001.fastq.gz and S0_L001_R2_001.fastq.gz would be matched up reads</li>
+<li>S0_L002_R1_00X.fastq.gz and S0_L002_R2_00X.fastq.gz would be matched up reads</li>
+</ul>
+<p>If an optional &#8211;barcode_indicator file is used, it is searched for in the same
+manner that the paired files are searched for, so if the default &#8220;_I1_&#8221; is
+used, S0_L001_R1_001.fastq.gz and S0_L001_R2_001.fastq.gz would be matched up
+with S0_L001_I1_001.fastq.gz as the barcode indicator file.</p>
+<p>The output directory used for each call to <a class="reference external" href="./join_paired_ends.html">join_paired_ends.py</a> uses the base
+name of the input read 1 fastq file (a single directory would be problematic
+since the output names for <a class="reference external" href="./join_paired_ends.html">join_paired_ends.py</a> can be the same for different
+calls). Use the parameter &#8211;include_input_dir_path to also include the input
+directory name in the output directory path, which may be preferable in the
+case of an input folder of folders, and &#8211;remove_filepath_in_name can be used
+in this case to prevent the input read 1 fastq file base name from being used
+as part of the output directory name.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">multiple_join_paired_ends.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-input_dir</dt>
+<dd>Input directory of directories, or directory of paired fastq files.</dd>
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>Base output directory to write output folders</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-p, <cite>-</cite>-parameter_fp</dt>
+<dd>Path to the parameter file, which specifies changes to the default behavior of <a class="reference external" href="./join_paired_ends.html">join_paired_ends.py</a>. See <a class="reference external" href="http://www.qiime.org/documentation/file_formats.html#qiime-parameters">http://www.qiime.org/documentation/file_formats.html#qiime-parameters</a> [default: <a class="reference external" href="./join_paired_ends.html">join_paired_ends.py</a> defaults will be used]</dd>
+<dt><cite>-</cite>-read1_indicator</dt>
+<dd>Substring to search for to indicate read 1 [default: _R1_]</dd>
+<dt><cite>-</cite>-read2_indicator</dt>
+<dd>Substring to search for to indicate read 2 [default: _R2_]</dd>
+<dt>-b, <cite>-</cite>-match_barcodes</dt>
+<dd>Enable searching for matching barcodes [default: False]</dd>
+<dt><cite>-</cite>-barcode_indicator</dt>
+<dd>Substring to search for to indicate barcode reads [default: _I1_]</dd>
+<dt><cite>-</cite>-leading_text</dt>
+<dd>Leading text to add to each <a class="reference external" href="./join_paired_ends.html">join_paired_ends.py</a> command [default: no leading text added]</dd>
+<dt><cite>-</cite>-trailing_text</dt>
+<dd>Trailing text to add to each <a class="reference external" href="./join_paired_ends.html">join_paired_ends.py</a> command [default: no trailing text added]</dd>
+<dt><cite>-</cite>-include_input_dir_path</dt>
+<dd>Include the input directory name in the output directory path. Useful in cases where the file names are repeated in input folders [default: False]</dd>
+<dt><cite>-</cite>-remove_filepath_in_name</dt>
+<dd>Disable inclusion of the input filename in the output directory names. Must use &#8211;include_input_dir_path if this option is enabled [default: False]</dd>
+<dt>-w, <cite>-</cite>-print_only</dt>
+<dd>Print the commands but don&#8217;t call them &#8211; useful for debugging [default: False]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>The output of running <a class="reference external" href="./join_paired_ends.html">join_paired_ends.py</a> on many input files. See script description for more details.</p>
+<p><strong>Example 1:</strong></p>
+<p>Process an input folder of paired-up files (by filename, with the default _R1_ and _R2_ containing the forward and reverse reads filenames, respectively). An optional parameters file is passed with -p. This file can specify an optional parameter for <a class="reference external" href="./join_paired_ends.html">join_paired_ends.py</a>, such as: join_paired_ends:pe_join_method SeqPrep</p>
+<div class="highlight-python"><div class="highlight"><pre>multiple_join_paired_ends.py -i input_files -o output_folder -p qiime_parameters.txt
+</pre></div>
+</div>
+<p><strong>Example 2:</strong></p>
+<p>Process an input folder of folders (with the filenames having _forward_ and _reverse_ containing the forward and reverse read filenames, respectively). The individual folder names are included in the output folder names, but not the filenames. A matching barcode fastq file (indicated by _barcode_) is also included.</p>
+<div class="highlight-python"><div class="highlight"><pre>multiple_join_paired_ends.py -i input_folders -o output_folder --read1_indicator &#39;_forward_&#39; --read2_indicator &#39;_reverse_&#39; --include_input_dir_path --remove_filepath_in_name -b --barcode_indicator &#39;_barcode_&#39;
+</pre></div>
+</div>
+<p><strong>Example 3:</strong></p>
+<p>To see what commands would be executed by the script without actually running them, use the following command:</p>
+<div class="highlight-python"><div class="highlight"><pre>multiple_join_paired_ends.py -i input_files -o output_folder -w
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="multiple_extract_barcodes.html"
+                        title="previous chapter"><em>multiple_extract_barcodes.py</em> &#8211; Run extract_barcodes.py on multiple files.</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="multiple_rarefactions.html"
+                        title="next chapter"><em>multiple_rarefactions.py</em> &#8211; Perform multiple subsamplings/rarefactions on an otu table</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="multiple_rarefactions.html" title="multiple_rarefactions.py – Perform multiple subsamplings/rarefactions on an otu table"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="multiple_extract_barcodes.html" title="multiple_extract_barcodes.py – Run extract_barcodes.py on multiple files."
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

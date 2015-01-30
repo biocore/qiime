@@ -1,0 +1,179 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>compare_distance_matrices.py – Computes Mantel correlation tests between sets of distance matrices &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.8.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="compare-distance-matrices"></span><div class="section" id="compare-distance-matrices-py-computes-mantel-correlation-tests-between-sets-of-distance-matrices">
+<span id="index-0"></span><h1><em>compare_distance_matrices.py</em> &#8211; Computes Mantel correlation tests between sets of distance matrices<a class="headerlink" href="#compare-distance-matrices-py-computes-mantel-correlation-tests-between-sets-of-distance-matrices" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>This script compares two or more distance/dissimilarity matrices for correlation by providing the Mantel, partial Mantel, and Mantel correlogram matrix correlation tests.</p>
+<p>The Mantel test will test the correlation between two matrices. The data often represents the &#8220;distance&#8221; between objects or samples.</p>
+<p>The partial Mantel test is a first-order correlation analysis that utilizes three distance (dissimilarity) matrices. This test builds on the traditional Mantel test which is a procedure that tests the hypothesis that distances between the objects within a given matrix are linearly independent of the distances withing those same objects in a separate matrix. It builds on the traditional Mantel test by adding a third &#8220;control&#8221; matrix.</p>
+<p>Mantel correlogram produces a plot of distance classes versus Mantel statistics. Briefly, an ecological distance matrix (e.g. UniFrac distance matrix) and a second distance matrix (e.g. spatial distances, pH distances, etc.) are provided. The second distance matrix has its distances split into a number of distance classes (the number of classes is determined by Sturge&#8217;s rule). A Mantel test is run over these distance classes versus the ecological distance matrix. The Mantel statistics obtained from each of these tests are then plotted in a correlogram. A filled-in point on the plot indicates that the Mantel statistic was statistically significant (you may provide what alpha to use).</p>
+<p>For more information and examples pertaining to this script, please refer to the accompanying tutorial, which can be found at <a class="reference external" href="http://qiime.org/tutorials/distance_matrix_comparison.html">http://qiime.org/tutorials/distance_matrix_comparison.html</a>.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">compare_distance_matrices.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt><cite>-</cite>-method</dt>
+<dd>Matrix correlation method to use. Valid options: [mantel, partial_mantel, mantel_corr]</dd>
+<dt>-i, <cite>-</cite>-input_dms</dt>
+<dd>The input distance matrices, comma-separated. WARNING: Only symmetric, hollow distance matrices may be used as input. Asymmetric distance matrices, such as those obtained by the UniFrac Gain metric (i.e. <a class="reference external" href="./beta_diversity.html">beta_diversity.py</a> -m unifrac_g), should not be used as input</dd>
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>Path to the output directory</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-n, <cite>-</cite>-num_permutations</dt>
+<dd>The number of permutations to perform when calculating the p-value [default: 100]</dd>
+<dt>-s, <cite>-</cite>-sample_id_map_fp</dt>
+<dd>Map of original sample ids to new sample ids [default: None]</dd>
+<dt>-t, <cite>-</cite>-tail_type</dt>
+<dd>The type of tail test to perform when calculating the p-value. Valid options: [two sided, less, greater] Two sided is a two-tailed test, while less tests for r statistics less than the observed r statistic, and greater tests for r statistics greater than the observed r statistic. Only applies when method is mantel [default: two sided]</dd>
+<dt>-a, <cite>-</cite>-alpha</dt>
+<dd>The value of alpha to use when denoting significance in the correlogram plot. Only applies when method is mantel_corr</dd>
+<dt>-g, <cite>-</cite>-image_type</dt>
+<dd>The type of image to produce. Valid options: [png, svg, pdf]. Only applies when method is mantel_corr [default: pdf]</dd>
+<dt><cite>-</cite>-variable_size_distance_classes</dt>
+<dd>If this option is supplied, each distance class will have an equal number of distances (i.e. pairwise comparisons), which may result in variable sizes of distance classes (i.e. each distance class may span a different range of distances). If this option is not supplied, each distance class will have the same width, but may contain varying numbers of pairwise distances in each class. This option can help maintain statistical power if there are large differences in the number of distances in each class. See Darcy et al. 2011 (PLoS ONE) for an example of this type of correlogram. Only applies when method is mantel_corr [default: False]</dd>
+<dt>-c, <cite>-</cite>-control_dm</dt>
+<dd>The control matrix. Only applies (and is <em>required</em>) when method is partial_mantel. [default: None]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>Mantel: One file is created containing the Mantel &#8216;r&#8217; statistic and p-value.</p>
+<p>Partial Mantel: One file is created in the output directory, which contains the partial Mantel statistic and p-value.</p>
+<p>Mantel Correlogram: Two files are created in the output directory: a text file containing information about the distance classes, their associated Mantel statistics and p-values, etc. and an image of the correlogram plot.</p>
+<p><strong>Partial Mantel:</strong></p>
+<p>Performs a partial Mantel test on two distance matrices, using a third matrix as a control. Runs 99 permutations to calculate the p-value.</p>
+<div class="highlight-python"><pre>compare_distance_matrices.py --method partial_mantel -i weighted_unifrac_dm.txt,unweighted_unifrac_dm.txt -c PH_dm.txt -o partial_mantel_out -n 99</pre>
+</div>
+<p><strong>Mantel:</strong></p>
+<p>Performs a Mantel test on all pairs of four distance matrices, including 999 permutations for each test.</p>
+<div class="highlight-python"><pre>compare_distance_matrices.py --method mantel -i weighted_unifrac_dm.txt,unweighted_unifrac_dm.txt,weighted_unifrac_even100_dm.txt,unweighted_unifrac_even100_dm.txt -o mantel_out -n 999</pre>
+</div>
+<p><strong>Mantel Correlogram:</strong></p>
+<p>This example computes a Mantel correlogram on two distance matrices using 999 permutations in each Mantel test. Output is written to the mantel_correlogram_out directory.</p>
+<div class="highlight-python"><pre>compare_distance_matrices.py --method mantel_corr -i unweighted_unifrac_dm.txt,PH_dm.txt -o mantel_correlogram_out -n 999</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

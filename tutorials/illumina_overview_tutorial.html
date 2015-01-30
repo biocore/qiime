@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Tutorials" href="index.html" />
+    <link rel="next" title="454 Overview Tutorial: de novo OTU picking and diversity analyses using 454 data" href="tutorial.html" />
+    <link rel="prev" title="OTU picking strategies in QIIME" href="otu_picking.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,14 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="tutorial.html" title="454 Overview Tutorial: de novo OTU picking and diversity analyses using 454 data"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="otu_picking.html" title="OTU picking strategies in QIIME"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Tutorials</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -56,15 +66,7 @@
             
   <div class="section" id="illumina-overview-tutorial-an-ipython-notebook-open-reference-otu-picking-and-core-diversity-analyses">
 <span id="illumina-overview-tutorial"></span><h1>Illumina Overview Tutorial (an IPython Notebook): open reference OTU picking and core diversity analyses<a class="headerlink" href="#illumina-overview-tutorial-an-ipython-notebook-open-reference-otu-picking-and-core-diversity-analyses" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="ipython-notebook">
-<h2>IPython Notebook<a class="headerlink" href="#ipython-notebook" title="Permalink to this headline">¶</a></h2>
-<p>This tutorial is provided as an IPython Notebook. See the <a class="reference external" href="http://nbviewer.ipython.org/github/biocore/qiime/blob/1.8.0/examples/ipynb/illumina_overview_tutorial.ipynb">Illumina Overview Tutorial IPython Notebook</a>.</p>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">The links in the above notebook won&#8217;t work as they represent the output of one specific run of the notebook. You can download the notebook <tt class="docutils literal"><span class="pre">.ipynb</span></tt> file to run it on your own notebook server from the page linked above (see <tt class="docutils literal"><span class="pre">Download</span> <span class="pre">notebook</span></tt> link on the top-right of that page).</p>
-</div>
-<p>For more information on using QIIME with IPython, see <a class="reference external" href="http://www.nature.com/ismej/journal/vaop/ncurrent/full/ismej2012123a.html">our recent paper here</a>. You can find more information on the <a class="reference external" href="http://ipython.org/ipython-doc/stable/interactive/htmlnotebook.html">IPython Notebook here</a>, and the <a class="reference external" href="http://nbviewer.ipython.org/">nbviewer tool (which we use to display the notebook) here</a>.</p>
-</div>
+<p>This tutorial is provided as an IPython Notebook. See the <a class="reference external" href="http://nbviewer.ipython.org/github/biocore/qiime/blob/1.9.0/examples/ipynb/illumina_overview_tutorial.ipynb">Illumina Overview Tutorial IPython Notebook</a>.</p>
 </div>
 
 
@@ -75,26 +77,28 @@
         <div class="sphinxsidebarwrapper">
 
     
-  <h3><a href="../index.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Illumina Overview Tutorial (an IPython Notebook): open reference OTU picking and core diversity analyses</a><ul>
-<li><a class="reference internal" href="#ipython-notebook">IPython Notebook</a></li>
-</ul>
-</li>
-</ul>
+
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="index.html">Tutorials</a><br /></li>
+    <li><a href="../scripts/index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
-
-
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="otu_picking.html"
+                        title="previous chapter">OTU picking strategies in QIIME</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tutorial.html"
+                        title="next chapter">454 Overview Tutorial: de novo OTU picking and diversity analyses using 454 data</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -118,16 +122,23 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="tutorial.html" title="454 Overview Tutorial: de novo OTU picking and diversity analyses using 454 data"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="otu_picking.html" title="OTU picking strategies in QIIME"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Tutorials</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

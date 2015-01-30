@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="add_qiime_labels.py – Takes a directory, a metadata mapping file, and a column name that contains the fasta file names that SampleIDs are associated with, combines all files that have valid fasta extensions into a single fasta file, with valid QIIME fasta labels." href="add_qiime_labels.html" />
+    <link rel="prev" title="QIIME Scripts" href="index.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="add_qiime_labels.html" title="add_qiime_labels.py – Takes a directory, a metadata mapping file, and a column name that contains the fasta file names that SampleIDs are associated with, combines all files that have valid fasta extensions into a single fasta file, with valid QIIME fasta labels."
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="QIIME Scripts"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -57,7 +68,7 @@
   <span class="target" id="add-alpha-to-mapping-file"></span><div class="section" id="add-alpha-to-mapping-file-py-add-alpha-diversity-data-to-a-metadata-mapping-file">
 <span id="index-0"></span><h1><em>add_alpha_to_mapping_file.py</em> &#8211; Add alpha diversity data to a metadata mapping file<a class="headerlink" href="#add-alpha-to-mapping-file-py-add-alpha-diversity-data-to-a-metadata-mapping-file" title="Permalink to this headline">¶</a></h1>
 <p><strong>Description:</strong></p>
-<p>Add alpha diversity data to a mapping file for use with other QIIME scripts, i. e. <a class="reference external" href="./make_emperor.html">make_emperor.py</a>. The resulting mapping file will contain three new columns per metric in the alpha diversity data; the first column being the raw value, the second being a normalized raw value and the third one a label classifying the bin where this value fits based on the normalized value.</p>
+<p>Add alpha diversity data to a mapping file for use with other QIIME scripts, i. e. make_emperor. The resulting mapping file will contain three new columns per metric in the alpha diversity data; the first column being the raw value, the second being a normalized raw value and the third one a label classifying the bin where this value fits based on the normalized value.</p>
 <p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">add_alpha_to_mapping_file.py</span> <span class="pre">[options]</span></tt></p>
 <p><strong>Input Arguments:</strong></p>
 <div class="admonition note">
@@ -89,15 +100,18 @@
 <p>The result of running this script is a metadata mapping file that will include 3 new columns per alpha diversity metric included in the alpha diversity file. For example, with an alpha diversity file with only PD_whole_tree, the new columns will PD_whole_tree_alpha, PD_whole_tree_normalized and PD_whole_tree_bin.</p>
 <p><strong>Adding alpha diversity data:</strong></p>
 <p>Add the alpha diversity values to a mapping file and classify the normalized values into 4 bins, where the limits will be  0 &lt; x &lt;= 0.25 for the first bin 0.25 &lt; x &lt;= 0.5 for the second bin, 0.5 &lt; x &lt;= 0.75 for the third bin and 0.75 &lt; x &lt;= 1 for the fourth bin.</p>
-<div class="highlight-python"><pre>add_alpha_to_mapping_file.py -i adiv_pd.txt -m mapping.txt -b 4 -o alpha_mapping.txt</pre>
+<div class="highlight-python"><div class="highlight"><pre>add_alpha_to_mapping_file.py -i adiv_pd.txt -m mapping.txt -b 4 -o alpha_mapping.txt
+</pre></div>
 </div>
 <p><strong>Adding alpha diversity data with the quantile method:</strong></p>
 <p>Add the alpha diversity values to a mapping file and classify the normalized values using the quartiles of the distribution of this values.</p>
-<div class="highlight-python"><pre>add_alpha_to_mapping_file.py -i adiv_pd.txt -m mapping.txt -b 4 -o alpha_mapping_quantile.txt --binning_method=quantile</pre>
+<div class="highlight-python"><div class="highlight"><pre>add_alpha_to_mapping_file.py -i adiv_pd.txt -m mapping.txt -b 4 -o alpha_mapping_quantile.txt --binning_method=quantile
+</pre></div>
 </div>
 <p><strong>Adding collated alpha diversity data:</strong></p>
 <p>Add the mean of the alpha diversity values at a specified rarefaction depth, this case is for use with the output of <a class="reference external" href="./collate_alpha.html">collate_alpha.py</a>. It is recommended that the filenames are the name of the metric used in each file.</p>
-<div class="highlight-python"><pre>add_alpha_to_mapping_file.py -i 'shannon.txt,chao1.txt' -m mapping.txt -b 4 -o collated_alpha_mapping.txt --depth=49 --collated_input</pre>
+<div class="highlight-python"><div class="highlight"><pre>add_alpha_to_mapping_file.py -i &#39;shannon.txt,chao1.txt&#39; -m mapping.txt -b 4 -o collated_alpha_mapping.txt --depth=49 --collated_input
+</pre></div>
 </div>
 </div>
 
@@ -110,17 +124,27 @@
 
     
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">QIIME Scripts</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="add_qiime_labels.html"
+                        title="next chapter"><em>add_qiime_labels.py</em> &#8211; Takes a directory, a metadata mapping file, and a column name that contains the fasta file names that SampleIDs are associated with, combines all files that have valid fasta extensions into a single fasta file, with valid QIIME fasta labels.</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -144,16 +168,24 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="add_qiime_labels.html" title="add_qiime_labels.py – Takes a directory, a metadata mapping file, and a column name that contains the fasta file names that SampleIDs are associated with, combines all files that have valid fasta extensions into a single fasta file, with valid QIIME fasta labels."
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="QIIME Scripts"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

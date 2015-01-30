@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Tutorials" href="index.html" />
+    <link rel="next" title="Describing samples based on their metadata" href="metadata_description.html" />
+    <link rel="prev" title="Using parallel QIIME" href="parallel_qiime.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,14 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="metadata_description.html" title="Describing samples based on their metadata"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="parallel_qiime.html" title="Using parallel QIIME"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Tutorials</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -87,7 +97,8 @@
 <h2>How do I use a remote mapping file with QIIME?<a class="headerlink" href="#how-do-i-use-a-remote-mapping-file-with-qiime" title="Permalink to this headline">¶</a></h2>
 <p>The script <a class="reference external" href="../scripts/load_remote_mapping_file.html">load_remote_mapping_file.py</a> allows you to export and download a remote mapping file (currently a Google Spreadsheet) to your local machine. This removes the steps of navigating to Google Docs in a web browser and exporting the spreadsheet as TSV each time you need to obtain the latest published version of the spreadsheet.</p>
 <p>To obtain a local copy of the <a class="reference external" href="./tutorial.html">QIIME overview tutorial</a> mapping file stored in Google Docs, run the following command:</p>
-<div class="highlight-python"><pre>load_remote_mapping_file.py -o Fasting_Map.txt -k 0AnzomiBiZW0ddDVrdENlNG5lTWpBTm5kNjRGbjVpQmc</pre>
+<div class="highlight-python"><div class="highlight"><pre>load_remote_mapping_file.py -o Fasting_Map.txt -k 0AnzomiBiZW0ddDVrdENlNG5lTWpBTm5kNjRGbjVpQmc
+</pre></div>
 </div>
 <p>The -o option specifies the filename to save the mapping file to, and -k specifies the key that we previously copied. Open up <tt class="file docutils literal"><span class="pre">Fasting_Map.txt</span></tt> to see the mapping file in TSV (QIIME-compatible) format:</p>
 <div class="admonition note">
@@ -109,7 +120,7 @@
 <p>To update this mapping file at a later time, simply rerun the above command (note that you&#8217;ll lose any local changes you may have made to the mapping file, so please be cautious!).</p>
 <p>If your spreadsheet has multiple worksheets (i.e. tabs), <a class="reference external" href="../scripts/load_remote_mapping_file.html">load_remote_mapping_file.py</a>  will by default choose the first worksheet as the one it will export. You can override this behavior by using the -w option and providing the name of the worksheet.</p>
 <p>You may also specify the entire URL of the Google Spreadsheet (instead of only supplying the key) using the same -k option that we used above. The script will attempt to extract the key from the URL.</p>
-<p><strong>Note:</strong> Now that we have a local copy of our mapping file, it is a good idea to run <a class="reference external" href="../scripts/check_id_map.html">check_id_map.py</a> on the mapping file to make sure it is a valid mapping file and that there weren&#8217;t any problems during the export/download process.</p>
+<p><strong>Note:</strong> Now that we have a local copy of our mapping file, it is a good idea to run <a class="reference external" href="../scripts/validate_mapping_file.html">validate_mapping_file.py</a> on the mapping file to make sure it is a valid mapping file and that there weren&#8217;t any problems during the export/download process.</p>
 </div>
 <div class="section" id="caveats">
 <h2>Caveats<a class="headerlink" href="#caveats" title="Permalink to this headline">¶</a></h2>
@@ -124,7 +135,7 @@
 <p>Remote mapping files are very new to QIIME and are thus an experimental feature. We plan to add additional support for remote mapping files in the future, including the following features:</p>
 <ul class="simple">
 <li>Seamless integration with existing QIIME scripts to allow a remote mapping file to be specified directly as input (without having to run <a class="reference external" href="../scripts/load_remote_mapping_file.html">load_remote_mapping_file.py</a> beforehand).</li>
-<li>Option to run <a class="reference external" href="../scripts/check_id_map.html">check_id_map.py</a> as part of the remote mapping file fetching process. Option to have offending fields highlighted in Google Spreadsheet for visual feedback.</li>
+<li>Option to run <a class="reference external" href="../scripts/validate_mapping_file.html">validate_mapping_file.py</a> as part of the remote mapping file fetching process. Option to have offending fields highlighted in Google Spreadsheet for visual feedback.</li>
 <li>Ability to authenticate users to allow access to spreadsheets that are not &#8220;published to the web&#8221; and to allow edits.</li>
 </ul>
 </div>
@@ -151,17 +162,27 @@
 </ul>
 
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="index.html">Tutorials</a><br /></li>
+    <li><a href="../scripts/index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="parallel_qiime.html"
+                        title="previous chapter">Using parallel QIIME</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="metadata_description.html"
+                        title="next chapter">Describing samples based on their metadata</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -185,16 +206,23 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="metadata_description.html" title="Describing samples based on their metadata"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="parallel_qiime.html" title="Using parallel QIIME"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Tutorials</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

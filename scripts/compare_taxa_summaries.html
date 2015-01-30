@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="compare_trajectories.py – Run analysis of volatility using a variety of algorithms" href="compare_trajectories.html" />
+    <link rel="prev" title="compare_distance_matrices.py – Computes Mantel correlation tests between sets of distance matrices" href="compare_distance_matrices.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="compare_trajectories.html" title="compare_trajectories.py – Run analysis of volatility using a variety of algorithms"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="compare_distance_matrices.html" title="compare_distance_matrices.py – Computes Mantel correlation tests between sets of distance matrices"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -127,19 +138,23 @@ correlation coefficient.</p>
 that were performed.</p>
 <p><strong>Paired sample comparison:</strong></p>
 <p>Compare all samples that have matching sample IDs between the two input taxa summary files using the pearson correlation coefficient. The first input taxa summary file is from the overview tutorial, using the RDP classifier with a confidence level of 0.60 and the gg_otus_4feb2011 97% representative set. The second input taxa summary file was generated the same way, except for using a confidence level of 0.80.</p>
-<div class="highlight-python"><pre>compare_taxa_summaries.py -i ts_rdp_0.60.txt,ts_rdp_0.80.txt -m paired -o taxa_comp</pre>
+<div class="highlight-python"><div class="highlight"><pre>compare_taxa_summaries.py -i ts_rdp_0.60.txt,ts_rdp_0.80.txt -m paired -o taxa_comp
+</pre></div>
 </div>
 <p><strong>Paired sample comparison with sample ID map:</strong></p>
 <p>Compare samples based on the mappings in the sample ID map using the spearman correlation coefficient. The second input taxa summary file is simply the original ts_rdp_0.60.txt file with all sample IDs containing &#8216;PC.&#8217; renamed to &#8216;S.&#8217;.</p>
-<div class="highlight-python"><pre>compare_taxa_summaries.py -i ts_rdp_0.80.txt,ts_rdp_0.60_renamed.txt -m paired -o taxa_comp_using_sample_id_map -s sample_id_map.txt -c spearman</pre>
+<div class="highlight-python"><div class="highlight"><pre>compare_taxa_summaries.py -i ts_rdp_0.80.txt,ts_rdp_0.60_renamed.txt -m paired -o taxa_comp_using_sample_id_map -s sample_id_map.txt -c spearman
+</pre></div>
 </div>
 <p><strong>Detailed paired sample comparison:</strong></p>
 <p>Compare all samples that have matching sample IDs between the two input taxa summary files using the pearson correlation coefficient. Additionally, compute the correlation coefficient between each pair of samples individually.</p>
-<div class="highlight-python"><pre>compare_taxa_summaries.py -i ts_rdp_0.60.txt,ts_rdp_0.80.txt -m paired -o taxa_comp_detailed --perform_detailed_comparisons</pre>
+<div class="highlight-python"><div class="highlight"><pre>compare_taxa_summaries.py -i ts_rdp_0.60.txt,ts_rdp_0.80.txt -m paired -o taxa_comp_detailed --perform_detailed_comparisons
+</pre></div>
 </div>
 <p><strong>One-tailed test:</strong></p>
 <p>Compare all samples that have matching sample IDs between the two input taxa summary files using the pearson correlation coefficient. Perform a one-tailed (negative association) test of significance for both parametric and nonparametric tests. Additionally, compute a 90% confidence interval for the correlation coefficient. Note that the confidence interval will still be two-sided.</p>
-<div class="highlight-python"><pre>compare_taxa_summaries.py -i ts_rdp_0.60.txt,ts_rdp_0.80.txt -m paired -o taxa_comp_one_tailed -t low -l 0.90</pre>
+<div class="highlight-python"><div class="highlight"><pre>compare_taxa_summaries.py -i ts_rdp_0.60.txt,ts_rdp_0.80.txt -m paired -o taxa_comp_one_tailed -t low -l 0.90
+</pre></div>
 </div>
 </div>
 
@@ -152,17 +167,27 @@ that were performed.</p>
 
     
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="compare_distance_matrices.html"
+                        title="previous chapter"><em>compare_distance_matrices.py</em> &#8211; Computes Mantel correlation tests between sets of distance matrices</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="compare_trajectories.html"
+                        title="next chapter"><em>compare_trajectories.py</em> &#8211; Run analysis of volatility using a variety of algorithms</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -186,16 +211,24 @@ that were performed.</p>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="compare_trajectories.html" title="compare_trajectories.py – Run analysis of volatility using a variety of algorithms"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="compare_distance_matrices.html" title="compare_distance_matrices.py – Computes Mantel correlation tests between sets of distance matrices"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

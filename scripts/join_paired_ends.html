@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="load_remote_mapping_file.py – Downloads and saves a remote mapping file" href="load_remote_mapping_file.html" />
+    <link rel="prev" title="jackknifed_beta_diversity.py – A workflow script for performing jackknifed UPGMA clustering and build jackknifed 2d and 3D PCoA plots." href="jackknifed_beta_diversity.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="load_remote_mapping_file.html" title="load_remote_mapping_file.py – Downloads and saves a remote mapping file"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="jackknifed_beta_diversity.html" title="jackknifed_beta_diversity.py – A workflow script for performing jackknifed UPGMA clustering and build jackknifed 2d and 3D PCoA plots."
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -98,39 +109,43 @@
 </div>
 <p><strong>Output:</strong></p>
 <p>All paired-end joining software will return a joined / merged / assembled paired-end fastq file. Depending on the method chosen, additional files may be written to the user-specified output directory.</p>
-<ol class="arabic">
-<li><p class="first">fastq-join will output fastq-formatted files as:
-&#8220;<em>.join&#8221; - assembled / joined reads output
-&#8220;</em>.un1&#8221; - unassembled / unjoined reads1 output
-&#8220;<a href="#id1"><span class="problematic" id="id2">*</span></a>.un2&#8221; - unassembled / unjoined reads2 output</p>
+<ol class="arabic simple">
+<li>fastq-join will output fastq-formatted files as:<ul>
+<li>&#8220;*.join&#8221;: assembled / joined reads output</li>
+<li>&#8220;*.un1&#8221;: unassembled / unjoined reads1 output</li>
+<li>&#8220;*.un2&#8221;: unassembled / unjoined reads2 output</li>
+</ul>
 </li>
-<li><p class="first">SeqPrep will output fastq-formatted gzipped files as:
-&#8220;<a href="#id3"><span class="problematic" id="id4">*</span></a>_assembled.gz&#8221; - unassembled / unjoined reads1 output
-&#8220;<a href="#id5"><span class="problematic" id="id6">*</span></a>_unassembled_R1.gz&#8221; - unassembled / unjoined reads1 output
-&#8220;<a href="#id7"><span class="problematic" id="id8">*</span></a>_unassembled_R2.gz&#8221; - unassembled / unjoined reads2 output</p>
+<li>SeqPrep will output fastq-formatted gzipped files as:<ul>
+<li>&#8220;*_assembled.gz&#8221;: unassembled / unjoined reads1 output</li>
+<li>&#8220;*_unassembled_R1.gz&#8221;: unassembled / unjoined reads1 output</li>
+<li>&#8220;*_unassembled_R2.gz&#8221;: unassembled / unjoined reads2 output</li>
+</ul>
 </li>
-<li><p class="first">If a barcode / index file is provided via the &#8216;-b&#8217; option, an updated
-barcodes file will be output as:
-&#8221;..._barcodes.fastq&#8221;</p>
-<blockquote>
-<div><p>This barcode / index file must be used in conjunction with the joined
-paired-ends file as input to &#8216;<a class="reference external" href="./split_libraries_fastq.html">split_libraries_fastq.py</a>&#8216;. Except for
+<li>If a barcode / index file is provided via the &#8216;-b&#8217; option, an updated
+barcodes file will be output as:<ul>
+<li>&#8221;..._barcodes.fastq&#8221;: This barcode / index file must be used in
+conjunction with the joined
+paired-ends file as input to <a class="reference external" href="./split_libraries_fastq.html">split_libraries_fastq.py</a>. Except for
 missing reads that may result from failed merging of paired-ends, the
-index-reads and joined-reads must be in the same order.</p>
-</div></blockquote>
+index-reads and joined-reads must be in the same order.</li>
+</ul>
 </li>
 </ol>
 <p><strong>Join paired-ends with &#8216;fastq-join&#8217;:</strong></p>
 <p>This is the default method to join paired-end Illumina data:</p>
-<div class="highlight-python"><pre>join_paired_ends.py -f $PWD/forward_reads.fastq -r $PWD/reverse_reads.fastq -o $PWD/fastq-join_joined</pre>
+<div class="highlight-python"><div class="highlight"><pre>join_paired_ends.py -f $PWD/forward_reads.fastq -r $PWD/reverse_reads.fastq -o $PWD/fastq-join_joined
+</pre></div>
 </div>
 <p><strong>Join paired-ends with &#8216;SeqPrep&#8217;:</strong></p>
 <p>Produces similar output to the &#8216;fastq-join&#8217; but returns data in gzipped format.</p>
-<div class="highlight-python"><pre>join_paired_ends.py -m SeqPrep -f $PWD/forward_reads.fastq -r $PWD/reverse_reads.fastq -o $PWD/SeqPrep_joined</pre>
+<div class="highlight-python"><div class="highlight"><pre>join_paired_ends.py -m SeqPrep -f $PWD/forward_reads.fastq -r $PWD/reverse_reads.fastq -o $PWD/SeqPrep_joined
+</pre></div>
 </div>
 <p><strong>Update the index / barcode reads file to match the surviving joined pairs.:</strong></p>
-<p>This is required if you will be using &#8216;<a class="reference external" href="./split_libraries_fastq.html">split_libraries_fastq.py</a>&#8216;.</p>
-<div class="highlight-python"><pre>join_paired_ends.py -f $PWD/forward_reads.fastq -r $PWD/reverse_reads.fastq -b $PWD/barcodes.fastq -o $PWD/fastq-join_joined</pre>
+<p>This is required if you will be using <a class="reference external" href="./split_libraries_fastq.html">split_libraries_fastq.py</a>.</p>
+<div class="highlight-python"><div class="highlight"><pre>join_paired_ends.py -f $PWD/forward_reads.fastq -r $PWD/reverse_reads.fastq -b $PWD/barcodes.fastq -o $PWD/fastq-join_joined
+</pre></div>
 </div>
 </div>
 
@@ -143,17 +158,27 @@ index-reads and joined-reads must be in the same order.</p>
 
     
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="jackknifed_beta_diversity.html"
+                        title="previous chapter"><em>jackknifed_beta_diversity.py</em> &#8211; A workflow script for performing jackknifed UPGMA clustering and build jackknifed 2d and 3D PCoA plots.</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="load_remote_mapping_file.html"
+                        title="next chapter"><em>load_remote_mapping_file.py</em> &#8211; Downloads and saves a remote mapping file</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -177,16 +202,24 @@ index-reads and joined-reads must be in the same order.</p>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="load_remote_mapping_file.html" title="load_remote_mapping_file.py – Downloads and saves a remote mapping file"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="jackknifed_beta_diversity.html" title="jackknifed_beta_diversity.py – A workflow script for performing jackknifed UPGMA clustering and build jackknifed 2d and 3D PCoA plots."
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

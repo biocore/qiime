@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.8.0',
+        VERSION:     '1.9.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
-    <link rel="top" title="Homepage" href="../index.html" />     
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="shared_phylotypes.py – Compute shared OTUs between all pairs of samples" href="shared_phylotypes.html" />
+    <link rel="prev" title="quality_scores_plot.py – Generates histograms of sequence quality scores and number of nucleotides recorded at a particular index" href="quality_scores_plot.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
@@ -44,7 +47,15 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="shared_phylotypes.html" title="shared_phylotypes.py – Compute shared OTUs between all pairs of samples"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="quality_scores_plot.html" title="quality_scores_plot.py – Generates histograms of sequence quality scores and number of nucleotides recorded at a particular index"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -72,7 +83,7 @@
 <p><strong>[OPTIONAL]</strong></p>
 <dl class="last docutils">
 <dt>-i, <cite>-</cite>-iters</dt>
-<dd>Number of iterations to use for sampling tips without replacement (null model 2 community sampling, see see <a class="reference external" href="http://bodegaphylo.wikispot.org/Community_Phylogenetics">http://bodegaphylo.wikispot.org/Community_Phylogenetics</a>). [default: 1000]</dd>
+<dd>Number of iterations to use for sampling tips without replacement (null model 2 community sampling, see <a class="reference external" href="http://bodegaphylo.wikispot.org/Community_Phylogenetics">http://bodegaphylo.wikispot.org/Community_Phylogenetics</a> [default: 1000]</dd>
 <dt>-m, <cite>-</cite>-methods</dt>
 <dd>Comma-separated list of metrics to calculate. [default: nri,nti]</dd>
 <dt>-o, <cite>-</cite>-output_fp</dt>
@@ -82,16 +93,20 @@
 <p><strong>Output:</strong></p>
 <p>Outputs a value for specified tests</p>
 <p><strong>Calculate both NRI and NTI from the given tree and group of taxa:</strong></p>
-<div class="highlight-python"><pre>relatedness.py -t reference.tre -g group1_otus.txt -m nri,nti</pre>
+<div class="highlight-python"><div class="highlight"><pre>relatedness.py -t reference.tre -g group1_otus.txt -m nri,nti
+</pre></div>
 </div>
 <p><strong>Calculate only NRI:</strong></p>
-<div class="highlight-python"><pre>relatedness.py -t reference.tre -g group1_otus.txt -m nri</pre>
+<div class="highlight-python"><div class="highlight"><pre>relatedness.py -t reference.tre -g group1_otus.txt -m nri
+</pre></div>
 </div>
 <p><strong>Calculate only NTI using a different number of iterations:</strong></p>
-<div class="highlight-python"><pre>relatedness.py -t reference.tre -g group1_otus.txt -m nti -i 100</pre>
+<div class="highlight-python"><div class="highlight"><pre>relatedness.py -t reference.tre -g group1_otus.txt -m nti -i 100
+</pre></div>
 </div>
 <p><strong>Calculate only NTI using a different number of iterations and save the results into a file called output.txt:</strong></p>
-<div class="highlight-python"><pre>relatedness.py -t reference.tre -g group1_otus.txt -m nti -i 100 -o output.txt</pre>
+<div class="highlight-python"><div class="highlight"><pre>relatedness.py -t reference.tre -g group1_otus.txt -m nti -i 100 -o output.txt
+</pre></div>
 </div>
 </div>
 
@@ -104,17 +119,27 @@
 
     
 
-	<h3><a href="../index.html">Site index</a></h3>
-	<ul><li><ul>
-	<li><a href="../index.html">Home</a><br /></li>
-	<li><a href="../install/index.html">Install</a><br /></li>
-	<li><a href="../documentation/index.html">Documentation</a><br /></li>
-	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
-	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
-	<li><a href="../developer/index.html">Developer</a><br /></li>
-	</ul></li></ul>
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
 
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="quality_scores_plot.html"
+                        title="previous chapter"><em>quality_scores_plot.py</em> &#8211; Generates histograms of sequence quality scores and number of nucleotides recorded at a particular index</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="shared_phylotypes.html"
+                        title="next chapter"><em>shared_phylotypes.py</em> &#8211; Compute shared OTUs between all pairs of samples</a></p>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -138,16 +163,24 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">Home</a> &raquo;</li> 
+        <li class="right" >
+          <a href="shared_phylotypes.html" title="shared_phylotypes.py – Compute shared OTUs between all pairs of samples"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="quality_scores_plot.html" title="quality_scores_plot.py – Generates histograms of sequence quality scores and number of nucleotides recorded at a particular index"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
-<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
     <div class="footer">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
