@@ -15,10 +15,10 @@ each column in a file represents one diversity metric
 
 Output files are:
 each file represents one diversity metric
-each row in a file represents one (rarefied) otu table 
+each row in a file represents one (rarefied) otu table
 each column in a file represents one sample
 
-The input directory should contain only otu tables. The output directory should be empty or nonexistant and the example file is optional.  
+The input directory should contain only otu tables. The output directory should be empty or nonexistant and the example file is optional.
 
 If you have a set of rarefied OTU tables, make sure the example file contains every sample present in the otu talbes. You should typically choose the file with the fewest sequences per sample, to avoid files with sparse samples omitted.
 
@@ -53,12 +53,12 @@ This script transforms a series of files, named (e.g. alpha_rarefaction_20_0.txt
 ==========================  ====================    =========   ======  ======
 \                           sequences per sample    iteration   PC.354  PC.355
 ==========================  ====================    =========   ======  ======
-alpha_rarefaction_20_0.txt  20                      0           0.925   0.915 
-alpha_rarefaction_20_1.txt  20                      1           0.9     0.89 
-alpha_rarefaction_20_2.txt  20                      2           0.88    0.915 
-alpha_rarefaction_20_3.txt  20                      3           0.91    0.93 
+alpha_rarefaction_20_0.txt  20                      0           0.925   0.915
+alpha_rarefaction_20_1.txt  20                      1           0.9     0.89
+alpha_rarefaction_20_2.txt  20                      2           0.88    0.915
+alpha_rarefaction_20_3.txt  20                      3           0.91    0.93
 ...                         ...                     ...         ...     ...
-==========================  ====================    =========   ======  ====== 
+==========================  ====================    =========   ======  ======
 
 
 

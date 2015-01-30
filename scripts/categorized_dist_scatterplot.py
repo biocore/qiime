@@ -28,9 +28,9 @@ from qiime.categorized_dist_scatterplot import get_avg_dists, get_sam_ids
 
 script_info = {}
 script_info[
-    'brief_description'] = "makes a figure representing average distances between samples, broken down by categories. I call it a 'categorized distance scatterplot'"
+    'brief_description'] = "Create a categorized distance scatterplot representing average distances between samples, broken down by categories"
 script_info[
-    'script_description'] = "makes a figure representing average distances between samples, broken down by categories. I call it a 'categorized distance scatterplot'. See script usage for more details. The mapping file specifies the relavent data - if you have e.g. 'N/A' values or samples you don't want included, first use filter_samples_from_otu_table.py to remove unwanted samples from the mapping file, and thus the analysis. Note that the resulting plot will include only samples in both the mapping file AND the distance matrix."
+    'script_description'] = "Create a figure representing average distances between samples, broken down by categories. I call it a 'categorized distance scatterplot'. See script usage for more details. The mapping file specifies the relevant data - if you have e.g. 'N/A' values or samples you don't want included, first use filter_samples_from_otu_table.py to remove unwanted samples from the mapping file, and thus the analysis. Note that the resulting plot will include only samples in both the mapping file AND the distance matrix."
 script_info['script_usage'] = [(
     "Canonical Example:",
     "Split samples by country. Within each country compare each child to all adults. Plot the average distance from that child to all adults, vs. the age of that child",

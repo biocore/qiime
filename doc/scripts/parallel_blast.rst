@@ -35,13 +35,13 @@ This script for performing blast while making use of multicore/multiprocessor en
 	-w, `-`-word_size
 		Word size for blast searches [default: 30]
 	-a, `-`-blastmat_dir
-		Full path to directory containing blastmat file [default: /Applications/blast-2.2.22/data/]
+		Full path to directory containing blastmat file [default: None]
 	-r, `-`-refseqs_path
 		Path to fasta sequences to search against. Required if -b is not provided.
 	-b, `-`-blast_db
 		Name of pre-formatted BLAST database. Required if -r is not provided.
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 2]
+		Number of jobs to start [default: 1]
 	-R, `-`-retain_temp_files
 		Retain temporary files after runs complete (useful for debugging) [default: False]
 	-S, `-`-suppress_submit_jobs

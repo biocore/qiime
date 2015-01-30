@@ -709,8 +709,8 @@ class QIIMEDependencyFull(QIIMEDependencyBase):
                         "h5py is not installed. You should install this for "
                         "improved performance with large BIOM files or if "
                         "working with BIOM format version 2.x files. For "
-                        "more information, see http://biom-format.org.")
-        # cd-hit does not have a version print in their program
+                        "more information, see "
+                        "http://qiime.org/documentation/file_formats.html#biom-file-format-versions")
 
 
 def test_qiime_config_variable(variable, qiime_config, test,

@@ -28,7 +28,7 @@ script_info = {}
 script_info[
     'brief_description'] = "This script runs any of a set of common tests to determine if a sample is statistically significantly different from another sample"
 script_info[
-    'script_description'] = "The tests are conducted on each pair of samples present in the input otu table. See the unifrac tutorial online for more details (http://bmf2.colorado.edu/unifrac/tutorial.psp)"
+    'script_description'] = "The tests are conducted on each pair of samples present in the input otu table. See the unifrac tutorial online for more details (http://unifrac.colorado.edu/)"
 
 script_info['script_usage'] = []
 

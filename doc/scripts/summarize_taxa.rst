@@ -12,7 +12,6 @@ The `summarize_taxa.py <./summarize_taxa.html>`_ script provides summary informa
 By default, taxa summary tables will be output in both classic (tab-separated) and BIOM formats. The BIOM-formatted taxa summary tables can be used as input to other QIIME scripts that accept BIOM files.
 
 
-
 **Usage:** :file:`summarize_taxa.py [options]`
 
 **Input Arguments:**
@@ -30,17 +29,15 @@ By default, taxa summary tables will be output in both classic (tab-separated) a
 	-L, `-`-level
 		Taxonomic level to summarize by. [default: 2,3,4,5,6]
 	-m, `-`-mapping
-		Input metadata mapping filepath. If supplied, then the taxon information will be added to this file. This option is  useful for coloring PCoA plots by taxon abundance or to  perform statistical tests of taxon/mapping associations.
+		Input metadata mapping filepath. If supplied, then the taxon information will be added to this file. This option is useful for coloring PCoA plots by taxon abundance or to perform statistical tests of taxon/mapping associations.
 	`-`-md_identifier
 		The relevant observation metadata key [default: taxonomy]
 	`-`-md_as_string
 		Metadata is included as string [default: metadata is included as list]
 	-d, `-`-delimiter
 		Delimiter separating taxonomy levels. [default: ;]
-	-r, `-`-relative_abundance
-		DEPRECATED: please use -a/--absolute_abundance to disable relative abundance [default: ]
 	-a, `-`-absolute_abundance
-		If present, the absolute abundance of the lineage in  each sample is reported. By default, this script uses relative abundance [default: False]
+		If present, the absolute abundance of the lineage in each sample is reported. By default, this script uses relative abundance [default: False]
 	-l, `-`-lower_percentage
 		If present, OTUs having higher absolute abundance are trimmed. To remove OTUs that make up more than 5% of the total dataset you would pass 0.05. [default: None]
 	-u, `-`-upper_percentage
@@ -57,13 +54,12 @@ By default, taxa summary tables will be output in both classic (tab-separated) a
 
 **Output:**
 
-There are two possible output formats depending on whether or not a mapping file is provided with the -m option. If a mapping file is not provided, a table is returned where the taxonomic groups are each in a row and there is a column for each sample. If a mapping file is provided, the summary information will be appended to this file. Specifically, a new column will be made for each taxonomic group to which the relative abundances or raw counts will be added to the existing rows for each sample. The addition of the taxonomic information to the mapping file allows for taxonomic coloration of Principal coordinates plots in the 3d viewer. As described in the `make_emperor.py <./make_emperor.html>`_ section, principal coordinates plots can be dynamically colored based on any of the metadata columns in the mapping file. Dynamic coloration of the plots by the relative abundances of each taxonomic group can help to distinguish which taxonomic groups are driving the clustering patterns.
-
+There are two possible output formats depending on whether or not a mapping file is provided with the -m option. If a mapping file is not provided, a table is returned where the taxonomic groups are each in a row and there is a column for each sample. If a mapping file is provided, the summary information will be appended to this file. Specifically, a new column will be made for each taxonomic group to which the relative abundances or raw counts will be added to the existing rows for each sample. The addition of the taxonomic information to the mapping file allows for taxonomic coloration of Principal coordinates plots in Emperor. As described in the Emperor documentation, principal coordinates plots can be dynamically colored based on any of the metadata columns in the mapping file. Dynamic coloration of the plots by the relative abundances of each taxonomic group can help to distinguish which taxonomic groups are driving the clustering patterns.
 
 
 **Examples:**
 
-Summarize taxa based at taxonomic levels 2, 3, 4, 5, and 6, and write resulting taxa tables to the directory "./tax" 
+Summarize taxa based at taxonomic levels 2, 3, 4, 5, and 6, and write resulting taxa tables to the directory './tax'
 
 ::
 
@@ -71,7 +67,7 @@ Summarize taxa based at taxonomic levels 2, 3, 4, 5, and 6, and write resulting 
 
 **Examples:**
 
-Summarize taxa based at taxonomic levels 2, 3, 4, 5, and 6, and write resulting mapping files to the directory "./tax" 
+Summarize taxa based at taxonomic levels 2, 3, 4, 5, and 6, and write resulting mapping files to the directory './tax'
 
 ::
 

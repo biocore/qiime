@@ -40,6 +40,8 @@ This script generates 2D PCoA plots using the principal coordinates file generat
 		Used only when plotting ellipsoids for jackknifed beta diversity  (i.e. using a directory of coord files instead of a single coord file). These coordinates will be the center of each ellipisoid. [default: None; arbitrarily chosen PC matrix will define the center point]
 	`-`-scree
 		Generate the scree plot [default: False]
+	`-`-pct_variation_below_one
+		Allow the percent variation explained by the axes to be below one. The default behaivor is to multiply by 100 all values if PC1 is < 1.0 [default: False]
 	-o, `-`-output_dir
 		Path to the output directory
 

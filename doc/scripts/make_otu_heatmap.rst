@@ -2,12 +2,12 @@
 
 .. index:: make_otu_heatmap.py
 
-*make_otu_heatmap.py* -- Make heatmap of OTU table
+*make_otu_heatmap.py* -- Plot heatmap of OTU table
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Description:**
 
-Once an OTU table has been generated, it can be visualized using a heatmap. In these heatmaps each row corresponds to an OTU, and each column corresponds to a sample. The higher the relative abundance of an OTU in a sample, the more intense the color at the corresponsing position in the heatmap. By default, the OTUs (rows) will be clustered by UPGMA hierarchical clustering, and the samples (columns) will be presented in the order in which they appear in the OTU table. Alternatively, the user may pass in a tree to sort the OTUs (rows) or samples (columns), or both. For samples, the user may also pass in a mapping file. If the user passes in a mapping file and a metadata category, samples (columns in the heatmap) will be grouped by category value and subsequently clustered within each group.
+This script visualizes an OTU table as a heatmap where each row corresponds to an OTU and each column corresponds to a sample. The higher the relative abundance of an OTU in a sample, the more intense the color at the corresponsing position in the heatmap. By default, the OTUs (rows) will be clustered by UPGMA hierarchical clustering, and the samples (columns) will be presented in the order in which they appear in the OTU table. Alternatively, the user may supply a tree to sort the OTUs (rows) or samples (columns), or both. The user may also pass in a mapping file for sorting samples. If the user passes in a mapping file and a metadata category, samples (columns) will be grouped by category value and subsequently clustered within each group.
 
 
 **Usage:** :file:`make_otu_heatmap.py [options]`
@@ -21,11 +21,11 @@ Once an OTU table has been generated, it can be visualized using a heatmap. In t
 		
 	-i, `-`-otu_table_fp
 		Path to the input OTU table (i.e., the output from `make_otu_table.py <./make_otu_table.html>`_)
+	-o, `-`-output_fp
+		The output filepath
 	
 	**[OPTIONAL]**
 		
-	-o, `-`-output_dir
-		Path to the output directory
 	-t, `-`-otu_tree
 		Tree file to be used for sorting OTUs in the heatmap
 	-m, `-`-map_fname
@@ -34,6 +34,8 @@ Once an OTU table has been generated, it can be visualized using a heatmap. In t
 		Metadata category for sorting samples. Samples will be clustered within each category level using euclidean UPGMA.
 	-s, `-`-sample_tree
 		Tree file to be used for sorting samples (e.g, output from `upgma_cluster.py <./upgma_cluster.html>`_). If both this and the sample mapping file are provided, the mapping file is ignored.
+	-g, `-`-imagetype
+		Type of image to produce (i.e. png, svg, pdf) [default: pdf]
 	`-`-no_log_transform
 		Data will not be log-transformed. Without this option, all zeros will be set to a small value (default is 1/2 the smallest non-zero entry). Data will be translated to be non-negative after log transform, and num_otu_hits will be set to 0.
 	`-`-suppress_row_clustering
@@ -41,46 +43,54 @@ Once an OTU table has been generated, it can be visualized using a heatmap. In t
 	`-`-suppress_column_clustering
 		No UPGMA clustering of Samples (columns) is performed. If --map_fname is provided, this flag is ignored.
 	`-`-absolute_abundance
-		Do not normalize samples to sum to 1.[default False]
-	`-`-log_eps
-		Small value to replace zeros for log transform. [default: 1/2 the smallest non-zero entry].
+		Do not normalize samples to sum to 1 [default: False]
+	`-`-color_scheme
+		Color scheme for figure. see http://matplotlib.org/examples/color/colormaps_reference.html for choices [default: YlGn]
+	`-`-width
+		Width of the figure in inches [default: 5]
+	`-`-height
+		Height of the figure in inches [default: 5]
+	`-`-dpi
+		Resolution of the figure in dots per inch [default: value of savefig.dpi in matplotlibrc file]
+	`-`-obs_md_category
+		Observation metadata category to plot [default: taxonomy]
+	`-`-obs_md_level
+		The level of observation metadata to plot for hierarchical metadata [default: lowest level]
 
 
 **Output:**
 
-The heatmap image is located in the specified output directory. It is formatted as a PDF file.
+A single output file is created containing the heatmap of the OTU table (a PDF file by default).
 
 
-**Examples:**
-
-Using default values:
+Generate a heatmap as a PDF using all default values:
 
 ::
 
-	make_otu_heatmap.py -i otu_table.biom
+	make_otu_heatmap.py -i otu_table.biom -o heatmap.pdf
 
-Different output directory (i.e., "otu_heatmap"):
-
-::
-
-	make_otu_heatmap.py -i otu_table.biom -o otu_heatmap
-
-Sort the heatmap columns by the order in a mapping file, as follows:
+Generate a heatmap as a PNG:
 
 ::
 
-	make_otu_heatmap.py -i otu_table.biom -o otu_heatmap -m mapping_file.txt
+	make_otu_heatmap.py -i otu_table.biom -o heatmap.png -g png
 
-Sort the heatmap columns by Sample ID's and the heatmap rows by the order of tips in the tree, you can supply a tree as follows:
-
-::
-
-	make_otu_heatmap.py -i otu_table.biom -o otu_heatmap -m mapping_file.txt -t tree_file.txt
-
-Group the heatmap columns by metadata category (e.g., GENDER), then cluster within each group:
+Sort the heatmap columns (samples) by the order of samples in the mapping file
 
 ::
 
-	make_otu_heatmap.py -i otu_table.biom -o otu_heatmap -m mapping_file.txt -c 'GENDER'
+	make_otu_heatmap.py -i otu_table.biom -o heatmap_sorted_samples.pdf -m mapping_file.txt
+
+Sort the heatmap columns (samples) by the order of samples in the mapping file, and sort the heatmap rows by the order of tips in the tree:
+
+::
+
+	make_otu_heatmap.py -i otu_table.biom -o heatmap_sorted.pdf -m mapping_file.txt -t rep_set.tre
+
+Group the heatmap columns (samples) by metadata category (e.g., Treatment), then cluster within each group:
+
+::
+
+	make_otu_heatmap.py -i otu_table.biom -o heatmap_grouped_by_Treatment.pdf -m mapping_file.txt -c Treatment
 
 

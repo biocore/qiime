@@ -10,7 +10,7 @@
 
 This script allows for the analysis of the strength and statistical
 significance of sample groupings using a distance matrix as the primary input.
-Several statistical methods are available: adonis, ANOSIM, BEST, Moran's I,
+Several statistical methods are available: adonis, ANOSIM, BIO-ENV, Moran's I,
 MRPP, PERMANOVA, PERMDISP, and db-RDA.
 
 Note: R's vegan and ape packages are used to compute many of these methods, and
@@ -44,13 +44,17 @@ significantly different from 'Fast' samples. Since ANOSIM is nonparametric,
 significance is determined through permutations. See vegan::anosim for more
 details.
 
-BEST - This method looks at the numerical environmental variables relating
-samples in a distance matrix. For instance, given a UniFrac distance matrix and
-pH and latitude (or any other number of variables) in soil samples, BEST will
-rank them in order of which best explain patterns in the communities. This
-method will only accept categories that are numerical (continuous or discrete).
-This is currently the only method in this script that accepts more than one
-category (via -c). See vegan::bioenv for more details.
+BIO-ENV - Finds subsets of variables whose Euclidean distances (after scaling
+the variables) are maximally rank-correlated with the distance matrix. For
+example, the distance matrix might contain UniFrac distances between
+communities, and the variables might be numeric environmental variables (e.g.,
+pH and latitude). Correlation between the community distance matrix and
+Euclidean environmental distance matrix is computed using Spearman's rank
+correlation coefficient (rho). This method will only accept categories that are
+numerical (continuous or discrete). This is currently the only method in the
+script that accepts more than one category (via -c). See vegan::bioenv for more
+details. This method is also known as BEST (previously called BIO-ENV) in the
+PRIMER-E software package.
 
 Moran's I - This method uses the numerical (e.g. geographical) data supplied to
 identify what type of spatial configuration occurs in the samples. For example,
@@ -106,13 +110,13 @@ http://qiime.org/tutorials/category_comparison.html.
 	**[REQUIRED]**
 		
 	`-`-method
-		The statistical method to use. Valid options: adonis, anosim, best, morans_i, mrpp, permanova, permdisp, dbrda
+		The statistical method to use. Valid options: adonis, anosim, bioenv, morans_i, mrpp, permanova, permdisp, dbrda
 	-i, `-`-input_dm
 		The input distance matrix. WARNING: Only symmetric, hollow distance matrices may be used as input. Asymmetric distance matrices, such as those obtained by the UniFrac Gain metric (i.e. `beta_diversity.py <./beta_diversity.html>`_ -m unifrac_g), should not be used as input
 	-m, `-`-mapping_file
 		The metadata mapping file
 	-c, `-`-categories
-		A comma-delimited list of categories from the mapping file. Note: all methods except for BEST take just a single category. If multiple categories are provided, only the first will be used
+		A comma-delimited list of categories from the mapping file. Note: all methods except for BIO-ENV accept just a single category. If multiple categories are provided, only the first will be used
 	-o, `-`-output_dir
 		Path to the output directory
 	

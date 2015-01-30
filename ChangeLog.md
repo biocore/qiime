@@ -7,12 +7,14 @@ New scripts
 * ``observation_metadata_correlation.py``: Allows the calculation of correlations between feature abundances and continuous-valued metadata. This script replaces the continuous-valued correlation functionality that was in ``otu_category_significance.py`` in QIIME 1.7.0 and earlier.
 * ``compare_trajectories.py``: Allows analysis of volatility using different algorithms.
 * ``compute_taxonomy_ratios.py``: Implements the microbial dysbiosis index (MD-index) from [Gevers et al 2014](http://www.ncbi.nlm.nih.gov/pubmed/24629344).
-* ``collpase_samples.py``: Allows collapsing groups of samples in BIOM tables and mapping files based on their metadata (see [#1678](https://github.com/biocore/qiime/issues/1678)). This can be used, for example, to collapse samples belonging to a replicate group. This also has replaced ``summarize_otu_by_cat.py`` (see discussion on [#1798](https://github.com/biocore/qiime/issues/1798)).
+* ``collapse_samples.py``: Allows collapsing groups of samples in BIOM tables and mapping files based on their metadata (see [#1678](https://github.com/biocore/qiime/issues/1678)). This can be used, for example, to collapse samples belonging to a replicate group. This also has replaced ``summarize_otu_by_cat.py`` (see discussion on [#1798](https://github.com/biocore/qiime/issues/1798)).
 * ``multiple_split_libraries_fastq.py``, ``multiple_join_paired_ends.py``, and ``multiple_extract_barcodes.py``: Facilitate initial QIIME processing of already-demultiplexed fastq files, as these are commonly being provided by sequencing centers.
 * ``differential_abundance.py``: Supplements ``group_significance.py`` to support metagenomeSeq's fitZIG algorithm and DESeq2's negative binomial algorithm.  The input for this is an unnormalized, raw BIOM table.
 * ``normalize_table.py``: Adds support for BIOM table normalization algorithms in addition to rarefaction. Supported methods are metagenomeSeq's CSS and DESeq's variance stabilizing transformation.
 * ``start_parallel_jobs_slurm.py``: Allows for parallel job submission using [slurm](https://computing.llnl.gov/linux/slurm/).
 * ``split_libraries_lea_seq.py``: Allows for demultiplexing of sequences using the LEA-Seq protocol, described in [Faith et al. (2013)](http://www.sciencemag.org/content/341/6141/1237439). This script should be considered to be in **beta testing status**.
+* ``extract_reads_from_interleaved_file.py``: Splits an interleaved FASTQ file (like the ones produced by JGI) into forward and reverse reads. See [this section](http://qiime.org/tutorials/processing_illumina_data.html#processing-joint-genome-institute-fastq-files) of the Illumina data preparation tutorial for more details.
+* ``parallel_pick_otus_sortmerna.py``: Perform parallel OTU picking with SortMeRNA ([Kopylova et al. (2012)](http://www.ncbi.nlm.nih.gov/pubmed/23071270).
 
 Features
 --------
@@ -43,6 +45,7 @@ Features
 * ``cluster_jobs_fp`` in the QIIME config file now defaults to ``start_parallel_jobs.py``. ``seconds_to_sleep`` now defaults to 1.
 * Added ``--negate_sample_id_fp`` option to ``filter_samples_from_otu_table.py`` (see [#1117](https://github.com/biocore/qiime/issues/1117)).
 * Added ``--percent_variation_below_one`` flag to ``make_2d_plots.py`` for when the percent variation is actually below 1 and not a relative measure.
+* The default confidence threshold for the Naive Bayes taxonomy assigners (RDP Classifier and mothur) is now ``0.50``, as [recommended by the RDP Classifier developers](https://rdp.cme.msu.edu/classifier/class_help.jsp#conf) for partial sequences. 
 
 Usability enhancements
 ----------------------

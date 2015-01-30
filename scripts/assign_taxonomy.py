@@ -79,16 +79,13 @@ script_info['script_usage'].append(
      """Optionally, the user could changed the E-value ("-e"), using the following command:""",
      """%prog -i repr_set_seqs.fasta -r ref_seq_set.fna -t id_to_taxonomy.txt -e 0.01 -m blast"""))
 
-script_info['script_usage'].append(("""Assignment with the RDP Classifier:""", """The RDP Classifier program (Wang, Garrity, Tiedje, & Cole, 2007) assigns taxonomies by matching sequence segments of length 8 to a database of previously assigned sequences. It uses a naive bayesian algorithm, which means that for each potential assignment, it attempts to calculate the probability of the observed matches, assuming that the assignment is correct and that the sequence segments are completely independent. The RDP Classifier is distributed with a pre-built database of assigned sequence, which is used by default. The quality scores provided by the RDP classifier are confidence values.
-
-Note: If a reference set of sequences and taxonomy to id assignment file are provided, the script will use them to generate a new training dataset for the RDP Classifier on-the-fly.  Because of the RDP Classifier's implementation, all lineages in the training dataset must contain the same number of ranks.
-
-To assign the representative sequence set, where the output directory is "rdp_assigned_taxonomy", you can run the following command:""", """%prog -i repr_set_seqs.fasta -m rdp"""))
+script_info['script_usage'].append(("""Assignment with the RDP Classifier:""", """The RDP Classifier (Wang, Garrity, Tiedje, & Cole, 2007) assigns taxonomies using Naive Bayes classification. By default, the classifier is retrained using the values provided for --id_to_taxonomy_fp and --reference_seqs_fp.""",
+"""%prog -i repr_set_seqs.fasta -m rdp"""))
 
 script_info['script_usage'].append(
     ("""""",
-     """Alternatively, the user could change the minimum confidence score ("-c"), using the following command:""",
-     """%prog -i repr_set_seqs.fasta -m rdp -c 0.85"""))
+     """Assignment with the RDP Classifier using an alternative minimum confidence score by passing -c:""",
+     """%prog -i repr_set_seqs.fasta -m rdp -c 0.80"""))
 
 script_info['script_usage'].append(("""Assignment with RTAX:""", """
 Taxonomy assignments are made by searching input sequences against a fasta database of pre-assigned reference sequences. All matches are collected which match the query within 0.5% identity of the best match.  A taxonomy assignment is made to the lowest rank at which more than half of these hits agree.  Note that both unclustered read fasta files are required as inputs in addition to the representative sequence file.
@@ -193,7 +190,7 @@ script_info['optional_options'] = [
                 '--reference_seqs_db for assignment with blast [default: %default]'),
     make_option('-c', '--confidence', type='float',
                 help='Minimum confidence to record an assignment, only used for rdp '
-                'and mothur methods [default: %default]', default=0.80),
+                'and mothur methods [default: %default]', default=0.50),
     make_option('--min_consensus_fraction', type='float',
                 help=('Minimum fraction of database hits that must have a '
                       'specific taxonomic assignment to assign that taxonomy '

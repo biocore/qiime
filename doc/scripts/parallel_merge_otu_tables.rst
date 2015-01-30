@@ -28,10 +28,6 @@ This script works like the `merge_otu_tables.py <./merge_otu_tables.html>`_ scri
 		
 	-C, `-`-cluster
 		Submit to a torque cluster
-	-N, `-`-merge_otus_fp
-		Full path to scripts/`merge_otu_tables.py <./merge_otu_tables.html>`_ [default: /Users/caporaso/code/Qiime/scripts/`merge_otu_tables.py <./merge_otu_tables.html>`_]
-	-Y, `-`-python_exe_fp
-		Full path to python executable [default: python]
 	-Z, `-`-seconds_to_sleep
 		Number of seconds to sleep between checks for run  completion when polling runs [default: 1]
 	-X, `-`-job_prefix

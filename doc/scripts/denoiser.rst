@@ -49,17 +49,17 @@ The denoiser removes sequencing noise characteristic to pyrosequencing by flowgr
 	-b, `-`-bail_out
 		Stop clustering in phase II with clusters smaller or equal than BAILde [default: 1]
 	`-`-percent_id
-		Sequence similarity clustering threshold [default: 0.97]
-	`-`-low_cut-off
+		Sequence similarity clustering threshold, expressed as a fraction between 0 and 1 [default: 0.97]
+	`-`-low_cut_off
 		Low clustering threshold for phase II [default: 3.75]
-	`-`-high_cut-off
+	`-`-high_cut_off
 		High clustering threshold for phase III [default: 4.5]
 	`-`-low_memory
 		Use slower, low memory method [default: False]
 	-e, `-`-error_profile
-		Path to error profile [default= /Users/caporaso/code/qiime/qiime/support_files/denoiser/Data/FLX_error_profile.dat]
+		Path to error profile [default= <qiime-install-path>/qiime/support_files/denoiser/Data/FLX_error_profile.dat]
 	`-`-titanium
-		Shortcut for -e /Users/caporaso/code/qiime/qiime/support_files/denoiser/Data//Titanium_error_profile.dat --low_cut-off=4 --high_cut_off=5 . Warning: overwrites all previous cut-off values [DEFAULT: False]
+		Shortcut for -e <qiime-install-path>/qiime/support_files/denoiser/Data//Titanium_error_profile.dat --low_cut_off=4 --high_cut_off=5 . Warning: overwrites all previous cut-off values [DEFAULT: False]
 
 
 **Output:**
@@ -71,7 +71,7 @@ centroids.fasta: The cluster representatives of each cluster
 singletons.fasta: contains all unclustered reads
 
 denoiser_mapping.txt: This file contains the actual clusters. The cluster centroid is given first,
-                    the cluster members follow after the ':'.   
+                    the cluster members follow after the ':'.
 
 checkpoints/ : directory with checkpoints
 
@@ -109,7 +109,7 @@ put results into Outdir, log progress in Outdir/denoiser.log
 **Resuming a failed run:**
 
 Resume a previous denoiser run from breakpoint stored in Outdir_from_failed_run/checkpoints/checkpoint100.pickle.
-The checkpoint option requires the -p or --preprocess option, which usually can be set to the output dir of the failed run. 
+The checkpoint option requires the -p or --preprocess option, which usually can be set to the output dir of the failed run.
 All other arguments must be identical to the failed run.
 
 ::

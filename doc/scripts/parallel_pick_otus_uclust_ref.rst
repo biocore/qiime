@@ -37,23 +37,23 @@ This script works like the `pick_otus.py <./pick_otus.html>`_ script, but is int
 	-E, `-`-exact_uclust
 		Pass the --exact flag to uclust for uclust otu picking. [default: False]
 	`-`-max_accepts
-		Max_accepts value to uclust and uclust_ref [default: 20]
+		Max_accepts value to uclust and uclust_ref [default: 1]
 	`-`-max_rejects
-		Max_rejects value to uclust and uclust_ref [default: 500]
+		Max_rejects value to uclust and uclust_ref [default: 8]
 	`-`-stepwords
-		Stepwords value to uclust and uclust_ref [default: 20]
+		Stepwords value to uclust and uclust_ref [default: 8]
 	`-`-word_length
-		W value to uclust and uclust_ref [default: 12]
+		W value to uclust and uclust_ref [default: 8]
 	`-`-uclust_stable_sort
 		Deprecated: stable sort enabled by default, pass --uclust_suppress_stable_sort to disable [default: True]
 	`-`-suppress_uclust_stable_sort
 		Don't pass --stable-sort to uclust [default: False]
 	-d, `-`-save_uc_files
 		Enable preservation of intermediate uclust (.uc) files that are used to generate clusters via uclust. [default: True]
-	`-`-uclust_otu_id_prefix
+	`-`-denovo_otu_id_prefix
 		OTU identifier prefix (string) for the de novo uclust OTU picker [default: None, OTU ids are ascending integers]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 2]
+		Number of jobs to start [default: 1]
 	-R, `-`-retain_temp_files
 		Retain temporary files after runs complete (useful for debugging) [default: False]
 	-S, `-`-suppress_submit_jobs

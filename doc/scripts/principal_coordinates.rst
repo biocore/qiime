@@ -27,7 +27,7 @@ Principal Coordinate Analysis (PCoA) is commonly used to compare groups of sampl
 
 **Output:**
 
-The resulting output file consists of the principal coordinate (PC) axes (columns) for each sample (rows). Pairs of PCs can then be graphed to view the relationships between samples. The bottom of the output file contains the eigenvalues and % variation explained for each PC.
+The resulting output file consists of the principal coordinate (PC) axes (columns) for each sample (rows). Pairs of PCs can then be graphed to view the relationships between samples. The bottom of the output file contains the eigenvalues and % variation explained for each PC. For more information of the file format, check the OrdinationResults class in the scikit-bio package (http://scikit-bio.org/)
 
 
 **PCoA (Single File):**

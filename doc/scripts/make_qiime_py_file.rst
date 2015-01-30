@@ -7,8 +7,7 @@
 
 **Description:**
 
-This is a script which will add headers and footers to new python files
-and make them executable.
+This is a script which will add headers and footers to new python files and make them executable.
 
 
 **Usage:** :file:`make_qiime_py_file.py [options]`
@@ -30,11 +29,11 @@ and make them executable.
 	-t, `-`-test
 		Pass if creating a unit test file to include relevant information [default:False].
 	-a, `-`-author_name
-		The script author's (probably you) name to be included the header variables. This will typically need to be enclosed  in quotes to handle spaces. [default:AUTHOR_NAME]
+		The script author's (probably you) name to be included the header variables. This will typically need to be enclosed in quotes to handle spaces. [default:AUTHOR_NAME]
 	-e, `-`-author_email
 		The script author's (probably you) e-mail address to be included the header variables. [default:AUTHOR_EMAIL]
 	-c, `-`-copyright
-		The copyright information to be included in the header variables. [default:Copyright 2011, The QIIME project]
+		The copyright information to be included in the header variables. [default:Copyright 2014, The QIIME Project]
 
 
 **Output:**

@@ -24,9 +24,7 @@ from qiime.format import format_mapping_file
 from qiime.split import (make_non_empty_sample_lists, subset_mapping_data)
 
 script_info = {}
-script_info['brief_description'] = """\
-Split a biom table into one table per combination of values found in the
-specified fields in the mapping file."""
+script_info['brief_description'] = "Split a biom table into one table per combination of values found in the specified fields in the mapping file."
 script_info['script_description'] = """\
 This script splits a biom table based on the cartesian product of the values
 found in the mapping fields specified. It accepts any number of mapping fields

@@ -60,7 +60,13 @@ Prepare your build environment...
 First, you need to have a build environment on your machine:
 
  - On OS X, this involves installing the `developer tools <http://developer.apple.com/technologies/xcode.html>`_.
- - On Debian-based Linux (e.g., Ubuntu), this involves installing the ``build-essential`` package with the command: ``sudo apt-get install build-essential``
+ - On Debian-based Linux (e.g., Ubuntu), this involves installing the following packages::
+
+     sudo apt-get install build-essential python-dev python-pip
+
+.. warning:: Depending on your system, additional packages may need to be installed that may be required by QIIME or its dependencies. Also, packages names will vary across operating systems and even within operating system distributions (e.g., different versions of Ubuntu). Since there are a wide range of systems that QIIME can be installed on, the QIIME development team cannot provide a comprehensive list of commands that are guaranteed to successfully install QIIME on your system.
+
+   If you encounter problems installing QIIME, please visit http://help.qiime.org.
 
 Then, just pip install qiime!
 -----------------------------
@@ -74,6 +80,10 @@ If you do not have pip, the easiest way to install it is by running::
 
 	easy_install pip
 
+Or, if you are on Ubuntu, run::
+
+  apt-get install python-pip
+
 **Note:** You may need to prefix the above commands with ``sudo`` if you do not have permission to place files in the default locations. You will also need an active Internet connection.
 
 These commands install QIIME and all of its Python dependencies. ``pip install qiime`` will also attempt to install some non-Python dependencies, including uclust, FastTree, SortMeRNA, SUMACLUST, and swarm. If any of the non-Python dependencies cannot be installed, they will be skipped and you'll need to install them manually if you need to use them. See below for links to where you can obtain these dependencies if any of them fail to install with ``pip``.
@@ -81,10 +91,10 @@ These commands install QIIME and all of its Python dependencies. ``pip install q
 Alternatives to pip install qiime
 ---------------------------------
 
-If you don't have permission to (or don't want to) install QIIME into your system version of python, you might want to look into these alternatives:
+If you don't have permission (or don't want) to install QIIME into your system (e.g., with ``sudo``), you might want to look into these alternatives:
 
- - `virtualenv and virtualenv-wrapper <https://virtualenvwrapper.readthedocs.org/en/latest/>`_ (this is what most of the QIIME developers use instead of system-wide QIIME installations)
  - `Anaconda <https://store.continuum.io/cshop/anaconda/>`_
+ - `virtualenv and virtualenv-wrapper <https://virtualenvwrapper.readthedocs.org/en/latest/>`_ (this is what most of the QIIME developers use instead of system-wide QIIME installations)
  - `Canopy <https://www.enthought.com/products/canopy/>`_
  - `pip-install to a non-system directory <https://pip.pypa.io/en/latest/user_guide.html#user-installs>`_
 
@@ -106,7 +116,7 @@ You should begin by performing the `QIIME minimal (base) install`__. The followi
 
 __ native-base_
 
-Then, install the following packages. If you're installing on Linux, the easiest way to install all of these packages is using `qiime-deploy <https://github.com/qiime/qiime-deploy>`_.
+Then, install the following packages. If you're installing on Linux, the easiest way to install most of these packages is using `qiime-deploy <https://github.com/qiime/qiime-deploy>`_.
 
 Alternatively, you can manually install some or all of the following packages. These are grouped by the features that each dependency will provide access to. Installation instructions should be followed for each individual package (e.g., from the project's website or README/INSTALL file).
 
@@ -120,7 +130,7 @@ Alignment, tree-building, taxonomy assignment, OTU picking, and other data gener
 * mothur 1.25.0 (`src_mothur <http://www.mothur.org/w/images/6/6d/Mothur.1.25.0.zip>`_) (license: GPL)
 * clearcut v1.0.9 (`src_clearcut <http://www.mothur.org/w/images/9/91/Clearcut.source.zip>`_)
 * raxml 7.3.0 (`src_raxml <ftp://thebeast.colorado.edu/pub/QIIME-v1.5.0-dependencies/stamatak-standard-RAxML-5_7_2012.tgz>`_)
-* infernal 1.0.2 (`src_infernal <ftp://selab.janelia.org/pub/software/infernal/infernal.tar.gz>`_) (license: GPL)
+* infernal 1.0.2 (`src_infernal <ftp://selab.janelia.org/pub/software/infernal/infernal-1.0.2.tar.gz>`_) (license: GPL)
 * cdbtools (`src_cdbtools <ftp://occams.dfci.harvard.edu/pub/bio/tgi/software/cdbfasta/cdbfasta.tar.gz>`_)
 * muscle 3.8.31 (`src_muscle <http://www.drive5.com/muscle/downloads.htm>`_) (Public domain)
 * rtax 0.984 (`src_rtax <http://static.davidsoergel.com/rtax-0.984.tgz>`_) (license: BSD)

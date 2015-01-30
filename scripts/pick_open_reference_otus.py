@@ -56,10 +56,10 @@ genomic sequence or sequencing artifacts.
 If prefiltering is applied, this step progresses with the prefiltered_seqs.fna.
 Otherwise it progresses with the input file. The Step 1 closed reference OTU
 picking is done against the supplied reference database. This command produces:
-step1_otus/*_clusters.uc
-step1_otus/*_failures.txt
-step1_otus/*_otus.log
-step1_otus/*_otus.txt
+step1_otus/_clusters.uc
+step1_otus/_failures.txt
+step1_otus/_otus.log
+step1_otus/_otus.txt
 
 The representative sequence for each of the Step 1 picked OTUs are selected to
 produce:

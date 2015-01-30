@@ -7,10 +7,10 @@
 
 **Description:**
 
-This module is designed to remove regions of poor quality in 
-454 sequence data.  Drops in quality can be visualized with the 
+This module is designed to remove regions of poor quality in
+454 sequence data.  Drops in quality can be visualized with the
 `quality_scores_plot.py <./quality_scores_plot.html>`_ module.  The base position specified will
-be used as an index to truncate the sequence and quality scores, and 
+be used as an index to truncate the sequence and quality scores, and
 all data at that base position and to the end of the sequence will be
 removed in the output filtered files.
 

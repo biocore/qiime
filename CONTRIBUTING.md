@@ -1,12 +1,11 @@
 Contributing to QIIME
 =====================
 
-[QIIME](http://www.qiime.org) is an open source software package, and we welcome community contributions. You can find the source code and test code for QIIME under public revision control in the QIIME git repository on [GitHub](https://github.com/qiime/qiime). While we have a core development group, we very much welcome contributions from other users. 
+[QIIME](http://www.qiime.org) is an open source software package, and we welcome community contributions. You can find the source code and test code for QIIME under public revision control in the QIIME git repository on [GitHub](https://github.com/qiime/qiime). While we have a core development group, we very much welcome contributions from other users.
 
 This document covers what you should do to get started with contributing to QIIME. You should read this whole document before considering submitting code to QIIME. This will save time for both you and the QIIME developers.
 
-If you're looking for help with QIIME, you should post an issue to the [QIIME Forum](http://forum.qiime.org).
-
+To get help with using QIIME, please visit http://help.qiime.org.
 
 Type of Submissions
 -------------------
@@ -17,7 +16,7 @@ When considering submitting a new feature to QIIME, you should begin by posting 
 
 * For new features, you'll want to describe why the functionality that you are proposing to add is relevant. For it to be relevant, it should be demonstrably useful to QIIME users. This typically means that a new analytic method is implemented (you should describe why it's useful, ideally including a link to a paper that uses this method), or an existing method is enhanced (your implementation matches the performance of the pre-existing method while reducing runtime, memory consumption, etc, or it improves performance over the pre-existing method). We will request benchmark results comparing your method to the pre-existing methods (which would also be required for publication of your method) so pointing to a paper or other document containing benchmark results, or including benchmark results in your issue, will speed up the process.
 
-* For bug fixes, you should provide a detailed description of the bug so other developers can reproduce it. We take bugs in QIIME very seriously. Bugs can be related to errors in code, documentation, or tests. Errors in documentation or tests are usually updated in the next major release of QIIME. Errors in code that could result in incorrect results or inability to access certain functionality may result in a new minor release of QIIME. 
+* For bug fixes, you should provide a detailed description of the bug so other developers can reproduce it. We take bugs in QIIME very seriously. Bugs can be related to errors in code, documentation, or tests. Errors in documentation or tests are usually updated in the next major release of QIIME. Errors in code that could result in incorrect results or inability to access certain functionality may result in a new minor release of QIIME.
 
  You should include the following information in your bug report:
 
@@ -45,7 +44,7 @@ When you submit code to QIIME, it will be reviewed by one or more QIIME develope
 * Your code is sufficiently well-documented (see Coding Guidelines below).
 * Your code provides relevant changes or additions to QIIME (Type of Submissions above).
 
-This process is designed to ensure the quality of QIIME, and can be a very useful experience for new developers. 
+This process is designed to ensure the quality of QIIME, and can be a very useful experience for new developers.
 
 Particularly for big changes, if you'd like feedback on your code in the form of a code review as you work, you should request help in the issue that you created and one of the QIIME developers will work with you to perform regular code reviews. This can greatly reduce development time (and frustration) so we highly recommend that new developers take advantage of this rather than submitting a pull request with a massive amount of code in one chunk. That can lead to frustration when the developer thinks they are done, but the reviewer requests large amounts of changes, and it is also very hard to review.
 
@@ -53,7 +52,7 @@ Particularly for big changes, if you'd like feedback on your code in the form of
 Submitting code to QIIME
 ------------------------
 
-QIIME is hosted on [GitHub](http://www.github.com), and we use GitHub's [Pull Request](https://help.github.com/articles/using-pull-requests) mechanism for accepting submissions. You should go through the following steps to submit code to QIIME. 
+QIIME is hosted on [GitHub](http://www.github.com), and we use GitHub's [Pull Request](https://help.github.com/articles/using-pull-requests) mechanism for accepting submissions. You should go through the following steps to submit code to QIIME.
 
 1. Begin by [creating an issue](https://github.com/qiime/qiime/issues) describing your proposed change. This should include a description of your proposed change (is it a new feature, a bug fix, etc.), and note in the issue description that you want to work on it. If you'll be modifying existing QIIME file(s), you'll want to get input from the developer responsible for the relevant file(s) via a discussion on the issue tracker to let them know you what you'd like to do. The developer responsible for the code is named in the ``__maintainer__`` variable at the top of the file. Once you hear back that it is OK to make changes (i.e., they don't have local edits, they agree with the change you'd like to make, and they're comfortable with you editing their code), we will assign the issue to you on GitHub.
 
