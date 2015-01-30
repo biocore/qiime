@@ -7,7 +7,7 @@
 
 **Description:**
 
-This script provides a convenient interface for merging mapping files which contains data on different samples.
+This script provides a convenient interface for merging mapping files which contain data on different samples.
 
 
 **Usage:** :file:`merge_mapping_files.py [options]`
@@ -28,6 +28,8 @@ This script provides a convenient interface for merging mapping files which cont
 		
 	-n, `-`-no_data_value
 		Value to represent missing data (i.e., when all fields are not defined in all mapping files) [default: no_data]
+	`-`-case_insensitive
+		If present the headers will be merged case insensitivly and transformed to upper case [default: False]
 
 
 **Output:**

@@ -1,10 +1,5 @@
 #!/usr/bin/env python
 
-"""
-Parallel launching script for SortMeRNA v 2.0
-=============================================
-"""
-
 from __future__ import division
 __license__ = "GPL"
 __version__ = "1.9.0-rc2"
@@ -16,39 +11,32 @@ from qiime.util import (parse_command_line_parameters,
                         make_option)
 from qiime.parallel.pick_otus import ParallelPickOtusSortMeRNA
 
-
-# ----------------------------------------------------------------------------
-# Copyright (c) 2014--, The QIIME development team
-#
-# Distributed under the terms of the Modified BSD License.
-#
-# The full license is in the file COPYING.txt, distributed with this software.
-# ----------------------------------------------------------------------------
-
-############################
-# Script functionality
-
 options_lookup = get_options_lookup()
 
 script_info = {}
-script_info['brief_description'] = """Parallel pick otus using SortMeRNA"""
-script_info[
-    'script_description'] = """This script works like the pick_otus.py script,
-    but is intended to make use of multicore/multiprocessor environments to perform analyses in parallel."""
+script_info['brief_description'] = "Parallel pick otus using SortMeRNA"
+script_info['script_description'] = (
+    "This script works like the pick_otus.py script, but is intended to make "
+    "use of multicore/multiprocessor environments to perform analyses in "
+    "parallel.")
 script_info['script_usage'] = []
 script_info['script_usage'].append(
-    ("""Example""",
-     """Pick OTUs by searching $PWD/inseqs.fasta against $PWD/refseqs.fasta with
-        reference-based sortmerna and write the output to the $PWD/smr_otus/ directory.
-        This is a closed-reference OTU picking process. ALWAYS SPECIFY ABSOLUTE FILE PATHS
-        (absolute path represented here as $PWD, but will generally look something like
-            /home/ubuntu/my_analysis/).""",
-     """%prog -i $PWD/seqs.fna -r $PWD/refseqs.fna -o $PWD/smr_otus/"""))
-script_info['output_description'] = """The output consists of two files (i.e. seqs_otus.txt and seqs_otus.log).
-    The .txt file is composed of tab-delimited lines, where the first field on each line corresponds
-    to an OTU identifier which is the reference sequence identifier, and the remaining fields correspond
-    to sequence identifiers assigned to that OTU. The resulting .log file contains a list of parameters
-    passed to this script along with the output location of the resulting .txt file."""
+    ("Example",
+     "Pick OTUs by searching $PWD/inseqs.fasta against $PWD/refseqs.fasta "
+     "with reference-based sortmerna and write the output to the "
+     "$PWD/smr_otus/ directory. This is a closed-reference OTU picking "
+     "process. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented "
+     "here as $PWD, but will generally look something like "
+     "/home/ubuntu/my_analysis/).",
+     "%prog -i $PWD/seqs.fna -r $PWD/refseqs.fna -o $PWD/smr_otus/"))
+script_info['output_description'] = (
+    "The output consists of two files (i.e. seqs_otus.txt and seqs_otus.log). "
+    "The .txt file is composed of tab-delimited lines, where the first field "
+    "on each line corresponds to an OTU identifier which is the reference "
+    "sequence identifier, and the remaining fields correspond to sequence "
+    "identifiers assigned to that OTU. The resulting .log file contains a "
+    "list of parameters passed to this script along with the output location "
+    "of the resulting .txt file.")
 
 script_info['required_options'] = [
     make_option('-i', '--input_fasta_fp', action='store',

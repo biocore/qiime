@@ -2,12 +2,12 @@
 
 .. index:: categorized_dist_scatterplot.py
 
-*categorized_dist_scatterplot.py* -- makes a figure representing average distances between samples, broken down by categories. I call it a 'categorized distance scatterplot'
+*categorized_dist_scatterplot.py* -- Create a categorized distance scatterplot representing average distances between samples, broken down by categories
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Description:**
 
-makes a figure representing average distances between samples, broken down by categories. I call it a 'categorized distance scatterplot'. See script usage for more details. The mapping file specifies the relavent data - if you have e.g. 'N/A' values or samples you don't want included, first use `filter_samples_from_otu_table.py <./filter_samples_from_otu_table.html>`_ to remove unwanted samples from the mapping file, and thus the analysis. Note that the resulting plot will include only samples in both the mapping file AND the distance matrix.
+Create a figure representing average distances between samples, broken down by categories. I call it a 'categorized distance scatterplot'. See script usage for more details. The mapping file specifies the relevant data - if you have e.g. 'N/A' values or samples you don't want included, first use `filter_samples_from_otu_table.py <./filter_samples_from_otu_table.html>`_ to remove unwanted samples from the mapping file, and thus the analysis. Note that the resulting plot will include only samples in both the mapping file AND the distance matrix.
 
 
 **Usage:** :file:`categorized_dist_scatterplot.py [options]`

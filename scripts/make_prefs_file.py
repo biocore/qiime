@@ -24,7 +24,7 @@ options_lookup = get_options_lookup()
 script_info = {}
 script_info['brief_description'] = """Generate preferences file"""
 script_info[
-    'script_description'] = """This script generates a preferences (prefs) file, which can be passed to make_2d_plots.py and make_3d_plots.py. The prefs file allows for defining the monte_carlo distance, gradient coloring of continuous values in the 2D and 3D plots, the ball size scale for all the samples and the color of the arrow and the line of the arrow for the procrustes analysis. Currently there is only one color gradient: red to blue."""
+    'script_description'] = """This script generates a preferences (prefs) file, which can be passed to make_2d_plots.py. The prefs file allows for defining the monte_carlo distance, gradient coloring of continuous values in the 2D plots, the ball size scale for all the samples and the color of the arrow and the line of the arrow for the procrustes analysis. Currently there is only one color gradient: red to blue."""
 script_info['script_usage'] = []
 script_info['script_usage'].append(
     ("""Examples:""",
@@ -56,7 +56,7 @@ script_info['script_usage'].append(
      """%prog -m mapping.txt -a black -l blue -o prefs_out_procrustes.txt"""))
 
 script_info[
-    'output_description'] = """The result of this script is a text file, containing coloring preferences to be used by make_2d_plots.py and make_3d_plots.py."""
+    'output_description'] = """The result of this script is a text file, containing coloring preferences to be used by make_2d_plots.py."""
 script_info['optional_options'] = []
 
 

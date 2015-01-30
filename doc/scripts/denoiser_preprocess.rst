@@ -46,11 +46,11 @@ prefix_dereplicated.sff.txt: human readable sff file containing the flowgram of 
 prefix_dereplicated.fasta: Fasta file containing the cluster representative of each cluster.
 
 prefix_mapping.txt: This file contains the actual clusters. The cluster centroid is given first,
-                    the cluster members follw after the ':'.   
+                    the cluster members follw after the ':'.
 
 
 
-Run program on flowgrams in 454Reads.sff. Remove reads which are not in split_lib_filtered_seqs.fasta. 
+Run program on flowgrams in 454Reads.sff. Remove reads which are not in split_lib_filtered_seqs.fasta.
 Remove primer CATGCTGCCTCCCGTAGGAGT from reads before running phase I
 
 ::

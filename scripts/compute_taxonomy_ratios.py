@@ -62,6 +62,8 @@ script_info[
                              "in that mapping file is merged into the default "
                              "output mapping file.")
 
+script_info['required_options'] = []
+
 script_info['optional_options'] = [
     make_option('-i', '--input', type="existing_filepath",
                 help='The input BIOM table [REQUIRED if not passing -s]'),

@@ -16,14 +16,14 @@ A variety of data formats are possible, depending upon how one utilized sequenci
 
 .. note::
 
-
+	
 	**[REQUIRED]**
-
+		
 	-f, `-`-fastq1
 		Input fastq filepath. This file is considered read 1.
-
+	
 	**[OPTIONAL]**
-
+		
 	-r, `-`-fastq2
 		Input fastq filepath. This file is considered read 2. [default: None]
 	-o, `-`-output_dir
@@ -90,3 +90,5 @@ In the output directory, there will be fastq files (barcode file, and one or two
 ::
 
 	extract_barcodes.py -f inseqs_R1.fastq -c barcode_in_label --char_delineator '#' --bc1_len 12 -o processed_seqs
+
+

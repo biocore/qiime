@@ -7,8 +7,8 @@
 
 **Description:**
 
-A metadata mapping file with SampleIDs 
-and fasta file names (just the file name itself, not the full or relative 
+A metadata mapping file with SampleIDs
+and fasta file names (just the file name itself, not the full or relative
 filepath) is used to generate a combined fasta file with valid
 QIIME labels based upon the SampleIDs specified in the mapping file.
 
@@ -20,12 +20,12 @@ Example mapping file:
 Sample.1	AAAACCCCGGGG	CTACATAATCGGRATT	seqs1.fna	sample.1
 Sample.2	TTTTGGGGAAAA	CTACATAATCGGRATT	seqs2.fna	sample.2
 
-This script is to handle situations where fasta data comes already 
+This script is to handle situations where fasta data comes already
 demultiplexed into a one fasta file per sample basis.  Only alters
 the fasta label to add a QIIME compatible label at the beginning.
 
 Example:
-With the metadata mapping file above, and an specified directory containing the 
+With the metadata mapping file above, and an specified directory containing the
 files seqs1.fna and seqs2.fna, the first line from the seqs1.fna file might
 look like this:
 >FLP3FBN01ELBSX length=250 xy=1766_0111 region=1 run=R_2008_12_09_13_51_01_

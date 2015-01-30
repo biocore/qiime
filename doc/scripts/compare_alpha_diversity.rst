@@ -8,7 +8,7 @@
 **Description:**
 
 
-This script compares the alpha diversity of samples found in a collated alpha 
+This script compares the alpha diversity of samples found in a collated alpha
 diversity file. The comparison is done not between samples, but between groups
 of samples. The groupings are created via the input category passed via
 -c/--category. Any samples which have the same value under the catgory will be
@@ -94,9 +94,9 @@ passed.
 **Output:**
 
 
-Generates a tsv stats file and pdf of boxplots for each input category. 
-Each row in the tsv file corresponds to a comparison between two groups of treatment values, 
-and includes the means and standard deviations of the two groups' alpha diversities, 
+Generates a tsv stats file and pdf of boxplots for each input category.
+Each row in the tsv file corresponds to a comparison between two groups of treatment values,
+and includes the means and standard deviations of the two groups' alpha diversities,
 along with the results of the two-sample t-test.
 
 

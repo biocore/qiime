@@ -13,7 +13,7 @@ For example, if otu_map1.txt contains:
 
 =   ====    ====    ====
 0   seq1    seq2    seq5
-1   seq3    seq4    
+1   seq3    seq4
 2   seq6    seq7    seq8
 =   ====    ====    ====
 

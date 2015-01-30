@@ -7,7 +7,7 @@
 
 **Description:**
 
-Add alpha diversity data to a mapping file for use with other QIIME scripts, i. e. `make_emperor.py <./make_emperor.html>`_. The resulting mapping file will contain three new columns per metric in the alpha diversity data; the first column being the raw value, the second being a normalized raw value and the third one a label classifying the bin where this value fits based on the normalized value.
+Add alpha diversity data to a mapping file for use with other QIIME scripts, i. e. make_emperor. The resulting mapping file will contain three new columns per metric in the alpha diversity data; the first column being the raw value, the second being a normalized raw value and the third one a label classifying the bin where this value fits based on the normalized value.
 
 
 **Usage:** :file:`add_alpha_to_mapping_file.py [options]`

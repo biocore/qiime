@@ -11,31 +11,39 @@ The OTU picking step assigns similar sequences to operational taxonomic units, o
 
 Currently, the following clustering methods have been implemented in QIIME:
 
-1. cd-hit (Li & Godzik, 2006; Li, Jaroszewski, & Godzik, 2001), which applies a "longest-sequence-first list removal algorithm" to cluster sequences.  
+1.  cd-hit (Li & Godzik, 2006; Li, Jaroszewski, & Godzik, 2001), which applies a "longest-sequence-first list removal algorithm" to cluster sequences.
 
-2. blast (Altschul, Gish, Miller, Myers, & Lipman, 1990), which compares and clusters each sequence against a reference database of sequences.
+2.  blast (Altschul, Gish, Miller, Myers, & Lipman, 1990), which compares and clusters each sequence against a reference database of sequences.
 
-3. Mothur (Schloss et al., 2009), which requires an input file of aligned sequences.  The input file of aligned sequences may be generated from an input file like the one described below by running `align_seqs.py <./align_seqs.html>`_.  For the Mothur method, the clustering algorithm may be specified as nearest-neighbor, furthest-neighbor, or average-neighbor.  The default algorithm is furthest-neighbor.
+3.  Mothur (Schloss et al., 2009), which requires an input file of aligned sequences.  The input file of aligned sequences may be generated from an input file like the one described below by running `align_seqs.py <./align_seqs.html>`_.  For the Mothur method, the clustering algorithm may be specified as nearest-neighbor, furthest-neighbor, or average-neighbor.  The default algorithm is furthest-neighbor.
 
-4. prefix/suffix [Qiime team, unpublished], which will collapse sequences which are identical in their first and/or last bases (i.e., their prefix and/or suffix). The prefix and suffix lengths are provided by the user and default to 50 each.
+4.  prefix/suffix [Qiime team, unpublished], which will collapse sequences which are identical in their first and/or last bases (i.e., their prefix and/or suffix). The prefix and suffix lengths are provided by the user and default to 50 each.
 
-5. Trie [Qiime team, unpublished], which collapsing identical sequences and sequences which are subsequences of other sequences.
+5.  Trie [Qiime team, unpublished], which collapsing identical sequences and sequences which are subsequences of other sequences.
 
-6. uclust (Edgar, RC 2010), creates "seeds" of sequences which generate clusters based on percent identity.
+6.  uclust (Edgar, RC 2010), creates "seeds" of sequences which generate clusters based on percent identity.
 
-7. uclust_ref (Edgar, RC 2010), as uclust, but takes a reference database to use as seeds.  New clusters can be toggled on or off.
+7.  uclust_ref (Edgar, RC 2010), as uclust, but takes a reference database to use as seeds.  New clusters can be toggled on or off.
 
-8. usearch (Edgar, RC 2010, version v5.2.236), creates "seeds" of sequences which generate clusters based on percent identity, filters low abundance clusters, performs de novo and reference based chimera detection.
+8.  usearch (Edgar, RC 2010, version v5.2.236), creates "seeds" of sequences which generate clusters based on percent identity, filters low abundance clusters, performs de novo and reference based chimera detection.
 
-9. usearch_ref (Edgar, RC 2010, version v5.2.236), as usearch, but takes a reference database to use as seeds.  New clusters can be toggled on or off.
+9.  usearch_ref (Edgar, RC 2010, version v5.2.236), as usearch, but takes a reference database to use as seeds.  New clusters can be toggled on or off.
 
 Quality filtering pipeline with usearch 5.X is described as usearch_qf "usearch quality filter", described here: http://qiime.org/tutorials/usearch_quality_filter.html
 
-8. usearch61 (Edgar, RC 2010, version v6.1.544), creates "seeds" of sequences which generate clusters based on percent identity.
+8.  usearch61 (Edgar, RC 2010, version v6.1.544), creates "seeds" of sequences which generate clusters based on percent identity.
 
-9. usearch61_ref (Edgar, RC 2010, version v6.1.544), as usearch61, but takes a reference database to use as seeds.  New clusters can be toggled on or off.
+9.  usearch61_ref (Edgar, RC 2010, version v6.1.544), as usearch61, but takes a reference database to use as seeds.  New clusters can be toggled on or off.
+
+10. sumaclust (Mercier, C. et al., 2014, version 1.0), creates "seeds" of sequences which generate clusters based on similarity threshold.
+
+11. sortmerna_v2 (Kopylova, E. et al., 2012), takes a reference database to use as seeds.
+
+12. swarm (Mahe, F. et al., 2014), creates "seeds" of sequences which generate clusters based on a resolution threshold.
+
 
 Chimera checking with usearch 6.X is implemented in `identify_chimeric_seqs.py <./identify_chimeric_seqs.html>`_.  Chimera checking should be done first with usearch 6.X, and the filtered resulting fasta file can then be clustered.
+
 
 The primary inputs for `pick_otus.py <./pick_otus.html>`_ are:
 
@@ -65,7 +73,7 @@ The primary inputs for `pick_otus.py <./pick_otus.html>`_ are:
 	**[OPTIONAL]**
 		
 	-m, `-`-otu_picking_method
-		Method for picking OTUs.  Valid choices are: mothur, trie, uclust_ref, usearch, usearch_ref, blast, usearch61, usearch61_ref, prefix_suffix, cdhit, uclust. The mothur method requires an input file of aligned sequences.  usearch will enable the usearch quality filtering pipeline. [default: uclust]
+		Method for picking OTUs.  Valid choices are: sortmerna, mothur, trie, uclust_ref, usearch, usearch_ref, blast, usearch61, usearch61_ref, sumaclust, swarm, prefix_suffix, cdhit, uclust. The mothur method requires an input file of aligned sequences.  usearch will enable the usearch quality filtering pipeline. [default: uclust]
 	-c, `-`-clustering_algorithm
 		Clustering algorithm for mothur otu picking method.  Valid choices are: furthest, nearest, average. [default: furthest]
 	-M, `-`-max_cdhit_memory
@@ -73,15 +81,35 @@ The primary inputs for `pick_otus.py <./pick_otus.html>`_ are:
 	-o, `-`-output_dir
 		Path to store result file [default: ./<OTU_METHOD>_picked_otus/]
 	-r, `-`-refseqs_fp
-		Path to reference sequences to search against when using -m blast, -m uclust_ref, -m usearch_ref, or -m usearch61_ref [default: None]
+		Path to reference sequences to search against when using -m blast, -m sortmerna, -m uclust_ref, -m usearch_ref, or -m usearch61_ref [default: /Users/jairideout/.virtualenvs/qiime/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set/97_otus.fasta]
 	-b, `-`-blast_db
 		Pre-existing database to blast against when using -m blast [default: None]
-	`-`-min_aligned_percent
-		Minimum percent of query sequence that can be aligned to consider a hit (BLAST OTU picker only) [default: 0.5]
-	-s, `-`-similarity
-		Sequence similarity threshold (for blast, cdhit, uclust, uclust_ref, usearch, usearch_ref, usearch61, or usearch61_ref) [default: 0.97]
-	-e, `-`-max_e_value
+	-e, `-`-max_e_value_blast
 		Max E-value when clustering with BLAST [default: 1e-10]
+	`-`-sortmerna_db
+		Pre-existing database to search against when using -m sortmerna [default: None]
+	`-`-sortmerna_e_value
+		Maximum E-value when clustering [default = 1]
+	`-`-sortmerna_coverage
+		Mininum percent query coverage (of an alignment) to consider a hit, expressed as a fraction between 0 and 1 [default: 0.97]
+	`-`-sortmerna_tabular
+		Output alignments in the Blast tabular format with two additional columns including the CIGAR string and the percent query coverage [default: False]
+	`-`-sortmerna_best_N_alignments
+		Must be set together with --sortmerna_tabular. This option specifies how many alignments per read will be written [default: 1]
+	`-`-sortmerna_max_pos
+		The maximum number of positions per seed to store  in the indexed database [default: 10000]
+	`-`-min_aligned_percent
+		Minimum percent of query sequence that can be aligned to consider a hit, expressed as a fraction between 0 and 1 (BLAST OTU picker only) [default: 0.5]
+	-s, `-`-similarity
+		Sequence similarity threshold (for blast, cdhit, uclust, uclust_ref, usearch, usearch_ref, usearch61, usearch61_ref, sumaclust or sortmerna [default: 0.97]
+	`-`-sumaclust_exact
+		A sequence is assigned to the best matching seed rather than the first matching seed passing the similarity threshold [default: False]
+	`-`-sumaclust_l
+		Reference sequence length if the shortest [default: True]
+	`-`-denovo_otu_id_prefix
+		OTU identifier prefix (string) for the de novo OTU pickers (sumaclust, swarm and uclust) [default: denovo, OTU ids are ascendingintegers]
+	`-`-swarm_resolution
+		Maximum number of differences allowed between two amplicons, meaning that two amplicons will be grouped if they have integer (or less) differences (see Swarm manual at https://github.com/torognes/swarm for more details). [default: 1]
 	-q, `-`-trie_reverse_seqs
 		Reverse seqs before picking OTUs with the Trie OTU picker for suffix (rather than prefix) collapsing [default: False]
 	-n, `-`-prefix_prefilter_length
@@ -105,23 +133,21 @@ The primary inputs for `pick_otus.py <./pick_otus.html>`_ are:
 	-C, `-`-suppress_new_clusters
 		Suppress creation of new clusters using seqs that don't match reference when using -m uclust_ref, -m usearch61_ref, or -m usearch_ref [default: False]
 	`-`-max_accepts
-		Max_accepts value to uclust, uclust_ref, usearch61, and usearch61_ref.  By default, will use value suggested by method (uclust: 20, usearch61: 1) [default: default]
+		Max_accepts value to uclust, uclust_ref, usearch61, and usearch61_ref.  By default, will use value suggested by method (uclust: 1, usearch61: 1) [default: default]
 	`-`-max_rejects
-		Max_rejects value for uclust, uclust_ref, usearch61, and usearch61_ref.  With default settings, will use value recommended by clustering method used (uclust: 500, usearch61: 8 for usearch_fast_cluster option, 32 for reference and smallmem options) [default: default]
+		Max_rejects value for uclust, uclust_ref, usearch61, and usearch61_ref.  With default settings, will use value recommended by clustering method used (uclust: 8, usearch61: 8 for usearch_fast_cluster option, 32 for reference and smallmem options) [default: default]
 	`-`-stepwords
-		Stepwords value to uclust and uclust_ref [default: 20]
+		Stepwords value to uclust and uclust_ref [default: 8]
 	`-`-word_length
-		Word length value for uclust, uclust_ref, and usearch, usearch_ref, usearch61, and usearch61_ref. With default setting, will use the setting recommended by the method (uclust: 12, usearch: 64, usearch61: 8).  int value can be supplied to override this setting. [default: default]
-	`-`-uclust_otu_id_prefix
-		OTU identifier prefix (string) for the de novo uclust OTU picker and for new clusters when uclust_ref is used without -C [default: denovo, OTU ids are ascending integers]
+		Word length value for uclust, uclust_ref, and usearch, usearch_ref, usearch61, and usearch61_ref. With default setting, will use the setting recommended by the method (uclust: 8, usearch: 64, usearch61: 8).  int value can be supplied to override this setting. [default: default]
 	`-`-suppress_uclust_stable_sort
 		Don't pass --stable-sort to uclust [default: False]
-	`-`-suppress_uclust_prefilter_exact_match
-		Don't collapse exact matches before calling uclust [default: False]
+	`-`-suppress_prefilter_exact_match
+		Don't collapse exact matches before calling sortmerna, sumaclust or uclust [default: False]
 	-d, `-`-save_uc_files
 		Enable preservation of intermediate uclust (.uc) files that are used to generate clusters via uclust.  Also enables preservation of all intermediate files created by usearch  and usearch61. [default: True]
 	-j, `-`-percent_id_err
-		Percent identity threshold for cluster error detection with usearch. [default: 0.97]
+		Percent identity threshold for cluster error detection with usearch, expressed as a fraction between 0 and 1. [default: 0.97]
 	-g, `-`-minsize
 		Minimum cluster size for size filtering with usearch. [default: 4]
 	-a, `-`-abundance_skew
@@ -157,7 +183,7 @@ The primary inputs for `pick_otus.py <./pick_otus.html>`_ are:
 	`-`-sizeorder
 		Enable size based preference in clustering with usearch61. Requires that --usearch61_sort_method be abundance. [default: False]
 	`-`-threads
-		Specify number of threads per core to be used for  usearch61 commands that utilize multithreading. By default, will calculate the number of cores to utilize so a single thread will be used per CPU. Specify a fractional number, e.g. 1.0 for 1 thread per core, or 0.5 for a single thread on a two core CPU. Only applies to usearch61. [default: one_per_cpu]
+		Specify number of threads (1 thread per core) to be used for usearch61, sortmerna, sumaclust and swarm commands that utilize multithreading. [default: 1]
 
 
 **Output:**
@@ -167,9 +193,9 @@ The output consists of two files (i.e. seqs_otus.txt and seqs_otus.log). The .tx
 Example lines from the resulting .txt file:
 
 =   ====    ====    ====
-0   seq1    seq5        
-1   seq2                
-2   seq3                
+0   seq1    seq5
+1   seq2
+2   seq3
 3   seq4    seq6    seq7
 =   ====    ====    ====
 
@@ -198,7 +224,7 @@ uclust_ref can be passed via -m to pick OTUs against a reference set where seque
 
 ::
 
-	pick_otus.py -i seqs.fna -r refseqs.fasta -m uclust_ref --uclust_otu_id_prefix qiime_otu_
+	pick_otus.py -i seqs.fna -r refseqs.fasta -m uclust_ref --denovo_otu_id_prefix qiime_otu_
 
 **Example (cdhit method):**
 
@@ -287,5 +313,13 @@ Usearch (http://www.drive5.com/usearch/) provides clustering, chimera checking, 
 ::
 
 	pick_otus.py -i seqs.fna -m usearch --word_length 64 --suppress_reference_chimera_detection --minsize 2 -o usearch_qf_results_no_ref_chim_detection/
+
+**Use de novo OTU-picker Swarm:**
+
+Using the seqs.fna file generated from `split_libraries.py <./split_libraries.html>`_ and outputting the results to the directory "$PWD/picked_otus_swarm/", while using default parameters (resolution = 1) 
+
+::
+
+	pick_otus.py -i $PWD/seqs.fna -m swarm -o $PWD/picked_otus_swarm
 
 

@@ -7,7 +7,17 @@
 
 **Description:**
 
-This script calculates alpha diversity, or within-sample diversity, using an otu table. The QIIME pipeline allows users to conveniently calculate more than two dozen different diversity metrics. The full list of available metrics is available by passing the option -s to the script `alpha_diversity.py <./alpha_diversity.html>`_, and documentation of those metrics can be found at http://qiime.org/scripts/alpha_diversity_metrics.html. Every metric has different strengths and limitations - technical discussion of each metric is readily available online and in ecology textbooks, but is beyond the scope of this document.
+This script calculates alpha diversity, or within-sample diversity, using an
+OTU table. The QIIME pipeline allows users to conveniently calculate more than
+two dozen different diversity metrics. The full list of available metrics is
+available by passing the -s option to this script.
+
+Documentation of the metrics can be found at
+http://scikit-bio.org/docs/latest/generated/skbio.diversity.alpha.html.
+Every metric has different strengths and limitations - technical discussion of
+each metric is readily available online and in ecology textbooks, but is beyond
+the scope of this document.
+
 
 
 **Usage:** :file:`alpha_diversity.py [options]`
@@ -24,7 +34,7 @@ This script calculates alpha diversity, or within-sample diversity, using an otu
 	-o, `-`-output_path
 		Output filepath to store alpha diversity metric(s) for each sample in a tab-separated format or output directory when batch processing. [default: None]
 	-m, `-`-metrics
-		Alpha-diversity metric(s) to use. A comma-separated list should be provided when multiple metrics are specified. [default: PD_whole_tree,chao1,observed_species]
+		Alpha-diversity metric(s) to use. A comma-separated list should be provided when multiple metrics are specified. [default: PD_whole_tree,chao1,observed_otus]
 	-s, `-`-show_metrics
 		Show the available alpha-diversity metrics and exit.
 	-t, `-`-tree_path
@@ -37,9 +47,9 @@ The resulting file(s) is a tab-delimited text file, where the columns correspond
 
 Example Output:
 
-====== ======= ============= ================
-\      simpson PD_whole_tree observed_species
-====== ======= ============= ================
+====== ======= ============= =============
+\      simpson PD_whole_tree observed_otus
+====== ======= ============= =============
 PC.354 0.925   2.83739       16.0
 PC.355 0.915   3.06609       14.0
 PC.356 0.945   3.10489       19.0
@@ -49,7 +59,7 @@ PC.607 0.92    4.13397       16.0
 PC.634 0.9     3.71369       14.0
 PC.635 0.94    4.20239       18.0
 PC.636 0.925   3.78882       16.0
-====== ======= ============= ================
+====== ======= ============= =============
 
 
 
