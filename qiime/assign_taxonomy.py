@@ -685,7 +685,7 @@ class MothurTaxonAssigner(TaxonAssigner):
 
     def __init__(self, params):
         _params = {
-            'Confidence': 0.80,
+            'Confidence': 0.50,
             'Iterations': None,
             'KmerSize': None,
             'id_to_taxonomy_fp': None,
@@ -821,7 +821,7 @@ class RdpTaxonAssigner(TaxonAssigner):
         Taxonomy: taxonomy used (e.g. RDP, Hugenholtz)
         """
         _params = {
-            'Confidence': 0.80,
+            'Confidence': 0.50,
             'id_to_taxonomy_fp': None,
             'reference_sequences_fp': None,
             'training_data_properties_fp': None,

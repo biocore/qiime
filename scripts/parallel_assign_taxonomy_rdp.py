@@ -51,7 +51,7 @@ script_info['optional_options'] = [
                 default=rdp_classifier_fp),
     make_option('-c', '--confidence', action='store',
                 type='float', help='Minimum confidence to' +
-                ' record an assignment [default: %default]', default=0.80),
+                ' record an assignment [default: %default]', default=0.50),
     make_option('-t', '--id_to_taxonomy_fp', action='store',
                 type='existing_filepath', help='full path to ' +
                 'id_to_taxonomy mapping file [default: %s]' % default_id_to_taxonomy_fp,
