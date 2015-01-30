@@ -62,7 +62,7 @@ function load() {
 
   // Calling load sends the request off.  It requires a callback function.
   forums_feed.load(forumFeedLoaded);
-  
+
   var citation_feed = new google.feeds.Feed("http://rss.webofknowledge.com/rss?e=9caba57f6a84aac7&c=7af8db36f4f5d8b8b377625e44613eda");
 
   // Calling load sends the request off.  It requires a callback function.
@@ -72,7 +72,7 @@ function load() {
 function loadCitations(selected_item)
 {
     menuChange(selected_item);
-    
+
     var citation_feed = new google.feeds.Feed("http://rss.webofknowledge.com/rss?e=9caba57f6a84aac7&c=7af8db36f4f5d8b8b377625e44613eda");
   citation_feed.setNumEntries(2000);
   citation_feed.includeHistoricalEntries();
@@ -86,19 +86,11 @@ function loadHeaderFooter(selected_page)
 {
     if(selected_page == 'main')
         load();
-    document.getElementById('header').innerHTML = getFile("header.html");
-    document.getElementById('leftcol').innerHTML = getFile("leftcol.html");
-    document.getElementById('footer').innerHTML = getFile("footer.html");
+    document.getElementById('header').innerHTML = getFile("/home_static/header.html");
+    document.getElementById('leftcol').innerHTML = getFile("/home_static/leftcol.html");
+    document.getElementById('footer').innerHTML = getFile("/home_static/footer.html");
 }
 
-function loadHeaderFooterRoot(selected_page)
-{
-    if(selected_page == 'main')
-        load();
-    document.getElementById('header').innerHTML = getFile("home_static/header_root.html");
-    document.getElementById('leftcol').innerHTML = getFile("home_static/leftcol_root.html");
-    document.getElementById('footer').innerHTML = getFile("home_static/footer_root.html");
-}
 
 // function menuChange(selected_item)
 // {
@@ -106,12 +98,12 @@ function loadHeaderFooterRoot(selected_page)
 //   // document.getElementById('dataFiles').className = "unselected";
 //   // document.getElementById('calendar').className = "unselected";
 //   // document.getElementById('citations').className = "unselected";
-//  
+//
 //   // for(var element in document.getElementsByName(selected_item))
 //     // element.className = "selected";
-//  
+//
 //   document.getElementById('content').innerHTML = getFile(selected_item+".html");
-//   
+//
 //   if(selected_item == 'main')
 //     load();
 // }
