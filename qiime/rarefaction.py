@@ -6,7 +6,7 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Justin Kuczynski", "Jose Carlos Clemente Litran", "Rob Knight",
                "Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.9.0-rc2"
+__version__ = "1.9.0"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 

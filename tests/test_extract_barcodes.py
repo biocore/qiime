@@ -4,7 +4,7 @@ __author__ = "William Walters"
 __copyright__ = "Copyright 2011, The QIIME Project"  # consider project name
 __credits__ = ["William Walters", "Daniel McDonald"]  # remember to add yourself
 __license__ = "GPL"
-__version__ = "1.9.0-rc2"
+__version__ = "1.9.0"
 __maintainer__ = "William Walters"
 __email__ = "william.a.walters@colorado.edu"
 

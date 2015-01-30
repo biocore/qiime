@@ -7,7 +7,7 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso", "Justin Kuczynski", "Kyle Patnode",
                "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.9.0-rc2"
+__version__ = "1.9.0"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 

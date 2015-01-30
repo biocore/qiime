@@ -4,7 +4,7 @@ __author__ = "Kyle Bittinger"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Kyle Bittinger"]
 __license__ = "GPL"
-__version__ = "1.9.0-rc2"
+__version__ = "1.9.0"
 __maintainer__ = "Kyle Bittinger"
 __email__ = "kylebittinger@gmail.com"
 

@@ -11,7 +11,7 @@ __author__ = "Daniel McDonald"
 __copyright__ = "Copyright 2014, The QIIME project"
 __credits__ = ["Daniel McDonald"]
 __license__ = "GPL"
-__version__ = "1.9.0-rc2"
+__version__ = "1.9.0"
 __maintainer__ = "Daniel McDonald"
 __email__ = "mcdonadt@colorado.edu"
 
