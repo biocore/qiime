@@ -20,7 +20,7 @@ __copyright__ = "Copyright (c) 2011--, %s" % __author__
 __credits__ = ["Greg Caporaso", "Kyle Bittinger", "Jai Ram Rideout",
                "Yoshiki Vazquez Baeza", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.9.0-rc2"
+__version__ = "1.9.0"
 __maintainer__ = "Greg Caporaso"
 __email__ = "qiime.help@gmail.com"
 
@@ -436,7 +436,7 @@ setup(name='qiime',
                         'scipy >= 0.14.0',
                         'matplotlib >= 1.1.0',
                         'pynast == 1.2.2', 'qcli >= 0.1.1, < 0.2.0', 'gdata',
-                        'biom-format >= 2.1.2, < 2.2.0',
+                        'biom-format >= 2.1.3, < 2.2.0',
                         'emperor >= 0.9.5, < 1.0.0',
                         'scikit-bio >= 0.2.2, < 0.3.0',
                         'burrito-fillings >= 0.1.0, < 0.2.0',

@@ -6,10 +6,9 @@ __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jens Reeder", "Jose Antonio Navas Molina", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.9.0-rc2"
+__version__ = "1.9.0"
 __maintainer__ = "Jens Reeder"
 __email__ = "jens.reeder@gmail.com"
-__status__ = "Development"
 
 from qiime.util import make_option, parse_command_line_parameters
 from qiime.alpha_diversity import (single_file_cup,

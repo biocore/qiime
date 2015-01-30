@@ -11,7 +11,7 @@ __author__ = "Sophie Weiss"
 __copyright__ = "Copyright 2014, The QIIME Project"
 __credits__ = ["Sophie Weiss"]
 __license__ = "GPL"
-__version__ = "1.9.0-rc2"
+__version__ = "1.9.0"
 __maintainer__ = "Sophie Weiss"
 __email__ = "sophie.sjw@gmail.com"
 
