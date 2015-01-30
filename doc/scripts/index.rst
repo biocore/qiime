@@ -1,7 +1,7 @@
 .. _index:
 
 =============
-QIIME scripts
+QIIME Scripts
 =============
 
 All QIIME analyses are performed using python (``.py``) scripts. See `the QIIME install guide <../install/install.html>`_ if you need help getting the QIIME scripts installed.
