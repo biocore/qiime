@@ -67,7 +67,7 @@ Reference data sets and id-to-taxonomy maps for 16S rRNA sequences can be found 
 	-b, `-`-blast_db
 		Database to blast against.  Must provide either --blast_db or --reference_seqs_db for assignment with blast [default: None]
 	-c, `-`-confidence
-		Minimum confidence to record an assignment, only used for rdp and mothur methods [default: 0.8]
+		Minimum confidence to record an assignment, only used for rdp and mothur methods [default: 0.5]
 	`-`-min_consensus_fraction
 		Minimum fraction of database hits that must have a specific taxonomic assignment to assign that taxonomy to a query, only used for sortmerna and uclust methods [default: 0.51]
 	`-`-similarity
@@ -122,21 +122,17 @@ Optionally, the user could changed the E-value ("-e"), using the following comma
 
 **Assignment with the RDP Classifier:**
 
-The RDP Classifier program (Wang, Garrity, Tiedje, & Cole, 2007) assigns taxonomies by matching sequence segments of length 8 to a database of previously assigned sequences. It uses a naive bayesian algorithm, which means that for each potential assignment, it attempts to calculate the probability of the observed matches, assuming that the assignment is correct and that the sequence segments are completely independent. The RDP Classifier is distributed with a pre-built database of assigned sequence, which is used by default. The quality scores provided by the RDP classifier are confidence values.
-
-Note: If a reference set of sequences and taxonomy to id assignment file are provided, the script will use them to generate a new training dataset for the RDP Classifier on-the-fly.  Because of the RDP Classifier's implementation, all lineages in the training dataset must contain the same number of ranks.
-
-To assign the representative sequence set, where the output directory is "rdp_assigned_taxonomy", you can run the following command:
+The RDP Classifier (Wang, Garrity, Tiedje, & Cole, 2007) assigns taxonomies using Naive Bayes classification. By default, the classifier is retrained using the values provided for --id_to_taxonomy_fp and --reference_seqs_fp.
 
 ::
 
 	assign_taxonomy.py -i repr_set_seqs.fasta -m rdp
 
-Alternatively, the user could change the minimum confidence score ("-c"), using the following command:
+Assignment with the RDP Classifier using an alternative minimum confidence score by passing -c:
 
 ::
 
-	assign_taxonomy.py -i repr_set_seqs.fasta -m rdp -c 0.85
+	assign_taxonomy.py -i repr_set_seqs.fasta -m rdp -c 0.80
 
 **Assignment with RTAX:**
 
