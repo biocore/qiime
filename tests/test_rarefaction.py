@@ -46,9 +46,7 @@ class FunctionTests(TestCase):
 
         self.otu_table = Table(self.otu_table_data,
                                self.taxon_names,
-                               self.sample_names,
-                               observation_metadata=[{}, {}, {}, {}],
-                               sample_metadata=[{}, {}, {}])
+                               self.sample_names)
 
         self.otu_table_meta = Table(self.otu_table_data,
                                     self.taxon_names, self.sample_names,
