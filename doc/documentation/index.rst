@@ -6,9 +6,9 @@
 
 .. index:: Documentation
 
-===================
-QIIME Documentation
-===================
+==================
+QIIME File Formats
+==================
 
 These pages document various aspects of QIIME, including scripts, file formats, and parameters files. If you're instead looking for tutorials to guide you through different types of analyses, you should refer to the `QIIME tutorials <../tutorials/index.html>`_.
 
