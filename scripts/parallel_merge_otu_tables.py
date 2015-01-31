@@ -6,7 +6,7 @@ __author__ = "Daniel McDonald"
 __copyright__ = "Copyright 2013, The QIIME Project"
 __credits__ = ["Daniel McDonald", "Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.9.0"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Daniel McDonald"
 __email__ = "mcdonadt@colorado.edu"
 

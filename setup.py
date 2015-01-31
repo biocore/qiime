@@ -20,7 +20,7 @@ __copyright__ = "Copyright (c) 2011--, %s" % __author__
 __credits__ = ["Greg Caporaso", "Kyle Bittinger", "Jai Ram Rideout",
                "Yoshiki Vazquez Baeza", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.9.0"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "qiime.help@gmail.com"
 
@@ -368,19 +368,17 @@ if all([e not in sys.argv for e in 'egg_info', 'sdist', 'register']):
     catch_install_errors(build_SUMACLUST, 'SUMACLUST')
     catch_install_errors(build_swarm, 'swarm')
 
-# taken from PyNAST
 classes = """
     Development Status :: 5 - Production/Stable
     Environment :: Console
-    License :: OSI Approved :: GPL License
-    Topic :: Software Development :: Bioinformatics
+    License :: OSI Approved :: GNU General Public License v2 (GPLv2)
+    Topic :: Scientific/Engineering :: Bio-Informatics
     Programming Language :: Python
     Programming Language :: Python :: 2.7
-    Operating System :: UNIX
-    Operating System :: MacOS X
-    Operating System :: POSIX :: BSD
-    Operating System :: POSIX :: Linux
-"""
+    Operating System :: Unix
+    Operating System :: MacOS :: MacOS X
+    Operating System :: POSIX
+    """
 classifiers = [s.strip() for s in classes.split('\n') if s]
 
 # compile the list of all qiime_test_data files that need to be installed.

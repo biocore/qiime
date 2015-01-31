@@ -26,7 +26,7 @@ __credits__ = [
     "Jose Antonio Navas Molina",
     "Adam Robbins-Pianka"]
 __license__ = "GPL"
-__version__ = "1.9.0"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Jesse Zaneveld"
 __email__ = "zaneveld@gmail.com"
 

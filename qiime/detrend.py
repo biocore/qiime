@@ -4,7 +4,7 @@ __author__ = "Dan Knights"
 __copyright__ = "Copyright 2012, The QIIME Project"
 __credits__ = ["Dan Knights", "Adam Robbins-Pianka"]
 __license__ = "GPL"
-__version__ = "1.9.0"
+__version__ = "1.9.0-dev"
 __maintainer__ = "Dan Knights"
 __email__ = "danknights@gmail.com"
 
