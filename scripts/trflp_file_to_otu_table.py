@@ -53,7 +53,7 @@ def main():
 
     samples, otus, data = parse_trflp(open(opts.input_path, 'U'))
 
-    t = Table(data, otus, samples)
+    t = Table(data, otus, samples, type='OTU table')
     write_biom_table(t, opts.output_path)
 
 
