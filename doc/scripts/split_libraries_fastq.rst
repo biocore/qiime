@@ -45,7 +45,7 @@ In both these cases, this script can be used to demultiplex the reads.fastq file
 		The barcode read fastq files (comma-separated if more than one) [default: None]
 	`-`-store_qual_scores
 		Store qual strings in .qual files [default: False]
-	`-`-sample_id
+	`-`-sample_ids
 		Comma-separated list of samples id to be applied to all sequences, must be one per input file path (used when data is not multiplexed) [default: None]
 	`-`-store_demultiplexed_fastq
 		Write demultiplexed fastq files [default: False]
@@ -104,12 +104,12 @@ In both these cases, this script can be used to demultiplex the reads.fastq file
 
 ::
 
-	split_libraries_fastq.py -i lane1_read1.fastq.gz --sample_id my.sample.1 -o slout_single_sample_q20/ -q 19 --barcode_type 'not-barcoded'
+	split_libraries_fastq.py -i lane1_read1.fastq.gz --sample_ids my.sample.1 -o slout_single_sample_q20/ -q 19 --barcode_type 'not-barcoded'
 
 **Quality filter (at Phred >= Q20) two non-multiplexed lanes of Illumina fastq data with different samples in each and write results to ./slout_not_multiplexed_q20.:**
 
 ::
 
-	split_libraries_fastq.py -i lane1_read1.fastq.gz,lane2_read1.fastq.gz --sample_id my.sample.1,my.sample.2 -o slout_not_multiplexed_q20/ -q 19 --barcode_type 'not-barcoded'
+	split_libraries_fastq.py -i lane1_read1.fastq.gz,lane2_read1.fastq.gz --sample_ids my.sample.1,my.sample.2 -o slout_not_multiplexed_q20/ -q 19 --barcode_type 'not-barcoded'
 
 
