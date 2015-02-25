@@ -56,7 +56,8 @@ script_info['required_options'] = [
 script_info['optional_options'] = [
     make_option('--collapse_mode', type='choice', choices=collapse_modes,
         help="the mechanism for collapsing counts within groups; "
-        "valid options are: %s" % ', '.join(collapse_modes), default='sum'),
+        "valid options are: %s. " % ', '.join(collapse_modes) + 
+        "[default: %default]", default='sum'),
     make_option('--normalize',
         help='Normalize observation counts to relative abundances, so the '
              'counts within each sample sum to 1.0. [default: %default]',
