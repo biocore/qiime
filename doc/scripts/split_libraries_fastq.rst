@@ -45,7 +45,7 @@ In both these cases, this script can be used to demultiplex the reads.fastq file
 		The barcode read fastq files (comma-separated if more than one) [default: None]
 	`-`-store_qual_scores
 		Store qual strings in .qual files [default: False]
-	`-`-sample_ids
+	`-`-sample_id
 		Comma-separated list of samples id to be applied to all sequences, must be one per input file path (used when data is not multiplexed) [default: None]
 	`-`-store_demultiplexed_fastq
 		Write demultiplexed fastq files [default: False]
