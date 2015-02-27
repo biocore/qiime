@@ -1,19 +1,23 @@
-Welcome to the QIIME virtual box.
+Welcome to the QIIME Virtual Box!
 
-First, a note on using copy and paste in the Virtual Box. To copy and paste to and from all applications except the terminal, use control-c and control-v, respectively. To copy and paste to and from the terminal, use control-shift-c and control-shift-v, respectively. Note however that you will need to install the guest additions BEFORE this works. The steps for installing the guest additions are described in this document. You can copy and paste via the 'Edit' before or after installing the guest additions. 
+First, a note on using copy and paste in the Virtual Box. To copy and paste to and from all applications except the terminal, use control-c and control-v, respectively. To copy and paste to and from the terminal, use control-shift-c and control-shift-v, respectively. Note however that you will need to install the guest additions BEFORE this works. The steps for installing the guest additions are described in this document. You can also copy and paste via the 'Edit' menu before or after installing the guest additions.
 
-Before getting started with QIIME, you should install the VirtualBox guest additions. The guest additions are a set of applications that will be installed in the virtual machine to add convenient funcionalities including enabling a larger display window. 
+Before getting started with QIIME, you should install the VirtualBox guest additions. The guest additions are a set of applications that will be installed in the virtual machine to add convenient functionality, including enabling a larger display window.
 
-The steps to install it are:
-1. Release the mouse pointer from this Window using either the left Command-key (Mac) or the right Control-key (Windows). 
-2. Go to the virtual box menu and select Devices->Install Guest Additions... Click back into the virtual box, and then click 'Places' on the menu bar. Select VBOXADDITIONS_4.0.2_69518. (Note the name VBOXADDITIONS... may differ depending on your version of VirtualBox.) A new window should appear in the virtual machine. Hit Open Autorun Prompt.
-3. Open a terminal by clicking on the black window with a > in the top menu bar of the virtual machine, and paste this command into the terminal: 
+To install the guest additions:
 
- sudo /media/VBOXADDITIONS_4.0.2_69518/VBoxLinuxAdditions.run
+1. Release the mouse pointer from this window using either the left Command-key (Mac) or the right Control-key (Windows).
 
-Again, the directory name VBOXADDITIONS... may differ depending on your version of VirtualBox. You can run 'ls /media' to find the name of this directory. When prompted, enter the password: qiime
+2. Go to the VirtualBox menu and select Devices->Install Guest Additions... Click back into the Virtual Box, and then click 'Places' on the menu bar. Select VBOXADDITIONS_4.0.2_69518. (Note the name VBOXADDITIONS_4.0.2_69518 may differ depending on your version of VirtualBox.) A new window should appear in the virtual machine. Hit Open Autorun Prompt.
 
-4. When that command is finished running (i.e., you get a command prompt back), restart the virtual machine by clicking the power button to the right of word 'qiime' in the upper right corner of the virtual machine window and then selecting 'Restart...'.
-restart option can be under the 'qiime' box or under the power button icon to the right of the 'qiime' box).
+3. Open a terminal by clicking on the black window with a > in the side menu bar of the virtual machine, and paste this command into the terminal:
 
-After the virtual box restarts, if you are interested in knowing which software has been installed in this Virtual Machine move on to Document 2; if you are having problems with the network, i.e. the wget commands do not work, move to Document 3; otherwise move along to Document 4. All the Documents are in the Before_you_start folder on your desktop.
+  sudo /media/VBOXADDITIONS_4.0.2_69518/VBoxLinuxAdditions.run
+
+Again, the directory name VBOXADDITIONS_4.0.2_69518 may differ depending on your version of VirtualBox. You can run 'ls /media' to find the name of this directory. When prompted, enter the password: qiime
+
+4. When that command is finished running (i.e., you get a command prompt back), restart the virtual machine by clicking the power button to the right of the words 'Qiime User' in the upper right corner of the virtual machine window and then selecting 'Shut Down...'. Click 'Restart' when prompted.
+
+After the Virtual Box restarts, you're ready to start using QIIME! Please visit www.qiime.org for documentation, tutorials, and other resources. For getting help with QIIME, please visit help.qiime.org.
+
+If you are having problems with Internet access from within the Virtual Box, please follow the instructions in 2.Fixing_Internet_access_in_the_virtual_box.txt. For instructions on transferring files to the Virtual Box, please see 3.Transferring_files_to_your_virtual_box.txt. Both of these documents are in the Before_you_start folder on your desktop.
