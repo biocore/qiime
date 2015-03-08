@@ -1,3 +1,2 @@
-#SampleID   Description
-Sample1 Something good
-Sample3 Something boring
+S5
+S3
