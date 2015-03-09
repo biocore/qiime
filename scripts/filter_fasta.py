@@ -68,7 +68,7 @@ script_info['optional_options'] = [
     make_option('-s', '--seq_id_fp', type='existing_filepath',
                 help="A list of sequence identifiers (or tab-delimited lines "
                      "with a seq identifier in the first field) which should "
-                     "retained."),
+                     "be retained."),
     make_option('-b', '--biom_fp', type='existing_filepath',
                 help='A biom file where otu identifiers should be retained.'),
     make_option('-a', '--subject_fasta_fp', type='existing_filepath',
