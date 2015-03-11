@@ -1091,3 +1091,225 @@ def pick_subsampled_open_reference_otus(input_fp,
     if not suppress_index_page:
         index_fp = '%s/index.html' % output_dir
         generate_index_page(index_links, index_fp)
+
+
+def convergent_pick_subsampled_open_reference_otus(
+        input_fps,
+        refseqs_fp,
+        output_dir,
+        percent_subsample,
+        new_ref_set_id,
+        command_handler,
+        params,
+        qiime_config,
+        prefilter_refseqs_fp=None,
+        prefilter_percent_id=None,
+        min_otu_size=2,
+        run_assign_tax=True,
+        run_align_and_tree=True,
+        step1_otu_map_fp=None,
+        step1_failures_fasta_fp=None,
+        parallel=False,
+        suppress_step4=False,
+        logger=None,
+        suppress_md5=False,
+        denovo_otu_picking_method='uclust',
+        reference_otu_picking_method='uclust_ref',
+        status_update_callback=print_to_stdout,
+        minimum_failure_threshold=100000,
+        num_seqs=10000):
+    """Call the convergent open reference workflow"""
+    create_dir(output_dir)
+    commands = []
+
+    if logger is None:
+        logger = WorkflowLogger(generate_log_fp(output_dir), params=params,
+                                qiime_config=qiime_config)
+        close_logger_on_success = True
+    else:
+        close_logger_on_success = False
+
+    # if the user has not passed a different reference collection for the
+    # pre-filter, used the input refseqs_fp for all iterations. we want to
+    # pre-filter all data against the input data as lower percent identity
+    # searches with uclust can be slow, so we want the reference collection to
+    # stay at a reasonable size.
+    if prefilter_refseqs_fp is None:
+        prefilter_refseqs_fp = refseqs_fp
+
+    otu_table_fps = []
+    repset_fasta_fps = []
+
+    # Construct an array of sequence generators
+    seq_generators = [parse_fasta(open(fp, 'U')) for fp in input_fps]
+
+    done = False
+    iteration = 0
+
+    # Iterate until all seqs are clustered
+    while not done:
+        iteration_output_dir = '%s/%d/' % (output_dir, iteration)
+        iter_input_fp = join(output_dir, "iter_%s_seqs.fna" % iteration)
+
+        next_iter_seq_gen = []
+
+        if len(seq_generators) == 0:
+            done = True
+        else:
+            # Write the sequences for this iteration
+            with open(iter_input_fp, 'w') as f:
+
+                # Loop through all the input sequences
+                for seq_gen in seq_generators:
+
+                    # We need to write 'num_seqs' from each input
+                    remaining = num_seqs
+                    for label, seq in seq_gen:
+                        f.write(">%s\n%s\n" % (label, seq))
+                        remaining -= 1
+                        if remaining == 0:
+                            break
+
+                    # If remaining is 0, means that this sequence generator
+                    # still has more sequences, so add it to the sequence
+                    # generators of the next iteration
+                    if remaining == 0:
+                        next_iter_seq_gen.append(seq_gen)
+
+            # At this point we have already created the new input file with
+            # <= num_seqs * len(seq_generator) sequences for this iteration,
+            # so we can run pick_subsampled_open_reference_otus
+            pick_subsampled_open_reference_otus(
+                input_fp=input_fp,
+                refseqs_fp=refseqs_fp,
+                output_dir=iteration_output_dir,
+                percent_subsample=percent_subsample,
+                new_ref_set_id='%s.Iter.%d' % (new_ref_set_id, iteration),
+                command_handler=command_handler,
+                params=params,
+                qiime_config=qiime_config,
+                run_assign_tax=False,
+                run_align_and_tree=False,
+                prefilter_refseqs_fp=prefilter_refseqs_fp,
+                prefilter_percent_id=prefilter_percent_id,
+                min_otu_size=min_otu_size,
+                step1_otu_map_fp=step1_otu_map_fp,
+                step1_failures_fasta_fp=step1_failures_fasta_fp,
+                parallel=parallel,
+                suppress_step4=suppress_step4,
+                logger=logger,
+                suppress_md5=suppress_md5,
+                suppress_index_page=True,
+                denovo_otu_picking_method=denovo_otu_picking_method,
+                reference_otu_picking_method=reference_otu_picking_method,
+                status_update_callback=status_update_callback,
+                minimum_failure_threshold=minimum_failure_threshold)
+
+            # Perform post-iteration file shuffling whether the previous
+            # iteration's data previously existed or was just computed
+
+            # step1 otu map and failures can only be used for the first
+            # iteration as subsequent iterations need to use updated refseqs
+            # files
+            step1_otu_map_fp = step1_failures_fasta_fp = None
+            new_refseqs_fp = join(iteration_output_dir, 'new_refseqs.fna')
+            refseqs_fp = new_refseqs_fp
+
+            otu_table_fps.append(
+                join(iteration_output_dir,
+                     'otu_table_mc%d.biom' % min_otu_size))
+            repset_fasta_fps.append(
+                join(iteration_output_dir, 'rep_set.fna'))
+
+            iteration += 1
+            seq_generators = next_iter_seq_gen
+
+    # The open reference execution finished. Do some post processing to get
+    # the final results
+    otu_table_fp = join(output_dir, 'otu_table_mc%s.biom' % min_otu_size)
+    merge_cmd = ('merge_otu_tables -i %s -o %s'
+                 % (','.join(otu_table_fps), otu_table_fp))
+    commands.append([("Merge OTU tables", merge_cmd)])
+
+    # Build master rep set
+    final_repset_fp = join(output_dir, 'rep_set.fna')
+    final_repset_from_iteration_repsets_fps(repset_fasta_fps, final_repset_fp)
+
+    command_handler(commands, status_update_callback, logger=logger,
+                    close_logger_on_success=False)
+    commands = []
+
+    # Initialize output file names - these differ based on what combination of
+    # taxonomy assignment and alignment/tree building is happening
+    if run_assign_tax and run_align_and_tree:
+        tax_input_otu_table_fp = otu_table_fp
+        otu_table_w_tax_fp = join(
+            output_dir, 'otu_table_mc%d_w_tax.biom' % min_otu_size)
+        align_and_tree_input_otu_table = otu_table_w_tax_fp
+        pynast_failure_filtered_otu_table_fp = join(
+            output_dir,
+            'otu_table_mc%d_w_no_pynast_failures.biom' % min_otu_size)
+    elif run_assign_tax:
+        tax_input_otu_table_fp = otu_table_fp
+        otu_table_w_tax_fp = join(output_dir,
+                                  'otu_table_mc%d_w_tax.biom' % min_otu_size)
+    elif run_align_and_tree:
+        align_and_tree_input_otu_table = otu_table_fp
+        pynast_failure_filtered_otu_table_fp = join(
+            output_dir,
+            'otu_table_mc%d_no_pynast_failures.biom' % min_otu_size)
+
+    if run_assign_tax:
+        # remove files from partially completed runs
+        remove_files([otu_table_w_tax_fp], error_on_missing=False)
+
+        taxonomy_fp = assign_tax(
+            repset_fasta_fp=final_repset_fp,
+            output_dir=output_dir,
+            command_handler=command_handler,
+            params=params,
+            qiime_config=qiime_config,
+            parallel=parallel,
+            logger=logger,
+            status_update_callback=status_update_callback)
+
+        # Add taxa to OTU table
+        add_metadata_cmd = (
+            'biom add-metadata -i %s --observation-metadata-fp %s -o %s '
+            '--sc-separated taxonomy --observation-header OTUID,taxonomy'
+            % (tax_input_otu_table_fp, taxonomy_fp, otu_table_w_tax_fp))
+        commands.append([("Add taxa to OTU table", add_metadata_cmd)])
+
+        command_handler(commands, status_update_callback, logger=logger,
+                        close_logger_on_success=False)
+        commands = []
+
+    if run_align_and_tree:
+        # remove files form partially completed runs
+        remove_files([pynast_failure_filtered_otu_table_fp],
+                     error_on_missing=False)
+
+        pynast_failures_fp = align_and_tree(
+            repset_fasta_fp=final_repset_fp,
+            output_dir=output_dir,
+            command_handler=command_handler,
+            params=params,
+            qiime_config=qiime_config,
+            parallel=parallel,
+            logger=logger,
+            status_update_callback=status_update_callback)
+
+        # Build OTU table without pynast failures
+        table = load_table(align_and_tree_input_otu_table)
+        filtered_otu_table = filter_otus_from_otu_table(
+            table,
+            get_seq_ids_from_fasta_file(open(pynast_failures_fp, 'U')),
+            0, inf, 0, inf, negate_ids_to_keep=True)
+        write_biom_table(filtered_otu_table,
+                         pynast_failure_filtered_otu_table_fp)
+
+        command_handler(commands, status_update_callback, logger=logger,
+                        close_logger_on_success=False)
+        commands = []
+
+    logger.close()
