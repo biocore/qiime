@@ -1180,7 +1180,7 @@ def convergent_pick_subsampled_open_reference_otus(
             # <= num_seqs * len(seq_generator) sequences for this iteration,
             # so we can run pick_subsampled_open_reference_otus
             pick_subsampled_open_reference_otus(
-                input_fp=input_fp,
+                input_fp=iter_input_fp,
                 refseqs_fp=refseqs_fp,
                 output_dir=iteration_output_dir,
                 percent_subsample=percent_subsample,
@@ -1227,7 +1227,7 @@ def convergent_pick_subsampled_open_reference_otus(
     # The open reference execution finished. Do some post processing to get
     # the final results
     otu_table_fp = join(output_dir, 'otu_table_mc%s.biom' % min_otu_size)
-    merge_cmd = ('merge_otu_tables -i %s -o %s'
+    merge_cmd = ('merge_otu_tables.py -i %s -o %s'
                  % (','.join(otu_table_fps), otu_table_fp))
     commands.append([("Merge OTU tables", merge_cmd)])
 
@@ -1248,7 +1248,7 @@ def convergent_pick_subsampled_open_reference_otus(
         align_and_tree_input_otu_table = otu_table_w_tax_fp
         pynast_failure_filtered_otu_table_fp = join(
             output_dir,
-            'otu_table_mc%d_w_no_pynast_failures.biom' % min_otu_size)
+            'otu_table_mc%d_w_tax_no_pynast_failures.biom' % min_otu_size)
     elif run_assign_tax:
         tax_input_otu_table_fp = otu_table_fp
         otu_table_w_tax_fp = join(output_dir,
