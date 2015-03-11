@@ -10,6 +10,7 @@ __version__ = "1.9.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
+from itertools import izip
 from os.path import split, splitext, getsize, exists, abspath, join
 from shutil import copyfile, rmtree
 from numpy import inf
@@ -1143,86 +1144,78 @@ def convergent_pick_subsampled_open_reference_otus(
     # Construct an array of sequence generators
     seq_generators = [parse_fasta(open(fp, 'U')) for fp in input_fps]
 
-    done = False
     iteration = 0
 
     # Iterate until all seqs are clustered
-    while not done:
+    while len(seq_generators) > 0:
         iteration_output_dir = '%s/%d/' % (output_dir, iteration)
         iter_input_fp = join(output_dir, "iter_%s_seqs.fna" % iteration)
 
         next_iter_seq_gen = []
 
-        if len(seq_generators) == 0:
-            done = True
-        else:
-            # Write the sequences for this iteration
-            with open(iter_input_fp, 'w') as f:
+        # Write the sequences for this iteration
+        with open(iter_input_fp, 'w') as f:
 
-                # Loop through all the input sequences
-                for seq_gen in seq_generators:
+            # Loop through all the input sequences
+            for seq_gen in seq_generators:
 
-                    # We need to write 'num_seqs' from each input
-                    remaining = num_seqs
-                    for label, seq in seq_gen:
-                        f.write(">%s\n%s\n" % (label, seq))
-                        remaining -= 1
-                        if remaining == 0:
-                            break
+                # We need to write 'num_seqs' from each input
+                count_added = 0
+                for i, e in izip(range(num_seqs), seq_gen):
+                    f.write(">%s\n%s\n" % e)
+                    count_added += 1
 
-                    # If remaining is 0, means that this sequence generator
-                    # still has more sequences, so add it to the sequence
-                    # generators of the next iteration
-                    if remaining == 0:
-                        next_iter_seq_gen.append(seq_gen)
+                # More sequences still in this generator
+                if count_added == num_seqs:
+                    next_iter_seq_gen.append(seq_gen)
 
-            # At this point we have already created the new input file with
-            # <= num_seqs * len(seq_generator) sequences for this iteration,
-            # so we can run pick_subsampled_open_reference_otus
-            pick_subsampled_open_reference_otus(
-                input_fp=iter_input_fp,
-                refseqs_fp=refseqs_fp,
-                output_dir=iteration_output_dir,
-                percent_subsample=percent_subsample,
-                new_ref_set_id='%s.Iter.%d' % (new_ref_set_id, iteration),
-                command_handler=command_handler,
-                params=params,
-                qiime_config=qiime_config,
-                run_assign_tax=False,
-                run_align_and_tree=False,
-                prefilter_refseqs_fp=prefilter_refseqs_fp,
-                prefilter_percent_id=prefilter_percent_id,
-                min_otu_size=min_otu_size,
-                step1_otu_map_fp=step1_otu_map_fp,
-                step1_failures_fasta_fp=step1_failures_fasta_fp,
-                parallel=parallel,
-                suppress_step4=suppress_step4,
-                logger=logger,
-                suppress_md5=suppress_md5,
-                suppress_index_page=True,
-                denovo_otu_picking_method=denovo_otu_picking_method,
-                reference_otu_picking_method=reference_otu_picking_method,
-                status_update_callback=status_update_callback,
-                minimum_failure_threshold=minimum_failure_threshold)
+        # At this point we have already created the new input file with
+        # <= num_seqs * len(seq_generator) sequences for this iteration,
+        # so we can run pick_subsampled_open_reference_otus
+        pick_subsampled_open_reference_otus(
+            input_fp=iter_input_fp,
+            refseqs_fp=refseqs_fp,
+            output_dir=iteration_output_dir,
+            percent_subsample=percent_subsample,
+            new_ref_set_id='%s.Iter.%d' % (new_ref_set_id, iteration),
+            command_handler=command_handler,
+            params=params,
+            qiime_config=qiime_config,
+            run_assign_tax=False,
+            run_align_and_tree=False,
+            prefilter_refseqs_fp=prefilter_refseqs_fp,
+            prefilter_percent_id=prefilter_percent_id,
+            min_otu_size=min_otu_size,
+            step1_otu_map_fp=step1_otu_map_fp,
+            step1_failures_fasta_fp=step1_failures_fasta_fp,
+            parallel=parallel,
+            suppress_step4=suppress_step4,
+            logger=logger,
+            suppress_md5=suppress_md5,
+            suppress_index_page=True,
+            denovo_otu_picking_method=denovo_otu_picking_method,
+            reference_otu_picking_method=reference_otu_picking_method,
+            status_update_callback=status_update_callback,
+            minimum_failure_threshold=minimum_failure_threshold)
 
-            # Perform post-iteration file shuffling whether the previous
-            # iteration's data previously existed or was just computed
+        # Perform post-iteration file shuffling whether the previous
+        # iteration's data previously existed or was just computed
 
-            # step1 otu map and failures can only be used for the first
-            # iteration as subsequent iterations need to use updated refseqs
-            # files
-            step1_otu_map_fp = step1_failures_fasta_fp = None
-            new_refseqs_fp = join(iteration_output_dir, 'new_refseqs.fna')
-            refseqs_fp = new_refseqs_fp
+        # step1 otu map and failures can only be used for the first
+        # iteration as subsequent iterations need to use updated refseqs
+        # files
+        step1_otu_map_fp = step1_failures_fasta_fp = None
+        new_refseqs_fp = join(iteration_output_dir, 'new_refseqs.fna')
+        refseqs_fp = new_refseqs_fp
 
-            otu_table_fps.append(
-                join(iteration_output_dir,
-                     'otu_table_mc%d.biom' % min_otu_size))
-            repset_fasta_fps.append(
-                join(iteration_output_dir, 'rep_set.fna'))
+        otu_table_fps.append(
+            join(iteration_output_dir,
+                 'otu_table_mc%d.biom' % min_otu_size))
+        repset_fasta_fps.append(
+            join(iteration_output_dir, 'rep_set.fna'))
 
-            iteration += 1
-            seq_generators = next_iter_seq_gen
+        iteration += 1
+        seq_generators = next_iter_seq_gen
 
     # The open reference execution finished. Do some post processing to get
     # the final results
