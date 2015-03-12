@@ -11,6 +11,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 from itertools import izip
+from os import remove
 from os.path import split, splitext, getsize, exists, abspath, join
 from shutil import copyfile, rmtree
 from numpy import inf
@@ -1213,6 +1214,9 @@ def convergent_pick_subsampled_open_reference_otus(
                  'otu_table_mc%d.biom' % min_otu_size))
         repset_fasta_fps.append(
             join(iteration_output_dir, 'rep_set.fna'))
+
+        # Remove the iteration input file to avoid FS usage
+        remove(iter_input_fp)
 
         iteration += 1
         seq_generators = next_iter_seq_gen
