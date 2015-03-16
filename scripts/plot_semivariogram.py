@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Antonio Gonzalez Pena"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Antonio Gonzalez Pena, Kyle Patnode", "Yoshiki Vazquez-Baeza"]
+__credits__ = ["Antonio Gonzalez Pena", "Kyle Patnode", "Yoshiki Vazquez-Baeza"]
 __license__ = "GPL"
 __version__ = "1.9.0-dev"
 __maintainer__ = "Antonio Gonzalez Pena"
@@ -288,10 +288,20 @@ def main():
             plot(x_fit, y_fit, linewidth=2.0, color=color_only,
                  alpha=opts.line_alpha, label=single_category)
 
-    if opts.x_min is not None and opts.x_max is not None:
-        xlim([opts.x_min, opts.x_max])
-    if opts.y_min is not None and opts.y_max is not None:
-        ylim([opts.y_min, opts.y_max])
+    # set plot limits if requested
+    x_lb, x_ub = xlim()
+    y_lb, y_ub = ylim()
+    if opts.x_min is not None:
+        x_lb = opts.x_min
+    if opts.x_max is not None:
+        x_ub = opts.x_max
+    if opts.y_min is not None:
+        y_lb = opts.y_min
+    if opts.y_max is not None:
+        y_ub = opts.y_max
+    xlim(x_lb, x_ub)
+    ylim(y_lb, y_ub)
+
 
     x_label = opts.x_label
     y_label = opts.y_label
