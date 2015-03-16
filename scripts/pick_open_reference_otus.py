@@ -217,6 +217,14 @@ script_info['script_usage'].append(("", "Run the subsampled open-reference "
                                     "-s 0.1 -p $PWD/ucrss_params.txt"))
 
 script_info['script_usage'].append(("", "Run the subsampled open-reference "
+                                    "OTU picking workflow in convergent iterative mode on seqs1.fna and seqs2.fna using "
+                                    "refseqs.fna as the initial reference collection. ALWAYS SPECIFY ABSOLUTE "
+                                    "FILE PATHS (absolute path represented here as $PWD, but will generally "
+                                    "look something like /home/ubuntu/my_analysis/", "%prog "
+                                    "-i $PWD/seqs1.fna,$PWD/seqs2.fna -r $PWD/refseqs.fna -o $PWD/ucrss_iterc/ "
+                                    "-s 0.1 -p $PWD/ucrss_params.txt --convergent"))
+
+script_info['script_usage'].append(("", "Run the subsampled open-reference "
                                     "OTU picking workflow in iterative mode on seqs1.fna and seqs2.fna using "
                                     "refseqs.fna as the initial reference collection. This is useful if "
                                     "you're working with marker genes that do not result in useful alignment "
@@ -329,8 +337,9 @@ script_info['optional_options'] = [
                      'each step in the convergent mode. [default:%default]'),
     make_option('--convergent', action='store_true',
                 default=False,
-                help='Run the open reference workflow in convergent mode '
-                     '[default: %default]'),
+                help='Run the open reference workflow in convergent iterative mode. '
+                     'This flag is silently ignored when not running in iterative '
+                     'mode. [default: %default]'),
 
 ]
 script_info['version'] = __version__
