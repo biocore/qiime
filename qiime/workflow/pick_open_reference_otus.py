@@ -1158,7 +1158,7 @@ def convergent_pick_subsampled_open_reference_otus(
         num_seqs = int(total_num_seqs / len(seq_generators))
 
         iteration_output_dir = '%s/%d/' % (output_dir, iteration)
-        iter_input_fp = join(output_dir, "iter_%s_seqs.fna" % iteration)
+        iter_input_fp = join(output_dir, "iter_%d_seqs.fna" % iteration)
 
         next_iter_seq_gen = []
 
@@ -1178,34 +1178,43 @@ def convergent_pick_subsampled_open_reference_otus(
                 if count_added == num_seqs:
                     next_iter_seq_gen.append(seq_gen)
 
-        # At this point we have already created the new input file with
-        # <= num_seqs * len(seq_generator) sequences for this iteration,
-        # so we can run pick_subsampled_open_reference_otus
-        pick_subsampled_open_reference_otus(
-            input_fp=iter_input_fp,
-            refseqs_fp=refseqs_fp,
-            output_dir=iteration_output_dir,
-            percent_subsample=percent_subsample,
-            new_ref_set_id='%s.Iter.%d' % (new_ref_set_id, iteration),
-            command_handler=command_handler,
-            params=params,
-            qiime_config=qiime_config,
-            run_assign_tax=False,
-            run_align_and_tree=False,
-            prefilter_refseqs_fp=prefilter_refseqs_fp,
-            prefilter_percent_id=prefilter_percent_id,
-            min_otu_size=min_otu_size,
-            step1_otu_map_fp=step1_otu_map_fp,
-            step1_failures_fasta_fp=step1_failures_fasta_fp,
-            parallel=parallel,
-            suppress_step4=suppress_step4,
-            logger=logger,
-            suppress_md5=suppress_md5,
-            suppress_index_page=True,
-            denovo_otu_picking_method=denovo_otu_picking_method,
-            reference_otu_picking_method=reference_otu_picking_method,
-            status_update_callback=status_update_callback,
-            minimum_failure_threshold=minimum_failure_threshold)
+        if iteration_output_exists(iteration_output_dir, min_otu_size):
+            # If the output from an iteration already exists, skip that
+            # iteration (useful for continuing failed runs)
+            log_input_md5s(logger, [iter_input_fp, refseqs_fp])
+            logger.write(
+                'Iteration %s (input file: %s) output data already exists. '
+                'Skipping and moving to next.\n\n'
+                % (iteration, iter_input_fp))
+        else:
+            # At this point we have already created the new input file with
+            # <= num_seqs * len(seq_generator) sequences for this iteration,
+            # so we can run pick_subsampled_open_reference_otus
+            pick_subsampled_open_reference_otus(
+                input_fp=iter_input_fp,
+                refseqs_fp=refseqs_fp,
+                output_dir=iteration_output_dir,
+                percent_subsample=percent_subsample,
+                new_ref_set_id='%s.Iter.%d' % (new_ref_set_id, iteration),
+                command_handler=command_handler,
+                params=params,
+                qiime_config=qiime_config,
+                run_assign_tax=False,
+                run_align_and_tree=False,
+                prefilter_refseqs_fp=prefilter_refseqs_fp,
+                prefilter_percent_id=prefilter_percent_id,
+                min_otu_size=min_otu_size,
+                step1_otu_map_fp=step1_otu_map_fp,
+                step1_failures_fasta_fp=step1_failures_fasta_fp,
+                parallel=parallel,
+                suppress_step4=suppress_step4,
+                logger=logger,
+                suppress_md5=suppress_md5,
+                suppress_index_page=True,
+                denovo_otu_picking_method=denovo_otu_picking_method,
+                reference_otu_picking_method=reference_otu_picking_method,
+                status_update_callback=status_update_callback,
+                minimum_failure_threshold=minimum_failure_threshold)
 
         # Perform post-iteration file shuffling whether the previous
         # iteration's data previously existed or was just computed

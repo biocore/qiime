@@ -11,9 +11,9 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
 from glob import glob
-from os import chdir, getcwd
-from os.path import exists
-from shutil import rmtree
+from os import chdir, getcwd, makedirs
+from os.path import exists, join
+from shutil import rmtree, move
 from tempfile import mkdtemp
 from unittest import TestCase, main
 
@@ -2250,6 +2250,198 @@ A""".split('\n')
             '295053', axis='observation').sum()
         final_counts = load_table('%s/otu_table_mc2.biom' % self.wf_out).data(
             '295053', axis='observation').sum()
+        self.assertEqual(final_counts, i0_counts + i1_counts)
+
+        # confirm that number of tips in the tree is the same as the number of
+        # sequences in the alignment
+        with open(tree_fp) as f:
+            num_tree_tips = len(list(TreeNode.from_newick(f).tips()))
+        num_align_seqs = count_seqs(aln_fp)[0]
+        self.assertEqual(num_tree_tips, num_align_seqs)
+        self.assertEqual(num_tree_tips, 7)
+
+        # OTU table without singletons or pynast failures has same number of
+        # otus as there are aligned sequences
+        self.assertEqual(len(otu_table.ids(axis='observation')),
+                         num_align_seqs)
+
+        # Reference OTUs have correct taxonomy assignment
+        obs_idx = otu_table.index('295053', axis='observation')
+        self.assertEqual(
+            otu_table.metadata(axis='observation')[obs_idx]['taxonomy'],
+            ["k__Bacteria", "p__Proteobacteria", "c__Gammaproteobacteria",
+             "o__Enterobacteriales", "f__Enterobacteriaceae", "g__", "s__"])
+        # All observations have 'taxonomy' metadata, and are at least assigned
+        # to 'bacteria'
+        for o in otu_table.iter(axis='observation'):
+            self.assertTrue(
+                o[2]['taxonomy'][0] in ['k__Bacteria', 'Unassigned'])
+
+    def test_convergent_pick_subsampled_open_reference_otus_recover(self):
+        """pick_subsampled_open_reference_otus functions as expected with
+        prefilter in convergent mode and it is able to recover a failed run
+        """
+        # We first execute the workflow once
+        convergent_pick_subsampled_open_reference_otus(
+            input_fps=[self.test_data['seqs'][0],
+                       self.test_data['extra_seqs'][0]],
+            refseqs_fp=self.test_data['refseqs'][0],
+            output_dir=self.wf_out,
+            percent_subsample=0.5,
+            new_ref_set_id='wf.test.otu',
+            command_handler=call_commands_serially,
+            params=self.params,
+            qiime_config=self.qiime_config,
+            prefilter_refseqs_fp=None,
+            prefilter_percent_id=0.60,
+            step1_otu_map_fp=None,
+            step1_failures_fasta_fp=None,
+            parallel=False,
+            suppress_step4=False,
+            logger=None,
+            status_update_callback=no_status_updates,
+            minimum_failure_threshold=0,
+            num_seqs=150)
+
+        # We now create a different directory and move the results of the first
+        # iteration in there to create a "failed" run
+        new_output_dir = join(self.wf_out, "failed")
+        makedirs(new_output_dir)
+        move('%s/%d' % (self.wf_out, 0), '%s/%d/' % (new_output_dir, 0))
+
+        # Re-execute the workflow in the "failed" run
+        convergent_pick_subsampled_open_reference_otus(
+            input_fps=[self.test_data['seqs'][0],
+                       self.test_data['extra_seqs'][0]],
+            refseqs_fp=self.test_data['refseqs'][0],
+            output_dir=new_output_dir,
+            percent_subsample=0.5,
+            new_ref_set_id='wf.test.otu',
+            command_handler=call_commands_serially,
+            params=self.params,
+            qiime_config=self.qiime_config,
+            prefilter_refseqs_fp=None,
+            prefilter_percent_id=0.60,
+            step1_otu_map_fp=None,
+            step1_failures_fasta_fp=None,
+            parallel=False,
+            suppress_step4=False,
+            logger=None,
+            status_update_callback=no_status_updates,
+            minimum_failure_threshold=0,
+            num_seqs=150)
+
+        for i in (0, 1):
+            final_otu_map_fp = '%s/%d/final_otu_map.txt' % (new_output_dir, i)
+            final_failure_fp = '%s/%d/final_failures.txt' % (new_output_dir, i)
+            otu_table_fp = '%s/%d/otu_table_mc2.biom' % (new_output_dir, i)
+            repset_fp = '%s/%d/rep_set.fna' % (new_output_dir, i)
+            new_refseqs_fp = '%s/%d/new_refseqs.fna' % (new_output_dir, i)
+
+            self.assertTrue(
+                exists(final_otu_map_fp),
+                "Final OTU map doesn't exist")
+            self.assertFalse(
+                exists(final_failure_fp),
+                "Final failures file shouldn't exist, but it does")
+            self.assertTrue(exists(otu_table_fp), "OTU table doesn't exist.")
+            self.assertTrue(exists(repset_fp), "Rep set doesn't exist.")
+            self.assertTrue(
+                exists(new_refseqs_fp),
+                "New refseqs file doesn't exist.")
+
+        otu_table_fp = ('%s/otu_table_mc2_w_tax_no_pynast_failures.biom'
+                        % new_output_dir)
+        tree_fp = '%s/rep_set.tre' % new_output_dir
+        aln_fp = ('%s/pynast_aligned_seqs/rep_set_aligned.fasta'
+                  % new_output_dir)
+        pynast_failures_fp = ('%s/pynast_aligned_seqs/rep_set_failures.fasta'
+                              % new_output_dir)
+        iter0_otu_map_w_singletons = '%s/0/final_otu_map.txt' % new_output_dir
+        iter1_otu_map_w_singletons = '%s/1/final_otu_map.txt' % new_output_dir
+
+        self.assertTrue(exists(otu_table_fp), "Final OTU table doesn't exist")
+        self.assertTrue(exists(tree_fp), "Final tree doesn't exist")
+        self.assertTrue(exists(aln_fp), "Final alignment doesn't exist")
+        self.assertTrue(exists(pynast_failures_fp),
+                        "PyNAST failurs file doesn't exist")
+        self.assertTrue(exists(iter0_otu_map_w_singletons),
+                        "Iteration 0 OTU map with singletons doesn't exist")
+        self.assertTrue(exists(iter1_otu_map_w_singletons),
+                        "Iteration 1 OTU map with singletons doesn't exist")
+
+        # all OTUs in final OTU table occur more than once
+        otu_table = load_table(otu_table_fp)
+        for row in otu_table.iter_data(axis='observation'):
+            self.assertTrue(sum(row) >= 2,
+                            "Singleton OTU detected in OTU table.")
+        # number of OTUs in final OTU table equals the number of seequences in
+        # the alignment...
+        self.assertEqual(len(otu_table.ids(axis='observation')),
+                         count_seqs(aln_fp)[0])
+        # ... and that number is 7 (note: this is the same as without the
+        # prefilter because these reads are getting filtered from the final
+        # otu table because they fail to align with PyNAST)
+        self.assertEqual(len(otu_table.ids(axis='observation')), 7)
+
+        # non-16S sequences are prefiltered, so not in the OTU map
+        otu_map_seq_ids = []
+        for l in open(iter0_otu_map_w_singletons, 'U'):
+            otu_map_seq_ids.extend(l.strip().split()[1:])
+        self.assertFalse('t1_1' in otu_map_seq_ids)
+        self.assertFalse('p1_2' in otu_map_seq_ids)
+        self.assertFalse('not16S.1_130' in otu_map_seq_ids)
+        self.assertFalse('not16S.1_151' in otu_map_seq_ids)
+
+        otu_map_seq_ids = []
+        for l in open(iter1_otu_map_w_singletons, 'U'):
+            otu_map_seq_ids.extend(l.strip().split()[1:])
+        self.assertFalse('t1_1' in otu_map_seq_ids)
+        self.assertFalse('p1_2' in otu_map_seq_ids)
+        self.assertFalse('not16S.1_130' in otu_map_seq_ids)
+        self.assertFalse('not16S.1_151' in otu_map_seq_ids)
+
+        # confirm that the new reference sequences is the same length as the
+        # input reference sequences plus the number of new non-singleton otus
+        self.assertEqual(count_seqs(new_refseqs_fp)[0],
+                         count_seqs(self.test_data['refseqs'][0])[0] +
+                         len([o for o in otu_table.ids(axis='observation')
+                              if o.startswith('wf.test.otu')]) +
+                         count_seqs(pynast_failures_fp)[0])
+
+        # spot check a few of the otus to confirm that we're getting reference
+        # and new otus in the final otu map. This is done on the OTU map
+        # singletons get filtered before building the otu table
+        otu_map = fields_to_dict(open(iter0_otu_map_w_singletons))
+        self.assertTrue('295053' in otu_map,
+                        "Reference OTU (295053) is not in the final OTU map.")
+        self.assertTrue('42684' in otu_map,
+                        "Failure OTU (42684) is not in the final OTU map.")
+        # OTU from first iteration is in final map
+        self.assertTrue('wf.test.otu.Iter.0.ReferenceOTU0' in otu_map,
+                        "Failure OTU (wf.test.otu.Iter.0.ReferenceOTU0) is not"
+                        " in the final OTU map (first iteration).")
+        # OTU from second iteration is in final map
+        # Due to prefiltering, only the reference OTU map is kept
+        otu_map = fields_to_dict(open(iter1_otu_map_w_singletons))
+        self.assertTrue('295053' in otu_map,
+                        "Reference OTU (295053) is not in the final OTU map "
+                        "(second iteration).")
+
+        # In the test dataset, the only OTU present in the second OTU table is
+        # a reference OTU that is also present in the first iteration. To check
+        # that the results form the second iteration are also present in the
+        # final OTU table we are going to get the counts of that OTU
+        iter0_otu_table_fp = '%s/%d/otu_table_mc2.biom' % (new_output_dir, 0)
+        iter1_otu_table_fp = '%s/%d/otu_table_mc2.biom' % (new_output_dir, 1)
+
+        i0_counts = load_table(iter0_otu_table_fp).data(
+            '295053', axis='observation').sum()
+        i1_counts = load_table(iter1_otu_table_fp).data(
+            '295053', axis='observation').sum()
+        final_counts = load_table(
+            '%s/otu_table_mc2.biom'
+            % new_output_dir).data('295053', axis='observation').sum()
         self.assertEqual(final_counts, i0_counts + i1_counts)
 
         # confirm that number of tips in the tree is the same as the number of
