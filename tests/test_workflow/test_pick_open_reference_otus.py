@@ -1989,7 +1989,7 @@ A""".split('\n')
             logger=None,
             status_update_callback=no_status_updates,
             minimum_failure_threshold=0,
-            num_seqs=150)
+            num_seqs=90)
 
         for i in (0, 1):
             final_otu_map_fp = '%s/%d/final_otu_map.txt' % (self.wf_out, i)
@@ -2047,8 +2047,8 @@ A""".split('\n')
         otu_map_seq_ids = []
         for l in open(iter0_otu_map_w_singletons, 'U'):
             otu_map_seq_ids.extend(l.strip().split()[1:])
-        self.assertTrue('t1_1' in otu_map_seq_ids)
-        self.assertTrue('p1_2' in otu_map_seq_ids)
+        self.assertTrue('p2_31582' in otu_map_seq_ids)
+        self.assertTrue('f1_2278' in otu_map_seq_ids)
 
         otu_map_seq_ids = []
         for l in open(iter1_otu_map_w_singletons, 'U'):

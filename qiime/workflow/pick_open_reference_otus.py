@@ -1145,10 +1145,18 @@ def convergent_pick_subsampled_open_reference_otus(
     # Construct an array of sequence generators
     seq_generators = [parse_fasta(open(fp, 'U')) for fp in input_fps]
 
-    iteration = 0
+    # The input files can have different sizes, making the workflow to run
+    # slower as less sequences are included in each iteration as the smaller
+    # files are being processed. In order to keep the number of sequences per
+    # iteration, we will be adjusting the number of seqs per file dynamically
+    total_num_seqs = len(seq_generators) * num_seqs
 
+    iteration = 0
     # Iterate until all seqs are clustered
     while len(seq_generators) > 0:
+        # Adjust the number of sequences per file
+        num_seqs = int(total_num_seqs / len(seq_generators))
+
         iteration_output_dir = '%s/%d/' % (output_dir, iteration)
         iter_input_fp = join(output_dir, "iter_%s_seqs.fna" % iteration)
 
