@@ -106,28 +106,29 @@ class RDifferentialAbundanceTests(TestCase):
     def test_metagenomeSeq_fitZIG_format(self):
         zig = open(self.tmp_otu_fp_fitZIG_out).readlines()
         #test header format
-        exp = 'OTU\t+samples in group 0\t+samples in group 1\tcounts in group 0\tcounts in group 1\toddsRatio\tlower\tupper\tfisherP\tfisherAdjP\t(Intercept)\tMGS_categoryS2\tMGS_categoryS3\tscalingFactor\tpvalues\tadjPvalues\ttaxonomy\n'
+        exp = 'OTU\t+samples in group 0\t+samples in group 1\tcounts in group 0\tcounts in group 1\toddsRatio\tlower\tupper\tfisherP\tfisherAdjP\t(Intercept)\tMGS_categoryS2\tscalingFactor\tpvalues\tadjPvalues\ttaxonomy\n'
         self.assertEqual(zig[0], exp)
 
-        #test that fitZIG returns 25 features, it only returns the most important
+        #test that fitZIG returns 50 features
         num_features_returned = len(zig) - 1
-        self.assertEqual(num_features_returned, 25)
+        self.assertEqual(num_features_returned, 50)
 
         # ensure that each line has two elements, and that the first one
         # is the name of one of the OTUs, the second is a float
         for line in zig[1:]:
             words = line.strip().split('\t')
             line_length = len(words)
-            self.assertEqual(line_length, 17)
+            self.assertEqual(line_length, 16)
             self.assertEqual(words[0] in test_OTU_IDs, True)
             self.assertEqual(is_float(words[1]), True)
 
         #test first five significant OTUs
-        exp = ['1487\t3\t13\t3\t54\t0\t0\t0.0814754160126085\t1.03417385089143e-07\t2.58543462722858e-06\t0.732914457135622\t2.35091578797182\t-0.358285072078857\t-28.0403903601361\t2.59620832179624e-05\t0.000649052080449059\tAy; other\n',
-               '193\t2\t10\t4\t25\t0.0308298124876527\t0.00223706309126031\t0.229093863501484\t3.241507131278e-05\t0.000135062797136583\t0.980060835463344\t2.05824256013173\t-0.393172554812399\t-43.9276179169663\t6.26549562011497e-05\t0.000783186952514372\tAe; other\n',
-               '979\t0\t10\t0\t20\t0\t0\t0.0956087104342576\t6.04991702771485e-07\t5.04159752309571e-06\t0.0855575301280384\t1.4678274119766\t0.00901541795158288\t-7.07862887279825\t0.000648824231851767\t0.00540686859876472\tAp; other\n',
-               '1314\t4\t0\t7\t0\tInf\t0.34924924266116\tInf\t0.277924541082436\t0.347405676353045\t0.412980602558517\t-1.25800421238268\t-0.711956542078996\t22.3778549863952\t0.00315666606837298\t0.0197291629273311\tAv; other\n',
-               '1351\t0\t6\t0\t12\t0\t0\t0.320469784786932\t0.000621585760904647\t0.00194245550282702\t0.106944586260241\t1.21145998904839\t0.0112690273007214\t-8.84809361558598\t0.00579444501011918\t0.0289722250505959\tAw; other\n']
+        exp = ['3060\t0\t6\t0\t13\t0\t0\t0.701239961\t0.014906832\t0.028666985\t0.595803478\t2.121007454\t-49.29398614\t0.000370569\t0.01852846\tBv; other\n',
+               '1487\t3\t13\t3\t54\t0\t0\t0.216725451\t0.000107686\t0.000769186\t0.765975595\t2.423007145\t-30.82503122\t0.00100448 \t0.01969349\tAy; other\n',
+               '193\t2\t10\t4\t25\t0.069817772\t0.004780279\t0.572689974\t0.004832414\t0.01725862\t1.037682637\t2.177399317\t-48.72867884\t0.001181609\t0.01969349\tAe; other\n',
+               '2007\t2\t11\t3\t53\t0.044570535\t0.002609018\t0.407741658\t0.001202623\t0.005010929\t0.592157089\t2.304381478\t-18.72911757\t0.00273999\t0.034249876\tBe; other\n',
+               '1886\t0\t6\t0\t6\t0\t0\t0.701239961\t0.014906832\t0.028666985\t0.16999939\t0.979948784\t-14.06495245\t0.003618084\t0.036180837\tBd; other\n']
+
         for a, e in zip(zig[1:6],exp):
             af = map(str,a.split('\t'))
             ef = map(str,e.split('\t'))
@@ -143,19 +144,19 @@ class RDifferentialAbundanceTests(TestCase):
         ########test case where no taxonomy in input file
         zig_nt = open(self.tmp_otu_fp_fitZIG_out_no_taxa).readlines()
         #test header format
-        exp = 'Taxa\t+samples in group 0\t+samples in group 1\tcounts in group 0\tcounts in group 1\toddsRatio\tlower\tupper\tfisherP\tfisherAdjP\t(Intercept)\tMGS_categoryS2\tMGS_categoryS3\tscalingFactor\tpvalues\tadjPvalues\n'
+        exp = 'Taxa\t+samples in group 0\t+samples in group 1\tcounts in group 0\tcounts in group 1\toddsRatio\tlower\tupper\tfisherP\tfisherAdjP\t(Intercept)\tMGS_categoryS2\tscalingFactor\tpvalues\tadjPvalues\n'
         self.assertEqual(zig_nt[0], exp)
 
-        #test that fitZIG returns 25 features, it only returns the most important
+        #test that fitZIG returns 50 features
         num_features_returned = len(zig_nt) - 1
-        self.assertEqual(num_features_returned, 25)
+        self.assertEqual(num_features_returned, 50)
 
         #test first five significant OTUs
-        exp = ['1487\t3\t13\t3\t54\t0\t0\t0.0814754160126085\t1.03417385089143e-07\t2.58543462722858e-06\t0.732914457135622\t2.35091578797182\t-0.358285072078857\t-28.0403903601361\t2.59620832179624e-05\t0.000649052080449059\n',
-               '193\t2\t10\t4\t25\t0.0308298124876527\t0.00223706309126031\t0.229093863501484\t3.241507131278e-05\t0.000135062797136583\t0.980060835463344\t2.05824256013173\t-0.393172554812399\t-43.9276179169663\t6.26549562011497e-05\t0.000783186952514372\n',
-               '979\t0\t10\t0\t20\t0\t0\t0.0956087104342576\t6.04991702771485e-07\t5.04159752309571e-06\t0.0855575301280384\t1.4678274119766\t0.00901541795158288\t-7.07862887279825\t0.000648824231851767\t0.00540686859876472\n',
-               '1314\t4\t0\t7\t0\tInf\t0.34924924266116\tInf\t0.277924541082436\t0.347405676353045\t0.412980602558517\t-1.25800421238268\t-0.711956542078996\t22.3778549863952\t0.00315666606837298\t0.0197291629273311\n',
-               '1351\t0\t6\t0\t12\t0\t0\t0.320469784786932\t0.000621585760904647\t0.00194245550282702\t0.106944586260241\t1.21145998904839\t0.0112690273007214\t-8.84809361558598\t0.00579444501011918\t0.0289722250505959\n']
+        exp = ['3060\t0\t6\t0\t13\t0\t0\t0.701239961\t0.014906832\t0.028666985\t0.595803478\t2.121007454\t-49.29398614\t0.000370569\t0.01852846\n',
+               '1487\t3\t13\t3\t54\t0\t0\t0.216725451\t0.000107686\t0.000769186\t0.765975595\t2.423007145\t-30.82503122\t0.00100448 \t0.01969349\n',
+               '193\t2\t10\t4\t25\t0.069817772\t0.004780279\t0.572689974\t0.004832414\t0.01725862\t1.037682637\t2.177399317\t-48.72867884\t0.001181609\t0.01969349\n',
+               '2007\t2\t11\t3\t53\t0.044570535\t0.002609018\t0.407741658\t0.001202623\t0.005010929\t0.592157089\t2.304381478\t-18.72911757\t0.00273999\t0.034249876\n',
+               '1886\t0\t6\t0\t6\t0\t0\t0.701239961\t0.014906832\t0.028666985\t0.16999939\t0.979948784\t-14.06495245\t0.003618084\t0.036180837\n']
         for a, e in zip(zig_nt[1:6],exp):
             af = map(float,a.split('\t'))
             ef = map(float,e.split('\t'))
