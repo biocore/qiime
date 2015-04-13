@@ -37,7 +37,7 @@ if(is.null(opts$subcategory_2)) stop('Please supply a second subcategory.')
             MGS = biom2MRexperiment(foo)
             MGS = cumNorm(MGS,p = cumNormStat(MGS))
             samplesToKeep = which(pData(MGS)[,mapping_category]%in%c(subcategory_1,subcategory_2))
-            MGS = MGS[samplesToKeep,]
+            MGS = MGS[,samplesToKeep]
             MGS_category = pData(MGS)[,mapping_category]
             mod = model.matrix(~MGS_category)
             settings = zigControl(maxit=1, verbose=FALSE)

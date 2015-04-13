@@ -97,6 +97,8 @@ Usability enhancements
 Bug fixes
 ---------
 
+* Fixed bug in "differential_abundance.py" fitZIG algorithm, where significant OTU indices
+are assigned (see [#1960](https://github.com/biocore/qiime/pull/1960)).
 * Relaxed sanity tests for ``compare_categories.py --method adonis`` so that unique values are only checked for categories that are non-numeric (see [issue #1316](https://github.com/biocore/qiime/issues/1360)).
 * ``core_diversity_analyses.py`` now requires ``--tree_fp`` unless ``--nonphylogenetic_diversity`` is passed (see [#1671](https://github.com/biocore/qiime/issues/1671)).
 * Fixed bug in ``assign_taxonomy.py -m blast`` and ``parallel_assign_taxonomy_blast.py`` that prevented multiple instances of either to run at the same time (see [#1768](https://github.com/biocore/qiime/issues/1768)).
