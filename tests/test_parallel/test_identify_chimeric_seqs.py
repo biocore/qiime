@@ -12,7 +12,7 @@ __email__ = "jai.rideout@gmail.com"
 from shutil import rmtree
 from glob import glob
 from os import getenv
-from os.path import basename, exists, join
+from os.path import basename, exists, join, isfile, getsize
 from tempfile import NamedTemporaryFile, mkdtemp
 from unittest import TestCase, main
 
@@ -117,10 +117,9 @@ class ParallelChimericSequenceIdentifierTests(TestCase):
                 poll_directly=True,
                 suppress_submit_jobs=False)
 
-        # Basic sanity check: we should get two lines (i.e. two chimeras).
-        results = [line for line in open(join(self.test_out,
-                   'ChimeraSlayer_out.txt'), 'U')]
-        self.assertEqual(len(results), 1)
+        output_filepath = join(self.test_out, 'ChimeraSlayer_out.txt')
+        self.assertTrue(isfile(output_filepath) and
+                        (getsize(output_filepath) > 0))
 
 # This test data is taken from qiime_test_data.
 in_seqs = """
