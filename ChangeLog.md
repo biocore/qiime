@@ -5,6 +5,7 @@ Bug fixes
 ---------
 
 * Updated minimum required version of the [qiime-default-reference](http://github.com/biocore/qiime-default-reference) package to 0.1.2. This release includes an important bug fix described in more detail in [this QIIME blog post](https://qiime.wordpress.com/2015/04/15/qiime-1-9-0-bug-affecting-pynast-alignment-of-16s-amplicons-generated-with-non-515f806r-primers/) and in [biocore/qiime-default-reference#14](https://github.com/biocore/qiime-default-reference/issues/14).
+* Updated minimum required version of [biom-format](http://github.com/biocore/biom-format) package to 2.1.4. This is a bug fix release. Details are available in the [biom-format ChangeLog](https://github.com/biocore/biom-format/blob/master/ChangeLog.md).
 
 QIIME 1.9.0
 ===========
