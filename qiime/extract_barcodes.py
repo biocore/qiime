@@ -70,9 +70,6 @@ def extract_barcodes(fastq1,
     disable_header_match: if True, suppresses checks between fastq headers.
     """
 
-    # Turn off extra file creation for single read.
-    if input_type == "barcode_single_end" and attempt_read_orientation:
-        attempt_read_orientation = False
     if attempt_read_orientation:
         header, mapping_data, run_description, errors, warnings =\
             process_id_map(map_fp)
@@ -81,8 +78,11 @@ def extract_barcodes(fastq1,
                                            "barcodes_not_oriented.fastq.incomplete"), "w")
         fastq1_out_not_oriented = open(join(output_dir,
                                             "reads1_not_oriented.fastq.incomplete"), "w")
-        fastq2_out_not_oriented = open(join(output_dir,
-                                            "reads2_not_oriented.fastq.incomplete"), "w")
+        if input_type in ["barcode_paired_end"]:
+            fastq2_out_not_oriented = open(join(output_dir,
+                "reads2_not_oriented.fastq.incomplete"), "w")
+        else:
+            fastq2_out_not_oriented = None
     else:
         forward_primers = None
         reverse_primers = None
@@ -126,7 +126,10 @@ def extract_barcodes(fastq1,
 
         if input_type == "barcode_single_end":
             process_barcode_single_end_data(read1_data, output_bc_fastq,
-                                            output_fastq1, bc1_len, rev_comp_bc1)
+                                            output_fastq1, bc1_len, rev_comp_bc1,
+                                            attempt_read_orientation, forward_primers,
+                                            reverse_primers, output_bc_not_oriented,
+                                            fastq1_out_not_oriented)
 
         elif input_type == "barcode_paired_end":
             process_barcode_paired_end_data(read1_data, read2_data,
@@ -195,7 +198,12 @@ def process_barcode_single_end_data(read1_data,
                                     output_bc_fastq,
                                     output_fastq1,
                                     bc1_len=6,
-                                    rev_comp_bc1=False):
+                                    rev_comp_bc1=False,
+                                    attempt_read_orientation=False,
+                                    forward_primers=None,
+                                    reverse_primers=None,
+                                    output_bc_not_oriented=None,
+                                    fastq_out_not_oriented=None):
     """ Processes, writes single-end barcode data, parsed sequence
 
     read1_data: list of header, read, quality scores
@@ -203,25 +211,76 @@ def process_barcode_single_end_data(read1_data,
     output_fastq1: open output fastq reads filepath
     bc1_len: length of barcode to remove from beginning of data
     rev_comp_bc1: reverse complement barcode before writing.
+    attempt_read_orientation: If True, will attempt to orient the reads
+        according to the forward primers in the mapping file. If primer is
+        detected in current orientation, leave the read as is, but if reverse
+        complement is detected (or ReversePrimer is detected in the current
+        orientation) the read will either be written to the forward (read 1) or
+        reverse (read 2) reads for the case of paired files, or the read will be
+        reverse complemented in the case of stitched reads.
+    forward_primers: list of regular expression generators, forward primers
+    reverse_primers: list of regular expression generators, reverse primers
+    output_bc_not_oriented: Barcode output from reads that are not oriented
+    fastq_out_not_oriented: Open filepath to write reads where primers
+        can't be found when attempt_read_orientation is True.
     """
 
     header_index = 0
     sequence_index = 1
     quality_index = 2
+    
+    if not attempt_read_orientation:
+        bc_read = read1_data[sequence_index][:bc1_len]
+        bc_qual = read1_data[quality_index][:bc1_len]
+        if rev_comp_bc1:
+            bc_read = str(DNA(bc_read).rc())
+            bc_qual = bc_qual[::-1]
 
-    bc_read = read1_data[sequence_index][:bc1_len]
-    bc_qual = read1_data[quality_index][:bc1_len]
-    if rev_comp_bc1:
-        bc_read = str(DNA(bc_read).rc())
-        bc_qual = bc_qual[::-1]
-
-    bc_lines = format_fastq_record(read1_data[header_index], bc_read, bc_qual)
-    output_bc_fastq.write(bc_lines)
-    seq_lines = format_fastq_record(read1_data[header_index],
+        bc_lines = format_fastq_record(read1_data[header_index], bc_read, bc_qual)
+        output_bc_fastq.write(bc_lines)
+        seq_lines = format_fastq_record(read1_data[header_index],
                                     read1_data[sequence_index][bc1_len:],
                                     read1_data[quality_index][bc1_len:])
-    output_fastq1.write(seq_lines)
+        output_fastq1.write(seq_lines)
+    else:
+        read_seq = read1_data[sequence_index]
+        read_qual = read1_data[quality_index]
+        
+        found_primer_match = False
+        # Break from orientation search as soon as a match is found
+        if attempt_read_orientation:
+            for curr_primer in forward_primers:
+                if curr_primer.search(read1_data[sequence_index]):
+                    found_primer_match = True
+                    break
+            if not found_primer_match:
+                for curr_primer in reverse_primers:
+                    if curr_primer.search(read1_data[sequence_index]):
+                        read_seq = str(DNA(read_seq).rc())
+                        read_qual = read_qual[::-1]
+                        found_primer_match = True
+                        break
 
+        if not found_primer_match and attempt_read_orientation:
+            output_bc = output_bc_not_oriented
+            output_read = fastq_out_not_oriented
+        else:
+            output_bc = output_bc_fastq
+            output_read = output_fastq1
+
+        bc_read1 = read_seq[0:bc1_len]
+        bc_qual1 = read_qual[0:bc1_len]
+
+        if rev_comp_bc1:
+            bc_read1 = str(DNA(bc_read1).rc())
+            bc_qual1 = bc_qual1[::-1]
+
+        bc_lines = format_fastq_record(read1_data[header_index], bc_read1, bc_qual1)
+        output_bc.write(bc_lines)
+        seq_lines = format_fastq_record(read1_data[header_index],
+                                    read_seq[bc1_len:], read_qual[bc1_len:])
+        output_read.write(seq_lines)
+    
     return
 
 
