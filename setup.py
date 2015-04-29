@@ -440,5 +440,6 @@ setup(name='qiime',
                         'burrito-fillings >= 0.1.0, < 0.2.0',
                         'pandas >= 0.13.1', 'burrito  < 1.0.0',
                         'qiime-default-reference >= 0.1.2, < 0.2.0'],
-      extras_require={'all': ['ipython[all]', 'sphinx >= 0.3']}
+      extras_require={'all': ['ipython[notebook] >= 3.1.0, < 4.0.0',
+                              'sphinx >= 0.3']}
       )
