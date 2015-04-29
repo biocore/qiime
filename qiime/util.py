@@ -547,6 +547,9 @@ def write_biom_table(biom_table, biom_table_fp, compress=True,
         Defaults to ``True`` if H5PY is installed and to ``False`` if H5PY is
         not installed. If ``True`` the output biom table will be written as an
         HDF5 binary file, otherwise it will be a JSON string.
+    table_type : str, optional
+        The Table.type value to set for the table before it is written. Note
+        that this is a controlled vocabulary documented on biom-format.org.
     """
     generated_by = get_generated_by_for_biom_tables()
     biom_table.type = table_type
