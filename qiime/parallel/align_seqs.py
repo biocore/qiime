@@ -24,15 +24,6 @@ class ParallelAlignSeqsPyNast(ParallelWrapper):
 
     def _precommand_initiation(
             self, input_fp, output_dir, working_dir, params):
-        if not params['blast_db']:
-            # Build the blast database from the reference_seqs_fp -- all procs
-            # will then access one db rather than create one per proc
-            blast_db, db_files_to_remove = \
-                build_blast_db_from_fasta_path(params['template_fp'],
-                                               output_dir=get_qiime_temp_dir())
-            self.files_to_remove += db_files_to_remove
-            params['blast_db'] = blast_db
-
         if params['min_length'] < 0:
             params['min_length'] = compute_min_alignment_length(
                 open(input_fp, 'U'))
@@ -61,15 +52,6 @@ class ParallelAlignSeqsPyNast(ParallelWrapper):
         commands = []
         result_filepaths = []
 
-        # If there is a value for blast_db, pass it. If not, it
-        # will be created on-the-fly. Note that on-the-fly blast dbs
-        # are created with a string of random chars in the name, so this is safe.
-        # They shouldn't overwrite one another, and will be cleaned up.
-        if params['blast_db']:
-            blast_str = '-d %s' % params['blast_db']
-        else:
-            blast_str = ''
-
         # Iterate over the input files
         for i, fasta_fp in enumerate(fasta_fps):
             # Each run ends with moving the output file from the tmp dir to
@@ -79,10 +61,9 @@ class ParallelAlignSeqsPyNast(ParallelWrapper):
             result_filepaths += current_result_filepaths
 
             command = \
-                '%s %s %s -p %1.2f -e %d -m pynast -t %s -a %s -o %s -i %s %s %s' %\
+                '%s %s -p %1.2f -e %d -m pynast -t %s -a %s -o %s -i %s %s %s' %\
                 (command_prefix,
                  self._script_name,
-                 blast_str,
                  params['min_percent_id'],
                  params['min_length'],
                  params['template_fp'],
