@@ -6,6 +6,7 @@ Bug fixes
 
 * Updated minimum required version of the [qiime-default-reference](http://github.com/biocore/qiime-default-reference) package to 0.1.2. This release includes an important bug fix described in more detail in [this QIIME blog post](https://qiime.wordpress.com/2015/04/15/qiime-1-9-0-bug-affecting-pynast-alignment-of-16s-amplicons-generated-with-non-515f806r-primers/) and in [biocore/qiime-default-reference#14](https://github.com/biocore/qiime-default-reference/issues/14).
 * Updated minimum required version of [biom-format](http://github.com/biocore/biom-format) package to 2.1.4. This is a bug fix release. Details are available in the [biom-format ChangeLog](https://github.com/biocore/biom-format/blob/master/ChangeLog.md).
+* Fixed bug in ``differential_abundance.py`` fitZIG algorithm [#1960](https://github.com/biocore/qiime/pull/1960).
 
 QIIME 1.9.0
 ===========
@@ -103,8 +104,6 @@ Usability enhancements
 Bug fixes
 ---------
 
-* Fixed bug in "differential_abundance.py" fitZIG algorithm, where significant OTU indices
-are assigned (see [#1960](https://github.com/biocore/qiime/pull/1960)).
 * Relaxed sanity tests for ``compare_categories.py --method adonis`` so that unique values are only checked for categories that are non-numeric (see [issue #1316](https://github.com/biocore/qiime/issues/1360)).
 * ``core_diversity_analyses.py`` now requires ``--tree_fp`` unless ``--nonphylogenetic_diversity`` is passed (see [#1671](https://github.com/biocore/qiime/issues/1671)).
 * Fixed bug in ``assign_taxonomy.py -m blast`` and ``parallel_assign_taxonomy_blast.py`` that prevented multiple instances of either to run at the same time (see [#1768](https://github.com/biocore/qiime/issues/1768)).
