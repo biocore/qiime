@@ -104,6 +104,8 @@ class RDifferentialAbundanceTests(TestCase):
 
 
     def test_metagenomeSeq_fitZIG_format(self):
+        # Note - This is the output for metagenomeSeq version 1.10.0, R version 3.1.3 "Smooth Sidewalk"
+        # If the 'exp' numbers begin failing, it is likely due to an R/Bioconductor update
         zig = open(self.tmp_otu_fp_fitZIG_out).readlines()
         #test header format
         exp = 'OTU\t+samples in group 0\t+samples in group 1\tcounts in group 0\tcounts in group 1\toddsRatio\tlower\tupper\tfisherP\tfisherAdjP\t(Intercept)\tMGS_categoryS2\tscalingFactor\tpvalues\tadjPvalues\ttaxonomy\n'
@@ -123,11 +125,11 @@ class RDifferentialAbundanceTests(TestCase):
             self.assertEqual(is_float(words[1]), True)
 
         #test first five significant OTUs
-        exp = ['3060\t0\t6\t0\t13\t0\t0\t0.701239961\t0.014906832\t0.028666985\t0.595803478\t2.121007454\t-49.29398614\t0.000370569\t0.01852846\tBv; other\n',
-               '1487\t3\t13\t3\t54\t0\t0\t0.216725451\t0.000107686\t0.000769186\t0.765975595\t2.423007145\t-30.82503122\t0.00100448 \t0.01969349\tAy; other\n',
-               '193\t2\t10\t4\t25\t0.069817772\t0.004780279\t0.572689974\t0.004832414\t0.01725862\t1.037682637\t2.177399317\t-48.72867884\t0.001181609\t0.01969349\tAe; other\n',
-               '2007\t2\t11\t3\t53\t0.044570535\t0.002609018\t0.407741658\t0.001202623\t0.005010929\t0.592157089\t2.304381478\t-18.72911757\t0.00273999\t0.034249876\tBe; other\n',
-               '1886\t0\t6\t0\t6\t0\t0\t0.701239961\t0.014906832\t0.028666985\t0.16999939\t0.979948784\t-14.06495245\t0.003618084\t0.036180837\tBd; other\n']
+        exp = ['3060\t0\t6\t0\t13\t0\t0\t0.701239961\t0.014906832\t0.028666985\t0.595803478\t2.121007454\t-49.29398614\t0.00095899\t0.02971238\tBv; other\n',
+               '1487\t3\t13\t3\t54\t0\t0\t0.216725451\t0.000107686\t0.000769186\t0.765975595\t2.423007145\t-30.82503122\t0.00132187\t0.02971238\tAy; other\n',
+               '193\t2\t10\t4\t25\t0.069817772\t0.004780279\t0.572689974\t0.004832414\t0.01725862\t1.037682637\t2.177399317\t-48.72867884\t0.00178274\t0.02971238\tAe; other\n',
+               '2007\t2\t11\t3\t53\t0.044570535\t0.002609018\t0.407741658\t0.001202623\t0.005010929\t0.592157089\t2.304381478\t-18.72911757\t0.00362263\t0.04528287\tBe; other\n',
+               '1886\t0\t6\t0\t6\t0\t0\t0.701239961\t0.014906832\t0.028666985\t0.16999939\t0.979948784\t-14.06495245\t0.00595523\t0.05151768\tBd; other\n']
 
         for a, e in zip(zig[1:6],exp):
             af = map(str,a.split('\t'))
@@ -152,11 +154,11 @@ class RDifferentialAbundanceTests(TestCase):
         self.assertEqual(num_features_returned, 50)
 
         #test first five significant OTUs
-        exp = ['3060\t0\t6\t0\t13\t0\t0\t0.701239961\t0.014906832\t0.028666985\t0.595803478\t2.121007454\t-49.29398614\t0.000370569\t0.01852846\n',
-               '1487\t3\t13\t3\t54\t0\t0\t0.216725451\t0.000107686\t0.000769186\t0.765975595\t2.423007145\t-30.82503122\t0.00100448 \t0.01969349\n',
-               '193\t2\t10\t4\t25\t0.069817772\t0.004780279\t0.572689974\t0.004832414\t0.01725862\t1.037682637\t2.177399317\t-48.72867884\t0.001181609\t0.01969349\n',
-               '2007\t2\t11\t3\t53\t0.044570535\t0.002609018\t0.407741658\t0.001202623\t0.005010929\t0.592157089\t2.304381478\t-18.72911757\t0.00273999\t0.034249876\n',
-               '1886\t0\t6\t0\t6\t0\t0\t0.701239961\t0.014906832\t0.028666985\t0.16999939\t0.979948784\t-14.06495245\t0.003618084\t0.036180837\n']
+        exp = ['3060\t0\t6\t0\t13\t0\t0\t0.701239961\t0.014906832\t0.028666985\t0.595803478\t2.121007454\t-49.29398614\t0.00095899\t0.02971238\n',
+               '1487\t3\t13\t3\t54\t0\t0\t0.216725451\t0.000107686\t0.000769186\t0.765975595\t2.423007145\t-30.82503122\t0.00132187\t0.02971238\n',
+               '193\t2\t10\t4\t25\t0.069817772\t0.004780279\t0.572689974\t0.004832414\t0.01725862\t1.037682637\t2.177399317\t-48.72867884\t0.00178274\t0.02971238\n',
+               '2007\t2\t11\t3\t53\t0.044570535\t0.002609018\t0.407741658\t0.001202623\t0.005010929\t0.592157089\t2.304381478\t-18.72911757\t0.00362263\t0.04528287\n',
+               '1886\t0\t6\t0\t6\t0\t0\t0.701239961\t0.014906832\t0.028666985\t0.16999939\t0.979948784\t-14.06495245\t0.00595523\t0.05151768\n']
         for a, e in zip(zig_nt[1:6],exp):
             af = map(float,a.split('\t'))
             ef = map(float,e.split('\t'))
@@ -165,6 +167,8 @@ class RDifferentialAbundanceTests(TestCase):
                 self.assertAlmostEqual(ae, ee)
 
     def test_DESeq2_nbinom_format(self):
+        # Note - This is the output for R version 3.1.3 "Smooth Sidewalk"
+        # If the 'exp' numbers begin failing, it is likely due to an R/Bioconductor update 
         nbinom = open(self.tmp_otu_fp_DESeq2_out).readlines()
         #test header format
         exp = 'OTU\tbaseMean\tlog2FoldChange\tlfcSE\tstat\tpvalue\tpadj\ttaxonomy\n'
