@@ -7,6 +7,7 @@ Bug fixes
 * Updated minimum required version of the [qiime-default-reference](http://github.com/biocore/qiime-default-reference) package to 0.1.2. This release includes an important bug fix described in more detail in [this QIIME blog post](https://qiime.wordpress.com/2015/04/15/qiime-1-9-0-bug-affecting-pynast-alignment-of-16s-amplicons-generated-with-non-515f806r-primers/) and in [biocore/qiime-default-reference#14](https://github.com/biocore/qiime-default-reference/issues/14).
 * Fixed bug in "differential_abundance.py" fitZIG algorithm, where significant OTU indices
 are assigned (see [#1960](https://github.com/biocore/qiime/pull/1960)).
+* The ``--similarity`` option in ``pick_otus.py`` now only accepts sequence similarity thresholds between 0.0 and 1.0 (inclusive). Previous behavior would allow values outside this range, which would cause uninformative error messages to be raised by the external tools that ``pick_otus.py`` wraps ([#1979](https://github.com/biocore/qiime/issues/1979)).
 
 Usability enhancements
 ----------------------
