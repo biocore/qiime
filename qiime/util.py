@@ -530,7 +530,7 @@ def get_generated_by_for_biom_tables():
 
 
 def write_biom_table(biom_table, biom_table_fp, compress=True,
-                     write_hdf5=HAVE_H5PY, type='OTU table'):
+                     write_hdf5=HAVE_H5PY, table_type='OTU table'):
     """Writes a BIOM table to the specified filepath
 
     Parameters
@@ -549,7 +549,7 @@ def write_biom_table(biom_table, biom_table_fp, compress=True,
         HDF5 binary file, otherwise it will be a JSON string.
     """
     generated_by = get_generated_by_for_biom_tables()
-    biom_table.type = type
+    biom_table.type = table_type
 
     if write_hdf5:
         with biom_open(biom_table_fp, 'w') as biom_file:
