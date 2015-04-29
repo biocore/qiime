@@ -8,6 +8,11 @@ Bug fixes
 * Updated minimum required version of [biom-format](http://github.com/biocore/biom-format) package to 2.1.4. This is a bug fix release. Details are available in the [biom-format ChangeLog](https://github.com/biocore/biom-format/blob/master/ChangeLog.md).
 * Fixed bug in ``differential_abundance.py`` fitZIG algorithm [#1960](https://github.com/biocore/qiime/pull/1960).
 
+Usability enhancements
+----------------------
+
+* Removed parallel PyNAST ``formatdb`` step [#1989](https://github.com/biocore/qiime/issues/1989). The formatted database wasn't actually being used, this step was just left over from when BLAST was required by PyNAST. 
+
 QIIME 1.9.0
 ===========
 
