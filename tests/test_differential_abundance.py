@@ -7,7 +7,7 @@ from unittest import TestCase, main
 from biom import load_table
 
 from skbio.util import remove_files
-from qiime.util import load_qiime_config
+from qiime.util import get_qiime_temp_dir
 from qiime.differential_abundance import DA_fitZIG, DA_DESeq2, check_mapping_file_category
 
 
@@ -24,8 +24,7 @@ class RDifferentialAbundanceTests(TestCase):
     """Tests of the RDifferentialAbundanceTest class"""
 
     def setUp(self):
-        self.qiime_config = load_qiime_config()
-        self.tmp_dir = self.qiime_config['temp_dir'] or '/tmp/'
+        self.tmp_dir = get_qiime_temp_dir()
 
         # Temporary input file with taxonomy
         fd, self.tmp_otu_fp = mkstemp(dir=self.tmp_dir,
