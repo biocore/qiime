@@ -37,7 +37,7 @@ from qiime.filter import (filter_fasta, filter_samples_from_otu_table,
                           sample_ids_from_metadata_description,
                           get_seq_ids_from_seq_id_file)
 from qiime.test import FakeFile
-from qiime.util import load_qiime_config
+from qiime.util import get_qiime_temp_dir
 
 
 class fake_output_f():
@@ -55,8 +55,7 @@ class fake_output_f():
 class FilterTests(TestCase):
 
     def setUp(self):
-        self.qiime_config = load_qiime_config()
-        self.tmp_dir = self.qiime_config['temp_dir']
+        self.tmp_dir = get_qiime_temp_dir()
         self.files_to_remove = []
 
         self.filter_fasta_expected1 = filter_fasta_expected1

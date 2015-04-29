@@ -8,11 +8,11 @@ Bug fixes
 * Fixed bug in "differential_abundance.py" fitZIG algorithm, where significant OTU indices
 are assigned (see [#1960](https://github.com/biocore/qiime/pull/1960)).
 
-
 Usability enhancements
 ----------------------
 
-* Removed parallel PyNAST ``formatdb`` step [#1989](https://github.com/biocore/qiime/issues/1989). The formatted database wasn't actually being used, this step was just left over from when BLAST was required by PyNAST. 
+* Removed parallel PyNAST ``formatdb`` step [#1989](https://github.com/biocore/qiime/issues/1989). The formatted database wasn't actually being used, this step was just left over from when BLAST was required by PyNAST.
+* If ``temp_dir`` is not defined in the QIIME config file, QIIME will use the system's default temporary directory instead of assuming that ``/tmp`` is present and writeable. Note that the location of this default temporary directory [can be changed with environment variables](https://docs.python.org/2/library/tempfile.html#tempfile.tempdir) ([#1995](https://github.com/biocore/qiime/issues/1995)).
 
 QIIME 1.9.0
 ===========

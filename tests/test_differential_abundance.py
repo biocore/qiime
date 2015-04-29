@@ -7,7 +7,7 @@ from unittest import TestCase, main
 from biom import load_table
 
 from skbio.util import remove_files
-from qiime.util import load_qiime_config
+from qiime.util import get_qiime_temp_dir
 from qiime.differential_abundance import DA_fitZIG, DA_DESeq2, check_mapping_file_category
 
 
@@ -35,8 +35,7 @@ class RDifferentialAbundanceTests(TestCase):
     """Tests of the RDifferentialAbundanceTest class"""
 
     def setUp(self):
-        self.qiime_config = load_qiime_config()
-        self.tmp_dir = self.qiime_config['temp_dir'] or '/tmp/'
+        self.tmp_dir = get_qiime_temp_dir()
 
         # Temporary input file with taxonomy
         fd, self.tmp_otu_fp = mkstemp(dir=self.tmp_dir,
@@ -168,7 +167,7 @@ class RDifferentialAbundanceTests(TestCase):
 
     def test_DESeq2_nbinom_format(self):
         # Note - This is the output for R version 3.1.3 "Smooth Sidewalk"
-        # If the 'exp' numbers begin failing, it is likely due to an R/Bioconductor update 
+        # If the 'exp' numbers begin failing, it is likely due to an R/Bioconductor update
         nbinom = open(self.tmp_otu_fp_DESeq2_out).readlines()
         #test header format
         exp = 'OTU\tbaseMean\tlog2FoldChange\tlfcSE\tstat\tpvalue\tpadj\ttaxonomy\n'

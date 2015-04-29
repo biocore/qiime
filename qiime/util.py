@@ -18,6 +18,8 @@ __email__ = "gregcaporaso@gmail.com"
 A lot of this might migrate into cogent at some point.
 """
 
+import tempfile
+import os
 from os import getenv, listdir, close
 from os.path import abspath, basename, exists, dirname, join, splitext, isfile
 from collections import defaultdict
@@ -28,7 +30,6 @@ from datetime import datetime
 from subprocess import Popen
 from random import random
 from itertools import repeat, izip
-from tempfile import mkstemp
 from functools import partial
 
 from numpy import (array, zeros, shape, vstack, ndarray, asarray,
@@ -306,13 +307,7 @@ def get_qiime_temp_dir():
     """ Returns the temp directory that should be used by QIIME scripts
 
     """
-    qiime_config = load_qiime_config()
-    qiime_config_value = qiime_config['temp_dir']
-    if qiime_config_value is not None:
-        result = qiime_config_value
-    else:
-        result = '/tmp/'
-    return result
+    return load_qiime_config()['temp_dir']
 
 
 def load_qiime_config():
@@ -352,6 +347,15 @@ def load_qiime_config():
 
     qiime_config['assign_taxonomy_id_to_taxonomy_fp'] = \
         qiime_config['assign_taxonomy_id_to_taxonomy_fp'] or get_reference_taxonomy()
+
+    # Fall back to the system's temporary directory if one hasn't been defined.
+    temp_dir = qiime_config['temp_dir'] or tempfile.gettempdir()
+
+    # QIIME was historically written to assume that directory names end with a
+    # path separator. Add one for safety.
+    if not temp_dir.endswith(os.sep):
+        temp_dir += os.sep
+    qiime_config['temp_dir'] = temp_dir
 
     return qiime_config
 
@@ -1033,10 +1037,10 @@ def degap_fasta_aln(seqs):
         yield DNASequence(seq, id=label).degap()
 
 
-def write_degapped_fasta_to_file(seqs, tmp_dir="/tmp/"):
+def write_degapped_fasta_to_file(seqs, tmp_dir=get_qiime_temp_dir()):
     """ write degapped seqs to temp fasta file."""
-    fd, tmp_filename = mkstemp(dir=tmp_dir, prefix="degapped_",
-                               suffix=".fasta")
+    fd, tmp_filename = tempfile.mkstemp(dir=tmp_dir, prefix="degapped_",
+                                        suffix=".fasta")
     close(fd)
 
     with open(tmp_filename, 'w') as fh:
