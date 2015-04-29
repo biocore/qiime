@@ -78,7 +78,7 @@ def extract_barcodes(fastq1,
                                            "barcodes_not_oriented.fastq.incomplete"), "w")
         fastq1_out_not_oriented = open(join(output_dir,
                                             "reads1_not_oriented.fastq.incomplete"), "w")
-        if input_type in ["barcode_paired_end"]:
+        if input_type == "barcode_paired_end":
             fastq2_out_not_oriented = open(join(output_dir,
                 "reads2_not_oriented.fastq.incomplete"), "w")
         else:
@@ -95,7 +95,7 @@ def extract_barcodes(fastq1,
         output_fastq1 = open(join(output_dir, "reads.fastq.incomplete"), "w")
         output_fastq2 = None
         final_fastq1_name = join(output_dir, "reads.fastq")
-    elif input_type in ["barcode_paired_end"]:
+    elif input_type == "barcode_paired_end":
         output_fastq1 = open(join(output_dir, "reads1.fastq.incomplete"), "w")
         output_fastq2 = open(join(output_dir, "reads2.fastq.incomplete"), "w")
         final_fastq1_name = join(output_dir, "reads1.fastq")
