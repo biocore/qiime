@@ -15,6 +15,7 @@ Usability enhancements
 ----------------------
 
 * Removed parallel PyNAST ``formatdb`` step [#1989](https://github.com/biocore/qiime/issues/1989). The formatted database wasn't actually being used, this step was just left over from when BLAST was required by PyNAST.
+* ``count_seqs.py`` can now count records in fastq files that have the ``.fq`` extenstion. This previously was only possible for fastq files that have the ``.fastq`` extension.
 
 QIIME 1.9.0
 ===========
