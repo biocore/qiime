@@ -5,9 +5,10 @@ Bug fixes
 ---------
 
 * Updated minimum required version of the [qiime-default-reference](http://github.com/biocore/qiime-default-reference) package to 0.1.2. This release includes an important bug fix described in more detail in [this QIIME blog post](https://qiime.wordpress.com/2015/04/15/qiime-1-9-0-bug-affecting-pynast-alignment-of-16s-amplicons-generated-with-non-515f806r-primers/) and in [biocore/qiime-default-reference#14](https://github.com/biocore/qiime-default-reference/issues/14).
+* Fixed bug in ``differential_abundance.py`` fitZIG algorithm ([#1960](https://github.com/biocore/qiime/pull/1960)). This was a serious bug that was encountered when users would call ``differential_abundance.py -a metagenomeSeq_fitZIG``. Any results generated with that command in QIIME 1.9.0 should be re-run.
 * Updated minimum required version of [biom-format](http://github.com/biocore/biom-format) package to 2.1.4. This is a bug fix release. Details are available in the [biom-format ChangeLog](https://github.com/biocore/biom-format/blob/master/ChangeLog.md).
-* Fixed bug in ``differential_abundance.py`` fitZIG algorithm [#1960](https://github.com/biocore/qiime/pull/1960).
 * Updated minimum required version of [Emperor](http://github.com/biocore/emperor) package to 0.9.51.
+* Forced BIOM table type to "OTU table" for all tables written with QIIME. This fixes [#1928](https://github.com/biocore/qiime/issues/1928).
 
 Usability enhancements
 ----------------------
