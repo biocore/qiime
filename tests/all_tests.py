@@ -9,7 +9,7 @@ import re
 from sys import exit
 from qiime.util import (parse_command_line_parameters, get_options_lookup,
                         load_qiime_config, qiime_system_call, get_qiime_scripts_dir,
-                        make_option, get_qiime_project_dir)
+                        make_option, get_qiime_project_dir, get_qiime_temp_dir)
 from qiime.test import run_script_usage_tests
 
 __author__ = "Rob Knight"
@@ -108,7 +108,7 @@ def main():
             run_script_usage_tests(
                 test_data_dir=qiime_test_data_dir,
                 scripts_dir=get_qiime_scripts_dir(),
-                working_dir=qiime_config['temp_dir'],
+                working_dir=get_qiime_temp_dir(),
                 verbose=True,
                 tests=script_usage_tests,
                 force_overwrite=True,

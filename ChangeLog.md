@@ -9,11 +9,13 @@ Bug fixes
 * Updated minimum required version of [biom-format](http://github.com/biocore/biom-format) package to 2.1.4. This is a bug fix release. Details are available in the [biom-format ChangeLog](https://github.com/biocore/biom-format/blob/master/ChangeLog.md).
 * Updated minimum required version of [Emperor](http://github.com/biocore/emperor) package to 0.9.51.
 * Forced BIOM table type to "OTU table" for all tables written with QIIME. This fixes [#1928](https://github.com/biocore/qiime/issues/1928).
+* The ``--similarity`` option in ``pick_otus.py`` now only accepts sequence similarity thresholds between 0.0 and 1.0 (inclusive). Previous behavior would allow values outside this range, which would cause uninformative error messages to be raised by the external tools that ``pick_otus.py`` wraps ([#1979](https://github.com/biocore/qiime/issues/1979)).
 
 Usability enhancements
 ----------------------
 
 * Removed parallel PyNAST ``formatdb`` step [#1989](https://github.com/biocore/qiime/issues/1989). The formatted database wasn't actually being used, this step was just left over from when BLAST was required by PyNAST.
+* If ``temp_dir`` is not defined in the QIIME config file, QIIME will use the system's default temporary directory instead of assuming that ``/tmp`` is present and writeable. Note that the location of this default temporary directory [can be changed with environment variables](https://docs.python.org/2/library/tempfile.html#tempfile.tempdir) ([#1995](https://github.com/biocore/qiime/issues/1995)).
 
 QIIME 1.9.0
 ===========

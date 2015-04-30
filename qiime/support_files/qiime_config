@@ -11,7 +11,7 @@ pynast_template_alignment_fp
 pynast_template_alignment_blastdb
 jobs_to_start	1
 seconds_to_sleep	1
-temp_dir	/tmp/
+temp_dir
 denoiser_min_per_core	50
 topiaryexplorer_project_dir
 torque_queue	friendlyq
