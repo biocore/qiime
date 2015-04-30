@@ -115,6 +115,16 @@ class TopLevelTests(TestCase):
         write_biom_table(example_table, output_fp)
         self.assertTrue(exists(output_fp))
 
+    def test_write_biom_table_table_type(self):
+        """BIOM table has correct table type"""
+        fd, output_fp = mkstemp(prefix="test_biom_")
+        close(fd)
+
+        self.files_to_remove.append(output_fp)
+        write_biom_table(example_table, output_fp, write_hdf5=False)
+        t = parse_biom_table(open(output_fp))
+        self.assertEqual(t.type, "OTU table")
+
     def test_write_biom_table_no_h5py(self):
         fd, output_fp = mkstemp(prefix="test_biom_")
         close(fd)
