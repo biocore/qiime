@@ -49,7 +49,7 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
                         iseq_to_qseq_fields,
                         make_compatible_distance_matrices, stderr, _chk_asarray, expand_otu_ids,
                         subsample_fasta, summarize_otu_sizes_from_otu_map,
-                        load_qiime_config, MetadataMap,
+                        MetadataMap,
                         RExecutor, duplicates_indices, trim_fasta, get_qiime_temp_dir,
                         qiime_blastx_seqs, add_filename_suffix, is_valid_git_refname,
                         is_valid_git_sha1, sync_biom_and_mf,
@@ -1632,7 +1632,7 @@ class SubSampleFastaTests(TestCase):
         self.expected_lines_50_perc = expected_lines_50_perc
         self.expected_lines_20_perc = expected_lines_20_perc
 
-        self.temp_dir = load_qiime_config()['temp_dir']
+        self.temp_dir = get_qiime_temp_dir()
 
         self.fasta_lines = fasta_lines
         fd, self.fasta_filepath = mkstemp(

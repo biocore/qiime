@@ -30,7 +30,7 @@ from skbio.util import create_dir, remove_files
 from bfillings.formatdb import build_blast_db_from_fasta_path
 from bfillings.sortmerna_v2 import build_database_sortmerna
 
-from qiime.util import load_qiime_config
+from qiime.util import get_qiime_temp_dir
 from qiime.parse import fields_to_dict
 from qiime.pick_otus import (CdHitOtuPicker, OtuPicker,
                              MothurOtuPicker, PrefixSuffixOtuPicker, TrieOtuPicker, BlastOtuPicker,
@@ -1174,7 +1174,7 @@ class Usearch610DeNovoOtuPickerTests(TestCase):
     def setUp(self):
         # create the temporary input files
 
-        self.output_dir = load_qiime_config()['temp_dir']
+        self.output_dir = get_qiime_temp_dir()
 
         self.dna_seqs_usearch_97perc_id = dna_seqs_usearch_97perc_id
         self.dna_seqs_usearch_97perc_id_rc = dna_seqs_usearch_97perc_id_rc
@@ -1469,7 +1469,7 @@ class Usearch61ReferenceOtuPickerTests(TestCase):
     def setUp(self):
         # create the temporary input files
 
-        self.output_dir = load_qiime_config()['temp_dir']
+        self.output_dir = get_qiime_temp_dir()
 
         self.dna_seqs_usearch_97perc_id = dna_seqs_usearch_97perc_id
         self.dna_seqs_usearch_97perc_id_rc = dna_seqs_usearch_97perc_id_rc
@@ -1953,7 +1953,7 @@ class UsearchOtuPickerTests(TestCase):
         self.dna_seqs_4 = dna_seqs_usearch
         self.ref_database = usearch_ref_seqs1
 
-        self.temp_dir = load_qiime_config()['temp_dir']
+        self.temp_dir = get_qiime_temp_dir()
         fd, self.tmp_seq_filepath1 = mkstemp(
             prefix='UsearchOtuPickerTest_',
             suffix='.fasta')
@@ -2400,7 +2400,7 @@ class UsearchReferenceOtuPickerTests(TestCase):
         self.ref_database = usearch_ref_seqs1
         self.otu_ref_database = uclustref_query_seqs1
 
-        self.temp_dir = load_qiime_config()['temp_dir']
+        self.temp_dir = get_qiime_temp_dir()
         fd, self.tmp_seq_filepath1 = mkstemp(
             prefix='UsearchOtuPickerTest_',
             suffix='.fasta')
@@ -2895,7 +2895,7 @@ class UclustOtuPickerTests(TestCase):
 
     def setUp(self):
         # create the temporary input files
-        self.temp_dir = load_qiime_config()['temp_dir']
+        self.temp_dir = get_qiime_temp_dir()
         fd, self.tmp_seq_filepath1 = mkstemp(
             dir=self.temp_dir,
             prefix='UclustOtuPickerTest_',
@@ -3393,7 +3393,7 @@ class UclustReferenceOtuPickerTests(TestCase):
 
     def setUp(self):
         """ """
-        self.temp_dir = load_qiime_config()['temp_dir']
+        self.temp_dir = get_qiime_temp_dir()
         fd, self.tmp_seq_filepath1 = mkstemp(
             dir=self.temp_dir,
             prefix='UclustReferenceOtuPickerTest_',

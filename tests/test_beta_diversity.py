@@ -24,7 +24,7 @@ from skbio.util import remove_files
 from cogent.core.tree import PhyloNode
 from cogent.maths.distance_transform import dist_chisq
 
-from qiime.util import load_qiime_config, write_biom_table
+from qiime.util import get_qiime_temp_dir, write_biom_table
 from qiime.parse import parse_newick, parse_distmat, parse_matrix
 from qiime.beta_diversity import BetaDiversityCalc, single_file_beta,\
     list_known_nonphylogenetic_metrics, list_known_phylogenetic_metrics,\
@@ -37,8 +37,7 @@ class BetaDiversityCalcTests(TestCase):
     """Tests of the BetaDiversityCalc class"""
 
     def setUp(self):
-        self.qiime_config = load_qiime_config()
-        self.tmp_dir = self.qiime_config['temp_dir'] or '/tmp/'
+        self.tmp_dir = get_qiime_temp_dir()
 
         self.l19_data = np.array([
             [7, 1, 0, 0, 0, 0, 0, 0, 0],
@@ -288,10 +287,6 @@ class BetaDiversityCalcTests(TestCase):
  not parallelized, calculating the whole matrix...')
         warnings.filterwarnings('ignore', 'unifrac had no information for\
  sample M*')
-
-        # self.files_to_remove.extend([input_path,tree_path])
-        # self.folders_to_remove.append(output_dir)
-        # os.mkdir(output_dir+'/ft/')
 
         for metric in metrics:
             # do it
