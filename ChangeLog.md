@@ -5,6 +5,7 @@ Bug fixes
 ---------
 
 * Updated minimum required version of the [qiime-default-reference](http://github.com/biocore/qiime-default-reference) package to 0.1.2. This release includes an important bug fix described in more detail in [this QIIME blog post](https://qiime.wordpress.com/2015/04/15/qiime-1-9-0-bug-affecting-pynast-alignment-of-16s-amplicons-generated-with-non-515f806r-primers/) and in [biocore/qiime-default-reference#14](https://github.com/biocore/qiime-default-reference/issues/14).
+* ``count_seqs.py`` no longer fails on empty files. [#1991](https://github.com/biocore/qiime/issues/1991)
 * Fixed bug in ``differential_abundance.py`` fitZIG algorithm ([#1960](https://github.com/biocore/qiime/pull/1960)). This was a serious bug that was encountered when users would call ``differential_abundance.py -a metagenomeSeq_fitZIG``. Any results generated with that command in QIIME 1.9.0 should be re-run.
 * Updated minimum required version of [biom-format](http://github.com/biocore/biom-format) package to 2.1.4. This is a bug fix release. Details are available in the [biom-format ChangeLog](https://github.com/biocore/biom-format/blob/master/ChangeLog.md).
 * Updated minimum required version of [Emperor](http://github.com/biocore/emperor) package to 0.9.51.
@@ -15,6 +16,7 @@ Usability enhancements
 ----------------------
 
 * Removed parallel PyNAST ``formatdb`` step [#1989](https://github.com/biocore/qiime/issues/1989). The formatted database wasn't actually being used, this step was just left over from when BLAST was required by PyNAST.
+* ``count_seqs.py`` can now count records in fastq files that have the ``.fq`` extenstion. This previously was only possible for fastq files that have the ``.fastq`` extension.
 * If ``temp_dir`` is not defined in the QIIME config file, QIIME will use the system's default temporary directory instead of assuming that ``/tmp`` is present and writeable. Note that the location of this default temporary directory [can be changed with environment variables](https://docs.python.org/2/library/tempfile.html#tempfile.tempdir) ([#1995](https://github.com/biocore/qiime/issues/1995)).
 
 QIIME 1.9.0

@@ -1353,7 +1353,7 @@ def count_seqs_in_filepaths(fasta_filepaths, seq_counter=count_seqs):
     for fasta_filepath in fasta_filepaths:
         # if the file is actually fastq, use the fastq parser.
         # otherwise use the fasta parser
-        if fasta_filepath.endswith('.fastq'):
+        if fasta_filepath.endswith('.fastq') or fasta_filepath.endswith('.fq'):
             parser = partial(parse_fastq, enforce_qual_range=False)
         elif fasta_filepath.endswith('.tre') or \
                 fasta_filepath.endswith('.ph') or \
