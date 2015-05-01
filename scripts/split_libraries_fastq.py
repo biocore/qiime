@@ -57,14 +57,14 @@ script_info['script_usage'].append(("Demultiplex and quality filter "
 script_info['script_usage'].append(("Quality filter (at Phred >= Q20) one "
                                     "non-multiplexed lane of Illumina fastq data and write results "
                                     "to ./slout_single_sample_q20.", "", "%prog -i lane1_read1.fastq.gz "
-                                    "--sample_id my.sample.1 -o slout_single_sample_q20/ "
+                                    "--sample_ids my.sample.1 -o slout_single_sample_q20/ "
                                     "-q 19 --barcode_type 'not-barcoded'"))
 
 script_info['script_usage'].append(("Quality filter (at Phred >= Q20) two "
                                     "non-multiplexed lanes of Illumina fastq data with different samples in "
                                     "each and write results to ./slout_not_multiplexed_q20.", "",
                                     "%prog -i lane1_read1.fastq.gz,lane2_read1.fastq.gz "
-                                    "--sample_id my.sample.1,my.sample.2 -o slout_not_multiplexed_q20/ "
+                                    "--sample_ids my.sample.1,my.sample.2 -o slout_not_multiplexed_q20/ "
                                     "-q 19 --barcode_type 'not-barcoded'"))
 
 script_info['output_description'] = ""
@@ -86,7 +86,7 @@ script_info['optional_options'] = [
     make_option("--store_qual_scores", default=False, action='store_true',
                 help='store qual strings in .qual files [default: %default]'),
     make_option("--sample_ids", default=None, help='comma-separated list of '
-                'samples id to be applied to all sequences, must be one per input '
+                'samples ids to be applied to all sequences, must be one per input '
                 'file path (used when data is not multiplexed) [default: %default]'),
     make_option("--store_demultiplexed_fastq", default=False,
                 action='store_true', help='write demultiplexed fastq files '
@@ -127,8 +127,9 @@ script_info['optional_options'] = [
                 'CASAVA.'),
     make_option('--barcode_type', type='string', help='The type of barcode '
                 'used. This can be an integer, e.g. for length 6 barcodes, or '
-                'golay_12 for golay error-correcting barcodes. Error correction will '
-                'only be applied for golay_12 barcodes. [default: %default]',
+                '"golay_12" for golay error-correcting barcodes. Error correction will '
+                'only be applied for "golay_12" barcodes. If data is not barcoded, pass '
+                '"not-barcoded". [default: %default]',
                 default='golay_12'),
     make_option('--max_barcode_errors', default=1.5, type='float',
                 help='maximum number of errors in barcode [default: %default]'),
