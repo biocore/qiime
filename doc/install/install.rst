@@ -4,7 +4,7 @@
 QIIME installation guide
 =========================
 
-QIIME consists of native python code and additionally wraps many external applications. This gives the user flexibility to easily build their own analysis pipelines, making use of popular microbial community analysis tools. QIIME handles the processing of input and output of these applications, so the user can spend time analyzing their data rather than parsing, writing, and converting file formats.
+QIIME consists of native Python 2 code and additionally wraps many external applications. This gives the user flexibility to easily build their own analysis pipelines, making use of popular microbial community analysis tools. QIIME handles the processing of input and output of these applications, so the user can spend time analyzing their data rather than parsing, writing, and converting file formats.
 
 As a consequence of this *pipeline* architecture, **QIIME has a lot of dependencies and can (but doesn't have to) be very challenging to install**.
 
@@ -66,7 +66,12 @@ First, you need to have a build environment on your machine:
 
 .. warning:: Depending on your system, additional packages may need to be installed that may be required by QIIME or its dependencies. Also, packages names will vary across operating systems and even within operating system distributions (e.g., different versions of Ubuntu). Since there are a wide range of systems that QIIME can be installed on, the QIIME development team cannot provide a comprehensive list of commands that are guaranteed to successfully install QIIME on your system.
 
-   If you encounter problems installing QIIME, please visit http://help.qiime.org.
+QIIME is written in Python 2, and requires Python version greater than Python 2.7.0 and less than Python 3.0.0. You can verify which version of Python you're running with::
+
+    python --version
+
+
+If you encounter problems installing QIIME, please visit http://help.qiime.org.
 
 Then, just pip install qiime!
 -----------------------------
