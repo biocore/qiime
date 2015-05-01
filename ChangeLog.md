@@ -11,6 +11,7 @@ Bug fixes
 * Updated minimum required version of [Emperor](http://github.com/biocore/emperor) package to 0.9.51.
 * Forced BIOM table type to "OTU table" for all tables written with QIIME. This fixes [#1928](https://github.com/biocore/qiime/issues/1928).
 * The ``--similarity`` option in ``pick_otus.py`` now only accepts sequence similarity thresholds between 0.0 and 1.0 (inclusive). Previous behavior would allow values outside this range, which would cause uninformative error messages to be raised by the external tools that ``pick_otus.py`` wraps ([#1979](https://github.com/biocore/qiime/issues/1979)).
+* ``split_libraries_fastq.py`` now explicitly disallows ``-p 0``. This could lead to empty sequences being written to the resulting output file. ([#1984](https://github.com/biocore/qiime/issues/1984))
 
 Usability enhancements
 ----------------------
