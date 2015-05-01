@@ -558,6 +558,11 @@ def write_biom_table(biom_table, biom_table_fp, compress=True,
     table_type : str, optional
         The Table.type value to set for the table before it is written. Note
         that this is a controlled vocabulary documented on biom-format.org.
+
+    Raises
+    ------
+    EmptyBIOMTableError
+        If ``biom_table.is_empty() == True``. 
     """
     if biom_table.is_empty():
         raise EmptyBIOMTableError(
