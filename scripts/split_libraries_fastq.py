@@ -205,10 +205,10 @@ def main():
         option_parser.error('--last_bad_quality_char is no longer supported. '
                             'Use -q instead (see option help text by passing -h)')
 
-    if not (0 <= min_per_read_length_fraction <= 1):
-        option_parser.error('--min_per_read_length_fraction must be between '
-                            '0 and 1 (inclusive). You passed %1.5f' %
-                            min_per_read_length_fraction)
+    if not (0 < min_per_read_length_fraction <= 1):
+        option_parser.error('--min_per_read_length_fraction must be greater '
+                            'than 0 and less than or equal to 1. You passed '
+                            '%1.5f.' % min_per_read_length_fraction)
 
     barcode_correction_fn = BARCODE_DECODER_LOOKUP.get(barcode_type, None)
 
