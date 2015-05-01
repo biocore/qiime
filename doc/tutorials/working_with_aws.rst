@@ -28,7 +28,6 @@ To log into your QIIME instance, you'll need to have ssh access (i.e., port 22),
 
 If you want to use the `IPython Notebook`_ on your instance, you'll need to add another security rule. The *Type* should be ``Custom TCP Rule``, the *Protocol* should be ``TCP``, the *Port Range* should be ``8888``, and the *Source* should be ``Anywhere``.
 
-
 Connecting to your QIIME EC2 instance using ssh
 ===============================================
 
@@ -42,6 +41,7 @@ To connect to your running EC2 instance using ssh from Linux or OS X you'll use 
 
 	ssh -i PATH_TO_KEY ubuntu@PUBLIC_IP_ADDRESS
 
+.. warning:: When working with the QIIME AWS instance, you should always be logged in as the ``ubuntu`` user. This applies when running commands directly on an instance (when you've connected using ssh) or through an IPython Notebook. You can confirm that you are running as the correct user by running  ``whoami``, and confirming that ``ubuntu`` is displayed.
 
 Connecting to your QIIME EC2 instance using the IPython Notebook
 ================================================================
