@@ -29,7 +29,7 @@ from qiime.workflow.downstream import run_jackknifed_beta_diversity
 script_info = {}
 
 script_info['brief_description'] = """A workflow script for performing jackknifed\
- UPGMA clustering and build jackknifed 2d and 3D PCoA plots."""
+ UPGMA clustering and building jackknifed Emperor PCoA plots."""
 
 script_info['script_description'] = """To directly measure the robustness of\
  individual UPGMA clusters and clusters in PCoA plots, one can\
@@ -47,7 +47,7 @@ script_info['script_usage'].append(("""Example:""", """These steps are performed
  UPGMA trees; compare rarefied OTU table distance matrix UPGMA trees to either\
  (full or consensus) tree for jackknife support of tree nodes; perform\
  principal coordinates analysis on distance matrices generated from rarefied\
- OTU tables; generate 2D and 3D PCoA plots with jackknifed support.
+ OTU tables; generate Emperor PCoA plots with jackknifed support.
 
 """, """%prog -i otu_table.biom -o bdiv_jk100 -e 100 -m Fasting_Map.txt\
  -t rep_set.tre"""))
@@ -58,7 +58,7 @@ script_info['output_description'] = """This scripts results in several distance\
  matrices (from beta_diversity.py), several rarified OTU tables\
  (from multiple_rarefactions_even_depth.py), several UPGMA trees (from upgma_cluster.py),\
  a supporting file and newick tree with support values (from tree_compare.py),\
- and 2D and 3D PCoA plots."""
+ and Emperor PCoA plots."""
 
 qiime_config = load_qiime_config()
 options_lookup = get_options_lookup()

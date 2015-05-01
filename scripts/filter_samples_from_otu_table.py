@@ -20,7 +20,7 @@ from numpy import inf, isinf
 from biom import load_table
 
 from qiime.util import (parse_command_line_parameters, make_option,
-                        write_biom_table)
+                        write_biom_table, EmptyBIOMTableError)
 from qiime.parse import parse_mapping_file
 from qiime.filter import (sample_ids_from_metadata_description,
                           filter_samples_from_otu_table,
@@ -135,7 +135,12 @@ def main():
         otu_table, sample_ids_to_keep, min_count, max_count,
         negate_ids_to_keep=negate_sample_id_fp)
 
-    write_biom_table(filtered_otu_table, output_fp)
+    try:
+        write_biom_table(filtered_otu_table, output_fp)
+    except EmptyBIOMTableError:
+        option_parser.error(
+            "Filtering resulted in an empty BIOM table. "
+            "This indicates that no samples remained after filtering.")
 
     # filter mapping file if requested
     if output_mapping_fp:

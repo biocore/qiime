@@ -40,6 +40,7 @@ from numpy.ma.extras import apply_along_axis
 
 from biom.util import compute_counts_per_sample_stats, biom_open, HAVE_H5PY
 from biom import load_table
+from biom.exception import BiomException
 from biom.table import Table
 
 from cogent.parse.tree import DndParser
@@ -119,6 +120,9 @@ class ScriptsDirError(IOError):
     """Exception for when the QIIME scripts directory cannot be found."""
     pass
 
+class EmptyBIOMTableError(BiomException):
+    """Exception for when an empty BIOM table is encountered."""
+    pass
 
 def make_safe_f(f, allowed_params):
     """Make version of f that ignores extra named params."""
@@ -554,7 +558,17 @@ def write_biom_table(biom_table, biom_table_fp, compress=True,
     table_type : str, optional
         The Table.type value to set for the table before it is written. Note
         that this is a controlled vocabulary documented on biom-format.org.
+
+    Raises
+    ------
+    EmptyBIOMTableError
+        If ``biom_table.is_empty() == True``. 
     """
+    if biom_table.is_empty():
+        raise EmptyBIOMTableError(
+            "Attempting to write an empty BIOM table to disk. "
+            "QIIME doesn't support writing empty BIOM output files.")
+
     generated_by = get_generated_by_for_biom_tables()
     biom_table.type = table_type
 
