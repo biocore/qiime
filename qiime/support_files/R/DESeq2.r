@@ -39,7 +39,8 @@ if(is.null(opts$input_path)) stop('Please supply an otu table.')
                 	if (!is.null(DESeq_negatives_to_zero)) {
                     	vsmat[vsmat<0]=0
                		}
-               		vsmat = newMRexperiment(vsmat)
+               		taxADF = as(data.frame(as(observation_metadata(foo), "matrix")), "AnnotatedDataFrame")
+               		vsmat = newMRexperiment(vsmat, featureData=taxADF)
                		colnames(vsmat) <- c(colnames(x))
                 	write_biom(MRexperiment2biom(vsmat), out_path)
             	}
