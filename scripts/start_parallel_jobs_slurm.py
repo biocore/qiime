@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/packages/python/anaconda/2.1.0/bin/python
 
 """A simple slurm based cluster submission script."""
 
@@ -42,6 +42,7 @@ script_info['script_usage'] = [
 
 default_slurm_queue_desc = qiime_config['slurm_queue'] or "slurm's default"
 default_slurm_memory_desc = qiime_config['slurm_memory'] or "slurm's default"
+default_slurm_time_desc = qiime_config['slurm_time'] or "slurm's default"
 
 script_info['output_description'] = "No output is created."
 script_info['required_options'] = []
@@ -66,7 +67,12 @@ script_info['optional_options'] = [
 
     make_option('-j', '--job_dir',
                 help='directory to store the jobs [default: %default]',
-                default="jobs/")
+                default="jobs/"),
+
+    make_option('-t', '--time',
+                help=('run time limit of the job '
+                      '[default: %s]' % default_slurm_time_desc),
+                default=qiime_config['slurm_time']),
 ]
 
 script_info['version'] = __version__
@@ -131,6 +137,12 @@ def main():
             opts.job_dir)
     else:
         exit("Should we ever get here???")
+
+    if (opts.time):
+        time = " --time=" + opts.time
+    else:
+        time = ""
+
     if (opts.submit_jobs):
         for f in filenames:
             qiime_system_call("".join([
@@ -138,6 +150,7 @@ def main():
                     queue,
                     " -J ", job_prefix,
                     mem_per_cpu,
+                    time, 
                     " -o ", normpath(opts.job_dir), sep, job_prefix, "_%j.out",
                     " ", f
                 ]), shell=True)
