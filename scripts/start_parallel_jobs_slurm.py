@@ -1,4 +1,4 @@
-#!/packages/python/anaconda/2.1.0/bin/python
+#!/usr/bin/env python
 
 """A simple slurm based cluster submission script."""
 
@@ -138,7 +138,7 @@ def main():
     else:
         exit("Should we ever get here???")
 
-    if (opts.time):
+    if opts.time is not None:
         time = " --time=" + opts.time
     else:
         time = ""
