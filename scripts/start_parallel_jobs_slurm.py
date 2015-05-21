@@ -70,7 +70,7 @@ script_info['optional_options'] = [
                 default="jobs/"),
 
     make_option('-t', '--time',
-                help=('run time limit of the job in dd-hh:mm:ss format '
+                help=('run time limit of the jobs in dd-hh:mm:ss format '
                       '[default: %s]' % default_slurm_time_desc),
                 default=qiime_config['slurm_time']),
 ]
