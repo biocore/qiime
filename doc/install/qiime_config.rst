@@ -26,6 +26,7 @@ The values that you can set in your *qiime config* file are listed below. Defini
 - ``temp_dir`` : directory for storing temporary files created by QIIME scripts. When a script completes successfully, any temporary files that it created are cleaned up. If you're working in a cluster environment, this directory must be shared across all of the worker nodes that QIIME jobs may be running on. This directory is described in detail in :doc:`../tutorials/parallel_qiime`.
 - ``topiaryexplorer_project_dir`` : directory where TopiaryExplorer is installed
 - ``torque_queue`` : default queue to submit jobs to when using ``start_parallel_jobs_torque.py``
+- ``slurm_time`` : default runtime limit for jobs when using ``start_parallel_jobs_slurm.py``
 
 Viewing and testing your ``qiime_config`` settings
 --------------------------------------------------
