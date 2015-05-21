@@ -70,7 +70,7 @@ script_info['optional_options'] = [
                 default="jobs/"),
 
     make_option('-t', '--time',
-                help=('run time limit of the job '
+                help=('run time limit of the job in dd-hh:mm:ss format '
                       '[default: %s]' % default_slurm_time_desc),
                 default=qiime_config['slurm_time']),
 ]
@@ -119,12 +119,12 @@ def main():
     commands = list(open(args[0]))
     job_prefix = args[1]
 
-    if opts.mem_per_cpu:
+    if opts.mem_per_cpu is not None:
         mem_per_cpu = " --mem_per_cpu=" + opts.mem_per_cpu
     else:
         mem_per_cpu = ""
 
-    if opts.queue:
+    if opts.queue is not None:
         queue = " -p " + opts.queue
     else:
         queue = ""
@@ -145,15 +145,16 @@ def main():
 
     if (opts.submit_jobs):
         for f in filenames:
-            qiime_system_call("".join([
+            cmd = "".join([
                     "sbatch",
                     queue,
                     " -J ", job_prefix,
                     mem_per_cpu,
-                    time, 
+                    time,
                     " -o ", normpath(opts.job_dir), sep, job_prefix, "_%j.out",
                     " ", f
-                ]), shell=True)
+                ])
+            qiime_system_call(cmd, shell=True)
 
 if __name__ == "__main__":
     main()
