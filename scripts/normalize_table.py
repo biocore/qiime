@@ -38,21 +38,36 @@ it be 0.01 instead of 1?), for more information read Costea, P. et al. (2014)
 DESeq/DESeq2 can also have a very slow runtime, especially for larger datasets.
 In this script, we implement DESeq2's variance stabilization technique. If you do use these
 alternatives to rarefying, we would recommend metagenomeSeq's CSS (cumulative sum
-scaling) transformation for those metrics that are abundance-based.  It is not 
+scaling) transformation for those metrics that are abundance-based.  It is not
 recommended to use these new methods with presence/absence metrics, for example
-binary Jaccard or unweighted UniFrac. 
+binary Jaccard or unweighted UniFrac.
 
 For more on metagenomeSeq's CSS, please see Paulson, JN, et al. 'Differential
 abundance analysis for microbial marker-gene surveys' Nature Methods 2013.  For DESeq
 please see Anders S, Huber W. 'Differential expression analysis for sequence
-count data.' Genome Biology 2010.  For DESeq2 please read Love, MI et al. 
-'Moderated estimation of fold change and dispersion for RNA-Seq data 
+count data.' Genome Biology 2010.  For DESeq2 please read Love, MI et al.
+'Moderated estimation of fold change and dispersion for RNA-Seq data
 with DESeq2,' Genome Biology 2014.  If you use these methods, please CITE the
 appropriate reference as well as QIIME.  For any of these methods, clustering by
 sequence depth MUST BE CHECKED FOR as a confounding variable, e.g. by coloring
 by sequences/sample on a PCoA plot and testing for correlations between
-taxa abundances and sequencing depth with e.g. adonis in compare_categories.py, 
+taxa abundances and sequencing depth with e.g. adonis in compare_categories.py,
 or observation_metadata_correlation.py.
+
+Note: If the input BIOM table contains observation metadata (e.g., taxonomy
+metadata for each OTU), this metadata will not be included in the output
+normalized BIOM table when using DESeq2. When using CSS the taxonomy metadata
+will be included in the output normalized table but it may not be in the same
+format as the input table (e.g., "NA" will be added for missing taxonomic
+levels). This discrepancy occurs because the underlying R packages used to
+perform the normalization store taxonomy metadata in a different format.
+
+As a workaround, the "biom add-metadata" command can be used to add the
+original observation metadata to the output normalized table if desired. For
+example, to include the original taxonomy metadata on the output normalized
+table, "biom add-metadata" can be used with the representative sequence
+taxonomic assignment file output by assign_taxonomy.py.
+
 """
 
 script_info['script_usage']=[]
@@ -117,7 +132,7 @@ def main():
         almost_required_options = ['input_path', 'out_path']
         for option in almost_required_options:
             if getattr(opts, option) is None:
-                option_parser.error('Required option --%s omitted.' % option)     
+                option_parser.error('Required option --%s omitted.' % option)
         if algorithm == 'CSS':
             if os.path.isdir(input_path):
                 multiple_file_normalize_CSS(input_path, out_path, output_CSS_statistics)
