@@ -401,9 +401,9 @@ class DownstreamWorkflowTests(TestCase):
             'index.html')
 
         input_file_basename = splitext(split(self.test_data['biom'][0])[1])[0]
-        unweighted_unifrac_dm_fp = join(self.test_out, 'unrarified_bdiv',
+        unweighted_unifrac_dm_fp = join(self.test_out, 'unrarefied_bdiv',
                                         'unweighted_unifrac_%s.txt' % input_file_basename)
-        weighted_unifrac_dm_fp = join(self.test_out, 'unrarified_bdiv',
+        weighted_unifrac_dm_fp = join(self.test_out, 'unrarefied_bdiv',
                                       'weighted_unifrac_%s.txt' % input_file_basename)
 
        # check for expected relations between values in the unweighted unifrac
@@ -460,9 +460,9 @@ class DownstreamWorkflowTests(TestCase):
             'index.html')
 
         input_file_basename = splitext(split(self.test_data['biom'][0])[1])[0]
-        unweighted_unifrac_dm_fp = join(self.test_out, 'unrarified_bdiv',
+        unweighted_unifrac_dm_fp = join(self.test_out, 'unrarefied_bdiv',
                                         'unweighted_unifrac_%s.txt' % input_file_basename)
-        weighted_unifrac_dm_fp = join(self.test_out, 'unrarified_bdiv',
+        weighted_unifrac_dm_fp = join(self.test_out, 'unrarefied_bdiv',
                                       'weighted_unifrac_%s.txt' % input_file_basename)
 
        # check for expected relations between values in the unweighted unifrac

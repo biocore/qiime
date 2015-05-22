@@ -398,7 +398,7 @@ def run_jackknifed_beta_diversity(otu_table_fp,
         beta_diversity_metrics = ['weighted_unifrac', 'unweighted_unifrac']
 
     # Prep the beta-diversity command
-    full_table_bdiv_dir = join(output_dir, 'unrarified_bdiv')
+    full_table_bdiv_dir = join(output_dir, 'unrarefied_bdiv')
     try:
         params_str = get_params_str(params['beta_diversity'])
     except KeyError:

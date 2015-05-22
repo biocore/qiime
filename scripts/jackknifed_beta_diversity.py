@@ -55,7 +55,7 @@ script_info['script_usage'].append(("""Example:""", """These steps are performed
 script_info['script_usage_output_to_remove'] = ['bdiv_jk100']
 
 script_info['output_description'] = """This scripts results in several distance\
- matrices (from beta_diversity.py), several rarified OTU tables\
+ matrices (from beta_diversity.py), several rarefied OTU tables\
  (from multiple_rarefactions_even_depth.py), several UPGMA trees (from upgma_cluster.py),\
  a supporting file and newick tree with support values (from tree_compare.py),\
  and Emperor PCoA plots."""

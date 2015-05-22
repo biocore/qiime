@@ -48,7 +48,7 @@ To directly measure the robustness of individual UPGMA clusters and clusters in 
 
 **Output:**
 
-This scripts results in several distance matrices (from `beta_diversity.py <./beta_diversity.html>`_), several rarified OTU tables (from `multiple_rarefactions_even_depth.py <./multiple_rarefactions_even_depth.html>`_), several UPGMA trees (from `upgma_cluster.py <./upgma_cluster.html>`_), a supporting file and newick tree with support values (from `tree_compare.py <./tree_compare.html>`_), and Emperor PCoA plots.
+This scripts results in several distance matrices (from `beta_diversity.py <./beta_diversity.html>`_), several rarefied OTU tables (from `multiple_rarefactions_even_depth.py <./multiple_rarefactions_even_depth.html>`_), several UPGMA trees (from `upgma_cluster.py <./upgma_cluster.html>`_), a supporting file and newick tree with support values (from `tree_compare.py <./tree_compare.html>`_), and Emperor PCoA plots.
 
 
 **Example:**

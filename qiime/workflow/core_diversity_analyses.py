@@ -478,17 +478,17 @@ def run_core_diversity_analyses(
          filtered_biom_gzip_fp,
          _index_headers['run_summary']))
 
-    rarified_biom_gzip_fp = '%s.gz' % rarefied_biom_fp
-    if not exists(rarified_biom_gzip_fp):
+    rarefied_biom_gzip_fp = '%s.gz' % rarefied_biom_fp
+    if not exists(rarefied_biom_gzip_fp):
         commands.append(
-            [('Compress the rarified BIOM table', 'gzip %s' %
+            [('Compress the rarefied BIOM table', 'gzip %s' %
               rarefied_biom_fp)])
     else:
-        logger.write("Skipping compressing of rarified BIOM table as %s exists.\n\n"
-                     % rarified_biom_gzip_fp)
+        logger.write("Skipping compressing of rarefied BIOM table as %s exists.\n\n"
+                     % rarefied_biom_gzip_fp)
     index_links.append(
-        ('Rarified BIOM table (sampling depth: %d)' % sampling_depth,
-         rarified_biom_gzip_fp,
+        ('rarefied BIOM table (sampling depth: %d)' % sampling_depth,
+         rarefied_biom_gzip_fp,
          _index_headers['run_summary']))
 
     if len(commands) > 0:
