@@ -27,15 +27,12 @@ from cogent.maths.distance_transform import dist_chisq
 
 from qiime.util import get_qiime_temp_dir, write_biom_table
 from qiime.parse import parse_newick, parse_distmat, parse_matrix
-from qiime.beta_diversity import BetaDiversityCalc, single_file_beta,\
+from qiime.beta_diversity import single_file_beta,\
     list_known_nonphylogenetic_metrics, list_known_phylogenetic_metrics
 from qiime.beta_metrics import dist_unweighted_unifrac
 
 
-class BetaDiversityCalcTests(TestCase):
-
-    """Tests of the BetaDiversityCalc class"""
-
+class BetaDiversityTests(TestCase):
     def setUp(self):
         self.tmp_dir = get_qiime_temp_dir()
 
@@ -97,40 +94,6 @@ class BetaDiversityCalcTests(TestCase):
         remove_files(self.files_to_remove)
         for folder in self.folders_to_remove:
             shutil.rmtree(folder)
-
-    def test_l19_chi(self):
-        """beta calc run should return same values as directly calling metric"""
-        beta_calc_chisq = BetaDiversityCalc(dist_chisq, 'chi square', False)
-        matrix, labels = beta_calc_chisq(data_path=self.l19_fp, tree_path=None)
-        self.assertEqual(labels, self.l19_sample_names)
-        npt.assert_almost_equal(matrix, dist_chisq(self.l19_data))
-
-    def test_l19_unifrac(self):
-        """beta calc run should also work for phylo metric"""
-        beta_calc = BetaDiversityCalc(dist_unweighted_unifrac, 'unifrac', True)
-        matrix, labels = beta_calc(data_path=self.l19_fp,
-                                   tree_path=self.l19_tree, result_path=None, log_path=None)
-        self.assertEqual(labels, self.l19_sample_names)
-
-    def test_l19_unifrac_escaped_names(self):
-        """beta calc works for unifrac when tips names are escaped in newick
-        """
-        beta_calc = BetaDiversityCalc(dist_unweighted_unifrac, 'unifrac', True)
-        non_escaped_result = beta_calc(data_path=self.l19_fp,
-                                       tree_path=self.l19_tree, result_path=None, log_path=None)
-
-        l19_tree_str = "(((('tax7':0.1,'tax3':0.2):.98,tax8:.3, 'tax4':.3):.4,\
- (('ta_x1':0.3, tax6:.09):0.43,tax2:0.4):0.5):.2, (tax9:0.3, 'endbigtaxon':.08));"
-
-        fd, tree_fp = mkstemp(prefix='Beta_div_tests', suffix='.tre')
-        os.close(fd)
-        open(tree_fp, 'w').write(l19_tree_str)
-        self.files_to_remove.append(tree_fp)
-        escaped_result = beta_calc(data_path=self.l19_w_underscore_fp,
-                                   tree_path=tree_fp, result_path=None,
-                                   log_path=None)
-        npt.assert_almost_equal(escaped_result[0], non_escaped_result[0])
-        self.assertEqual(escaped_result[1], non_escaped_result[1])
 
     def single_file_beta(
             self, otu_table_string, tree_string, missing_sams=None,
