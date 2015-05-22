@@ -4,7 +4,7 @@ __author__ = "Will Van Treuren"
 __copyright__ = "Copyright 2013, The QIIME Project"
 __credits__ = ["Will Van Treuren, Julia Goodrich"]
 __license__ = "GPL"
-__version__ = "1.9.1"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Will Van Treuren"
 __email__ = "wdwvt1@gmail.com"
 

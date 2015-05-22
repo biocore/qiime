@@ -6,7 +6,7 @@ __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Jesse Stombaugh"]
 __license__ = "GPL"
-__version__ = "1.9.1"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 

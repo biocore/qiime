@@ -6,7 +6,7 @@ __author__ = "Will Van Treuren, Luke Ursell"
 __copyright__ = "Copyright 2013, The QIIME project"
 __credits__ = ["Will Van Treuren", "Luke Ursell", "Catherine Lozupone"]
 __license__ = "GPL"
-__version__ = "1.9.1"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Luke Ursell"
 __email__ = "lkursell@gmail.com"
 

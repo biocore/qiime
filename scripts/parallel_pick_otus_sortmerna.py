@@ -2,7 +2,7 @@
 
 from __future__ import division
 __license__ = "GPL"
-__version__ = "1.9.1"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Jenya Kopylov"
 __email__ = "jenya.kopylov@gmail.com"
 

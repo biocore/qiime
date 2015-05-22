@@ -13,7 +13,7 @@ __credits__ = [
     "William Walters",
     "Jose Carlos Clemente Litran"]
 __license__ = "GPL"
-__version__ = "1.9.1"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 

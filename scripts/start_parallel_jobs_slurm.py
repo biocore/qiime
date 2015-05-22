@@ -6,7 +6,7 @@ __author__ = "Simon Jacobs"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jens Reeder", "Rob Knight", "Greg Caporaso", "Jai Ram Rideout", "Evan Bolyen", "Simon Jacobs"]
 __license__ = "GPL"
-__version__ = "1.9.1"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Simon Jacobs"
 __email__ = "sdjacobs@uchicago.edu"
 

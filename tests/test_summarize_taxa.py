@@ -11,7 +11,7 @@ __credits__ = [
     "Antonio Gonzalez Pena",
     "Jose Carlos Clemente Litran"]
 __license__ = "GPL"
-__version__ = "1.9.1"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Daniel McDonald"
 __email__ = "wasade@gmail.com"
 

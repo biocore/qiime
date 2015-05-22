@@ -10,7 +10,7 @@ __credits__ = [
     "Daniel McDonald",
     "Justin Kuczynski"]
 __license__ = "GPL"
-__version__ = "1.9.1"
+__version__ = "1.9.1-dev"
 __maintainer__ = "William Van Treuren"
 __email__ = "vantreur@colorado.edu"
 
