@@ -1281,6 +1281,7 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
 
         # initialize the application controller object
         app = Uclust(params,
+                     TmpDir=get_qiime_temp_dir(),
                      HALT_EXEC=HALT_EXEC)
 
         # Configure for consensus taxonomy assignment
