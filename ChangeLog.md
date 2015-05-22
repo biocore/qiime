@@ -12,7 +12,7 @@ Bug fixes
 * Forced BIOM table type to "OTU table" for all tables written with QIIME. This fixes [#1928](https://github.com/biocore/qiime/issues/1928).
 * The ``--similarity`` option in ``pick_otus.py`` now only accepts sequence similarity thresholds between 0.0 and 1.0 (inclusive). Previous behavior would allow values outside this range, which would cause uninformative error messages to be raised by the external tools that ``pick_otus.py`` wraps ([#1979](https://github.com/biocore/qiime/issues/1979)).
 * ``split_libraries_fastq.py`` now explicitly disallows ``-p 0``. This could lead to empty sequences being written to the resulting output file ([#1984](https://github.com/biocore/qiime/issues/1984)).
-* Fixed issued where ``filter_samples_from_otu_table.py`` could only filter the mapping file when ``--valid_states`` was passed as the filtering method ([#2003](https://github.com/biocore/qiime/issues/2003)). 
+* Fixed issued where ``filter_samples_from_otu_table.py`` could only filter the mapping file when ``--valid_states`` was passed as the filtering method ([#2003](https://github.com/biocore/qiime/issues/2003)).
 
 Usability enhancements
 ----------------------
@@ -22,6 +22,7 @@ Usability enhancements
 * If ``temp_dir`` is not defined in the QIIME config file, QIIME will use the system's default temporary directory instead of assuming that ``/tmp`` is present and writeable. Note that the location of this default temporary directory [can be changed with environment variables](https://docs.python.org/2/library/tempfile.html#tempfile.tempdir) ([#1995](https://github.com/biocore/qiime/issues/1995)).
 * Improve error reporting from ``filter_taxa_from_otu_table.py``, ``filter_otus_from_otu_table.py``, and ``filter_samples_from_otu_table.py`` when all OTUs/samples are filtered out resulting in an empty table ([#1963](https://github.com/biocore/qiime/issues/1963)), and generally when attempting to write an empty BIOM table from QIIME.
 * Added ability to pass user-defined runtime limit for jobs to ``start_parallel_jobs_slurm.py``. This can be achieved by setting the ``slurm_time`` variable in ``qiime_config``, or by passing ``--time`` to ``start_parallel_jobs_slurm.py``.
+* Distances matrices and UPGMA trees generated from the full (unrarified) OTU table are now stored under ``unrarified_bdiv`` in the output directory from ``jackknifed_beta_diversity.py``. That UPGMA tree is optionally used (if the user passes ``--master_tree full``). This change makes their content more explicit so they're less likely to be used by accident ([#2024](https://github.com/biocore/qiime/issues/2024)). 
 
 QIIME 1.9.0
 ===========
