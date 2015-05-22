@@ -94,10 +94,9 @@ def main():
     max_count = opts.max_count
     sample_id_fp = opts.sample_id_fp
 
-    if ((mapping_fp is None and valid_states is not None) or
-        (mapping_fp is not None and valid_states is None)):
-        option_parser.error("Both --mapping_fp and --valid_states must be "
-                            "provided if either are used.")
+    if (mapping_fp is None and valid_states is not None):
+        option_parser.error("--mapping_fp must be provided if --valid_states "
+                            "is passed.")
 
     if not ((mapping_fp and valid_states) or
             min_count != 0 or

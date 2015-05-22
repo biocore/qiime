@@ -4,14 +4,17 @@ QIIME 1.9.0-dev
 Bug fixes
 ---------
 
-* Updated minimum required version of the [qiime-default-reference](http://github.com/biocore/qiime-default-reference) package to 0.1.2. This release includes an important bug fix described in more detail in [this QIIME blog post](https://qiime.wordpress.com/2015/04/15/qiime-1-9-0-bug-affecting-pynast-alignment-of-16s-amplicons-generated-with-non-515f806r-primers/) and in [biocore/qiime-default-reference#14](https://github.com/biocore/qiime-default-reference/issues/14).
+* Updated minimum required version of the [qiime-default-reference](http://github.com/biocore/qiime-default-reference) package to 0.1.2. **This release includes an important bug fix described in more detail in [this QIIME blog post](https://qiime.wordpress.com/2015/04/15/qiime-1-9-0-bug-affecting-pynast-alignment-of-16s-amplicons-generated-with-non-515f806r-primers/) and in [biocore/qiime-default-reference#14](https://github.com/biocore/qiime-default-reference/issues/14).**
+* Fixed bug in ``differential_abundance.py`` fitZIG algorithm ([#1960](https://github.com/biocore/qiime/pull/1960)). **This was a serious bug that was encountered when users would call ``differential_abundance.py -a metagenomeSeq_fitZIG``. Any results previosuly generated with that command should be re-run.**
+* Fixed serious bug in ``observation_metadata_correlation.py``, described in [#2009](https://github.com/biocore/qiime/issues/2009). **All previous output generated with ``observation_metadata_correlation.py`` was incorrect, and analyses using those results should be re-run.** This most commonly would have resulted in massive Type 2 error (false negatives), where observations whose abundance is correlated with metadata are not reported, though Type 1 error (false positives) are also possible.
 * ``count_seqs.py`` no longer fails on empty files. [#1991](https://github.com/biocore/qiime/issues/1991)
-* Fixed bug in ``differential_abundance.py`` fitZIG algorithm ([#1960](https://github.com/biocore/qiime/pull/1960)). This was a serious bug that was encountered when users would call ``differential_abundance.py -a metagenomeSeq_fitZIG``. Any results generated with that command in QIIME 1.9.0 should be re-run.
 * Updated minimum required version of [biom-format](http://github.com/biocore/biom-format) package to 2.1.4. This is a bug fix release. Details are available in the [biom-format ChangeLog](https://github.com/biocore/biom-format/blob/master/ChangeLog.md).
 * Updated minimum required version of [Emperor](http://github.com/biocore/emperor) package to 0.9.51.
 * Forced BIOM table type to "OTU table" for all tables written with QIIME. This fixes [#1928](https://github.com/biocore/qiime/issues/1928).
 * The ``--similarity`` option in ``pick_otus.py`` now only accepts sequence similarity thresholds between 0.0 and 1.0 (inclusive). Previous behavior would allow values outside this range, which would cause uninformative error messages to be raised by the external tools that ``pick_otus.py`` wraps ([#1979](https://github.com/biocore/qiime/issues/1979)).
 * ``split_libraries_fastq.py`` now explicitly disallows ``-p 0``. This could lead to empty sequences being written to the resulting output file ([#1984](https://github.com/biocore/qiime/issues/1984)).
+* Fixed issued where ``filter_samples_from_otu_table.py`` could only filter the mapping file when ``--valid_states`` was passed as the filtering method ([#2003](https://github.com/biocore/qiime/issues/2003)).
+
 
 Usability enhancements
 ----------------------
