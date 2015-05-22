@@ -2,7 +2,8 @@
 
 __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Justin Kuczynski", "Rob Knight", "Jose Antonio Navas Molina"]
+__credits__ = ["Justin Kuczynski", "Rob Knight", "Jose Antonio Navas Molina",
+               "Jai Ram Rideout"]
 __license__ = "GPL"
 __version__ = "1.9.0-dev"
 __maintainer__ = "Justin Kuczynski"
@@ -27,8 +28,7 @@ from cogent.maths.distance_transform import dist_chisq
 from qiime.util import get_qiime_temp_dir, write_biom_table
 from qiime.parse import parse_newick, parse_distmat, parse_matrix
 from qiime.beta_diversity import BetaDiversityCalc, single_file_beta,\
-    list_known_nonphylogenetic_metrics, list_known_phylogenetic_metrics,\
-    single_object_beta
+    list_known_nonphylogenetic_metrics, list_known_phylogenetic_metrics
 from qiime.beta_metrics import dist_unweighted_unifrac
 
 
@@ -266,102 +266,6 @@ class BetaDiversityCalcTests(TestCase):
         self.single_file_beta(missing_otu_table, missing_tree,
                               missing_sams=['M'], use_metric_list=True)
 
-    def single_object_beta(self, otu_table, metric, tree_string,
-                           missing_sams=None):
-        """ running single_file_beta should give same result using --rows"""
-        if missing_sams is None:
-            missing_sams = []
-
-        metrics = list_known_nonphylogenetic_metrics()
-        metrics.extend(list_known_phylogenetic_metrics())
-
-        # new metrics that don't trivially parallelize must be dealt with
-        # carefully
-        warnings.filterwarnings('ignore', 'dissimilarity binary_dist_chisq is\
- not parallelized, calculating the whole matrix...')
-        warnings.filterwarnings('ignore', 'dissimilarity dist_chisq is not\
- parallelized, calculating the whole matrix...')
-        warnings.filterwarnings('ignore', 'dissimilarity dist_gower is not\
- parallelized, calculating the whole matrix...')
-        warnings.filterwarnings('ignore', 'dissimilarity dist_hellinger is\
- not parallelized, calculating the whole matrix...')
-        warnings.filterwarnings('ignore', 'unifrac had no information for\
- sample M*')
-
-        for metric in metrics:
-            # do it
-            beta_out = single_object_beta(otu_table, metric,
-                                          tree_string, rowids=None,
-                                          full_tree=False)
-
-            sams, dmtx = parse_distmat(beta_out)
-
-            # do it by rows
-            for i in range(len(sams)):
-                if sams[i] in missing_sams:
-                    continue
-                rows = sams[i]
-                # row_outname = output_dir + '/' + metric + '_' +\
-                    # in_fname
-                r_out = single_object_beta(otu_table, metric,
-                                           tree_string, rowids=rows,
-                                           full_tree=False)
-                col_sams, row_sams, row_dmtx = parse_matrix(r_out)
-
-                self.assertEqual(row_dmtx.shape, (len(rows.split(',')),
-                                                  len(sams)))
-
-                # make sure rows same as full
-                for j in range(len(rows.split(','))):
-                    for k in range(len(sams)):
-                        row_v1 = row_dmtx[j, k]
-                        full_v1 =\
-                            dmtx[sams.index(row_sams[j]),
-                                 sams.index(col_sams[k])]
-                        npt.assert_almost_equal(row_v1, full_v1)
-
-            # full tree run:
-            if 'full_tree' in str(metric).lower():
-                continue
-            # do it by rows with full tree
-            for i in range(len(sams)):
-                if sams[i] in missing_sams:
-                    continue
-                rows = sams[i]
-
-                #~ row_outname = output_dir + '/ft/' + metric + '_' +\
-                    #~ in_fname
-                r_out = single_object_beta(otu_table, metric,
-                                           tree_string, rowids=None,
-                                           full_tree=True)
-                col_sams, row_sams, row_dmtx = parse_matrix(r_out)
-
-                self.assertEqual(row_dmtx.shape, (len(rows.split(',')),
-                                                  len(sams)))
-
-                # make sure rows same as full
-                for j in range(len(rows.split(','))):
-                    for k in range(len(sams)):
-                        row_v1 = row_dmtx[j, k]
-                        full_v1 =\
-                            dmtx[sams.index(row_sams[j]),
-                                 sams.index(col_sams[k])]
-                        npt.assert_almost_equal(row_v1, full_v1)
-
-            # do it with full tree
-            r_out = single_object_beta(otu_table, metric,
-                                       tree_string, rowids=None,
-                                       full_tree=True)
-            sams_ft, dmtx_ft = parse_distmat(r_out)
-            self.assertEqual(sams_ft, sams)
-            npt.assert_almost_equal(dmtx_ft, dmtx)
-
-    def test_single_object_beta(self):
-        self.single_file_beta(l19_otu_table, l19_tree)
-
-    def test_single_object_beta_missing(self):
-        self.single_file_beta(missing_otu_table, missing_tree,
-                              missing_sams=['M'])
 
 l19_otu_table = """{"rows": [{"id": "tax1", "metadata": {}}, {"id": "tax2",\
  "metadata": {}}, {"id": "tax3", "metadata": {}}, {"id": "tax4", "metadata":\
