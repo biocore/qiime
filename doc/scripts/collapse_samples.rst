@@ -33,7 +33,7 @@ Collapse samples in a BIOM table and mapping file. Values in the BIOM table are 
 	**[OPTIONAL]**
 		
 	`-`-collapse_mode
-		The mechanism for collapsing counts within groups; valid options are: mean, sum, random, median, first
+		The mechanism for collapsing counts within groups; valid options are: mean, sum, random, median, first. [default: sum]
 	`-`-normalize
 		Normalize observation counts to relative abundances, so the counts within each sample sum to 1.0. [default: False]
 

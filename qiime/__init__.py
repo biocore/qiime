@@ -18,7 +18,7 @@ __credits__ = ["Rob Knight",
                "Daniel McDonald",
                "Catherine Lozupone"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 

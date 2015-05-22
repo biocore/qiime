@@ -5,7 +5,7 @@ __credits__ = ["Rob Knight", "Greg Caporaso", "Kyle Bittinger", "Jens Reeder",
                "William Walters", "Jose Carlos Clemente Litran",
                "Adam Robbins-Pianka", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 

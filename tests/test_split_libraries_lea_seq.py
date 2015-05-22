@@ -5,7 +5,7 @@ __author__ = "Charudatta Navare"
 __copyright__ = "Copyright 2014, The QIIME Project"
 __credits__ = ["Charudatta Navare"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1"
 __maintainer__ = "Charudatta Navare"
 __email__ = "charudatta.navare@gmail.com"
 

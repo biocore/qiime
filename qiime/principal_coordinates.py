@@ -8,7 +8,7 @@ __credits__ = ["Justin Kuczynski", "Rob Knight", "Antonio Gonzalez Pena",
                "Catherine Lozupone", "Emily TerAvest",
                "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 

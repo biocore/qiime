@@ -182,7 +182,7 @@ workflow.
 	-m, `-`-otu_picking_method
 		The OTU picking method to use for reference and de novo steps. Passing usearch61, for example, means that usearch61 will be used for the de novo steps and usearch61_ref will be used for reference steps. [default: uclust]
 	-r, `-`-reference_fp
-		The reference sequences [default: /Users/jairideout/.virtualenvs/qiime/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set/97_otus.fasta]
+		The reference sequences [default: /Users/caporaso/.virtualenvs/qiime/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set/97_otus.fasta]
 	-p, `-`-parameter_fp
 		Path to the parameter file, which specifies changes to the default behavior. See http://www.qiime.org/documentation/file_formats.html#qiime-parameters . [if omitted, default values will be used]
 	`-`-prefilter_refseqs_fp

@@ -7,7 +7,7 @@ __credits__ = ["Meg Pirrung", "Jesse Stombaugh", "Antonio Gonzalez Pena",
                "Will Van Treuren", "Yoshiki Vazquez Baeza", "Jai Ram Rideout",
                "Evan Bolyen"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 
