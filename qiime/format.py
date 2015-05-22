@@ -87,7 +87,7 @@ def format_qiime_parameters(params, header="#QIIME parameters"):
 
             qiime_params.append(full_line)
     return qiime_params
-    
+
 
 def format_add_taxa_summary_mapping(summary, tax_order, mapping, header,
                                     delimiter=';'):
@@ -275,16 +275,30 @@ format_observation_map = format_otu_map
 
 def format_distance_matrix(labels, data):
     """Writes distance matrix as tab-delimited text, uses format_matrix"""
-    return format_matrix(data, labels, labels)
+    return format_matrix(data, labels, labels,
+                         convert_matching_names_to_zero=True)
 
 
-def format_matrix(data, row_names, col_names):
+def format_matrix(data, row_names, col_names,
+                  convert_matching_names_to_zero=False):
     """Writes matrix as tab-delimited text.
 
     format is rows: samples,
     cols: metrics/ confidence levels, etc
 
     data: array or 2d list.
+
+    convert_matching_names_to_zero : bool
+        If ``True``, each element in `data` with a matching row name and column
+        name will be converted to 0.0 if the original value is close to zero
+        (as determined by ``numpy.isclose(value, 0.0)``). This is a necessary
+        evil to handle distance matrices with diagonals that are close to zero.
+        We have to perform this conversion here instead of simply checking the
+        distance matrix's diagonal because parallelized beta diversity
+        calculations will compute subsets of the entire distance matrix and we
+        don't know where the true diagonal will fall. See
+        https://github.com/biocore/qiime/issues/1933 for details.
+
     """
     len_col = len(col_names)
     try:
@@ -308,8 +322,14 @@ def format_matrix(data, row_names, col_names):
     col_names = map(str, col_names)
     # just in case they weren't strings initially
     lines.append('\t'.join([''] + col_names))
-    for sam, vals in zip(row_names, data):
-        lines.append('\t'.join([sam] + map(str, vals)))
+    for row_name, values in zip(row_names, data):
+        line = [row_name]
+        for col_name, value in zip(col_names, values):
+            if convert_matching_names_to_zero and col_name == row_name and \
+                    numpy.isclose(value, 0.0):
+                value = 0.0
+            line.append(str(value))
+        lines.append('\t'.join(line))
     return '\n'.join(lines)
 
 
