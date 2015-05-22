@@ -199,7 +199,7 @@ def main():
 
     # sort the biom table so that feature values are retrieved in the same
     # order as the metadata in the samples they correspond to
-    bt.sort(sort_f = lambda _: samples_to_correlate, axis='sample')
+    bt = bt.sort(sort_f = lambda _: samples_to_correlate, axis='sample')
 
     if bt.shape[1] <= 3:
         option_parser.error(filtration_error_text)
