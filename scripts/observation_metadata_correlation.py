@@ -199,14 +199,14 @@ def main():
 
     # sort the biom table so that feature values are retrieved in the same
     # order as the metadata in the samples they correspond to
-    nbt = bt.sort(sort_f = lambda _: samples_to_correlate, axis='sample')
+    bt = bt.sort(sort_f = lambda _: samples_to_correlate, axis='sample')
 
-    if nbt.shape[1] <= 3:
+    if bt.shape[1] <= 3:
         option_parser.error(filtration_error_text)
 
     rhos = []
     pvals = []
-    for feature_vector in nbt.iter_data(axis='observation'):
+    for feature_vector in bt.iter_data(axis='observation'):
         rho = correlate(feature_vector, md_values_to_correlate,
                         method=opts.test)
         pval = assign_correlation_pval(rho, len(feature_vector),
@@ -225,7 +225,7 @@ def main():
     fdr_pvals = where(array(fdr_pvals) > 1.0, 1.0, fdr_pvals)
     bon_pvals = where(array(bon_pvals) > 1.0, 1.0, bon_pvals)
 
-    lines = correlate_output_formatter(nbt, rhos, pvals, fdr_pvals,
+    lines = correlate_output_formatter(bt, rhos, pvals, fdr_pvals,
                                        bon_pvals, opts.metadata_key)
     lines = sort_by_pval(lines, ind=2)
 
