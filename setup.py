@@ -378,7 +378,7 @@ classes = """
     Operating System :: Unix
     Operating System :: MacOS :: MacOS X
     Operating System :: POSIX
-    """
+"""
 classifiers = [s.strip() for s in classes.split('\n') if s]
 
 # compile the list of all qiime_test_data files that need to be installed.
