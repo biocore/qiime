@@ -81,7 +81,7 @@ The primary inputs for `pick_otus.py <./pick_otus.html>`_ are:
 	-o, `-`-output_dir
 		Path to store result file [default: ./<OTU_METHOD>_picked_otus/]
 	-r, `-`-refseqs_fp
-		Path to reference sequences to search against when using -m blast, -m sortmerna, -m uclust_ref, -m usearch_ref, or -m usearch61_ref [default: /Users/jairideout/.virtualenvs/qiime/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set/97_otus.fasta]
+		Path to reference sequences to search against when using -m blast, -m sortmerna, -m uclust_ref, -m usearch_ref, or -m usearch61_ref [default: /Users/caporaso/.virtualenvs/qiime/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set/97_otus.fasta]
 	-b, `-`-blast_db
 		Pre-existing database to blast against when using -m blast [default: None]
 	-e, `-`-max_e_value_blast
@@ -101,7 +101,7 @@ The primary inputs for `pick_otus.py <./pick_otus.html>`_ are:
 	`-`-min_aligned_percent
 		Minimum percent of query sequence that can be aligned to consider a hit, expressed as a fraction between 0 and 1 (BLAST OTU picker only) [default: 0.5]
 	-s, `-`-similarity
-		Sequence similarity threshold (for blast, cdhit, uclust, uclust_ref, usearch, usearch_ref, usearch61, usearch61_ref, sumaclust or sortmerna [default: 0.97]
+		Sequence similarity threshold (for blast, cdhit, uclust, uclust_ref, usearch, usearch_ref, usearch61, usearch61_ref, sumaclust, and sortmerna) [default: 0.97]
 	`-`-sumaclust_exact
 		A sequence is assigned to the best matching seed rather than the first matching seed passing the similarity threshold [default: False]
 	`-`-sumaclust_l

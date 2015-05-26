@@ -2,7 +2,7 @@
 
 .. index:: jackknifed_beta_diversity.py
 
-*jackknifed_beta_diversity.py* -- A workflow script for performing jackknifed UPGMA clustering and build jackknifed 2d and 3D PCoA plots.
+*jackknifed_beta_diversity.py* -- A workflow script for performing jackknifed UPGMA clustering and building jackknifed Emperor PCoA plots.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Description:**
@@ -48,12 +48,12 @@ To directly measure the robustness of individual UPGMA clusters and clusters in 
 
 **Output:**
 
-This scripts results in several distance matrices (from `beta_diversity.py <./beta_diversity.html>`_), several rarified OTU tables (from `multiple_rarefactions_even_depth.py <./multiple_rarefactions_even_depth.html>`_), several UPGMA trees (from `upgma_cluster.py <./upgma_cluster.html>`_), a supporting file and newick tree with support values (from `tree_compare.py <./tree_compare.html>`_), and 2D and 3D PCoA plots.
+This scripts results in several distance matrices (from `beta_diversity.py <./beta_diversity.html>`_), several rarefied OTU tables (from `multiple_rarefactions_even_depth.py <./multiple_rarefactions_even_depth.html>`_), several UPGMA trees (from `upgma_cluster.py <./upgma_cluster.html>`_), a supporting file and newick tree with support values (from `tree_compare.py <./tree_compare.html>`_), and Emperor PCoA plots.
 
 
 **Example:**
 
-These steps are performed by the following command: Compute beta diversity distance matrix from otu table (and tree, if applicable); build rarefied OTU tables by evenly sampling to the specified depth (-e); build UPGMA tree from full distance matrix; compute distance matrics for rarefied OTU tables; build UPGMA trees from rarefied OTU table distance matrices; build a consensus tree from the rarefied UPGMA trees; compare rarefied OTU table distance matrix UPGMA trees to either (full or consensus) tree for jackknife support of tree nodes; perform principal coordinates analysis on distance matrices generated from rarefied OTU tables; generate 2D and 3D PCoA plots with jackknifed support.
+These steps are performed by the following command: Compute beta diversity distance matrix from otu table (and tree, if applicable); build rarefied OTU tables by evenly sampling to the specified depth (-e); build UPGMA tree from full distance matrix; compute distance matrics for rarefied OTU tables; build UPGMA trees from rarefied OTU table distance matrices; build a consensus tree from the rarefied UPGMA trees; compare rarefied OTU table distance matrix UPGMA trees to either (full or consensus) tree for jackknife support of tree nodes; perform principal coordinates analysis on distance matrices generated from rarefied OTU tables; generate Emperor PCoA plots with jackknifed support.
 
 
 

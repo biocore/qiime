@@ -9,7 +9,7 @@ __credits__ = [
     "Jeremy Widmann",
     "Antonio Gonzalez Pena"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 

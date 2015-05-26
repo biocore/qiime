@@ -4,7 +4,7 @@ __author__ = "Dan Knights"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Dan Knights", "Greg Caporaso", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1"
 __maintainer__ = "Dan Knights"
 __email__ = "daniel.knights@colorado.edu"
 

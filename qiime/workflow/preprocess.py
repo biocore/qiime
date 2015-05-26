@@ -4,7 +4,7 @@ __author__ = "William Walters"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["William Walters"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1"
 __maintainer__ = "William Walters"
 __email__ = "William.A.Walters@colorado.edu"
 

@@ -20,7 +20,7 @@ __copyright__ = "Copyright (c) 2011--, %s" % __author__
 __credits__ = ["Greg Caporaso", "Kyle Bittinger", "Jai Ram Rideout",
                "Yoshiki Vazquez Baeza", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1"
 __maintainer__ = "Greg Caporaso"
 __email__ = "qiime.help@gmail.com"
 
@@ -433,6 +433,7 @@ setup(name='qiime',
       install_requires=['numpy >= 1.9.0',
                         'scipy >= 0.14.0',
                         'cogent == 1.5.3',
+                        'natsort < 4.0.0',
                         'matplotlib >= 1.1.0, != 1.4.2',
                         'pynast == 1.2.2', 'qcli >= 0.1.1, < 0.2.0', 'gdata',
                         'biom-format >= 2.1.4, < 2.2.0',

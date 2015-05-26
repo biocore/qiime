@@ -27,23 +27,23 @@
 	**[OPTIONAL]**
 		
 	-m, `-`-otu_map
-		An OTU map where sequences ids are those which should be retained
+		An OTU map where sequences ids are those which should be retained.
 	-s, `-`-seq_id_fp
-		A list of sequence identifiers (or tab-delimited lines with a seq identifier in the first field) which should be retained
+		A list of sequence identifiers (or tab-delimited lines with a seq identifier in the first field) which should be retained.
 	-b, `-`-biom_fp
-		A biom file where otu identifiers should be retained
+		A biom file where otu identifiers should be retained.
 	-a, `-`-subject_fasta_fp
 		A fasta file where the seq ids should be retained.
 	-p, `-`-seq_id_prefix
-		Keep seqs where seq_id starts with this prefix
+		Keep seqs where seq_id starts with this prefix.
 	`-`-sample_id_fp
-		Keep seqs where seq_id starts with a sample id listed in this file
+		Keep seqs where seq_id starts with a sample id listed in this file. Must be newline delimited and may not contain a header.
 	-n, `-`-negate
-		Discard passed seq ids rather than keep passed seq ids [default: False]
+		Discard passed seq ids rather than keep passed seq ids. [default: False]
 	`-`-mapping_fp
-		Mapping file path (for use with --valid_states) [default: None]
+		Mapping file path (for use with --valid_states). [default: None]
 	`-`-valid_states
-		Description of sample ids to retain (for use with --mapping_fp) [default: None]
+		Description of sample ids to retain (for use with --mapping_fp). [default: None]
 
 
 **Output:**
