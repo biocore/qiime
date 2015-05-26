@@ -1,0 +1,161 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Describing samples based on their metadata &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Tutorials" href="index.html" />
+    <link rel="next" title="QIIME Scripts" href="../scripts/index.html" />
+    <link rel="prev" title="Using Remote Mapping Files" href="remote_mapping_files.html" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../scripts/index.html" title="QIIME Scripts"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="remote_mapping_files.html" title="Using Remote Mapping Files"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="describing-samples-based-on-their-metadata">
+<span id="metadata-description"></span><h1>Describing samples based on their metadata<a class="headerlink" href="#describing-samples-based-on-their-metadata" title="Permalink to this headline">¶</a></h1>
+<p>Several scripts in QIIME, including <a class="reference external" href="../scripts/filter_samples_from_otu_table.html">filter_samples_from_otu_table.py</a>, <a class="reference external" href="../scripts/filter_distance_matrix.html">filter_distance_matrix.py</a>, and <a class="reference external" href="../scripts/filter_fasta.html">filter_fasta.py</a>, allow you to describe samples based on metadata about those samples in the mapping file. These scripts will require two parameters to achieve this: the mapping file (usually <tt class="docutils literal"><span class="pre">-m</span></tt>) and the state string (usually <tt class="docutils literal"><span class="pre">--valid_states</span></tt>). This section describes how to use the state string to describe a set of samples. When you <em>describe a set of samples</em>, you&#8217;re usually doing that to tell QIIME that you want to retain that set of samples in some filtering operation.</p>
+<p>A state string will contain one or more metadata field names (i.e., column header(s) from the mapping file, call this <tt class="docutils literal"><span class="pre">FIELD</span></tt>), and one or more values of that field (call this <tt class="docutils literal"><span class="pre">VALUE</span></tt>). Special characters used in state strings include <tt class="docutils literal"><span class="pre">:</span></tt> (delimiter between a <tt class="docutils literal"><span class="pre">FIELD</span></tt> and a <tt class="docutils literal"><span class="pre">VALUE</span></tt>), <tt class="docutils literal"><span class="pre">,</span></tt> (delimiter between two <tt class="docutils literal"><span class="pre">VALUEs</span></tt> associated with a single <tt class="docutils literal"><span class="pre">FIELD</span></tt>), <tt class="docutils literal"><span class="pre">*</span></tt> (special <tt class="docutils literal"><span class="pre">VALUE</span></tt> that indicates any value), <tt class="docutils literal"><span class="pre">!</span></tt> (negation modifier, which indicates any value other than the one specified), and <tt class="docutils literal"><span class="pre">;</span></tt> (delimiter between multiple <tt class="docutils literal"><span class="pre">FIELD</span></tt>/<tt class="docutils literal"><span class="pre">VALUE</span></tt> combinations).</p>
+<p>To describe the values associated with some field with a state string, that state string should look like: <tt class="docutils literal"><span class="pre">FIELD:VALUE</span></tt>. For example, if you have a <tt class="docutils literal"><span class="pre">BodySite</span></tt> field in your mapping file, and you want to describe all of the samples that contain the value <tt class="docutils literal"><span class="pre">Gut</span></tt> in that field in the mapping file, your state string should look like <tt class="docutils literal"><span class="pre">BodySite:Gut</span></tt>. To negate this, to describe all samples that don&#8217;t have <tt class="docutils literal"><span class="pre">Gut</span></tt> in the <tt class="docutils literal"><span class="pre">BodySite</span></tt> field, your state string should look like <tt class="docutils literal"><span class="pre">BodySite:*,!Gut</span></tt>. In this case the <tt class="docutils literal"><span class="pre">*</span></tt> is saying any value, and the <tt class="docutils literal"><span class="pre">!Gut</span></tt> is saying <em>except Gut</em>.</p>
+<p>To describe data based on more than one field, you can separate <tt class="docutils literal"><span class="pre">FIELD:VALUE</span></tt> pairs with a <tt class="docutils literal"><span class="pre">;</span></tt>, as in <tt class="docutils literal"><span class="pre">FIELD1:VALUE1;FIELD2:VALUE2</span></tt>. For example, <tt class="docutils literal"><span class="pre">BodySite:Gut;Age:42</span></tt> would describe all samples with the value <tt class="docutils literal"><span class="pre">Gut</span></tt> in the <tt class="docutils literal"><span class="pre">BodySite</span></tt> field, and <tt class="docutils literal"><span class="pre">42</span></tt> in the <tt class="docutils literal"><span class="pre">Age</span></tt> field. You can of course use the negation operator here as well. For example, <tt class="docutils literal"><span class="pre">BodySite:*,!Gut;Age:42</span></tt> would describe all samples that don&#8217;t have the value <tt class="docutils literal"><span class="pre">Gut</span></tt> in the <tt class="docutils literal"><span class="pre">BodySite</span></tt> field, and do have <tt class="docutils literal"><span class="pre">42</span></tt> in the <tt class="docutils literal"><span class="pre">Age</span></tt> field.</p>
+<p><strong>IMPORTANT</strong>: When passing state strings on the command line, you must put these in single quotes to avoid the shell interpreting these directly. For example:</p>
+<div class="highlight-python"><div class="highlight"><pre>filter_samples_from_otu_table.py -i otu_table.biom -o otu_table_not_control.biom -m map.txt -s &#39;Treatment:*,!Control&#39;
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="index.html">Tutorials</a><br /></li>
+    <li><a href="../scripts/index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="remote_mapping_files.html"
+                        title="previous chapter">Using Remote Mapping Files</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../scripts/index.html"
+                        title="next chapter">QIIME Scripts</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../scripts/index.html" title="QIIME Scripts"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="remote_mapping_files.html" title="Using Remote Mapping Files"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

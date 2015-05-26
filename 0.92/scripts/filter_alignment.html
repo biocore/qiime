@@ -1,0 +1,158 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>filter_alignment.py – Filter sequence alignment by removing highly variable regions &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="Scripts - Analyses and Parameters" href="../doc_script_index.html" />
+    <link rel="next" title="parallel_align_seqs_pynast.py – Parallel sequence alignment using PyNAST" href="parallel_align_seqs_pynast.html" />
+    <link rel="prev" title="align_seqs.py – Align sequences using a variety of alignment methods" href="align_seqs.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;">
+	<p style="font-size:12pt;padding: 5px;"><b>News and Announcements &raquo;</b>
+<script type="text/javascript" src="http://app.feed.informer.com/digest3/U9OLMKHF9N.js"><noscript><a href="http://app.feed.informer.com/digest3/U9OLMKHF9N.html">Click for &quot;QIIME&quot;.</a> Powered by <a href="http://feed.informer.com/">RSS Feed Informer</a></noscript></script></p>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="parallel_align_seqs_pynast.html" title="parallel_align_seqs_pynast.py – Parallel sequence alignment using PyNAST"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="align_seqs.html" title="align_seqs.py – Align sequences using a variety of alignment methods"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation.html" >QIIME Documentation</a> &raquo;</li>
+          <li><a href="../doc_script_index.html" accesskey="U">Scripts - Analyses and Parameters</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="filter-alignment"></span><div class="section" id="filter-alignment-py-filter-sequence-alignment-by-removing-highly-variable-regions">
+<span id="index-97"></span><h1><em>filter_alignment.py</em> &#8211; Filter sequence alignment by removing highly variable regions<a class="headerlink" href="#filter-alignment-py-filter-sequence-alignment-by-removing-highly-variable-regions" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>This script should be applied to generate a useful tree when aligning against a template alignment (e.g., with PyNAST). This script will remove positions which are gaps in every sequence (common for PyNAST, as typical sequences cover only 200-400 bases, and they are being aligned against the full 16S gene). Additionally, the user can supply a lanemask file, that defines which positions should included when building the tree, and which should be ignored. Typically, this will differentiate between non-conserved positions, which are uninformative for tree building, and conserved positions which are informative for tree building. FILTERING ALIGNMENTS WHICH WERE BUILD WITH PYNAST AGAINST THE GREENGENES CORE SET ALIGNMENT SHOULD BE CONSIDERED AN ESSENTIAL STEP.</p>
+<p><strong>Usage:</strong> <tt class="docutils literal"><span class="pre">filter_alignment.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-input_fasta_file</dt>
+<dd>The input directory</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>The output directory [default: .]</dd>
+<dt>-m, <cite>-</cite>-lane_mask_fp</dt>
+<dd>Path to lanemask file [default: None]</dd>
+<dt>-s, <cite>-</cite>-suppress_lane_mask_filter</dt>
+<dd>Suppress lane mask filtering (necessary to turn off lane-mask-based filtering when a qiime_config default is  provided for &#8211;lane_mask_fp) [default: False]</dd>
+<dt>-g, <cite>-</cite>-allowed_gap_frac</dt>
+<dd>Gap filter threshold, filters positions which are gaps in &gt; allowed_gap_frac of the sequences [default: 0.999999]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>The output of <a class="reference external" href="./filter_alignment.html">filter_alignment.py</a> consists of a single FASTA file, which ends with &#8220;pfiltered.fasta&#8221;, where the &#8220;p&#8221; stands for positional filtering of the columns.</p>
+<p><strong>Examples:</strong></p>
+<p>As a simple example of this script, the user can use the following command, which consists of an input FASTA file (i.e. resulting file from <a class="reference external" href="./align_seqs.html">align_seqs.py</a>), lanemask template file and the output directory &#8220;filtered_alignment/&#8221;:</p>
+<div class="highlight-python"><pre>filter_alignment.py -i repr_set_seqs_aligned.fna -m lanemask_template -o filtered_alignment/</pre>
+</div>
+<p>Alternatively, if the user would like to use a different gap fraction threshold (&#8220;-g&#8221;), they can use the following command:</p>
+<div class="highlight-python"><pre>filter_alignment.py -i repr_set_seqs_aligned.fna -m lanemask_template -o filtered_alignment/ -g 0.95</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="align_seqs.html"
+                                  title="previous chapter"><em>align_seqs.py</em> &#8211; Align sequences using a variety of alignment methods</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="parallel_align_seqs_pynast.html"
+                                  title="next chapter"><em>parallel_align_seqs_pynast.py</em> &#8211; Parallel sequence alignment using PyNAST</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/scripts/filter_alignment.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="parallel_align_seqs_pynast.html" title="parallel_align_seqs_pynast.py – Parallel sequence alignment using PyNAST"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="align_seqs.html" title="align_seqs.py – Align sequences using a variety of alignment methods"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation.html" >QIIME Documentation</a> &raquo;</li>
+          <li><a href="../doc_script_index.html" >Scripts - Analyses and Parameters</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+  </body>
+</html>

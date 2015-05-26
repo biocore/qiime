@@ -1,0 +1,145 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>process_sff.py – Convert sff to FASTA and QUAL files &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="Scripts - Analyses and Parameters" href="../doc_script_index.html" />
+    <link rel="next" title="sra_spreadsheet_to_map_files.py – Create mapping file from SRA submission spreadsheet" href="sra_spreadsheet_to_map_files.html" />
+    <link rel="prev" title="per_library_stats.py – Calculate per library statistics" href="per_library_stats.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;">
+	<p style="font-size:12pt;padding: 5px;"><b>News and Announcements &raquo;</b>
+<script type="text/javascript" src="http://app.feed.informer.com/digest3/U9OLMKHF9N.js"><noscript><a href="http://app.feed.informer.com/digest3/U9OLMKHF9N.html">Click for &quot;QIIME&quot;.</a> Powered by <a href="http://feed.informer.com/">RSS Feed Informer</a></noscript></script></p>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="sra_spreadsheet_to_map_files.html" title="sra_spreadsheet_to_map_files.py – Create mapping file from SRA submission spreadsheet"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="per_library_stats.html" title="per_library_stats.py – Calculate per library statistics"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation.html" >QIIME Documentation</a> &raquo;</li>
+          <li><a href="../doc_script_index.html" accesskey="U">Scripts - Analyses and Parameters</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="process-sff"></span><div class="section" id="process-sff-py-convert-sff-to-fasta-and-qual-files">
+<span id="index-138"></span><h1><em>process_sff.py</em> &#8211; Convert sff to FASTA and QUAL files<a class="headerlink" href="#process-sff-py-convert-sff-to-fasta-and-qual-files" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>This script converts a directory of sff files into FASTA and QUAL files.</p>
+<p>This script requires that 454&#8217;s off-instrument apps (sffinfo, sfffile) are in your path.</p>
+<p><strong>Usage:</strong> <tt class="docutils literal"><span class="pre">process_sff.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="last docutils">
+<dt>-i, <cite>-</cite>-input_dir</dt>
+<dd>Input directory of sff files</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>This script results in FASTA and QUAL formatted files.</p>
+<p><strong>Simple example:</strong></p>
+<p>Convert all the sffs in directory &#8220;sffs/&#8221; to fasta and qual.</p>
+<div class="highlight-python"><pre>process_sff.py -i sffs/</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="per_library_stats.html"
+                                  title="previous chapter"><em>per_library_stats.py</em> &#8211; Calculate per library statistics</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="sra_spreadsheet_to_map_files.html"
+                                  title="next chapter"><em>sra_spreadsheet_to_map_files.py</em> &#8211; Create mapping file from SRA submission spreadsheet</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/scripts/process_sff.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="sra_spreadsheet_to_map_files.html" title="sra_spreadsheet_to_map_files.py – Create mapping file from SRA submission spreadsheet"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="per_library_stats.html" title="per_library_stats.py – Calculate per library statistics"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation.html" >QIIME Documentation</a> &raquo;</li>
+          <li><a href="../doc_script_index.html" >Scripts - Analyses and Parameters</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+  </body>
+</html>

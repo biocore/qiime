@@ -1,0 +1,243 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>identify_chimeric_seqs.py – Identify chimeric sequences in input FASTA file &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.8.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="identify-chimeric-seqs"></span><div class="section" id="index-0">
+<span id="identify-chimeric-seqs-py-identify-chimeric-sequences-in-input-fasta-file"></span><h1><em>identify_chimeric_seqs.py</em> &#8211; Identify chimeric sequences in input FASTA file<a class="headerlink" href="#index-0" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>A FASTA file of sequences, can be screened to remove chimeras (sequences generated due to the PCR amplification of multiple templates or parent sequences). QIIME currently includes a taxonomy-assignment-based approach, blast_fragments, for identifying sequences as chimeric and the ChimeraSlayer algorithm.</p>
+<ol class="arabic simple">
+<li>Blast_fragments approach:</li>
+</ol>
+<p>The reference sequences (-r) and id-to-taxonomy map (-t) provided are the same format as those provided to <a class="reference external" href="./assign_taxonomy.html">assign_taxonomy.py</a>. The reference sequences are in fasta format, and the id-to-taxonomy map contains tab-separated lines where the first field is a sequence identifier, and the second field is the taxonomy separated by semi-colons (e.g., Archaea;Euryarchaeota;Methanobacteriales;Methanobacterium). The reference collection should be derived from a chimera-checked database (such as the full greengenes database), and filtered to contain only sequences at, for example, a maximum of 97% sequence identity.</p>
+<ol class="arabic simple" start="2">
+<li>ChimeraSlayer:</li>
+</ol>
+<p>ChimeraSlayer uses BLAST to identify potential chimera parents and computes the optimal branching alignment of the query against two parents.
+We suggest to use the pynast aligned representative sequences as input.</p>
+<ol class="arabic simple" start="3">
+<li>usearch61:</li>
+</ol>
+<p>usearch61 performs both de novo (abundance based) chimera and reference based detection.  Unlike the other two chimera checking software, unclustered sequences should be used as input rather than a representative sequence set, as these sequences need to be clustered to get abundance data.  The results can be taken as the union or intersection of all input sequences not flagged as chimeras.  For details, see: <a class="reference external" href="http://drive5.com/usearch/usearch_docs.html">http://drive5.com/usearch/usearch_docs.html</a></p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">identify_chimeric_seqs.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-input_fasta_fp</dt>
+<dd>Path to the input fasta file</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-t, <cite>-</cite>-id_to_taxonomy_fp</dt>
+<dd>Path to tab-delimited file mapping sequences to assigned taxonomy. Each assigned taxonomy is provided as a comma-separated list. [default: None; REQUIRED when method is blast_fragments]</dd>
+<dt>-r, <cite>-</cite>-reference_seqs_fp</dt>
+<dd>Path to reference sequences (used to build a blast db when method blast_fragments or reference database for usearch61). [default: None; REQUIRED when method blast_fragments if no blast_db is provided, suppress requirement for usearch61 with &#8211;suppress_usearch61_ref;]</dd>
+<dt>-a, <cite>-</cite>-aligned_reference_seqs_fp</dt>
+<dd>Path to (Py)Nast aligned reference sequences. REQUIRED when method ChimeraSlayer [default: None]</dd>
+<dt>-b, <cite>-</cite>-blast_db</dt>
+<dd>Database to blast against. Must provide either &#8211;blast_db or &#8211;reference_seqs_fp when method is blast_fragments [default: None]</dd>
+<dt>-m, <cite>-</cite>-chimera_detection_method</dt>
+<dd>Chimera detection method. Choices: blast_fragments or ChimeraSlayer or usearch61. [default:ChimeraSlayer]</dd>
+<dt>-n, <cite>-</cite>-num_fragments</dt>
+<dd>Number of fragments to split sequences into (i.e., number of expected breakpoints + 1) [default: 3]</dd>
+<dt>-d, <cite>-</cite>-taxonomy_depth</dt>
+<dd>Number of taxonomic divisions to consider when comparing taxonomy assignments [default: 4]</dd>
+<dt>-e, <cite>-</cite>-max_e_value</dt>
+<dd>Max e-value to assign taxonomy [default: 1e-30]</dd>
+<dt>-R, <cite>-</cite>-min_div_ratio</dt>
+<dd>Min divergence ratio (passed to ChimeraSlayer). If set to None uses ChimeraSlayer default value.  [default: None]</dd>
+<dt>-k, <cite>-</cite>-keep_intermediates</dt>
+<dd>Keep intermediate files, useful for debugging  [default: False]</dd>
+<dt><cite>-</cite>-suppress_usearch61_intermediates</dt>
+<dd>Use to suppress retention of usearch intermediate files/logs.[default: False]</dd>
+<dt><cite>-</cite>-suppress_usearch61_ref</dt>
+<dd>Use to suppress reference based chimera detection with usearch61 [default: False]</dd>
+<dt><cite>-</cite>-suppress_usearch61_denovo</dt>
+<dd>Use to suppress de novo based chimera detection with usearch61 [default: False]</dd>
+<dt><cite>-</cite>-split_by_sampleid</dt>
+<dd>Enable to split sequences by initial SampleID, requires that fasta be in demultiplexed format, e.g., &gt;Sample.1_0, &gt;Sample.2_1, &gt;Sample.1_2, with the initial string before first underscore matching SampleIDs. If not in this format, could cause unexpected errors. [default: False]</dd>
+<dt><cite>-</cite>-non_chimeras_retention</dt>
+<dd>Usearch61 only - selects subsets of sequences detected as non-chimeras to retain after de novo and reference based chimera detection.  Options are intersection or union.  union will retain sequences that are flagged as non-chimeric from either filter, while intersection will retain only those sequences that are flagged as non-chimeras from both detection methods. [default: union]</dd>
+<dt><cite>-</cite>-usearch61_minh</dt>
+<dd>Minimum score (h). Increasing this value tends to reduce the number of false positives and decrease sensitivity.[default: 0.28]</dd>
+<dt><cite>-</cite>-usearch61_xn</dt>
+<dd>Weight of &#8216;no&#8217; vote. Increasing this value tends to the number of false positives (and also sensitivity). Must be &gt; 1.[default: 8.0]</dd>
+<dt><cite>-</cite>-usearch61_dn</dt>
+<dd>Pseudo-count prior for &#8216;no&#8217; votes. (n). Increasing this value tends to the number of false positives (and also sensitivity). Must be &gt; 0.[default: 1.4]</dd>
+<dt><cite>-</cite>-usearch61_mindiffs</dt>
+<dd>Minimum number of diffs in a segment. Increasing this value tends to reduce the number of false positives while reducing sensitivity to very low-divergence chimeras. Must be &gt; 0.[default: 3]</dd>
+<dt><cite>-</cite>-usearch61_mindiv</dt>
+<dd>Minimum divergence, i.e. 100% - identity between the query and closest reference database sequence. Expressed as a percentage, so the default is 0.8%, which allows chimeras that are up to 99.2% similar to a reference sequence. This value is chosen to improve sensitivity to very low-divergence chimeras.  Must be &gt; 0.[default: 0.8]</dd>
+<dt><cite>-</cite>-usearch61_abundance_skew</dt>
+<dd>Abundance skew setting for de novo chimera detection with usearch61. Must be &gt; 0. [default: 2.0]</dd>
+<dt><cite>-</cite>-percent_id_usearch61</dt>
+<dd>Percent identity threshold for clustering with usearch61. [default: 0.97]</dd>
+<dt><cite>-</cite>-minlen</dt>
+<dd>Minimum length of sequence allowed for usearch61 [default: 64]</dd>
+<dt><cite>-</cite>-word_length</dt>
+<dd>Word length value for usearch61. [default: 8]</dd>
+<dt><cite>-</cite>-max_accepts</dt>
+<dd>Max_accepts value to usearch61. [default: 1]</dd>
+<dt><cite>-</cite>-max_rejects</dt>
+<dd>Max_rejects value for usearch61.  [default: 8]</dd>
+<dt>-o, <cite>-</cite>-output_fp</dt>
+<dd>Path to store output, output filepath in the case of blast_fragments and ChimeraSlayer, or directory in case of usearch61  [default: derived from input_seqs_fp]</dd>
+<dt><cite>-</cite>-threads</dt>
+<dd>Specify number of threads per core to be used for  usearch61 commands that utilize multithreading. By default, will calculate the number of cores to utilize so a single thread will be used per CPU. Specify a fractional number, e.g. 1.0 for 1 thread per core, or 0.5 for a single thread on a two core CPU. Only applies to usearch61. [default: one_per_cpu]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>The result of <a class="reference external" href="./identify_chimeric_seqs.html">identify_chimeric_seqs.py</a> is a text file that identifies which sequences are chimeric.</p>
+<p><strong>blast_fragments example:</strong></p>
+<p>For each sequence provided as input, the blast_fragments method splits the input sequence into n roughly-equal-sized, non-overlapping fragments, and assigns taxonomy to each fragment against a reference database. The BlastTaxonAssigner (implemented in <a class="reference external" href="./assign_taxonomy.html">assign_taxonomy.py</a>) is used for this. The taxonomies of the fragments are compared with one another (at a default depth of 4), and if contradictory assignments are returned the sequence is identified as chimeric. For example, if an input sequence was split into 3 fragments, and the following taxon assignments were returned:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="15%" />
+<col width="85%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>fragment1:</td>
+<td>Archaea;Euryarchaeota;Methanobacteriales;Methanobacterium</td>
+</tr>
+<tr class="row-even"><td>fragment2:</td>
+<td>Archaea;Euryarchaeota;Halobacteriales;uncultured</td>
+</tr>
+<tr class="row-odd"><td>fragment3:</td>
+<td>Archaea;Euryarchaeota;Methanobacteriales;Methanobacterium</td>
+</tr>
+</tbody>
+</table>
+<p>The sequence would be considered chimeric at a depth of 3 (Methanobacteriales vs. Halobacteriales), but non-chimeric at a depth of 2 (all Euryarchaeota).</p>
+<p>blast_fragments begins with the assumption that a sequence is non-chimeric, and looks for evidence to the contrary. This is important when, for example, no taxonomy assignment can be made because no blast result is returned. If a sequence is split into three fragments, and only one returns a blast hit, that sequence would be considered non-chimeric. This is because there is no evidence (i.e., contradictory blast assignments) for the sequence being chimeric. This script can be run by the following command, where the resulting data is written to the directory &#8220;identify_chimeras/&#8221; and using default parameters (e.g. chimera detection method (&#8220;-m blast_fragments&#8221;), number of fragments (&#8220;-n 3&#8221;), taxonomy depth (&#8220;-d 4&#8221;) and maximum E-value (&#8220;-e 1e-30&#8221;)):</p>
+<div class="highlight-python"><pre>identify_chimeric_seqs.py -i repr_set_seqs.fasta -t taxonomy_assignment.txt -r ref_seq_set.fna -m blast_fragments -o chimeric_seqs_blast.txt</pre>
+</div>
+<p><strong>ChimeraSlayer Example:</strong></p>
+<p>Identify chimeric sequences using the ChimeraSlayer algorithm against a user provided reference data base. The input sequences need to be provided in aligned (Py)Nast format. The reference data base needs to be provided as aligned FASTA (-a). Note that the reference database needs to be the same that was used to build the alignment of the input sequences!</p>
+<div class="highlight-python"><pre>identify_chimeric_seqs.py -m ChimeraSlayer -i repr_set_seqs_aligned.fasta -a ref_seq_set_aligned.fasta -o chimeric_seqs_cs.txt</pre>
+</div>
+<p><strong>usearch61 Example:</strong></p>
+<p>Identify chimeric sequences using the usearch61 algorithm against a user provided reference data base.  The input sequences should be the demultiplexed (not clustered rep set!) sequences, such as those output from <a class="reference external" href="./split_libraries.html">split_libraries.py</a>. The input sequences need to be provided as unaligned fasta in the same orientation as the query sequences.</p>
+<div class="highlight-python"><pre>identify_chimeric_seqs.py -m usearch61 -i seqs.fna -r ref_sequences.fasta -o usearch61_chimera_checking/</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

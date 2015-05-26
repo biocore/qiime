@@ -1,0 +1,205 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Setting up your qiime config file &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="Installing QIIME" href="index.html" />
+    <link rel="next" title="QIIME Tutorials" href="../tutorials/index.html" />
+    <link rel="prev" title="Upgrading to the latest version of QIIME" href="upgrade.html" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../tutorials/index.html" title="QIIME Tutorials"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="upgrade.html" title="Upgrading to the latest version of QIIME"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Installing QIIME</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="setting-up-your-qiime-config-file">
+<span id="qiime-config"></span><h1>Setting up your qiime config file<a class="headerlink" href="#setting-up-your-qiime-config-file" title="Permalink to this headline">¶</a></h1>
+<p>Your QIIME installation can be customized using a <em>qiime config</em> file.</p>
+<p>You have two options of where your <em>qiime config</em> file can be stored, and you can use either or both of these options. First, you can place a file called <tt class="docutils literal"><span class="pre">.qiime_config</span></tt> in your home directory (i.e., <tt class="docutils literal"><span class="pre">$HOME/.qiime_config</span></tt>). Second, you can put the <em>qiime config</em> file in a location of your choice, and define an environment variable called <tt class="docutils literal"><span class="pre">QIIME_CONFIG_FP</span></tt> whose value is the absolute path to the <em>qiime config</em> file. If you use both of these options, the settings that are defined in <tt class="docutils literal"><span class="pre">$HOME/.qiime_config</span></tt> will take precedence over the settings that are defined in <tt class="docutils literal"><span class="pre">$QIIME_CONFIG_FP</span></tt>.</p>
+<p>The values that you can set in your <em>qiime config</em> file are listed below. Defining any of these is optional. QIIME will use built-in defaults for any of these values that you don&#8217;t set.</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">assign_taxonomy_id_to_taxonomy_fp</span></tt> : id-to-taxonomy map to use with assign_taxonomy.py (and parallel versions), if you prefer to not use the default</li>
+<li><tt class="docutils literal"><span class="pre">assign_taxonomy_reference_seqs_fp</span></tt> : reference database to use with assign_taxonomy.py (and parallel versions), if you prefer to not use the default</li>
+<li><tt class="docutils literal"><span class="pre">blastmat_dir</span></tt> : directory where BLAST substitution matrices are stored</li>
+<li><tt class="docutils literal"><span class="pre">blastall_fp</span></tt> : path to <tt class="docutils literal"><span class="pre">blastall</span></tt> executable</li>
+<li><tt class="docutils literal"><span class="pre">cluster_jobs_fp</span></tt> : path to your <em>cluster jobs</em> file. This file is described in detail in <a class="reference internal" href="../tutorials/parallel_qiime.html"><em>Using parallel QIIME</em></a>.</li>
+<li><tt class="docutils literal"><span class="pre">denoiser_min_per_core</span></tt> : minimum number of flowgrams to denoise per core in parallel denoiser runs</li>
+<li><tt class="docutils literal"><span class="pre">jobs_to_start</span></tt> : default number of jobs to start when running QIIME in parallel. This value is described in detail in <a class="reference internal" href="../tutorials/parallel_qiime.html"><em>Using parallel QIIME</em></a>.</li>
+<li><tt class="docutils literal"><span class="pre">pick_otus_reference_seqs_fp</span></tt> : reference database to use with all OTU picking scripts and workflows, if you prefer to not use the default</li>
+<li><tt class="docutils literal"><span class="pre">pynast_template_alignment_blastdb</span></tt> : template alignment to use with PyNAST as a pre-formatted BLAST database, if you prefer to not have a BLAST database constructed from the fasta filepath provided for <tt class="docutils literal"><span class="pre">pynast_template_alignment_fp</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">pynast_template_alignment_fp</span></tt> : template alignment to use with PyNAST as a fasta file, if you prefer to not use the default</li>
+<li><tt class="docutils literal"><span class="pre">sc_queue</span></tt> : default queue to submit jobs to when running parallel QIIME on <a class="reference external" href="http://star.mit.edu/cluster/">StarCluster-based</a> Amazon Web Services clusters</li>
+<li><tt class="docutils literal"><span class="pre">seconds_to_sleep</span></tt> : number of seconds to wait when checking whether parallel jobs have completed</li>
+<li><tt class="docutils literal"><span class="pre">slurm_memory</span></tt> : amount of memory in megabytes to request per CPU, when using <tt class="docutils literal"><span class="pre">start_parallel_jobs_slurm.py</span></tt>; will default to slurm&#8217;s default</li>
+<li><tt class="docutils literal"><span class="pre">slurm_queue</span></tt> : queue to submit jobs to, when using <tt class="docutils literal"><span class="pre">start_parallel_jobs_slurm.py</span></tt>; will default to slurm&#8217;s default</li>
+<li><tt class="docutils literal"><span class="pre">temp_dir</span></tt> : directory for storing temporary files created by QIIME scripts. When a script completes successfully, any temporary files that it created are cleaned up. If you&#8217;re working in a cluster environment, this directory must be shared across all of the worker nodes that QIIME jobs may be running on. This directory is described in detail in <a class="reference internal" href="../tutorials/parallel_qiime.html"><em>Using parallel QIIME</em></a>.</li>
+<li><tt class="docutils literal"><span class="pre">topiaryexplorer_project_dir</span></tt> : directory where TopiaryExplorer is installed</li>
+<li><tt class="docutils literal"><span class="pre">torque_queue</span></tt> : default queue to submit jobs to when using <tt class="docutils literal"><span class="pre">start_parallel_jobs_torque.py</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">slurm_time</span></tt> : default runtime limit for jobs when using <tt class="docutils literal"><span class="pre">start_parallel_jobs_slurm.py</span></tt></li>
+</ul>
+<div class="section" id="viewing-and-testing-your-qiime-config-settings">
+<h2>Viewing and testing your <tt class="docutils literal"><span class="pre">qiime_config</span></tt> settings<a class="headerlink" href="#viewing-and-testing-your-qiime-config-settings" title="Permalink to this headline">¶</a></h2>
+<p>To see the qiime_config values as read by QIIME, run:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">print_qiime_config</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">t</span>
+</pre></div>
+</div>
+<p>We refer to the output of this command as the <em>print_qiime_config.py output</em>.</p>
+<p>If you have added some of the above settings to a <em>qiime config</em> file, and you do not see those settings associated with the values in your print_qiime_config.py output, that means that QIIME did not find your <em>qiime config</em> file. Check that it is in one of the two allowed locations described above.</p>
+</div>
+<div class="section" id="default-reference-files">
+<h2>Default reference files<a class="headerlink" href="#default-reference-files" title="Permalink to this headline">¶</a></h2>
+<p>Several of the above settings will fall back to default files if not overwritten. These are:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">assign_taxonomy_id_to_taxonomy_fp</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">assign_taxonomy_reference_seqs_fp</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">pick_otus_reference_seqs_fp</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">pynast_template_alignment_fp</span></tt></li>
+</ul>
+<p>In the <em>QIIME default reference information</em> section of the print_qiime_config.py output, you&#8217;ll be presented with a link to a page that describes what files are used as the defaults for each of these. These files come from the <a class="reference external" href="http://github.com/biocore/qiime-default-reference">qiime-default-reference project</a>, one of QIIME&#8217;s core dependencies. (We don&#8217;t describe those here as the defaults may differ based on how recent your QIIME installation is.)</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Setting up your qiime config file</a><ul>
+<li><a class="reference internal" href="#viewing-and-testing-your-qiime-config-settings">Viewing and testing your <tt class="docutils literal"><span class="pre">qiime_config</span></tt> settings</a></li>
+<li><a class="reference internal" href="#default-reference-files">Default reference files</a></li>
+</ul>
+</li>
+</ul>
+
+
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="../scripts/index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="upgrade.html"
+                        title="previous chapter">Upgrading to the latest version of QIIME</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../tutorials/index.html"
+                        title="next chapter">QIIME Tutorials</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../tutorials/index.html" title="QIIME Tutorials"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="upgrade.html" title="Upgrading to the latest version of QIIME"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" >Installing QIIME</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

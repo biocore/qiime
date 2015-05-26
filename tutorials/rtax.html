@@ -1,0 +1,225 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Taxonomic classifications of single- and paired-end sequences with RTAX &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Tutorials" href="index.html" />
+    <link rel="next" title="Re-training the RDP Classifier" href="retraining_rdp.html" />
+    <link rel="prev" title="Denoising and chimera detection usage differences in QIIME" href="denoising_and_chimera_detection_usage_comparison.html" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="retraining_rdp.html" title="Re-training the RDP Classifier"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="denoising_and_chimera_detection_usage_comparison.html" title="Denoising and chimera detection usage differences in QIIME"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="taxonomic-classifications-of-single-and-paired-end-sequences-with-rtax">
+<span id="rtax"></span><h1>Taxonomic classifications of single- and paired-end sequences with RTAX<a class="headerlink" href="#taxonomic-classifications-of-single-and-paired-end-sequences-with-rtax" title="Permalink to this headline">¶</a></h1>
+<p>The RTAX procedure takes advantage of mate-pair information when performing taxonomic classification.  The additional information from a second read may allow a more precise taxonomy assignment to be made.  Conversely, the second read may reveal greater uncertainty in the assignment than would have been inferred from one read alone, leading to a less precise (but more accurate) assignment.</p>
+<p>RTAX may also be used to classify single reads.  Here too it attempts to avoid overprediction by considering a range of best hits (something like a k-nearest-neighbor classifier), in contrast to the single best hit approach used by the Blast classifier.</p>
+<div class="section" id="taxonomic-classifications-of-paired-end-sequences">
+<h2>Taxonomic classifications of paired-end sequences<a class="headerlink" href="#taxonomic-classifications-of-paired-end-sequences" title="Permalink to this headline">¶</a></h2>
+<p>To obtain taxonomic classifications of paired-end sequences with RTAX, follow these steps:</p>
+<div class="section" id="obtain-fasta-files-for-each-read">
+<h3>Obtain fasta files for each read<a class="headerlink" href="#obtain-fasta-files-for-each-read" title="Permalink to this headline">¶</a></h3>
+<p>Run <a class="reference external" href="../scripts/split_libraries_fastq.html">split_libraries_fastq.py</a> on each read individually (making sure to reverse-complement the reverse read):</p>
+<div class="highlight-python"><div class="highlight"><pre>split_libraries_fastq.py -i s_1_1.seqs.fastq -o sl_out.1/ -b s_1_1.barcodes.fastq -m s_1_map.txt
+
+split_libraries_fastq.py -i s_1_3.seqs.fastq -o sl_out.2/ -b s_1_3.barcodes.fastq -m s_1_map.txt --rev_comp
+</pre></div>
+</div>
+<p>Note that while most amplicons should be represented in both the forward and the reverse read files (i.e., with mate pairs matchable by amplicon ID), it may happen that one read is eliminated by quality filters while the other is not.</p>
+<p>Normally the fasta files resulting from <a class="reference external" href="../scripts/split_libraries_fastq.html">split_libraries_fastq.py</a> will contain millions of sequences; for tutorial purposes we provide tiny samples taken from (<a class="reference external" href="http://www.ncbi.nlm.nih.gov/pubmed/20534432">Caporaso et al. 2010 PNAS</a>).  These are constructed to contain 10,000 mate-pairs, as well as 1000 sequences represented only by the forward read and 2000 represented only by the reverse read.  The sample forward and reverse read files thus contain 11,000 and 12,000 sequences, respectively.</p>
+</div>
+<div class="section" id="perform-otu-picking">
+<h3>Perform OTU picking<a class="headerlink" href="#perform-otu-picking" title="Permalink to this headline">¶</a></h3>
+<p>Our procedure is to perform OTU picking on one read only, but then to obtain additional information from the second read at the taxonomic classification step.  So, start by running the standard one-read pipeline:</p>
+<div class="highlight-python"><div class="highlight"><pre>pick_de_novo_otus.py -i rtax_sample_data/forward_read.11k.fna -o pick_otus.out -v
+</pre></div>
+</div>
+<p>In addition to choosing representative sequences, that produces taxonomy information using just the given read and the default classifier; this may be interesting for comparison with the RTAX results. (The PyNast part may fail on short sequences, given the default options, but the OTU representatives will be written to pick_otus.out/rep_set, which is really all we need). You can choose OTUs based on the forward or the reverse read here, or do it both ways to compare; the downstream RTAX classification doesn&#8217;t care which read is which.</p>
+<p>The OTU-picking procedure is completely unaware of the reverse read, and so may choose representative sequences for which only the forward read was available.  In this example, there are 2301 cluster representatives, of which 2079 turn out to have a mate pair and 222 do not.</p>
+</div>
+<div class="section" id="classify-cluster-representatives">
+<h3>Classify cluster representatives<a class="headerlink" href="#classify-cluster-representatives" title="Permalink to this headline">¶</a></h3>
+<p>To classify the cluster representatives, pass them as the main input to assign_taxonomy as usual, but also provide the complete unclustered fasta files for both reads:</p>
+<div class="highlight-python"><div class="highlight"><pre>assign_taxonomy.py -i pick_otus.out/rep_set/forward_read.11k_rep_set.fasta -m rtax --read_1_seqs_fp rtax_sample_data/forward_read.11k.fna --read_2_seqs_fp rtax_sample_data/reverse_read.12k.fna -r  /software/gg_otus-4feb2011-release/rep_set/gg_97_otus_4feb2011.fasta -t  /software/gg_otus-4feb2011-release/taxonomies/greengenes_tax.txt -v
+</pre></div>
+</div>
+<p>The resulting taxonomy file will contain the same FASTA headers that were present in the representative sequence file, typically a cluster ID and the read ID produced by the <a class="reference external" href="../scripts/split_libraries_fastq.html">split_libraries_fastq.py</a> step.</p>
+<p>RTAX does not presently compute a confidence value for each assignment.  Because Qiime expects one, RTAX simply reports 1.0 for every sequence&#8211; but this is not meaningful.</p>
+</div>
+<div class="section" id="impact-of-reference-databases">
+<h3>Impact of reference databases<a class="headerlink" href="#impact-of-reference-databases" title="Permalink to this headline">¶</a></h3>
+<p>The choice of reference database can have a large impact on the results.  The 97%-clustered database provided with QIIME is used in this example.  For 99% OTUs, simply replace &#8220;97&#8221; with &#8220;99&#8221; in the -r option.</p>
+<p>An alternative set of reference databases&#8211;those used in (<a class="reference external" href="http://www.ncbi.nlm.nih.gov/pubmed/22237546">Soergel et al. 2012</a>)&#8211;is available <a class="reference external" href="http://dev.davidsoergel.com/rtax">here</a>.  To use these, the command line options would include <tt class="docutils literal"><span class="pre">-t</span> <span class="pre">rtax.greengenes.20110311/gg.nr.taxonomy</span> <span class="pre">-r</span> <span class="pre">rtax.greengenes.20110311/gg.nr.fasta</span></tt>.</p>
+</div>
+<div class="section" id="fallback-from-paired-end-to-single-ended-classification">
+<h3>Fallback from paired-end to single-ended classification<a class="headerlink" href="#fallback-from-paired-end-to-single-ended-classification" title="Permalink to this headline">¶</a></h3>
+<p>By default, RTAX classifies only those sequences for which mate pairs are available.  In this case, 2079 of the 2301 cluster representatives have an associated reverse read and thus are classified, while the remaining 222 are ignored.</p>
+<p>If you wish to classify the remaining sequences using the single-ended classification procedure, pass the &#8220;&#8211;single_ok&#8221; option:</p>
+<div class="highlight-python"><div class="highlight"><pre>assign_taxonomy.py -i pick_otus.out/rep_set/forward_read.11k_rep_set.fasta -m rtax --read_1_seqs_fp rtax_sample_data/forward_read.11k.fna --read_2_seqs_fp rtax_sample_data/reverse_read.12k.fna -r gg_otus_4feb2011/rep_set/gg_97_otus_4feb2011.fasta -t gg_otus_4feb2011/taxonomies/greengenes_tax.txt -v --single_ok
+</pre></div>
+</div>
+<p>This classifies all of the cluster representative sequences, with the caveat that the taxonomic predictions for the single-ended representatives may be less accurate than those for the paired-end cases.</p>
+</div>
+</div>
+<div class="section" id="taxonomic-classifications-of-single-ended-sequences">
+<h2>Taxonomic classifications of single-ended sequences<a class="headerlink" href="#taxonomic-classifications-of-single-ended-sequences" title="Permalink to this headline">¶</a></h2>
+<p>RTAX can be used for single-ended classification as well; simply omit the &#8220;&#8211;read_2_seqs_fp&#8221; option.  The original read file for the single read must nonetheless be passed via &#8220;&#8211;read_1_seqs_fp&#8221;; it is needed to establish the mapping between cluster ID, read representative ID, and amplicon ID.:</p>
+<div class="highlight-python"><div class="highlight"><pre>assign_taxonomy.py -i pick_otus.out/rep_set/forward_read.11k_rep_set.fasta -m rtax --read_1_seqs_fp rtax_sample_data/forward_read.11k.fna -r gg_otus_4feb2011/rep_set/gg_97_otus_4feb2011.fasta -t gg_otus_4feb2011/taxonomies/greengenes_tax.txt -v
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Taxonomic classifications of single- and paired-end sequences with RTAX</a><ul>
+<li><a class="reference internal" href="#taxonomic-classifications-of-paired-end-sequences">Taxonomic classifications of paired-end sequences</a><ul>
+<li><a class="reference internal" href="#obtain-fasta-files-for-each-read">Obtain fasta files for each read</a></li>
+<li><a class="reference internal" href="#perform-otu-picking">Perform OTU picking</a></li>
+<li><a class="reference internal" href="#classify-cluster-representatives">Classify cluster representatives</a></li>
+<li><a class="reference internal" href="#impact-of-reference-databases">Impact of reference databases</a></li>
+<li><a class="reference internal" href="#fallback-from-paired-end-to-single-ended-classification">Fallback from paired-end to single-ended classification</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#taxonomic-classifications-of-single-ended-sequences">Taxonomic classifications of single-ended sequences</a></li>
+</ul>
+</li>
+</ul>
+
+
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="index.html">Tutorials</a><br /></li>
+    <li><a href="../scripts/index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="denoising_and_chimera_detection_usage_comparison.html"
+                        title="previous chapter">Denoising and chimera detection usage differences in QIIME</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="retraining_rdp.html"
+                        title="next chapter">Re-training the RDP Classifier</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="retraining_rdp.html" title="Re-training the RDP Classifier"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="denoising_and_chimera_detection_usage_comparison.html" title="Denoising and chimera detection usage differences in QIIME"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

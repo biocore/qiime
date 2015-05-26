@@ -1,0 +1,189 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Multi-step OTU picking &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.7.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="multi-step-otu-picking">
+<span id="chaining-otu-pickers"></span><h1>Multi-step OTU picking<a class="headerlink" href="#multi-step-otu-picking" title="Permalink to this headline">¶</a></h1>
+<p>This document describes how to perform chained or multi-step OTU picking, using the results from the QIIME Overview Tutorial. This is relevant, for example, when you have a very large collection of sequences, and you first want to apply a fast but rough OTU picker (e.g., PrefixSuffix) and then want to apply a slow but better OTU picker (e.g., cdhit).</p>
+<p>This example illustrates how to chain two OTU pickers, which is probably the most common usage. It is possible however to chain an arbitrary number of OTU pickers.</p>
+<div class="section" id="step-1-pick-otus-with-the-fast-method-using-your-full-input-sequence-collection">
+<h2>Step 1. Pick OTUs with the fast method using your full input sequence collection.<a class="headerlink" href="#step-1-pick-otus-with-the-fast-method-using-your-full-input-sequence-collection" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>pick_otus.py -m prefix_suffix -u 0 -i split_library_output/seqs.fna -o prefix_picked_otus</pre>
+</div>
+<p>The resulting OTU map will look something like:</p>
+<div class="highlight-python"><pre>0       PC.634_143      PC.634_196      PC.634_211
+1       PC.481_611</pre>
+</div>
+<p>where 0 and 1 are OTU IDs, and PC.* are sequence IDs.</p>
+</div>
+<div class="section" id="step-2-pick-a-representative-set-of-sequences-for-the-resulting-otu-map">
+<h2>Step 2. Pick a representative set of sequences for the resulting OTU map.<a class="headerlink" href="#step-2-pick-a-representative-set-of-sequences-for-the-resulting-otu-map" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>pick_rep_set.py -i prefix_picked_otus/seqs_otus.txt -f split_library_output/seqs.fna -o prefix_picked_otus/rep_set.fasta</pre>
+</div>
+<p>The resulting fasta file will look something like:</p>
+<div class="highlight-python"><pre>&gt;0 PC.634_143
+TTGGGCCGTGTCTCAGTCCCAATGTGGCCGTTTACCCTCTCAGGCCGGCTACGCATCATCGCCTTGGTGGGCCGTTACCTCACCAACTAGCTAATGCGCCGCAGGTCCATCCATGTTCACGCCTTGATGGGCGCTTTAATATACTGAGCATGCGCTCTGTATACCTATCCGGTTTTAGCTACCGTTTCCAGCAGTTATCCCGGACACATGGGCAGGTT
+&gt;1 PC.481_611
+TTGGTCCGTGTCTCAGTACCAATGTGGGGGTTAACCTCTCAGTCCCCTATGTATCGTCGCCTTGGTGAGCCGTTACCTCACCAACCAGCTAATACAACGCATGCCCATCCATAACCACCGGAGTTTTCAATCAAAAGGGATGCCCCTCTTGATGTTATGGGATATTAGTACCGATTTCTCAGTGTTATCCCCCTGTTATGGGTAGTTGCATACGCGTTACGCACCCGTGCGCCGGTCG</pre>
+</div>
+</div>
+<div class="section" id="step-3-pick-otus-with-the-slow-method-using-the-representative-set">
+<h2>Step 3. Pick OTUs with the slow method using the representative set.<a class="headerlink" href="#step-3-pick-otus-with-the-slow-method-using-the-representative-set" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>pick_otus.py -m cdhit -i prefix_picked_otus/rep_set.fasta -o prefix_picked_otus/cdhit_picked_otus/</pre>
+</div>
+<p>The resulting OTU map will look something like:</p>
+<div class="highlight-python"><pre>0       39
+1       65      103 163</pre>
+</div>
+<p>where the first column (containing 0 and 1) are the OTU IDs and the remaining values on each line are the OTU IDs from the first round of OTU picking.</p>
+</div>
+<div class="section" id="step-4-next-you-must-merge-your-otu-maps-so-your-final-otu-ids-map-to-input-sequence-identifiers">
+<h2>Step 4. Next, you must merge your OTU maps, so your final OTU IDs map to input sequence identifiers.<a class="headerlink" href="#step-4-next-you-must-merge-your-otu-maps-so-your-final-otu-ids-map-to-input-sequence-identifiers" title="Permalink to this headline">¶</a></h2>
+<p>You&#8217;ll need to provide the OTU map filepaths generated above <em>in the order that they were generated!</em> The files paths (passed via -i) should be comma-separated, with no spaces.</p>
+<div class="highlight-python"><pre>merge_otu_maps.py -i prefix_picked_otus/seqs_otus.txt,prefix_picked_otus/cdhit_picked_otus/rep_set_otus.txt -o otus.txt</pre>
+</div>
+<p>The resulting OTU map will look something like:</p>
+<div class="highlight-python"><pre>133 PC.355_971
+132 PC.607_1118
+131 PC.354_823  PC.593_1312</pre>
+</div>
+<p>where 133, 132 and 131 are the OTU IDs from step 3 (i.e., the second round of OTU picking), and PC.* are the original sequence identifiers.</p>
+</div>
+<div class="section" id="step-5-finally-you-can-pick-your-representative-set">
+<h2>Step 5. Finally, you can pick your representative set.<a class="headerlink" href="#step-5-finally-you-can-pick-your-representative-set" title="Permalink to this headline">¶</a></h2>
+<p>At this stage, you&#8217;ll pass the final OTU map (otus.txt) and the <em>original</em> sequence collection (split_library_output/seqs.fna).</p>
+<div class="highlight-python"><pre>pick_rep_set.py -i otus.txt -f split_library_output/seqs.fna -o repr_set.fasta</pre>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Multi-step OTU picking</a><ul>
+<li><a class="reference internal" href="#step-1-pick-otus-with-the-fast-method-using-your-full-input-sequence-collection">Step 1. Pick OTUs with the fast method using your full input sequence collection.</a></li>
+<li><a class="reference internal" href="#step-2-pick-a-representative-set-of-sequences-for-the-resulting-otu-map">Step 2. Pick a representative set of sequences for the resulting OTU map.</a></li>
+<li><a class="reference internal" href="#step-3-pick-otus-with-the-slow-method-using-the-representative-set">Step 3. Pick OTUs with the slow method using the representative set.</a></li>
+<li><a class="reference internal" href="#step-4-next-you-must-merge-your-otu-maps-so-your-final-otu-ids-map-to-input-sequence-identifiers">Step 4. Next, you must merge your OTU maps, so your final OTU IDs map to input sequence identifiers.</a></li>
+<li><a class="reference internal" href="#step-5-finally-you-can-pick-your-representative-set">Step 5. Finally, you can pick your representative set.</a></li>
+</ul>
+</li>
+</ul>
+
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2012, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

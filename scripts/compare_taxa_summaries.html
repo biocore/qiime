@@ -1,0 +1,244 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>compare_taxa_summaries.py – Compares taxa summary files &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="compare_trajectories.py – Run analysis of volatility using a variety of algorithms" href="compare_trajectories.html" />
+    <link rel="prev" title="compare_distance_matrices.py – Computes Mantel correlation tests between sets of distance matrices" href="compare_distance_matrices.html" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="compare_trajectories.html" title="compare_trajectories.py – Run analysis of volatility using a variety of algorithms"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="compare_distance_matrices.html" title="compare_distance_matrices.py – Computes Mantel correlation tests between sets of distance matrices"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="compare-taxa-summaries"></span><div class="section" id="compare-taxa-summaries-py-compares-taxa-summary-files">
+<span id="index-0"></span><h1><em>compare_taxa_summaries.py</em> &#8211; Compares taxa summary files<a class="headerlink" href="#compare-taxa-summaries-py-compares-taxa-summary-files" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>This script compares two taxa summary files by computing the correlation
+coefficient between pairs of samples. This is useful, for example, if you want
+to compare the taxonomic composition of mock communities that were assigned
+using different taxonomy assigners in order to see if they are correlated or
+not. Another example use-case is to compare the taxonomic composition of
+several mock community replicate samples to a single expected, or known, sample
+community.</p>
+<p>This script is also useful for sorting and filling taxa summary files so that
+each sample has the same taxa listed in the same order (with missing taxa
+reporting an abundance of zero). The sorted and filled taxa summary files can
+then be passed to a script, such as <a class="reference external" href="./plot_taxa_summary.html">plot_taxa_summary.py</a>, to visually compare
+the differences using the same taxa coloring scheme.</p>
+<p>For more information and examples pertaining to this script, please refer to
+the accompanying tutorial, which can be found at
+<a class="reference external" href="http://qiime.org/tutorials/taxa_summary_comparison.html">http://qiime.org/tutorials/taxa_summary_comparison.html</a>.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">compare_taxa_summaries.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-taxa_summary_fps</dt>
+<dd>The two input taxa summary filepaths, comma-separated. These will usually be the files that are output by <a class="reference external" href="./summarize_taxa.html">summarize_taxa.py</a>. These taxa summary files do not need to have the same taxa in the same order, as the script will make them compatible before comparing them</dd>
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>Path to the output directory</dd>
+<dt>-m, <cite>-</cite>-comparison_mode</dt>
+<dd>The type of comparison to perform. Valid choices: paired or expected. &#8220;paired&#8221; will compare each sample in the taxa summary files that match based on sample ID, or that match given a sample ID map (see the &#8211;sample_id_map_fp option for more information). &#8220;expected&#8221; will compare each sample in the first taxa summary file to an expected sample (contained in the second taxa summary file). If &#8220;expected&#8221;, the second taxa summary file must contain only a single sample that all other samples will be compared to (unless the &#8211;expected_sample_id option is provided)</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-c, <cite>-</cite>-correlation_type</dt>
+<dd>The type of correlation coefficient to compute. Valid choices: pearson or spearman [default: pearson]</dd>
+<dt>-t, <cite>-</cite>-tail_type</dt>
+<dd>The type of tail test to compute when calculating the p-values. &#8220;high&#8221; specifies a one-tailed test for values greater than the observed correlation coefficient (positive association), while &#8220;low&#8221; specifies a one-tailed test for values less than the observed correlation coefficient (negative association). &#8220;two-sided&#8221; specifies a two-tailed test for values greater in magnitude than the observed correlation coefficient. Valid choices: low or high or two-sided [default: two-sided]</dd>
+<dt>-n, <cite>-</cite>-num_permutations</dt>
+<dd>The number of permutations to perform when calculating the nonparametric p-value. Must be an integer greater than or equal to zero. If zero, the nonparametric test of significance will not be performed and the nonparametric p-value will be reported as &#8220;N/A&#8221; [default: 999]</dd>
+<dt>-l, <cite>-</cite>-confidence_level</dt>
+<dd>The confidence level of the correlation coefficient confidence interval. Must be a value between 0 and 1 (exclusive). For example, a 95% confidence interval would be 0.95 [default: 0.95]</dd>
+<dt>-s, <cite>-</cite>-sample_id_map_fp</dt>
+<dd>Map of original sample IDs to new sample IDs. Use this to match up sample IDs that should be compared between the two taxa summary files. Each line should contain an original sample ID, a tab, and the new sample ID. All original sample IDs from the two input taxa summary files must be mapped. This option only applies if the comparison mode is &#8220;paired&#8221;. If not provided, only sample IDs that exist in both taxa summary files will be compared [default: None]</dd>
+<dt>-e, <cite>-</cite>-expected_sample_id</dt>
+<dd>The sample ID in the second &#8220;expected&#8221; taxa summary file to compare all samples to. This option only applies if the comparison mode is &#8220;expected&#8221;. If not provided, the second taxa summary file must have only one sample [default: None]</dd>
+<dt><cite>-</cite>-perform_detailed_comparisons</dt>
+<dd>Perform a comparison for each sample pair in addition to the single overall comparison. The results will include the Bonferroni-corrected p-values in addition to the original p-values [default: False]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>The script will always output at least three files to the specified output
+directory. Two files will be the sorted and filled versions of the input taxa
+summary files, which can then be used in <a class="reference external" href="./plot_taxa_summary.html">plot_taxa_summary.py</a> to visualize the
+differences in taxonomic composition. These files will be named based on the
+basename of the input files. If the input files&#8217; basenames are the same, the
+output files will have &#8216;0&#8217; and &#8216;1&#8217; appended to their names to keep the
+filenames unique. The first input taxa summary file will have &#8216;0&#8217; in its
+filename and the second input taxa summary file will have &#8216;1&#8217; in its filename.</p>
+<p>The third output file will contain the results of the overall comparison of the
+input taxa summary files using the specified sample pairings. The correlation
+coefficient, parametric p-value, nonparametric p-value, and a confidence
+interval for the correlation coefficient will be included.</p>
+<p>If <cite>-</cite>-perform_detailed_comparisons is specified, the fourth output file is a
+tab-separated file containing the correlation coefficients that were computed
+between each of the paired samples. Each line will contain the sample IDs of
+the samples that were compared, followed by the correlation coefficient that
+was computed, followed by the parametric and nonparametric p-values
+(uncorrrected and Bonferroni-corrected) and a confidence interval for the
+correlation coefficient.</p>
+<p>The output files will contain comments at the top explaining the types of tests
+that were performed.</p>
+<p><strong>Paired sample comparison:</strong></p>
+<p>Compare all samples that have matching sample IDs between the two input taxa summary files using the pearson correlation coefficient. The first input taxa summary file is from the overview tutorial, using the RDP classifier with a confidence level of 0.60 and the gg_otus_4feb2011 97% representative set. The second input taxa summary file was generated the same way, except for using a confidence level of 0.80.</p>
+<div class="highlight-python"><div class="highlight"><pre>compare_taxa_summaries.py -i ts_rdp_0.60.txt,ts_rdp_0.80.txt -m paired -o taxa_comp
+</pre></div>
+</div>
+<p><strong>Paired sample comparison with sample ID map:</strong></p>
+<p>Compare samples based on the mappings in the sample ID map using the spearman correlation coefficient. The second input taxa summary file is simply the original ts_rdp_0.60.txt file with all sample IDs containing &#8216;PC.&#8217; renamed to &#8216;S.&#8217;.</p>
+<div class="highlight-python"><div class="highlight"><pre>compare_taxa_summaries.py -i ts_rdp_0.80.txt,ts_rdp_0.60_renamed.txt -m paired -o taxa_comp_using_sample_id_map -s sample_id_map.txt -c spearman
+</pre></div>
+</div>
+<p><strong>Detailed paired sample comparison:</strong></p>
+<p>Compare all samples that have matching sample IDs between the two input taxa summary files using the pearson correlation coefficient. Additionally, compute the correlation coefficient between each pair of samples individually.</p>
+<div class="highlight-python"><div class="highlight"><pre>compare_taxa_summaries.py -i ts_rdp_0.60.txt,ts_rdp_0.80.txt -m paired -o taxa_comp_detailed --perform_detailed_comparisons
+</pre></div>
+</div>
+<p><strong>One-tailed test:</strong></p>
+<p>Compare all samples that have matching sample IDs between the two input taxa summary files using the pearson correlation coefficient. Perform a one-tailed (negative association) test of significance for both parametric and nonparametric tests. Additionally, compute a 90% confidence interval for the correlation coefficient. Note that the confidence interval will still be two-sided.</p>
+<div class="highlight-python"><div class="highlight"><pre>compare_taxa_summaries.py -i ts_rdp_0.60.txt,ts_rdp_0.80.txt -m paired -o taxa_comp_one_tailed -t low -l 0.90
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="compare_distance_matrices.html"
+                        title="previous chapter"><em>compare_distance_matrices.py</em> &#8211; Computes Mantel correlation tests between sets of distance matrices</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="compare_trajectories.html"
+                        title="next chapter"><em>compare_trajectories.py</em> &#8211; Run analysis of volatility using a variety of algorithms</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="compare_trajectories.html" title="compare_trajectories.py – Run analysis of volatility using a variety of algorithms"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="compare_distance_matrices.html" title="compare_distance_matrices.py – Computes Mantel correlation tests between sets of distance matrices"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

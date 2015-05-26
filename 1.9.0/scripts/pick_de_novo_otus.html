@@ -1,0 +1,199 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pick_de_novo_otus.py – A workflow for de novo OTU picking, taxonomy assignment, phylogenetic tree construction, and OTU table construction. &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.9.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="pick_open_reference_otus.py – Perform open-reference OTU picking" href="pick_open_reference_otus.html" />
+    <link rel="prev" title="pick_closed_reference_otus.py – Closed-reference OTU picking/Shotgun UniFrac workflow." href="pick_closed_reference_otus.html" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="pick_open_reference_otus.html" title="pick_open_reference_otus.py – Perform open-reference OTU picking"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pick_closed_reference_otus.html" title="pick_closed_reference_otus.py – Closed-reference OTU picking/Shotgun UniFrac workflow."
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="pick-de-novo-otus"></span><div class="section" id="pick-de-novo-otus-py-a-workflow-for-de-novo-otu-picking-taxonomy-assignment-phylogenetic-tree-construction-and-otu-table-construction">
+<span id="index-0"></span><h1><em>pick_de_novo_otus.py</em> &#8211; A workflow for de novo OTU picking, taxonomy assignment, phylogenetic tree construction, and OTU table construction.<a class="headerlink" href="#pick-de-novo-otus-py-a-workflow-for-de-novo-otu-picking-taxonomy-assignment-phylogenetic-tree-construction-and-otu-table-construction" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>This script takes a sequence file and performs all processing steps through building the OTU table.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">pick_de_novo_otus.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-input_fp</dt>
+<dd>The input fasta file [REQUIRED]</dd>
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>The output directory [REQUIRED]</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-p, <cite>-</cite>-parameter_fp</dt>
+<dd>Path to the parameter file, which specifies changes to the default behavior. See <a class="reference external" href="http://www.qiime.org/documentation/file_formats.html#qiime-parameters">http://www.qiime.org/documentation/file_formats.html#qiime-parameters</a> . [if omitted, default values will be used]</dd>
+<dt>-f, <cite>-</cite>-force</dt>
+<dd>Force overwrite of existing output directory (note: existing files in output_dir will not be removed) [default: None]</dd>
+<dt>-w, <cite>-</cite>-print_only</dt>
+<dd>Print the commands but don&#8217;t call them &#8211; useful for debugging [default: False]</dd>
+<dt>-a, <cite>-</cite>-parallel</dt>
+<dd>Run in parallel where available [default: False]</dd>
+<dt>-O, <cite>-</cite>-jobs_to_start</dt>
+<dd>Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 1]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>This script will produce an OTU mapping file (<a class="reference external" href="./pick_otus.html">pick_otus.py</a>), a representative set of sequences (FASTA file from <a class="reference external" href="./pick_rep_set.html">pick_rep_set.py</a>), a sequence alignment file (FASTA file from <a class="reference external" href="./align_seqs.html">align_seqs.py</a>), taxonomy assignment file (from <a class="reference external" href="./assign_taxonomy.html">assign_taxonomy.py</a>), a filtered sequence alignment (from <a class="reference external" href="./filter_alignment.html">filter_alignment.py</a>), a phylogenetic tree (Newick file from <a class="reference external" href="./make_phylogeny.html">make_phylogeny.py</a>) and a biom-formatted OTU table (from <a class="reference external" href="./make_otu_table.html">make_otu_table.py</a>).</p>
+<p><strong>Uclust example:</strong></p>
+<p>The following command will start an analysis on seqs.fna (-i), which is a post-split_libraries fasta file. The sequence identifiers in this file should be of the form &lt;sample_id&gt;_&lt;unique_seq_id&gt;. The following steps, corresponding to the preliminary data preparation, are applied: Pick de novo OTUs at 97%; pick a representative sequence for each OTU (the OTU centroid sequence); align the representative set with PyNAST; assign taxonomy with the uclust consensus taxonomy assigner; filter the alignment prior to tree building - remove positions which are all gaps, and specified as 0 in the lanemask; build a phylogenetic tree with FastTree; build an OTU table. All output files will be written to the directory specified by -o, and subdirectories as appropriate. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).</p>
+<div class="highlight-python"><div class="highlight"><pre>pick_de_novo_otus.py -i $PWD/seqs.fna -o $PWD/uclust_otus/
+</pre></div>
+</div>
+<p><strong>SumaClust example:</strong></p>
+<p>The following command will start an analysis on seqs.fna (-i), which is a post-split_libraries fasta file. The sequence identifiers in this file should be of the form &lt;sample_id&gt;_&lt;unique_seq_id&gt;. The following steps, corresponding to the preliminary data preparation, are applied: Pick de novo OTUs at 97%; pick a representative sequence for each OTU (the OTU centroid sequence); align the representative set with PyNAST; assign taxonomy with the RDP consensus taxonomy assigner; filter the alignment prior to tree building - remove positions which are all gaps, and specified as 0 in the lanemask; build a phylogenetic tree with FastTree; build an OTU table. All output files will be written to the directory specified by -o, and subdirectories as appropriate. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).</p>
+<div class="highlight-python"><div class="highlight"><pre>pick_de_novo_otus.py -i $PWD/seqs.fna -o $PWD/sumaclust_otus/ -p $PWD/sumaclust_params.txt
+</pre></div>
+</div>
+<p><strong>Swarm example:</strong></p>
+<p>The following command will start an analysis on seqs.fna (-i), which is a post-split_libraries fasta file. The sequence identifiers in this file should be of the form &lt;sample_id&gt;_&lt;unique_seq_id&gt;. The following steps, corresponding to the preliminary data preparation, are applied: Pick de novo OTUs at 97%; pick a representative sequence for each OTU (the OTU centroid sequence); align the representative set with PyNAST; assign taxonomy with the RDP consensus taxonomy assigner; filter the alignment prior to tree building - remove positions which are all gaps, and specified as 0 in the lanemask; build a phylogenetic tree with FastTree; build an OTU table. All output files will be written to the directory specified by -o, and subdirectories as appropriate. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).</p>
+<div class="highlight-python"><div class="highlight"><pre>pick_de_novo_otus.py -i $PWD/seqs.fna -o $PWD/swarm_otus/ -p $PWD/swarm_params.txt
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pick_closed_reference_otus.html"
+                        title="previous chapter"><em>pick_closed_reference_otus.py</em> &#8211; Closed-reference OTU picking/Shotgun UniFrac workflow.</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pick_open_reference_otus.html"
+                        title="next chapter"><em>pick_open_reference_otus.py</em> &#8211; Perform open-reference OTU picking</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="pick_open_reference_otus.html" title="pick_open_reference_otus.py – Perform open-reference OTU picking"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pick_closed_reference_otus.html" title="pick_closed_reference_otus.py – Closed-reference OTU picking/Shotgun UniFrac workflow."
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

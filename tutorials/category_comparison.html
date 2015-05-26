@@ -1,0 +1,261 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Comparing Categories &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Tutorials" href="index.html" />
+    <link rel="next" title="Creating Distance Comparison Plots" href="creating_distance_comparison_plots.html" />
+    <link rel="prev" title="Multi-step OTU picking" href="chaining_otu_pickers.html" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="creating_distance_comparison_plots.html" title="Creating Distance Comparison Plots"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="chaining_otu_pickers.html" title="Multi-step OTU picking"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="comparing-categories">
+<span id="category-comparison"></span><h1>Comparing Categories<a class="headerlink" href="#comparing-categories" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>This tutorial explains the use of several different mapping file category comparison techniques that are available in <a class="reference external" href="../scripts/compare_categories.html">compare_categories.py</a>. A majority of the currently available comparison techniques are based on the ANOVA family of statistical methods, which is a statistical method wherein observed variance in a particular variable is partitioned into components attributable to different sources of variation. Most of the methods available in <a class="reference external" href="../scripts/compare_categories.html">compare_categories.py</a> determine whether the grouping of samples by a given category is statistically significant. Many of these methods are nonparametric, which means they use permutations of the data to determine the p-value, or statistical significance.</p>
+<p><strong>Note:</strong> Many of these methods have been evaluated on empirical and simulated data sets to verify their usefulness on microbial community data. It has been found that these methods seem to suffer from low specificity (i.e. they always seem to detect significance of grouping even when there doesn&#8217;t appear to be any). Even though the methods do not assume normality of the data due to their nonparametric nature, many of the methods assume that each group of samples has equal variance. Thus, it may be possible that the low specificity of the methods is due to violations of this equal variance assumption. Therefore, the methods may be detecting significant differences in the <cite>variability</cite> of sample groups instead of differences in center (i.e. mean). Another potential explanation of this problem is that as the number of samples increases, the more likely you are to see significant p-values. Thus, it is important to look at the <cite>effect size</cite> of the test as well as the statistical significance (e.g. look at ANOSIM&#8217;s R value <cite>and</cite> its p-value). These methods need to be tested more thoroughly to verify these claims, so please be cautious with your use of these methods until then.</p>
+</div>
+<div class="section" id="input-files">
+<h2>Input Files<a class="headerlink" href="#input-files" title="Permalink to this headline">¶</a></h2>
+<p>You can obtain the files used in this tutorial <a class="reference external" href="ftp://ftp.microbio.me/qiime/tutorial_files/keyboard.zip">here</a>. The files are taken from a study (Fierer et al., 2010) where samples were collected from the fingertips of three individuals and the keys of their keyboards. Researchers found that an individual&#8217;s fingertip samples clustered very closely with his or her corresponding keyboard samples. These results have potential application in the field of forensic science. Throughout this tutorial, we will explore various ways of determining whether the clustering of fingertip and keyboard samples is statistically significant by analyzing the groups of samples.</p>
+</div>
+<div class="section" id="output-files">
+<h2>Output Files<a class="headerlink" href="#output-files" title="Permalink to this headline">¶</a></h2>
+<p>Depending on which statistical method you run, the output file(s) generated by this script will vary. They will all be placed in the directory specified by the required -o option. Most of the output files will be tab-separated text files containing information about the test that was performed and its results. These can easily be viewed in a spreadsheet program such as Excel.</p>
+</div>
+<div class="section" id="adonis">
+<h2>adonis<a class="headerlink" href="#adonis" title="Permalink to this headline">¶</a></h2>
+<p>adonis is a nonparametric statistical method that takes a QIIME distance matrix file such as a UniFrac distance matrix, a mapping file, and a category in the mapping file to determine sample grouping from. It computes an R<sup>2</sup> value (effect size) which shows the percentage of variation explained by the supplied mapping file category, as well as a p-value to determine the statistical significance.</p>
+<p>adonis creates a set by first identifying the relevant centroids of the data and then calculating the squared deviations from these points. After that, significance tests are performed using F-tests based on sequential sums of squares from permutations of the raw data.</p>
+<p>Suppose we wanted to determine whether the samples grouped by host individual (i.e. person) are statistically significant. Run the following command:</p>
+<div class="highlight-python"><div class="highlight"><pre>compare_categories.py --method adonis -i unweighted_unifrac_dm.txt -m map.txt -c HOST_SUBJECT_ID -o adonis_out -n 999
+</pre></div>
+</div>
+<p>When broken down the command syntax means:</p>
+<div class="highlight-python"><div class="highlight"><pre>compare_categories.py - This is the script being run.
+
+--method adonis - This is the method to perform, in this case it&#39;s &#39;adonis&#39;.
+
+-i unweighted_unifrac_dm.txt - This is the unweighted UniFrac distance matrix being passed in for this statistical test.
+
+-m map.txt - This is the metadata mapping file associated with this data set.
+
+-c HOST_SUBJECT_ID - This specifies the category in the metadata mapping file to analyze. In this case it&#39;s &#39;HOST_SUBJECT_ID&#39;.
+
+-o adonis_out - This specifies the output directory to place the results of this method in. In this case it&#39;s &#39;adonis_out&#39;.
+
+-n 999 - This specifies the number of permutations that will be used to calculate the p-value.
+</pre></div>
+</div>
+<p>This command will create a new output directory named <tt class="file docutils literal"><span class="pre">adonis_out</span></tt>, which will contain a single text file called <tt class="file docutils literal"><span class="pre">adonis_results.txt</span></tt>. Open up <tt class="file docutils literal"><span class="pre">adonis_results.txt</span></tt> to see the results of the test:</p>
+<div class="highlight-python"><div class="highlight"><pre>Call:
+adonis(formula = as.dist(qiime.data$distmat) ~ qiime.data$map[[opts$category]],      permutations = opts$num_permutations)
+
+Terms added sequentially (first to last)
+
+                               Df SumsOfSqs MeanSqs F.Model      R2 Pr(&gt;F)
+qiime.data$map[[opts$category]]  10    7.1804 0.71804  5.1788 0.33243  0.001
+Residuals                       104   14.4196 0.13865         0.66757
+Total                           114   21.6000                 1.00000
+
+qiime.data$map[[opts$category]] ***
+Residuals
+Total
+---
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+</pre></div>
+</div>
+<p>The p-value of 0.001 indicates that at an alpha of 0.05, the grouping of samples by individual is statistically significant. The R<sup>2</sup> value indicates that approximately 33% of the variation in distances is explained by this grouping. These results confirm the results obtained by the original researchers of this study.</p>
+</div>
+<div class="section" id="anosim">
+<h2>ANOSIM<a class="headerlink" href="#anosim" title="Permalink to this headline">¶</a></h2>
+<p>ANOSIM is a method that tests whether two or more groups of samples are significantly different (similar to adonis, above). You can specify a category in the metadata mapping file to separate samples into groups and then test whether there are significant differences between those groups. For example, you might test whether Control samples are significantly different from Fast samples. Since ANOSIM is nonparametric, statistical significance is determined through permutations.</p>
+<p><strong>Note:</strong> ANOSIM only works with a categorical variable that is used to do the grouping. Mantel is recommended for continuous variables.</p>
+<p>The R statistic that is calculated by ANOSIM is determined by the following formula:</p>
+<p>R = (rb-rw)/(N(N-1)/4)</p>
+<p>where rb is the mean rank of all distances between groups and rw is the mean rank of all distances within groups. An R value near +1 means that there is dissimilarity between the groups, while an R value near 0 indicates no significant dissimilarity between the groups (<a class="reference external" href="http://folk.uio.no/ohammer/past/multivar.html">http://folk.uio.no/ohammer/past/multivar.html</a>).</p>
+<p>We will attempt to answer the same question posed in the adonis section (above). Run the following command:</p>
+<div class="highlight-python"><div class="highlight"><pre>compare_categories.py --method anosim -i unweighted_unifrac_dm.txt -m map.txt -c HOST_SUBJECT_ID -o anosim_out -n 999
+</pre></div>
+</div>
+<p>When broken down the command syntax means:</p>
+<div class="highlight-python"><div class="highlight"><pre>compare_categories.py - This is the script being run.
+
+--method anosim - This is the method to perform, in this case it&#39;s &#39;anosim&#39;.
+
+-i unweighted_unifrac_dm.txt - This is the unweighted UniFrac distance matrix being passed in for this statistical test.
+
+-m map.txt - This is the metadata mapping file associated with this data set.
+
+-c HOST_SUBJECT_ID - This specifies the category in the metadata mapping file to analyze. In this case it&#39;s &#39;HOST_SUBJECT_ID&#39;.
+
+-o anosim_out - This specifies the output directory to place the results of this method in. In this case it&#39;s &#39;anosim_out&#39;.
+
+-n 999 - This specifies the number of permutations that will be used to calculate the p-value.
+</pre></div>
+</div>
+<p>This command will create a new output directory named <tt class="file docutils literal"><span class="pre">anosim_out</span></tt>, which will contain a single text file called <tt class="file docutils literal"><span class="pre">anosim_results.txt</span></tt>. Open up <tt class="file docutils literal"><span class="pre">anosim_results.txt</span></tt> to see the results of the test:</p>
+<div class="highlight-python"><div class="highlight"><pre>Method Name     R-value P-value
+ANOSIM  0.794026410205  0.001
+</pre></div>
+</div>
+<p>The p-value of 0.001 indicates that at an alpha of 0.05, the grouping of samples by individual is statistically significant. The R value of 0.794 is fairly close to +1, indicating that the grouping of samples based on individual is strong. These results confirm the results obtained by the original researchers of this study, as well as our results when we applied adonis to this dataset (above).</p>
+</div>
+<div class="section" id="references">
+<h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<p>Fierer, N. et al. Forensic identification using skin bacterial communities. Proc. Natl. Acad. Sci. USA. 107: 6477-6481 (2010).</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Comparing Categories</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#input-files">Input Files</a></li>
+<li><a class="reference internal" href="#output-files">Output Files</a></li>
+<li><a class="reference internal" href="#adonis">adonis</a></li>
+<li><a class="reference internal" href="#anosim">ANOSIM</a></li>
+<li><a class="reference internal" href="#references">References</a></li>
+</ul>
+</li>
+</ul>
+
+
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="index.html">Tutorials</a><br /></li>
+    <li><a href="../scripts/index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="chaining_otu_pickers.html"
+                        title="previous chapter">Multi-step OTU picking</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="creating_distance_comparison_plots.html"
+                        title="next chapter">Creating Distance Comparison Plots</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="creating_distance_comparison_plots.html" title="Creating Distance Comparison Plots"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="chaining_otu_pickers.html" title="Multi-step OTU picking"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

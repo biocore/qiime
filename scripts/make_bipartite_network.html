@@ -1,0 +1,270 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>make_bipartite_network.py – This script makes a bipartite network connecting samples to observations. It is most suitable for visualization with cytoscape. &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="make_bootstrapped_tree.py – Make bootstrapped tree" href="make_bootstrapped_tree.html" />
+    <link rel="prev" title="make_2d_plots.py – Make 2D PCoA Plots" href="make_2d_plots.html" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="make_bootstrapped_tree.html" title="make_bootstrapped_tree.py – Make bootstrapped tree"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="make_2d_plots.html" title="make_2d_plots.py – Make 2D PCoA Plots"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="make-bipartite-network"></span><div class="section" id="make-bipartite-network-py-this-script-makes-a-bipartite-network-connecting-samples-to-observations-it-is-most-suitable-for-visualization-with-cytoscape">
+<span id="index-0"></span><h1><em>make_bipartite_network.py</em> &#8211; This script makes a bipartite network connecting samples to observations. It is most suitable for visualization with cytoscape.<a class="headerlink" href="#make-bipartite-network-py-this-script-makes-a-bipartite-network-connecting-samples-to-observations-it-is-most-suitable-for-visualization-with-cytoscape" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>This script was created to ease the process of making bipartite networks
+that have appeared in high profile publications including
+10.1073/pnas.1217767110 and 10.1126/science.1198719. The script will take a
+biom table and a mapping file and produce an edge table which connects each
+sample in the biom table to the observations found in that sample. It is
+bipartite because there are two distinct node classes &#8211; OTU and Sample. The
+&#8216;OTU&#8217; node class does not have to be an operational taxonomic unit, it can be a
+KEGG category or metabolite etc.  &#8211; anything that is an observation. The edges
+are weighted by the abundance of the observation in the sample to which it is
+connected. The output files of this script are intended to be loaded into
+Cytoscape. The EdgeTable should be uploaded first, and then the NodeAttrTable
+file can be uploaded as node attributes to control coloring, sizing, and
+shaping as the user desires. The overall idea behind this script is to make
+bipartite network creation easier.  To that end, the color, size, and shape
+options are used to provide fields in the NetworkViz tab of Cytoscape so that
+nodes can be appropriately presented.  Those options are passed via comma
+separated strings (as in the example below).  The most common visualization
+strategy is to color sample nodes by a metadata category like timepoint or pH,
+color OTU nodes by one of their taxonomic levels, and to scale OTU node size by
+abundance. This script makes this process easy (as well as a myriad of other
+visualiation strategies). Once the tables are created by this script they must
+be opened in cytoscape. This process is described in detail in the QIIME
+bipartite network tutorial available at:
+<a class="reference external" href="http://qiime.org/tutorials/making_cytoscape_networks.html">http://qiime.org/tutorials/making_cytoscape_networks.html</a> All color, size, and
+shape options in this script default to &#8216;NodeType&#8217;. OTU nodes have NodeType:
+otu, sample nodes have NodeType: sample. Thus, if you ran this script with
+defaults, you would only be able to change the shape, size, and color of the
+nodes depending on whether or not they were observations or samples. You would
+not be able to distinguish between two observations based on color, shape, or
+size. The script is flexible in that it allows you to pass any number of fields
+for the &#8211;{s,o}{shape,size,color}. This will allow you to distinguish between
+OTU and sample nodes in a huge number of different ways. The usage examples
+below show some of the common use cases and what options you would pass to
+emulate them. There are a couple of important considerations for using this
+script:</p>
+<p>Note that the &#8211;md_fields option has a different meaning depending on the type
+of metadata in the biom table. Regardless of type, the md_fields will be the
+headers in the OTUNodeTable.txt. If the metadata is a dict or default dict, the
+md_fields will be used as keys to extract data from the biom file metadata. If
+the metadata is a list or a string, then the md_fields will be have no
+intrinsic relation to the columns they head. For example if
+md_fields=[&#8216;k&#8217;,&#8217;p&#8217;,&#8217;c&#8217;] and the metadata contained in a given OTU was
+&#8216;k__Bacteria;p__Actinobacter;c__Actino&#8217; the resulting OTUNodeTable would have
+k__Bacteria in the &#8216;k&#8217; column, p__Actinobacter in the &#8216;p&#8217; column, and c__Actino
+in the &#8216;c&#8217; column. If one passed md_fields=[&#8216;1.0&#8217;,&#8217;XYZ&#8217;,&#8217;Five&#8217;] then the
+OTUNodeTable would have columns headed by [&#8216;1.0&#8217;,&#8217;XYZ&#8217;,&#8217;Five&#8217;], but the
+metadata values in those columns would be the same (e.g. &#8216;1.0&#8217; column entry
+would be k__Bacteria etc.) If the number of elements in the metadata for a
+given OTU is not equal to the number of headers provided the script will adjust
+the OTU metadata. In the case where the metadata is too short, it will add
+&#8216;Other&#8217; into the OTU metadata until the required length is reached.  In the
+case where the metadata is too long it will simply remove extra entries. This
+means you can end up with many observations which have the value of &#8216;Other&#8217; if
+you have short taxonomic strings/lists for your observations.</p>
+<p>The available fields for both sample and otu nodes are:
+[NodeType, Abundance]</p>
+<p>For observation nodes the additional fields available are:
+any fields you passed for the md_fields</p>
+<p>For sample nodes the additional fields available are
+any fields found in the mapping file headers</p>
+<p>If multiple fields are passed for a given option, they will be concatenated in the output with a &#8216;_&#8217; character.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">make_bipartite_network.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-biom_fp</dt>
+<dd>The input file path for biom table.</dd>
+<dt>-m, <cite>-</cite>-map_fp</dt>
+<dd>The input file path for mapping file.</dd>
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>Directory to be created for storing the results.</dd>
+<dt>-k, <cite>-</cite>-observation_md_header_key</dt>
+<dd>Key to retrieve metadata (usually taxonomy) from the biom file.</dd>
+<dt><cite>-</cite>-md_fields</dt>
+<dd>Metadata fields that will be the headers of the OTUNodeTable. If the biom table has metadata dictionaries, md_fields will be the keys extracted from the biom table metadata. Passed like &#8220;kingdom,phylum,class&#8221;.</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt><cite>-</cite>-scolors</dt>
+<dd>Commas separated string specifying fields of interest for sample node coloring [default: NodeType].</dd>
+<dt><cite>-</cite>-ocolors</dt>
+<dd>Commas separated string specifying fields of interest for observation node coloring [default: NodeType].</dd>
+<dt><cite>-</cite>-sshapes</dt>
+<dd>Commas separated string specifying fields of interest for sample node shape [default: NodeType].</dd>
+<dt><cite>-</cite>-oshapes</dt>
+<dd>Commas separated string specifying fields of interest for observation node shape [default: NodeType].</dd>
+<dt><cite>-</cite>-ssizes</dt>
+<dd>Commas separated string specifying fields of interest for sample node size [default: NodeType].</dd>
+<dt><cite>-</cite>-osizes</dt>
+<dd>Commas separated string specifying fields of interest for observation node size [default: NodeType].</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<dl class="docutils">
+<dt>The output of this script is four files:</dt>
+<dd><ol class="first last arabic simple">
+<li>EdgeTable - table with connections between samples and observations.</li>
+<li>OTUNodeTable - table with observations and their associated metadata.</li>
+<li>SampleNodeTable - table with samples and their associated metadata.</li>
+<li>NodeAttrTable - table with the node attributes specified by the user with
+the given options.</li>
+</ol>
+</dd>
+</dl>
+<p>Create an EdgeTable and NodeAttrTable that allow you to color sample nodes with one of their metadata categories (Treatment for our example), observation nodes (in this case OTUs) by their taxonomic level (class for our example), control observation node size by their abundance, and control node shape by whether its an observation or sample.</p>
+<div class="highlight-python"><div class="highlight"><pre>make_bipartite_network.py -i otu_table.biom -m mapping_file.txt -k taxonomy --md_fields &#39;k,p,c,o,f&#39; -o bipartite_network/ --scolors &#39;Treatment&#39; --ocolors &#39;c&#39; --osize &#39;Abundance&#39;
+</pre></div>
+</div>
+<p>Create an EdgeTable and NodeAttrTable that allow you to color sample nodes by a combination of their time point and diet, color observation nodes by their abundance and family, and node shape by whether the node is an observation or sample. Note that the names in the &#8211;md_fields are irrelevant as long as the field passed for &#8211;ocolors is available. The length is important however, since there are 5 levels in our OTU table. If fewer fewer than 5 fields were passed for &#8211;md_fields we would get an error.</p>
+<div class="highlight-python"><div class="highlight"><pre>make_bipartite_network.py -i otu_table.biom -m mapping_file.txt -k taxonomy --md_fields &#39;a1,a2,a3,a4,f&#39; -o bipartite_network_combo_colors/ --scolors &#39;TimePt,Diet&#39; --ocolors &#39;f,Abundance&#39;
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="make_2d_plots.html"
+                        title="previous chapter"><em>make_2d_plots.py</em> &#8211; Make 2D PCoA Plots</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="make_bootstrapped_tree.html"
+                        title="next chapter"><em>make_bootstrapped_tree.py</em> &#8211; Make bootstrapped tree</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="make_bootstrapped_tree.html" title="make_bootstrapped_tree.py – Make bootstrapped tree"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="make_2d_plots.html" title="make_2d_plots.py – Make 2D PCoA Plots"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

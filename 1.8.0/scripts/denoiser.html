@@ -1,0 +1,208 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>denoiser.py – Remove noise from 454 sequencing data &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.8.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="denoiser"></span><div class="section" id="denoiser-py-remove-noise-from-454-sequencing-data">
+<span id="index-0"></span><h1><em>denoiser.py</em> &#8211; Remove noise from  454 sequencing data<a class="headerlink" href="#denoiser-py-remove-noise-from-454-sequencing-data" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>The denoiser removes sequencing noise characteristic to pyrosequencing by flowgram clustering. For a detailed explanation of the underlying algorithm see (Reeder and Knight, Nature Methods 7(9), 2010).</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">denoiser.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-input_files</dt>
+<dd>Path to flowgram files (.sff.txt), comma separated</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-f, <cite>-</cite>-fasta_fp</dt>
+<dd>Path to fasta input file. Reads not in the fasta file are filtered out before denoising. File format is as produced by <a class="reference external" href="./split_libraries.html">split_libraries.py</a> [default: None]</dd>
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>Path to output directory [default: random dir in ./]</dd>
+<dt>-c, <cite>-</cite>-cluster</dt>
+<dd>Use cluster/multiple CPUs for flowgram alignments [default: False]</dd>
+<dt>-p, <cite>-</cite>-preprocess_fp</dt>
+<dd>Do not do preprocessing (phase I),instead use already preprocessed data in PREPROCESS_FP</dd>
+<dt><cite>-</cite>-checkpoint_fp</dt>
+<dd>Resume denoising from checkpoint. Be careful when changing parameters for a resumed run. Requires -p option.  [default: None]</dd>
+<dt>-s, <cite>-</cite>-squeeze</dt>
+<dd>Use run-length encoding for prefix filtering in phase I [default: False]</dd>
+<dt>-S, <cite>-</cite>-split</dt>
+<dd>Split input into per library sets and denoise separately [default: False]</dd>
+<dt><cite>-</cite>-force</dt>
+<dd>Force overwrite of existing directory [default: False]</dd>
+<dt><cite>-</cite>-primer</dt>
+<dd>Primer sequence [default: CATGCTGCCTCCCGTAGGAGT]</dd>
+<dt>-n, <cite>-</cite>-num_cpus</dt>
+<dd>Number of cpus, requires -c [default: 1]</dd>
+<dt>-m, <cite>-</cite>-max_num_iterations</dt>
+<dd>Maximal number of iterations in phase II. None means unlimited iterations [default: None]</dd>
+<dt>-b, <cite>-</cite>-bail_out</dt>
+<dd>Stop clustering in phase II with clusters smaller or equal than BAILde [default: 1]</dd>
+<dt><cite>-</cite>-percent_id</dt>
+<dd>Sequence similarity clustering threshold [default: 0.97]</dd>
+<dt><cite>-</cite>-low_cut-off</dt>
+<dd>Low clustering threshold for phase II [default: 3.75]</dd>
+<dt><cite>-</cite>-high_cut-off</dt>
+<dd>High clustering threshold for phase III [default: 4.5]</dd>
+<dt><cite>-</cite>-low_memory</dt>
+<dd>Use slower, low memory method [default: False]</dd>
+<dt>-e, <cite>-</cite>-error_profile</dt>
+<dd>Path to error profile [default= /Users/caporaso/code/qiime/qiime/support_files/denoiser/Data/FLX_error_profile.dat]</dd>
+<dt><cite>-</cite>-titanium</dt>
+<dd>Shortcut for -e /Users/caporaso/code/qiime/qiime/support_files/denoiser/Data//Titanium_error_profile.dat &#8211;low_cut-off=4 &#8211;high_cut_off=5 . Warning: overwrites all previous cut-off values [DEFAULT: False]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>centroids.fasta: The cluster representatives of each cluster</p>
+<p>singletons.fasta: contains all unclustered reads</p>
+<dl class="docutils">
+<dt>denoiser_mapping.txt: This file contains the actual clusters. The cluster centroid is given first,</dt>
+<dd>the cluster members follow after the &#8216;:&#8217;.</dd>
+</dl>
+<p>checkpoints/ : directory with checkpoints</p>
+<p>Note that the centroids and singleton files are disjoint. For most downstream analyses one wants to cat the two files.</p>
+<p>Run denoiser on flowgrams in 454Reads.sff.txt with read-to-barcode mapping in seqs.fna,
+put results into Outdir, log progress in Outdir/denoiser.log</p>
+<div class="highlight-python"><pre>denoiser.py -i 454Reads.sff.txt -f seqs.fna -v -o Outdir</pre>
+</div>
+<p><strong>Multiple sff.txt files:</strong></p>
+<p>Run denoiser on two flowgram files in 454Reads_1.sff.txt and 454Reads_2.sff.txt
+with read-to-barcode mapping in seqs.fna, put results into Outdir,
+log progress in Outdir/denoiser.log</p>
+<div class="highlight-python"><pre>denoiser.py -i 454Reads_1.sff.txt,454Reads_2.sff.txt -f seqs.fna -v -o Outdir</pre>
+</div>
+<p><strong>Denoise multiple library separately:</strong></p>
+<p>Run denoiser on flowgrams in 454Reads.sff.txt with read-to-barcode mapping in seqs.fna,
+split input files into libraries and process each library separately,
+put results into Outdir, log progress in Outdir/denoiser.log</p>
+<div class="highlight-python"><pre>denoiser.py -S -i 454Reads.sff.txt -f seqs.fna -v -o Outdir</pre>
+</div>
+<p><strong>Resuming a failed run:</strong></p>
+<p>Resume a previous denoiser run from breakpoint stored in Outdir_from_failed_run/checkpoints/checkpoint100.pickle.
+The checkpoint option requires the -p or &#8211;preprocess option, which usually can be set to the output dir of the failed run.
+All other arguments must be identical to the failed run.</p>
+<div class="highlight-python"><pre>denoiser.py -i 454Reads.sff.txt -f seqs.fna -v -o Outdir_resumed -p Outdir_from_failed_run --checkpoint Outdir_from_failed_run/checkpoints/checkpoint100.pickle</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

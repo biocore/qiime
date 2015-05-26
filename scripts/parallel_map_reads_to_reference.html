@@ -1,0 +1,217 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>parallel_map_reads_to_reference.py – &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="parallel_merge_otu_tables.py – Parallel merge BIOM tables" href="parallel_merge_otu_tables.html" />
+    <link rel="prev" title="parallel_identify_chimeric_seqs.py – Parallel chimera detection" href="parallel_identify_chimeric_seqs.html" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="parallel_merge_otu_tables.html" title="parallel_merge_otu_tables.py – Parallel merge BIOM tables"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="parallel_identify_chimeric_seqs.html" title="parallel_identify_chimeric_seqs.py – Parallel chimera detection"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="parallel-map-reads-to-reference"></span><div class="section" id="parallel-map-reads-to-reference-py">
+<span id="index-0"></span><h1><em>parallel_map_reads_to_reference.py</em> &#8211;<a class="headerlink" href="#parallel-map-reads-to-reference-py" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">parallel_map_reads_to_reference.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-input_seqs_filepath</dt>
+<dd>Path to input sequences file</dd>
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>Directory to store results</dd>
+<dt>-r, <cite>-</cite>-refseqs_fp</dt>
+<dd>Path to reference sequences</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-t, <cite>-</cite>-observation_metadata_fp</dt>
+<dd>Path to observation metadata (e.g., taxonomy, EC, etc) [default: None]</dd>
+<dt>-m, <cite>-</cite>-assignment_method</dt>
+<dd>Method for picking OTUs.  Valid choices are: usearch blat bwa-short. [default: usearch]</dd>
+<dt>-e, <cite>-</cite>-evalue</dt>
+<dd>Max e-value to consider a match [default: 1e-10]</dd>
+<dt>-s, <cite>-</cite>-min_percent_id</dt>
+<dd>Min percent id to consider a match, expressed as a fraction between 0 and 1 [default: 0.75]</dd>
+<dt><cite>-</cite>-max_diff</dt>
+<dd>MaxDiff to consider a match (applicable for -m bwa) &#8211; see the aln section of &#8220;man bwa&#8221; for details [default (defined by bwa): 0.04]</dd>
+<dt><cite>-</cite>-queryalnfract</dt>
+<dd>Min percent of the query seq that must match to consider a match, expressed as a fraction between 0 and 1 (usearch only) [default: 0.35]</dd>
+<dt><cite>-</cite>-targetalnfract</dt>
+<dd>Min percent of the target/reference seq that must match to consider a match, expressed as a fraction between 0 and 1 (usearch only) [default: 0.0]</dd>
+<dt><cite>-</cite>-max_accepts</dt>
+<dd>Max_accepts value (usearch only) [default: 1]</dd>
+<dt><cite>-</cite>-max_rejects</dt>
+<dd>Max_rejects value to (usearch only) [default: 32]</dd>
+<dt>-O, <cite>-</cite>-jobs_to_start</dt>
+<dd>Number of jobs to start [default: 1]</dd>
+<dt>-R, <cite>-</cite>-retain_temp_files</dt>
+<dd>Retain temporary files after runs complete (useful for debugging) [default: False]</dd>
+<dt>-S, <cite>-</cite>-suppress_submit_jobs</dt>
+<dd>Only split input and write commands file - don&#8217;t submit jobs [default: False]</dd>
+<dt>-T, <cite>-</cite>-poll_directly</dt>
+<dd>Poll directly for job completion rather than running poller as a separate job. If -T is specified this script will not return until all jobs have completed. [default: False]</dd>
+<dt>-U, <cite>-</cite>-cluster_jobs_fp</dt>
+<dd>Path to cluster jobs script (defined in qiime_config)  [default: <a class="reference external" href="./start_parallel_jobs.html">start_parallel_jobs.py</a>]</dd>
+<dt>-W, <cite>-</cite>-suppress_polling</dt>
+<dd>Suppress polling of jobs and merging of results upon completion [default: False]</dd>
+<dt>-X, <cite>-</cite>-job_prefix</dt>
+<dd>Job prefix [default: descriptive prefix + random chars]</dd>
+<dt>-Z, <cite>-</cite>-seconds_to_sleep</dt>
+<dd>Number of seconds to sleep between checks for run  completion when polling runs [default: 1]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>parallel_map_reads_to_reference.py -i $PWD/query_nt.fasta -r $PWD/refseqs_pr.fasta -o $PWD/usearch_mapped
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>parallel_map_reads_to_reference.py -i $PWD/query_nt.fasta -r $PWD/refseqs_pr.fasta -o $PWD/blat_mapped -m blat
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre>parallel_map_reads_to_reference.py -i $PWD/query_nt.fasta -r $PWD/refseqs_nt.fasta -o $PWD/bwa-short_mapped -m bwa-short
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="parallel_identify_chimeric_seqs.html"
+                        title="previous chapter"><em>parallel_identify_chimeric_seqs.py</em> &#8211; Parallel chimera detection</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="parallel_merge_otu_tables.html"
+                        title="next chapter"><em>parallel_merge_otu_tables.py</em> &#8211; Parallel merge BIOM tables</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="parallel_merge_otu_tables.html" title="parallel_merge_otu_tables.py – Parallel merge BIOM tables"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="parallel_identify_chimeric_seqs.html" title="parallel_identify_chimeric_seqs.py – Parallel chimera detection"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

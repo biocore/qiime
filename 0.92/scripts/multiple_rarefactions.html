@@ -1,0 +1,165 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>multiple_rarefactions.py – Perform rarefaction on multiple otu tables &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="Scripts - Analyses and Parameters" href="../doc_script_index.html" />
+    <link rel="next" title="otu_category_significance.py – OTU significance and co-occurence analysis" href="otu_category_significance.html" />
+    <link rel="prev" title="make_otu_table.py – Make OTU table" href="make_otu_table.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;">
+	<p style="font-size:12pt;padding: 5px;"><b>News and Announcements &raquo;</b>
+<script type="text/javascript" src="http://app.feed.informer.com/digest3/U9OLMKHF9N.js"><noscript><a href="http://app.feed.informer.com/digest3/U9OLMKHF9N.html">Click for &quot;QIIME&quot;.</a> Powered by <a href="http://feed.informer.com/">RSS Feed Informer</a></noscript></script></p>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="otu_category_significance.html" title="otu_category_significance.py – OTU significance and co-occurence analysis"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="make_otu_table.html" title="make_otu_table.py – Make OTU table"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation.html" >QIIME Documentation</a> &raquo;</li>
+          <li><a href="../doc_script_index.html" accesskey="U">Scripts - Analyses and Parameters</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="multiple-rarefactions"></span><div class="section" id="multiple-rarefactions-py-perform-rarefaction-on-multiple-otu-tables">
+<span id="index-120"></span><h1><em>multiple_rarefactions.py</em> &#8211; Perform rarefaction on multiple otu tables<a class="headerlink" href="#multiple-rarefactions-py-perform-rarefaction-on-multiple-otu-tables" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>To perform bootstrap, jackknife, and rarefaction analyses, the otu table must be subsampled (rarefied).  This script rarefies, or subsamples, OTU tables.  This does not provide curves of diversity by number of sequences in a sample. Rather it creates a series of subsampled OTU tables by random sampling (without replacement) of the input OTU table.  The pseudo-random number generator used for rarefaction by subsampling is NumPy&#8217;s default - an implementation of the Mersenne twister PRNG.</p>
+<p><strong>Usage:</strong> <tt class="docutils literal"><span class="pre">multiple_rarefactions.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-input_path</dt>
+<dd>Input otu table filepath</dd>
+<dt>-o, <cite>-</cite>-output_path</dt>
+<dd>Write output rarefied otu tables files to this dir makes dir if it doesn&#8217;t exist</dd>
+<dt>-m, <cite>-</cite>-min</dt>
+<dd>Min seqs/sample</dd>
+<dt>-x, <cite>-</cite>-max</dt>
+<dd>Max seqs/sample (inclusive)</dd>
+<dt>-s, <cite>-</cite>-step</dt>
+<dd>Levels: min, min+step... for level &lt;= max</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-n, <cite>-</cite>-num-reps</dt>
+<dd>Num iterations at each seqs/sample level [default: 1]</dd>
+<dt><cite>-</cite>-lineages_included</dt>
+<dd>Output rarefied otu tables will include taxonomic (lineage) information for each otu, if present in input otu table [default: False]</dd>
+<dt><cite>-</cite>-small_included</dt>
+<dd>Samples containing fewer seqs than the rarefaction level are included in the output but not rarefied [default: False]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>The result of <a class="reference external" href="./multiple_rarefactions.html">multiple_rarefactions.py</a> consists of a number of files, which depend on the minimum/maximum number of sequences per samples, steps and iterations. The files have the same otu table format as the input otu_table.txt, and are named in the following way: rarefaction_100_0.txt, where &#8220;100&#8221; corresponds to the sequences per sample and &#8220;0&#8221; the iteration.</p>
+<p><strong>Examples:</strong></p>
+<p>An example of this script, where the user sets the minimum (&#8220;-m&#8221;) and maximum (&#8220;-x&#8221;) number of sequences per sample to 100 and 1200, respectively, while using steps (&#8220;-s&#8221;) of 100, performing 2 iterations at each sampling depth (&#8220;-n&#8221;), and outputting the results to the directory &#8220;rarefaction_tables/&#8221; is shown by the following command:</p>
+<div class="highlight-python"><pre>multiple_rarefactions.py otu_table.txt -m 100 -x 1200 -s 100 -n 2 -o rarefaction_tables/</pre>
+</div>
+<p>As a result, this command produces subsamples of the input otu_table.txt at 100 seqs per sample (twice), 200 seqs per sample (twice) ... 1200 seqs per sample (twice), which produces 24 rarefied otu talbes in the &#8220;rarefaction_tables&#8221; directory.</p>
+<p>By default, any sample containing fewer sequences in the input file than the requested number of sequences per sample is removed from the output rarefied otu table. To include samples with fewer than the requested number, you can use the following command:</p>
+<div class="highlight-python"><pre>multiple_rarefactions.py otu_table.txt -m 100 -x 1200 -s 100 -n 2 -o rarefaction_tables/ --small_included</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="make_otu_table.html"
+                                  title="previous chapter"><em>make_otu_table.py</em> &#8211; Make OTU table</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="otu_category_significance.html"
+                                  title="next chapter"><em>otu_category_significance.py</em> &#8211; OTU significance and co-occurence analysis</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/scripts/multiple_rarefactions.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="otu_category_significance.html" title="otu_category_significance.py – OTU significance and co-occurence analysis"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="make_otu_table.html" title="make_otu_table.py – Make OTU table"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation.html" >QIIME Documentation</a> &raquo;</li>
+          <li><a href="../doc_script_index.html" >Scripts - Analyses and Parameters</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+  </body>
+</html>

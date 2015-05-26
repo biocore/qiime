@@ -1,0 +1,213 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Re-training the RDP Classifier &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.6.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="re-training-the-rdp-classifier">
+<span id="retraining-rdp"></span><h1>Re-training the RDP Classifier<a class="headerlink" href="#re-training-the-rdp-classifier" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="retraining-the-rdp-classifier-and-assign-taxonomy">
+<h2>Retraining the RDP classifier and assign taxonomy<a class="headerlink" href="#retraining-the-rdp-classifier-and-assign-taxonomy" title="Permalink to this headline">¶</a></h2>
+<p>This tutorial covers how to retrain the RDP Classifier with an alternate taxonomy to use the RDP Classifier with arbitrary taxonomies. This is useful, for example, to assign greengenes taxonomy strings to your sequences, or to assign taxonomy to eukaryotic sequences using the Silva database.</p>
+<p>This tutorial will illustrate an example where you&#8217;ve run the <a class="reference external" href="../tutorials/tutorial.html">QIIME Overview Tutorial</a>, and then want to re-assign taxonomy using the greengenes taxonomy. To do this you&#8217;ll need the greengenes reference OTUs. This is covered in the first step.</p>
+<p>This tutorial assumes that you&#8217;ve already run the <a class="reference external" href="../tutorials/tutorial.html">QIIME Overview Tutorial</a>, and that you&#8217;re working in the directory where you ran the tutorial commands.</p>
+<div class="section" id="getting-the-greengenes-reference-otus">
+<h3>Getting the greengenes reference OTUs<a class="headerlink" href="#getting-the-greengenes-reference-otus" title="Permalink to this headline">¶</a></h3>
+<p>The most recent version of the greengenes OTUs is always listed on the top right corner of the <a class="reference external" href="http://blog.qiime.org">QIIME Blog homepage</a> (click the &#8220;Most recent Greengenes OTUs&#8221; link on that page). As of this writing that is the <tt class="docutils literal"><span class="pre">4feb2011</span></tt> version, so we&#8217;ll illustrate commands working with that.</p>
+<p>Download and unzip the greengenes reference OTUs:</p>
+<div class="highlight-python"><pre>wget http://greengenes.lbl.gov/Download/Sequence_Data/Fasta_data_files/Caporaso_Reference_OTUs/gg_otus_4feb2011.tgz
+tar -xvzf gg_otus_4feb2011.tgz</pre>
+</div>
+</div>
+<div class="section" id="re-train-the-rdp-classifier-and-classify-the-representative-sequences">
+<h3>Re-train the RDP Classifier and classify the representative sequences<a class="headerlink" href="#re-train-the-rdp-classifier-and-classify-the-representative-sequences" title="Permalink to this headline">¶</a></h3>
+<p>Next you&#8217;ll retrain the RDP classifier and classify your sequences. You can use either <a class="reference external" href="../scripts/assign_taxonomy.html">assign_taxonomy.py</a> or <a class="reference external" href="../scripts/parallel_assign_taxonomy_rdp.html">parallel_assign_taxonomy_rdp.py</a> for this.</p>
+<div class="highlight-python"><pre>assign_taxonomy.py -i otus/rep_set/seqs_rep_set.fasta -t gg_otus_4feb2011/taxonomies/greengenes_tax_rdp_train.txt -r gg_otus_4feb2011/rep_set/gg_97_otus_4feb2011.fasta -o otus/rdp_assigned_taxonomy_gg/</pre>
+</div>
+</div>
+<div class="section" id="integrate-the-taxonomy-assignments-into-a-new-otu-table">
+<h3>Integrate the taxonomy assignments into a new OTU table<a class="headerlink" href="#integrate-the-taxonomy-assignments-into-a-new-otu-table" title="Permalink to this headline">¶</a></h3>
+<p>Next, you&#8217;ll rebuild the OTU table with the new taxonomic information.</p>
+<div class="highlight-python"><pre>make_otu_table.py -i otus/uclust_picked_otus/seqs_otus.txt -t otus/rdp_assigned_taxonomy_gg/seqs_rep_set_tax_assignments.txt -o otus/otu_table_gg.biom</pre>
+</div>
+<p>That&#8217;s it. The resulting OTU table (<tt class="docutils literal"><span class="pre">otu_table_gg.biom</span></tt>) can now be used in downstream analyses, such as <a class="reference external" href="../scripts/summarize_taxa_through_plots.html">summarize_taxa_through_plots.py</a>.</p>
+</div>
+</div>
+<div class="section" id="retraining-rdp-using-a-custom-parameters-file">
+<h2>Retraining RDP using a custom parameters file<a class="headerlink" href="#retraining-rdp-using-a-custom-parameters-file" title="Permalink to this headline">¶</a></h2>
+<p>If you want to integrate retraining of the RDP classifier into your QIIME workflows, you can create a custom parameters file that can be used with the <a class="reference external" href="../scripts/pick_otus_through_otu_table.html">pick_otus_through_otu_table.py</a> workflow script. If the <tt class="docutils literal"><span class="pre">gg_otus_4feb2011</span></tt> directory is in <tt class="docutils literal"><span class="pre">/home/qiime/</span></tt>, the values in your custom parameters file would be:</p>
+<div class="highlight-python"><pre>assign_taxonomy:reference_seqs_fp       /home/qiime/gg_otus_4feb2011/rep_set/gg_97_otus_4feb2011.fasta
+assign_taxonomy:id_to_taxonomy_fp       /home/qiime/gg_otus_4feb2011/taxonomies/greengenes_tax_rdp_train.txt</pre>
+</div>
+</div>
+<div class="section" id="defining-alternate-training-files">
+<h2>Defining alternate training files<a class="headerlink" href="#defining-alternate-training-files" title="Permalink to this headline">¶</a></h2>
+<p>Training files can be defined by users for other taxonomies. The format is the same as the <tt class="docutils literal"><span class="pre">id_to_taxonomy_map</span></tt> used by the BLAST taxonomy assigner, defined <a class="reference external" href="../documentation/file_formats.html#sequence-id-to-taxonomy-mapping-files">here</a>. You must provide this file as well as a fasta file of reference sequences where the identifiers correspond to the ids in the <tt class="docutils literal"><span class="pre">id_to_taxonomy_map</span></tt>.</p>
+<p>The RDP Classifier has several requirements about its taxonomy strings for retraining.  The first column of this tab separated file is the sequence identifiers (see the reference sequence file below).  The second column is the taxonomy strings in descending order of taxonomic specification, separated by semicolons.  The number of taxonomic levels must be equal for every line.</p>
+<p>An example set of four lines in the <tt class="docutils literal"><span class="pre">4feb2011</span></tt> greengenes OTUs that are valid for RDP retraining are:</p>
+<div class="highlight-python"><pre>573145  k__Bacteria;p__Proteobacteria;c__Gammaproteobacteria;o__Enterobacteriales;f__Enterobacteriaceae;g__Escherichia;s__
+89440   k__Bacteria;p__Proteobacteria;c__Gammaproteobacteria;o__Enterobacteriales;f__Enterobacteriaceae;g__Escherichia;s__
+222043  k__Bacteria;p__Proteobacteria;c__Gammaproteobacteria;o__Enterobacteriales;f__Enterobacteriaceae;g__Raoultella;s__Raoultellaornithinolytica
+430240  k__Bacteria;p__Proteobacteria;c__Gammaproteobacteria;o__Enterobacteriales;f__Enterobacteriaceae;g__Serratia;s__Serratiamarcescens</pre>
+</div>
+<p>The reference sequence file should have fasta labels that match all of the labels as listed in the taxonomy mapping file.  Orientation of the sequences does not matter for RDP, but as this can impact other software such as uclust, so it is suggested that the sequences be in the same orientation to avoid complications with other QIIME scripts.</p>
+<p>An example fasta file (with truncated nucleotide sequences) that matches the above taxonomy strings is:</p>
+<div class="highlight-python"><pre>&gt;573145
+AGAGTTTGATCATGGCTCAGATTGAACGCAGGCGGCAGGCCTAACACATGCAAGTCGAACGGTAACAGGAAGCAGCT
+&gt;89440
+AGAGTTTGATCCTGGCTCAGATTGAACGCTGGCGGCAGGCCTAACACATGCAAGTCGAACGGTAACAGGAAGC
+&gt;222043
+AGAGTTTGATCCTGGCTCAGATTGAACGCTGGCGGCAGGCCTAACACATGCAAGTCGAGCGGTAGCACAGAAAGCTTACTC
+&gt;101567
+TGAAGAAGGCCTTCGGGTTGTAAAGTACTTTCAGCGAGGAGGAAGGCATTAAGGTTAATAACCTTAGTGATTGA</pre>
+</div>
+</div>
+<div class="section" id="tips-for-building-and-troubleshooting-custom-rdp-retraining-files">
+<h2>Tips for building and troubleshooting custom RDP retraining files<a class="headerlink" href="#tips-for-building-and-troubleshooting-custom-rdp-retraining-files" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li>Always use a plain-text editor when modifying taxonomy mapping or reference sequence files to avoid the addition of unwanted characters.  If errors occur, it may be necessary to check a file using a command such as <tt class="docutils literal"><span class="pre">less</span></tt> in the terminal to check for hidden characters.</li>
+<li>Always have the same number of taxonomic levels (separated by semicolons) in the taxonomy mapping file.</li>
+<li>The memory requirements can change when alternative files are used.  Additionally memory can be allocated with the &#8211;rdp_max_memory parameter when calling assign_taxonomy.py.</li>
+<li>Avoid having white space in the taxonomy mapping data.  In the above example taxonomy mapping data, if the first line had an extra space before the class level, an error would be raised.</li>
+<li>Avoid empty levels in the taxonomy mapping with double semicolons.  At an unknown taxonomic level, use a consistent naming convention (such as the <cite>s__</cite> listed above for unknown species), rather than leaving a level empty.</li>
+<li>Used consistent capitalization.  For instance, do not have one class level named c__Gammaproteobacteria and another named c__gammaproteobacteria, as these would be considered distinct taxonomies.</li>
+<li>Reference sequences should be unaligned (no gap or leading/trailing characters such as . or -) with nucleotide characters only.</li>
+<li>As the exact line causing an error is sometimes difficult to detect, it may be advisable to break apart the taxonomy mapping file and reference sequences into smaller subsets to determine which part(s) are causing error(s).</li>
+</ol>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Re-training the RDP Classifier</a><ul>
+<li><a class="reference internal" href="#retraining-the-rdp-classifier-and-assign-taxonomy">Retraining the RDP classifier and assign taxonomy</a><ul>
+<li><a class="reference internal" href="#getting-the-greengenes-reference-otus">Getting the greengenes reference OTUs</a></li>
+<li><a class="reference internal" href="#re-train-the-rdp-classifier-and-classify-the-representative-sequences">Re-train the RDP Classifier and classify the representative sequences</a></li>
+<li><a class="reference internal" href="#integrate-the-taxonomy-assignments-into-a-new-otu-table">Integrate the taxonomy assignments into a new OTU table</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#retraining-rdp-using-a-custom-parameters-file">Retraining RDP using a custom parameters file</a></li>
+<li><a class="reference internal" href="#defining-alternate-training-files">Defining alternate training files</a></li>
+<li><a class="reference internal" href="#tips-for-building-and-troubleshooting-custom-rdp-retraining-files">Tips for building and troubleshooting custom RDP retraining files</a></li>
+</ul>
+</li>
+</ul>
+
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2012, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

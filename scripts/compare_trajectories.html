@@ -1,0 +1,208 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>compare_trajectories.py – Run analysis of volatility using a variety of algorithms &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="compute_core_microbiome.py – Identify the core microbiome." href="compute_core_microbiome.html" />
+    <link rel="prev" title="compare_taxa_summaries.py – Compares taxa summary files" href="compare_taxa_summaries.html" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="compute_core_microbiome.html" title="compute_core_microbiome.py – Identify the core microbiome."
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="compare_taxa_summaries.html" title="compare_taxa_summaries.py – Compares taxa summary files"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="compare-trajectories"></span><div class="section" id="compare-trajectories-py-run-analysis-of-volatility-using-a-variety-of-algorithms">
+<span id="index-0"></span><h1><em>compare_trajectories.py</em> &#8211; Run analysis of volatility using a variety of algorithms<a class="headerlink" href="#compare-trajectories-py-run-analysis-of-volatility-using-a-variety-of-algorithms" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>This script mainly allows performing analysis of volatility on time series data, but they can be applied to any data that contains a gradient. The methods available are RMS (either using &#8216;avg&#8217; or &#8216;trajectory&#8217;); or the first difference (using &#8216;diff&#8217;), or &#8216;wdiff&#8217; for a modified first difference algorithm. The trajectories are computed as follows. For &#8216;avg&#8217; it calculates the average point within a group and then computes the norm of the distance of each sample from the averaged value. For &#8216;trajectory&#8217; each component of the result trajectory is computed as taking the sorted list of samples in the group and taking the norm of the coordinates of the 2nd samples minus the 1st sample, 3rd sample minus 2nd sample and so on. For &#8216;diff&#8217; it calculates the norm for all the time-points and then calculates the first difference for each resulting point. For &#8216;wdiff&#8217;, it calculates the norm for all the time-points and substracts the mean of the next number of elements, specified using the &#8216;&#8211;window_size&#8217; parameters, and the current element.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">compare_trajectories.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-input_fp</dt>
+<dd>Input ordination results filepath</dd>
+<dt>-m, <cite>-</cite>-map_fp</dt>
+<dd>Input metadata mapping filepath</dd>
+<dt>-c, <cite>-</cite>-categories</dt>
+<dd>Comma-separated list of category names of the mapping file to use to create the trajectories</dd>
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>Name of the output directory to save the results</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-s, <cite>-</cite>-sort_by</dt>
+<dd>Category name of the mapping file to use to sort</dd>
+<dt><cite>-</cite>-algorithm</dt>
+<dd>The algorithm to use. Available methods: [&#8216;avg&#8217;, &#8216;trajectory&#8217;, &#8216;diff&#8217;, &#8216;wdiff&#8217;]. [Default: avg]</dd>
+<dt><cite>-</cite>-axes</dt>
+<dd>The number of axes to account while doing the trajectory specific calculations. We suggest using 3 because those are the ones being displayed in the plots but you could use any number between 1 and number of samples - 1. To use all of them pass 0. [default: 3]</dd>
+<dt>-w, <cite>-</cite>-weight_by_vector</dt>
+<dd>Use -w when you want the output to be weighted by the space between samples in the &#8211;sort_by column, i. e. days between samples [default: False]</dd>
+<dt><cite>-</cite>-window_size</dt>
+<dd>Use &#8211;window_size, when selecting the modified first difference (&#8216;wdiff&#8217;) option for &#8211;algorithm. This integer determines the number of elements to be averaged per element subtraction, the resulting trajectory. [default: None]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>This script generates two files in the output directory, &#8216;trajectories.txt&#8217; and &#8216;trajectories_raw_values.txt&#8217;. The &#8216;trajectories.txt&#8217; file includes the resulting statistics and a list of categories that did not passed the tests to run the analysis. The &#8216;trajectories_raw_values.txt&#8217; file includes the resulting trajectory for each used category.</p>
+<p><strong>Average method:</strong></p>
+<p>Execute the analysis of volatility using the average method, grouping the samples using the &#8216;Treatment&#8217; category</p>
+<div class="highlight-python"><div class="highlight"><pre>compare_trajectories.py -i pcoa_res.txt -m map.txt -c &#39;Treatment&#39; -o avg_output
+</pre></div>
+</div>
+<p><strong>Trajectory method:</strong></p>
+<p>Execute the analysis of volatility using the trajectory method, grouping the samples using the &#8216;Treatment&#8217; category and sorting them using the &#8216;time&#8217; category</p>
+<div class="highlight-python"><div class="highlight"><pre>compare_trajectories.py -i pcoa_res.txt -m map.txt -c &#39;Treatment&#39; --algorithm trajectory -o trajectory_output -s time
+</pre></div>
+</div>
+<p><strong>First difference method:</strong></p>
+<p>Execute the analysis of volatility using the first difference method, grouping the samples using the &#8216;Treatment&#8217; category, sorting them using the &#8216;time&#8217; category and calculating the trajectory using the first four axes</p>
+<div class="highlight-python"><div class="highlight"><pre>compare_trajectories.py -i pcoa_res.txt -m map.txt -c &#39;Treatment&#39; --algorithm diff -o diff_output -s time --axes 4
+</pre></div>
+</div>
+<p><strong>Window difference method:</strong></p>
+<p>Execute the analysis of volatility using the window difference method, grouping the samples using the &#8216;Treatment&#8217; category, sorting them using the &#8216;time&#8217; category, weighting the output by the space between samples in the &#8216;time&#8217; category and using a window size of three.</p>
+<div class="highlight-python"><div class="highlight"><pre>compare_trajectories.py -i pcoa_res.txt -m map.txt -c &#39;Treatment&#39; --algorithm wdiff -o wdiff_output -s time --window_size 3 -w
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="compare_taxa_summaries.html"
+                        title="previous chapter"><em>compare_taxa_summaries.py</em> &#8211; Compares taxa summary files</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="compute_core_microbiome.html"
+                        title="next chapter"><em>compute_core_microbiome.py</em> &#8211; Identify the core microbiome.</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="compute_core_microbiome.html" title="compute_core_microbiome.py – Identify the core microbiome."
+             >next</a> |</li>
+        <li class="right" >
+          <a href="compare_taxa_summaries.html" title="compare_taxa_summaries.py – Compares taxa summary files"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

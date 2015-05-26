@@ -1,0 +1,247 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Comparing Taxa Summaries &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.7.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="comparing-taxa-summaries">
+<span id="taxa-summary-comparison"></span><h1>Comparing Taxa Summaries<a class="headerlink" href="#comparing-taxa-summaries" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>This tutorial explains how to use a few different taxa summary comparison techniques that are available in <a class="reference external" href="../scripts/compare_taxa_summaries.html">compare_taxa_summaries.py</a>. Taxa summary files are compared using either Pearson or Spearman correlation coefficients, which are computed between pairs of samples. The script provides two different comparison modes. <cite>Paired</cite> comparison mode compares samples that match between the two taxa summary files, while <cite>expected</cite> comparison mode compares all samples in one taxa summary file to an &#8220;expected&#8221; sample in the other file.</p>
+<p>One potential use for this script is to compare two taxa summary files that have been constructed using different taxonomic classification techniques. For example, you might want to see whether the taxonomic composition of samples assigned using the RDP classifier are correlated with the taxonomic composition of samples derived from BLAST or RTAX. Another example is to see whether using different confidence levels or E-values (for RDP and BLAST, respectively) yield taxonomic compositions that are similar/correlated.</p>
+<p>Another example use-case is to compare the taxonomic composition of several mock community replicate samples to a single expected, or known, sample community.</p>
+<p>This script is also useful for sorting and filling taxa summary files so that each sample has the same taxa listed in the same order (with missing taxa reporting an abundance of zero). The sorted and filled taxa summary files can then be passed to a script, such as <a class="reference external" href="../scripts/plot_taxa_summary.html">plot_taxa_summary.py</a>, to visually compare the differences using the same taxa coloring scheme.</p>
+<p>Please note that this tutorial does not attempt to cover every possible option that can be used in the taxa summary comparison script. Instead, it attempts to provide useful examples to give you an idea of how to use this script in your own study, as well as customize some of the output to your liking. For a complete listing of the available options, please refer to the <a class="reference external" href="../scripts/compare_taxa_summaries.html">compare_taxa_summaries.py</a> script documentation.</p>
+</div>
+<div class="section" id="input-files">
+<h2>Input Files<a class="headerlink" href="#input-files" title="Permalink to this headline">¶</a></h2>
+<p>You can obtain the files used in this tutorial <a class="reference external" href="https://s3.amazonaws.com/s3-qiime_tutorial_files/taxa_summary_comparison_tutorial_data.zip">here</a>. The files are derived from the <a class="reference external" href="./tutorial.html">overview tutorial</a>. The unzipped directory will contain two taxa summary files named <tt class="file docutils literal"><span class="pre">ts_rdp_0.60.txt</span></tt> and <tt class="file docutils literal"><span class="pre">ts_rdp_0.80.txt</span></tt>. These taxa summaries were constructed from the overview tutorial representative sequence set by assigning taxonomy to it using the RDP classifier with two different confidence levels (0.60 and 0.80). The gg_otus_4feb2011 97% representative set was used as training input to the RDP classifier.</p>
+</div>
+<div class="section" id="output-files">
+<h2>Output Files<a class="headerlink" href="#output-files" title="Permalink to this headline">¶</a></h2>
+<p>Depending on the options that you invoke on the script, either three or four output files will be generated. They will all be placed in the directory specified by the required -o option. Most of the output files will be tab-separated text files containing information about the test that was performed and its results. These can easily be viewed in a spreadsheet program such as Excel.</p>
+<p>Two of the output files will be the sorted and filled versions of the input taxa summary files, which can then be used in <a class="reference external" href="../scripts/plot_taxa_summary.html">plot_taxa_summary.py</a> to visualize the differences in taxonomic composition. These files will be named based on the basename of the input taxa summary files. If the input files&#8217; basenames are the same, the output files will have &#8216;0&#8217; and &#8216;1&#8217; appended to their names to keep the filenames unique. The first input taxa summary file will have &#8216;0&#8217; in its filename and the second input taxa summary file will have &#8216;1&#8217; in its filename.</p>
+<p>The third output file will contain the results of the overall comparison of the input taxa summary files using the specified comparison mode. The file will be named <tt class="file docutils literal"><span class="pre">overall_comparison.txt</span></tt> and will be in tab-delimited format for easy viewing in a program such as Excel.</p>
+<p>If &#8211;perform_detailed_comparisons is specified, a fourth output file named <tt class="file docutils literal"><span class="pre">detailed_comparisons.txt</span></tt> will be created. This file will also be in tab-delimited format and will contain the results of comparing individual pairs of samples (whereas <tt class="file docutils literal"><span class="pre">overall_comparison.txt</span></tt> contains results from comparing all pairs of samples at once).</p>
+</div>
+<div class="section" id="paired-comparison">
+<h2>Paired Comparison<a class="headerlink" href="#paired-comparison" title="Permalink to this headline">¶</a></h2>
+<p>In order to see whether the results of using the RDP classifier at a confidence
+level of 0.60 versus 0.80 are correlated, we need to compute the correlation
+between each of the paired samples in the two taxa summary files. To do this,
+run the following command:</p>
+<div class="highlight-python"><pre>compare_taxa_summaries.py -i ts_rdp_0.60.txt,ts_rdp_0.80.txt -m paired -o taxa_comp</pre>
+</div>
+<p>This command will create a new output directory named <tt class="file docutils literal"><span class="pre">taxa_comp</span></tt>, which will contain three files named <tt class="file docutils literal"><span class="pre">ts_rdp_0.60_sorted_and_filled.txt</span></tt>, <tt class="file docutils literal"><span class="pre">ts_rdp_0.80_sorted_and_filled.txt</span></tt>, and <tt class="file docutils literal"><span class="pre">overall_comparison.txt</span></tt>. The first two files are sorted and filled versions of the input taxa summary files, meaning that the taxa (rows) have been sorted and any missing taxa have been added with zero abundance. This results in taxa summary files that have the same taxa listed in the same order. Open up <tt class="file docutils literal"><span class="pre">overall_comparison.txt</span></tt> to see the results of the test:</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li># Correlation coefficient: pearson.</li>
+<li># The parametric p-value(s) were calculated using a two-sided test of significance using a t-distribution.</li>
+<li># The nonparametric p-value(s) were calculated using a two-sided permutation test with 999 permutations.</li>
+<li># The confidence interval(s) were constructed at a confidence level of 95.0% using Fisher&#8217;s z-transformation (see Sokal and Rohlf 3rd edition pg. 575). The confidence interval(s) are two-sided.</li>
+<li># Number of samples that matched between the taxa summary files: 9</li>
+<li>Correlation coefficient   Parametric p-value      Nonparametric p-value   CI (lower)      CI (upper)</li>
+<li>0.9993    0.0000  0.001   0.9989  0.9996</li>
+</ul>
+</div>
+<p>The comment at the top of the file tells us that Pearson&#8217;s correlation coefficient was used to compute the correlation between samples. The value of 0.9993 is very close to +1, which indicates strong positive correlation between the paired samples in the two input taxa summary files. Both parametric and nonparametric p-values indicate that the correlation is statistically significant. The two-sided 95% confidence interval also supports the same conclusion. Thus, it appears that using the RDP classifier at a confidence level of 0.60 or 0.80 yields highly correlated results (i.e. you might draw the same biological conclusions from using either taxa summary file).</p>
+<p>Note the fifth line of the file, which tells us that 9 samples matched between the two taxa summary files. All 9 samples matched between the two files because both files have the same sample IDs. The script determines which samples to compute the correlation between based on matching sample IDs between the two files (the order of sample IDs does not matter between the two files, but the names must match exactly). Any sample IDs that do not match will not be considered when calculating the results.</p>
+<p>If you need to compare taxa summaries that do not have matching sample IDs, you can use a sample ID map to provide a mapping between sample IDs. For a description of this file format, see <a class="reference internal" href="../documentation/file_formats.html#sample-id-map"><em>Sample id map</em></a>. To illustrate this, run the following command:</p>
+<div class="highlight-python"><pre>compare_taxa_summaries.py -i ts_rdp_0.80.txt,ts_rdp_0.60_renamed.txt -m paired -o taxa_comp_using_sample_id_map -s sample_id_map.txt -c spearman</pre>
+</div>
+<p>The second input taxa summary file (<tt class="file docutils literal"><span class="pre">ts_rdp_0.60_renamed.txt</span></tt>) is simply the original <tt class="file docutils literal"><span class="pre">ts_rdp_0.60.txt</span></tt> file with all sample IDs starting with &#8216;PC.&#8217; renamed to &#8216;S.&#8217;. The sample ID map (<tt class="file docutils literal"><span class="pre">sample_id_map.txt</span></tt>) specifies how to pair up samples between the two taxa summary files now that the sample IDs do not exactly match.</p>
+<p>This command will create a new output directory named <tt class="file docutils literal"><span class="pre">taxa_comp_using_sample_id_map</span></tt>, which will contain three files like before. Open up <tt class="file docutils literal"><span class="pre">overall_comparison.txt</span></tt> to see the results of the test:</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li># Correlation coefficient: spearman.</li>
+<li># The parametric p-value(s) were calculated using a two-sided test of significance using a t-distribution.</li>
+<li># The nonparametric p-value(s) were calculated using a two-sided permutation test with 999 permutations.</li>
+<li># The confidence interval(s) were constructed at a confidence level of 95.0% using Fisher&#8217;s z-transformation (see Sokal and Rohlf 3rd edition pg. 575). The confidence interval(s) are two-sided.</li>
+<li># Number of samples that matched between the taxa summary files: 9</li>
+<li>Correlation coefficient   Parametric p-value      Nonparametric p-value   CI (lower)      CI (upper)</li>
+<li>0.9687    0.0000  0.001   0.9502  0.9803</li>
+</ul>
+</div>
+<p>Notice that all 9 samples were still included because we provided a sample ID map. If we had not provided a sample ID map, the script would have raised an error stating that the two taxa summary files were incompatible because no matches could be found.</p>
+<p>Also notice that we used the -c option to use the Spearman correlation coefficient instead of the Pearson correlation coefficient. This is why we obtained a different value for the correlation coefficient. Regardless, we still reach essentially the same conclusion regarding the correlation of the two taxa summary files.</p>
+<p>If you&#8217;d like to see the correlation tests applied to each pair of samples (instead of to all pairs of samples at one time), use the &#8211;perform_detailed_comparisons option:</p>
+<div class="highlight-python"><pre>compare_taxa_summaries.py -i ts_rdp_0.60.txt,ts_rdp_0.80.txt -m paired -o taxa_comp_detailed --perform_detailed_comparisons</pre>
+</div>
+<p>In addition to the three previous file, you will find the file <tt class="file docutils literal"><span class="pre">detailed_comparisons.txt</span></tt> in the newly created directory <tt class="file docutils literal"><span class="pre">taxa_comp_detailed</span></tt>:</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li># Correlation coefficient: pearson.</li>
+<li># The parametric p-value(s) were calculated using a two-sided test of significance using a t-distribution.</li>
+<li># The nonparametric p-value(s) were calculated using a two-sided permutation test with 999 permutations.</li>
+<li># The confidence interval(s) were constructed at a confidence level of 95.0% using Fisher&#8217;s z-transformation (see Sokal and Rohlf 3rd edition pg. 575). The confidence interval(s) are two-sided.</li>
+<li># Number of samples that matched between the taxa summary files: 9</li>
+<li>Sample ID Sample ID       Correlation coefficient Parametric p-value      Parametric p-value (Bonferroni-corrected)       Nonparametric p-value   Nonparametric p-value (Bonferroni-corrected)    CI (lower)      CI (upper)</li>
+<li>PC.354    PC.354  0.9997  0.0000  0.0000  0.007   0.063   0.9985  1.0000</li>
+<li>PC.355    PC.355  0.9998  0.0000  0.0000  0.005   0.045   0.9988  1.0000</li>
+<li>PC.356    PC.356  0.9999  0.0000  0.0000  0.002   0.018   0.9995  1.0000</li>
+<li>PC.481    PC.481  0.9998  0.0000  0.0000  0.002   0.018   0.9989  1.0000</li>
+<li>PC.593    PC.593  0.9999  0.0000  0.0000  0.002   0.018   0.9993  1.0000</li>
+<li>PC.607    PC.607  0.9990  0.0000  0.0000  0.002   0.018   0.9942  0.9998</li>
+<li>PC.634    PC.634  1.0000  0.0000  0.0000  0.001   0.009   1.0000  1.0000</li>
+<li>PC.635    PC.635  0.9963  0.0000  0.0000  0.002   0.018   0.9788  0.9994</li>
+<li>PC.636    PC.636  0.9999  0.0000  0.0000  0.001   0.009   0.9994  1.0000</li>
+</ul>
+</div>
+<p>We see that nearly all of the comparisons indicate strong, statistically-significant correlation. The p-values are provided that have been Bonferroni-corrected for multiple comparisons (though are still zero for the parametric test because the uncorrected p-values are zero). The minor differences in confidence intervals between correlation coefficients that are the same is attributed to rounding error.</p>
+<p>To perform a one-tailed test of negative association instead of a two-tailed test, run the following command:</p>
+<div class="highlight-python"><pre>compare_taxa_summaries.py -i ts_rdp_0.60.txt,ts_rdp_0.80.txt -m paired -o taxa_comp_one_tailed -t low -l 0.90</pre>
+</div>
+<p>This command will create a new output directory named <tt class="file docutils literal"><span class="pre">taxa_comp_one_tailed</span></tt>, which will contain three files like before. Open up <tt class="file docutils literal"><span class="pre">overall_comparison.txt</span></tt> to see the results of the test:</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li># Correlation coefficient: pearson.</li>
+<li># The parametric p-value(s) were calculated using a one-sided (negative association) test of significance using a t-distribution.</li>
+<li># The nonparametric p-value(s) were calculated using a one-sided (negative association) permutation test with 999 permutations.</li>
+<li># The confidence interval(s) were constructed at a confidence level of 90.0% using Fisher&#8217;s z-transformation (see Sokal and Rohlf 3rd edition pg. 575). The confidence interval(s) are two-sided.</li>
+<li># Number of samples that matched between the taxa summary files: 9</li>
+<li>Correlation coefficient   Parametric p-value      Nonparametric p-value   CI (lower)      CI (upper)</li>
+<li>0.9993    1.0000  1.000   0.9990  0.9996</li>
+</ul>
+</div>
+<p>We performed a one-tailed test of negative association, i.e. the null hypothesis was that Pearson&#8217;s product-moment coefficient was equal to 0 (no association) and the alternative hypothesis was that the correlation coefficient was less than 0. We see that both parametric and nonparametric p-values are now insignificant, indicating that we fail to reject the null hypothesis of no association (keep in mind that the observed correlation coefficient of 0.9993 indicates strong <cite>positive</cite> correlation, not negative correlation).</p>
+<p>Also note that we specified a 90% confidence interval instead of the default 95% confidence interval. If you compare these results to the results in the first command of the tutorial, you&#8217;ll see that the 90% confidence interval is a little tighter than the 95% confidence interval, which is what we would expect.</p>
+</div>
+<div class="section" id="expected-comparison">
+<h2>Expected Comparison<a class="headerlink" href="#expected-comparison" title="Permalink to this headline">¶</a></h2>
+<p>By specifying <cite>-m expected</cite> to the script, all samples in the first input taxa summary file will be compared to a single &#8220;expected&#8221; sample in the second input taxa summary file. This comparison mode is especially useful if you need to compare the taxonomic composition of various samples to a sample that has a known taxonomic composition. The second input taxa summary file must contain only a single sample or you must tell the script which one to use (if there are multiple samples) using the &#8211;expected_sample_id option. The output files will be in the same format as those seen previously when using paired comparison mode.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Comparing Taxa Summaries</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#input-files">Input Files</a></li>
+<li><a class="reference internal" href="#output-files">Output Files</a></li>
+<li><a class="reference internal" href="#paired-comparison">Paired Comparison</a></li>
+<li><a class="reference internal" href="#expected-comparison">Expected Comparison</a></li>
+</ul>
+</li>
+</ul>
+
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2012, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

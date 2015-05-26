@@ -1,0 +1,168 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>QIIME coding guidelines &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0.0-dev',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="qiime-coding-guidelines">
+<h1>QIIME coding guidelines<a class="headerlink" href="#qiime-coding-guidelines" title="Permalink to this headline">¶</a></h1>
+<p>QIIME generally follows the <a class="reference external" href="http://pycogent.sourceforge.net/coding_guidelines.html">PyCogent Coding Guidelines</a>. You <strong>must</strong> review this document, and adhere to these standards in your QIIME code.</p>
+<div class="section" id="qiime-command-line-interface-guidelines">
+<h2>QIIME command line interface guidelines<a class="headerlink" href="#qiime-command-line-interface-guidelines" title="Permalink to this headline">¶</a></h2>
+<p>For many of our users, their primary mode of interaction with QIIME is the command line interfaces to the scripts. It is very important that our command line interfaces behave in a standard way, and are consistent across scripts.</p>
+<p>To get a good start on defining acceptable command line interfaces, you can use the file <tt class="docutils literal"><span class="pre">Qiime/scripts/make_qiime_py_file.py</span></tt> with the <tt class="docutils literal"><span class="pre">-s</span></tt> option. This will generate a template file with the option parsing infrastructure already in place.</p>
+<div class="section" id="defining-your-command-line-interfaces">
+<h3>Defining your command line interfaces<a class="headerlink" href="#defining-your-command-line-interfaces" title="Permalink to this headline">¶</a></h3>
+<p>QIIME command line interfaces should adhere to the following standards:</p>
+<blockquote>
+<ul class="simple">
+<li>All options/arguments to QIIME scripts should be passed via options. NO positional arguments are allowed.</li>
+<li>Required options must be listed first in the help string, and must end with the text <tt class="docutils literal"><span class="pre">[REQUIRED]</span></tt></li>
+<li>Required options must be listed in curly braces on the first line followed by the values they should receive, if applicable.</li>
+<li>One or more usage examples should be provided as part of the usage string.</li>
+<li>Non-required options must contain their default values in the help string. Typically your help string should end with <tt class="docutils literal"><span class="pre">[default:</span> <span class="pre">%default]</span></tt>. optparse will replace <tt class="docutils literal"><span class="pre">%default</span></tt> with the default value you provide. In some case using <tt class="docutils literal"><span class="pre">%default</span></tt> is not possible, for example if -o refers to an output file, and the default behavior is to name the output file based on the name of the input file. In that case you should be as descriptive as possible. In this case <tt class="docutils literal"><span class="pre">[default:</span> <span class="pre">&lt;input_fp&gt;.out]</span></tt> is a good way to list the default value.</li>
+<li>You must test for the presence of required_options, and call parser.error if the user fails to provide a required option</li>
+<li>if you have been passing dest= to parser.add_option, note that you do not need to do this &#8211; dest will be generated from the long format option (e.g., the value passed to &#8211;input_file will be stored in input_file)</li>
+<li>Your usage string should be defined in a variable called <tt class="docutils literal"><span class="pre">usage_str</span></tt> as a multiline string outside of the function that is using it. This makes the code look neater, and will help automated documentation tools find that text (eventually).</li>
+</ul>
+</blockquote>
+</div>
+<div class="section" id="naming-command-line-options">
+<h3>Naming command line options<a class="headerlink" href="#naming-command-line-options" title="Permalink to this headline">¶</a></h3>
+<p>We have a minimal set of required option names for QIIME scripts. If your script takes the follow values, they must use these options:</p>
+<blockquote>
+<ul class="simple">
+<li>input filepath or input directory: <tt class="docutils literal"><span class="pre">-i</span></tt>, <tt class="docutils literal"><span class="pre">--input_fp</span></tt>, <tt class="docutils literal"><span class="pre">--input_dir</span></tt></li>
+<li>output filepath or output directory: <tt class="docutils literal"><span class="pre">-o</span></tt>, <tt class="docutils literal"><span class="pre">--output_fp</span></tt>, <tt class="docutils literal"><span class="pre">--output_dir</span></tt></li>
+<li>log filepath or log directory: <tt class="docutils literal"><span class="pre">-l</span></tt>, <tt class="docutils literal"><span class="pre">--log_fp</span></tt>, <tt class="docutils literal"><span class="pre">--log_dir</span></tt></li>
+<li>verbose output: <tt class="docutils literal"><span class="pre">-v</span></tt>, <tt class="docutils literal"><span class="pre">--verbose</span></tt></li>
+</ul>
+</blockquote>
+<p>These options cannot be used to pass any other values.</p>
+<p><strong>The uppercase options</strong> <tt class="docutils literal"><span class="pre">-N</span></tt> <strong>through</strong> <tt class="docutils literal"><span class="pre">-Z</span></tt> <strong>are reserved for parallel scripts.</strong> No other scripts can define options with uppercase letters <tt class="docutils literal"><span class="pre">N</span></tt> through <tt class="docutils literal"><span class="pre">Z</span></tt>.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">QIIME coding guidelines</a><ul>
+<li><a class="reference external" href="#qiime-command-line-interface-guidelines">QIIME command line interface guidelines</a><ul>
+<li><a class="reference external" href="#defining-your-command-line-interfaces">Defining your command line interfaces</a></li>
+<li><a class="reference external" href="#naming-command-line-options">Naming command line options</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+		
+	 <li><a href="../index.html">Home</a><br /></li>
+	 <li><a href="../install/index.html">Install</a><br /></li>
+	 <li><a href="../documentation/index.html">Documentation</a><br /></li>
+	 <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	 <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	 <li><a href="index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+      &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

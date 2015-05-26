@@ -1,0 +1,201 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>filter_otus_from_otu_table.py – Filter OTUs from an OTU table based on their observation counts or identifier. &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="filter_samples_from_otu_table.py – Filters samples from an OTU table on the basis of the number of observations in that sample, or on the basis of sample metadata. Mapping file can also be filtered to the resulting set of sample ids." href="filter_samples_from_otu_table.html" />
+    <link rel="prev" title="filter_otus_by_sample.py – Filter OTU mapping file and sequences by SampleIDs" href="filter_otus_by_sample.html" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="filter_samples_from_otu_table.html" title="filter_samples_from_otu_table.py – Filters samples from an OTU table on the basis of the number of observations in that sample, or on the basis of sample metadata. Mapping file can also be filtered to the resulting set of sample ids."
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="filter_otus_by_sample.html" title="filter_otus_by_sample.py – Filter OTU mapping file and sequences by SampleIDs"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="filter-otus-from-otu-table"></span><div class="section" id="filter-otus-from-otu-table-py-filter-otus-from-an-otu-table-based-on-their-observation-counts-or-identifier">
+<span id="index-0"></span><h1><em>filter_otus_from_otu_table.py</em> &#8211; Filter OTUs from an OTU table based on their observation counts or identifier.<a class="headerlink" href="#filter-otus-from-otu-table-py-filter-otus-from-an-otu-table-based-on-their-observation-counts-or-identifier" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">filter_otus_from_otu_table.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-input_fp</dt>
+<dd>The input otu table filepath in biom format</dd>
+<dt>-o, <cite>-</cite>-output_fp</dt>
+<dd>The output filepath in biom format</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt><cite>-</cite>-negate_ids_to_exclude</dt>
+<dd>Keep OTUs in otu_ids_to_exclude_fp rather than discard them [default:False]</dd>
+<dt>-n, <cite>-</cite>-min_count</dt>
+<dd>The minimum total observation count of an otu for that otu to be retained [default: 0]</dd>
+<dt><cite>-</cite>-min_count_fraction</dt>
+<dd>Fraction of the total observation (sequence) count to apply as the minimum total observation count of an otu for that otu to be retained. this is a fraction, not percent, so if you want to filter to 1%, you specify 0.01. [default: 0]</dd>
+<dt>-x, <cite>-</cite>-max_count</dt>
+<dd>The maximum total observation count of an otu for that otu to be retained [default: infinity]</dd>
+<dt>-s, <cite>-</cite>-min_samples</dt>
+<dd>The minimum number of samples an OTU must be observed in for that otu to be retained [default: 0]</dd>
+<dt>-y, <cite>-</cite>-max_samples</dt>
+<dd>The maximum number of samples an OTU must be observed in for that otu to be retained [default: infinity]</dd>
+<dt>-e, <cite>-</cite>-otu_ids_to_exclude_fp</dt>
+<dd>File containing list of OTU ids to exclude: can be a text file with one id per line, a text file where id is the first value in a tab-separated line, or can be a fasta file (extension must be .fna or .fasta) [default: None]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p><strong>Singleton filtering:</strong></p>
+<p>Discard all OTUs that are observed fewer than 2 times (i.e., singletons)</p>
+<div class="highlight-python"><div class="highlight"><pre>filter_otus_from_otu_table.py -i otu_table.biom -o otu_table_no_singletons.biom -n 2
+</pre></div>
+</div>
+<p><strong>Abundance filtering:</strong></p>
+<p>Discard all OTUs that are observed greater than 100 times (e.g., if you want to look at low abundance OTUs only)</p>
+<div class="highlight-python"><div class="highlight"><pre>filter_otus_from_otu_table.py -i otu_table.biom -o otu_table_low_abundance.biom -x 100
+</pre></div>
+</div>
+<p><strong>Chimera filtering:</strong></p>
+<p>Discard all OTUs listed in chimeric_otus.txt (e.g., to remove chimeric OTUs from an OTU table)</p>
+<div class="highlight-python"><div class="highlight"><pre>filter_otus_from_otu_table.py -i otu_table.biom -o otu_table_non_chimeric.biom -e chimeric_otus.txt
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="filter_otus_by_sample.html"
+                        title="previous chapter"><em>filter_otus_by_sample.py</em> &#8211; Filter OTU mapping file and sequences by SampleIDs</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="filter_samples_from_otu_table.html"
+                        title="next chapter"><em>filter_samples_from_otu_table.py</em> &#8211; Filters samples from an OTU table on the basis of the number of observations in that sample, or on the basis of sample metadata. Mapping file can also be filtered to the resulting set of sample ids.</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="filter_samples_from_otu_table.html" title="filter_samples_from_otu_table.py – Filters samples from an OTU table on the basis of the number of observations in that sample, or on the basis of sample metadata. Mapping file can also be filtered to the resulting set of sample ids."
+             >next</a> |</li>
+        <li class="right" >
+          <a href="filter_otus_by_sample.html" title="filter_otus_by_sample.py – Filter OTU mapping file and sequences by SampleIDs"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

@@ -1,0 +1,193 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>extract_seqs_by_sample_id.py – Extract sequences based on the SampleID &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="filter_alignment.py – Filter sequence alignment by removing highly variable regions" href="filter_alignment.html" />
+    <link rel="prev" title="extract_reads_from_interleaved_file.py – Extract reads from an interleaved file." href="extract_reads_from_interleaved_file.html" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="filter_alignment.html" title="filter_alignment.py – Filter sequence alignment by removing highly variable regions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="extract_reads_from_interleaved_file.html" title="extract_reads_from_interleaved_file.py – Extract reads from an interleaved file."
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="extract-seqs-by-sample-id"></span><div class="section" id="extract-seqs-by-sample-id-py-extract-sequences-based-on-the-sampleid">
+<span id="index-0"></span><h1><em>extract_seqs_by_sample_id.py</em> &#8211; Extract sequences based on the SampleID<a class="headerlink" href="#extract-seqs-by-sample-id-py-extract-sequences-based-on-the-sampleid" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>This script creates a fasta file which will contain only sequences that ARE associated with a set of sample IDs, OR all sequences that are NOT associated with a set of sample IDs (-n)</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">extract_seqs_by_sample_id.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-input_fasta_fp</dt>
+<dd>Path to the input fasta file</dd>
+<dt>-o, <cite>-</cite>-output_fasta_fp</dt>
+<dd>The output fasta file</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-n, <cite>-</cite>-negate</dt>
+<dd>Negate the sample ID list (i.e., output sample ids not passed via -s) [default: False]</dd>
+<dt>-s, <cite>-</cite>-sample_ids</dt>
+<dd>Comma-separated sample_ids to include in output fasta file (or exclude if &#8211;negate), or string describing mapping file states defining sample ids (mapping_fp must be provided for the latter)</dd>
+<dt>-m, <cite>-</cite>-mapping_fp</dt>
+<dd>The mapping filepath</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>The script produces a fasta file containing containing only the specified SampleIDs.</p>
+<p><strong>Examples:</strong></p>
+<p>Create the file outseqs.fasta (-o), which will be a subset of inseqs.fasta (-i) containing only the sequences THAT ARE associated with sample ids S2, S3, S4 (-s). As always, sample IDs are case-sensitive:</p>
+<div class="highlight-python"><div class="highlight"><pre>extract_seqs_by_sample_id.py -i inseqs.fasta -o outseqs_by_sample.fasta -s S2,S3,S4
+</pre></div>
+</div>
+<p>Create the file outseqs.fasta (-o), which will be a subset of inseqs.fasta (-i) containing only the sequences THAT ARE NOT (-n) associated with sample ids S2, S3, S4 (-s). As always, sample IDs are case-sensitive:</p>
+<div class="highlight-python"><div class="highlight"><pre>extract_seqs_by_sample_id.py -i inseqs.fasta -o outseqs_by_sample_negated.fasta -s S2,S3,S4 -n
+</pre></div>
+</div>
+<p>Create the file outseqs.fasta (-o), which will be a subset of inseqs.fasta (-i) containing only the sequences THAT ARE associated with sample ids whose &#8220;Treatment&#8221; value is &#8220;Fast&#8221; in the mapping file:</p>
+<div class="highlight-python"><div class="highlight"><pre>extract_seqs_by_sample_id.py -i inseqs.fasta -o outseqs_by_mapping_field.fasta -m map.txt -s &quot;Treatment:Fast&quot;
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="extract_reads_from_interleaved_file.html"
+                        title="previous chapter"><em>extract_reads_from_interleaved_file.py</em> &#8211; Extract reads from an interleaved file.</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="filter_alignment.html"
+                        title="next chapter"><em>filter_alignment.py</em> &#8211; Filter sequence alignment by removing highly variable regions</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="filter_alignment.html" title="filter_alignment.py – Filter sequence alignment by removing highly variable regions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="extract_reads_from_interleaved_file.html" title="extract_reads_from_interleaved_file.py – Extract reads from an interleaved file."
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

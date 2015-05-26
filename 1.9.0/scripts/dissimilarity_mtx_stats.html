@@ -1,0 +1,181 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>dissimilarity_mtx_stats.py – Calculate mean, median and standard deviation from a set of distance matrices &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.9.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="distance_matrix_from_mapping.py – Calculate the pairwise dissimilarity on one column of a mappping file" href="distance_matrix_from_mapping.html" />
+    <link rel="prev" title="differential_abundance.py – Identify OTUs that are differentially abundance across two sample categories" href="differential_abundance.html" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="distance_matrix_from_mapping.html" title="distance_matrix_from_mapping.py – Calculate the pairwise dissimilarity on one column of a mappping file"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="differential_abundance.html" title="differential_abundance.py – Identify OTUs that are differentially abundance across two sample categories"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="dissimilarity-mtx-stats"></span><div class="section" id="dissimilarity-mtx-stats-py-calculate-mean-median-and-standard-deviation-from-a-set-of-distance-matrices">
+<span id="index-0"></span><h1><em>dissimilarity_mtx_stats.py</em> &#8211; Calculate mean, median and standard deviation from a set of distance matrices<a class="headerlink" href="#dissimilarity-mtx-stats-py-calculate-mean-median-and-standard-deviation-from-a-set-of-distance-matrices" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>This script reads in all (dis)similarity matrices from an input directory
+(input_dir), then calculates and writes the mean, median, standdard deviation
+(stdev) to an output folder.</p>
+<p>The input_dir must contain only (dis)similarity matrices, and only those you
+wish to perform statistical analyses on.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">dissimilarity_mtx_stats.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="last docutils">
+<dt>-i, <cite>-</cite>-input_dir</dt>
+<dd>Path to input directory</dd>
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>Path to store result files</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>The outputs are in distance matrix format, where each value is the mean,
+median, or stdev of that element in all the input distance matrices.</p>
+<p><strong>Example:</strong></p>
+<p>This examples takes the &#8220;dists/&#8221; directory as input and returns the results in the &#8220;dist_stats/&#8221; directory.</p>
+<div class="highlight-python"><div class="highlight"><pre>dissimilarity_mtx_stats.py -i dists/ -o dist_stats/
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="differential_abundance.html"
+                        title="previous chapter"><em>differential_abundance.py</em> &#8211; Identify OTUs that are differentially abundance across two sample categories</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="distance_matrix_from_mapping.html"
+                        title="next chapter"><em>distance_matrix_from_mapping.py</em> &#8211; Calculate the pairwise dissimilarity on one column of a mappping file</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="distance_matrix_from_mapping.html" title="distance_matrix_from_mapping.py – Calculate the pairwise dissimilarity on one column of a mappping file"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="differential_abundance.html" title="differential_abundance.py – Identify OTUs that are differentially abundance across two sample categories"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

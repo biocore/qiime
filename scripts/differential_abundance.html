@@ -1,0 +1,233 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>differential_abundance.py – Identify OTUs that are differentially abundance across two sample categories &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="dissimilarity_mtx_stats.py – Calculate mean, median and standard deviation from a set of distance matrices" href="dissimilarity_mtx_stats.html" />
+    <link rel="prev" title="detrend.py – Detrend Principal Coordinates" href="detrend.html" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="dissimilarity_mtx_stats.html" title="dissimilarity_mtx_stats.py – Calculate mean, median and standard deviation from a set of distance matrices"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="detrend.html" title="detrend.py – Detrend Principal Coordinates"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="differential-abundance"></span><div class="section" id="differential-abundance-py-identify-otus-that-are-differentially-abundance-across-two-sample-categories">
+<span id="index-0"></span><h1><em>differential_abundance.py</em> &#8211; Identify OTUs that are differentially abundance across two sample categories<a class="headerlink" href="#differential-abundance-py-identify-otus-that-are-differentially-abundance-across-two-sample-categories" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>OTU differential abundance testing is commonly used to identify OTUs that
+differ between two mapping file sample categories (i.e. Palm and Tongue body
+sites).  We would recommend having at least 5 samples in each category.  These
+methods can be used in comparison to <a class="reference external" href="./group_significance.html">group_significance.py</a> on a rarefied matrix,
+and we would always recommend comparing the results of these approaches to the
+rarefied/<a class="reference external" href="./group_significance.html">group_significance.py</a> approaches.  We would also recommend treating the
+differentially abundant OTUs identified by these (metagenomeSeq zero-inflated Gaussian,
+or ZIG, and DESeq2 negative binomial Wald test) techniques with caution, as they assume a
+distribution and are therefore parametric tests.  Parametric tests can do poorly if
+the assumptions about the data are not met.  These tests are also newer techniques
+that are less well tested compared to rarefying with a <a class="reference external" href="./group_significance.html">group_significance.py</a> test.</p>
+<p>The input is a raw (not normalized, not rarefied) matrix having uneven column sums.
+With these techniques, we would still recommend removing low depth samples (e.g. below
+1000 sequences per sample), and low abundance/rare OTUs from the data set.  The DESeq2 method
+should NOT be used if the fit line on the dispersion plot (one of the diagnostic plots
+output by the -d, or &#8211;DESeq2_diagnostic_plots option) does not look smooth, there are big
+gaps in the point spacings, and the fitted line does not look appropriate for the data.</p>
+<p>DESeq2 is stronger at very small/smaller data sets, but the run-time beyond 100
+total samples becomes very long.  MetagenomeSeq&#8217;s fitZIG is a better algorithm for larger
+library sizes and over 50 samples per category (e.g. 50 Palm samples), the more the better.
+In simulation, these techniques have higher sensitivity, but sometimes higher false positive
+rate compared to the non-parametric tests (e.g. Wilcoxon rank sum) in <a class="reference external" href="./group_significance.html">group_significance.py</a>,
+especially with very uneven library sizes (starting at 2-3 fold difference).  In practice
+and with real data, we do not observe much of a difference between these results and
+the tests in <a class="reference external" href="./group_significance.html">group_significance.py</a>.</p>
+<p>For more on these techniques please see McMurdie, P. and Holmes, S. &#8216;Waste not want not
+why rarefying microbiome data is inadmissible.&#8217; PLoS Comp. Bio. 2014.  For more on
+metagenomeSeq and fitZIG, please read Paulson, JN, et al. &#8216;Differential abundance analysis
+for microbial marker-gene surveys.&#8217;  Nature Methods 2013.  For DESeq2/DESeq please read
+Love, MI et al. &#8216;Moderated estimation of fold change and dispersion for RNA-Seq data
+with DESeq2,&#8217; Genome Biology 2014.  Anders S, Huber W. &#8216;Differential expression analysis
+for sequence count data.&#8217; Genome Biology 2010.  Additionally, you can also read the
+vignettes for each of the techniques on the Bioconductor/R websites.  Also, if you use
+these methods, please CITE the proper sources above (metagenomeSeq and DESeq2) as well as QIIME.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">differential_abundance.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-i, <cite>-</cite>-input_path</dt>
+<dd>Path to the input BIOM file (e.g., the output from OTU picking) or directory containing input BIOM files for batch processing [REQUIRED if not passing -l]</dd>
+<dt>-o, <cite>-</cite>-out_path</dt>
+<dd>Output filename for single file operation, or output directory for batch processing [REQUIRED if not passing -l]</dd>
+<dt>-a, <cite>-</cite>-algorithm</dt>
+<dd>Differential abundance algorithm to apply to input BIOM table(s) [default: metagenomeSeq_fitZIG] Available options are: metagenomeSeq_fitZIG, DESeq2_nbinom</dd>
+<dt>-m, <cite>-</cite>-mapping_file_path</dt>
+<dd>Path to mapping file [REQUIRED if not passing -l]</dd>
+<dt>-c, <cite>-</cite>-mapping_file_category</dt>
+<dd>Mapping file category [REQUIRED if not passing -l]</dd>
+<dt>-x, <cite>-</cite>-mapping_file_subcategory_1</dt>
+<dd>Mapping file subcategory [REQUIRED if not passing -l]</dd>
+<dt>-y, <cite>-</cite>-mapping_file_subcategory_2</dt>
+<dd>Mapping file subcategory [REQUIRED if not passing -l]</dd>
+<dt>-l, <cite>-</cite>-list_algorithms</dt>
+<dd>Show available differential abundance algorithms and exit [default: False]</dd>
+<dt>-d, <cite>-</cite>-DESeq2_diagnostic_plots</dt>
+<dd>Show a MA plot - y axis: log2 fold change, x axis: average size factor normalized OTU value. Also show a Dispersion Estimate plot - visualize the fitted dispersion vs. mean relationship [default: False]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>The resulting output OTU txt file contains a list of all the OTUs in the input matrix, along with their associated statistics and FDR p-values.</p>
+<p><strong>Single File OTU Differential Abundance Testing with metagenomeSeq_fitZIG:</strong></p>
+<p>Apply metagenomeSeq_fitZIG differential OTU abundance testing to a raw (NOT normalized) BIOM table to test for differences in OTU abundance between samples in the Treatment:Control and Treatment:Fast groups.</p>
+<div class="highlight-python"><div class="highlight"><pre>differential_abundance.py -i otu_table.biom -o diff_otus.txt -m map.txt -a metagenomeSeq_fitZIG -c Treatment -x Control -y Fast
+</pre></div>
+</div>
+<p><strong>Single File OTU Differential Abundance Testing with DESeq2_nbinom:</strong></p>
+<p>Apply DESeq2_nbinom differential OTU abundance testing to a raw (NOT normalized) BIOM table to test for differences in OTU abundance between samples in the Treatment:Control and Treatment:Fast groups, including output of plots.</p>
+<div class="highlight-python"><div class="highlight"><pre>differential_abundance.py -i otu_table.biom -o diff_otus.txt -m map.txt -a DESeq2_nbinom -c Treatment -x Control -y Fast -d
+</pre></div>
+</div>
+<p><strong>Multiple File OTU Differential Abundance Testing with metagenomeSeq_fitZIG:</strong></p>
+<p>Apply metagenomeSeq_fitZIG differential OTU abundance testing to a folder of raw (NOT normalized) BIOM tables to test for differences in OTU abundance between samples in the Treatment:Control and Treatment:Fast groups.</p>
+<div class="highlight-python"><div class="highlight"><pre>differential_abundance.py -i otu_tables/ -o diff_otus/ -m map.txt -a metagenomeSeq_fitZIG -c Treatment -x Control -y Fast
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="detrend.html"
+                        title="previous chapter"><em>detrend.py</em> &#8211; Detrend Principal Coordinates</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="dissimilarity_mtx_stats.html"
+                        title="next chapter"><em>dissimilarity_mtx_stats.py</em> &#8211; Calculate mean, median and standard deviation from a set of distance matrices</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="dissimilarity_mtx_stats.html" title="dissimilarity_mtx_stats.py – Calculate mean, median and standard deviation from a set of distance matrices"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="detrend.html" title="detrend.py – Detrend Principal Coordinates"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

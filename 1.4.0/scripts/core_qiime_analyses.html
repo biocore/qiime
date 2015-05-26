@@ -1,0 +1,171 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>core_qiime_analyses.py – A workflow for running a core set of QIIME analyses. &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.4.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="core-qiime-analyses"></span><div class="section" id="core-qiime-analyses-py-a-workflow-for-running-a-core-set-of-qiime-analyses">
+<span id="index-0"></span><h1><em>core_qiime_analyses.py</em> &#8211; A workflow for running a core set of QIIME analyses.<a class="headerlink" href="#core-qiime-analyses-py-a-workflow-for-running-a-core-set-of-qiime-analyses" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>This script plugs several QIIME steps together to form a basic full data analysis workflow. The steps include quality filtering and demultiplexing sequences (optional), running the <a class="reference external" href="./pick_otus_through_otu_table.html">pick_otus_through_otu_table.py</a> workflow (pick otus and representative sequences, assign taxonomy, align representative sequences, build a tree, and build the OTU table), generating 2d and 3d beta diversity PCoA plots, generating alpha rarefaction plots, identifying OTUs that are differentially represented in different categories, and several additional analysis. Beta diversity calculations will be run both with and without an even sampling step, where the depth of sampling can either be passed to the script or QIIME will try to make a reasonable guess.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">core_qiime_analyses.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-input_fnas</dt>
+<dd>The input fasta file(s) &#8211; comma-separated if more than one [REQUIRED]</dd>
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>The output directory [REQUIRED]</dd>
+<dt>-m, <cite>-</cite>-mapping_fp</dt>
+<dd>The mapping filepath [REQUIRED]</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-p, <cite>-</cite>-parameter_fp</dt>
+<dd>Path to the parameter file, which specifies changes to the default behavior. See <a class="reference external" href="http://www.qiime.org/documentation/file_formats.html#qiime-parameters">http://www.qiime.org/documentation/file_formats.html#qiime-parameters</a>. [if omitted, default values will be used]</dd>
+<dt>-q, <cite>-</cite>-input_quals</dt>
+<dd>The 454 qual files. Comma-separated if more than one, and must correspond to the  order of the fasta files. Not relevant if passing  &#8211;suppress_split_libraries. [default: None]</dd>
+<dt>-f, <cite>-</cite>-force</dt>
+<dd>Force overwrite of existing output directory (note: existing files in output_dir will not be removed) [default: None]</dd>
+<dt>-a, <cite>-</cite>-parallel</dt>
+<dd>Run in parallel where available. Specify number of jobs to start with -O or in the parameters file. [default: False]</dd>
+<dt>-e, <cite>-</cite>-seqs_per_sample</dt>
+<dd>Depth of coverage for diversity analyses that incorporate subsampling the OTU table to an equal number of sequences per sample. [default: determined automatically - bad choices can be made in some circumstances]</dd>
+<dt><cite>-</cite>-even_sampling_keeps_all_samples</dt>
+<dd>If -e/&#8211;seqs_per_sample is not provided, chose the even sampling depth to force retaining all samples (rather then default which will choose a sampling depth which may favor keeping  more sequences by excluding some samples) [default: False]</dd>
+<dt>-t, <cite>-</cite>-reference_tree_fp</dt>
+<dd>Path to the tree file if one should be used. Relevant for closed-reference-based OTU picking methods only (i.e., uclust_ref -C and BLAST) [default: de novo tree will be used]</dd>
+<dt>-c, <cite>-</cite>-categories</dt>
+<dd>The metadata category or categories to compare (i.e., column headers in the mapping file) for the otu_category_significance, <a class="reference external" href="./supervised_learning.html">supervised_learning.py</a>, and <a class="reference external" href="./cluster_quality.html">cluster_quality.py</a> steps. Pass a comma-separated list if more than one category [default: None; skip these steps]</dd>
+<dt><cite>-</cite>-suppress_split_libraries</dt>
+<dd>Skip demultiplexing/quality filtering (i.e. split_libraries). This assumes that sequence identifiers are in post-split_libraries format (i.e., sampleID_seqID) [default: False]</dd>
+<dt>-O, <cite>-</cite>-jobs_to_start</dt>
+<dd>Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 1]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>Run serial analysis using default parameters, and guess the even sampling depth (no -e provided)</p>
+<div class="highlight-python"><pre>core_qiime_analyses.py -i Fasting_Example.fna -q Fasting_Example.qual -o FastingStudy -m Fasting_Map.txt -c Treatment,DOB</pre>
+</div>
+<p>Run serial analysis, and guess the even sampling depth (no -e provided). Skip split libraries by starting with already demultiplexed sequences.</p>
+<div class="highlight-python"><pre>core_qiime_analyses.py -i seqs.fna -o FastingStudy -p custom_parameters.txt -m Fasting_Map.txt -c Treatment,DOB</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://pycogent.sourceforge.net" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2011, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

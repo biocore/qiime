@@ -1,0 +1,154 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Report and fixing bugs &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="prev" title="SRA Submission" href="../doc_sra_submission.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;">
+	<p style="font-size:12pt;padding: 5px;"><b>News and Announcements &raquo;</b>
+<script type="text/javascript" src="http://app.feed.informer.com/digest3/U9OLMKHF9N.js"><noscript><a href="http://app.feed.informer.com/digest3/U9OLMKHF9N.html">Click for &quot;QIIME&quot;.</a> Powered by <a href="http://feed.informer.com/">RSS Feed Informer</a></noscript></script></p>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../doc_sra_submission.html" title="SRA Submission"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="report-and-fixing-bugs">
+<h1>Report and fixing bugs<a class="headerlink" href="#report-and-fixing-bugs" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="i-found-a-bug-in-qiime-what-should-i-do">
+<h2>I found a bug in QIIME. What should I do?<a class="headerlink" href="#i-found-a-bug-in-qiime-what-should-i-do" title="Permalink to this headline">¶</a></h2>
+<p>If you find a bug in QIIME, you should report it as a bug in the bug tracker on sourceforge. It&#8217;s useful to report even small bugs with the bug tracker, and it allows us to keep records of how frequently bugs are found and fixed. The QIIME bug tracker is located <a class="reference external" href="http://sourceforge.net/tracker/?atid=1157164&amp;group_id=272178&amp;func=browse">here</a>.</p>
+<p>This will alert the project managers about the bug, and the bug tracker is actively monitored by the QIIME team.</p>
+<p>Please include some way for us to get it touch with you regarding the bug as we may have questions about your bug report. You can do this by logging in with your sourceforge account before reporting the bug, including your e-mail address in the bug report (which you may not want to do), or sending an e-mail to <a class="reference external" href="mailto:qiime-developers&#37;&#52;&#48;googlegroups&#46;com">qiime-developers<span>&#64;</span>googlegroups<span>&#46;</span>com</a> with the bug tracker ID number, and any contact details that we might need.</p>
+<p>We aim to be very responsive regarding QIIME bugs, and we greatly appreciate your help in making QIIME a better software package.</p>
+</div>
+<div class="section" id="writing-useful-bug-reports">
+<h2>Writing useful bug reports<a class="headerlink" href="#writing-useful-bug-reports" title="Permalink to this headline">¶</a></h2>
+<p>Regardless of whether you plan to fix the bug yourself, or wait for the developer to fix it, you should write a good bug report. If you do plan to fix it, this is important for the records. If you are not comfortable with fixing the bug because you don&#8217;t know what&#8217;s causing it, or because you are not familiar with the code that is failing, a good bug report is likely to speed up the bug fix. Since you are the person who found it, you know the most about it, so you&#8217;re in a position to help out a lot.</p>
+<p>The developers will need to reproduce the bug into order to fix it, so part of the purpose of a bug report is to help the developers reproduce the bug. To do this, you should include the following information in your sourceforge bug report:</p>
+<blockquote>
+<ol class="arabic simple">
+<li>The exact command or function call that you issue to create the bug.</li>
+<li>All necessary input files for reproducing the bug. These files should only be as large as necessary to create the bug. For example, if you have an input file with 10,000 fasta-formatted sequences but the error only arises due to one of the sequences, create a new fasta file with only that sequence, run the command that was giving you problems, and verify that you still get an error. Then post that command and the trimmed fasta file. This is <em>extremely</em> useful to the developer, and it is likely that if you don&#8217;t provide this information, you&#8217;ll get a response asking for it.</li>
+</ol>
+</blockquote>
+</div>
+<div class="section" id="fixing-bugs-yourself">
+<h2>Fixing bugs yourself<a class="headerlink" href="#fixing-bugs-yourself" title="Permalink to this headline">¶</a></h2>
+<p>After adding a bug report, there are two paths you can follow. If you are comfortable with fixing the bug, you should do that. The steps you should take are as follows:</p>
+<blockquote>
+<ol class="arabic simple">
+<li>Contact the primary developer of the relevant file(s), to let them know you found a bug and would like to fix it. The primary developer is the person listed in the <tt class="docutils literal"><span class="pre">__maintainer__</span></tt> variable at the top of the file.  You should include a description of the bug, the ID for the bug report, and a proposal for how you plan to fix it.</li>
+<li>Once you hear back that it is OK to make changes (i.e., they don&#8217;t have local edits, they agree with the change you&#8217;d like to make, and they&#8217;re comfortable your editing their code), you should assign the bug to yourself on Sourceforge.</li>
+<li>Run an svn update to ensure that you have the latest version of all files (especially important for the file(s) you plan to edit).</li>
+<li>Run Qiime/tests/all_tests.py to confirm that tests pass before you make any changes. You make get some failures, for example if you don&#8217;t have an external application (e.g., PyroNoise) installed. It is acceptable to continue if the failing tests are unrelated to the the code your working with. However, if you want to make changes to align_seqs.py and test_align_seqs.py is failing because of missing external applications, you should not proceed until you have installed the external applications and all tests pass.</li>
+<li>Make your changes to the code and the tests.</li>
+<li>Run Qiime/tests/all_tests.py to ensure that your changes did not cause anything unexpected to break.</li>
+<li>Once all of the tests pass, you should check your changes in with svn. Note that some tests may fail again because you do not have external applications installed. This is OK, but this is why it is important that you run all_tests.py prior to making changes: if the same tests fail, then you should be OK.</li>
+</ol>
+</blockquote>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">Report and fixing bugs</a><ul>
+<li><a class="reference external" href="#i-found-a-bug-in-qiime-what-should-i-do">I found a bug in QIIME. What should I do?</a></li>
+<li><a class="reference external" href="#writing-useful-bug-reports">Writing useful bug reports</a></li>
+<li><a class="reference external" href="#fixing-bugs-yourself">Fixing bugs yourself</a></li>
+</ul>
+</li>
+</ul>
+
+
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="../doc_sra_submission.html"
+                                  title="previous chapter">SRA Submission</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/developer/reporting_and_fixing_bugs.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../doc_sra_submission.html" title="SRA Submission"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+  </body>
+</html>

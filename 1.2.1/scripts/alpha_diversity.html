@@ -1,0 +1,225 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>alpha_diversity.py – Calculate alpha diversity on each sample in an otu table, using a variety of alpha diversity metrics &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.2.1-dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="alpha-diversity"></span><div class="section" id="alpha-diversity-py-calculate-alpha-diversity-on-each-sample-in-an-otu-table-using-a-variety-of-alpha-diversity-metrics">
+<span id="index-0"></span><h1><em>alpha_diversity.py</em> &#8211; Calculate alpha diversity on each sample in an otu table, using a variety of alpha diversity metrics<a class="headerlink" href="#alpha-diversity-py-calculate-alpha-diversity-on-each-sample-in-an-otu-table-using-a-variety-of-alpha-diversity-metrics" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>This script calculates alpha diversity, or within-sample diversity, using an otu table. The QIIME pipeline allows users to conveniently calculate more than two dozen different diversity metrics. The full list of available metrics is available by passing the option -s to the script <a class="reference external" href="./alpha_diversity.html">alpha_diversity.py</a>. Every metric has different strengths and limitations - technical discussion of each metric is readily available online and in ecology textbooks, but is beyond the scope of this document.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">alpha_diversity.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-i, <cite>-</cite>-input_path</dt>
+<dd>Input path.  directory for batch processing, filename for single file operation</dd>
+<dt>-o, <cite>-</cite>-output_path</dt>
+<dd>Output path. directory for batch processing, filename for single file operation</dd>
+<dt>-m, <cite>-</cite>-metrics</dt>
+<dd>Metrics to use, comma delimited</dd>
+<dt>-s, <cite>-</cite>-show_metrics</dt>
+<dd>Show available alpha diversity metrics and quit</dd>
+<dt>-t, <cite>-</cite>-tree_path</dt>
+<dd>Path to newick tree file, required for phylogenetic metrics [default: None]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>The resulting file(s) is a tab-delimited text file, where the columns correspond to alpha diversity metrics and the rows correspond to samples and their calculated diversity measurements. When a folder is given as input (-i), the script processes every otu table file in the given folder, and creates a corresponding file in the output directory.</p>
+<p>Example Output:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="17%" />
+<col width="31%" />
+<col width="38%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head"></th>
+<th class="head">simpson</th>
+<th class="head">PD_whole_tree</th>
+<th class="head">observed_species</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>PC.354</td>
+<td>0.925</td>
+<td>2.83739</td>
+<td>16.0</td>
+</tr>
+<tr><td>PC.355</td>
+<td>0.915</td>
+<td>3.06609</td>
+<td>14.0</td>
+</tr>
+<tr><td>PC.356</td>
+<td>0.945</td>
+<td>3.10489</td>
+<td>19.0</td>
+</tr>
+<tr><td>PC.481</td>
+<td>0.945</td>
+<td>3.65695</td>
+<td>19.0</td>
+</tr>
+<tr><td>PC.593</td>
+<td>0.91</td>
+<td>3.3776</td>
+<td>15.0</td>
+</tr>
+<tr><td>PC.607</td>
+<td>0.92</td>
+<td>4.13397</td>
+<td>16.0</td>
+</tr>
+<tr><td>PC.634</td>
+<td>0.9</td>
+<td>3.71369</td>
+<td>14.0</td>
+</tr>
+<tr><td>PC.635</td>
+<td>0.94</td>
+<td>4.20239</td>
+<td>18.0</td>
+</tr>
+<tr><td>PC.636</td>
+<td>0.925</td>
+<td>3.78882</td>
+<td>16.0</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Single File Alpha Diversity Example:</strong></p>
+<p>To perform alpha diversity (e.g. chao1) on a single OTU table, where the results are output to &#8220;alpha_div.txt&#8221;, you can use the following command:</p>
+<div class="highlight-python"><pre>alpha_diversity.py -i otu_table.txt -m chao1 -o alpha_div.txt</pre>
+</div>
+<p>Note: Since this is a non-phylogenetic metric, the tree does not need to be supplied.</p>
+<p>In the case that you would like to perform alpha diversity using a phylogenetic metric (e.g. PD_whole_tree), you can use the following command:</p>
+<div class="highlight-python"><pre>alpha_diversity.py -i otu_table.txt -m PD_whole_tree -o alpha_div.txt -t repr_set.tre</pre>
+</div>
+<p>You can use the following idiom to run multiple metrics at once (comma-separated):</p>
+<div class="highlight-python"><pre>alpha_diversity.py -i otu_table.txt -m chao1,PD_whole_tree -o alpha_div.txt -t repr_set.tre</pre>
+</div>
+<p><strong>Multiple File (batch) Alpha Diversity:</strong></p>
+<p>To perform alpha diversity on multiple OTU tables (e.g.: rarefied otu tables resulting from <a class="reference external" href="./multiple_rarefactions.html">multiple_rarefactions.py</a>), specify an input directory instead of a single otu talbe, and an output directory (e.g. &#8220;alpha_div_chao1_PD/&#8221;) as shown by the following command:</p>
+<div class="highlight-python"><pre>alpha_diversity.py -i rarefaction_tables/ -m chao1,PD_whole_tree -o alpha_div_chao1_PD/ -t repr_set.tre</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://pycogent.sourceforge.net" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

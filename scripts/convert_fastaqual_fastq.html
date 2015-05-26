@@ -1,0 +1,196 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>convert_fastaqual_fastq.py – From a FASTA file and a matching QUAL file, generates a FASTQ file. From FASTQ file generates FASTA file and matching QUAL file. &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="core_diversity_analyses.py – A workflow for running a core set of QIIME diversity analyses." href="core_diversity_analyses.html" />
+    <link rel="prev" title="consensus_tree.py – This script outputs a majority consensus tree given a collection of input trees." href="consensus_tree.html" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="core_diversity_analyses.html" title="core_diversity_analyses.py – A workflow for running a core set of QIIME diversity analyses."
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="consensus_tree.html" title="consensus_tree.py – This script outputs a majority consensus tree given a collection of input trees."
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="convert-fastaqual-fastq"></span><div class="section" id="convert-fastaqual-fastq-py-from-a-fasta-file-and-a-matching-qual-file-generates-a-fastq-file-from-fastq-file-generates-fasta-file-and-matching-qual-file">
+<span id="index-0"></span><h1><em>convert_fastaqual_fastq.py</em> &#8211; From a FASTA file and a matching QUAL file, generates a FASTQ file. From FASTQ file generates FASTA file and  matching QUAL file.<a class="headerlink" href="#convert-fastaqual-fastq-py-from-a-fasta-file-and-a-matching-qual-file-generates-a-fastq-file-from-fastq-file-generates-fasta-file-and-matching-qual-file" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>From a FASTA file and a matching QUAL file, generates a FASTQ file. A minimal FASTQ file omits the redundant sequence label on the quality scores; the quality scores for a sequence are assumed to follow immediately after the sequence with which they are associated. The output FASTQ file will be generated in the specified output directory with the same name as the input FASTA file, suffixed with &#8216;.fastq&#8217;. A FASTQ file will be split into FASTA and QUAL files, and generated in the designated output directory.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">convert_fastaqual_fastq.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-f, <cite>-</cite>-fasta_file_path</dt>
+<dd>Input FASTA or FASTQ file.</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-q, <cite>-</cite>-qual_file_path</dt>
+<dd>Required input QUAL file if converting to FASTQ.</dd>
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>Output directory. Will be created if does not exist. [default: .]</dd>
+<dt>-c, <cite>-</cite>-conversion_type</dt>
+<dd>Type of conversion: fastaqual_to_fastq or fastq_to_fastaqual [default: fastaqual_to_fastq]</dd>
+<dt>-a, <cite>-</cite>-ascii_increment</dt>
+<dd>The number to add (subtract if coverting from FASTQ) to the quality score to get the ASCII character (or numeric quality score). [default: 33]</dd>
+<dt>-F, <cite>-</cite>-full_fasta_headers</dt>
+<dd>Include full FASTA headers in output file(s) (as opposed to merely the sequence label). [default: False]</dd>
+<dt>-b, <cite>-</cite>-full_fastq</dt>
+<dd>Include identifiers on quality lines in the FASTQ file (those beginning with a &#8220;+&#8221;). Irrelevant when converting from FASTQ. [default=False]</dd>
+<dt>-m, <cite>-</cite>-multiple_output_files</dt>
+<dd>Create multiple FASTQ files, one for each sample, or create multiple matching FASTA/QUAL for each sample. [default=False]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>Outputs a complete or minimal FASTQ file, which omits the redundant sequence label on the quality scores, or splits FASTQ file into matching FASTA/QUAL files.</p>
+<p><strong>Example:</strong></p>
+<p>Using the input files seqs.fna and seqs.qual, generate seqs.fastq in the fastq_files directory:</p>
+<div class="highlight-python"><div class="highlight"><pre>convert_fastaqual_fastq.py -f seqs.fna -q seqs.qual -o fastq_files/
+</pre></div>
+</div>
+<p><strong>Example:</strong></p>
+<p>Using input seqs.fastq generate fasta and qual files in fastaqual directory:</p>
+<div class="highlight-python"><div class="highlight"><pre>convert_fastaqual_fastq.py -c fastq_to_fastaqual -f seqs.fastq -o fastaqual
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="consensus_tree.html"
+                        title="previous chapter"><em>consensus_tree.py</em> &#8211; This script outputs a majority consensus tree given a collection of input trees.</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="core_diversity_analyses.html"
+                        title="next chapter"><em>core_diversity_analyses.py</em> &#8211; A workflow for running a core set of QIIME diversity analyses.</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="core_diversity_analyses.html" title="core_diversity_analyses.py – A workflow for running a core set of QIIME diversity analyses."
+             >next</a> |</li>
+        <li class="right" >
+          <a href="consensus_tree.html" title="consensus_tree.py – This script outputs a majority consensus tree given a collection of input trees."
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

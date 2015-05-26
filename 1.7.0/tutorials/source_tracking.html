@@ -1,0 +1,195 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Tracking the source of microbes with SourceTracker &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.7.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="tracking-the-source-of-microbes-with-sourcetracker">
+<span id="source-tracking"></span><h1>Tracking the source of microbes with SourceTracker<a class="headerlink" href="#tracking-the-source-of-microbes-with-sourcetracker" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>This tutorial illustrations how to use the <a class="reference external" href="http://sourceforge.net/projects/sourcetracker/">SourceTracker</a> 0.9.5 software with QIIME. SourceTracker is designed to predict the source of microbial communities in a set of input samples (i.e., the sink samples). See <a class="reference external" href="http://www.nature.com/nmeth/journal/v8/n9/full/nmeth.1650.html">Knights (2011)</a> for the original paper on SourceTracker.</p>
+<p>This tutorial does not attempt to cover every possible usage of SourceTracker. Instead, it provide an example of how to use the basic framework in your own analyses.</p>
+</div>
+<div class="section" id="tutorial-data">
+<h2>Tutorial data<a class="headerlink" href="#tutorial-data" title="Permalink to this headline">¶</a></h2>
+<p>You can obtain the files used in this tutorial <a class="reference external" href="https://s3.amazonaws.com/s3-qiime_tutorial_files/sourcetracker_tutorial_files.tgz">here</a>. These are derived from <a class="reference external" href="http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0054703">Hewitt et al., 2013</a>, where samples were collected from various surfaces in two different Neonatal Intensive Care Units (NICUs). The 16S rRNA was sequenced from these samples, and compared against pre-existing data sets using SourceTracker in order to predict the likely origin of the microbial contaminants on each NICU surface.</p>
+<p>This tutorial begins with an OTU table. For information on various ways to generate OTU tables with QIIME, see <a class="reference internal" href="otu_picking.html#otu-picking"><em>OTU picking strategies in QIIME</em></a>.</p>
+</div>
+<div class="section" id="test-usage">
+<h2>Test Usage<a class="headerlink" href="#test-usage" title="Permalink to this headline">¶</a></h2>
+<p>Before running SourceTracker check to see if it installed and accessible to QIIME:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">print_qiime_config</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">t</span>
+</pre></div>
+</div>
+<p>You should see the following line in the output if SourceTracker is properly installed:</p>
+<div class="highlight-python"><pre>sourcetracker is installed ... ok</pre>
+</div>
+<p>For information on interacting with SourceTracker, run the following command to get SourceTracker&#8217;s help text:</p>
+<div class="highlight-python"><pre>R --slave --vanilla --args -h &lt; $SOURCETRACKER_PATH/sourcetracker_for_qiime.r</pre>
+</div>
+<p>(The <tt class="docutils literal"><span class="pre">$SOURCETRACKER_PATH</span></tt> environment variable referenced here will be defined if SourceTracker is correctly installed.)</p>
+</div>
+<div class="section" id="filter-otus-present-in-less-than-1-of-the-samples-from-the-otu-table">
+<h2>Filter OTUs present in less than 1% of the samples from the OTU table<a class="headerlink" href="#filter-otus-present-in-less-than-1-of-the-samples-from-the-otu-table" title="Permalink to this headline">¶</a></h2>
+<p>First we filter OTUs that are present in very few samples, as we consider these unlikely to provide useful source tracking information. We define <em>very few samples</em> here as less than 1% of the samples, which in our case is roughly 7 samples. This value should be determined on a per-study basis (so you shouldn&#8217;t just use 7 on your own data). You can find the total number of samples in your OTU table by running <tt class="docutils literal"><span class="pre">print_biom_table_summary.py</span></tt> on it.</p>
+<p>To filter the OTU table, run the following command:</p>
+<div class="highlight-python"><pre>filter_otus_from_otu_table.py -i otu_table.biom -o filtered_otu_table.biom -s 7</pre>
+</div>
+<p>This command will create an output file named <tt class="docutils literal"><span class="pre">filtered_otu_table.biom</span></tt>, which only contains OTUs that appear in at least 7 samples. To see how many OTUs were filtered in this process, you can run <tt class="docutils literal"><span class="pre">print_biom_table_summary.py</span></tt> and compare <em>Num observations</em> for <tt class="docutils literal"><span class="pre">otu_table.biom</span></tt> and <tt class="docutils literal"><span class="pre">filtered_otu_table.biom</span></tt>. It&#8217;s not uncommon to filter a large percentage (e.g., greater than 50%) of your OTUs using this process.</p>
+</div>
+<div class="section" id="convert-table-from-biom-to-tab-separated-text-format">
+<h2>Convert table from BIOM to tab-separated text format<a class="headerlink" href="#convert-table-from-biom-to-tab-separated-text-format" title="Permalink to this headline">¶</a></h2>
+<p>SourceTracker does not work with the <a class="reference external" href="http://www.biom-format.org">BIOM format</a>, so the OTU table needs to be converted to tab-separated text format. You can do that with the following command:</p>
+<div class="highlight-python"><pre>convert_biom.py -i filtered_otu_table.biom -o filtered_otu_table.txt -b</pre>
+</div>
+<p>This creates a file named <tt class="docutils literal"><span class="pre">filtered_otu_table.txt</span></tt>.</p>
+</div>
+<div class="section" id="run-sourcetracker">
+<h2>Run SourceTracker<a class="headerlink" href="#run-sourcetracker" title="Permalink to this headline">¶</a></h2>
+<p>To use SourceTracker, your mapping must contain two columns titled <tt class="docutils literal"><span class="pre">SourceSink</span></tt>, and <tt class="docutils literal"><span class="pre">Env</span></tt>, which define whether each sample should be treated as a source or a sink, and describe the sample type, respectively. These columns can be added to your mapping file by opening it in Excel or as a Google Spreadsheet and adding the new columns.</p>
+<p>In the tutorial data set the sources include <tt class="docutils literal"><span class="pre">Outdoor</span> <span class="pre">Air</span></tt>, <tt class="docutils literal"><span class="pre">Human</span> <span class="pre">Skin</span></tt>, and <tt class="docutils literal"><span class="pre">Human</span> <span class="pre">Mouth</span></tt>. Each row that represents a sample taken from one of these should be labeled <tt class="docutils literal"><span class="pre">source</span></tt> in the <tt class="docutils literal"><span class="pre">SourceSink</span></tt> column. Likewise the sink samples (including <tt class="docutils literal"><span class="pre">NICU</span> <span class="pre">Incubator</span></tt>, <tt class="docutils literal"><span class="pre">NICU</span> <span class="pre">BabyBedside</span></tt> here) should be labeled <tt class="docutils literal"><span class="pre">sink</span></tt> in the <tt class="docutils literal"><span class="pre">SourceSink</span></tt> column. Each row in the <tt class="docutils literal"><span class="pre">Env</span></tt> column should contain a description of the corresponding sample type, for example <tt class="docutils literal"><span class="pre">Outdoor</span> <span class="pre">Air</span></tt>, <tt class="docutils literal"><span class="pre">Human</span> <span class="pre">Skin</span></tt>, and <tt class="docutils literal"><span class="pre">NICU</span> <span class="pre">BabyBedside</span></tt>. Any sample that should not be used in the SourceTracker analysis should contain <tt class="docutils literal"><span class="pre">NA</span></tt> in the <tt class="docutils literal"><span class="pre">SourceSink</span></tt> and <tt class="docutils literal"><span class="pre">Env</span></tt> columns. These steps have all been completed in the mapping file used in this tutorial (<tt class="docutils literal"><span class="pre">map.txt</span></tt>). You can review that file as you prepare a mapping file for your own analyses.</p>
+<p>You can run SourceTracker with the following command:</p>
+<div class="highlight-python"><pre>R --slave --vanilla --args -i filtered_otu_table.txt -m map.txt -o sourcetracker_out &lt; $SOURCETRACKER_PATH/sourcetracker_for_qiime.r</pre>
+</div>
+<p>This will take a few minutes to run. Once it&#8217;s complete, you can open <tt class="docutils literal"><span class="pre">sourcetracker_out/sink_predictions_pie_NICU</span> <span class="pre">BabyBedside.pdf</span></tt> to view an example of the output. That file should look like this:</p>
+<img alt="../_images/sink_predictions_pie_NICU_BabyBedside.png" class="align-center" src="../_images/sink_predictions_pie_NICU_BabyBedside.png" />
+<p>These pie charts represent the likely origin of microbial communities from each sample taken from the <tt class="docutils literal"><span class="pre">BabyBedside</span></tt>. Each of the colors in a pie chart represent one of the sources that were denoted in the mapping file. The <tt class="docutils literal"><span class="pre">sourcetracker_out/sink_predictions.txt</span></tt> file contains the raw data for these pie charts.</p>
+</div>
+<div class="section" id="references">
+<h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<p>Knights, Dan et al. &#8220;Bayesian community-wide culture-independent microbial source tracking.&#8221; Nature Methods (2011) (<a class="reference external" href="http://www.nature.com/nmeth/journal/v8/n9/full/nmeth.1650.html">link</a>)</p>
+<p>Hewitt, Krissi M et al. &#8220;Bacterial Diversity in Two Neonatal Intensive Care Units (NICUs).&#8221; PLOS ONE (2013) (<a class="reference external" href="http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0054703">link</a>)</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Tracking the source of microbes with SourceTracker</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#tutorial-data">Tutorial data</a></li>
+<li><a class="reference internal" href="#test-usage">Test Usage</a></li>
+<li><a class="reference internal" href="#filter-otus-present-in-less-than-1-of-the-samples-from-the-otu-table">Filter OTUs present in less than 1% of the samples from the OTU table</a></li>
+<li><a class="reference internal" href="#convert-table-from-biom-to-tab-separated-text-format">Convert table from BIOM to tab-separated text format</a></li>
+<li><a class="reference internal" href="#run-sourcetracker">Run SourceTracker</a></li>
+<li><a class="reference internal" href="#references">References</a></li>
+</ul>
+</li>
+</ul>
+
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2012, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

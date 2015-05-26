@@ -1,0 +1,170 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Analysis of 18S data &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.9.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Tutorials" href="index.html" />
+    <link rel="next" title="Working with BIOM tables in QIIME" href="working_with_biom_tables.html" />
+    <link rel="prev" title="Preparing raw Illumina data in different formats for use with QIIME" href="processing_illumina_data.html" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="working_with_biom_tables.html" title="Working with BIOM tables in QIIME"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="processing_illumina_data.html" title="Preparing raw Illumina data in different formats for use with QIIME"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="analysis-of-18s-data">
+<span id="processing-18s-data"></span><h1>Analysis of 18S data<a class="headerlink" href="#analysis-of-18s-data" title="Permalink to this headline">¶</a></h1>
+<p>Most of the steps for analysis of 18S, or mixed 16S/18S, are identical to the standard 16S pipeline described in the <a class="reference external" href="./illumina_overview_tutorial.html">QIIME Illumina Overview Tutorial</a> or the <a class="reference external" href="./tutorial.html">QIIME 454 Overview Tutorial</a>, with the main difference being the use of a non-default reference database. Alternative QIIME-compatible reference databases can be found on the <a class="reference external" href="http://qiime.org/home_static/dataFiles.html">QIIME resources page</a>. Please refer to the <a class="reference external" href="./fungal_its_analysis.html">Fungal ITS Analysis Tutorial</a> for an example of how to perform a QIIME analysis with a non-default reference database.</p>
+<div class="section" id="separating-otu-tables-according-to-domain">
+<h2>Separating OTU Tables According to Domain<a class="headerlink" href="#separating-otu-tables-according-to-domain" title="Permalink to this headline">¶</a></h2>
+<p>It may be desirable to split the OTU table according to domain for mixed 16S/18S datasets.  To do this, you can use <tt class="docutils literal"><span class="pre">split_otu_table_by_taxonomy.py</span></tt> to split at the domain level (2):</p>
+<div class="highlight-python"><div class="highlight"><pre>split_otu_table_by_taxonomy.py -i otu_table.biom -L 2 -o split_otu_tables/
+</pre></div>
+</div>
+<p>The output directory, <tt class="docutils literal"><span class="pre">split_otu_tables</span></tt>, will contain an OTU table for archaea, bacteria, and eukaryotes, which can be utilized in downstream QIIME analyses.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Analysis of 18S data</a><ul>
+<li><a class="reference internal" href="#separating-otu-tables-according-to-domain">Separating OTU Tables According to Domain</a></li>
+</ul>
+</li>
+</ul>
+
+
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="index.html">Tutorials</a><br /></li>
+    <li><a href="../scripts/index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="processing_illumina_data.html"
+                        title="previous chapter">Preparing raw Illumina data in different formats for use with QIIME</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="working_with_biom_tables.html"
+                        title="next chapter">Working with BIOM tables in QIIME</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="working_with_biom_tables.html" title="Working with BIOM tables in QIIME"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="processing_illumina_data.html" title="Preparing raw Illumina data in different formats for use with QIIME"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

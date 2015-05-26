@@ -1,0 +1,716 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>454 Overview Tutorial: de novo OTU picking and diversity analyses using 454 data &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.8.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="overview-tutorial-de-novo-otu-picking-and-diversity-analyses-using-454-data">
+<span id="tutorial"></span><h1>454 Overview Tutorial: de novo OTU picking and diversity analyses using 454 data<a class="headerlink" href="#overview-tutorial-de-novo-otu-picking-and-diversity-analyses-using-454-data" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>This tutorial explains how to use the <strong>QIIME</strong> (Quantitative Insights Into Microbial Ecology) Pipeline to process data from high-throughput 16S rRNA sequencing studies. If you have not already installed qiime, please see the section <a class="reference external" href="../install/index.html">Installing Qiime</a> first. The purpose of this pipeline is to provide a start-to-finish workflow, beginning with multiplexed sequence reads and finishing with taxonomic and phylogenetic profiles and comparisons of the samples in the study. With this information in hand, it is possible to determine biological and environmental factors that alter microbial community ecology in your experiment.</p>
+<p>As an example, we will use data from a study of the response of mouse gut microbial communities to fasting (Crawford et al., 2009). To make this tutorial run quickly on a personal computer, we will use a subset of the data generated from 5 animals kept on the control ad libitum fed diet, and 4 animals fasted for 24 hours before sacrifice. At the end of our tutorial, we will be able to compare the community structure of control vs. fasted animals. In particular, we will be able to compare taxonomic profiles for each sample type, differences in diversity metrics within the samples and between the groups, and perform comparative clustering analysis to look for overall differences in the samples.</p>
+<p>In this walkthrough, text like the following:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">print_qiime_config</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>denotes the command-line invocation of scripts. You can find full usage information for each script by passing the -h option (help) and/or by reading the full description in the <a class="reference external" href="../documentation/index.html">Documentation</a>. Execute all tutorial commands from within the <tt class="file docutils literal"><span class="pre">qiime_overview_tutorial</span></tt> directory, which can be downloaded from here: <a class="reference external" href="ftp://thebeast.colorado.edu/pub/qiime-files/qiime_overview_tutorial.zip">QIIME Overview Tutorial files</a>.</p>
+<p>To process our data, we will perform the following analyses, each of which is described in more detail below:</p>
+<ul class="simple">
+<li>Filter the DNA sequence reads for quality and assign multiplexed reads to starting samples by nucleotide barcode .</li>
+<li>Pick Operational Taxonomic Units (OTUs) based on sequence similarity within the reads, and pick a representative sequence from each OTU.</li>
+<li>Assign the OTU to a taxonomic identity using reference databases.</li>
+<li>Align the OTU sequences and create a phylogenetic tree.</li>
+<li>Calculate diversity metrics for each sample and compare the types of communities, using the taxonomic and phylogenetic assignments.</li>
+<li>Generate UPGMA and PCoA plots to visually depict the differences between the samples, and dynamically work with these graphs to generate publication quality figures.</li>
+</ul>
+</div>
+<div class="section" id="essential-files">
+<h2>Essential Files<a class="headerlink" href="#essential-files" title="Permalink to this headline">¶</a></h2>
+<p>All the files you will need for this tutorial are here (<a class="reference external" href="ftp://thebeast.colorado.edu/pub/qiime-files/qiime_overview_tutorial.zip">ftp://thebeast.colorado.edu/pub/qiime-files/qiime_overview_tutorial.zip</a>). Descriptions of these files are below.</p>
+<div class="section" id="sequences-fna">
+<h3>Sequences (.fna)<a class="headerlink" href="#sequences-fna" title="Permalink to this headline">¶</a></h3>
+<p>This is the 454-machine generated FASTA file. Using the Amplicon processing software on the 454 FLX standard, each region of the PTP plate will yield a fasta file of form <tt class="file docutils literal"><span class="pre">1.TCA.454Reads.fna</span></tt>, where &#8220;1&#8221; is replaced with the appropriate region number. For the purposes of this tutorial, we will use the fasta file <tt class="file docutils literal"><span class="pre">Fasting_Example.fna</span></tt>.</p>
+</div>
+<div class="section" id="quality-scores-qual">
+<h3>Quality Scores (.qual)<a class="headerlink" href="#quality-scores-qual" title="Permalink to this headline">¶</a></h3>
+<p>This is the 454-machine generated quality score file, which contains a score for each base in each sequence included in the FASTA file. Like the fasta file mentioned above, the Amplicon processing software will generate one of these files for each region of the PTP plate, named <tt class="file docutils literal"><span class="pre">1.TCA.454Reads.qual</span></tt>, etc. For the purposes of this tutorial, we will use the quality scores file <tt class="file docutils literal"><span class="pre">Fasting_Example.qual</span></tt>.</p>
+</div>
+<div class="section" id="mapping-file-tab-delimited-txt">
+<h3>Mapping File (Tab-delimited .txt)<a class="headerlink" href="#mapping-file-tab-delimited-txt" title="Permalink to this headline">¶</a></h3>
+<p>The mapping file is generated by the user. This file contains all of the information about the samples necessary to perform the data analysis. At a minimum, the mapping file should contain the name of each sample, the barcode sequence used for each sample, the linker/primer sequence used to amplify the sample, and a Description column. In general, you should also include in the mapping file any metadata that relates to the samples (for instance, health status or sampling site) and any additional information relating to specific samples that may be useful to have at hand when considering outliers (for example, what medications a patient was taking at time of sampling). Of note: the sample names may only contain alphanumeric characters (A-z) and the dot (.). Full format specifications can be found in the Documentation (<a class="reference external" href="../documentation/file_formats.html">File Formats</a>).</p>
+<p>For the purposes of this tutorial, we will use the mapping file <tt class="file docutils literal"><span class="pre">Fasting_Map.txt</span></tt>. The contents of the mapping file are shown here - as you can see, a nucleotide barcode sequence is provided for each of the 9 samples, as well as metadata related to treatment group and date of birth, and general run descriptions about the project. Fasting_Map.txt file contents:</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li>#SampleID  BarcodeSequence LinkerPrimerSequence    Treatment DOB   Description</li>
+<li>#Example mapping file for the QIIME analysis package. These 9 samples are from a study of the effects of</li>
+<li>#exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).</li>
+<li>PC.354 AGCACGAGCCTA    YATGCTGCCTCCCGTAGGAGT   Control 20061218    Control_mouse__I.D._354</li>
+<li>PC.355 AACTCGTCGATG    YATGCTGCCTCCCGTAGGAGT   Control 20061218    Control_mouse__I.D._355</li>
+<li>PC.356 ACAGACCACTCA    YATGCTGCCTCCCGTAGGAGT   Control 20061126    Control_mouse__I.D._356</li>
+<li>PC.481 ACCAGCGACTAG    YATGCTGCCTCCCGTAGGAGT   Control 20070314    Control_mouse__I.D._481</li>
+<li>PC.593 AGCAGCACTTGT    YATGCTGCCTCCCGTAGGAGT   Control 20071210    Control_mouse__I.D._593</li>
+<li>PC.607 AACTGTGCGTAC    YATGCTGCCTCCCGTAGGAGT   Fast    20071112    Fasting_mouse__I.D._607</li>
+<li>PC.634 ACAGAGTCGGCT    YATGCTGCCTCCCGTAGGAGT   Fast    20080116    Fasting_mouse__I.D._634</li>
+<li>PC.635 ACCGCAGAGTCA    YATGCTGCCTCCCGTAGGAGT   Fast    20080116    Fasting_mouse__I.D._635</li>
+<li>PC.636 ACGGTGAGTGTC    YATGCTGCCTCCCGTAGGAGT   Fast    20080116    Fasting_mouse__I.D._636</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="section" id="check-mapping-file">
+<span id="checkmapping"></span><h2>Check Mapping File<a class="headerlink" href="#check-mapping-file" title="Permalink to this headline">¶</a></h2>
+<p>Before beginning with QIIME, you should ensure that your mapping file is formatted correctly with the <a class="reference external" href="../scripts/check_id_map.html">check_id_map.py</a> script. Type:</p>
+<div class="highlight-python"><pre>check_id_map.py -m Fasting_Map.txt -o mapping_output</pre>
+</div>
+<p>This utility will display a message indicating whether or not problems were found in the mapping file. A HTML file showing the location of errors and warnings will be generated in the output directory, and will also be written to the output to a log file. Errors will cause fatal problems with subsequent scripts and must be corrected before moving forward. Warnings will not cause fatal problems, but it is encouraged that you fix these problems as they are often indicative of typos in your mapping file, invalid characters, or other unintended errors that will impact downstream analysis. A <tt class="file docutils literal"><span class="pre">corrected_mapping.txt</span></tt> file will also be created in the output directory, which will have a copy of the mapping file with invalid characters replaced by underscores.</p>
+<p>Reverse primers can be specified in the mapping file, for removal during the demultiplexing step.  This is not required, but it is STRONGLY recommended, as leaving in sequences following primers, such as sequencing adapters, can interfere with OTU picking and taxonomic assignment.</p>
+<p>An example mapping file with faux reverse primers specified, using the ReversePrimer field, is available here:  <a class="reference external" href="../_static/Examples/File_Formats/Fasting_Map_reverse_primers.txt">reverse primer mapping file</a>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li>#SampleID  BarcodeSequence LinkerPrimerSequence    Treatment ReversePrimer   Description</li>
+<li>#Example mapping file for the QIIME analysis package. These 9 samples are from a study of the effects of</li>
+<li>#exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).</li>
+<li>PC.354 AGCACGAGCCTA    YATGCTGCCTCCCGTAGGAGT   Control GCGCACGGGTGAGTA    Control_mouse__I.D._354</li>
+<li>PC.355 AACTCGTCGATG    YATGCTGCCTCCCGTAGGAGT   Control GCGCACGGGTGAGTA    Control_mouse__I.D._355</li>
+<li>PC.356 ACAGACCACTCA    YATGCTGCCTCCCGTAGGAGT   Control GCGCACGGGTGAGTA    Control_mouse__I.D._356</li>
+<li>PC.481 ACCAGCGACTAG    YATGCTGCCTCCCGTAGGAGT   Control GCGCACGGGTGAGTA    Control_mouse__I.D._481</li>
+<li>PC.593 AGCAGCACTTGT    YATGCTGCCTCCCGTAGGAGT   Control GCGCACGGGTGAGTA    Control_mouse__I.D._593</li>
+<li>PC.607 AACTGTGCGTAC    YATGCTGCCTCCCGTAGGAGT   Fast    GCGCACGGGTGAGTA    Fasting_mouse__I.D._607</li>
+<li>PC.634 ACAGAGTCGGCT    YATGCTGCCTCCCGTAGGAGT   Fast    GCGCACGGGTGAGTA    Fasting_mouse__I.D._634</li>
+<li>PC.635 ACCGCAGAGTCA    YATGCTGCCTCCCGTAGGAGT   Fast    GCGCACGGGTGAGTA    Fasting_mouse__I.D._635</li>
+<li>PC.636 ACGGTGAGTGTC    YATGCTGCCTCCCGTAGGAGT   Fast    GCGCACGGGTGAGTA    Fasting_mouse__I.D._636</li>
+</ul>
+</div>
+<p>The reverse primers, like the forward primers, are written in 5&#8217;-&gt;3&#8217; direction.  In this case, these are not the true reverse primers used, but rather just a somewhat conserved site in the sequences used for this example.</p>
+<p>An example image of a the entire primer construct and amplicon is shown below, using QIIME nomenclature:</p>
+<img alt="../_images/example_primer_construct.png" class="align-center" src="../_images/example_primer_construct.png" />
+<p>454 sequencing, in most cases, generates sequences that begin at the BarcodeSequence, which is followed by the LinkerPrimerSequence, both of which are automatically removed during the demultiplexing step described below.  However, the ReversePrimer (i.e., the primer at the end of the read) is not removed by default, and needs to be specified.  The adapter sequence (Adapter B) does not match genomic data, such as 16S sequences, and as such it can disrupt analyses.</p>
+</div>
+<div class="section" id="assign-samples-to-multiplex-reads">
+<span id="assignsamples"></span><h2>Assign Samples to Multiplex Reads<a class="headerlink" href="#assign-samples-to-multiplex-reads" title="Permalink to this headline">¶</a></h2>
+<p>The next task is to assign the multiplexed reads to samples based on their nucleotide barcode. Also, this step performs quality filtering based on the characteristics of each sequence, removing any low quality or ambiguous reads. The script for this step is <a class="reference external" href="../scripts/split_libraries.html">split_libraries.py</a>. A full description of parameters for this script are described in the <a class="reference external" href="../documentation/index.html">Documentation</a>. For this tutorial, we will use default parameters (minimum quality score = 25, minimum/maximum length = 200/1000, no ambiguous bases allowed and no mismatches allowed in the primer sequence). Type:</p>
+<div class="highlight-python"><pre>split_libraries.py -m Fasting_Map.txt -f Fasting_Example.fna -q Fasting_Example.qual -o split_library_output</pre>
+</div>
+<p>This invocation will create three files in the new directory <tt class="file docutils literal"><span class="pre">split_library_output/</span></tt>:</p>
+<ul class="simple">
+<li><tt class="file docutils literal"><span class="pre">split_library_log.txt</span></tt> : This file contains the summary of splitting, including the number of reads detected for each sample and a brief summary of any reads that were removed due to quality considerations.</li>
+<li><tt class="file docutils literal"><span class="pre">histograms.txt</span></tt> : This tab delimited file shows the number of reads at regular size intervals before and after splitting the library.</li>
+<li><tt class="file docutils literal"><span class="pre">seqs.fna</span></tt> : This is a fasta formatted file where each sequence is renamed according to the sample it came from. The header line also contains the name of the read in the input fasta file and information on any barcode errors that were corrected.</li>
+</ul>
+<p>A few lines from the <tt class="file docutils literal"><span class="pre">seqs.fna</span></tt> file are shown below:</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li>&gt;PC.634_1 FLP3FBN01ELBSX orig_bc=ACAGAGTCGGCT new_bc=ACAGAGTCGGCT bc_diffs=0</li>
+<li>CTGGGCCGTGTCTCAGTCCCAATGTGGCCGTTTACCCTCTCAGGCCGGCTACGCATCATCGCC....</li>
+<li>&gt;PC.634_2 FLP3FBN01EG8AX orig_bc=ACAGAGTCGGCT new_bc=ACAGAGTCGGCT bc_diffs=0</li>
+<li>TTGGACCGTGTCTCAGTTCCAATGTGGGGGCCTTCCTCTCAGAACCCCTATCCATCGAAGGCTT....</li>
+<li>&gt;PC.354_3 FLP3FBN01EEWKD orig_bc=AGCACGAGCCTA new_bc=AGCACGAGCCTA bc_diffs=0</li>
+<li>TTGGGCCGTGTCTCAGTCCCAATGTGGCCGATCAGTCTCTTAACTCGGCTATGCATCATTGCCTT....</li>
+<li>&gt;PC.481_4 FLP3FBN01DEHK3 orig_bc=ACCAGCGACTAG new_bc=ACCAGCGACTAG bc_diffs=0</li>
+<li>CTGGGCCGTGTCTCAGTCCCAATGTGGCCGTTCAACCTCTCAGTCCGGCTACTGATCGTCGACT....</li>
+</ul>
+</div>
+<p>Reverse primer removal can be accomplished by adding the -z option.  An example command using the mapping file with reverse primers described above is this:</p>
+<div class="highlight-python"><pre>split_libraries.py -m Fasting_Map_reverse_primers.txt -f Fasting_Example.fna -q Fasting_Example.qual -z truncate_only -o split_library_output_revprimers/</pre>
+</div>
+<p>The following is the first several lines of the <tt class="file docutils literal"><span class="pre">split_library_log.txt</span></tt></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li>Number raw input seqs      1339</li>
+<li></li>
+<li>Length outside bounds of 200 and 1000      0</li>
+<li>Num ambiguous bases exceeds limit of 6     0</li>
+<li>Missing Qual Score 0</li>
+<li>Mean qual score below minimum of 25        1</li>
+<li>Max homopolymer run exceeds limit of 6     0</li>
+<li>Num mismatches in primer exceeds limit of 0: 1</li>
+<li></li>
+<li>Number of sequences with identifiable barcode but without identifiable reverse primer: 961</li>
+<li>...</li>
+</ul>
+</div>
+<p>If the number of sequences where the reverse primer is not identifiable is high, you want to check the primer sequence to make sure it is in 5&#8217;-&gt;3&#8217; orientation, or increase the number of mismatches allowed with &#8211;reverse_primer_mismatches.</p>
+<p>Data that are already demultiplexed can have reverse primers removed using the stand-alone script <a class="reference external" href="../scripts/truncate_reverse_primer.html">truncate_reverse_primer.py</a>.</p>
+</div>
+<div class="section" id="picking-operational-taxonomic-units-otus-through-making-otu-table">
+<span id="pickotusandrepseqs"></span><h2>Picking Operational Taxonomic Units (OTUs) through making OTU table<a class="headerlink" href="#picking-operational-taxonomic-units-otus-through-making-otu-table" title="Permalink to this headline">¶</a></h2>
+<p>Here we will be running the <a class="reference external" href="../scripts/pick_de_novo_otus.html">pick_de_novo_otus.py</a> workflow, which performs a series of small steps by calling a series of other scripts automatically. This workflow consists of the following steps:</p>
+<ol class="arabic simple">
+<li>Picking OTUs (for more information, refer to <a class="reference external" href="../scripts/pick_otus.html">pick_otus.py</a>)</li>
+<li>Picking a representative sequence set, one sequence from each OTU (for more information, refer to <a class="reference external" href="../scripts/pick_rep_set.html">pick_rep_set.py</a>)</li>
+<li>Aligning the representative sequence set (for more information, refer to <a class="reference external" href="../scripts/align_seqs.html">align_seqs.py</a>)</li>
+<li>Assigning taxonomy to the representative sequence set (for more information, refer to <a class="reference external" href="../scripts/assign_taxonomy.html">assign_taxonomy.py</a>)</li>
+<li>Filtering the alignment prior to tree building - removing positions which are all gaps, or not useful for phylogenetic inference (for more information, refer to <a class="reference external" href="../scripts/filter_alignment.html">filter_alignment.py</a>)</li>
+<li>Building a phylogenetic tree  (for more information, refer to <a class="reference external" href="../scripts/make_phylogeny.html">make_phylogeny.py</a>)</li>
+<li>Building an OTU table (for more information, refer to <a class="reference external" href="../scripts/make_otu_table.html">make_otu_table.py</a>)</li>
+</ol>
+<p>Using the output from split_libraries.py (the seqs.fna file), run the following command:</p>
+<div class="highlight-python"><pre>pick_de_novo_otus.py -i split_library_output/seqs.fna -o otus</pre>
+</div>
+<p>Optionally, we could denoise the sequences based on clustering the flowgram sequences. For a single library/sff file we can simply use the workflow script <a class="reference external" href="../scripts/pick_de_novo_otus.html">pick_de_novo_otuss.py</a>, by providing the script with the sff file and the metadata mapping file. For multiple sff files refer to the special purpose tutorial <a class="reference external" href="denoising_454_data.html">Denoising of 454 Data Sets</a>.</p>
+<p>The results of <cite>pick_de_novo_otus.py</cite> are in <tt class="file docutils literal"><span class="pre">otus/</span></tt>, and a description of the steps performed and the results follow:</p>
+<div class="section" id="step-1-pick-otus-based-on-sequence-similarity-within-the-reads">
+<span id="pickotusseqsim"></span><h3>Step 1. Pick OTUs based on Sequence Similarity within the Reads<a class="headerlink" href="#step-1-pick-otus-based-on-sequence-similarity-within-the-reads" title="Permalink to this headline">¶</a></h3>
+<p>At this step, all of the sequences from all of the samples will be clustered into Operational Taxonomic Units (OTUs) based on their sequence similarity. OTUs in QIIME are clusters of sequences, frequently intended to represent some degree of taxonomic relatedness. For example, when sequences are clustered at 97% sequence similarity with uclust, each resulting cluster is typically thought of as representing a species. This model and the current techniques for picking OTUs are known to be flawed, however, in that 97% OTUs do not match what humans have called species for many microbes. Determining exactly how OTUs should be defined, and what they represent, is an active area of research.</p>
+<p><cite>pick_de_novo_otus.py</cite> assigns sequences to OTUs at 97% similarity by default. Further information on how to view and change default behavior will be discussed later.</p>
+</div>
+<div class="section" id="step-2-pick-representative-sequences-for-each-otu">
+<span id="pickrepseqsforotu"></span><h3>Step 2. Pick Representative Sequences for each OTU<a class="headerlink" href="#step-2-pick-representative-sequences-for-each-otu" title="Permalink to this headline">¶</a></h3>
+<p>Since each OTU may be made up of many related sequences, we will pick a representative sequence from each OTU for downstream analysis. This representative sequence will be used for taxonomic identification of the OTU and phylogenetic alignment. QIIME uses the OTU file created above and extracts a representative sequence from the fasta file by one of several methods.</p>
+<p>In the <tt class="file docutils literal"><span class="pre">otus/rep_set/</span></tt> directory, QIIME has created two new files - the log file <tt class="file docutils literal"><span class="pre">seqs_rep_set.log</span></tt> and the fasta file <tt class="file docutils literal"><span class="pre">seqs_rep_set.fasta</span></tt> containing one representative sequence for each OTU. In this fasta file, the sequence has been renamed by the OTU, and the additional information on the header line reflects the sequence used as the representative:</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li>&gt;0 PC.636_424</li>
+<li>CTGGGCCGTATCTCAGTCCCAATGTGGCCGGTCGACCTCTC....</li>
+<li>&gt;1 PC.481_321</li>
+<li>TTGGGCCGTGTCTCAGTCCCAATGTGGCCGTCCGCCCTCTC....</li>
+</ul>
+</div>
+</div>
+<div class="section" id="step-3-assign-taxonomy">
+<span id="assigntax"></span><h3>Step 3. Assign Taxonomy<a class="headerlink" href="#step-3-assign-taxonomy" title="Permalink to this headline">¶</a></h3>
+<p>A primary goal of the QIIME pipeline is to assign taxonomy to high-throughput sequencing reads. This provides information on the microbial taxa found in the samples. By default, QIIME uses the uclust consensus taxonomy classifier to attempt to assign taxonomy to each representative sequence resulting from step 2.</p>
+<p>In the directory <tt class="file docutils literal"><span class="pre">otus/uclust_assigned_taxonomy/</span></tt>, there will be a log file and a text file. The text file (which we refer to as an observation or OTU metadata file) contains a line for each OTU considered, followed by the taxonomic assignment, the fraction of uclust hits that contained this taxonomic assignment, and the number of uclust hits that were found. For some OTUs, the assignment may be as specific as a bacterial species, while others may not be assignable at all (and will therefore be labeled as <em>Unassigned</em>). Below are the first few lines of an observation metadata file containing the results of uclust taxonomic assignment.</p>
+<div class="highlight-python"><pre>denovo367       k__Bacteria; p__Bacteroidetes; c__Bacteroidia; o__Bacteroidales; f__S24-7; g__; s__     1.00    3
+denovo366       k__Bacteria; p__Firmicutes; c__Clostridia; o__Clostridiales; f__; g__; s__      1.00    3
+denovo365       k__Bacteria; p__Firmicutes; c__Erysipelotrichi; o__Erysipelotrichales; f__Erysipelotrichaceae; g__Allobaculum; s__      1.00    3
+denovo364       k__Bacteria; p__Firmicutes; c__Clostridia; o__Clostridiales; f__Lachnospiraceae 0.67    3
+denovo281       Unassigned      1.00    1</pre>
+</div>
+</div>
+<div class="section" id="step-4-align-otu-sequences">
+<span id="alignotuseq"></span><h3>Step 4. Align OTU Sequences<a class="headerlink" href="#step-4-align-otu-sequences" title="Permalink to this headline">¶</a></h3>
+<p>Alignment of the sequences and phylogeny inference is necessary only if phylogenetic tools such as <a class="reference external" href="http://bmf2.colorado.edu/unifrac/index.psp">UniFrac</a> will be subsequently invoked. Alignments can either be generated de novo using programs such as MUSCLE, or through assignment to an existing alignment with tools like <a class="reference external" href="http://qiime.org/pynast/">PyNAST</a>. For small studies such as this tutorial, either method is possible. However, for studies involving many sequences (roughly, more than 1000), the de novo aligners are very slow and assignment with <a class="reference external" href="http://qiime.org/pynast/">PyNAST</a> is preferred. Since this is one of the most computationally intensive bottlenecks in the pipeline, large studies benefit greatly from parallelization of this task (described in detail in the <a class="reference external" href="../documentation/index.html">Documentation</a>):  When using <a class="reference external" href="http://qiime.org/pynast/">PyNAST</a> as an aligner (the default), QIIME must know the location of  a template alignment. Most QIIME installations use the greengenes file &#8216;core_set_aligned.fasta.imputed&#8217; by default.</p>
+<p>After aligning the sequences, a log file and an alignment file are created in the directory <tt class="file docutils literal"><span class="pre">otus/pynast_aligned_seqs/</span></tt>.</p>
+</div>
+<div class="section" id="step-5-filter-alignment">
+<span id="filteraln"></span><h3>Step 5. Filter Alignment<a class="headerlink" href="#step-5-filter-alignment" title="Permalink to this headline">¶</a></h3>
+<p>Before inferring a phylogenetic tree relating the sequences, it is beneficial to filter the sequence alignment to removed columns comprised of only gaps, and locations known to be excessively variable. Most QIIME installations use a lanemask file named either lanemask_in_1s_and_0s.txt or lanemask_in_1s_and_0s by default. After filtering, a filtered alignment file is created in the directory <tt class="file docutils literal"><span class="pre">otus/pynast_aligned_seqs/</span></tt>.</p>
+</div>
+<div class="section" id="step-6-make-phylogenetic-tree">
+<span id="maketree"></span><h3>Step 6. Make Phylogenetic Tree<a class="headerlink" href="#step-6-make-phylogenetic-tree" title="Permalink to this headline">¶</a></h3>
+<p>The filtered alignment file produced in the directory <tt class="file docutils literal"><span class="pre">otus/pynast_aligned_seqs/</span></tt> is then used to build a phylogenetic tree using a tree-building program.</p>
+<p>The Newick format tree file is written to <tt class="file docutils literal"><span class="pre">rep_set.tre</span></tt>, which is located in the <tt class="file docutils literal"><span class="pre">otus/</span></tt> directory . This file can be viewed in a tree visualization software, and is necessary for <a class="reference external" href="http://bmf2.colorado.edu/unifrac/index.psp">UniFrac</a> diversity measurements and other phylogenetically aware analyses (described below). The tree obtained can be visualized with programs such as FigTree, which was used to visualize the phylogenetic tree obtained from <tt class="file docutils literal"><span class="pre">rep_set.tre</span></tt>.</p>
+<img alt="../_images/tree.png" class="align-center" src="../_images/tree.png" />
+</div>
+<div class="section" id="step-7-make-otu-table">
+<span id="makeotutable"></span><h3>Step 7. Make OTU Table<a class="headerlink" href="#step-7-make-otu-table" title="Permalink to this headline">¶</a></h3>
+<p>Using taxonomic assignments (step 3) and the OTU map (step 1) QIIME assembles a readable matrix of OTU abundance in each sample with meaningful taxonomic identifiers for each OTU.</p>
+<p>The result of this step is <tt class="file docutils literal"><span class="pre">otu_table.biom</span></tt>, which is located in the <tt class="file docutils literal"><span class="pre">otus/</span></tt> directory. For more information about the OTU table format, which relies on the biom-format, please go here: <a class="reference external" href="http://biom-format.org/documentation/biom_format.html">biom-format</a></p>
+</div>
+</div>
+<div class="section" id="view-statistics-of-the-otu-table">
+<span id="perlibrarystats"></span><h2>View statistics of the OTU table<a class="headerlink" href="#view-statistics-of-the-otu-table" title="Permalink to this headline">¶</a></h2>
+<p>To view the number of sequence reads which were assigned to the otu table (otus/otu_table.biom), type:</p>
+<div class="highlight-python"><pre>biom summarize-table -i otus/otu_table.biom -o otus/otu_table_summary.txt</pre>
+</div>
+<p>Open the output file <tt class="file docutils literal"><span class="pre">otus/otu_table_summary.txt</span></tt>, which contains a summary of the OTU table. The summary shows that there are relatively few sequences in this tutorial example, but the sequences present are fairly evenly distributed among the 9 microbial communities.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<div class="last line-block">
+<div class="line">Num samples: 9</div>
+<div class="line"><br /></div>
+<div class="line">Seqs/sample summary:</div>
+<div class="line-block">
+<div class="line">Min: 146</div>
+<div class="line">Max: 150</div>
+<div class="line">Median: 148.0</div>
+<div class="line">Mean: 148.111111111</div>
+<div class="line">Std. dev.: 1.4487116456</div>
+<div class="line">Median Absolute Deviation: 1.0</div>
+<div class="line">Default even sampling depth in</div>
+<div class="line-block">
+<div class="line">core_qiime_analyses.py (just a suggestion): 146</div>
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="line">Seqs/sample detail:</div>
+<div class="line-block">
+<div class="line">PC.355: 146</div>
+<div class="line">PC.481: 146</div>
+<div class="line">PC.636: 147</div>
+<div class="line">PC.354: 148</div>
+<div class="line">PC.635: 148</div>
+<div class="line">PC.593: 149</div>
+<div class="line">PC.607: 149</div>
+<div class="line">PC.356: 150</div>
+<div class="line">PC.634: 150</div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="make-otu-heatmap">
+<span id="makeheatmap"></span><h2>Make OTU Heatmap<a class="headerlink" href="#make-otu-heatmap" title="Permalink to this headline">¶</a></h2>
+<p>The QIIME pipeline includes a very useful utility to generate images of the OTU table. The script is <a class="reference external" href="../scripts/make_otu_heatmap_html.html">make_otu_heatmap_html.py</a>. Type:</p>
+<div class="highlight-python"><pre>make_otu_heatmap_html.py -i otus/otu_table.biom -o otus/OTU_Heatmap/</pre>
+</div>
+<p>An html file is created in the directory <tt class="file docutils literal"><span class="pre">otus/OTU_Heatmap/</span></tt>. You can open this file with any web browser, and will be prompted to enter a value for &#8220;Filter by Counts per OTU&#8221;. Only OTUs with total counts at or above this threshold will be displayed. The OTU heatmap displays raw OTU counts per sample, where the counts are colored based on the contribution of each OTU to the total OTU count present in that sample (blue: contributes low percentage of OTUs to sample; red: contributes high percentage of OTUs). Leave the filter value unchanged, and click the &#8220;Sample ID&#8221; button, and a graphic will be generated like the figure below. For each sample, you will see in a heatmap the number of times each OTU was found in that sample. You can mouse over any individual count to get more information on the OTU (including taxonomic assignment). Within the mouseover, there is a link for the terminal lineage assignment, so you can easily search Google for more information about that assignment.</p>
+<img alt="../_images/heatmap.png" class="align-center" src="../_images/heatmap.png" />
+<p>Alternatively, you can click on one of the counts in the heatmap and a new pop-up window will appear. The pop-up window uses a Google Visualization API called Magic-Table. Depending on which table count you clicked on, the pop-up window will put the clicked-on count in the middle of the pop-up heatmap as shown below. For the following example, the table count with the red arrow mouseover is the same one being focused on using the Magic-Table.</p>
+<img alt="../_images/fisheyeheatmap.png" class="align-center" src="../_images/fisheyeheatmap.png" />
+<p>On the original heatmap webpage, select the &#8220;Taxonomy&#8221; button instead: you will generate a heatmap keyed by taxon assignment, which allows you to conveniently look for organisms and lineages of interest in your study. Again, mousing over an individual count will show additional information for that OTU and sample.</p>
+<img alt="../_images/taxheatmap.png" class="align-center" src="../_images/taxheatmap.png" />
+</div>
+<div class="section" id="make-otu-network">
+<span id="makeotunetwork"></span><h2>Make OTU Network<a class="headerlink" href="#make-otu-network" title="Permalink to this headline">¶</a></h2>
+<p>An alternative to viewing the OTU table as a heatmap is to create an OTU network, using the following command.:</p>
+<div class="highlight-python"><pre>make_otu_network.py -m Fasting_Map.txt -i otus/otu_table.biom -o otus/OTU_Network</pre>
+</div>
+<p>To visualize the network, we use the <a class="reference external" href="http://www.cytoscape.org/">Cytoscape</a> program (which you can run by calling cytoscape from the command line &#8211; you may need to call this beginning either with a capital or lowercase &#8216;C&#8217; depending on your version of Cytoscape), where each red circle represents a sample and each white square represents an OTU. The lines represent the OTUs present in a particular sample (blue for controls and green for fasting). For more information about opening the files in <a class="reference external" href="http://www.cytoscape.org/">Cytoscape</a> please refer to <a class="reference external" href="../tutorials/making_cytoscape_networks.html">Making Cytoscape Networks</a>.</p>
+<img alt="../_images/network.png" class="align-center" src="../_images/network.png" />
+</div>
+<div class="section" id="summarize-communities-by-taxonomic-composition">
+<span id="summarizetaxa"></span><h2>Summarize Communities by Taxonomic Composition<a class="headerlink" href="#summarize-communities-by-taxonomic-composition" title="Permalink to this headline">¶</a></h2>
+<p>You can group OTUs by samples or categories (when &#8220;-c&#8221; option is passed) by different taxonomic levels (division, class, family, etc.) with the workflow script <a class="reference external" href="../scripts/summarize_taxa_through_plots.html">summarize_taxa_through_plots.py</a>. Note that this process depends directly on the method used to assign taxonomic information to OTUS (see <a class="reference internal" href="#assigntax">Assigning Taxonomy</a> above). Type:</p>
+<div class="highlight-python"><pre>summarize_taxa_through_plots.py -i otus/otu_table.biom -o wf_taxa_summary -m Fasting_Map.txt</pre>
+</div>
+<p>The script will generate a new table grouping sequences by taxonomic assignment at various levels, for example the phylum level table at: <tt class="file docutils literal"><span class="pre">wf_taxa_summary/otu_table_L3.txt</span></tt>. The value of each <em>i,j</em> entry in the matrix is the count of the number of times all OTUs belonging to the taxon <em>i</em> (for example, Phylum Actinobacteria) were found in the sequences for sample <em>j</em>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<div class="last line-block">
+<div class="line">#Full OTU Counts</div>
+<div class="line">Taxon              PC.354 PC.355   PC.356  PC.481  PC.593  PC.607  PC.634  PC.635  PC.636</div>
+<div class="line">Root;Bacteria;Actinobacteria   0.0 0.0 0.0 1.0 0.0 2.0 3.0 1.0     1.0</div>
+<div class="line">Root;Bacteria;Bacteroidetes    7.0 38.0    15.0    19.0    30.0    40.0    86.0    54.0    90.0</div>
+<div class="line">Root;Bacteria;Deferribacteres  0.0 0.0 0.0 0.0 0.0 3.0 5.0 2.0 7.0</div>
+<div class="line">Root;Bacteria;Firmicutes   136.0   102.0   115.0   117.0   65.0    66.0    37.0    63.0    34.0</div>
+<div class="line">Root;Bacteria;Other        5.0 6.0 18.0    9.0 49.0    35.0    14.0    27.0    14.0</div>
+<div class="line">Root;Bacteria;Proteobacteria   0.0 0.0 0.0 0.0 5.0 3.0 2.0 0.0 1.0</div>
+<div class="line">Root;Bacteria;TM7      0.0 0.0 0.0 0.0 0.0 0.0 2.0 0.0 0.0</div>
+<div class="line">Root;Bacteria;Verrucomicrobia  0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0</div>
+<div class="line">Root;Other         0.0 0.0 2.0 0.0 0.0 0.0 0.0 1.0 0.0</div>
+</div>
+</div>
+<p id="maketaxacharts">To view the resulting charts, open the area or bar chart html file located in the  <tt class="file docutils literal"><span class="pre">wf_taxa_summary/taxa_summary_plots</span></tt> folder. The following chart shows the taxa assignments for each sample as an area chart. You can mouseover the plot to see which taxa are contributing to the percentage shown.</p>
+<img alt="../_images/areachart1.png" class="align-center" src="../_images/areachart1.png" />
+<p>The following chart shows the taxa assignments for each sample as a bar chart.</p>
+<img alt="../_images/barchart1.png" class="align-center" src="../_images/barchart1.png" />
+</div>
+<div class="section" id="compute-alpha-diversity-within-the-samples-and-generate-rarefaction-curves">
+<span id="compalphadivrarecurves"></span><h2>Compute Alpha Diversity within the Samples and Generate Rarefaction Curves<a class="headerlink" href="#compute-alpha-diversity-within-the-samples-and-generate-rarefaction-curves" title="Permalink to this headline">¶</a></h2>
+<p>Community ecologists typically describe the microbial diversity within their study. This diversity can be assessed within a sample (alpha diversity) or between a collection of samples (beta diversity). Here, we will determine the level of alpha diversity in our samples using a series of scripts from the QIIME pipeline.  To perform this analysis, we will use the <tt class="file docutils literal"><span class="pre">alpha_rarefaction.py</span></tt> workflow script. This script performs the following steps:</p>
+<ol class="arabic simple">
+<li>Generate rarefied OTU tables (for more information, refer to <a class="reference external" href="../scripts/multiple_rarefactions.html">multiple_rarefactions.py</a>)</li>
+<li>Compute measures of alpha diversity for each rarefied OTU table (for more information, refer to <a class="reference external" href="../scripts/alpha_diversity.html">alpha_diversity.py</a>)</li>
+<li>Collate alpha diversity results (for more information, refer to <a class="reference external" href="../scripts/collate_alpha.html">collate_alpha.py</a>)</li>
+<li>Generate alpha rarefaction plots (for more information, refer to <a class="reference external" href="../scripts/make_rarefaction_plots.html">make_rarefaction_plots.py</a>)</li>
+</ol>
+<p>Although we could run this workflow with the (sensible) default parameters, this provides an excellent opportunity to illustrate the use of custom parameters. To see what measures of alpha diversity will be computed by default, type:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">alpha_diversity</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">h</span>
+</pre></div>
+</div>
+<p>You should see, among other information:</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<div class="last line-block">
+<div class="line">-m METRICS, &#8211;metrics=METRICS</div>
+<div class="line-block">
+<div class="line">Alpha-diversity metric(s) to use. A comma-separated</div>
+<div class="line">list should be provided when multiple metrics are</div>
+<div class="line">specified. [default:</div>
+<div class="line">PD_whole_tree,chao1,observed_species]</div>
+</div>
+</div>
+</div>
+<p>to also use the shannon index, create a custom parameters file by typing:</p>
+<div class="highlight-python"><pre>echo "alpha_diversity:metrics shannon,PD_whole_tree,chao1,observed_species" &gt; alpha_params.txt</pre>
+</div>
+<p>Then run the workflow, which requires the OTU table (-i) and phylogenetic tree (-t) from <a class="reference internal" href="#pickotusandrepseqs">above</a>, and the custom parameters file we just created:</p>
+<div class="highlight-python"><pre>alpha_rarefaction.py -i otus/otu_table.biom -m Fasting_Map.txt -o wf_arare/ -p alpha_params.txt -t otus/rep_set.tre</pre>
+</div>
+<p>Descriptions of the steps involved in alpha_rarefaction.py follow:</p>
+<div class="section" id="step-1-rarify-otu-table">
+<span id="rareotutable"></span><h3>Step 1. Rarify OTU Table<a class="headerlink" href="#step-1-rarify-otu-table" title="Permalink to this headline">¶</a></h3>
+<p>The directory <tt class="file docutils literal"><span class="pre">wf_arare/rarefaction/</span></tt> will contain many text files named <tt class="file docutils literal"><span class="pre">rarefaction_##_#.txt</span></tt>; the first set of numbers represents the number of sequences sampled, and the last number represents the iteration number. If you opened one of these files, you would find an OTU table where for each sample the sum of the counts equals the number of samples taken.</p>
+</div>
+<div class="section" id="step-2-compute-alpha-diversity">
+<span id="computealphadiv"></span><h3>Step 2. Compute Alpha Diversity<a class="headerlink" href="#step-2-compute-alpha-diversity" title="Permalink to this headline">¶</a></h3>
+<p>The rarefaction tables are the basis for calculating diversity metrics, which reflect the diversity within the sample based on the abundance of various taxa within a community. The QIIME pipeline allows users to conveniently calculate more than two dozen different diversity metrics. The full list of available metrics is available here: <a class="reference external" href="../scripts/alpha_diversity_metrics.html">alpha-diversity metrics</a>. Every metric has different strengths and limitations - technical discussion of each metric is readily available online and in ecology textbooks, but it is beyond the scope of this document. By default, QIIME calculates three metrics:</p>
+<ol class="arabic simple">
+<li>Chao1 metric estimates the species richness.</li>
+<li>The Observed Species metric is simply the count of unique OTUs found in the sample.</li>
+<li>Phylogenetic Distance (PD_whole_tree) is the only phylogenetic metric used, and requires a phylogenetic tree.</li>
+</ol>
+<p>In addition, <tt class="file docutils literal"><span class="pre">alpha_params.txt</span></tt> specified above adds the shannon index to the list of alpha diversity measures calculated by QIIME.</p>
+<p>The result of this step produces several text files with the results of the alpha diversity computations performed on the rarefied OTU tables. The results are located in the <tt class="file docutils literal"><span class="pre">wf_arare/alpha_div/</span></tt> directory.</p>
+</div>
+<div class="section" id="step-3-collate-rarified-otu-tables">
+<span id="collateotutable"></span><h3>Step 3. Collate Rarified OTU Tables<a class="headerlink" href="#step-3-collate-rarified-otu-tables" title="Permalink to this headline">¶</a></h3>
+<p>The output directory <tt class="file docutils literal"><span class="pre">wf_arare/alpha_div/</span></tt> will contain one text file <tt class="file docutils literal"><span class="pre">alpha_rarefaction_##_#</span></tt> for every file input from <tt class="file docutils literal"><span class="pre">wf_arare/rarefaction/</span></tt>, where the numbers represent the number of samples and iterations as before. The content of this tab delimited file is the calculated metrics for each sample. To collapse the individual files into a single combined table, the workflow uses the script <a class="reference external" href="../scripts/collate_alpha.html">collate_alpha.py</a>.</p>
+<p>In the newly created directory <tt class="file docutils literal"><span class="pre">wf_arare/alpha_div_collated/</span></tt>, there will be one matrix for every alpha diversity metric used. This matrix will contain the metric for every sample, arranged in ascending order from lowest number of sequences per sample to highest. A portion of the <tt class="file docutils literal"><span class="pre">observed_species.txt</span></tt> file are shown below:</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li>Sequences per sample   iteration   PC.354  PC.355  PC.356  PC.481  PC.593</li>
+<li>alpha_rarefaction_21_0.txt 21          0       14.0    16.0    18.0    18.0    13.0</li>
+<li>alpha_rarefaction_21_1.txt 21          1       15.0    17.0    18.0    20.0    12.0</li>
+<li>alpha_rarefaction_21_2.txt 21          2       15.0    16.0    21.0    19.0    13.0</li>
+<li>alpha_rarefaction_21_3.txt 21          3       10.0    19.0    18.0    21.0    13.0</li>
+<li>alpha_rarefaction_21_4.txt 21          4       14.0    18.0    16.0    15.0    12.0</li>
+<li>...</li>
+</ul>
+</div>
+</div>
+<div class="section" id="step-4-generate-rarefaction-curves">
+<span id="generaterarecurves"></span><h3>Step 4. Generate Rarefaction Curves<a class="headerlink" href="#step-4-generate-rarefaction-curves" title="Permalink to this headline">¶</a></h3>
+<p>QIIME creates plots of alpha diversity vs. simulated sequencing effort, known as rarefaction plots, using the script <a class="reference external" href="../scripts/make_rarefaction_plots.html">make_rarefaction_plots.py</a>. This script takes a mapping file and any number of rarefaction files generated by <a class="reference external" href="../scripts/collate_alpha.html">collate_alpha.py</a> and creates rarefaction curves. Each curve represents a sample and can be colored by the sample metadata supplied in the mapping file.</p>
+<p>This step generates a <tt class="file docutils literal"><span class="pre">wf_arare/alpha_rarefaction_plots/rarefaction_plots.html</span></tt> that can be opened with a web browser, in addition to other files. The <tt class="file docutils literal"><span class="pre">wf_arare/alpha_rarefaction_plots/average_tables/</span></tt> folder, which contains the rarefaction averages for each diversity metric, so the user can optionally plot the rarefaction curves in another application, like MS Excel. The <tt class="file docutils literal"><span class="pre">wf_arare/alpha_rarefaction_plots/average_plots/</span></tt> folder contains the average plots for each metric and category and the <tt class="file docutils literal"><span class="pre">wf_arare/alpha_rarefaction_plots/html_plots/</span></tt> folder contains all the images used in the html page generated.</p>
+</div>
+<div class="section" id="viewing-alpha-diversity-results">
+<h3>Viewing Alpha Diversity Results<a class="headerlink" href="#viewing-alpha-diversity-results" title="Permalink to this headline">¶</a></h3>
+<p>To view the rarefaction plots, open the file <tt class="file docutils literal"><span class="pre">wf_arare/alpha_rarefaction_plots/rarefaction_plots.html</span></tt> in a web browser, typically by double-clicking on it. Once the browser window is open,  select the metric <cite>PD_whole_tree</cite> and the category <cite>Treatment</cite>, to reveal a plot like the figure below. You can also turn on/off lines in the plot by (un)checking the box next to each label in the legend, or click on the triangle next to each label in the legend to see all the samples that contribute to that category. Below each plot is a table displaying average values for each measure of alpha diversity for each group of samples the specified category.</p>
+<img alt="../_images/rarecurve.png" class="align-center" src="../_images/rarecurve.png" />
+</div>
+</div>
+<div class="section" id="compute-beta-diversity-and-generate-beta-diversity-plots">
+<span id="compbetadivgenpcoa"></span><h2>Compute Beta Diversity and Generate Beta Diversity Plots<a class="headerlink" href="#compute-beta-diversity-and-generate-beta-diversity-plots" title="Permalink to this headline">¶</a></h2>
+<p>Beta diversity represents the explicit comparison of microbial (or other) communities based on their composition. Beta-diversity metrics thus assess the differences between microbial communities. The fundamental output of these comparisons is a square matrix where a &#8220;distance&#8221; or dissimilarity is calculated between every pair of community samples, reflecting the dissimilarity between those samples. The data in this distance matrix can be visualized with analyses such as Principal Coordinate Analysis (PCoA) and hierarchical clustering. Like alpha diversity, there are many possible metrics which can be calculated with the QIIME pipeline - the full list of options can be found here <a class="reference external" href="../scripts/beta_diversity_metrics.html">beta diversity metrics</a>. Here, we will calculate beta diversity between our 9 microbial communities using the default beta diversity metrics of weighted and unweighted unifrac, which are phylogenetic measures used extensively in recent microbial community sequencing projects. To perform this analysis, we will use the <a class="reference external" href="../scripts/beta_diversity_through_plots.html">beta_diversity_through_plots.py</a> workflow script. This script performs the following steps:</p>
+<ol class="arabic simple">
+<li>Rarify OTU table (for more information, refer to <a class="reference external" href="../scripts/single_rarefaction.html">single_rarefaction.py</a>)</li>
+<li>Compute Beta Diversity (for more information, refer to <a class="reference external" href="../scripts/beta_diversity.html">beta_diversity.py</a>)</li>
+<li>Generate Principal Coordinates (for more information, refer to <a class="reference external" href="../scripts/principal_coordinates.html">principal_coordinates.py</a>)</li>
+<li>Generate Emperor PCoA plots (for more information, refer to <a class="reference external" href="http://qiime.org/emperor/">make_emperor.py</a>)</li>
+</ol>
+<p>To run the workflow, type the following command, which defines the input OTU table &#8220;-i&#8221; and tree file &#8220;-t&#8221; (from <a class="reference external" href="../scripts/pick_de_novo_otus.html">pick_de_novo_otus.py</a>), the user-defined mapping file &#8220;-m&#8221;, the output directory &#8220;-o&#8221;, and the number of sequences per sample (sequencing depth) as 146:</p>
+<div class="highlight-python"><pre>beta_diversity_through_plots.py -i otus/otu_table.biom -m Fasting_Map.txt -o wf_bdiv_even146/ -t otus/rep_set.tre -e 146</pre>
+</div>
+<p>Descriptions of the steps involved in <cite>beta_diversity_through_plots.py</cite> follow:</p>
+<div class="section" id="step-1-rarify-otu-table-to-remove-sample-heterogeneity">
+<span id="compbetadiv"></span><h3>Step 1. Rarify OTU Table to Remove Sample Heterogeneity<a class="headerlink" href="#step-1-rarify-otu-table-to-remove-sample-heterogeneity" title="Permalink to this headline">¶</a></h3>
+<p>To remove sample heterogeneity, we can perform rarefaction on our OTU table. Rarefaction is an ecological approach that allows users to standardize the data obtained from samples with different sequencing efforts, and to compare the OTU richness of the samples using this standardized platform. For instance, if one of your samples yielded 10,000 sequence counts, and another yielded only 1,000 counts, the species diversity within those samples may be much more influenced by sequencing effort than underlying biology. The approach of rarefaction is to randomly sample the same number of OTUs from each sample, and use this data to compare the communities at a given level of sampling effort.</p>
+<p>The 9 communities in the tutorial data contain the following numbers of sequences per sample (see <a class="reference internal" href="#perlibrarystats">perlibrarystats</a>):</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<div class="last line-block">
+<div class="line">Num samples: 9</div>
+<div class="line"><br /></div>
+<div class="line">Seqs/sample summary:</div>
+<div class="line-block">
+<div class="line">Min: 146</div>
+<div class="line">Max: 150</div>
+<div class="line">Median: 148.0</div>
+<div class="line">Mean: 148.111111111</div>
+<div class="line">Std. dev.: 1.4487116456</div>
+<div class="line">Median Absolute Deviation: 1.0</div>
+<div class="line">Default even sampling depth in</div>
+<div class="line-block">
+<div class="line">core_qiime_analyses.py (just a suggestion): 146</div>
+<div class="line"><br /></div>
+</div>
+</div>
+<div class="line">Seqs/sample detail:</div>
+<div class="line-block">
+<div class="line">PC.355: 146</div>
+<div class="line">PC.481: 146</div>
+<div class="line">PC.636: 147</div>
+<div class="line">PC.354: 148</div>
+<div class="line">PC.635: 148</div>
+<div class="line">PC.593: 149</div>
+<div class="line">PC.607: 149</div>
+<div class="line">PC.356: 150</div>
+<div class="line">PC.634: 150</div>
+</div>
+</div>
+</div>
+<p>Because all samples have at least 146 sequences, a rarefaction level of 146 (specified by <cite>-e 146</cite> above), allows us to compare all 9 samples at equal sequencing depth. Any samples containing fewer than 146 sequences would have been removed from these beta diversity analyses.</p>
+</div>
+<div class="section" id="step-2-compute-beta-diversity">
+<h3>Step 2. Compute Beta Diversity<a class="headerlink" href="#step-2-compute-beta-diversity" title="Permalink to this headline">¶</a></h3>
+<p>Beta-diversity metrics assess the differences between microbial communities. By default, QIIME calculates both weighted and unweighted unifrac, which are phylogenetically aware measures of beta diversity.</p>
+<p>The resulting distance matrices ( <tt class="file docutils literal"><span class="pre">wf_bdiv_even146/unweighted_unifrac_dm.txt</span></tt> and <tt class="file docutils literal"><span class="pre">wf_bdiv_even146/weighted_unifrac_dm.txt</span></tt>) are the basis for later analysis steps (principal coordinate analysis, hierarchical clustering, and distance histograms)</p>
+</div>
+<div class="section" id="step-3-generate-principal-coordinates">
+<h3>Step 3. Generate Principal Coordinates<a class="headerlink" href="#step-3-generate-principal-coordinates" title="Permalink to this headline">¶</a></h3>
+<p>Principal Coordinate Analysis (PCoA) is a technique that helps to extract and visualize a few highly informative components of variation from complex, multidimensional data. This is a transformation that maps the samples present in the distance matrix to a new set of orthogonal axes such that a maximum amount of variation is explained by the first principal coordinate, the second largest amount of variation is explained by the second principal coordinate, etc. The principal coordinates can be plotted in two or three dimensions to provide an intuitive visualization of the data structure and look at differences between the samples, and look for similarities by sample category.</p>
+<p>The files <tt class="file docutils literal"><span class="pre">wf_bdiv_even146/unweighted_unifrac_pc.txt</span></tt> and <tt class="file docutils literal"><span class="pre">wf_bdiv_even146/weighted_unifrac_pc.txt</span></tt> list every sample in the first column, and the subsequent columns contain the value for the sample against the noted principal coordinate. At the bottom of each Principal Coordinate column, you will find the eigenvalue and percent of variation explained by the coordinate.</p>
+</div>
+<div class="section" id="step-4-generate-emperor-pcoa-plots">
+<h3>Step 4. Generate Emperor PCoA Plots<a class="headerlink" href="#step-4-generate-emperor-pcoa-plots" title="Permalink to this headline">¶</a></h3>
+<p><cite>Emperor &lt;http://qiime.org/emperor/&gt;</cite> allows for the inspection of PCoA plots in three dimensions. html files are created in <tt class="file docutils literal"><span class="pre">wf_bdiv_even146/unweighted_unifrac_emperor_pcoa_plot...</span></tt> and <tt class="file docutils literal"><span class="pre">wf_bdiv_even146/weighted_unifrac_emperor_pcoa_plot...</span></tt> directories. For the &#8220;Treatment&#8221; column, all samples with the same &#8220;Treatment&#8221; will get the same color. For our tutorial, the five control samples are all red and the four Fast samples are all blue. This lets you easily visualize &#8220;clustering&#8221; by metadata category. The 3d visualization software allows you to rotate the axes to see the data from different perspectives. By default, the script will plot the first three dimensions in your file. Other combinations can be viewed using the &#8220;Axes&#8221; option in Emperor. The first 8 components can be viewed using the left bottom menu &#8220;Parallel&#8221; using a parallel coordinates plot.</p>
+<a class="reference internal image-reference" href="../_images/pcoa1.png"><img alt="../_images/pcoa1.png" class="align-center" src="../_images/pcoa1.png" style="width: 900px;" /></a>
+</div>
+</div>
+<div class="section" id="jackknifed-beta-diversity-and-hierarchical-clustering">
+<span id="jackbd"></span><span id="gendisthist"></span><h2>Jackknifed Beta Diversity and Hierarchical Clustering<a class="headerlink" href="#jackknifed-beta-diversity-and-hierarchical-clustering" title="Permalink to this headline">¶</a></h2>
+<p>This workflow uses jackknife replicates to estimate the uncertainty in PCoA plots and hierarchical clustering of microbial communities. Many of the same concepts relevant to beta diversity and PCoA are used here. For this analysis we use the script <cite>jackknifed_beta_diversity.py</cite>, which performs the following steps:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Compute the beta diversity distance matrix from the full OTU table (and tree, if applicable) (for more information, refer to <a class="reference external" href="../scripts/beta_diversity.html">beta_diversity.py</a>)</li>
+<li>Build UPGMA tree from full distance matrix; (for more information, refer to <a class="reference external" href="../scripts/upgma_cluster.html">upgma_cluster.py</a>)</li>
+<li>Build rarefied OTU tables (for more information, refer to <a class="reference external" href="../scripts/multiple_rarefactions_even_depth.html">multiple_rarefactions_even_depth.py</a>)</li>
+<li>Compute distance matrices for rarefied OTU tables (for more information, refer to <a class="reference external" href="../scripts/beta_diversity.html">beta_diversity.py</a>) &lt;../scripts/beta_diversity.html&gt;`_)</li>
+<li>Build UPGMA trees from rarefied distance matrices (for more information, refer to <a class="reference external" href="../scripts/upgma_cluster.html">upgma_cluster.py</a>)</li>
+<li>Compare rarefied UPGMA trees and determine jackknife support for tree nodes. (for more information, refer to <a class="reference external" href="../scripts/tree_compare.html">tree_compare.py</a> and <a class="reference external" href="../scripts/consensus_tree.html">consensus_tree.py</a>)</li>
+<li>Compute principal coordinates on each rarefied distance matrix (for more information, refer to <a class="reference external" href="../scripts/principal_coordinates.html">principal_coordinates.py</a>)</li>
+<li>Compare rarefied principal coordinates plots from each rarefied distance matrix (for more information, refer to <cite>make_emperor.py &lt;http://qiime.org/emperor/&gt;</cite></li>
+</ol>
+</div></blockquote>
+<p>To run the analysis, type the following:</p>
+<div class="highlight-python"><pre>jackknifed_beta_diversity.py -i otus/otu_table.biom -t otus/rep_set.tre -m Fasting_Map.txt -o wf_jack -e 110</pre>
+</div>
+<div class="section" id="steps-1-and-2-upgma-clustering">
+<span id="hiarchclust"></span><h3>Steps 1 and 2. UPGMA Clustering<a class="headerlink" href="#steps-1-and-2-upgma-clustering" title="Permalink to this headline">¶</a></h3>
+<p>Unweighted Pair Group Method with Arithmetic mean (UPGMA) is type of hierarchical clustering method using average linkage and can be used to interpret the distance matrix produced by <a class="reference external" href="../scripts/beta_diversity.html">beta_diversity.py</a>.</p>
+<p>The output is a file that can be opened with tree viewing software, such as FigTree.</p>
+<a class="reference internal image-reference" href="../_images/UPGMAbytreatment.png"><img alt="../_images/UPGMAbytreatment.png" class="align-center" src="../_images/UPGMAbytreatment.png" style="width: 700px;" /></a>
+<p>This tree shows the relationship among the 9 samples, and reveals that the 4 samples from the guts of fasting mice cluster together (PC.6xx, fasting data is in <tt class="file docutils literal"><span class="pre">Fasting_Map.txt</span></tt>).</p>
+</div>
+<div class="section" id="steps-3-4-and-5-perform-jackknifing-support">
+<span id="jacksupport"></span><h3>Steps 3, 4 and 5. Perform Jackknifing Support<a class="headerlink" href="#steps-3-4-and-5-perform-jackknifing-support" title="Permalink to this headline">¶</a></h3>
+<p>To measure the robustness of this result to sequencing effort, we perform a jackknifing analysis, wherein a smaller number of sequences are chosen at random from each sample, and the resulting UPGMA tree from this subset of data is compared with the tree representing the entire available data set. This process is repeated with many random subsets of data, and the tree nodes which prove more consistent across jackknifed datasets are deemed more robust.</p>
+<p>First the jackknifed OTU tables must be generated, by subsampling the full available data set. In this tutorial, each sample contains between 146 and 150 sequences, as shown with <a class="reference internal" href="#perlibrarystats">biom summarize-table</a>:</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<div class="last line-block">
+<div class="line">Num samples: 9</div>
+<div class="line"><br /></div>
+<div class="line">Seqs/sample summary:</div>
+<div class="line-block">
+<div class="line">Min: 146</div>
+<div class="line">Max: 150</div>
+<div class="line">...</div>
+</div>
+</div>
+</div>
+<p>To ensure that a random subset of sequences is selected from each sample, we chose to select 110 sequences from each sample (75% of the smallest sample, though this value is only a guideline), which is designated by the &#8220;-e&#8221; option when running the workflow script (see above).</p>
+<p>More jackknife replicates provide a better estimate of the variability expected in beta diversity results, but at the cost of longer computational time. By default, QIIME generates 10 jackknife replicates of the available data. Each replicate is a simulation of a smaller sequencing effort (110 sequences in each sample, as defined below).</p>
+<p>The workflow then calculates the distance matrix for each jackknifed dataset, but now in batch mode, which results in two sets of 10 distance matrix files written to the <tt class="file docutils literal"><span class="pre">wf_jack/unweighted_unifrac/rare_dm/</span></tt> and <tt class="file docutils literal"><span class="pre">wf_jack/weighted_unifrac/rare_dm/</span></tt> directories. Each of those is then used as the basis for hierarchical clustering with UPGMA, written to the <tt class="file docutils literal"><span class="pre">wf_jack/unweighted_unifrac/rare_upgma/</span></tt> and <tt class="file docutils literal"><span class="pre">wf_jack/weighted_unifrac/rare_upgma/</span></tt> directories.</p>
+</div>
+<div class="section" id="step-6-compare-jackknifed-trees">
+<span id="compjackclustertree"></span><h3>Step 6. Compare Jackknifed Trees<a class="headerlink" href="#step-6-compare-jackknifed-trees" title="Permalink to this headline">¶</a></h3>
+<p>UPGMA clustering of the 10 distance matrix files results in 10 hierarchical clusters of the 9 mouse microbial communities, each  hierarchical cluster based on a random sub-sample of the available sequence data.</p>
+<p>This compares the UPGMA clustering based on all available data with the jackknifed UPGMA results. Three files are written to <tt class="file docutils literal"><span class="pre">wf_jack/unweighted_unifrac/upgma_cmp/</span></tt> and <tt class="file docutils literal"><span class="pre">wf_jack/weighted_unifrac/upgma_cmp/</span></tt>:</p>
+<blockquote>
+<div><ul class="simple">
+<li><tt class="file docutils literal"><span class="pre">master_tree.tre</span></tt>, which is virtually identical to <tt class="file docutils literal"><span class="pre">jackknife_named_nodes.tre</span></tt> but each internal node of the UPGMA clustering is assigned a unique name</li>
+<li><tt class="file docutils literal"><span class="pre">jackknife_named_nodes.tre</span></tt></li>
+<li><tt class="file docutils literal"><span class="pre">jackknife_support.txt</span></tt> explains how frequently a given internal node had the same set of descendant samples in the jackknifed UPGMA clusters as it does in the UPGMA cluster using the full available data.  A value of 0.5 indicates that half of the jackknifed data sets support that node, while 1.0 indicates perfect support.</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="steps-7-and-8-compare-principal-coordinates-plots">
+<span id="comppcoa"></span><h3>Steps 7 and 8. Compare Principal Coordinates plots<a class="headerlink" href="#steps-7-and-8-compare-principal-coordinates-plots" title="Permalink to this headline">¶</a></h3>
+<p>The jackknifed replicate PCoA plots can be compared to assess the degree of variation from one replicate to the next. QIIME displays this variation by displaying confidence ellipsoids around the samples represented in a PCoA plot. The resulting plots are present in <tt class="file docutils literal"><span class="pre">wf_jack/unweighted_unifrac/emperor_pcoa_plots</span></tt>, as well as the corresponding <tt class="file docutils literal"><span class="pre">weighted_unifrac/</span></tt> location. An example is shown below:</p>
+<a class="reference internal image-reference" href="../_images/jackpcoa.png"><img alt="../_images/jackpcoa.png" class="align-center" src="../_images/jackpcoa.png" style="width: 700px;" /></a>
+</div>
+<div class="section" id="generate-bootstrapped-tree">
+<span id="genboottree"></span><h3>Generate Bootstrapped Tree<a class="headerlink" href="#generate-bootstrapped-tree" title="Permalink to this headline">¶</a></h3>
+<p><tt class="file docutils literal"><span class="pre">jackknife_named_nodes.tre</span></tt> can be viewed with FigTree or another tree-viewing program. However, as an example, we can visualize the bootstrapped tree using QIIME&#8217;s <a class="reference external" href="../scripts/make_bootstrapped_tree.html">make_bootstrapped_tree.py</a>, as follows:</p>
+<div class="highlight-python"><pre>make_bootstrapped_tree.py -m wf_jack/unweighted_unifrac/upgma_cmp/master_tree.tre -s wf_jack/unweighted_unifrac/upgma_cmp/jackknife_support.txt -o wf_jack/unweighted_unifrac/upgma_cmp/jackknife_named_nodes.pdf</pre>
+</div>
+<p>The resulting pdf shows the tree with internal nodes colored, red for 75-100% support, yellow for 50-75%, green for 25-50%, and blue for &lt; 25% support. Although UPGMA shows that PC.354 and PC.593 cluster together and PC.481 with PC.6xx cluster together, we can not have high confidence in that result. However, there is excellent jackknife support for all fasted samples (PC.6xx) which are clustering together, separate from the non-fasted (PC.35x) samples.</p>
+<img alt="../_images/boottree.png" class="align-center" src="../_images/boottree.png" />
+</div>
+<div class="section" id="generate-3d-bi-plots">
+<h3>Generate 3D Bi-Plots<a class="headerlink" href="#generate-3d-bi-plots" title="Permalink to this headline">¶</a></h3>
+<p>One can add taxa from the taxon summary files in the folder <tt class="file docutils literal"><span class="pre">wf_taxa_summary/</span></tt> to a 3D principal coordinates plot using Emperor&#8217;s <a class="reference external" href="http://qiime.org/emperor/">make_emperor.py</a>. The coordinates of a given taxon are plotted as a weighted average of the coordinates of all samples, where the weights are the relative abundances of the taxon in the samples. The size of the sphere representing a taxon is proportional to the mean relative abundance of the taxon across all samples. The following example creates a biplot displaying the 5 most abundant phylum-level taxa:</p>
+<div class="highlight-python"><pre>make_emperor.py -i wf_bdiv_even146/unweighted_unifrac_pc.txt -m Fasting_Map.txt -t wf_taxa_summary/otu_table_L3.txt --n_taxa_to_keep 5 -o 3d_biplot</pre>
+</div>
+<p>The resulting html file <tt class="file docutils literal"><span class="pre">3d_biplot/index.html</span></tt> shows a biplot like this:</p>
+<img alt="../_images/biplot.png" class="align-center" src="../_images/biplot.png" />
+</div>
+</div>
+<div class="section" id="running-workflow-scripts-in-parallel">
+<h2>Running Workflow Scripts in Parallel<a class="headerlink" href="#running-workflow-scripts-in-parallel" title="Permalink to this headline">¶</a></h2>
+<p>To run the workflow scripts in parallel, pass the &#8220;-a&#8221; option to each of the scripts, and optionally the &#8220;-O&#8221; option to specify the number of parallel jobs to start. If running on a quad-core computer, you can set the number of jobs to start as 4 for one of the workflow scripts as follows:</p>
+<div class="highlight-python"><pre>pick_de_novo_otus.py -i split_library_output/seqs.fna -o otus -a -O 4</pre>
+</div>
+</div>
+<div class="section" id="running-the-qiime-tutorial-shell-scripts">
+<h2>Running the QIIME Tutorial Shell Scripts<a class="headerlink" href="#running-the-qiime-tutorial-shell-scripts" title="Permalink to this headline">¶</a></h2>
+<p>The commands in this tutorial are present as a shell script along with the other tutorial files, which can be run via the terminal. To run the shell scripts, you may need to allow all users to execute them, using the following commands:</p>
+<div class="highlight-python"><pre>chmod a+x ./qiime_tutorial_commands_serial.sh
+chmod a+x ./qiime_tutorial_commands_parallel.sh</pre>
+</div>
+<p>To run the QIIME tutorial in serial:</p>
+<div class="highlight-python"><pre>./qiime_tutorial_commands_serial.sh</pre>
+</div>
+<p>To run the QIIME tutorial in parallel:</p>
+<div class="highlight-python"><pre>./qiime_tutorial_commands_parallel.sh</pre>
+</div>
+</div>
+<div class="section" id="references">
+<h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<p>Crawford, P. A., Crowley, J. R., Sambandam, N., Muegge, B. D., Costello, E. K., Hamady, M., et al. (2009). Regulation of myocardial ketone body metabolism by the gut microbiota during nutrient deprivation. Proc Natl Acad Sci U S A, 106(27), 11276-11281.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">454 Overview Tutorial: de novo OTU picking and diversity analyses using 454 data</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#essential-files">Essential Files</a><ul>
+<li><a class="reference internal" href="#sequences-fna">Sequences (.fna)</a></li>
+<li><a class="reference internal" href="#quality-scores-qual">Quality Scores (.qual)</a></li>
+<li><a class="reference internal" href="#mapping-file-tab-delimited-txt">Mapping File (Tab-delimited .txt)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#check-mapping-file">Check Mapping File</a></li>
+<li><a class="reference internal" href="#assign-samples-to-multiplex-reads">Assign Samples to Multiplex Reads</a></li>
+<li><a class="reference internal" href="#picking-operational-taxonomic-units-otus-through-making-otu-table">Picking Operational Taxonomic Units (OTUs) through making OTU table</a><ul>
+<li><a class="reference internal" href="#step-1-pick-otus-based-on-sequence-similarity-within-the-reads">Step 1. Pick OTUs based on Sequence Similarity within the Reads</a></li>
+<li><a class="reference internal" href="#step-2-pick-representative-sequences-for-each-otu">Step 2. Pick Representative Sequences for each OTU</a></li>
+<li><a class="reference internal" href="#step-3-assign-taxonomy">Step 3. Assign Taxonomy</a></li>
+<li><a class="reference internal" href="#step-4-align-otu-sequences">Step 4. Align OTU Sequences</a></li>
+<li><a class="reference internal" href="#step-5-filter-alignment">Step 5. Filter Alignment</a></li>
+<li><a class="reference internal" href="#step-6-make-phylogenetic-tree">Step 6. Make Phylogenetic Tree</a></li>
+<li><a class="reference internal" href="#step-7-make-otu-table">Step 7. Make OTU Table</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#view-statistics-of-the-otu-table">View statistics of the OTU table</a></li>
+<li><a class="reference internal" href="#make-otu-heatmap">Make OTU Heatmap</a></li>
+<li><a class="reference internal" href="#make-otu-network">Make OTU Network</a></li>
+<li><a class="reference internal" href="#summarize-communities-by-taxonomic-composition">Summarize Communities by Taxonomic Composition</a></li>
+<li><a class="reference internal" href="#compute-alpha-diversity-within-the-samples-and-generate-rarefaction-curves">Compute Alpha Diversity within the Samples and Generate Rarefaction Curves</a><ul>
+<li><a class="reference internal" href="#step-1-rarify-otu-table">Step 1. Rarify OTU Table</a></li>
+<li><a class="reference internal" href="#step-2-compute-alpha-diversity">Step 2. Compute Alpha Diversity</a></li>
+<li><a class="reference internal" href="#step-3-collate-rarified-otu-tables">Step 3. Collate Rarified OTU Tables</a></li>
+<li><a class="reference internal" href="#step-4-generate-rarefaction-curves">Step 4. Generate Rarefaction Curves</a></li>
+<li><a class="reference internal" href="#viewing-alpha-diversity-results">Viewing Alpha Diversity Results</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#compute-beta-diversity-and-generate-beta-diversity-plots">Compute Beta Diversity and Generate Beta Diversity Plots</a><ul>
+<li><a class="reference internal" href="#step-1-rarify-otu-table-to-remove-sample-heterogeneity">Step 1. Rarify OTU Table to Remove Sample Heterogeneity</a></li>
+<li><a class="reference internal" href="#step-2-compute-beta-diversity">Step 2. Compute Beta Diversity</a></li>
+<li><a class="reference internal" href="#step-3-generate-principal-coordinates">Step 3. Generate Principal Coordinates</a></li>
+<li><a class="reference internal" href="#step-4-generate-emperor-pcoa-plots">Step 4. Generate Emperor PCoA Plots</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#jackknifed-beta-diversity-and-hierarchical-clustering">Jackknifed Beta Diversity and Hierarchical Clustering</a><ul>
+<li><a class="reference internal" href="#steps-1-and-2-upgma-clustering">Steps 1 and 2. UPGMA Clustering</a></li>
+<li><a class="reference internal" href="#steps-3-4-and-5-perform-jackknifing-support">Steps 3, 4 and 5. Perform Jackknifing Support</a></li>
+<li><a class="reference internal" href="#step-6-compare-jackknifed-trees">Step 6. Compare Jackknifed Trees</a></li>
+<li><a class="reference internal" href="#steps-7-and-8-compare-principal-coordinates-plots">Steps 7 and 8. Compare Principal Coordinates plots</a></li>
+<li><a class="reference internal" href="#generate-bootstrapped-tree">Generate Bootstrapped Tree</a></li>
+<li><a class="reference internal" href="#generate-3d-bi-plots">Generate 3D Bi-Plots</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#running-workflow-scripts-in-parallel">Running Workflow Scripts in Parallel</a></li>
+<li><a class="reference internal" href="#running-the-qiime-tutorial-shell-scripts">Running the QIIME Tutorial Shell Scripts</a></li>
+<li><a class="reference internal" href="#references">References</a></li>
+</ul>
+</li>
+</ul>
+
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

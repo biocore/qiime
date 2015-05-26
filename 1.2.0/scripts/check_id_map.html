@@ -1,0 +1,183 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>check_id_map.py – Checks user’s metadata mapping file for required data, valid format &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.2.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="check-id-map"></span><div class="section" id="check-id-map-py-checks-user-s-metadata-mapping-file-for-required-data-valid-format">
+<span id="index-16"></span><h1><em>check_id_map.py</em> &#8211; Checks user&#8217;s metadata mapping file for required data, valid format<a class="headerlink" href="#check-id-map-py-checks-user-s-metadata-mapping-file-for-required-data-valid-format" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>Specifically, we check that:</p>
+<blockquote>
+<ul class="simple">
+<li>The filename does not contain spaces (warn + rewrite if it does)</li>
+<li>There are headers for SampleID, LinkerPrimerSequence, and BarcodeSequence if barcodes are used (returns errors if these are absent or misspelled)</li>
+<li>The BarcodeSequence and LinkerPrimerSequences fields have valid IUPAC DNA characters</li>
+<li>There are not duplicate header fields (error)</li>
+<li>There are not duplicate near-unique but not exactly unique values within each column (warning)</li>
+<li>The headers do not contain invalid characters (alphanumeric and underscore only)</li>
+<li>The data fields do not contain invalid characters (alphanumeric, underscore, and +-%. characters)</li>
+<li>SampleID fields are MIENS compliant (only alphanumeric and . characters)</li>
+<li>There are no duplicates when the primer and barcodes are appended</li>
+<li>If there is a field ReversePrimer for reverse primers (for removal with split_libraries), the characters are DNA IUPAC compliant and no fields are empty</li>
+</ul>
+<p>Errors and warnings are saved to a log file.  Errors are generally caused
+by problems with the headers, and should be resolved before attempting to
+correct any warnings.  Warnings can arise from invalid characters,
+near-duplicate metadata, duplicate sample descriptions/barcodes, or missing
+data fields. Warnings will contain a reference to the cell (row,column)
+that the warning arose from.</p>
+<p>In addition to the log file, a &#8220;corrected_mapping&#8221; file will be created.
+Invalid characters will be replaced by underscores in this corrected mapping
+file if there were any such characters in the input metadata mapping file.
+If there were no invalid characters to replace, the corrected mapping file
+will contain comments saying as much.</p>
+<p><a class="reference external" href="./check_id_map.html">check_id_map.py</a> should not raise exceptions itself under normal
+circumstances, except for situations such as having a misformatted input
+metadata mapping file.</p>
+</blockquote>
+<p><strong>Usage:</strong> <tt class="docutils literal"><span class="pre">check_id_map.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-m, <cite>-</cite>-map</dt>
+<dd>Metadata mapping file filepath</dd>
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>Required output directory for log file and corrected mapping file (by default, invalid characters will be converted to underscores)</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-c, <cite>-</cite>-char_replace</dt>
+<dd>Changes the default character used to replace invalid characters found in the mapping file.  Must be a valid character (alphanumeric or underscore).  NOT IMPLEMENTED CURRENTLY [default: _]</dd>
+<dt>-b, <cite>-</cite>-not_barcoded</dt>
+<dd>Use -b if barcodes are not present. [default: False]</dd>
+<dt>-B, <cite>-</cite>-variable_len_barcodes</dt>
+<dd>Use -B if variable length barcodes are present to suppress warnings about barcodes of unequal length. [default: False]</dd>
+<dt>-p, <cite>-</cite>-disable_primer_check</dt>
+<dd>Use -p to disable checks for primers. [default: False]</dd>
+<dt>-v, <cite>-</cite>-verbose</dt>
+<dd>Turn on this flag to disable verbose output.  [default: True]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>A log file and corrected_mapping.txt file will be written to the mapping_info directory.</p>
+<p><strong>Example:</strong></p>
+<p>Check the test_mapping.txt mapping file for problems, supplying the required mapping file and output directory (in this case mapping_info)</p>
+<div class="highlight-python"><pre>check_id_map.py -m test_mapping.txt -o mapping_info/</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://pycogent.sourceforge.net" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+      &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

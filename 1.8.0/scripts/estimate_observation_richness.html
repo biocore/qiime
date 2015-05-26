@@ -1,0 +1,198 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>estimate_observation_richness.py – Estimates the observation (e.g., OTU) richness of samples in a BIOM table &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.8.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="estimate-observation-richness"></span><div class="section" id="estimate-observation-richness-py-estimates-the-observation-e-g-otu-richness-of-samples-in-a-biom-table">
+<span id="index-0"></span><h1><em>estimate_observation_richness.py</em> &#8211; Estimates the observation (e.g., OTU) richness of samples in a BIOM table<a class="headerlink" href="#estimate-observation-richness-py-estimates-the-observation-e-g-otu-richness-of-samples-in-a-biom-table" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>This script provides estimates of the observation (e.g., OTU) richness (i.e.
+number of observations) given a sampling depth (i.e. number of
+individuals/sequences per sample). Estimators are provided for both
+interpolation/rarefaction and extrapolation.</p>
+<p>Interpolation/rarefaction applies when the richness is estimated for a
+<em>smaller</em> number of individuals than the original number of individuals in that
+sample. We refer to this original sampling depth as the &#8220;reference sampling
+depth&#8221; or &#8220;reference sample size&#8221;.</p>
+<p>Extrapolation applies when the richness is estimated for a <em>larger</em> number of
+individuals than the reference sample size.</p>
+<p>This script currently only provides a single unified estimation model for
+interpolation and extrapolation. This model is the individual-based multinomial
+model, which uses Chao1 to estimate the full richness of the sample. Please
+refer to Colwell et al. (2012) for more details; equations 4, 5, 9, 10, 15a,
+and 15b are used in this script.</p>
+<p>For each interpolation/extrapolation point, the estimate, its unconditional
+standard error, and confidence interval are reported. The script currently only
+outputs this information to a table, which can be easily viewed in a program
+such as Excel. Other output formats, such as plots, may be added in the future.</p>
+<p>If an estimate is reported as &#8220;N/A&#8221;, not enough information was present to
+compute an estimate. This can occur when extrapolating if a sample does not
+contain any singletons or doubletons, or if there is exactly one singleton and
+no doubletons. A singleton is defined as an observation with exactly one
+individual/sequence in the sample. A doubleton is defined as an observation
+with exactly two individuals/sequences in the sample.</p>
+<p>IMPORTANT: If you use the results of this script in any published works, please
+be sure to cite the Colwell et al. (2012) paper, as well as QIIME (see
+<a class="reference external" href="http://qiime.org">http://qiime.org</a> for details).</p>
+<p>In addition to Colwell et al. (2012), the following resources were extremely
+useful while implementing and testing these estimators, so it is appropriate to
+also acknowledge them here:</p>
+<blockquote>
+<div>Hsieh et al. (2013)
+Shen et al. (2003)
+Colwell (2013)</div></blockquote>
+<p>References:</p>
+<p>Chao, A., N. J. Gotelli, T. C. Hsieh, E. L. Sander, K. H. Ma, R. K. Colwell, and A. M. Ellison 2013. Rarefaction and extrapolation with Hill numbers: a unified framework for sampling and estimation in biodiversity studies, Ecological Monographs (under revision).</p>
+<p>Colwell, R. K. 2013. EstimateS: Statistical estimation of species richness and shared species from samples. Version 9. User&#8217;s Guide and application published at: <a class="reference external" href="http://purl.oclc.org/estimates">http://purl.oclc.org/estimates</a>.</p>
+<p>Colwell, R. K., A. Chao, N. J. Gotelli, S. Y. Lin, C. X. Mao, R. L. Chazdon, and J. T. Longino. 2012. Models and estimators linking individual-based and sample-based rarefaction, extrapolation and comparison of assemblages. Journal of Plant Ecology 5:3-21.</p>
+<p>Hsieh, T. C., K. H. Ma, and A. Chao. 2013. iNEXT online: interpolation and extrapolation (Version 1.0) [Software]. Available from <a class="reference external" href="http://chao.stat.nthu.edu.tw/inext/">http://chao.stat.nthu.edu.tw/inext/</a>.</p>
+<p>Shen T-J, Chao A, Lin C- F. Predicting the number of new species in further taxonomic sampling. Ecology 2003;84:798-804.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">estimate_observation_richness.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-otu_table_fp</dt>
+<dd>Path to the input BIOM table (e.g., the output from <a class="reference external" href="./make_otu_table.html">make_otu_table.py</a>). IMPORTANT: This table should contain observation <em>counts</em> (integers), NOT relative abundances (fractions)</dd>
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>Path to the output directory</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-m, <cite>-</cite>-min</dt>
+<dd>The number of individuals (e.g. sequences) per sample to start performing estimations at [default: 1]</dd>
+<dt>-x, <cite>-</cite>-max</dt>
+<dd>The number of individuals (e.g. sequences) per sample to stop performing estimations at. By default, the base sample size will be used, which is defined in Chao et al. (2013) as &#8220;double the smallest reference sample size or the maximum reference sample size, whichever is larger&#8221; [default: base sample size]</dd>
+<dt>-n, <cite>-</cite>-num_steps</dt>
+<dd>The number of steps to make between -m/&#8211;min and -x/&#8211;max. Increasing this number will result in smoother curves, but will also increase the amount of time needed to run the script. Note that the reference sample size for each sample will be included if it does not fall within the min/max/num_steps range [default: 10]</dd>
+<dt>-c, <cite>-</cite>-confidence_level</dt>
+<dd>The confidence level of the unconditional confidence interval for each estimate. Must be a value between 0 and 1 (exclusive). For example, a 95% unconditional confidence interval would be 0.95 [default: 0.95]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>A single file containing tabular data in TSV format is created in the output
+directory. Other output formats may be added in the future.</p>
+<p><strong>Interpolation and extrapolation of richness:</strong></p>
+<p>Estimate the richness of each sample in the input BIOM table using the default sampling depth range, which includes interpolation and extrapolation.</p>
+<div class="highlight-python"><pre>estimate_observation_richness.py -i otu_table.biom -o estimates_out</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

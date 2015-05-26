@@ -1,0 +1,271 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Illumina Overview Tutorial: closed reference OTU picking and diversity analyses &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.6.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="illumina-overview-tutorial-closed-reference-otu-picking-and-diversity-analyses">
+<span id="illumina-overview-tutorial"></span><h1>Illumina Overview Tutorial: closed reference OTU picking and diversity analyses<a class="headerlink" href="#illumina-overview-tutorial-closed-reference-otu-picking-and-diversity-analyses" title="Permalink to this headline">¶</a></h1>
+<p>This tutorial covers a variety of QIIME using Illumina sequencing data. It expands on the <a class="reference internal" href="processing_illumina_data.html#processing-illumina-data"><em>Processing Illumina Data</em></a> tutorial, which focused primarily on demultiplexing Illumina data. This tutorial is is intended to be quick to run, and as such, uses only a subset of a full Illumina Genome Analyzer II (GAIIx) run.</p>
+<p>To further reduce runtime, we take a big shortcut: in this tutorial, we perform <em>closed-reference</em> OTU picking, where reads are searched against a reference collection (Greengenes in this case), and reads that do not hit the reference collection are discarded. This works well for well-characterized environments such as human-associated habitats, but not as well for environments that harbor a lot of novel diversity with respect to the reference collection (e.g., the <a class="reference external" href="http://www.ncbi.nlm.nih.gov/pubmed/22832344">Guerrero Negro microbial mats</a> are an example of where this does not work well). In general, we <em>highly</em> recommend that you use our <a class="reference external" href="open_reference_illumina_processing.html#option-2-subsampled-open-reference-otu-picking">subsampled open-reference OTU picking protocol</a> for processing Illumina data.</p>
+<p>The data used in this analysis is derived from the <a class="reference external" href="http://www.ncbi.nlm.nih.gov/pubmed/21624126">Moving Pictures of the Human Microbiome</a> study, where two human subjects collected daily samples from four body sites: the tongue, the palm of the left hand, the palm of the right hand, and the gut (via fecal samples obtained by swapping used toilet paper). This data was sequenced across six lanes of an Illumina GAIIx, using the barcoding amplicon sequencing protocol described in <a class="reference external" href="http://www.ncbi.nlm.nih.gov/pubmed/20534432">Global patterns of 16S rRNA diversity at a depth of millions of sequences per sample</a>. A more recent version of this protocol that can be used with the Illumina HiSeq 2000 and MiSeq can be found <a class="reference external" href="http://www.ncbi.nlm.nih.gov/pubmed/22402401">here</a>.</p>
+<div class="section" id="ipython-notebook">
+<h2>IPython Notebook<a class="headerlink" href="#ipython-notebook" title="Permalink to this headline">¶</a></h2>
+<p>The steps in this tutorial are also presented in an IPython Notebook which you can view <a class="reference external" href="http://nbviewer.ipython.org/urls/raw.github.com/qiime/qiime/master/examples/ipynb/illumina_overview_tutorial.ipynb">here</a>.</p>
+<p>We&#8217;d like to thank the IPython developers for their help with using their tools with QIIME. For more information on using QIIME with IPython, see <a class="reference external" href="http://www.nature.com/ismej/journal/vaop/ncurrent/full/ismej2012123a.html">our recent paper here</a>. You can find more information on the <a class="reference external" href="http://ipython.org/ipython-doc/stable/interactive/htmlnotebook.html">IPython Notebook here</a>, and the <a class="reference external" href="http://nbviewer.ipython.org/">nbviewer tool (which we use to display the notebook) here</a>.</p>
+</div>
+<div class="section" id="obtaining-the-data">
+<h2>Obtaining the data<a class="headerlink" href="#obtaining-the-data" title="Permalink to this headline">¶</a></h2>
+<p>The data used in this tutorial is available for download: <a class="reference external" href="https://s3.amazonaws.com/qiime-tutorial/moving_pictures_tutorial.tgz">moving_pictures_tutorial.tgz</a>. You can pull this data to your system by running the following command:</p>
+<div class="highlight-python"><pre>wget https://s3.amazonaws.com/qiime-tutorial/moving_pictures_tutorial.tgz</pre>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you are using an Apple computer, we recommend downloading the dataset directly using the above link as OS X does not come with <tt class="docutils literal"><span class="pre">wget</span></tt> pre-installed. Alternatively, for the adventurous, <tt class="docutils literal"><span class="pre">wget</span></tt> can be compiled from <a class="reference external" href="ftp://ftp.gnu.org/gnu/wget/">source</a> or you can use <tt class="docutils literal"><span class="pre">curl</span></tt>, which is similar to <tt class="docutils literal"><span class="pre">wget</span></tt> although the usage is different.</p>
+</div>
+<p>Once you have this data on your system you can unzip it as follows:</p>
+<div class="highlight-python"><pre>tar xzf moving_pictures_tutorial.tgz</pre>
+</div>
+</div>
+<div class="section" id="defining-reference-filepaths-with-environment-variables">
+<h2>Defining reference filepaths with environment variables<a class="headerlink" href="#defining-reference-filepaths-with-environment-variables" title="Permalink to this headline">¶</a></h2>
+<p>Through-out this tutorial we make use of a reference sequence collection, tree, and taxonomy derived from the Greengenes database. As these files may be store in different locations on your system, we&#8217;ll define them as environment variables using the paths as they would be if you&#8217;re running in a QIIME virtual machine (e.g., on AWS or with the Virtual Box). We&#8217;ll then reference the environment variables through-out this tutorial when they are used. If you&#8217;re not working on either of these systems, you&#8217;ll have to modify these paths. Run the following:</p>
+<div class="highlight-python"><pre>export reference_seqs=/home/ubuntu/qiime_software/gg_otus-12_10-release/rep_set/97_otus.fasta
+export reference_tree=/home/ubuntu/qiime_software/gg_otus-12_10-release/trees/97_otus.tree
+export reference_tax=/home/ubuntu/qiime_software/gg_otus-12_10-release/taxonomy/97_otu_taxonomy.txt</pre>
+</div>
+</div>
+<div class="section" id="demultiplexing-and-quality-filtering">
+<h2>Demultiplexing and quality filtering<a class="headerlink" href="#demultiplexing-and-quality-filtering" title="Permalink to this headline">¶</a></h2>
+<p>We start by demultiplexing our sequences (i.e. assigning barcoded reads to the samples they are derived from). In general, you should get seperate fastq files for your sequence and barcode reads. On the multiple-lane Illumina platforms, we typically reuse barcodes across lanes, so we must demultiplex each lane independently. To do that, run the following command (<em>will run for a few minutes</em>):</p>
+<div class="highlight-python"><pre>split_libraries_fastq.py -o slout/ -i moving_pictures_tutorial/subsampled_fastq/subsampled_s_1_sequence.fastq,moving_pictures_tutorial/subsampled_fastq/subsampled_s_2_sequence.fastq,moving_pictures_tutorial/subsampled_fastq/subsampled_s_3_sequence.fastq,moving_pictures_tutorial/subsampled_fastq/subsampled_s_4_sequence.fastq,moving_pictures_tutorial/subsampled_fastq/subsampled_s_5_sequence.fastq,moving_pictures_tutorial/subsampled_fastq/subsampled_s_6_sequence.fastq -b moving_pictures_tutorial/subsampled_fastq/subsampled_s_1_sequence_barcodes.fastq,moving_pictures_tutorial/subsampled_fastq/subsampled_s_2_sequence_barcodes.fastq,moving_pictures_tutorial/subsampled_fastq/subsampled_s_3_sequence_barcodes.fastq,moving_pictures_tutorial/subsampled_fastq/subsampled_s_4_sequence_barcodes.fastq,moving_pictures_tutorial/subsampled_fastq/subsampled_s_5_sequence_barcodes.fastq,moving_pictures_tutorial/subsampled_fastq/subsampled_s_6_sequence_barcodes.fastq -m moving_pictures_tutorial/filtered_mapping_l1.txt,moving_pictures_tutorial/filtered_mapping_l2.txt,moving_pictures_tutorial/filtered_mapping_l3.txt,moving_pictures_tutorial/filtered_mapping_l4.txt,moving_pictures_tutorial/filtered_mapping_l5.txt,moving_pictures_tutorial/filtered_mapping_l6.txt</pre>
+</div>
+<p>This is a big command, but it&#8217;s relatively straight-forward. We&#8217;re telling QIIME that we have six lanes of sequence data (specified as a comma-separated list of files passed as <tt class="docutils literal"><span class="pre">-i</span></tt>), six lanes of barcode data (specified as a comma-separated list of files passed as <tt class="docutils literal"><span class="pre">-b</span></tt>), and a metadata mapping file corresponding to each lane (specified as a comma-separated list of files passed as <tt class="docutils literal"><span class="pre">-m</span></tt>). The metadata mapping file contains the sample-to-barcode mapping that we need for demultiplexing. <strong>Important</strong>: The order of files passed for <tt class="docutils literal"><span class="pre">-m</span></tt>, <tt class="docutils literal"><span class="pre">-b</span></tt>, and <tt class="docutils literal"><span class="pre">-i</span></tt> must be consistent, so if you pass the lane 1 sequence data first for <tt class="docutils literal"><span class="pre">-i</span></tt>, you must pass the lane 1 barcode data first for <tt class="docutils literal"><span class="pre">-b</span></tt>, and the lane 1 metadata mapping file first as <tt class="docutils literal"><span class="pre">-m</span></tt>. The only other parameter here is the output directory, which we&#8217;ll call <tt class="docutils literal"><span class="pre">slout</span></tt>, for <em>split libraries output</em>.</p>
+<p>When this completes you can view the files that were created by calling <tt class="docutils literal"><span class="pre">ls</span></tt> on the output directory:</p>
+<div class="highlight-python"><pre>ls slout/</pre>
+</div>
+<p>You&#8217;ll see that we now have three files. The ones we care the most about are <tt class="docutils literal"><span class="pre">split_library_log.txt</span></tt>, and <tt class="docutils literal"><span class="pre">seqs.fna</span></tt>. The former provides a summary of what was filtered during quality filtering, and the latter is the demultiplexed sequence data, combined across all lanes.</p>
+<p>Review the <tt class="docutils literal"><span class="pre">split_library_log.txt</span></tt> file as follows:</p>
+<div class="highlight-python"><pre>less slout/split_library_log.txt</pre>
+</div>
+<p>The command that we&#8217;re using here, <tt class="docutils literal"><span class="pre">less</span></tt>, allows us to view files in read-only mode. Use the up and down arrows to scroll through the file. When you&#8217;re done, hit the <tt class="docutils literal"><span class="pre">q</span></tt> key to exit from <tt class="docutils literal"><span class="pre">less</span></tt>.</p>
+<p>If you want to see how many sequences remain after demultiplexing and quality filtering you can call the following QIIME command:</p>
+<div class="highlight-python"><pre>count_seqs.py -i slout/seqs.fna</pre>
+</div>
+<p>You can use <tt class="docutils literal"><span class="pre">count_seqs.py</span></tt> to count the sequences and summarize the sequence lengths in any <tt class="docutils literal"><span class="pre">fasta</span></tt> or <tt class="docutils literal"><span class="pre">fastq</span></tt> file.</p>
+</div>
+<div class="section" id="otu-picking">
+<h2>OTU picking<a class="headerlink" href="#otu-picking" title="Permalink to this headline">¶</a></h2>
+<p>Now that we have demultiplexed sequences, we&#8217;re ready to cluster these sequences into OTUs. As mentioned above, in the interest of providing a tutorial that can be run quickly for educational purposes, we&#8217;re using a closed-reference OTU picking protocol here, although typically you&#8217;ll want to use open-reference OTU picking, as discussed <a class="reference external" href="open_reference_illumina_processing.html">here</a>). For closed-reference OTU picking we use <cite>pick_reference_otus_through_otu_table.py</cite> (<em>will run for a few minutes</em>):</p>
+<div class="highlight-python"><pre>pick_reference_otus_through_otu_table.py -o ucrC_fast/ -i slout/seqs.fna -r $reference_seqs -t $reference_tax -p moving_pictures_tutorial/ucrC_fast_params.txt</pre>
+</div>
+<p>Note that this command takes the <tt class="docutils literal"><span class="pre">seqs.fna</span></tt> file that was generated in the previous step, as well as the reference fasta file (<tt class="docutils literal"><span class="pre">$reference_seqs</span></tt> here) and the taxonomies associated with the reference sequences (<tt class="docutils literal"><span class="pre">$reference_tax</span></tt> here). We&#8217;re also taking on an additional shortcut here for the sake of reduced run time: we&#8217;re using the <em>fast uclust</em> parameters. To allow this to run in a just a couple of minutes, we&#8217;re using parameters that are optimized for reduced runtime at the expense of accuracy. These correspond to <tt class="docutils literal"><span class="pre">uclust</span></tt>&#8216;s default parameters. QIIME uses slightly more stringent parameter settings by default. These parameters are specified the the <em>parameters file</em> which is passes as <tt class="docutils literal"><span class="pre">-p</span></tt>. You can find information on defining parameters files <a class="reference external" href="../documentation/file_formats.html#qiime-parameters">here</a>.</p>
+<p>The primary output that we can about from this command is the <em>OTU table</em>, or the number of times each operational taxonomic unit (OTU) is observed in each sample. QIIME uses the Genomics Standards Consortium <em>candidate standard</em> Biological Observation Matrix (BIOM) format for representing these files. You can find additional information on the <a class="reference external" href="http://www.biom-format.org">BIOM format here</a>, and information on converting this files to tab-separated text that can be view in spreadsheet programs <a class="reference external" href="http://biom-format.org/documentation/biom_conversion.html">here</a>.</p>
+<p>To see some summary statistics of the OTU table we can run the following command:</p>
+<div class="highlight-python"><pre>per_library_stats.py -i ucrC_fast/uclust_ref_picked_otus/otu_table.biom</pre>
+</div>
+<p>We started with six lanes of data but have now summarized these in a single OTU table. However, we still need to merge the per-lane mapping files into a single <em>combined</em> mapping file that represents all six lanes, and therefore all of our data. Note that we will have duplicated barcodes in our mapping file, but that&#8217;s OK as we&#8217;ve already demultiplexed our reads. We don&#8217;t use the barcodes again. We can merge the six mapping files as follows:</p>
+<div class="highlight-python"><pre>merge_mapping_files.py -o combined_mapping_file.txt -m moving_pictures_tutorial/filtered_mapping_l1.txt,moving_pictures_tutorial/filtered_mapping_l2.txt,moving_pictures_tutorial/filtered_mapping_l3.txt,moving_pictures_tutorial/filtered_mapping_l4.txt,moving_pictures_tutorial/filtered_mapping_l5.txt,moving_pictures_tutorial/filtered_mapping_l6.txt</pre>
+</div>
+<p>From this point on, we&#8217;ll work with <tt class="docutils literal"><span class="pre">combined_mapping_file.txt</span></tt>.</p>
+<p>The OTU table is a key piece of data, and essentially all of the additional analyses that you&#8217;ll want to do with QIIME use that as input. We&#8217;ll now explore some of the additional analyses. As these all branch from the OTU table, it&#8217;s not necessary to run this in order.</p>
+</div>
+<div class="section" id="comparing-microbial-communities-beta-diversity">
+<h2>Comparing microbial communities: beta diversity<a class="headerlink" href="#comparing-microbial-communities-beta-diversity" title="Permalink to this headline">¶</a></h2>
+<p>Now that we have an OTU table, and we&#8217;re working with a reference phylogenetic tree for our analysis, we can compute UniFrac distances between our samples. To do this, we will use one of QIIME&#8217;s <em>workflow</em> scripts, which computes a beta diversity distance matrix containing distances between all samples, summarizes that distance matrix using Principal Coordinates Analysis (PCoA), and then generates PCoA plots. You can run this workflow as follows (<em>will run for a few minutes</em>):</p>
+<div class="highlight-python"><pre>beta_diversity_through_plots.py -o bdiv_even258/ -i ucrC_fast/uclust_ref_picked_otus/otu_table.biom -m combined_mapping_file.txt -t $reference_tree -e 258</pre>
+</div>
+<p>The parameters used are described as follows: we&#8217;re passing our OTU table as <tt class="docutils literal"><span class="pre">-i</span></tt>, our metadata mapping file as <tt class="docutils literal"><span class="pre">-m</span></tt>, our phylogenetic tree as <tt class="docutils literal"><span class="pre">-t</span></tt>, the output directory as <tt class="docutils literal"><span class="pre">-o</span></tt> and last, <tt class="docutils literal"><span class="pre">-e</span></tt> to specify an even sampling depth that we want to apply in this analysis. The sampling depth is extremely important: in order to accurately compare our microbial communities with UniFrac, each sample must have the same number of sequences otherwise we may see samples cluster by their depth of sequencing coverage, which is not representative of the biology of the samples, but rather a technical artifact. <tt class="docutils literal"><span class="pre">-e</span> <span class="pre">258</span></tt> tells QIIME to randomly subsample each of the samples in the OTU table to exactly 258 sequences per sample, without replacement.</p>
+<blockquote>
+<div><div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">If you&#8217;re working on a remote system (e.g., EC2) and want to download the results of this analysis for viewing, you&#8217;ll need to download the whole directory for the plots to be viewable. You can zip this directory (<tt class="docutils literal"><span class="pre">tar</span> <span class="pre">-czf</span> <span class="pre">bdiv_even258.tgz</span> <span class="pre">bdiv_even258</span></tt>) and then <a class="reference external" href="./working_with_aws.html#working-with-cyberduck">download it using Cyberduck</a> or <a class="reference external" href="http://qiime.org/tutorials/working_with_aws.html#working-with-command-line-tools">via the command line</a>.</p>
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="generating-taxonomic-summaries-of-microbial-communities">
+<h2>Generating taxonomic summaries of microbial communities<a class="headerlink" href="#generating-taxonomic-summaries-of-microbial-communities" title="Permalink to this headline">¶</a></h2>
+<p>We can additionally generate taxonomic summaries of these samples using the <tt class="docutils literal"><span class="pre">summarize_taxa_through_plots.py</span></tt> script. These can be run on a per-sample basis as followsi (<em>will run for a few minutes</em>):</p>
+<div class="highlight-python"><pre>summarize_taxa_through_plots.py -o taxa_summaries/ -i ucrC_fast/uclust_ref_picked_otus/otu_table.biom -m combined_mapping_file.txt</pre>
+</div>
+<p>After this command completes, there will be two <tt class="docutils literal"><span class="pre">html</span></tt> files in the new <tt class="docutils literal"><span class="pre">taxa_summaries</span></tt> directory: <tt class="docutils literal"><span class="pre">bar_charts.html</span></tt> and <tt class="docutils literal"><span class="pre">area_charts.html</span></tt>. For categorical data the bar charts are generally more informative, and for continuous data the area charts are generally more informative. If working with continuous data you will likely want to call <a class="reference external" href="../scripts/sort_otu_table.html">sort_otu_table.py</a> first, sorting by the continuous variable in your metadata file. The <a class="reference external" href="../scripts/filter_samples_from_otu_table.html">filter_samples_from_otu_table.py</a> script may also be useful here to filter out samples that you may not want in your taxa summary plot (e.g., control samples, or human skin samples if you&#8217;re trying to generate a plot illustrating the change in your human gut communities over time).</p>
+<p>You may alternatively be interesting in a taxonomic summary of your samples collapsed by some metadata category. For example, in this data set collapsing by the sample type (left palm, right palm, tongue, and gut) is a useful way to see the differences across community types. We can achieve this by adding the <tt class="docutils literal"><span class="pre">-c</span></tt> parameter to our call to <tt class="docutils literal"><span class="pre">summarize_taxa_through_plots.py</span></tt>. Here we collapse by <tt class="docutils literal"><span class="pre">SampleType</span></tt>, which is a column header in our mapping file:</p>
+<div class="highlight-python"><pre>summarize_taxa_through_plots.py -o taxa_summaries_by_SampleType/ -i ucrC_fast/uclust_ref_picked_otus/otu_table.biom -m combined_mapping_file.txt -c "SampleType"</pre>
+</div>
+<p>As before, be can view either bar charts or area charts by opening the corresponding file.</p>
+<blockquote>
+<div><div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">If you&#8217;re working on a remote system (e.g., EC2) and want to download the results of this analysis for viewing, you&#8217;ll need to download the whole directory for the plots to be viewable. You can zip this directory (<tt class="docutils literal"><span class="pre">tar</span> <span class="pre">-czf</span> <span class="pre">taxa_summaries.tgz</span> <span class="pre">taxa_summaries</span></tt>) and then <a class="reference external" href="./working_with_aws.html#working-with-cyberduck">download it using Cyberduck</a> or <a class="reference external" href="http://qiime.org/tutorials/working_with_aws.html#working-with-command-line-tools">via the command line</a>.</p>
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="comparing-microbial-communities-alpha-diversity">
+<h2>Comparing microbial communities: alpha diversity<a class="headerlink" href="#comparing-microbial-communities-alpha-diversity" title="Permalink to this headline">¶</a></h2>
+<p><strong>WARNING: This step can be require approximately 20 minutes to run.</strong></p>
+<p>Alpha rarefaction plots are a useful way to compare the relative alpha diversities across samples, and also to determine if we are approaching complete coverage of our microbial communities. We can generate alpha rarefaction plots with QIIME as follows (<em>will run for over 10 minutes</em>):</p>
+<div class="highlight-python"><pre>alpha_rarefaction.py -o arare_max258/ -i ucrC_fast/uclust_ref_picked_otus/otu_table.biom -m combined_mapping_file.txt -t $reference_tree -e 258</pre>
+</div>
+<p>Notice that we again pass <tt class="docutils literal"><span class="pre">-e</span> <span class="pre">258</span></tt> here. In this case, this specifies the maximum rarefaction depth: in general you want to choose the same value as specified for the even sampling depth to <cite>beta_diversity_through_plots.py</cite> if you are interested in looking at alpha diversity and rarefaction by metadata category.</p>
+<blockquote>
+<div><div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">If you&#8217;re working on a remote system (e.g., EC2) and want to download the results of this analysis for viewing, you&#8217;ll need to download the whole directory for the plots to be viewable. You can zip this directory (<tt class="docutils literal"><span class="pre">tar</span> <span class="pre">-czf</span> <span class="pre">arare_max258.tgz</span> <span class="pre">arare_max258</span></tt>) and then <a class="reference external" href="./working_with_aws.html#working-with-cyberduck">download it using Cyberduck</a> or <a class="reference external" href="http://qiime.org/tutorials/working_with_aws.html#working-with-command-line-tools">via the command line</a>.</p>
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="next-steps">
+<h2>Next steps<a class="headerlink" href="#next-steps" title="Permalink to this headline">¶</a></h2>
+<p>This illustrates some of the basic features of QIIME, and there are a lot of places to go from here. If you&#8217;re interested in seeing additional visualizations, you should check out the <a class="reference external" href="tutorial.html">QIIME overview tutorial</a>. We also highly recommend reviewing how to perform open-reference OTU picking on Illumina data, which you can find <a class="reference external" href="open_reference_illumina_processing.html#option-2-subsampled-open-reference-otu-picking">here</a>. The <a class="reference external" href="procrustes_analysis.html">Procrustes analysis tutorial</a> illustrates a really cool analysis, allowing you to continue with the same data used here, comparing against the samples sequenced on 454 (rather than Illumina, as in this analysis). If you&#8217;re interested in some possibilities for statistical analyses you can try our <a class="reference external" href="running_supervised_learning.html">supervised learning</a> or <a class="reference external" href="distance_matrix_comparison.html">distance matrix comparison</a> tutorials, both of which can be adapted to use data generated in this tutorial.</p>
+</div>
+<div class="section" id="modified-procrustes-analysis-steps-temporary">
+<h2>Modified Procrustes Analysis Steps (temporary)<a class="headerlink" href="#modified-procrustes-analysis-steps-temporary" title="Permalink to this headline">¶</a></h2>
+<p>We&#8217;re in the process of modifying the <a class="reference external" href="procrustes_analysis.html">Procrustes analysis tutorial</a> to more directly follow from this one. In the meantime, these commands will allow you to continue:</p>
+<div class="highlight-python"><pre>pick_reference_otus_through_otu_table.py -i moving_pictures_tutorial/subsampled_454_seqs.fna -o 454_ucrC_fast/ -r $reference_seqs -t $reference_tax -p moving_pictures_tutorial/ucrC_fast_params.txt
+per_library_stats.py -i 454_ucrC_fast/uclust_ref_picked_otus/otu_table.biom
+beta_diversity_through_plots.py -o bdiv_even135/ -i 454_ucrC_fast/uclust_ref_picked_otus/otu_table.biom -e 135 -t $reference_tree -m moving_pictures_tutorial/454_map.txt
+transform_coordinate_matrices.py -o 454_v_illumina/ -i bdiv_even258/unweighted_unifrac_pc.txt,bdiv_even135/unweighted_unifrac_pc.txt -s moving_pictures_tutorial/procrustes_sid_map.txt -r 100
+compare_3d_plots.py -o 454_v_illumina/plots/ -i 454_v_illumina/pc1_transformed.txt,454_v_illumina/pc2_transformed.txt -m moving_pictures_tutorial/procrustes_metadata_map.txt --custom_axes days_since_epoch</pre>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">If you&#8217;re working on a remote system (e.g., EC2) and want to download the results of this analysis for viewing, you&#8217;ll need to download the whole directory for the plots to be viewable. You can zip this directory (<tt class="docutils literal"><span class="pre">tar</span> <span class="pre">-czf</span> <span class="pre">454_v_illumina.tgz</span> <span class="pre">454_v_illumina</span></tt>) and then <a class="reference external" href="./working_with_aws.html#working-with-cyberduck">download it using Cyberduck</a> or <a class="reference external" href="http://qiime.org/tutorials/working_with_aws.html#working-with-command-line-tools">via the command line</a>.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Illumina Overview Tutorial: closed reference OTU picking and diversity analyses</a><ul>
+<li><a class="reference internal" href="#ipython-notebook">IPython Notebook</a></li>
+<li><a class="reference internal" href="#obtaining-the-data">Obtaining the data</a></li>
+<li><a class="reference internal" href="#defining-reference-filepaths-with-environment-variables">Defining reference filepaths with environment variables</a></li>
+<li><a class="reference internal" href="#demultiplexing-and-quality-filtering">Demultiplexing and quality filtering</a></li>
+<li><a class="reference internal" href="#otu-picking">OTU picking</a></li>
+<li><a class="reference internal" href="#comparing-microbial-communities-beta-diversity">Comparing microbial communities: beta diversity</a></li>
+<li><a class="reference internal" href="#generating-taxonomic-summaries-of-microbial-communities">Generating taxonomic summaries of microbial communities</a></li>
+<li><a class="reference internal" href="#comparing-microbial-communities-alpha-diversity">Comparing microbial communities: alpha diversity</a></li>
+<li><a class="reference internal" href="#next-steps">Next steps</a></li>
+<li><a class="reference internal" href="#modified-procrustes-analysis-steps-temporary">Modified Procrustes Analysis Steps (temporary)</a></li>
+</ul>
+</li>
+</ul>
+
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2012, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

@@ -1,0 +1,175 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>filter_samples_from_otu_table.py – Filters samples from an OTU table on the basis of the number of observations in that sample, or on the basis of sample metadata. Mapping file can also be filtered to the resulting set of sample ids. &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.8.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="filter-samples-from-otu-table"></span><div class="section" id="filter-samples-from-otu-table-py-filters-samples-from-an-otu-table-on-the-basis-of-the-number-of-observations-in-that-sample-or-on-the-basis-of-sample-metadata-mapping-file-can-also-be-filtered-to-the-resulting-set-of-sample-ids">
+<span id="index-0"></span><h1><em>filter_samples_from_otu_table.py</em> &#8211; Filters samples from an OTU table on the basis of the number of observations in that sample, or on the basis of sample metadata. Mapping file can also be filtered to the resulting set of sample ids.<a class="headerlink" href="#filter-samples-from-otu-table-py-filters-samples-from-an-otu-table-on-the-basis-of-the-number-of-observations-in-that-sample-or-on-the-basis-of-sample-metadata-mapping-file-can-also-be-filtered-to-the-resulting-set-of-sample-ids" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">filter_samples_from_otu_table.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-input_fp</dt>
+<dd>The input otu table filepath in biom format</dd>
+<dt>-o, <cite>-</cite>-output_fp</dt>
+<dd>The output filepath in biom format</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-m, <cite>-</cite>-mapping_fp</dt>
+<dd>Path to the map file [default: None]</dd>
+<dt><cite>-</cite>-output_mapping_fp</dt>
+<dd>Path to write filtered mapping file [default: filtered mapping file is not written]</dd>
+<dt><cite>-</cite>-sample_id_fp</dt>
+<dd>Path to file listing sample ids to keep [default: None]</dd>
+<dt>-s, <cite>-</cite>-valid_states</dt>
+<dd>String describing valid states (e.g. &#8216;Treatment:Fasting&#8217;) [default: None]</dd>
+<dt>-n, <cite>-</cite>-min_count</dt>
+<dd>The minimum total observation count in a sample for that sample to be retained [default: 0]</dd>
+<dt>-x, <cite>-</cite>-max_count</dt>
+<dd>The maximum total observation count in a sample for that sample to be retained [default: infinity]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p><strong>Abundance filtering (low coverage):</strong></p>
+<p>Filter samples with fewer than 150 observations from the otu table.</p>
+<div class="highlight-python"><pre>filter_samples_from_otu_table.py -i otu_table.biom -o otu_table_no_low_coverage_samples.biom -n 150</pre>
+</div>
+<p><strong>Abundance filtering (high coverage):</strong></p>
+<p>Filter samples with greater than 149 observations from the otu table.</p>
+<div class="highlight-python"><pre>filter_samples_from_otu_table.py -i otu_table.biom -o otu_table_no_high_coverage_samples.biom -x 149</pre>
+</div>
+<p><strong>Metadata-based filtering (positive):</strong></p>
+<p>Filter samples from the table, keeping samples where the value for &#8216;Treatment&#8217; in the mapping file is &#8216;Control&#8217;</p>
+<div class="highlight-python"><pre>filter_samples_from_otu_table.py -i otu_table.biom -o otu_table_control_only.biom -m map.txt -s 'Treatment:Control'</pre>
+</div>
+<p><strong>Metadata-based filtering (negative):</strong></p>
+<p>Filter samples from the table, keeping samples where the value for &#8216;Treatment&#8217; in the mapping file is not &#8216;Control&#8217;</p>
+<div class="highlight-python"><pre>filter_samples_from_otu_table.py -i otu_table.biom -o otu_table_not_control.biom -m map.txt -s 'Treatment:*,!Control'</pre>
+</div>
+<p><strong>List-based filtering:</strong></p>
+<p>Filter samples where the id is listed in samples_to_keep.txt</p>
+<div class="highlight-python"><pre>filter_samples_from_otu_table.py -i otu_table.biom -o otu_table_samples_to_keep.biom --sample_id_fp samples_to_keep.txt</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

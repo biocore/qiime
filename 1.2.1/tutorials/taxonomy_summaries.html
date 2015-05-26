@@ -1,0 +1,247 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Generating Taxonomy Summaries &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.2.1-dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="generating-taxonomy-summaries">
+<span id="generate-taxa-summaries"></span><h1>Generating Taxonomy Summaries<a class="headerlink" href="#generating-taxonomy-summaries" title="Permalink to this headline">¶</a></h1>
+<p>This document describes how to perform taxonomy summaries for samples or for categories from a users mapping file. We will also illustrate the use of a sorting script that will allow users to sort their OTU table, so the charts will represent that order.</p>
+<p>Here we will illustrate how to generate summarized taxonomy charts using the QIIME tutorial dataset.</p>
+<div class="section" id="step-1-sort-otu-table-by-category-in-mapping-file-optional">
+<h2>Step 1. Sort OTU Table by Category in Mapping File (Optional)<a class="headerlink" href="#step-1-sort-otu-table-by-category-in-mapping-file-optional" title="Permalink to this headline">¶</a></h2>
+<p>Users can sort their OTU table using the mapping file and <a class="reference external" href="../scripts/sort_otu_table.html">sort_otu_table.py</a> script</p>
+<div class="highlight-python"><pre>sort_otu_table.py -i seqs_otu_table.txt -o seqs_otu_table_sorted_by_DOB.txt -m Fasting_Map.txt -s DOB</pre>
+</div>
+<p>The resulting OTU Table will look something like the following, where the samples are sorted by the mouse date of birth:</p>
+<div class="highlight-python"><pre>#OTU ID PC.356  PC.354  PC.355  PC.481  PC.607  PC.593  PC.634  PC.635  PC.636  Consensus Lineage
+0       0       0       0       0       0       0       0       1       0       Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
+1       0       0       0       0       1       0       0       0       0       Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"</pre>
+</div>
+<p>where 0 and 1 are OTU ids, and PC.* are sample ids.</p>
+</div>
+<div class="section" id="step-2-summarize-otu-table-by-mapping-category-optional">
+<h2>Step 2. Summarize OTU Table by Mapping Category (Optional)<a class="headerlink" href="#step-2-summarize-otu-table-by-mapping-category-optional" title="Permalink to this headline">¶</a></h2>
+<p>Users can summarize their OTU table using one of the column headers in the mapping file and <a class="reference external" href="../scripts/summarize_otu_by_cat.html">summarize_otu_by_cat.py</a> script.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li>If the user performed Step 1, then this script will override the OTU table order, since it is combining samples into the category defined.</li>
+</ul>
+</div>
+<div class="highlight-python"><pre>summarize_otu_by_cat.py -i Fasting_Map.txt -c seqs_otu_table.txt -m Treatment</pre>
+</div>
+<p>The resulting OTU Table (<tt class="file docutils literal"><span class="pre">Treatment_otu_table.txt</span></tt>) will have category ids instead of sample ids as shown below.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li>The categories are sorted by the order they are listed in your mapping file:</li>
+</ul>
+</div>
+<div class="highlight-python"><pre>#Category OTU Counts-Treatment
+#OTU ID Fast    Control Consensus Lineage
+0       1       0       Root; Bacteria; Firmicutes; "Clostridia"; Clostridiales; "Lachnospiraceae"
+1       1       0       Root; Bacteria; Firmicutes; "Clostridia"; Clostridiales; "Lachnospiraceae"</pre>
+</div>
+<p>where 0 and 1 are OTU ids, and Fast/Control are the category ids.</p>
+</div>
+<div class="section" id="step-3-summarize-taxa-in-otu-table">
+<h2>Step 3. Summarize Taxa in OTU Table<a class="headerlink" href="#step-3-summarize-taxa-in-otu-table" title="Permalink to this headline">¶</a></h2>
+<p>For summarizing the taxa, the following will illustrate the usage based on whether the user performed either Steps 1, 2 or neither, where the user can use the <a class="reference external" href="../scripts/summarize_taxa.html">summarize_taxa.py</a> script. For each of the following examples, we will summarize the taxa at the Phylum level (3).</p>
+<div class="section" id="example-1-case-where-the-user-did-not-perform-steps-1-or-2">
+<h3>Example 1: case where the user did not perform Steps 1 or 2.<a class="headerlink" href="#example-1-case-where-the-user-did-not-perform-steps-1-or-2" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><pre>summarize_taxa.py -L 3 -i seqs_otu_table.txt -o seqs_otu_table_summarized.txt</pre>
+</div>
+<p>The resulting summarized taxa will look something like:</p>
+<div class="highlight-python"><pre>Taxon       PC.354  PC.355  PC.356  PC.481  PC.593  PC.607  PC.634  PC.635  PC.636
+Root;Bacteria;Actinobacteria        0.0     0.0     0.0     0.00684931506849        0.0     0.0134228187919 0.02    0.00675675675676        0.00680272108844
+Root;Bacteria;Bacteroidetes 0.0472972972973 0.267123287671  0.1     0.130136986301  0.214765100671  0.275167785235  0.646666666667  0.47972972973   0.65306122449</pre>
+</div>
+<p>where Root;Bacteria;* are Taxa, and PC.* are the sample ids.</p>
+</div>
+<div class="section" id="example-2-case-where-the-user-performed-step-1">
+<h3>Example 2: case where the user performed Step 1.<a class="headerlink" href="#example-2-case-where-the-user-performed-step-1" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><pre>summarize_taxa.py -L 3 -i seqs_otu_table_sorted_by_DOB.txt -o seqs_otu_table_sorted_by_DOB_summarized.txt</pre>
+</div>
+<p>The resulting summarized taxa will look something like:</p>
+<div class="highlight-python"><pre>Taxon       PC.356  PC.354  PC.355  PC.481  PC.607  PC.593  PC.634  PC.635  PC.636
+Root;Bacteria;Actinobacteria        0.0     0.0     0.0     0.00684931506849        0.0134228187919 0.0     0.02    0.00675675675676        0.00680272108844
+Root;Bacteria;Bacteroidetes 0.1     0.0472972972973 0.267123287671  0.130136986301  0.275167785235  0.214765100671  0.646666666667  0.47972972973   0.65306122449</pre>
+</div>
+<p>where Root;Bacteria;* are Taxa, and PC.* are the category ids, but note that the order of the sample ids are based on the DOB category in the mapping file.</p>
+</div>
+<div class="section" id="example-3-case-where-the-user-performed-step-2">
+<h3>Example 3: case where the user performed Step 2.<a class="headerlink" href="#example-3-case-where-the-user-performed-step-2" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><pre>summarize_taxa.py -L 3 -i Treatment_otu_table.txt -o Treatment_otu_table_summarized.txt</pre>
+</div>
+<p>The resulting summarized taxa will look something like:</p>
+<div class="highlight-python"><pre>Taxon       Fast    Control
+Root;Bacteria;Actinobacteria        0.0117845117845 0.00135317997294
+Root;Bacteria;Bacteroidetes 0.513468013468  0.151556156969</pre>
+</div>
+<p>where Root;Bacteria;* are Taxa, and Fast/Control are the category ids.</p>
+</div>
+</div>
+<div class="section" id="step-4-generate-the-summarized-taxa-charts">
+<h2>Step 4. Generate the Summarized Taxa Charts<a class="headerlink" href="#step-4-generate-the-summarized-taxa-charts" title="Permalink to this headline">¶</a></h2>
+<p>Now that the user has summarized the taxa, they can generate area, bar or pie charts for their data using <a class="reference external" href="../scripts/plot_taxa_summary.html">plot_taxa_summary.py</a>. Here we will generate bar charts with a white background for each example from the previous step:</p>
+<div class="section" id="id1">
+<h3>Example 1: case where the user did not perform Steps 1 or 2.<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><pre>plot_taxa_summary.py -i seqs_otu_table_summarized.txt -l Phylum -o bar_charts -c bar -k white</pre>
+</div>
+<p>The resulting plot should look like the following:</p>
+<img alt="../_images/barchartex1.png" class="align-center" src="../_images/barchartex1.png" />
+</div>
+<div class="section" id="id2">
+<h3>Example 2: case where the user performed Step 1.<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><pre>plot_taxa_summary.py -i seqs_otu_table_summarized.txt -l Phylum -o bar_charts -c bar -k white</pre>
+</div>
+<p>The resulting plot should look like the following and notice that PC.356 is now the first sample based on the sorting of sample ids from Step 1:</p>
+<img alt="../_images/barchartex2.png" class="align-center" src="../_images/barchartex2.png" />
+</div>
+<div class="section" id="id3">
+<h3>Example 3: case where the user performed Step 2.<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><pre>plot_taxa_summary.py -i seqs_otu_table_summarized.txt -l Phylum -o bar_charts -c bar -k white</pre>
+</div>
+<p>The resulting plot should look like the following:</p>
+<img alt="../_images/barchartex3.png" class="align-center" src="../_images/barchartex3.png" />
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Generating Taxonomy Summaries</a><ul>
+<li><a class="reference internal" href="#step-1-sort-otu-table-by-category-in-mapping-file-optional">Step 1. Sort OTU Table by Category in Mapping File (Optional)</a></li>
+<li><a class="reference internal" href="#step-2-summarize-otu-table-by-mapping-category-optional">Step 2. Summarize OTU Table by Mapping Category (Optional)</a></li>
+<li><a class="reference internal" href="#step-3-summarize-taxa-in-otu-table">Step 3. Summarize Taxa in OTU Table</a><ul>
+<li><a class="reference internal" href="#example-1-case-where-the-user-did-not-perform-steps-1-or-2">Example 1: case where the user did not perform Steps 1 or 2.</a></li>
+<li><a class="reference internal" href="#example-2-case-where-the-user-performed-step-1">Example 2: case where the user performed Step 1.</a></li>
+<li><a class="reference internal" href="#example-3-case-where-the-user-performed-step-2">Example 3: case where the user performed Step 2.</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#step-4-generate-the-summarized-taxa-charts">Step 4. Generate the Summarized Taxa Charts</a><ul>
+<li><a class="reference internal" href="#id1">Example 1: case where the user did not perform Steps 1 or 2.</a></li>
+<li><a class="reference internal" href="#id2">Example 2: case where the user performed Step 1.</a></li>
+<li><a class="reference internal" href="#id3">Example 3: case where the user performed Step 2.</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://pycogent.sourceforge.net" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

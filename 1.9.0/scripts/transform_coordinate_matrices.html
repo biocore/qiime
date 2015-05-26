@@ -1,0 +1,198 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>transform_coordinate_matrices.py – Transform two or more coordinate matrices &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.9.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="tree_compare.py – Compare jackknifed/bootstrapped trees" href="tree_compare.html" />
+    <link rel="prev" title="supervised_learning.py – Run supervised classification using OTUs as predictors and a mapping file category as class labels." href="supervised_learning.html" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="tree_compare.html" title="tree_compare.py – Compare jackknifed/bootstrapped trees"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="supervised_learning.html" title="supervised_learning.py – Run supervised classification using OTUs as predictors and a mapping file category as class labels."
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="transform-coordinate-matrices"></span><div class="section" id="transform-coordinate-matrices-py-transform-two-or-more-coordinate-matrices">
+<span id="index-0"></span><h1><em>transform_coordinate_matrices.py</em> &#8211; Transform two or more coordinate matrices<a class="headerlink" href="#transform-coordinate-matrices-py-transform-two-or-more-coordinate-matrices" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>This script transforms two or more coordinate matrices (e.g., the output of <a class="reference external" href="./principal_coordinates.html">principal_coordinates.py</a>) using procrustes analysis to minimize the distances between corresponding points. The first coordinate matrix provided is treated as the reference, and all other coordinate matrices are transformed to minimize distances to the reference points. Monte Carlo simulations can additionally be performed (-r random trials are run) to estimate the probability of seeing an M^2 value as extreme as the actual M^2.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">transform_coordinate_matrices.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-input_fps</dt>
+<dd>Comma-separated list of input coordinate matrices</dd>
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>The output directory</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-r, <cite>-</cite>-random_trials</dt>
+<dd>Number of random permutations of matrix2 to perform. [default: (no Monte Carlo analysis performed)]</dd>
+<dt>-d, <cite>-</cite>-num_dimensions</dt>
+<dd>Number of dimensions to include in output matrices [default: 3]</dd>
+<dt>-s, <cite>-</cite>-sample_id_map_fps</dt>
+<dd>If sample id maps are provided, there must be exactly one fewer files here than there are coordinate matrices (as each nth sample id map will provide the mapping from the first input coordinate matrix to the n+1th coordinate matrix) [default: None]</dd>
+<dt><cite>-</cite>-store_trial_details</dt>
+<dd>Store PC matrices for individual trials [default: False]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>Two transformed coordinate matrices corresponding to the two input coordinate matrices, and (if -r was specified) a text file summarizing the results of the Monte Carlo simulations.</p>
+<p><strong>Write the transformed procrustes matrices to file:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>transform_coordinate_matrices.py -i unweighted_unifrac_pc.txt,weighted_unifrac_pc.txt -o procrustes_output
+</pre></div>
+</div>
+<p><strong>Generate transformed procrustes matrices and monte carlo p-values for two principal coordinate matrices:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>transform_coordinate_matrices.py -i unweighted_unifrac_pc.txt,weighted_unifrac_pc.txt -o mc_procrustes_output_2 -r 1000
+</pre></div>
+</div>
+<p><strong>Generate transformed procrustes matrices and monte carlo p-values for four principal coordinate matrices:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>transform_coordinate_matrices.py -i unweighted_unifrac_pc.txt,weighted_unifrac_pc.txt,euclidean_pc.txt,bray_curtis_pc.txt -o mc_procrustes_output_4 -r 1000
+</pre></div>
+</div>
+<p><strong>Generate transformed procrustes matrices and monte carlo p-values for three principal coordinate matrices where the sample ids must be mapped between matrices:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>transform_coordinate_matrices.py -i s1_pc.txt,s2_pc.txt,s3_pc.txt -s s1_s2_map.txt,s1_s3_map.txt -o mc_procrustes_output_3 -r 1000
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="supervised_learning.html"
+                        title="previous chapter"><em>supervised_learning.py</em> &#8211; Run supervised classification using OTUs as predictors and a mapping file category as class labels.</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tree_compare.html"
+                        title="next chapter"><em>tree_compare.py</em> &#8211; Compare jackknifed/bootstrapped trees</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="tree_compare.html" title="tree_compare.py – Compare jackknifed/bootstrapped trees"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="supervised_learning.html" title="supervised_learning.py – Run supervised classification using OTUs as predictors and a mapping file category as class labels."
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

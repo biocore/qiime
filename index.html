@@ -1,0 +1,93 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>QIIME</title>
+<script src="https://www.google.com/jsapi?key=ABQIAAAAdyJBQQABvxRaME0S-wyQoxTvN-l145hOL_mSBP7Ok7BhV-E7XBQBTiu1ANdFaBO1ezmiKNOZBPvvzg" type="text/javascript"></script>
+<script type="text/javascript" src="home_static/qiime.js"></script>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ?
+"https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost +
+"google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+<link rel="stylesheet" type="text/css" href="home_static/qiime.css">
+<link rel="shortcut icon" href="favicon.ico">
+<body onload="loadHeaderFooter('main')">
+</head>
+
+<body>
+	<a href="https://github.com/qiime/qiime"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_left_green_007200.png" alt="Fork me on GitHub"></a>
+	<div class="wrapper">
+		<div class="header" id="header">
+		</div>
+		<div class="leftcol" id="leftcol">
+		</div>
+		<div class="centercol">
+			<!-- <div class="content" id="content"> -->
+				<div>
+					<h1> What is QIIME? <img src="home_static/images/spacer_dots.png" alt="..."></h1>
+					<p>
+						QIIME (canonically pronounced <i>chime</i>) stands for Quantitative Insights Into Microbial Ecology. </p>
+                    <p>  
+                        QIIME is an open-source bioinformatics pipeline for performing microbiome analysis from raw DNA sequencing data. QIIME is designed to take users from raw sequencing data generated on the Illumina or other platforms through publication quality graphics and statistics.
+                        This includes demultiplexing and quality filtering, OTU picking, taxonomic assignment, and phylogenetic reconstruction, and diversity analyses and visualizations. QIIME has been applied to studies based on billions of sequences from tens of thousands of samples.
+					</p>
+				</div>
+				<div>
+					<h2> Getting started with QIIME </h2>
+					<p><b>Installing:</b> The quickest way to get started using QIIME is with <a href="http://www.wernerlab.org/software/macqiime">MacQIIME</a> (if you're running Mac OS X), the <a href="http://qiime.org/install/virtual_box.html">QIIME VirtualBox</a> or the <a href="http://qiime.org/tutorials/working_with_aws.html">QIIME Amazon EC2 image</a> (if you're using Windows, Mac OS X, or Linux), or <a href="http://qiime.org/install/install.html#installing-qiime-natively-with-a-minimal-base-install">pip</a> (if you're using Linux or Mac OS X). See the <a href="http://qiime.org/install/install.html">QIIME install documentation</a> for details. </p>
+					<p><b>Running:</b> Once you've installed QIIME, move on to the <a href="http://qiime.org/tutorials/index.html">QIIME Tutorials</a>. The <a href="http://qiime.org/tutorials/illumina_overview_tutorial.html">Illumina overview tutorial</a> or the <a href="http://qiime.org/tutorials/tutorial.html">454 overview tutorial</a> are good first analyses to run. In each of these tutorials you'll download a small data set and work through a series of commands that will introduce you to some of QIIME's commonly used features and analyses.</p>
+                    <p><b>Getting help:</b> For help with QIIME, see <a href="http://help.qiime.org">help.qiime.org</a>. For getting started on interacting with the command line, we recommend the <a href="http://software-carpentry.org/">Software Carpentry lessons and workshops</a>.</p>
+					<p><b>QIIME scripts:</b> <a href="http://qiime.org/scripts/index.html">The QIIME script documentation</a> will help you explore and learn QIIME's functionality.</p>
+					<h2> Code </h2>
+					<p>
+					QIIME is open source software. See <a href="https://github.com/biocore/qiime/blob/master/CONTRIBUTING.md">here</a> for information on how to contribute to QIIME.
+					</p>
+				</div>
+				<div>
+					<h2> News </h2>
+					<div id="news">
+					</div>
+				</div>
+				<div>
+					<h2> Latest forum posts </h2>
+					<div id="forum">
+					</div>
+				</div>
+				<div>
+					<h2> Most recent articles citing QIIME </h2>
+					<div id="citations">
+					</div>
+				</div>
+				<div>
+					<h2>Citing QIIME<a class="headerlink" href="#citing-qiime" title="Permalink to this headline"></a></h2>
+					<p>If you use QIIME for any published research, please include the following citation:</p>
+					<blockquote>
+						<div>
+							<p><strong>QIIME allows analysis of high-throughput community sequencing data</strong>
+							</p>
+							<p>J Gregory Caporaso, Justin Kuczynski, Jesse Stombaugh, Kyle Bittinger, Frederic D Bushman, Elizabeth K Costello, Noah Fierer, Antonio Gonzalez Pena, Julia K Goodrich, Jeffrey I Gordon, Gavin A Huttley, Scott T Kelley, Dan Knights, Jeremy E Koenig, Ruth E Ley, Catherine A Lozupone, Daniel McDonald, Brian D Muegge, Meg Pirrung, Jens Reeder, Joel R Sevinsky, Peter J Turnbaugh, William A Walters, Jeremy Widmann, Tanya Yatsunenko, Jesse Zaneveld and Rob Knight; Nature Methods, 2010; doi:10.1038/nmeth.f.303
+							</p>
+						</div>
+					</blockquote>
+					<p>QIIME wraps many other software packages, and these should be cited if they are used. For example, users of <tt>pick_de_novo.py</tt> are actually using QIIME, uclust, PyNAST, and FastTree, since QIIME is wrapping those applications. <b>Any time you're using tools that QIIME wraps, it is essential to cite those tools.</b> The Werner Lab website <a href="http://www.wernerlab.org/software/macqiime/citations">has a list of software, including citations, that is used in the various stages of QIIME</a>.
+					<p>You can find the <a class="reference external" href="http://www.nature.com/nmeth/journal/vaop/ncurrent/full/nmeth.f.303.html">QIIME paper here</a>, and the data presented in this paper can be found
+						<a class="reference external" href="ftp://ftp.microbio.me/qiime/QIIME_NM_2010.tgz">here</a>.
+					<br><br>
+					</p>
+
+				</div>
+
+			<!-- </div> -->
+		</div>
+		<div class="footer clearfix" id="footer">
+		</div>
+	</div>
+</body>
+</html>

@@ -1,0 +1,285 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Using usearch quality filtering with QIIME &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Tutorials" href="index.html" />
+    <link rel="next" title="Denoising and chimera detection usage differences in QIIME" href="denoising_and_chimera_detection_usage_comparison.html" />
+    <link rel="prev" title="Chimera checking sequences with QIIME" href="chimera_checking.html" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="denoising_and_chimera_detection_usage_comparison.html" title="Denoising and chimera detection usage differences in QIIME"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="chimera_checking.html" title="Chimera checking sequences with QIIME"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="using-usearch-quality-filtering-with-qiime">
+<span id="otupipe"></span><h1>Using usearch quality filtering with QIIME<a class="headerlink" href="#using-usearch-quality-filtering-with-qiime" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p><strong>usearch_qf</strong> (usearch quality filter) is a pipeline script built using <a class="reference external" href="http://www.drive5.com/usearch">USEARCH</a> to perform filtering of noisy sequences, chimera checking, and OTU picking on a set of de-multiplexed (i.e. post <a class="reference external" href="../scripts/split_libraries.html">split_libraries.py</a>) sequences. This tutorial explains how to use usearch_qf through QIIME, with details about each of the steps performed and a brief description of basic parameters and their effect.</p>
+<p>Usearch quality filtering is modeled after the OTUPipe series of scripts by Robert Edgar.  For details, please check the website <a class="reference external" href="http://www.drive5.com/otupipe">OTUPIPE</a> where you can also find some benchmark results using an artificial bacterial community <a class="reference external" href="http://www.drive5.com/usearch/perf/mock_results.html">http://www.drive5.com/usearch/perf/mock_results.html</a>.</p>
+</div>
+<div class="section" id="basic-usage">
+<span id="basicuse"></span><h2>Basic usage<a class="headerlink" href="#basic-usage" title="Permalink to this headline">¶</a></h2>
+<p>To use usearch_qf in QIIME, you will need a FASTA file resulting from split_libraries.py. In this tutorial we will use data from the main QIIME tutorial, so our input file will be <tt class="file docutils literal"><span class="pre">seqs.fna</span></tt>. From the directory where this file is located, type:</p>
+<div class="highlight-python"><div class="highlight"><pre>pick_otus.py -i seqs.fna -m usearch --db_filepath=/path/to/gold.fa -o usearch_qf_results/ --word_length 64
+</pre></div>
+</div>
+<p>where <tt class="file docutils literal"><span class="pre">/path/to/gold.fa</span></tt> specifies the full path to the location of the reference set that will be used when doing chimera checking. A copy of this file can be found <a class="reference external" href="http://drive5.com/otupipe/gold.tz">here</a> (remember to uncompress the file). After executing this command, several files will be created in the <tt class="file docutils literal"><span class="pre">usearch_qf_results/</span></tt> directory. The only file that you will need at this point is <tt class="file docutils literal"><span class="pre">usearch_qf_results/seqs_otus.txt</span></tt> (the OTU map file), which can then be used to pick a set of representative sequences with <a class="reference external" href="../scripts/pick_rep_set.html">pick_rep_set.py</a> as you would do after running <tt class="file docutils literal"><span class="pre">pick_otus.py</span></tt> with default options (i.e. using uclust).  The word length is the optimized value for the mock community results <a class="reference external" href="http://www.drive5.com/usearch/perf/mock_results.html">http://www.drive5.com/usearch/perf/mock_results.html</a>.</p>
+</div>
+<div class="section" id="how-does-it-work">
+<h2>How does it work<a class="headerlink" href="#how-does-it-work" title="Permalink to this headline">¶</a></h2>
+<p>usearch_qf performs 10 steps to process the input reads. We will assume log files are created at each step, which is the default setting in QIIME. File names correspond to those you will see if you use the command specified in the section <a class="reference internal" href="#basicuse">Basic usage</a>. The value of certain parameters might be different depending on what you specified.</p>
+<div class="section" id="step-1-sort-by-length">
+<h3>Step 1. Sort by length<a class="headerlink" href="#step-1-sort-by-length" title="Permalink to this headline">¶</a></h3>
+<p>Sequences are initially sorted by length, and the result is stored in the file <tt class="file docutils literal"><span class="pre">usearch_qf_results/len_sorted.fasta</span></tt>.</p>
+</div>
+<div class="section" id="step-2-de-replication">
+<h3>Step 2. De-replication<a class="headerlink" href="#step-2-de-replication" title="Permalink to this headline">¶</a></h3>
+<p>Sequences are de-replicated, so that the resulting file will contain unique sequences only. Results are stored in the file <tt class="file docutils literal"><span class="pre">usearch_qf_results/dereplicated_seqs.fasta</span></tt>. In this file each sequence description now includes information on how many sequences match exactly this one, so for instance a sequence with two exact copies would appear as:</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li>&gt;PC.634_73 FLP3FBN01DX9GS orig_bc=ACAGAGTCGGCT new_bc=ACAGAGTCGGCT bc_diffs=0;size=2</li>
+<li>CTGGTCCGTGTCTCAGTACCAGTGTGGGGGGCCTTCCTCTCAGAACCCCTACGCATCGTCGCCTCGGTGGGCCGTTACCC</li>
+<li>CGCCGACTAGCTAATGCGCCGCATGCCCATCCGTGGCCGGGATTGCTCCCTTTGGCGGCCCGGGGATGCCCCAAGGCCGC</li>
+<li>GTTACGCGGTATTAGACGGGGTTTCCCCCGCTTATCCCCCTGCCACGGGCAGGTTGCATACGTGTTACTCACCCGTGCGC</li>
+<li>CGGTCGCCGGCGG</li>
+</ul>
+</div>
+<p>By default, de-replication is performed using &#8211;max_rejects=500, which can be time demanding if your input data set is large. Reducing this value to, for instance, 64, can greatly improve the speed of this step and still produce very similar results.</p>
+</div>
+<div class="section" id="step-3-sort-by-abundance">
+<h3>Step 3. Sort by abundance<a class="headerlink" href="#step-3-sort-by-abundance" title="Permalink to this headline">¶</a></h3>
+<p>De-replicated sequences are then sorted by abundance using the information generated in the previous step, the result being stored in the file <tt class="file docutils literal"><span class="pre">usearch_qf_results/abundance_sorted.fasta</span></tt>.</p>
+</div>
+<div class="section" id="step-4-filtering-of-noisy-sequences">
+<h3>Step 4. Filtering of noisy sequences<a class="headerlink" href="#step-4-filtering-of-noisy-sequences" title="Permalink to this headline">¶</a></h3>
+<p>Sequences are clustered at the specified identity (by default, 97%) to filter noisy reads, and the resulting consensus sequences are written to <tt class="file docutils literal"><span class="pre">usearch_qf_results/clustered_error_corrected.fasta</span></tt>. Each sequence header contains a new identifier (a unique cluster number) and the size of the cluster:</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li>&gt;Cluster0;size=50</li>
+<li>TTGGACCGTGTCTCAGTTCCAATGTGGGGGACCTTCCTCTCAGAACCCCTATCCATCGAAGACTAGGTGGGCCGTTACCC</li>
+<li>CGCCTACTATCTAATGGAACGCATCCCCATCGTCTACCGGAATACCTTTAATCATGTGAACATGCGGACTCATGATGCCA</li>
+<li>TCTTGTATTAATCTTCCTTTCAGAAGGCTGTCCAAGAGTAGACGGCAGGTTGGATACGTGTTACTCACCCGG</li>
+<li>&gt;Cluster1;size=52</li>
+<li>CTGGTCCGTGTCTCAGTACCAGTGTGGGGGACCTTCCTCTCAGAACCCCTACGCATCGTCGGCTTGGTGGTCCGTTACAC</li>
+<li>CGCCAACTACCTAATGCGACGCATGCCCATCCGCTACCGGATCGCTCCTTTGGAATCCCGGGGATGTCCCCGGAACTCGT</li>
+<li>TATGCGGTATTAGACGGAATTTCTTCCGCTTATCCCCCTGTAGCGGGCAGGTTGCATACGTGTTACTCACCCGTGCGCCG</li>
+<li>GTCGCCGG</li>
+</ul>
+</div>
+<p>The identity percentage specified for error correction can be set with the option -j or &#8211;percent_id_err, by default 0.97. Higher values of this parameter will result in less reads being merged together at this point; &#8220;good&#8221; reads that are similar to each other other won&#8217;t be clustered as a unique read (i.e. you are not artificially reducing diversity), but some &#8220;noisy&#8221; reads will escape detection, thus artificially inflating diversity estimates. In general we have not found cases where this parameter needs to be modified. Additionally, running time can be affected by larger values of the parameter &#8211;max_rejects in this step.</p>
+</div>
+<div class="section" id="step-5-chimera-filter-de-novo">
+<h3>Step 5. Chimera filter, de novo<a class="headerlink" href="#step-5-chimera-filter-de-novo" title="Permalink to this headline">¶</a></h3>
+<p>Once the sequences have been corrected for errors, chimera checking is performed using <strong>UCHIME</strong> (<a class="reference internal" href="#id4">1</a>). In this step &#8220;<em>de novo</em>&#8221; checking is performed, without using any external set of reference sequences. This is particularly useful when are using data for which a good reference set does not exist. However, &#8220;<em>de novo</em>&#8221; chimera checking can be computationally expensive for large datasets, and we suggest to disable it in such cases using the parameter -k or &#8211;de_novo_chimera_detection. Results from this step are stored in files <tt class="file docutils literal"><span class="pre">de_novo_non_chimeras.fasta</span></tt> and <tt class="file docutils literal"><span class="pre">de_novo_chimeras.fasta</span></tt>.</p>
+<p>The parameter -a or &#8211;abundance_skew can be used to control the abundance skew for chimera detection.</p>
+</div>
+<div class="section" id="step-6-chimera-filter-ref-based">
+<h3>Step 6. Chimera filter, ref-based<a class="headerlink" href="#step-6-chimera-filter-ref-based" title="Permalink to this headline">¶</a></h3>
+<p>Reference-based chimera checking is performed against <tt class="file docutils literal"><span class="pre">gold.fa</span></tt> (or another user-provide set of sequences), and results are stored in files <tt class="file docutils literal"><span class="pre">reference_non_chimeras.fasta</span></tt> and <tt class="file docutils literal"><span class="pre">reference_novo_chimeras.fasta</span></tt>.</p>
+<p>The parameter -f or &#8211;db_filepath can be used to specify the path to the sequence set to be used for ref-based chimera checking. To skip this step altogether, use the option -x or &#8211;reference_chimera_detection.</p>
+</div>
+<div class="section" id="step-7-merging-chimera-checked-sequences">
+<h3>Step 7. Merging chimera-checked sequences<a class="headerlink" href="#step-7-merging-chimera-checked-sequences" title="Permalink to this headline">¶</a></h3>
+<p>Sequences tagged as non-chimeric during steps 6 and 7 can be combined either by taking the intersection (only sequences flagged as non-chimeric by both methods) or union (sequences recognized by one of the methods as non-chimeric). Results are stored in <tt class="file docutils literal"><span class="pre">combined_non_chimeras.fasta</span></tt>.</p>
+<p>The parameter -F or &#8211;non_chimeras_retention is used to set the merging as the union or intersection of the sets of non-chimeric sequences obtained from &#8220;<em>de novo</em>&#8221; and reference-based chimera checking.</p>
+<p><strong>Example</strong>
+Assume there are 4 sequences (A, B, C, D) before chimera checking and &#8220;<em>de novo</em>&#8221; tags sequence A and B as chimeric while ref-based tags sequences B and C. Using &#8211;non_chimeras_retention=union will result in sequence B tagged as chimeric and A, C, and D as non-chimeric, while &#8211;non_chimeras_retention=intersection will tag A, B, and C as chimeras and only D as a non chimera.</p>
+</div>
+<div class="section" id="step-8-sort-by-abundance-chimera-free-sequences">
+<h3>Step 8. Sort by abundance chimera-free sequences<a class="headerlink" href="#step-8-sort-by-abundance-chimera-free-sequences" title="Permalink to this headline">¶</a></h3>
+<p>Once sequences tagged as chimeras have been removed, the sequences are again sorted by abundance and clusters with less than MINSIZE reads are discarded. Results are stored in <tt class="file docutils literal"><span class="pre">abundance_sorted_minsize_4.fasta</span></tt> (this assume MINSIZE is set to the default value of 4). To modify the minimum number of reads that a cluster can have, use the parameter -g or &#8211;minsize. A value of 2, for instance, would remove all singletons (clusters of size 1). To skip this step use the parameter -l or &#8211;cluster_size_filtering.</p>
+</div>
+<div class="section" id="step-9-cluster-chimera-free-sequences">
+<h3>Step 9. Cluster chimera-free sequences<a class="headerlink" href="#step-9-cluster-chimera-free-sequences" title="Permalink to this headline">¶</a></h3>
+<p>This step corresponds to what is usually known as &#8220;<em>OTU picking</em>&#8221;, i.e. sequences are clustered at the desired identity level. Different to regular OTU picking, by using usearch_qf you have also performed error correction and chimera checking, producing a &#8216;cleaner&#8217; set of OTUs that will contain less artifacts. Results are stored in <tt class="file docutils literal"><span class="pre">clustered_seqs.fasta</span></tt>.</p>
+<p>The identity percentage to cluster reads can be specified with the parameter -s or &#8211;similarity. In general the default of 0.97 works well for most datasets. The parameter &#8211;max_rejects can be modified to reduce running time during this step.</p>
+</div>
+<div class="section" id="step-10-assign-sequential-ids-to-otus">
+<h3>Step 10. Assign sequential IDs to OTUs<a class="headerlink" href="#step-10-assign-sequential-ids-to-otus" title="Permalink to this headline">¶</a></h3>
+<p>The OTUs calculated in the previous step get their IDs replaced by a sequential number, and the result is stored in <tt class="file docutils literal"><span class="pre">enumerated_otus.fasta</span></tt>.</p>
+</div>
+<div class="section" id="step-11-classify-reads">
+<h3>Step 11. Classify reads<a class="headerlink" href="#step-11-classify-reads" title="Permalink to this headline">¶</a></h3>
+<p>Each non-chimeric reads is assigned to the specific OTU identifier it belongs to. This creates the OTU map file (<tt class="file docutils literal"><span class="pre">seqs_otus.txt</span></tt>), which can be later used by <tt class="file docutils literal"><span class="pre">pick_rep_set.py</span></tt>.</p>
+</div>
+</div>
+<div class="section" id="references">
+<h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<table class="docutils footnote" frame="void" id="id4" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[1]</td><td>Edgar RC, Haas BJ, Clemente JC, Quince C, Knight R. UCHIME improves sensitivity and speed of chimera detection. Bioinformatics. 2011 Aug 15;27(16):2194-200. Epub 2011 Jun 23. (<a class="reference external" href="http://www.ncbi.nlm.nih.gov/pubmed/21700674">link</a>)</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="id5" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[2]</td><td>Edgar RC. Search and clustering orders of magnitude faster than BLAST. Bioinformatics. 2010 Aug 12;26(19):2460-2461. (<a class="reference external" href="http://bioinformatics.oxfordjournals.org/content/26/19/2460">link</a>)</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Using usearch quality filtering with QIIME</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#basic-usage">Basic usage</a></li>
+<li><a class="reference internal" href="#how-does-it-work">How does it work</a><ul>
+<li><a class="reference internal" href="#step-1-sort-by-length">Step 1. Sort by length</a></li>
+<li><a class="reference internal" href="#step-2-de-replication">Step 2. De-replication</a></li>
+<li><a class="reference internal" href="#step-3-sort-by-abundance">Step 3. Sort by abundance</a></li>
+<li><a class="reference internal" href="#step-4-filtering-of-noisy-sequences">Step 4. Filtering of noisy sequences</a></li>
+<li><a class="reference internal" href="#step-5-chimera-filter-de-novo">Step 5. Chimera filter, de novo</a></li>
+<li><a class="reference internal" href="#step-6-chimera-filter-ref-based">Step 6. Chimera filter, ref-based</a></li>
+<li><a class="reference internal" href="#step-7-merging-chimera-checked-sequences">Step 7. Merging chimera-checked sequences</a></li>
+<li><a class="reference internal" href="#step-8-sort-by-abundance-chimera-free-sequences">Step 8. Sort by abundance chimera-free sequences</a></li>
+<li><a class="reference internal" href="#step-9-cluster-chimera-free-sequences">Step 9. Cluster chimera-free sequences</a></li>
+<li><a class="reference internal" href="#step-10-assign-sequential-ids-to-otus">Step 10. Assign sequential IDs to OTUs</a></li>
+<li><a class="reference internal" href="#step-11-classify-reads">Step 11. Classify reads</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#references">References</a></li>
+</ul>
+</li>
+</ul>
+
+
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="index.html">Tutorials</a><br /></li>
+    <li><a href="../scripts/index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="chimera_checking.html"
+                        title="previous chapter">Chimera checking sequences with QIIME</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="denoising_and_chimera_detection_usage_comparison.html"
+                        title="next chapter">Denoising and chimera detection usage differences in QIIME</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="denoising_and_chimera_detection_usage_comparison.html" title="Denoising and chimera detection usage differences in QIIME"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="chimera_checking.html" title="Chimera checking sequences with QIIME"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

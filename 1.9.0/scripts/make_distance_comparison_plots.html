@@ -1,0 +1,245 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>make_distance_comparison_plots.py – Creates plots comparing distances between sample groupings &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.9.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="make_fastq.py – Make FASTQ file for ERA submission from paired FASTA and QUAL files" href="make_fastq.html" />
+    <link rel="prev" title="make_distance_boxplots.py – Creates boxplots to compare distances between categories" href="make_distance_boxplots.html" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="make_fastq.html" title="make_fastq.py – Make FASTQ file for ERA submission from paired FASTA and QUAL files"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="make_distance_boxplots.html" title="make_distance_boxplots.py – Creates boxplots to compare distances between categories"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="make-distance-comparison-plots"></span><div class="section" id="make-distance-comparison-plots-py-creates-plots-comparing-distances-between-sample-groupings">
+<span id="index-0"></span><h1><em>make_distance_comparison_plots.py</em> &#8211; Creates plots comparing distances between sample groupings<a class="headerlink" href="#make-distance-comparison-plots-py-creates-plots-comparing-distances-between-sample-groupings" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>This script creates plots (bar charts, scatter plots, or box plots) that
+allow for the comparison between samples grouped at different field states
+of a mapping file field.</p>
+<p>This script can work with any field in the mapping file, and it can compare
+any number of field states to all other field states within that field.
+This script may be especially useful for fields that represent a time series,
+because a plot can be generated showing the distances between samples at
+certain timepoints against all other timepoints.</p>
+<p>For example, a time field might contain the values 1, 2, 3, 4, and 5, which
+label samples that are from day 1, day 2, day 3, and so on. This time field
+can be specified when the script is run, as well as the timepoint(s) to
+compare to every other timepoint. For example, two comparison groups
+might be timepoints 1 and 2. The resulting plot would contain timepoints for
+days 3, 4, and 5 along the x-axis, and at each of those timepoints, the
+distances between day 1 and that timepoint would be plotted, as well as the
+distances between day 2 and the timepoint.</p>
+<p>The script also performs two-sample t-tests for all pairs of distributions to
+help determine which distributions are significantly different from each other.</p>
+<p>Tip: the script tries its best to fit everything into the plot, but there are
+cases where plot elements may get cut off (e.g. if axis labels are extremely
+long), or things may appear squashed, cluttered, or too small (e.g. if
+there are many boxplots in one plot). Increasing the width and/or height of the
+plot (using &#8211;width and &#8211;height) usually fixes these problems.</p>
+<p>For more information and examples pertaining to this script, please refer to
+the accompanying tutorial, which can be found at
+<a class="reference external" href="http://qiime.org/tutorials/creating_distance_comparison_plots.html">http://qiime.org/tutorials/creating_distance_comparison_plots.html</a>.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">make_distance_comparison_plots.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-m, <cite>-</cite>-mapping_fp</dt>
+<dd>The mapping filepath</dd>
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>Path to the output directory</dd>
+<dt>-d, <cite>-</cite>-distance_matrix_fp</dt>
+<dd>Input distance matrix filepath (i.e. the result of <a class="reference external" href="./beta_diversity.html">beta_diversity.py</a>). WARNING: Only symmetric, hollow distance matrices may be used as input. Asymmetric distance matrices, such as those obtained by the UniFrac Gain metric (i.e. <a class="reference external" href="./beta_diversity.html">beta_diversity.py</a> -m unifrac_g), should not be used as input</dd>
+<dt>-f, <cite>-</cite>-field</dt>
+<dd>Field in the mapping file to make comparisons on</dd>
+<dt>-c, <cite>-</cite>-comparison_groups</dt>
+<dd>Comma-separated list of field states to compare to every other field state, where the list of field states should be in quotes (e.g. &#8220;FieldState1,FieldState2,FieldState3&#8221;)</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-t, <cite>-</cite>-plot_type</dt>
+<dd>Type of plot to produce (&#8220;bar&#8221; is bar chart, &#8220;scatter&#8221; is scatter plot, and &#8220;box&#8221; is box plot) [default: bar]</dd>
+<dt>-g, <cite>-</cite>-imagetype</dt>
+<dd>Type of image to produce (i.e. png, svg, pdf) [default: pdf]</dd>
+<dt><cite>-</cite>-save_raw_data</dt>
+<dd>Store raw data used to create plot in a tab-delimited file [default: False]</dd>
+<dt><cite>-</cite>-suppress_significance_tests</dt>
+<dd>Suppress performing signifance tests between each pair of distributions [default: False]</dd>
+<dt>-n, <cite>-</cite>-num_permutations</dt>
+<dd>The number of Monte Carlo permutations to perform when calculating the nonparametric p-value in the significance tests. Must be an integer greater than or equal to zero. If zero, the nonparametric p-value will not be calculated and will instead be reported as &#8220;N/A&#8221;. This option has no effect if &#8211;suppress_significance_tests is supplied [default: 0]</dd>
+<dt><cite>-</cite>-tail_type</dt>
+<dd>The type of tail test to compute when calculating the p-values in the significance tests. &#8220;high&#8221; specifies a one-tailed test for values greater than the observed t statistic, while &#8220;low&#8221; specifies a one-tailed test for values less than the observed t statistic. &#8220;two-sided&#8221; specifies a two-tailed test for values greater in magnitude than the observed t statistic. This option has no effect if &#8211;suppress_significance_tests is supplied. Valid choices: low or high or two-sided [default: two-sided]</dd>
+<dt><cite>-</cite>-width</dt>
+<dd>Width of the output image in inches [default: 12]</dd>
+<dt><cite>-</cite>-height</dt>
+<dd>Height of the output image in inches [default: 6]</dd>
+<dt><cite>-</cite>-x_tick_labels_orientation</dt>
+<dd>Type of orientation for x-axis tick labels [default: vertical]</dd>
+<dt>-a, <cite>-</cite>-label_type</dt>
+<dd>Label type (&#8220;numeric&#8221; or &#8220;categorical&#8221;). If the label type is defined as numeric, the x-axis will be scaled accordingly. Otherwise the x-values will treated categorically and will be evenly spaced [default: categorical].</dd>
+<dt><cite>-</cite>-y_min</dt>
+<dd>The minimum y-axis value in the resulting plot. If &#8220;auto&#8221;, it is automatically calculated [default: 0]</dd>
+<dt><cite>-</cite>-y_max</dt>
+<dd>The maximum y-axis value in the resulting plot. If &#8220;auto&#8221;, it is automatically calculated [default: 1]</dd>
+<dt><cite>-</cite>-transparent</dt>
+<dd>Make output images transparent (useful for overlaying an image on top of a colored background ) [default: False]</dd>
+<dt><cite>-</cite>-whisker_length</dt>
+<dd>If &#8211;plot_type is &#8220;box&#8221;, determines the length of the whiskers as a function of the IQR. For example, if 1.5, the whiskers extend to 1.5 * IQR. Anything outside of that range is seen as an outlier. If &#8211;plot_type is not &#8220;box&#8221;, this option is ignored [default: 1.5]</dd>
+<dt><cite>-</cite>-error_bar_type</dt>
+<dd>If &#8211;plot_type is &#8220;bar&#8221;, determines the type of error bars to use. &#8220;stdv&#8221; is standard deviation and &#8220;sem&#8221; is the standard error of the mean. If &#8211;plot_type is not &#8220;bar&#8221;, this option is ignored [default: stdv]</dd>
+<dt><cite>-</cite>-distribution_width</dt>
+<dd>Width (in plot units) of each individual distribution (e.g. each bar if the plot type is a bar chart, or the width of each box if the plot type is a boxplot) [default: auto]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>An image of the plot is written to the specified output directory. The raw data
+used in the plots and the results of significance tests can optionally be
+written into tab-delimited files that are most easily viewed in a spreadsheet
+program such as Microsoft Excel.</p>
+<p><strong>Compare distances between Native and Input samples for each timepoint in the Time field:</strong></p>
+<p>This example will generate a PDF containing a bar chart with the distances between Native samples and every other timepoint, as well as the distances between Input samples and every other timepoint. The output image will be put in the &#8216;out1&#8217; directory. For more details about this example input data, please refer to the accompanying tutorial.</p>
+<div class="highlight-python"><div class="highlight"><pre>make_distance_comparison_plots.py -d forearm_only_unweighted_unifrac_dm.txt -m costello_timeseries_map.txt -f TIME_SINCE_TRANSPLANT -c &quot;Native,Input&quot; -o out1
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="make_distance_boxplots.html"
+                        title="previous chapter"><em>make_distance_boxplots.py</em> &#8211; Creates boxplots to compare distances between categories</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="make_fastq.html"
+                        title="next chapter"><em>make_fastq.py</em> &#8211; Make FASTQ file for ERA submission from paired FASTA and QUAL files</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="make_fastq.html" title="make_fastq.py – Make FASTQ file for ERA submission from paired FASTA and QUAL files"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="make_distance_boxplots.html" title="make_distance_boxplots.py – Creates boxplots to compare distances between categories"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

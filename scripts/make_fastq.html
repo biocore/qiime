@@ -1,0 +1,188 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>make_fastq.py – Make FASTQ file for ERA submission from paired FASTA and QUAL files &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="make_library_id_lists.py – Make library id lists" href="make_library_id_lists.html" />
+    <link rel="prev" title="make_distance_comparison_plots.py – Creates plots comparing distances between sample groupings" href="make_distance_comparison_plots.html" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="make_library_id_lists.html" title="make_library_id_lists.py – Make library id lists"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="make_distance_comparison_plots.html" title="make_distance_comparison_plots.py – Creates plots comparing distances between sample groupings"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="make-fastq"></span><div class="section" id="make-fastq-py-make-fastq-file-for-era-submission-from-paired-fasta-and-qual-files">
+<span id="index-0"></span><h1><em>make_fastq.py</em> &#8211; Make FASTQ file for ERA submission from paired FASTA and QUAL files<a class="headerlink" href="#make-fastq-py-make-fastq-file-for-era-submission-from-paired-fasta-and-qual-files" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>The ERA currently requires a separate FASTQ file for each library, split by library id. This code takes the output from <a class="reference external" href="./split_libraries.html">split_libraries.py</a> and the corresponding QUAL files and produces ERA-compatible FASTQ files.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">make_fastq.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-f, <cite>-</cite>-input_fasta_fp</dt>
+<dd>Path to the input fasta file</dd>
+<dt>-q, <cite>-</cite>-qual</dt>
+<dd>Names of QUAL files, comma-delimited</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-o, <cite>-</cite>-result_fp</dt>
+<dd>Path to store results [default: &lt;input_sequences_filename&gt;.fastq]</dd>
+<dt>-s, <cite>-</cite>-split</dt>
+<dd>Make separate file for each library [default:False]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>Matches QUAL info to FASTA entries by id, and writes FASTQ output to one file or to per-library files.</p>
+<p>The FASTQ format for each record is as follows:</p>
+<p>&#64;seq_id [and optional description]
+seq as bases
++ [and optionally with repeat of seq_id and repeat line]
+qual scores as string of chr(33+qual)</p>
+<p><strong>Example:</strong></p>
+<p>Take input FASTA file input_fasta_filepath and QUAL file input_qual_filepath: make separate file for each library (with the -s option: assumes that the FASTA file is the output of <a class="reference external" href="./split_libraries.html">split_libraries.py</a> or similar script):</p>
+<div class="highlight-python"><div class="highlight"><pre>make_fastq.py -f $PWD/seqs.fna -q $PWD/Fasting_Example.qual -s
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="make_distance_comparison_plots.html"
+                        title="previous chapter"><em>make_distance_comparison_plots.py</em> &#8211; Creates plots comparing distances between sample groupings</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="make_library_id_lists.html"
+                        title="next chapter"><em>make_library_id_lists.py</em> &#8211; Make library id lists</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="make_library_id_lists.html" title="make_library_id_lists.py – Make library id lists"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="make_distance_comparison_plots.html" title="make_distance_comparison_plots.py – Creates plots comparing distances between sample groupings"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

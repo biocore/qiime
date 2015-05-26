@@ -1,0 +1,194 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pick_rep_set.py – Pick representative set of sequences &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.9.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="plot_rank_abundance_graph.py – plot rank-abundance curve" href="plot_rank_abundance_graph.html" />
+    <link rel="prev" title="pick_otus.py – OTU picking" href="pick_otus.html" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="plot_rank_abundance_graph.html" title="plot_rank_abundance_graph.py – plot rank-abundance curve"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pick_otus.html" title="pick_otus.py – OTU picking"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="pick-rep-set"></span><div class="section" id="pick-rep-set-py-pick-representative-set-of-sequences">
+<span id="index-0"></span><h1><em>pick_rep_set.py</em> &#8211; Pick representative set of sequences<a class="headerlink" href="#pick-rep-set-py-pick-representative-set-of-sequences" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>After picking OTUs, you can then pick a representative set of sequences. For each OTU, you will end up with one sequence that can be used in subsequent analyses.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">pick_rep_set.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-input_file</dt>
+<dd>Path to input otu mapping file [REQUIRED]</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-f, <cite>-</cite>-fasta_file</dt>
+<dd>Path to input fasta file [REQUIRED if not picking against a reference set; default: None]</dd>
+<dt>-m, <cite>-</cite>-rep_set_picking_method</dt>
+<dd>Method for picking representative sets.  Valid choices are random, longest, most_abundant, first [default: first (first chooses cluster seed when picking otus with uclust)]</dd>
+<dt>-o, <cite>-</cite>-result_fp</dt>
+<dd>Path to store result file [default: &lt;input_sequences_filepath&gt;_rep_set.fasta]</dd>
+<dt>-l, <cite>-</cite>-log_fp</dt>
+<dd>Path to store log file [default: No log file created.]</dd>
+<dt>-s, <cite>-</cite>-sort_by</dt>
+<dd>Sort by otu or seq_id [default: otu]</dd>
+<dt>-r, <cite>-</cite>-reference_seqs_fp</dt>
+<dd>Collection of preferred representative sequences [default: None]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>The output from <a class="reference external" href="./pick_rep_set.html">pick_rep_set.py</a> is a single FASTA file containing one sequence per OTU. The FASTA header lines will be the OTU identifier (from here on used as the unique sequence identifier) followed by a space, followed by the sequence identifier originally associated with the representative sequence. The name of the output FASTA file will be &lt;input_sequences_filepath&gt;_rep_set.fasta by default, or can be specified via the &#8220;-o&#8221; parameter.</p>
+<p><strong>Simple example: picking a representative set for de novo-picked OTUs:</strong></p>
+<p>The script <a class="reference external" href="./pick_rep_set.html">pick_rep_set.py</a> takes as input an &#8216;OTU map&#8217; (via the &#8220;-i&#8221; parameter) which maps OTU identifiers to sequence identifiers. Typically, this will be the output file provided by <a class="reference external" href="./pick_otus.html">pick_otus.py</a>. Additionally, a FASTA file is required, via &#8220;-f&#8221;, which contains all of the sequences whose identifiers are listed in the OTU map.</p>
+<div class="highlight-python"><div class="highlight"><pre>pick_rep_set.py -i seqs_otus.txt -f seqs.fna -o rep_set1.fna
+</pre></div>
+</div>
+<p><strong>Picking OTUs with &#8220;preferred representative&#8221; sequences:</strong></p>
+<p>Under some circumstances you may have a fasta file of &#8220;preferred representative&#8221; sequences. An example of this is if you were to pick OTUs against a reference collection with uclust_ref. In this case you may want your representative sequences to be the sequences from the reference collection, rather than the sequences from your sequencing run. To achieve this, you can pass the original reference collection via -r. If you additionally allowed for new clusters (i.e., sequences which don&#8217;t match a reference sequence are used as seeds for new OTUs) you&#8217;ll also need to pass the original sequence collection to pick a representative sequence from the sequencing run in that case.</p>
+<div class="highlight-python"><div class="highlight"><pre>pick_rep_set.py -i seqs_otus.txt -f seqs.fna -r refseqs.fasta -o rep_set2.fna
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pick_otus.html"
+                        title="previous chapter"><em>pick_otus.py</em> &#8211; OTU picking</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="plot_rank_abundance_graph.html"
+                        title="next chapter"><em>plot_rank_abundance_graph.py</em> &#8211; plot rank-abundance curve</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="plot_rank_abundance_graph.html" title="plot_rank_abundance_graph.py – plot rank-abundance curve"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pick_otus.html" title="pick_otus.py – OTU picking"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

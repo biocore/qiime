@@ -1,0 +1,227 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>otu_category_significance.py – OTU significance and co-occurence analysis &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.3.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="otu-category-significance"></span><div class="section" id="otu-category-significance-py-otu-significance-and-co-occurence-analysis">
+<span id="index-0"></span><h1><em>otu_category_significance.py</em> &#8211; OTU significance and co-occurence analysis<a class="headerlink" href="#otu-category-significance-py-otu-significance-and-co-occurence-analysis" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>The script <a class="reference external" href="./otu_category_significance.html">otu_category_significance.py</a> tests whether any of the OTUs in an OTU table are significantly associated with a category in the category mapping file. This code uses, ANOVA, the G test of independence, Pearson correlation, or a paired T test to find OTUs whose members are differentially represented across experimental treatments or measured variables.</p>
+<p>The script can also be used to measure co-occurrence. For instance it can also be used with presence/absence or abundance data for a phylogenetic group (such as that determined with quantitative PCR) to determine if any OTUs co-occur with a taxon of interest, using the ANOVA or G test of Independence.</p>
+<p>The statistical test to be run is designated with the -s option, and includes the following options:</p>
+<p>The G test of independence (g_test): determines whether OTU presence/absence is associated with a category (e.g. if an OTU is more or less likely to be present in samples from people with a disease vs healthy controls).</p>
+<p>ANOVA (ANOVA): determines whether OTU relative abundance is different between categories (e.g. if any OTUs are increased or decreased in relative abundance in the gut microbiota of obese versus lean individuals).</p>
+<p>Pearson correlation (correlation): determines whether OTU abundance is correlated with a continuous variable in the category mapping file. (e.g. which OTUs are positively or negatively correlated with measured pH across soil samples)</p>
+<p>The tests also include options for longitudinal data (i.e. datasets in which multiple samples are collected from a single individual or site.) The composition of microbes may differ substantially across samples for reasons that do not relate to a study treatment. For instance, a given OTU may not be in an individual or study site for historical reasons, and so cannot change as a result of a treatment. The longitudinal tests thus ignore samples from individuals in which a particular OTU has never been observed across samples. The category mapping file must have an &#8220;individual&#8221; column indicating which sample is from which individual or site, and a &#8220;reference_sample&#8221; column, indicating which sample is the reference sample for an individual or site (e.g. time point zero in a timeseries experiment). The longitudinal options include:</p>
+<p>Pearson correlation (longitudinal_correlation): determines whether OTU relative abundance is correlated with a continuous variable in the category mapping file while accounting for an experimental design where multiple samples are collected from the same individual or site. Uses the change in relative abundance for each sample from the reference sample (e.g. timepoint zero in a timeseries analysis) rather than the absolute relative abundances in the correlation (e.g. if the relative abundance before the treatment was 0.2, and after the treatment was 0.4, the new values for the OTU relative abundance will be 0.0 for the before sample, and 0.2 for the after, thus indicating that the OTU went up in response to the treatment.)</p>
+<p>Paired T-test (paired_T): This option is when measurements were taken &#8220;before&#8221; and &#8220;after&#8221; a treatment. There must be exactly two measurements for each individual/site. The category mapping file must again have an individual column, indicating which sample is from which individual, and a reference_sample column, that has a 1 for the before time point and a 0 for the after.</p>
+<p>With the exception of longitudinal correlation and paired_T, this script can be performed on a directory of OTU tables (for example, the output of <a class="reference external" href="./multiple_rarefactions_even_depth.html">multiple_rarefactions_even_depth.py</a>), in addition to on a single OTU table. If the script is called on a directory, the resulting p-values are the average of the p-values observed when running a single test on each otu_table separately. It is generally a good practice to rarefy the OTU table (e.g. with <a class="reference external" href="./single_rarefaction.html">single_rarefaction.py</a>) prior to running these significance tests in order to avoid artifacts/biases from unequal sample sizes.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">otu_category_significance.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-otu_table_fp</dt>
+<dd>Path to the otu table, or to a directory containing OTU tables</dd>
+<dt>-m, <cite>-</cite>-category_mapping_fp</dt>
+<dd>Path to category mapping file</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-c, <cite>-</cite>-category</dt>
+<dd>Name of the category over which to run the analysis</dd>
+<dt>-s, <cite>-</cite>-test</dt>
+<dd>The type of statistical test to run. options are: g_test: determines whether OTU presence/absence is associated with a category using the G test of Independence.      ANOVA: determines whether OTU abundance is associated with a category.      correlation: determines whether OTU abundance is correlated with a continuous variable in the category mapping file.     longitudinal_correlation: determine whether OTU relative abundance is correlated with a continuous variable in the category mapping file in longitudinal study designs such as with timeseries data.     paired_T: determine whether OTU relative abundance goes up or down in response to a treatment.</dd>
+<dt>-o, <cite>-</cite>-output_fp</dt>
+<dd>Path to output file. otu_category_significance_results.txt by default</dd>
+<dt>-f, <cite>-</cite>-filter</dt>
+<dd>Minimum number of samples that must contain the OTU for the OTU to be included in the analysis. For longitudinal options, is the number of samples from the individuals/sites that were not ignored because of the OTU not being observed in any of the samples from that individual/site. As an example, if 5 samples per individual were collected over a timeseries that was being evaluated with longitudinal_correlation, a value of 10 would indicate that the OTU would have to have been detected in at least 2 individuals. The default value=10.</dd>
+<dt>-t, <cite>-</cite>-threshold</dt>
+<dd>Threshold under which to consider something absent: Only used if you have numerical data that should be converted to present or absent based on a threshold. Should be None for categorical data or with the correlation test. default value is None</dd>
+<dt>-l, <cite>-</cite>-otu_include_fp</dt>
+<dd>Path to a file with a list of OTUs to evaluate. By default evaluates all OTUs that pass the minimum sample filter. If a filepath is given here in which each OTU name one wishes to evaluate is on a separate line, will apply this additional filter</dd>
+<dt>-z, <cite>-</cite>-reference_sample_column</dt>
+<dd>This column specifies the sample to which all other samples within an individual are compared. For instance, for timeseries data, it would usually be the initial timepoint before a treatment began. The reference samples should be marked with a 1, and other samples with a 0.</dd>
+<dt>-n, <cite>-</cite>-individual_column</dt>
+<dd>Name of the column in the category mapping file that designates which sample is from which individual.</dd>
+<dt>-b, <cite>-</cite>-converted_otu_table_output_fp</dt>
+<dd>The test options longitudinal_correlation and paired_T convert the original OTU table into one in which samples that are ignored because they are never observed in an individual are replaced with the ignore number 999999999 and the OTU counts are the change in relative abundance compared to the designated reference sample. If a filepath is given with the -b option this converted OTU table will be saved to this path.</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>The G test results are output as tab delimited text, which can be examined in Excel. The output has the following columns:</p>
+<ul class="simple">
+<li>OTU: The name of the OTU.</li>
+<li>g_val: The raw test statistic.</li>
+<li>g_prob: The probability that this OTU is non-randomly distributed across the categories.</li>
+<li>Bonferroni_corrected: The probability after correction for multiple comparisons with the Bonferroni correction. In this correction, the p-value is multiplied by the number of comparisons performed (the number of OTUs remaining after applying the filter).</li>
+<li>FDR_corrected: The probability after correction with the &#8220;false discovery rate&#8221; method. In this method, the raw p-values are ranked from low to high. Each p-value is multiplied by the number of comparisons divided by the rank. This correction is less conservative than the Bonferroni correction. The list of significant OTUs is expected to have the percent of false positives predicted by the p value.</li>
+<li>Contingency table columns: The next columns give the information in the contingency table and will vary in number and name based on the number of categories and their names. The two numbers in brackets represent the number of samples that were observed in those categories and the number that would be expected if the OTU members were randomly distributed across samples in the different categories. These columns can be used to evaluate the nature of a non-random association (e.g. if that OTU is always present in a particular category or if it is never present).</li>
+<li>Consensus lineage: The consensus lineage for that OTU will be listed in the last column if it was present in the input OTU table.</li>
+</ul>
+<p>The ANOVA results are output as tab delimited text that can be examined in Excel. The output has the following columns:</p>
+<ul class="simple">
+<li>OTU: The name of the OTU.</li>
+<li>prob: The raw probability from the ANOVA</li>
+<li>Bonferroni_corrected: The probability after correction for multiple comparisons with the Bonferroni correction. In this correction, the p-value is multiplied by the number of comparisons performed (the number of OTUs remaining after applying the filter).</li>
+<li>FDR_corrected: The probability after correction with the &#8220;false discovery rate&#8221; method. In this method, the raw p-values are ranked from low to high. Each p-value is multiplied by the number of comparisons divided by the rank. This correction is less conservative than the Bonferroni correction. The list of significant OTUs is expected to have the percent of false positives predicted by the p value.</li>
+<li>Category Mean Columns: Contains one column for each category reporting the mean count of the OTU in that category.</li>
+<li>Consensus lineage: The consensus lineage for that OTU will be listed in the last column if it was present in the input OTU table.</li>
+</ul>
+<p>The correlation and longitudinal_correlation test results are output as tab delimited text, which can be examined in Excel. The output has the following columns:</p>
+<ul class="simple">
+<li>OTU: The name of the OTU.</li>
+<li>prob: The probability that the OTU relative abundance is correlated with the category values across samples.</li>
+<li>otu_values_y: a list of the values (relative abundance) of the OTU across the samples that were plotted on the y axis for the correlation.</li>
+<li>cat_values_x: a list of the values of the selected category that were plotted on the x axis for the correlation.</li>
+<li>Bonferroni_corrected: The probability after correction for multiple comparisons with the Bonferroni correction. In this correction, the p-value is multiplied by the number of comparisons performed (the number of OTUs remaining after applying the filter).</li>
+<li>FDR_corrected: The probability after correction with the &#8220;false discovery rate&#8221; method. In this method, the raw p-values are ranked from low to high. Each p-value is multiplied by the number of comparisons divided by the rank. This correction is less conservative than the Bonferroni correction. The list of significant OTUs is expected to have the percent of false positives predicted by the p value.</li>
+<li>r: Pearson&#8217;s r. This value ranges from -1 to +1, with -1 indicating a perfect negative correlation, +1 indicating a perfect positive correlation, and 0 indicating no relationship.</li>
+<li>Consensus lineage: The consensus lineage for that OTU will be listed in the last column if it was present in the input OTU table.</li>
+</ul>
+<p>The paired_T results are output as tab delimited text that can be examined in Excel. The output has the following columns:</p>
+<ul class="simple">
+<li>OTU: The name of the OTU.</li>
+<li>prob: The raw probability from the paired T test</li>
+<li>T stat: The raw T value</li>
+<li>average_diff: The average difference between the before and after samples in the individuals in which the OTU was observed.</li>
+<li>num_pairs: The number of sample pairs (individuals) in which the OTU was observed.</li>
+<li>Bonferroni_corrected: The probability after correction for multiple comparisons with the Bonferroni correction. In this correction, the p-value is multiplied by the number of comparisons performed (the number of OTUs remaining after applying the filter).</li>
+<li>FDR_corrected: The probability after correction with the &#8220;false discovery rate&#8221; method. In this method, the raw p-values are ranked from low to high. Each p-value is multiplied by the number of comparisons divided by the rank. This correction is less conservative than the Bonferroni correction. The list of significant OTUs is expected to have the percent of false positives predicted by the p value.</li>
+<li>Consensus lineage: The consensus lineage for that OTU will be listed in the last column if it was present in the input OTU table.</li>
+</ul>
+<p><strong>Example 1:</strong></p>
+<p>If the user would like to perform a G test on their OTU table using default parameters, while testing the category &#8220;Sex&#8221;, they can run the following command:</p>
+<div class="highlight-python"><pre>otu_category_significance.py -i otu_table.txt -m Mapping_file.txt -s g_test -c Sex</pre>
+</div>
+<p><strong>Example 2:</strong></p>
+<p>If the user would like to perform the same test using numerical qPCR data, where everything below a threshold value should be considered &#8220;absent&#8221; and everything above that value &#8220;present&#8221;, the user will need to set the threshold by running the following command:</p>
+<div class="highlight-python"><pre>otu_category_significance.py -i otu_table.txt -m Mapping_file.txt -s g_test -c qPCR -t 0.16</pre>
+</div>
+<p><strong>Example 3:</strong></p>
+<p>Alternatively, the user could run an ANOVA test on the same data by using the following command:</p>
+<div class="highlight-python"><pre>otu_category_significance.py -i otu_table.txt -m Mapping_file.txt -s ANOVA -c Sex</pre>
+</div>
+<p><strong>Example 4:</strong></p>
+<p>If the user would like to perform an ANOVA on an entire directory of rarefied  OTU tables using default parameters, while testing the category &#8220;Sex&#8221;, they can run the following command:</p>
+<div class="highlight-python"><pre>otu_category_significance.py -i otu_table_dir -m Mapping_file.txt -s g_test -c Sex</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://pycogent.sourceforge.net" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2011, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

@@ -1,0 +1,179 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>process_sra_submission.py – A workflow script for creating a second-stage SRA submission. &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.2.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="process-sra-submission"></span><div class="section" id="process-sra-submission-py-a-workflow-script-for-creating-a-second-stage-sra-submission">
+<span id="index-85"></span><h1><em>process_sra_submission.py</em> &#8211; A workflow script for creating a second-stage SRA submission.<a class="headerlink" href="#process-sra-submission-py-a-workflow-script-for-creating-a-second-stage-sra-submission" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>The steps performed by this script are:</p>
+<ol class="arabic simple">
+<li>Get fasta and qual from sff files.</li>
+<li>Produce valid mapping file for library demultiplexing.</li>
+<li>Demultiplex libraries.</li>
+<li>Reduce sequence complexity by picking OTUs with cd-hit.</li>
+<li>Pick a representative sequence for each OTU.</li>
+<li>Blast the representative set sequences against 95% OTUs in greengenes to eliminate non-16S  sequences.</li>
+<li>Make per-library files of &#8220;good&#8221; ids to pass to sfffile.</li>
+<li>Use sfffile to make per-library sff files.</li>
+<li>Use sfffile to quality-trim the barcodes, primers and linkers.</li>
+<li>Move files around and make archive.</li>
+<li>Finally, make the XML files for a second-stage submission.</li>
+</ol>
+<p><strong>Usage:</strong> <tt class="docutils literal"><span class="pre">process_sra_submission.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-u, <cite>-</cite>-input_submission_fp</dt>
+<dd>The tab-delimited text file with info about the submission [REQUIRED]</dd>
+<dt>-s, <cite>-</cite>-sff_dir</dt>
+<dd>Directory containing sff files [REQUIRED]</dd>
+<dt>-e, <cite>-</cite>-input_experiment_fp</dt>
+<dd>The tab-delimited text file with info about the experiment [REQUIRED]</dd>
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>The output directory [REQUIRED]</dd>
+<dt>-p, <cite>-</cite>-parameter_fp</dt>
+<dd>Path to the parameter file [REQUIRED]</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-a, <cite>-</cite>-input_sample_fp</dt>
+<dd>The tab-delimited text file with info about the sample [default: None]</dd>
+<dt>-t, <cite>-</cite>-input_study_fp</dt>
+<dd>The tab-delimited text file with info about the study [default: None]</dd>
+<dt><cite>-</cite>-experiment_attribute_fp</dt>
+<dd>Three-column, tab-delimited file of experiment attributes [default: None]</dd>
+<dt><cite>-</cite>-experiment_link_fp</dt>
+<dd>Three-column, tab-delimited file of experiment links [default: None]</dd>
+<dt>-w, <cite>-</cite>-print_only</dt>
+<dd>Print the commands but don&#8217;t call them [default: False]</dd>
+<dt><cite>-</cite>-remove_unassigned</dt>
+<dd>Comma-separated list of run prefixes for which to remove unassigned sequences [default: None]</dd>
+<dt>-r, <cite>-</cite>-reference_set_fp</dt>
+<dd>Path to reference set of 16S sequences [default: None; NO HUMAN SCREENING]</dd>
+<dt>-n, <cite>-</cite>-negative_screen</dt>
+<dd>Perform negative screen (i.e., sequences which don&#8217;t match reference are retained) [default: None; positive screen: sequences which do match reference are retained]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>Produces all the files necessary to make an SRA submission, including an archive of per-library SFF files, and XML files for the experiment, runs, and submission.</p>
+<p><strong>Example:</strong></p>
+<div class="highlight-python"><pre>process_sra_submission.py -s sff_dir -e experiment.txt -r greengenes_unaligned.fasta -u submission.txt -p sra_parameters.txt -o out_dir/</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://pycogent.sourceforge.net" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+      &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

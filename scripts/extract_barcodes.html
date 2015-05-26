@@ -1,0 +1,220 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>extract_barcodes.py – This script is designed to format fastq sequence and barcode data so they are compatible with split_libraries_fastq.py (see http://qiime.org/tutorials/processing_illumina_data.html). &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="extract_reads_from_interleaved_file.py – Extract reads from an interleaved file." href="extract_reads_from_interleaved_file.html" />
+    <link rel="prev" title="exclude_seqs_by_blast.py – Exclude contaminated sequences using BLAST" href="exclude_seqs_by_blast.html" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="extract_reads_from_interleaved_file.html" title="extract_reads_from_interleaved_file.py – Extract reads from an interleaved file."
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="exclude_seqs_by_blast.html" title="exclude_seqs_by_blast.py – Exclude contaminated sequences using BLAST"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="extract-barcodes"></span><div class="section" id="extract-barcodes-py-this-script-is-designed-to-format-fastq-sequence-and-barcode-data-so-they-are-compatible-with-split-libraries-fastq-py-see-http-qiime-org-tutorials-processing-illumina-data-html">
+<span id="index-0"></span><h1><em>extract_barcodes.py</em> &#8211; This script is designed to format fastq sequence and barcode data so they are compatible with split_libraries_fastq.py (see <a class="reference external" href="http://qiime.org/tutorials/processing_illumina_data.html">http://qiime.org/tutorials/processing_illumina_data.html</a>).<a class="headerlink" href="#extract-barcodes-py-this-script-is-designed-to-format-fastq-sequence-and-barcode-data-so-they-are-compatible-with-split-libraries-fastq-py-see-http-qiime-org-tutorials-processing-illumina-data-html" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>A variety of data formats are possible, depending upon how one utilized sequencing primers, designed primer constructs (e.g., partial barcodes on each end of the read), or processed the data (e.g., barcodes were put into the sequence labels rather than the reads). See various input examples below.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">extract_barcodes.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-f, <cite>-</cite>-fastq1</dt>
+<dd>Input fastq filepath. This file is considered read 1.</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-r, <cite>-</cite>-fastq2</dt>
+<dd>Input fastq filepath. This file is considered read 2. [default: None]</dd>
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>Directory prefix for output files [default: .]</dd>
+<dt>-c, <cite>-</cite>-input_type</dt>
+<dd>Specify the input type. barcode_single_end: Input is a single fastq file, that starts with the barcode sequence. barcode_paired_end: Input is a pair of fastq files (&#8211;fastq1 and &#8211;fastq2) that each begin with a barcode sequence. The barcode for fastq1 will be written first, followed by the barcode from fastq2. barcode_paired_stitched: Input is a single fastq file that has barcodes at the beginning and end. The barcode from the beginning of the read will be written first followed by the barcode from the end of the read, unless the order is switched with &#8211;switch_bc_order. barcode_in_label: Input is a one (&#8211;fastq1) or two (&#8211;fastq2) fastq files with the barcode written in the labels. [default: barcode_single_end]</dd>
+<dt>-l, <cite>-</cite>-bc1_len</dt>
+<dd>Specify the length, in base pairs, of barcode 1. This applies to the &#8211;fastq1 file and all options specified by &#8211;input_type [default: 6]</dd>
+<dt>-L, <cite>-</cite>-bc2_len</dt>
+<dd>Specify the length, in base pairs, of barcode 2. This applies to the &#8211;fastq2 file and options &#8220;barcode_paired_end&#8221;, &#8220;barcode_paired_stitched&#8221;, and &#8220;barcode_in_label&#8221; for the &#8211;input_type [default: 6]</dd>
+<dt><cite>-</cite>-rev_comp_bc1</dt>
+<dd>Reverse complement barcode 1 before writing [default: False]</dd>
+<dt><cite>-</cite>-rev_comp_bc2</dt>
+<dd>Reverse complement barcode 2 before writing [default: False]</dd>
+<dt>-s, <cite>-</cite>-char_delineator</dt>
+<dd>Character in fastq label that should immediately precede the barcode sequence. The length of the barcode is specified by the &#8211;bc1_len (and optionally &#8211;bc2_len if paired end files are used) parameter. [default: :]</dd>
+<dt><cite>-</cite>-switch_bc_order</dt>
+<dd>Reverse barcode order written when using the -c barcode_paired_stitched option. [default: False]</dd>
+<dt>-m, <cite>-</cite>-mapping_fp</dt>
+<dd>Filepath of mapping file. NOTE: Must contain a header line indicating SampleID in the first column and BarcodeSequence in the second, LinkerPrimerSequence in the third and a ReversePrimer column before the final Description column. Needed for &#8211;attempt_read_orientation option. [default: None]</dd>
+<dt>-a, <cite>-</cite>-attempt_read_reorientation</dt>
+<dd>Will attempt to search for the forward and reverse primer in the read and adjust the sequence orientation to match the orientation of the forward primer. An exact match for the  forward and reverse complemented versions of the primers are tested for, and sequences are reverse complemented, if necessary, before writing. Sequences without an exact match are written to a separate output fastq file, labeled as _no_primer_match.fastq. [default: False]</dd>
+<dt>-d, <cite>-</cite>-disable_header_match</dt>
+<dd>Enable this option to suppress header matching between input fastq files.[default: False]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>In the output directory, there will be fastq files (barcode file, and one or two reads files)</p>
+<p><strong>Parse barcodes of 12 base pairs from the beginning of a single read. Will create an output fastq file of the barcodes and an output file of the reads supplied with the barcodes removed.:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>extract_barcodes.py -f inseqs.fastq -c barcode_single_end --bc1_len 12 -o processed_seqs
+</pre></div>
+</div>
+<p><strong>Parse barcodes of 12 base pairs from the beginning of a single read, reverse complement the barcodes before writing. Will create an output fastq file of the barcodes and an output file of the reads supplied with the barcodes removed:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>extract_barcodes.py -f inseqs.fastq -c barcode_single_end --bc1_len 12 -o processed_seqs --rev_comp_bc1
+</pre></div>
+</div>
+<p><strong>Parse barcodes of 6 base pairs from the beginning of paired reads. Will create an output fastq file of the barcodes and an output file of each of the reads supplied with the barcodes removed. The order of the barcodes written is determined by the order of the files passed (-f is written first, followed by -r):</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>extract_barcodes.py -f inseqs_R1.fastq -r inseqs_R2.fastq -c barcode_paired_end --bc1_len 6 --bc2_len 6 -o processed_seqs
+</pre></div>
+</div>
+<p><strong>Parse barcodes of 6 base pairs from the beginning of paired reads, attempt to orient reads based upon detection of forward and reverse primers in the mapping file. Will create an output fastq file of the barcodes and an output file of each of the reads supplied with the barcodes removed. The order of the barcodes written is determined by the order of the files passed (-f is written first, followed by -r):</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>extract_barcodes.py -f inseqs_R1.fastq -r inseqs_R2.fastq -c barcode_paired_end --map_fp mapping_data.txt --attempt_read_reorientation --bc1_len 6 --bc2_len 6 -o processed_seqs
+</pre></div>
+</div>
+<p><strong>Parse barcodes of 6 base pairs from the beginning, 8 base pairs at the end of a stitched read. Will create an output fastq file of the barcodes and an output fastq file of the stitched read supplied with the barcodes removed. The barcode at the beginning of the stitched read is written first, followed by the barcode at the end, unless reversed by the &#8211;switch_bc_order option is used:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>extract_barcodes.py -f inseqs_R1.fastq -c barcode_paired_stitched --bc1_len 6 --bc2_len 8 -o processed_seqs
+</pre></div>
+</div>
+<p><strong>Parse barcodes of 12 base pairs from labels of the input fastq file. Example label (note that the desired character preceding the barcode is &#8216;#&#8217;): &#64;MCIC-SOLEXA_0051_FC:1:1:14637:1026#CGATGTGATTTC/1 This will create an output fastq file of the barcodes (no other sequence are written). A second file with barcodes in the label can be passed with -r, and if this is done, the combined barcodes from -f and -r will be written together:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre>extract_barcodes.py -f inseqs_R1.fastq -c barcode_in_label --char_delineator &#39;#&#39; --bc1_len 12 -o processed_seqs
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="exclude_seqs_by_blast.html"
+                        title="previous chapter"><em>exclude_seqs_by_blast.py</em> &#8211; Exclude contaminated sequences using BLAST</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="extract_reads_from_interleaved_file.html"
+                        title="next chapter"><em>extract_reads_from_interleaved_file.py</em> &#8211; Extract reads from an interleaved file.</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="extract_reads_from_interleaved_file.html" title="extract_reads_from_interleaved_file.py – Extract reads from an interleaved file."
+             >next</a> |</li>
+        <li class="right" >
+          <a href="exclude_seqs_by_blast.html" title="exclude_seqs_by_blast.py – Exclude contaminated sequences using BLAST"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

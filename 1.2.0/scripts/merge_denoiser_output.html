@@ -1,0 +1,165 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>merge_denoiser_output.py – Merge the output of denoising step back into QIIME &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.2.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="merge-denoiser-output"></span><div class="section" id="merge-denoiser-output-py-merge-the-output-of-denoising-step-back-into-qiime">
+<span id="index-56"></span><h1><em>merge_denoiser_output.py</em> &#8211; Merge the output of denoising step back into QIIME<a class="headerlink" href="#merge-denoiser-output-py-merge-the-output-of-denoising-step-back-into-qiime" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>This script combines the output of the denoising step with the OTU picker results.
+This script has to be run after denoising and OTU picking to combine the denoiser clusters and OTU clusters.
+The input to the script is:</p>
+<blockquote>
+<p>DENOISER_MAP_FILE: the cluster mapping from the denoiser, usually denoiser_mapping.txt in the denoiser output directory</p>
+<p>DENOISED_FASTA_FP: path to the output FASTA file of the denoiser (centroids.fasta and singletons.fasta in the denoiser output dir. Concatenate if you want to include both)</p>
+<p>OTU_PICKER_MAP_FILE: path to OTU mapping file from OTU picking on the</p>
+<p>FASTA_FP:  path to FASTA input file, thus has to be the output of <a class="reference external" href="./split_libraries.html">split_libraries.py</a></p>
+</blockquote>
+<p>See the tutorial on 454 Denoising in the QIIME tutorials on how to use this script properly.</p>
+<p><strong>Usage:</strong> <tt class="docutils literal"><span class="pre">merge_denoiser_output.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-m, <cite>-</cite>-map_file</dt>
+<dd>Path to denoiser cluster mapping file [REQUIRED]</dd>
+<dt>-p, <cite>-</cite>-otu_picker_map_file</dt>
+<dd>Path to OTU mapping file from OTU picker [REQUIRED]</dd>
+<dt>-f, <cite>-</cite>-fasta_fp</dt>
+<dd>Path to FASTA file, output of <a class="reference external" href="./split_libraries.html">split_libraries.py</a> [REQUIRED]</dd>
+<dt>-d, <cite>-</cite>-denoised_fasta_fp</dt>
+<dd>Path to denoised fasta file [REQUIRED]</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>Path to output directory [default: Denoiser_out_otu_picked/]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>Two files are generated:</p>
+<ol class="arabic simple">
+<li>A new otu mapping file with the combined clusters from denoising and OTU picking,</li>
+<li>a FASTA file with one sequence per OTU.</li>
+</ol>
+<p>These two files need to be provided to pick_rep_set using -m first</p>
+<p><strong>Example usage:</strong></p>
+<p>Merge the output of denoising (denoised_seqs.fasta and denoiser_mapping.txt) the OTU picker results on denoised_seqs.fasta (uclust_picked_otus/denoised_seqs_otus.txt) and replace the read IDs with the sampleIDs from the output of <a class="reference external" href="./split_libraries.html">split_libraries.py</a> (seqs.fna)</p>
+<div class="highlight-python"><pre>merge_denoiser_output.py -f seqs.fna -d denoised_seqs.fasta -m denoiser_mapping.txt -p uclust_picked_otus/denoised_seqs_otus.txt</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://pycogent.sourceforge.net" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+      &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

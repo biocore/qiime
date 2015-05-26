@@ -1,0 +1,176 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Getting started with the command line &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Tutorials" href="index.html" />
+    <link rel="next" title="Working with QIIME on Amazon Web Services EC2" href="working_with_aws.html" />
+    <link rel="prev" title="Analysis of shotgun sequencing data" href="shotgun_analysis.html" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="working_with_aws.html" title="Working with QIIME on Amazon Web Services EC2"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="shotgun_analysis.html" title="Analysis of shotgun sequencing data"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="getting-started-with-the-command-line">
+<span id="unix-commands"></span><h1>Getting started with the command line<a class="headerlink" href="#getting-started-with-the-command-line" title="Permalink to this headline">¶</a></h1>
+<p>If you&#8217;re new to the command line it can seem daunting, but it&#8217;s not as hard as it seems. We recommend the <a class="reference external" href="http://software-carpentry.org/lessons.html">Unix Shell lessons from Software Carpentry</a> for getting started. <a class="reference external" href="http://software-carpentry.org/">Software Carpentry</a> also offers frequent hands-on workshops on scientific computing skills that cover many topics that will make using QIIME easier.</p>
+<div class="section" id="ensuring-that-long-jobs-keep-running-despite-loss-of-network-connection">
+<h2>Ensuring that long jobs keep running despite loss of network connection<a class="headerlink" href="#ensuring-that-long-jobs-keep-running-despite-loss-of-network-connection" title="Permalink to this headline">¶</a></h2>
+<p>When you start a job on a remote server (e.g., where you are connected over <tt class="docutils literal"><span class="pre">ssh</span></tt>), that job will stay running only as long as your ssh connection is active. So, if you lose your network connection (e.g., if you close your laptop or your wifi connection drops) your job will stop running. This commonly happens accidentally, so it&#8217;s a good idea to follow these steps for all long-running jobs.</p>
+<p>To avoid having your jobs stop running if your ssh connection becomes inactive, you can use the <tt class="docutils literal"><span class="pre">screen</span></tt> command. These steps illustrate basic usage of <tt class="docutils literal"><span class="pre">screen</span></tt>. To start a screen session to safely run commands:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">screen</span>
+</pre></div>
+</div>
+<p>This will start a <em>screen session</em>, which looks identical to your normal command line session. You can run your commands now, and safely close the terminal window, terminate your ssh session, close your computer, etc. When you come back you&#8217;ll need to ssh into the server again. After doing that, you can then type:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">screen</span> <span class="o">-</span><span class="n">r</span>
+</pre></div>
+</div>
+<p>to return to the <em>screen session</em> where your command was running.</p>
+<p>You can find additional <a class="reference external" href="http://www.rackaid.com/blog/linux-screen-tutorial-and-how-to/">details on screen here</a>.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Getting started with the command line</a><ul>
+<li><a class="reference internal" href="#ensuring-that-long-jobs-keep-running-despite-loss-of-network-connection">Ensuring that long jobs keep running despite loss of network connection</a></li>
+</ul>
+</li>
+</ul>
+
+
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="index.html">Tutorials</a><br /></li>
+    <li><a href="../scripts/index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="shotgun_analysis.html"
+                        title="previous chapter">Analysis of shotgun sequencing data</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="working_with_aws.html"
+                        title="next chapter">Working with QIIME on Amazon Web Services EC2</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="working_with_aws.html" title="Working with QIIME on Amazon Web Services EC2"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="shotgun_analysis.html" title="Analysis of shotgun sequencing data"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Tutorials</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

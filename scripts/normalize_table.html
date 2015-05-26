@@ -1,0 +1,237 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>normalize_table.py – Matrix normalization alternatives to rarefaction &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="observation_metadata_correlation.py – Correlation between observation abundances and continuous-valued metadata" href="observation_metadata_correlation.html" />
+    <link rel="prev" title="nmds.py – Nonmetric Multidimensional Scaling (NMDS)" href="nmds.html" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="observation_metadata_correlation.html" title="observation_metadata_correlation.py – Correlation between observation abundances and continuous-valued metadata"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="nmds.html" title="nmds.py – Nonmetric Multidimensional Scaling (NMDS)"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="normalize-table"></span><div class="section" id="normalize-table-py-matrix-normalization-alternatives-to-rarefaction">
+<span id="index-0"></span><h1><em>normalize_table.py</em> &#8211; Matrix normalization alternatives to rarefaction<a class="headerlink" href="#normalize-table-py-matrix-normalization-alternatives-to-rarefaction" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>To perform many downstream analyses after OTU picking (besides
+metagenomeSeq&#8217;s fitZIG and DESeq OTU differential abundance testing), the OTU
+matrix must be normalized to account for uneven column (sample) sums that are a
+result of most modern sequencing techniques.  These methods attempt to correct
+for compositionality too.  Rarefying throws away some data by rarefying to a
+constant sum and throwing away extremely low depth samples.</p>
+<p>Even with these new normalization techniques, we would recommend throwing away
+low depth samples (e.g. less that 1000 sequences/sample).  DESeq/DESeq2 outputs
+negative values for lower abundant OTUs as a result of its log transformation.
+For most ecologically useful metrics (e.g. UniFrac/Bray Curtis) this presents
+problems. No good solution exists at the moment for this issue.  Note that one
+is added to the matrix to avoid log(0).  It has been shown that clustering
+results can be highly dependent upon the choice of the pseudocount (e.g. should
+it be 0.01 instead of 1?), for more information read Costea, P. et al. (2014)
+&#8220;A fair comparison&#8221;, Nature Methods.</p>
+<p>DESeq/DESeq2 can also have a very slow runtime, especially for larger datasets.
+In this script, we implement DESeq2&#8217;s variance stabilization technique. If you do use these
+alternatives to rarefying, we would recommend metagenomeSeq&#8217;s CSS (cumulative sum
+scaling) transformation for those metrics that are abundance-based.  It is not
+recommended to use these new methods with presence/absence metrics, for example
+binary Jaccard or unweighted UniFrac.</p>
+<p>For more on metagenomeSeq&#8217;s CSS, please see Paulson, JN, et al. &#8216;Differential
+abundance analysis for microbial marker-gene surveys&#8217; Nature Methods 2013.  For DESeq
+please see Anders S, Huber W. &#8216;Differential expression analysis for sequence
+count data.&#8217; Genome Biology 2010.  For DESeq2 please read Love, MI et al.
+&#8216;Moderated estimation of fold change and dispersion for RNA-Seq data
+with DESeq2,&#8217; Genome Biology 2014.  If you use these methods, please CITE the
+appropriate reference as well as QIIME.  For any of these methods, clustering by
+sequence depth MUST BE CHECKED FOR as a confounding variable, e.g. by coloring
+by sequences/sample on a PCoA plot and testing for correlations between
+taxa abundances and sequencing depth with e.g. adonis in <a class="reference external" href="./compare_categories.html">compare_categories.py</a>,
+or <a class="reference external" href="./observation_metadata_correlation.html">observation_metadata_correlation.py</a>.</p>
+<p>Note: If the input BIOM table contains observation metadata (e.g., taxonomy
+metadata for each OTU), this metadata will not be included in the output
+normalized BIOM table when using DESeq2. When using CSS the taxonomy metadata
+will be included in the output normalized table but it may not be in the same
+format as the input table (e.g., &#8220;NA&#8221; will be added for missing taxonomic
+levels). This discrepancy occurs because the underlying R packages used to
+perform the normalization store taxonomy metadata in a different format.</p>
+<p>As a workaround, the &#8220;biom add-metadata&#8221; command can be used to add the
+original observation metadata to the output normalized table if desired. For
+example, to include the original taxonomy metadata on the output normalized
+table, &#8220;biom add-metadata&#8221; can be used with the representative sequence
+taxonomic assignment file output by <a class="reference external" href="./assign_taxonomy.html">assign_taxonomy.py</a>.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">normalize_table.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-i, <cite>-</cite>-input_path</dt>
+<dd>Path to the input BIOM file (e.g., the output from OTU picking) or directory containing input BIOM files for batch processing [REQUIRED if not passing -l]</dd>
+<dt>-o, <cite>-</cite>-out_path</dt>
+<dd>Output filename for single file operation, or output directory for batch processing [REQUIRED if not passing -l]</dd>
+<dt>-s, <cite>-</cite>-output_CSS_statistics</dt>
+<dd>Output CSS statistics file. This will be a directory for batch processing, and a filename for single file operation [default: False]</dd>
+<dt>-z, <cite>-</cite>-DESeq_negatives_to_zero</dt>
+<dd>Replace negative numbers produced by the DESeq normalization technique with zeros [default: False]</dd>
+<dt>-a, <cite>-</cite>-algorithm</dt>
+<dd>Normalization algorithm to apply to input BIOM table(s). [default: CSS] Available options are: CSS, DESeq2</dd>
+<dt>-l, <cite>-</cite>-list_algorithms</dt>
+<dd>Show available normalization algorithms and exit [default: False]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>BIOM table with normalized counts.</p>
+<p><strong>Single File CSS Matrix Normalization:</strong></p>
+<p>Normalize a raw (non-normalized/non-rarefied) otu_table.biom using CSS:</p>
+<div class="highlight-python"><div class="highlight"><pre>normalize_table.py -i otu_table.biom -a CSS -o CSS_normalized_otu_table.biom
+</pre></div>
+</div>
+<p><strong>Single File DESeq2 Matrix Normalization:</strong></p>
+<p>Normalize a raw (non-normalized/non-rarefied) otu_table.biom using DESeq2:</p>
+<div class="highlight-python"><div class="highlight"><pre>normalize_table.py -i otu_table.biom -a DESeq2 -o DESeq2_normalized_otu_table.biom
+</pre></div>
+</div>
+<p><strong>Multiple File Matrix Normalization:</strong></p>
+<p>Normalize a folder of raw (non-normalized/non-rarefied) otu tables using e.g. DESeq2:</p>
+<div class="highlight-python"><div class="highlight"><pre>normalize_table.py -i otu_tables/ -a DESeq2 -o normalized_tables/
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="nmds.html"
+                        title="previous chapter"><em>nmds.py</em> &#8211; Nonmetric Multidimensional Scaling (NMDS)</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="observation_metadata_correlation.html"
+                        title="next chapter"><em>observation_metadata_correlation.py</em> &#8211; Correlation between observation abundances and continuous-valued metadata</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="observation_metadata_correlation.html" title="observation_metadata_correlation.py – Correlation between observation abundances and continuous-valued metadata"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="nmds.html" title="nmds.py – Nonmetric Multidimensional Scaling (NMDS)"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

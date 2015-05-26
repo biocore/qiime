@@ -1,0 +1,211 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>parallel_identify_chimeric_seqs.py – Parallel chimera detection &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.5.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="parallel-identify-chimeric-seqs"></span><div class="section" id="parallel-identify-chimeric-seqs-py-parallel-chimera-detection">
+<span id="index-0"></span><h1><em>parallel_identify_chimeric_seqs.py</em> &#8211; Parallel chimera detection<a class="headerlink" href="#parallel-identify-chimeric-seqs-py-parallel-chimera-detection" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>This script works like the <a class="reference external" href="./identify_chimeric_seqs.html">identify_chimeric_seqs.py</a> script, but is intended to make use of multicore/multiprocessor environments to perform analyses in parallel.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">parallel_identify_chimeric_seqs.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-input_fasta_fp</dt>
+<dd>Path to the input fasta file</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-a, <cite>-</cite>-aligned_reference_seqs_fp</dt>
+<dd>Path to (Py)Nast aligned reference sequences. REQUIRED when method ChimeraSlayer [default: /Users/jistombaugh/python_software/core_set_aligned.fasta.imputed]</dd>
+<dt>-t, <cite>-</cite>-id_to_taxonomy_fp</dt>
+<dd>Path to tab-delimited file mapping sequences to assigned taxonomy. Each assigned taxonomy is provided as a comma-separated list. [default: None; REQUIRED when method is blast_fragments]</dd>
+<dt>-r, <cite>-</cite>-reference_seqs_fp</dt>
+<dd>Path to reference sequences (used to build a blast db when method blast_fragments). [default: None; REQUIRED when method blast_fragments if no blast_db is provided;]</dd>
+<dt>-b, <cite>-</cite>-blast_db</dt>
+<dd>Database to blast against. Must provide either &#8211;blast_db or &#8211;reference_seqs_fp when method is blast_fragments [default: None]</dd>
+<dt>-m, <cite>-</cite>-chimera_detection_method</dt>
+<dd>Chimera detection method. Choices: blast_fragments or ChimeraSlayer. [default:ChimeraSlayer]</dd>
+<dt>-n, <cite>-</cite>-num_fragments</dt>
+<dd>Number of fragments to split sequences into (i.e., number of expected breakpoints + 1) [default: 3]</dd>
+<dt>-d, <cite>-</cite>-taxonomy_depth</dt>
+<dd>Number of taxonomic divisions to consider when comparing taxonomy assignments [default: 4]</dd>
+<dt>-e, <cite>-</cite>-max_e_value</dt>
+<dd>Max e-value to assign taxonomy [default: 1e-30]</dd>
+<dt><cite>-</cite>-min_div_ratio</dt>
+<dd>Min divergence ratio (passed to ChimeraSlayer). If set to None uses ChimeraSlayer default value.  [default: None]</dd>
+<dt>-o, <cite>-</cite>-output_fp</dt>
+<dd>Path to store output [default: derived from input_seqs_fp]</dd>
+<dt>-N, <cite>-</cite>-identify_chimeric_seqs_fp</dt>
+<dd>Full path to scripts/<a class="reference external" href="./identify_chimeric_seqs.html">identify_chimeric_seqs.py</a> [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/<a class="reference external" href="./identify_chimeric_seqs.html">identify_chimeric_seqs.py</a>]</dd>
+<dt>-O, <cite>-</cite>-jobs_to_start</dt>
+<dd>Number of jobs to start [default: 2]</dd>
+<dt>-P, <cite>-</cite>-poller_fp</dt>
+<dd>Full path to qiime/parallel/<a class="reference external" href="./poller.html">poller.py</a> [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/<a class="reference external" href="./poller.html">poller.py</a>]</dd>
+<dt>-R, <cite>-</cite>-retain_temp_files</dt>
+<dd>Retain temporary files after runs complete (useful for debugging) [default: False]</dd>
+<dt>-S, <cite>-</cite>-suppress_submit_jobs</dt>
+<dd>Only split input and write commands file - don&#8217;t submit jobs [default: False]</dd>
+<dt>-T, <cite>-</cite>-poll_directly</dt>
+<dd>Poll directly for job completion rather than running poller as a separate job. If -T is specified this script will not return until all jobs have completed. [default: False]</dd>
+<dt>-U, <cite>-</cite>-cluster_jobs_fp</dt>
+<dd>Path to cluster jobs script (defined in qiime_config)  [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/<a class="reference external" href="./start_parallel_jobs.html">start_parallel_jobs.py</a>]</dd>
+<dt>-W, <cite>-</cite>-suppress_polling</dt>
+<dd>Suppress polling of jobs and merging of results upon completion [default: False]</dd>
+<dt>-X, <cite>-</cite>-job_prefix</dt>
+<dd>Job prefix [default: descriptive prefix + random chars]</dd>
+<dt>-Y, <cite>-</cite>-python_exe_fp</dt>
+<dd>Full path to python executable [default: /usr/local/bin/python2.7]</dd>
+<dt>-Z, <cite>-</cite>-seconds_to_sleep</dt>
+<dd>Number of seconds to sleep between checks for run  completion when polling runs [default: 60]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>The result of <a class="reference external" href="./parallel_identify_chimeric_seqs.html">parallel_identify_chimeric_seqs.py</a> is a text file that identifies which sequences are chimeric.</p>
+<p><strong>blast_fragments example:</strong></p>
+<p>For each sequence provided as input, the blast_fragments method splits the input sequence into n roughly-equal-sized, non-overlapping fragments, and assigns taxonomy to each fragment against a reference database. The BlastTaxonAssigner (implemented in <a class="reference external" href="./assign_taxonomy.html">assign_taxonomy.py</a>) is used for this. The taxonomies of the fragments are compared with one another (at a default depth of 4), and if contradictory assignments are returned the sequence is identified as chimeric. For example, if an input sequence was split into 3 fragments, and the following taxon assignments were returned:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="15%" />
+<col width="85%" />
+</colgroup>
+<tbody valign="top">
+<tr><td>fragment1:</td>
+<td>Archaea;Euryarchaeota;Methanobacteriales;Methanobacterium</td>
+</tr>
+<tr><td>fragment2:</td>
+<td>Archaea;Euryarchaeota;Halobacteriales;uncultured</td>
+</tr>
+<tr><td>fragment3:</td>
+<td>Archaea;Euryarchaeota;Methanobacteriales;Methanobacterium</td>
+</tr>
+</tbody>
+</table>
+<p>The sequence would be considered chimeric at a depth of 3 (Methanobacteriales vs. Halobacteriales), but non-chimeric at a depth of 2 (all Euryarchaeota).</p>
+<p>blast_fragments begins with the assumption that a sequence is non-chimeric, and looks for evidence to the contrary. This is important when, for example, no taxonomy assignment can be made because no blast result is returned. If a sequence is split into three fragments, and only one returns a blast hit, that sequence would be considered non-chimeric. This is because there is no evidence (i.e., contradictory blast assignments) for the sequence being chimeric. This script can be run by the following command, where the resulting data is written to $PWD/blast_fragments_chimeric_seqs.txt and using default parameters (i.e., number of fragments (&#8220;-n 3&#8221;), taxonomy depth (&#8220;-d 4&#8221;) and maximum E-value (&#8220;-e 1e-30&#8221;)). ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).</p>
+<div class="highlight-python"><pre>parallel_identify_chimeric_seqs.py -i $PWD/inseqs.fasta -t $PWD/id_to_tax.txt -r $PWD/refseqs.fasta -o $PWD/blast_fragments_chimeric_seqs.txt -m blast_fragments</pre>
+</div>
+<p><strong>ChimeraSlayer Example:</strong></p>
+<p>Identify chimeric sequences using the ChimeraSlayer algorithm against a user provided reference database. The input sequences need to be provided in aligned (Py)Nast format and the reference database needs to be provided as aligned FASTA (-a). Note that the reference database needs to be the same that was used to build the alignment of the input sequences! ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).</p>
+<div class="highlight-python"><pre>parallel_identify_chimeric_seqs.py -i $PWD/inseqs_aligned.fasta -o $PWD/chimera_slayer_chimeric_seqs.txt</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://pycogent.sourceforge.net" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2012, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

@@ -1,0 +1,192 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>QIIME: Quantitative Insights Into Microbial Ecology &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.6.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="#" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="#"><img src="_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="#">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="qiime-quantitative-insights-into-microbial-ecology">
+<h1>QIIME: Quantitative Insights Into Microbial Ecology<a class="headerlink" href="#qiime-quantitative-insights-into-microbial-ecology" title="Permalink to this headline">¶</a></h1>
+<p>QIIME (canonically pronounced &#8216;Chime&#8217;) is a pipeline for performing microbial community analysis that integrates many third party tools which have become standard in the field. QIIME can run on a laptop, a supercomputer, and systems in between such as multicore desktops.  Linux and Mac OS X are supported natively, and Windows, Linux, and Mac OS X are supported via the <a class="reference external" href="./install/virtual_box.html">QIIME virtual box</a>.</p>
+<p><strong>The quickest way to start using QIIME is with the</strong> <a class="reference external" href="./install/virtual_box.html">QIIME virtual box</a>. To stay up-to-date on what&#8217;s new with QIIME, you should subscribe to the <a class="reference external" href="http://qiime.wordpress.com">blog</a>.</p>
+<p>Rather than reimplementing commonly used algorithms, QIIME wraps popular implementations of those algorithms. This allows us to make use of the many excellent tools available in this area, and allows faster integration of new tools. If you use tools that you think would be useful additions to QIIME, consider submitting a feature request by <a class="reference external" href="https://github.com/qiime/qiime/issues">creating a new issue on our GitHub issue tracker</a> and labelling it as an <em>enhancement</em>. You will need to create a free GitHub account in order to create an issue.</p>
+<p>A standard QIIME analysis begins with sequence data from one or more sequencing platforms, including Sanger, Roche/454, and Illumina GAIIx. QIIME can perform library de-multiplexing and quality filtering; denoising with AmpliconNoise or the QIIME Denoiser; OTU and representative set picking with uclust, cdhit, mothur, BLAST, or other tools; taxonomy assignment with BLAST or the RDP classifier; sequence alignment with PyNAST, muscle, infernal, or other tools; phylogeny reconstruction with FastTree, raxml, clearcut, or other tools; alpha diversity and rarefaction, including visualization of results, using over 20 metrics including Phylogenetic Diversity, chao1, and observed species; beta diversity and rarefaction, including visualization of results, using over 25 metrics including weighted and unweighted UniFrac, Euclidean distance, and Bray-Curtis; summarization and visualization of taxonomic composition of samples using area, bar and pie charts along with distance histograms; and many other features. While QIIME is primarily used for analysis of amplicon data, many of the downstream analysis pipeline (such as alpha rarefaction and jackknifed beta diversity) can be performed on any type of <a class="reference external" href="./documentation/file_formats.html#otu-table-format">sample x observation tables if they are formatted correctly</a>.</p>
+<p>QIIME includes parallelization capabilities for many of the computationally intensive steps. By default, these are configured to utilize a mutli-core environment, and are easily configured to run in a cluster environment. QIIME is built in Python using the open-source <a class="reference external" href="http://www.pycogent.org">PyCogent</a> toolkit. It makes extensive use of unit tests, and is highly modular to facilitate custom analyses.</p>
+<div class="section" id="blog-and-mailing-list">
+<h2>Blog and Mailing List<a class="headerlink" href="#blog-and-mailing-list" title="Permalink to this headline">¶</a></h2>
+<p>We recommend that all QIIME users keep an eye on the QIIME blog for important announcements. You can <a class="reference external" href="http://qiime.wordpress.com/feed/">subscribe to the RSS feed</a> or <a class="reference external" href="http://qiime.wordpress.com">sign up for e-mail notifications on the front page of the blog</a>. This is a very low traffic list (typically around one message per month), and we will not share subscriber information with anyone.</p>
+</div>
+<div class="section" id="download-qiime">
+<h2>Download QIIME<a class="headerlink" href="#download-qiime" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><ul>
+<li><p class="first">Virtual Box: The QIIME Virtual Box is an Ubuntu Linux virtual machine, pre-loaded with QIIME and its dependencies. This is the quickest way to start using QIIME. To get the Virtual Box, please <a class="reference external" href="./install/virtual_box.html">see Virtual Box documentation</a>.</p>
+</li>
+<li><p class="first">Stable Release: Currently the most stable version of QIIME is our 1.6.0 release, which you can <a class="reference external" href="ftp://thebeast.colorado.edu/pub/qiime-releases/qiime-1.6.0.tar.gz">download here</a>.</p>
+</li>
+<li><p class="first">Development Version: QIIME is under very active development. To get the latest development version of QIIME, you access our git repository, which is hosted on GitHub. While this code is subject to minor changes in interface, it will provide access to the latest and greatest features. The official web documentation is likely to be out-of-date with respect to the development software. You should instead refer to the documentation in Qiime/doc. Check out the latest version of QIIME using git with the command:</p>
+<div class="highlight-python"><pre>git clone git://github.com/qiime/qiime.git Qiime</pre>
+</div>
+</li>
+<li><p class="first">Amazon EC2 image: A QIIME EC2 image can be loaded in the Amazon Web Services cloud. For details, <a class="reference external" href="./install/vm_ec2.html">see EC2 documentation</a>.</p>
+</li>
+<li><p class="first">qiime-deploy: The <a class="reference external" href="https://github.com/qiime/qiime-deploy">qiime-deploy</a> tool can be used to easily install various versions of QIIME natively on Linux systems.</p>
+</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="installing-and-using-qiime">
+<h2>Installing and using QIIME<a class="headerlink" href="#installing-and-using-qiime" title="Permalink to this headline">¶</a></h2>
+<p>New users should begin with the <a class="reference external" href="./install/install.html">QIIME installation guide</a> or the <a class="reference external" href="./install/virtual_box.html">QIIME virtual box</a>. After installing QIIME, you should move on to the <a class="reference external" href="./tutorials/tutorial.html">QIIME overview tutorial</a> to analyze an example data set. As you begin using QIIME on your own data, you&#8217;ll want to refer to the <a class="reference external" href="./documentation/index.html">QIIME documentation</a> and the general <a class="reference external" href="./tutorials/index.html">QIIME tutorials</a>.</p>
+</div>
+<div class="section" id="contact-us">
+<h2>Contact Us<a class="headerlink" href="#contact-us" title="Permalink to this headline">¶</a></h2>
+<p>The only way to get help with QIIME is to search or ask questions in the <a class="reference external" href="http://groups.google.com/group/qiime-forum">QIIME Forum</a>. This is a public space for users to ask questions, search previous questions and answers, and share any tips they&#8217;ve found. The QIIME Developers moderate this forum, and we aim to respond to questions within one working day.</p>
+<p>Before requesting help with QIIME <a class="reference external" href="http://groups.google.com/group/qiime-forum/browse_thread/thread/67e2ab4af75655ae">review this discussion</a> to get information on what data to send to help us answer your question as quickly as possible.</p>
+<p>Users can also submit bug reports and feature requests via our <a class="reference external" href="https://github.com/qiime/qiime/issues">GitHub issue tracker</a>.</p>
+</div>
+<div class="section" id="qiime-development">
+<h2>QIIME Development<a class="headerlink" href="#qiime-development" title="Permalink to this headline">¶</a></h2>
+<p>QIIME is an open-source project, primarily developed in the Knight Lab at the University of Colorado at Boulder. If you are interested in getting involved, check out the <a class="reference external" href="./developer/index.html">developer notes</a>.</p>
+</div>
+<div class="section" id="citing-qiime">
+<h2>Citing QIIME<a class="headerlink" href="#citing-qiime" title="Permalink to this headline">¶</a></h2>
+<p>If you use QIIME for any published research, please include the following citation:</p>
+<blockquote>
+<div><p><strong>QIIME allows analysis of high-throughput community sequencing data</strong></p>
+<p>J Gregory Caporaso, Justin Kuczynski, Jesse Stombaugh, Kyle Bittinger, Frederic D Bushman, Elizabeth K Costello, Noah Fierer, Antonio Gonzalez Pena, Julia K Goodrich, Jeffrey I Gordon, Gavin A Huttley, Scott T Kelley, Dan Knights, Jeremy E Koenig, Ruth E Ley, Catherine A Lozupone, Daniel McDonald, Brian D Muegge, Meg Pirrung, Jens Reeder, Joel R Sevinsky, Peter J Turnbaugh, William A Walters, Jeremy Widmann, Tanya Yatsunenko, Jesse Zaneveld and Rob Knight; Nature Methods, 2010; doi:10.1038/nmeth.f.303</p>
+</div></blockquote>
+<p>You can find the <a class="reference external" href="http://www.nature.com/nmeth/journal/vaop/ncurrent/full/nmeth.f.303.html">QIIME paper here</a>, and the data presented in this paper can be found <a class="reference external" href="http://bmf.colorado.edu/QIIME/QIIME_NM_2010.tgz">here</a>.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">QIIME: Quantitative Insights Into Microbial Ecology</a><ul>
+<li><a class="reference internal" href="#blog-and-mailing-list">Blog and Mailing List</a></li>
+<li><a class="reference internal" href="#download-qiime">Download QIIME</a></li>
+<li><a class="reference internal" href="#installing-and-using-qiime">Installing and using QIIME</a></li>
+<li><a class="reference internal" href="#contact-us">Contact Us</a></li>
+<li><a class="reference internal" href="#qiime-development">QIIME Development</a></li>
+<li><a class="reference internal" href="#citing-qiime">Citing QIIME</a></li>
+</ul>
+</li>
+</ul>
+
+
+	<h3><a href="#">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="#">Home</a><br /></li>
+	<li><a href="install/index.html">Install</a><br /></li>
+	<li><a href="documentation/index.html">Documentation</a><br /></li>
+	<li><a href="tutorials/index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="#">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2012, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

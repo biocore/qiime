@@ -1,0 +1,185 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Predicting Mislabeled Samples &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.7.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="predicting-mislabeled-samples">
+<span id="id1"></span><h1>Predicting Mislabeled Samples<a class="headerlink" href="#predicting-mislabeled-samples" title="Permalink to this headline">¶</a></h1>
+<p>This document describes how to use supervised classification to predict mislabeling of samples. Accidental mislabeling of samples due to human error, although rare, is nonetheless a real problem in large-scale studies. Supervised learning can be used to mitigate mislabeling of samples, as described previously (<a class="reference internal" href="#id2">1</a>). There are full instructions for running supervised learning in the <a class="reference external" href="running_supervised_learning.html">Running Supervised Learning</a> tutorial. If you suspect mislabeling in your data, you can use the following procedure to predict and remove mislabeled samples at varying levels of confidence.</p>
+<div class="section" id="input-files">
+<h2>Input files<a class="headerlink" href="#input-files" title="Permalink to this headline">¶</a></h2>
+<p>This script requires a QIIME OTU table (or equivalent) and a QIIME metadata mapping file.</p>
+</div>
+<div class="section" id="estimating-mislabeling-probabilities">
+<h2>Estimating mislabeling probabilities<a class="headerlink" href="#estimating-mislabeling-probabilities" title="Permalink to this headline">¶</a></h2>
+<p>To run supervised classification on the <a class="reference external" href="./tutorial.html">QIIME tutorial</a> data set, where the &#8220;Treatment&#8221; metadata column gives the class labels:</p>
+<div class="highlight-python"><pre>supervised_learning.py -i otu_table.biom -m Fasting_Map.txt -c Treatment -o ml -v</pre>
+</div>
+</div>
+<div class="section" id="removing-mislabeled-samples">
+<h2>Removing mislabeled samples<a class="headerlink" href="#removing-mislabeled-samples" title="Permalink to this headline">¶</a></h2>
+<p>One of the output files from <tt class="file docutils literal"><span class="pre">supervised_learning.py</span></tt> is the file <tt class="file docutils literal"><span class="pre">mislabeling.txt</span></tt>. This contains columns &#8220;mislabeled_probability_above_0.xx&#8221; for thresholds 5%, 10%, ..., 95%, 99%, indicating whether the probability that a given sample is mislabeled exceeds the given threshold. For example, if a particular sample has the value &#8220;TRUE&#8221; in the column &#8220;mislabeled_probability_above_0.95&#8221;, then the model has estimated that there is a 95% chance that the sample is mislabeled. Then, to remove samples from your data table that are predicted to have at least a 95% chance of being mislabeled, you would run:</p>
+<div class="highlight-python"><pre>filter_samples_from_otu_table.py -i otu_table.biom -m ml/mislabeling.txt -s 'mislabeled_probability_above_0.95:FALSE' -o otu_table_no_mislabeled.biom</pre>
+</div>
+</div>
+<div class="section" id="visualizing-mislabeled-samples">
+<h2>Visualizing mislabeled samples<a class="headerlink" href="#visualizing-mislabeled-samples" title="Permalink to this headline">¶</a></h2>
+<p>You can also visualize the predicted mislabels using <tt class="file docutils literal"><span class="pre">make_3d_plots.py</span></tt>. Assuming that you have run <tt class="file docutils literal"><span class="pre">beta_diversity.py</span></tt> and <tt class="file docutils literal"><span class="pre">principal_coordinates.py</span></tt> to obtain a principal coordinates table <tt class="file docutils literal"><span class="pre">pcoa.txt</span></tt> for your samples, you can use the following command to obtain a plot where samples are colored by their mislabeling status at a 90% threshold (i.e. 90% estimated probability of being mislabeled):</p>
+<div class="highlight-python"><pre>make_3d_plots.py -i pcoa.txt -m ml/mislabeling.txt -o color_by_mislabeling -b mislabeled_probability_above_0.90</pre>
+</div>
+<p>The following command will make separate plots for all mislabeling thresholds:</p>
+<div class="highlight-python"><pre>make_3d_plots.py -i pcoa.txt -m mislabeling.txt -o color_by_mislabeling -b mislabeled_probability_above_0.05,mislabeled_probability_above_0.10,mislabeled_probability_above_0.15,mislabeled_probability_above_0.20,mislabeled_probability_above_0.25,mislabeled_probability_above_0.30,mislabeled_probability_above_0.35,mislabeled_probability_above_0.40,mislabeled_probability_above_0.45,mislabeled_probability_above_0.50,mislabeled_probability_above_0.55,mislabeled_probability_above_0.60,mislabeled_probability_above_0.65,mislabeled_probability_above_0.70,mislabeled_probability_above_0.75,mislabeled_probability_above_0.80,mislabeled_probability_above_0.85,mislabeled_probability_above_0.90,mislabeled_probability_above_0.95,mislabeled_probability_above_0.99</pre>
+</div>
+</div>
+<div class="section" id="cautions">
+<h2>Cautions<a class="headerlink" href="#cautions" title="Permalink to this headline">¶</a></h2>
+<p>Predicting mislabeled samples is challenging because (a) we don&#8217;t know the proportion of mislabeled samples ahead of time (in fact it is often zero); (b) we have to be able to distinguish the different types of labels with high accuracy; and (c) we have train a model to do (b) even when some of the training samples may be mislabeled. Therefore we recommend applying this approach only to data sets with a small number of well-characterized and distinguishable classes. We have found the Random Forests classifier to be robust to noisy (i.e. mislabeled) training data in several data sets (<a class="reference internal" href="#id2">1</a>), but we still recommend that you exercise caution when applying this technique. Here are some important steps that you can take to decrease the likelihood that you will be discarding correctly labeled samples:</p>
+<ul class="simple">
+<li>Read the <a class="reference external" href="running_supervised_learning.html">tutorial on running supervised learning</a>.</li>
+<li>After running <tt class="file docutils literal"><span class="pre">supervised_learning.py</span></tt>, examine the output file <tt class="file docutils literal"><span class="pre">summary.txt</span></tt>. If your estimated error is high (e.g. above 5% or 10%) this is an indication that your classes are not sufficiently distinct from one another to detect mislabeling, and you should not use the predictions of the model to remove mislabeled samples. In general, the more classes you have, and the more similar they are to one another, the more samples the model requires to be able to distinguish them. For example, you might be able to get good results with only 50 samples when you have two very distinct classes (e.g. gut microbiome versus skin microbiome), but you may need hundreds or thousands of samples to build an accurate predictive model if you have many very similar classes (e.g. distinguishing the gut microbiomes of a dozen individuals). The estimated error rate in <tt class="file docutils literal"><span class="pre">summary.txt</span></tt> indicates how well the model was able to distinguish the classes in your data.</li>
+<li>Unless you are certain that some of your data are mislabeled, you may want to use a very conservative threshold for identifying mislabeled samples. For example, you might choose to discard samples only if the model predicts their probability of being mislabeled to be 95% or higher.</li>
+<li>This approach should be used to flag potentially mislabeled samples for further investigation. Whenever possible, return to the primary data source to verify and correct mislabeling.</li>
+</ul>
+<p>Note: we recommend running <tt class="file docutils literal"><span class="pre">single_rarefaction.py</span></tt> on your OTU table before using it as input to <tt class="file docutils literal"><span class="pre">supervised_learning.py</span></tt>, to control for variation in sequencing effort.</p>
+</div>
+<div class="section" id="references">
+<h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<table class="docutils footnote" frame="void" id="id2" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[1]</td><td>Knights, D., et al. (2010). Supervised classification of microbiota mitigates mislabeling errors. The ISME journal, 5(4), 570-573. (<a class="reference external" href="http://www.nature.com/ismej/journal/v5/n4/full/ismej2010148a.html">link</a>)</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Predicting Mislabeled Samples</a><ul>
+<li><a class="reference internal" href="#input-files">Input files</a></li>
+<li><a class="reference internal" href="#estimating-mislabeling-probabilities">Estimating mislabeling probabilities</a></li>
+<li><a class="reference internal" href="#removing-mislabeled-samples">Removing mislabeled samples</a></li>
+<li><a class="reference internal" href="#visualizing-mislabeled-samples">Visualizing mislabeled samples</a></li>
+<li><a class="reference internal" href="#cautions">Cautions</a></li>
+<li><a class="reference internal" href="#references">References</a></li>
+</ul>
+</li>
+</ul>
+
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+	<li><a href="../index.html">Home</a><br /></li>
+	<li><a href="../install/index.html">Install</a><br /></li>
+	<li><a href="../documentation/index.html">Documentation</a><br /></li>
+	<li><a href="index.html">Tutorials</a><br /></li>
+	<li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	<li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.pycogent.org" target="_blank"><img src="../_static/PoweredByPycogent.jpg" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2012, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

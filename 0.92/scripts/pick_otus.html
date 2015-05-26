@@ -1,0 +1,272 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pick_otus.py – OTU picking &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="Scripts - Analyses and Parameters" href="../doc_script_index.html" />
+    <link rel="next" title="summarize_taxa.py – Summarize Taxa" href="summarize_taxa.html" />
+    <link rel="prev" title="parallel_pick_otus_blast.py – Parallel pick otus using BLAST" href="parallel_pick_otus_blast.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;">
+	<p style="font-size:12pt;padding: 5px;"><b>News and Announcements &raquo;</b>
+<script type="text/javascript" src="http://app.feed.informer.com/digest3/U9OLMKHF9N.js"><noscript><a href="http://app.feed.informer.com/digest3/U9OLMKHF9N.html">Click for &quot;QIIME&quot;.</a> Powered by <a href="http://feed.informer.com/">RSS Feed Informer</a></noscript></script></p>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="summarize_taxa.html" title="summarize_taxa.py – Summarize Taxa"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="parallel_pick_otus_blast.html" title="parallel_pick_otus_blast.py – Parallel pick otus using BLAST"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation.html" >QIIME Documentation</a> &raquo;</li>
+          <li><a href="../doc_script_index.html" accesskey="U">Scripts - Analyses and Parameters</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="pick-otus"></span><div class="section" id="pick-otus-py-otu-picking">
+<span id="index-131"></span><h1><em>pick_otus.py</em> &#8211; OTU picking<a class="headerlink" href="#pick-otus-py-otu-picking" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>The OTU picking step assigns similar sequences to operational taxonomic units, or OTUs, by clustering sequences based on a user-defined similarity threshold. Sequences which are similar at or above the threshold level are taken to represent the presence of a taxonomic unit (e.g., a genus, when the similarity threshold is set at 0.94) in the sequence collection.</p>
+<p>Currently, the following clustering methods have been implemented in QIIME:</p>
+<ol class="arabic simple">
+<li>cd-hit (Li &amp; Godzik, 2006; Li, Jaroszewski, &amp; Godzik, 2001), which applies a &#8220;longest-sequence-first list removal algorithm&#8221; to cluster sequences.</li>
+<li>blast (Altschul, Gish, Miller, Myers, &amp; Lipman, 1990), which compares and clusters each sequence against a reference database of sequences.</li>
+<li>Mothur (Schloss et al., 2009), which requires an input file of aligned sequences.  The input file of aligned sequences may be generated from an input file like the one described below by running <a class="reference external" href="./align_seqs.html">align_seqs.py</a>.  For the Mothur method, the clustering algorithm may be specified as nearest-neighbor, furthest-neighbor, or average-neighbor.  The default algorithm is furthest-neighbor.</li>
+<li>prefix/suffix [Qiime team, unpublished], which will collapse sequences which are identical in their first and/or last bases (i.e., their prefix and/or suffix). The prefix and suffix lengths are provided by the user and default to 50 each.</li>
+<li>Trie [Qiime team, unpublished], which collapsing identical sequences and sequences which are subsequences of other sequences.</li>
+<li>uclust (Robert Edgar, unpublished, 2009), creates &#8220;seeds&#8221; of sequences which generate clusters based on percent identity.</li>
+</ol>
+<p>The primary inputs for <a class="reference external" href="./pick_otus.html">pick_otus.py</a> are:</p>
+<ol class="arabic simple">
+<li>A FASTA file containing sequences to be clustered</li>
+<li>An OTU threshold (default is 0.97, roughly corresponding to species-level OTUs);</li>
+<li>The method to be applied for clustering sequences into OTUs.</li>
+</ol>
+<p>A standard input file for <a class="reference external" href="./pick_otus.html">pick_otus.py</a> should look something like
+the following:</p>
+<p>&gt;seq1 some sequence description
+ACCGGATATGAGAGAGAGAG
+&gt;seq2 another sequence description
+ACCGTTATATGAGAGGAG
+&gt;seq3
+ACCGTTATATTTAATTGGAGAAG</p>
+<p>Note that sequence identifier lines correspond to the FASTA format, where each line begins with a &#8216;&gt;&#8217;, followed by an optional space character, followed by the sequence identifiers, and then optionally followed by a space character and a comment describing the sequence. Only the first required sequence identifier field (i.e., seq1, seq2, seq3 in the above example) is used by the OTU picker to identify each sequence.</p>
+<p><strong>Usage:</strong> <tt class="docutils literal"><span class="pre">pick_otus.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-input_seqs_filepath</dt>
+<dd>Path to input sequences file</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-m, <cite>-</cite>-otu_picking_method</dt>
+<dd>Method for picking OTUs.  Valid choices are: mothur, trie, prefix_suffix, blast, cdhit, uclust. The mothur method requires an input file of aligned sequences [default: cdhit]</dd>
+<dt>-c, <cite>-</cite>-clustering_algorithm</dt>
+<dd>Clustering algorithm for mothur otu picking method.  Valid choices are: furthest, nearest, average. [default: furthest]</dd>
+<dt>-M, <cite>-</cite>-max_cdhit_memory</dt>
+<dd>Maximum available memory to cd-hit-est (via the program&#8217;s -M option) for cdhit OTU picking method (units of Mbyte) [default: 400]</dd>
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>Path to store result file [default: ./&lt;OTU_METHOD&gt;_picked_otus/]</dd>
+<dt>-r, <cite>-</cite>-refseqs_fp</dt>
+<dd>Path to reference sequences to blast against when using -m blast [default: None]</dd>
+<dt>-b, <cite>-</cite>-blast_db</dt>
+<dd>Pre-existing database to blast against when using -m blast [default: None]</dd>
+<dt>-s, <cite>-</cite>-similarity</dt>
+<dd>Sequence similarity threshold (for cdhit or uclust) [default: 0.97]</dd>
+<dt>-e, <cite>-</cite>-max_e_value</dt>
+<dd>Max E-value when clustering with BLAST [default: 1e-10]</dd>
+<dt>-q, <cite>-</cite>-trie_reverse_seqs</dt>
+<dd>Reverse seqs before picking OTUs with the Trie OTU picker for suffix (rather than prefix) collapsing [default: False]</dd>
+<dt>-n, <cite>-</cite>-prefix_prefilter_length</dt>
+<dd>Prefilter data so seqs with identical first prefix_prefilter_length are automatically grouped into a single OTU.  This is useful for large sequence collections where OTU picking doesn&#8217;t scale well [default: None; 100 is a good value]</dd>
+<dt>-t, <cite>-</cite>-trie_prefilter</dt>
+<dd>Prefilter data so seqs which are identical prefixes of a longer seq are automatically grouped into a single OTU; useful for large sequence collections where OTU picking doesn&#8217;t scale well [default: False]</dd>
+<dt>-p, <cite>-</cite>-prefix_length</dt>
+<dd>Prefix length when using the prefix_suffix otu picker; WARNING: CURRENTLY DIFFERENT FROM prefix_prefilter_length (-n)! [default: 50]</dd>
+<dt>-u, <cite>-</cite>-suffix_length</dt>
+<dd>Suffix length when using the prefix_suffix otu picker [default: 50]</dd>
+<dt>-z, <cite>-</cite>-enable_rev_strand_match</dt>
+<dd>Enable reverse strand matching for uclust clustering, will double the amount of memory used. [default: False]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>The output consists of two files (i.e. seqs_otus.txt and seqs_otus.log). The .txt file is composed of tab-delimited lines, where the first field on each line corresponds to an (arbitrary) cluster identifier, and the remaining fields correspond to sequence identifiers assigned to that cluster. Sequence identifiers correspond to those provided in the input FASTA file.</p>
+<p>Example lines from the resulting .txt file:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="8%" />
+<col width="31%" />
+<col width="31%" />
+<col width="31%" />
+</colgroup>
+<tbody valign="top">
+<tr><td>0</td>
+<td>seq1</td>
+<td>seq5</td>
+<td>&nbsp;</td>
+</tr>
+<tr><td>1</td>
+<td>seq2</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr><td>2</td>
+<td>seq3</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr><td>3</td>
+<td>seq4</td>
+<td>seq6</td>
+<td>seq7</td>
+</tr>
+</tbody>
+</table>
+<p>This result implies that four clusters were created based on 7 input sequences. The first cluster (cluster id 0) contains two sequences, sequence ids seq1 and seq5; the second cluster (cluster id 1) contains one sequence, sequence id seq2; the third cluster (cluster id 2) contains one sequence, sequence id seq3, and the final cluster (cluster id 3) contains three sequences, sequence ids seq4, seq6, and seq7.</p>
+<p>The resulting .log file contains a list of parameters passed to the <a class="reference external" href="./pick_otus.html">pick_otus.py</a> script along with the output location of the resulting .txt file.</p>
+<p><strong>Example (cd-hit method):</strong></p>
+<p>Using the seqs.fna file generated from <a class="reference external" href="./split_libraries.html">split_libraries.py</a> and outputting the results to the directory &#8220;picked_otus/&#8221;, while using default parameters (cd-hit, 0.97 sequence similarity, no prefix filtering):</p>
+<div class="highlight-python"><pre>pick_otus.py -i seqs.fna -o picked_otus/</pre>
+</div>
+<p>Currently the cd-hit OTU picker allows for users to perform a pre-filtering step, so that highly similar sequences are clustered prior to OTU picking. This works by collapsing sequences which begin with an identical n-base prefix, where n is specified by the -n parameter. A commonly used value here is 100 (e.g., -n 100). So, if using this filter with -n 100, all sequences which are identical in their first 100 bases will be clustered together, and only one representative sequence from each cluster will be passed to cd-hit. This is used to greatly increase the run-time of cd-hit-based OTU picking when working with very large sequence collections, as shown by the following command:</p>
+<div class="highlight-python"><pre>pick_otus.py -i seqs.fna -o picked_otus/ -n 100</pre>
+</div>
+<p>Alternatively, if the user would like to collapse identical sequences, or those which are subsequences of other sequences prior to OTU picking, they can use the trie prefiltering (&#8220;-t&#8221;) option as shown by the following command:</p>
+<div class="highlight-python"><pre>pick_otus.py -i seqs.fna -o picked_otus/ -t</pre>
+</div>
+<p>Note: It is highly recommended to use one of the prefiltering methods when analyzing large dataset (&gt;100,000 seqs) to reduce run-time.</p>
+<p><strong>Example (uclust method):</strong></p>
+<p>Using the seqs.fna file generated from <a class="reference external" href="./split_libraries.html">split_libraries.py</a> and outputting the results to the directory &#8220;picked_otus/&#8221;, while using default parameters (0.97 sequence similarity, no reverse strand matching):</p>
+<div class="highlight-python"><pre>pick_otus.py -i seqs.fna -m uclust -o picked_otus/</pre>
+</div>
+<p>To change the percent identity to a lower value, such as 90%, and also enable reverse strand matching, the script would be the following:</p>
+<div class="highlight-python"><pre>pick_otus.py -i seqs.fna -m uclust -o picked_otus/ -s 0.90 -z</pre>
+</div>
+<p><strong>BLAST OTU-Picking Example:</strong></p>
+<p>OTUs can be picked against a reference database using the BLAST OTU picker. This is useful, for example, when different regions of the SSU RNA have sequenced and a sequence similarity based approach like cd-hit therefore wouldn&#8217;t work. When using the BLAST OTU picking method, the user must supply either a reference set of sequences or a reference database to compare against. The OTU identifiers resulting from this step will be the sequence identifiers in the reference database. This allows for use of a pre-existing tree in downstream analyses, which again is useful in cases where different regions of the 16s gene have been sequenced.</p>
+<p>The following command can be used to blast against a reference sequence set, using the default E-value and sequence similarity (0.97) parameters:</p>
+<div class="highlight-python"><pre>pick_otus.py -i seqs.fna -o picked_otus/ -m blast -r ref_seq_set.fna</pre>
+</div>
+<p>If you already have a pre-built BLAST database, you can pass the database prefix as shown by the following command:</p>
+<div class="highlight-python"><pre>pick_otus.py -i seqs.fna -o picked_otus/ -m blast -b ref_database</pre>
+</div>
+<p>If the user would like to change the sequence similarity (&#8220;-s&#8221;) and/or the E-value (&#8220;-e&#8221;) for the blast method, they can use the following command:</p>
+<div class="highlight-python"><pre>pick_otus.py -i seqs.fna -o picked_otus/ -m blast -s 0.90 -e 1e-30</pre>
+</div>
+<p><strong>Prefix-suffix OTU Picking Example:</strong></p>
+<p>OTUs can be picked by collapsing sequences which being and/or end with identical bases (i.e., identical prefixes or suffixes). This OTU picker is currently likely to be of limited use on its own, but will be very useful in collapsing very similar sequences in a chained OTU picking strategy that is currently in development. For example, user will be able to pick OTUs with this method, followed by representative set picking, and then re-pick OTUs on their representative set. This will allow for highly similar sequences to be collapsed, followed by running a slower OTU picker. This ability to chain OTU pickers is not yet supported in QIIME. The following command illustrates how to pick OTUs by collapsing sequences which are identical in their first 50 and last 25 bases:</p>
+<div class="highlight-python"><pre>pick_otus.py -i seqs.fna -o picked_otus/ -m prefix_suffix -p 50 -u 25</pre>
+</div>
+<p><strong>Mothur OTU Picking Example:</strong></p>
+<p>The Mothur program (<a class="reference external" href="http://www.mothur.org/">http://www.mothur.org/</a>) provides three clustering algorithms for OTU formation: furthest-neighbor (complete linkage), average-neighbor (group average), and nearest-neighbor (single linkage). Details on the algorithms may be found on the Mothur website and publications (Schloss et al., 2009). However, the running times of Mothur&#8217;s clustering algorithms scale with the number of sequences squared, so the program may not be feasible for large data sets.</p>
+<p>The following command may be used to create OTU&#8217;s based on a furthest-neighbor algorithm (the default setting):</p>
+<div class="highlight-python"><pre>pick_otus.py -i seqs.fna -o picked_otus/ -m mothur</pre>
+</div>
+<p>If you prefer to use a nearest-neighbor algorithm instead, you may specify this with the &#8216;-c&#8217; flag:</p>
+<div class="highlight-python"><pre>pick_otus.py -i seqs.fna -o picked_otus/ -m mothur -c nearest</pre>
+</div>
+<p>The sequence similarity parameter may also be specified. For example, the following command may be used to create OTU&#8217;s at the level of 95% similarity:</p>
+<div class="highlight-python"><pre>pick_otus.py -i seqs.fna -o picked_otus/ -m mothur -s 0.90</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="parallel_pick_otus_blast.html"
+                                  title="previous chapter"><em>parallel_pick_otus_blast.py</em> &#8211; Parallel pick otus using BLAST</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="summarize_taxa.html"
+                                  title="next chapter"><em>summarize_taxa.py</em> &#8211; Summarize Taxa</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/scripts/pick_otus.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="summarize_taxa.html" title="summarize_taxa.py – Summarize Taxa"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="parallel_pick_otus_blast.html" title="parallel_pick_otus_blast.py – Parallel pick otus using BLAST"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation.html" >QIIME Documentation</a> &raquo;</li>
+          <li><a href="../doc_script_index.html" >Scripts - Analyses and Parameters</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+  </body>
+</html>

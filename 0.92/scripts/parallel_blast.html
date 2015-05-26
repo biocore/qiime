@@ -1,0 +1,182 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>parallel_blast.py – Parallel BLAST &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="Scripts - Analyses and Parameters" href="../doc_script_index.html" />
+    <link rel="next" title="poller.py – Poller for parallel QIIME scripts." href="poller.html" />
+    <link rel="prev" title="make_qiime_rst_file.py – Make Sphinx RST file" href="make_qiime_rst_file.html" /> 
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;">
+	<p style="font-size:12pt;padding: 5px;"><b>News and Announcements &raquo;</b>
+<script type="text/javascript" src="http://app.feed.informer.com/digest3/U9OLMKHF9N.js"><noscript><a href="http://app.feed.informer.com/digest3/U9OLMKHF9N.html">Click for &quot;QIIME&quot;.</a> Powered by <a href="http://feed.informer.com/">RSS Feed Informer</a></noscript></script></p>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="poller.html" title="poller.py – Poller for parallel QIIME scripts."
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="make_qiime_rst_file.html" title="make_qiime_rst_file.py – Make Sphinx RST file"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation.html" >QIIME Documentation</a> &raquo;</li>
+          <li><a href="../doc_script_index.html" accesskey="U">Scripts - Analyses and Parameters</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="parallel-blast"></span><div class="section" id="parallel-blast-py-parallel-blast">
+<span id="index-127"></span><h1><em>parallel_blast.py</em> &#8211; Parallel BLAST<a class="headerlink" href="#parallel-blast-py-parallel-blast" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>This script for performing blast while making use of multicore/multiprocessor environments to perform analyses in parallel.</p>
+<p><strong>Usage:</strong> <tt class="docutils literal"><span class="pre">parallel_blast.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-infile_path</dt>
+<dd>Path of sequences to use as queries [REQUIRED]</dd>
+<dt>-r, <cite>-</cite>-refseqs_path</dt>
+<dd>Path to fasta sequences to search against [REQUIRED]</dd>
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>Name of output directory for blast jobs [REQUIRED]</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-e, <cite>-</cite>-e_value</dt>
+<dd>E-value threshold for blasts [default: 1e-30]</dd>
+<dt>-n, <cite>-</cite>-num_hits</dt>
+<dd>Number of hits per query for blast results [default: 1]</dd>
+<dt>-w, <cite>-</cite>-word_size</dt>
+<dd>Word size for blast searches [default: 30]</dd>
+<dt>-D, <cite>-</cite>-suppress_format_blastdb</dt>
+<dd>Supress format of blastdb [default: False]</dd>
+<dt>-a, <cite>-</cite>-blastmat_dir</dt>
+<dd>Full path to directory containing blastmat file [default: /software/blast-2.2.16/data]</dd>
+<dt>-b, <cite>-</cite>-blastall_fp</dt>
+<dd>Path to blastall [default: /software/bin/blastall]</dd>
+<dt>-O, <cite>-</cite>-jobs_to_start</dt>
+<dd>Number of jobs to start [default: 24]</dd>
+<dt>-P, <cite>-</cite>-poller_fp</dt>
+<dd>Full path to qiime/parallel/<a class="reference external" href="./poller.html">poller.py</a> [default: /software/Qiime/scripts/<a class="reference external" href="./poller.html">poller.py</a>]</dd>
+<dt>-R, <cite>-</cite>-retain_temp_files</dt>
+<dd>Retain temporary files after runs complete (useful for debugging) [default: False]</dd>
+<dt>-S, <cite>-</cite>-suppress_submit_jobs</dt>
+<dd>Only split input and write commands file - don&#8217;t submit jobs [default: False]</dd>
+<dt>-T, <cite>-</cite>-poll_directly</dt>
+<dd>Poll directly for job completion rather than running poller as a separate job. If -T is specified this script will not return until all jobs have completed. [default: False]</dd>
+<dt>-U, <cite>-</cite>-cluster_jobs_fp</dt>
+<dd>Path to <a class="reference external" href="./cluster_jobs.html">cluster_jobs.py</a> script  [default: /software/scripts/<a class="reference external" href="./cluster_jobs.html">cluster_jobs.py</a>]</dd>
+<dt>-W, <cite>-</cite>-suppress_polling</dt>
+<dd>Suppress polling of jobs and merging of results upon completion [default: False]</dd>
+<dt>-X, <cite>-</cite>-job_prefix</dt>
+<dd>Job prefix [default: descriptive prefix + random chars]</dd>
+<dt>-Y, <cite>-</cite>-python_exe_fp</dt>
+<dd>Full path to python executable [default: /software/bin/python]</dd>
+<dt>-Z, <cite>-</cite>-seconds_to_sleep</dt>
+<dd>Number of seconds to sleep between checks for run  completion when polling runs [default: 60]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p><strong>Example:</strong></p>
+<p>BLAST /home/qiime_user/10_seq.fasta (-i) via three (-O) independent jobs against a blast database created from /home/qiime_user/1000_seq.fasta (-r). Store the results in /home/qiime_user/bla_out/ (-o).</p>
+<div class="highlight-python"><pre>parallel_blast.py -i /home/qiime_user/10_seq.fasta -r /home/qiime_user/1000_seq.fasta -O 3 -o /home/qiime_user/bla_out/</pre>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="make_qiime_rst_file.html"
+                                  title="previous chapter"><em>make_qiime_rst_file.py</em> &#8211; Make Sphinx RST file</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="poller.html"
+                                  title="next chapter"><em>poller.py</em> &#8211; Poller for parallel QIIME scripts.</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/scripts/parallel_blast.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="poller.html" title="poller.py – Poller for parallel QIIME scripts."
+             >next</a> |</li>
+        <li class="right" >
+          <a href="make_qiime_rst_file.html" title="make_qiime_rst_file.py – Make Sphinx RST file"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation.html" >QIIME Documentation</a> &raquo;</li>
+          <li><a href="../doc_script_index.html" >Scripts - Analyses and Parameters</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+  </body>
+</html>

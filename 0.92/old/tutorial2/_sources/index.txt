@@ -1,0 +1,69 @@
+.. _introduction:
+.. QIIME documentation master file, created by
+   sphinx-quickstart on Mon Jan 25 12:57:02 2010.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+############################
+Welcome to QIIME's Tutorial!
+############################
+
+Contents
+^^^^^^^^
+
+.. toctree::
+   :maxdepth: 1
+
+   essential_files.rst
+   data_analysis_steps.rst
+
+Introduction
+============
+This tutorial explains how to use the **QIIME** (Quantitative Insights Into Microbial Ecology) 
+Pipeline to process data from high-throughput 16S rRNA sequencing studies. The purpose of this 
+pipeline is to provide a start-to-finish workflow, beginning with multiplexed sequence reads and 
+finishing with taxonomic and phylogenetic profiles and comparisons of the samples in the study. 
+With this information in hand, it is possible to determine biological and environmental factors that
+alter microbial community ecology in your experiment.
+
+As an example, we will use data from a study of the response of mouse gut microbial communities to 
+fasting (Crawford et al., 2009). To make this tutorial run quickly on a personal computer, we will 
+use a subset of the data generated from 5 animals kept on the control ad libitum fed diet, and 4 
+animals fasted for 24 hours before sacrifice. At the end of our tutorial, we will be able to 
+compare the community structure of control vs. fasted animals. In particular, we will be able to 
+compare taxonomic profiles for each sample type, differences in diversity metrics within the 
+samples and between the groups, and perform comparative clustering analysis to look for overall 
+differences in the samples.
+
+To process our data, we will perform the following steps, each of which is described in more detail 
+in the Data Analysis Steps:
+
+* Filter the sequence reads for quality and assign multiplexed reads to starting samples by nucleotide barcode.
+* Pick Operational Taxonomic Units (OTUs) based on sequence similarity within the reads, and pick a representative sequence from each OTU.
+* Assign the OTU to a taxonomic identity using reference databases.
+* Align the OTU sequences and create a phylogenetic tree.
+* Calculate diversity metrics for each sample and compare the types of communities, using the taxonomic and phylogenetic assignments.
+* Generate UPGMA and PCoA plots to visually depict the differences between the samples, and dynamically work with these graphs to generate publication quality figures.
+
+Contributors
+============
+J. Gregory Caporaso [#f1]_, Justin Kuczynski [#f2]_, Jesse Stombaugh [#f1]_, 
+Kyle Bittinger [#f3]_, Frederic D. Bushman [#f3]_, Elizabeth K. Costello [#f1]_, Noah Fierer [#f4]_, 
+Antonio Gonzalez Peña [#f5]_, Julia K. Goodrich [#f5]_, Jeff I. Gordon6, Gavin Huttley [#f7]_, 
+Scott T. Kelley [#f8]_, Dan Knights [#f5]_, Jeremy E. Koenig [#f9]_, Ruth E. Ley [#f9]_, 
+Cathy A. Lozupone [#f1]_, Daniel McDonald [#f1]_, Brian D. Muegge [#f6]_, Megan Pirrung [#f1]_, 
+Jens Reeder [#f1]_, Joel R. Sevinsky [#f10]_, Peter J. Turnbaugh [#f6]_, Will Van Treuren [#f1]_, 
+William A. Walters [#f2]_, Jeremy Widmann [#f1]_, Tanya Yatsunenko [#f6]_, Jesse Zaneveld [#f2]_ and 
+Rob Knight [#f1]_, [#f11]_ 
+
+.. [#f1] Department of Chemistry and Biochemistry, UCB 215, University of Colorado, Boulder, CO 80309 
+.. [#f2] Department of Molecular, Cellular and Developmental Biology, UCB 347, University of Colorado, Boulder, CO 80309 
+.. [#f3] Department of Microbiology, Johnson Pavilion 425, University of Pennsylvania, Philadelphia, PA 19104 
+.. [#f4] Cooperative Institute for Research in Environmental Sciences, University of Colorado, Boulder, CO 80309, USA.; Department of Ecology and Evolutionary Biology, University of Colorado, Boulder, CO 80309, USA. 
+.. [#f5] Department of Computer Science, University of Colorado, Boulder, Colorado, USA. 
+.. [#f6] Center for Genome Sciences, Washington University School of Medicine, St. Louis, MO 63108 
+.. [#f7] Computational Genomics Laboratory, John Curtin School of Medical Research, The Australian National University, Canberra, Australian Capital Territory, Australia.
+.. [#f8] Department of Biology, San Diego State University, San Diego CA 92182
+.. [#f9] Department of Microbiology, Cornell University, Ithaca NY 14853
+.. [#f10] Luca Technologies, 500 Corporate Circle, Suite C, Golden, Colorado 80401 
+.. [#f11] Howard Hughes Medical Institute 

@@ -1,0 +1,195 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>filter_distance_matrix.py – Filter a distance matrix to contain only a specified set of samples. &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.9.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="filter_fasta.py – This script can be applied to remove sequences from a fasta or fastq file based on input criteria." href="filter_fasta.html" />
+    <link rel="prev" title="filter_alignment.py – Filter sequence alignment by removing highly variable regions" href="filter_alignment.html" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="filter_fasta.html" title="filter_fasta.py – This script can be applied to remove sequences from a fasta or fastq file based on input criteria."
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="filter_alignment.html" title="filter_alignment.py – Filter sequence alignment by removing highly variable regions"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="filter-distance-matrix"></span><div class="section" id="filter-distance-matrix-py-filter-a-distance-matrix-to-contain-only-a-specified-set-of-samples">
+<span id="index-0"></span><h1><em>filter_distance_matrix.py</em> &#8211; Filter a distance matrix to contain only a specified set of samples.<a class="headerlink" href="#filter-distance-matrix-py-filter-a-distance-matrix-to-contain-only-a-specified-set-of-samples" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>Remove samples from a distance matrix based on a mapping file or an otu table or a list of sample ids.</p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">filter_distance_matrix.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-input_distance_matrix</dt>
+<dd>The input distance matrix</dd>
+<dt>-o, <cite>-</cite>-output_distance_matrix</dt>
+<dd>Path to store the output distance matrix</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt><cite>-</cite>-sample_id_fp</dt>
+<dd>A list of sample identifiers (or tab-delimited lines with a sample identifier in the first field) which should be retained</dd>
+<dt>-t, <cite>-</cite>-otu_table_fp</dt>
+<dd>The otu table filepath</dd>
+<dt>-m, <cite>-</cite>-mapping_fp</dt>
+<dd>Path to the mapping file</dd>
+<dt>-s, <cite>-</cite>-valid_states</dt>
+<dd>String containing valid states, e.g. &#8216;STUDY_NAME:DOB&#8217;</dd>
+<dt><cite>-</cite>-negate</dt>
+<dd>Discard specified samples (instead of keeping them) [default: False]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>Filter samples ids listed in sample_id_list.txt from dm.txt</p>
+<div class="highlight-python"><div class="highlight"><pre>filter_distance_matrix.py -i dm.txt -o dm_out_sample_list.txt --sample_id_fp sample_id_list.txt
+</pre></div>
+</div>
+<p>Filter samples ids in otu_table.biom from dm.txt</p>
+<div class="highlight-python"><div class="highlight"><pre>filter_distance_matrix.py -i dm.txt -o dm_out_otu_table.txt -t otu_table.biom
+</pre></div>
+</div>
+<p>Filter samples ids where DOB is 20061218 in Fasting_Map.txt. (Run &#8220;<a class="reference external" href="./filter_samples_from_otu_table.html">filter_samples_from_otu_table.py</a> -h&#8221; for additional information on how metadata filtering can be specified.)</p>
+<div class="highlight-python"><div class="highlight"><pre>filter_distance_matrix.py -i dm.txt -o dm_out_mapping_file.txt -m Fasting_Map.txt -s &quot;DOB:20061218&quot;
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="filter_alignment.html"
+                        title="previous chapter"><em>filter_alignment.py</em> &#8211; Filter sequence alignment by removing highly variable regions</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="filter_fasta.html"
+                        title="next chapter"><em>filter_fasta.py</em> &#8211; This script can be applied to remove sequences from a fasta or fastq file based on input criteria.</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="filter_fasta.html" title="filter_fasta.py – This script can be applied to remove sequences from a fasta or fastq file based on input criteria."
+             >next</a> |</li>
+        <li class="right" >
+          <a href="filter_alignment.html" title="filter_alignment.py – Filter sequence alignment by removing highly variable regions"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

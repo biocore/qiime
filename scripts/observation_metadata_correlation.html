@@ -1,0 +1,269 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>observation_metadata_correlation.py – Correlation between observation abundances and continuous-valued metadata &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="parallel_align_seqs_pynast.py – Parallel sequence alignment using PyNAST" href="parallel_align_seqs_pynast.html" />
+    <link rel="prev" title="normalize_table.py – Matrix normalization alternatives to rarefaction" href="normalize_table.html" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="parallel_align_seqs_pynast.html" title="parallel_align_seqs_pynast.py – Parallel sequence alignment using PyNAST"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="normalize_table.html" title="normalize_table.py – Matrix normalization alternatives to rarefaction"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="observation-metadata-correlation"></span><div class="section" id="observation-metadata-correlation-py-correlation-between-observation-abundances-and-continuous-valued-metadata">
+<span id="index-0"></span><h1><em>observation_metadata_correlation.py</em> &#8211; Correlation between observation abundances and continuous-valued metadata<a class="headerlink" href="#observation-metadata-correlation-py-correlation-between-observation-abundances-and-continuous-valued-metadata" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>This script calculates correlations between feature (aka observation) abundances
+(relative or absolute) and numeric metadata. Several methods are provided to
+allow the user to correlate features to sample metadata values including
+Spearman&#8217;s Rho, Pearson, Kendall&#8217;s Tau, and the C or checkerboard score.
+References for these methods are numerous, but good descriptions may be found in
+&#8216;Biometry&#8217; by Sokal and Rolhf. A brief description of the available tests
+follows:</p>
+<ul class="simple">
+<li>Pearson score: The Pearson score, aka Pearson&#8217;s Product Moment correlation, is
+a scaled measure of the degree to which two sequences of numbers co-vary. For
+&#8216;correlated&#8217; sequences, Pearson &gt; 0, and for &#8216;anticorrelated&#8217; sequences
+Pearson &lt; 0 (uncorrelated implies Pearson = 0). Pearson is a paramateric
+and linear measure of correlation.</li>
+<li>Spearman&#8217;s Rho: The Spearman correlation is a non-paramateric measure of
+correlation between two sequences of numbers. Spearman correlation is
+appropriate for data where the values of the observations are not necessarily
+accurate, but for which their relative magnitudes are (see Biometry for more
+details).</li>
+<li>Kendall&#8217;s Tau: Kendall&#8217;s Tau is an alternative method of calculating
+correlation between two sequences of numbers. It is slower and less widely
+utilized than Spearman or Pearson scores.</li>
+<li>Cscore: The c-score or &#8216;checkerboard score&#8217; is a measure of covariation
+between two sequences that is derived from traditional ecology (Stone and
+Roberts. 1990, Oecologia 85:74-79).</li>
+</ul>
+<p>Raw correlation statistics alone reflect only the degree of association between
+two sequences of numbers or vectors. Assigning a likelihood to these score via
+a p-value can be done with several methods depending on the particular
+assumptions that are used. This script allows four methods for calculating
+p-values:</p>
+<ul class="simple">
+<li>Bootrapping: Bootstrapping is the most robust, but slowest procedure for
+calculating the p-value of a given correlation score. Bootstrapping takes the
+input sequences, shuffles the order of one, and then recomputes the
+correlation score. The p-value is then the number of times (out of the given
+number of permutations) that the score of the permuted sequence pair was more
+extreme than the observed pair. Bootstrapping is good when the underlying
+properties of the distributions are unknown.</li>
+<li>Parametric t distribution: the traditional method for calculating the
+significance of a correlation score, this method assumes that the scores are
+normally distributed and computes a t statistic for each correlation score in
+conjunction with the length of the sequences being correlated.</li>
+<li>Fisher Z transform: Fisher&#8217;s Z transform is a way to make the distribution of
+correlation scores (especially when there are many highly correlated scores)
+look more normal. It is not to be confused with Fisher&#8217;s transformation for
+the combination of p-values.</li>
+<li>Kendall&#8217;s Tau: for the Kendall&#8217;s Tau calculation, the specific Kendall&#8217;s Tau
+p-value is provided.</li>
+</ul>
+<p>Notes:</p>
+<ul class="simple">
+<li>The only supported metric for p-value assignment with the C-score is
+bootstrapping. For more information on the C-score, read Stone and Roberts
+1990 Oecologea paper 85: 74-79. If you don&#8217;t pass
+pval_assignment_method=&#8217;bootstrapped&#8217; while you have -s cscore, the script
+will raise an error.</li>
+<li>Assigning p-values to Kendall&#8217;s Tau scores with the bootstrapping method is
+very slow.</li>
+</ul>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">observation_metadata_correlation.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-i, <cite>-</cite>-otu_table_fp</dt>
+<dd>Path to input BIOM table</dd>
+<dt>-o, <cite>-</cite>-output_fp</dt>
+<dd>Path to the output file to be created</dd>
+<dt>-m, <cite>-</cite>-mapping_fp</dt>
+<dd>Path to metadata mapping file</dd>
+<dt>-c, <cite>-</cite>-category</dt>
+<dd>Name of the category in the metadata mapping file over which to run the analysis</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-s, <cite>-</cite>-test</dt>
+<dd>Correlation method to use. Choices are: spearman, pearson, kendall, cscore [default: spearman]</dd>
+<dt><cite>-</cite>-pval_assignment_method</dt>
+<dd>P-value method to use. Choices are: fisher_z_transform, parametric_t_distribution, bootstrapped, kendall [default: fisher_z_transform]</dd>
+<dt><cite>-</cite>-metadata_key</dt>
+<dd>Key to extract metadata from BIOM table. [default: taxonomy]</dd>
+<dt><cite>-</cite>-permutations</dt>
+<dd>Number of permutations to use for bootstrapped p-value calculations. [default: 1000]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>The output will be a tab-delimited file with the following headers. Each row
+will record the values calculated for a given feature:</p>
+<ul class="simple">
+<li>Feature ID: ID of the features being correlated. These are the observation IDs
+in the BIOM table.</li>
+<li>Test stat.: the value of the test statistic for the given test.</li>
+<li>pval: the raw p-value returned by the given test.</li>
+<li>pval_fdr: the p-value corrected by the Benjamini-Hochberg FDR procedure for
+multiple comparisons.</li>
+<li>pval_bon: the p-value corrected by the Bonferroni procedure for multiple
+comparisons.</li>
+<li>[metadata]: this column will be present only if the BIOM table contained
+metadata information for your features. For example, if these are OTUs, and
+taxonomy is present in the BIOM table, this column will contain OTU
+taxonomy and will be named &#8216;taxonomy&#8217;.</li>
+</ul>
+<p><strong>Example 1:</strong></p>
+<p>Calculate the correlation between OTUs in the table and the pH of the samples from whence they came:</p>
+<div class="highlight-python"><div class="highlight"><pre>observation_metadata_correlation.py -i otu_table.biom -m map.txt -c pH -s spearman -o spearman_otu_gradient.txt
+</pre></div>
+</div>
+<p><strong>Example 2:</strong></p>
+<p>Calculate the correlation between OTUs in the table and the pH of the samples from whence they came using bootstrapping and pearson correlation:</p>
+<div class="highlight-python"><div class="highlight"><pre>observation_metadata_correlation.py -i otu_table.biom -m map.txt -c pH -s pearson --pval_assignment_method bootstrapped --permutations 100 -o pearson_bootstrapped.txt
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="normalize_table.html"
+                        title="previous chapter"><em>normalize_table.py</em> &#8211; Matrix normalization alternatives to rarefaction</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="parallel_align_seqs_pynast.html"
+                        title="next chapter"><em>parallel_align_seqs_pynast.py</em> &#8211; Parallel sequence alignment using PyNAST</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="parallel_align_seqs_pynast.html" title="parallel_align_seqs_pynast.py – Parallel sequence alignment using PyNAST"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="normalize_table.html" title="normalize_table.py – Matrix normalization alternatives to rarefaction"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

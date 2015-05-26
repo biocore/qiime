@@ -1,0 +1,168 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>make_distance_histograms.py – Make distance histograms &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.1.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="make-distance-histograms"></span><div class="section" id="make-distance-histograms-py-make-distance-histograms">
+<span id="index-34"></span><h1><em>make_distance_histograms.py</em> &#8211; Make distance histograms<a class="headerlink" href="#make-distance-histograms-py-make-distance-histograms" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>To visualize the distance between samples and/or categories in the metadata mapping file, the user can generate histograms to represent the distances between samples. This script generates an HTML file, where the user can compare the distances between samples based on the different categories associated to each sample in the metadata mapping file.</p>
+<p><strong>Usage:</strong> <tt class="docutils literal"><span class="pre">make_distance_histograms.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-d, <cite>-</cite>-distance_matrix_file</dt>
+<dd>Path to distance matrix file.</dd>
+<dt>-m, <cite>-</cite>-map_fname</dt>
+<dd>This is the metadata mapping file  [default=None]</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-p, <cite>-</cite>-prefs_path</dt>
+<dd>This is the user-generated preferences file. NOTE: This is a file with a dictionary containing preferences for the analysis.  This dict must have a &#8220;Fields&#8221; key mapping to a list of desired fields. [default: None]</dd>
+<dt>-o, <cite>-</cite>-dir_path</dt>
+<dd>Directory to output data for all analyses. [default: .]</dd>
+<dt>-k, <cite>-</cite>-background_color</dt>
+<dd>This is the     background color to use in the plots (Options are &#8216;black&#8217; or &#8216;white&#8217;.     [default: white]</dd>
+<dt><cite>-</cite>-monte_carlo</dt>
+<dd>Perform Monte Carlo analysis on distances.  [Default: False]</dd>
+<dt><cite>-</cite>-html_output</dt>
+<dd>Write output in HTML format. [Default: False]</dd>
+<dt>-f, <cite>-</cite>-fields</dt>
+<dd>Comma delimited list of fields to compare.  This overwrites fields in prefs file.  If this is not provided, the first field in metadata mapping file will be used.  Usage: &#8211;fields Field1,Field2,Field3</dd>
+<dt><cite>-</cite>-monte_carlo_iters</dt>
+<dd>Number of iterations to perform for Monte Carlo analysis. [default: 10]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>The result of this script will be a folder containing images and/or an html file (with appropriate javascript files), depending on the user-defined parameters.</p>
+<p><strong>Examples:</strong></p>
+<p>Distance Histograms are a way to compare different categories and see which tend to have larger/smaller distances than others. For example, in the hand study, you may want to compare the distances between hands to the distances between individuals (with the file &#8220;hand_distances.txt&#8221; using the parameter -d hand_distances.txt). The categories are defined in the metadata mapping file (specified using the parameter -m hand_map.txt). If you want to look at the distances between hands and individuals, choose the &#8220;Hand&#8221; field and &#8220;Individual&#8221; field (using the parameter &#8211;fields Hand,Individual (notice the fields are comma delimited)). For each of these groups of distances a histogram is made. The output is a HTML file (&#8220;QIIME_Distance_Histograms.html&#8221; when the parameter &#8211;html_output is specified) which is created in the &#8220;Distance_Histograms&#8221; directory (using the parameter -o Distance_Histograms to specify output directory) where you can look at all the distance histograms individually, and compare them between each other.</p>
+<p>In the following command, the user only supplies a distance matrix (i.e. resulting file from <a class="reference external" href="./beta_diversity.html">beta_diversity.py</a>), the user-generated metadata mapping file and one category (e.g. pH):</p>
+<div class="highlight-python"><pre>make_distance_histograms.py -d beta_div.txt -m Mapping_file.txt --fields pH</pre>
+</div>
+<p>For comparison of multiple categories (e.g. pH, salinity), you can use the following command:</p>
+<div class="highlight-python"><pre>make_distance_histograms.py -d beta_div.txt -m Mapping_file.txt --fields pH,salinity</pre>
+</div>
+<p>If the user would like to write the result to a dynamic HTML, you can use the following command:</p>
+<div class="highlight-python"><pre>make_distance_histograms.py -d beta_div.txt -m Mapping_file.txt --fields pH --html_output</pre>
+</div>
+<p>In the case that the user generates their own preferences file (prefs.txt), they can use the following command:</p>
+<div class="highlight-python"><pre>make_distance_histograms.py -d beta_div.txt -m Mapping_file.txt -p prefs.txt</pre>
+</div>
+<p>Note: In the case that a preferences file is passed, the user does not need to supply fields in the command-line.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+		
+	 <li><a href="../index.html">Home</a><br /></li>
+	 <li><a href="../install/index.html">Install</a><br /></li>
+	 <li><a href="../documentation/index.html">Documentation</a><br /></li>
+	 <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	 <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	 <li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+      &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

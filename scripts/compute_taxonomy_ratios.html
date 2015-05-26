@@ -1,0 +1,200 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>compute_taxonomy_ratios.py – Compute the log ratio abundance of specified taxonomic groups. &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.9.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="conditional_uncovered_probability.py – Calculate the conditional uncovered probability on each sample in an otu table." href="conditional_uncovered_probability.html" />
+    <link rel="prev" title="compute_core_microbiome.py – Identify the core microbiome." href="compute_core_microbiome.html" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="conditional_uncovered_probability.html" title="conditional_uncovered_probability.py – Calculate the conditional uncovered probability on each sample in an otu table."
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="compute_core_microbiome.html" title="compute_core_microbiome.py – Identify the core microbiome."
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="compute-taxonomy-ratios"></span><div class="section" id="compute-taxonomy-ratios-py-compute-the-log-ratio-abundance-of-specified-taxonomic-groups">
+<span id="index-0"></span><h1><em>compute_taxonomy_ratios.py</em> &#8211; Compute the log ratio abundance of specified taxonomic groups.<a class="headerlink" href="#compute-taxonomy-ratios-py-compute-the-log-ratio-abundance-of-specified-taxonomic-groups" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>Compute the log ratio abundance of specified taxonomic groups. This method is based on the microbial dysbiosis index described in Gevers et al. 2014: <a class="reference external" href="http://www.ncbi.nlm.nih.gov/pubmed/24629344">http://www.ncbi.nlm.nih.gov/pubmed/24629344</a></p>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">compute_taxonomy_ratios.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-i, <cite>-</cite>-input</dt>
+<dd>The input BIOM table [REQUIRED if not passing -s]</dd>
+<dt>-o, <cite>-</cite>-output</dt>
+<dd>Path to where the output will be written; this will be a new sample metadata mapping file [REQUIRED if not passing -s]</dd>
+<dt><cite>-</cite>-increased</dt>
+<dd>Comma-separated list of taxa whose abundances are included in the numerator of the ratio [REQUIRED if not passing -s or -e]</dd>
+<dt><cite>-</cite>-decreased</dt>
+<dd>Comma-separated list of taxa whose abundances are included in the denominator of the ratio [REQUIRED if not passing -s or -e]</dd>
+<dt>-e, <cite>-</cite>-index</dt>
+<dd>Apply an existing index. Options are: md [REQUIRED if not passing -s or &#8211;increased and &#8211;decreased]</dd>
+<dt>-n, <cite>-</cite>-name</dt>
+<dd>Column name for the index in the output file [default: &#8216;index&#8217;, or value passed as -e if provided]</dd>
+<dt>-m, <cite>-</cite>-mapping_file</dt>
+<dd>A mapping file containing data that should be included in the output file [default: no additional mapping file data is included in output]</dd>
+<dt>-k, <cite>-</cite>-key</dt>
+<dd>Metadata key to use for computing index [default: taxonomy]</dd>
+<dt>-s, <cite>-</cite>-show_indices</dt>
+<dd>List known indices and exit [default: False]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>By default, a minimal QIIME mapping file is created containing two columns: SampleID and the index. If -m is provided, the information in that mapping file is merged into the default output mapping file.</p>
+<p><strong>Example:</strong></p>
+<p>Compute the microbial dysbiosis (MD) index</p>
+<div class="highlight-python"><div class="highlight"><pre>compute_taxonomy_ratios.py -i table.biom.gz -e md -o md.txt
+</pre></div>
+</div>
+<p><strong>Example:</strong></p>
+<p>Compute the microbial dysbiosis (MD) index and add it to an existing mapping file</p>
+<div class="highlight-python"><div class="highlight"><pre>compute_taxonomy_ratios.py -i table.biom.gz -e md -o map_w_md.txt -m map.txt
+</pre></div>
+</div>
+<p><strong>Example:</strong></p>
+<p>Compute the log of the abundance of p__Firmicutes plus p__Fusobacteria divided by the abundance of p__Bacteroidetes and write the results to custom_index.txt.</p>
+<div class="highlight-python"><div class="highlight"><pre>compute_taxonomy_ratios.py -i table.biom.gz --increased p__Firmicutes,p__Fusobacteria --decreased p__Bacteroidetes -o custom_index.txt
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="compute_core_microbiome.html"
+                        title="previous chapter"><em>compute_core_microbiome.py</em> &#8211; Identify the core microbiome.</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="conditional_uncovered_probability.html"
+                        title="next chapter"><em>conditional_uncovered_probability.py</em> &#8211; Calculate the conditional uncovered probability on each sample in an otu table.</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="conditional_uncovered_probability.html" title="conditional_uncovered_probability.py – Calculate the conditional uncovered probability on each sample in an otu table."
+             >next</a> |</li>
+        <li class="right" >
+          <a href="compute_core_microbiome.html" title="compute_core_microbiome.py – Identify the core microbiome."
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>QIIME Virtual Box &mdash; Homepage</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0.0-dev',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />     
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="qiime-virtual-box">
+<span id="virtual-box"></span><h1>QIIME Virtual Box<a class="headerlink" href="#qiime-virtual-box" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="what-is-the-qiime-virtual-box">
+<h2>What is the QIIME Virtual Box?<a class="headerlink" href="#what-is-the-qiime-virtual-box" title="Permalink to this headline">¶</a></h2>
+<p>Because of the &#8216;pipeline&#8217; nature of QIIME, there are many external dependencies and installation can therefore be challenging for new users. The QIIME Virtual Box should get around that problem, and is a fully functional environment for analyzing microbial community surveys and visualizing results.</p>
+<p>The QIIME Virtual Box is a virtual machine based on Ubuntu Linux which comes pre-packaged with QIIME&#8217;s dependencies. This is the fastest way to get up-and-running with QIIME, and is useful for small analyses (approximately up to a full 454 run); and testing QIIME to determine if it meets your needs before investing time in installing it, for example, in your cluster environment.</p>
+</div>
+<div class="section" id="installing-the-qiime-virtual-box">
+<h2>Installing the QIIME Virtual Box<a class="headerlink" href="#installing-the-qiime-virtual-box" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li>Download and install the <a class="reference external" href="http://www.virtualbox.org/wiki/Downloads">VirtualBox</a> (VB) version for your machine.</li>
+<li>Download the <a class="reference external" href="http://bmf.colorado.edu/QIIME/QIIME-1.0.0.vdi.gz">QIIME Virtual Box</a>. This file is large so it may take between a few minutes and a few hours depending on your Internet connection speed. You will need to unzip this file, which you can typically do by double-clicking on it.</li>
+<li>Create a new virtual machine:</li>
+</ol>
+<blockquote>
+<ul class="simple">
+<li>Launch VirtualBox, and create a new machine (press the New button).</li>
+<li>A new window will show up. Click &#8216;Next&#8217;.</li>
+<li>In this screen type QIIME as the name for the virtual machine. Then select Linux as the Operating System, and Ubuntu as the version. Click Next.</li>
+<li>Select the amount of RAM (memory). We recommend at least 1024MB, but the best option is based on your machine. After selecting the amount of RAM, click Next.</li>
+<li>Select &#8220;Use existing hard drive&#8221;, and click the folder icon next to the selector (it has a green up arrow). In the new window click &#8216;Add&#8217;, and locate the virtual hard drive that was downloaded in step 2. Click Select and then click Next.</li>
+<li>In the new window click Finish.</li>
+</ul>
+</blockquote>
+<ol class="arabic simple" start="4">
+<li>Double click on the new virtual machine created &#8211; it will be called QIIME &#8211; to boot it for the first time.</li>
+<li>Review any messages that are shown, and select whatever options are best for you.</li>
+<li>When your new virtual machine boots, you will see a folder on the Desktop called &#8216;Before_you_start&#8217;. Double click on that folder to open it, and then double click on the &#8216;Welcome&#8217; file in that folder. This will get you started with using your QIIME virtual box.</li>
+</ol>
+</div>
+<div class="section" id="limitations-of-the-qiime-virtual-box">
+<h2>Limitations of the QIIME Virtual Box<a class="headerlink" href="#limitations-of-the-qiime-virtual-box" title="Permalink to this headline">¶</a></h2>
+<p>Due to licensing restrictions, we cannot package the <tt class="docutils literal"><span class="pre">sff</span> <span class="pre">tools</span></tt> software with the QIIME Virtual Box. These must be obtained from Roche/454. When you run QIIME&#8217;s <tt class="docutils literal"><span class="pre">tests/all_tests.py</span></tt> script, you will therefore get failures associated with the wrapper for <tt class="docutils literal"><span class="pre">sff</span> <span class="pre">tools</span></tt> which look like:</p>
+<div class="highlight-python"><pre>Failed the following unit tests, in part or whole due to missing external applications.
+Depending on the QIIME features you plan to use, this may not be critical.
+/home/qiime/Qiime/tests/test_process_sff.py</pre>
+</div>
+<p>You can safely ignore these, unless you are planning to process <tt class="docutils literal"><span class="pre">sff</span></tt> files directly (rather than beginning with <tt class="docutils literal"><span class="pre">fasta</span></tt> and <tt class="docutils literal"><span class="pre">qual</span></tt> files). If you do plan to process the <tt class="docutils literal"><span class="pre">sff</span></tt> files directly, you will need to install your copy of <tt class="docutils literal"><span class="pre">sff</span> <span class="pre">tools</span></tt> in the virtual box.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">QIIME Virtual Box</a><ul>
+<li><a class="reference external" href="#what-is-the-qiime-virtual-box">What is the QIIME Virtual Box?</a></li>
+<li><a class="reference external" href="#installing-the-qiime-virtual-box">Installing the QIIME Virtual Box</a></li>
+<li><a class="reference external" href="#limitations-of-the-qiime-virtual-box">Limitations of the QIIME Virtual Box</a></li>
+</ul>
+</li>
+</ul>
+
+
+	<h3><a href="../index.html">Site index</a></h3>
+	<ul><li><ul>
+		
+	 <li><a href="../index.html">Home</a><br /></li>
+	 <li><a href="index.html">Install</a><br /></li>
+	 <li><a href="../documentation/index.html">Documentation</a><br /></li>
+	 <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+	 <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+	 <li><a href="../developer/index.html">Developer</a><br /></li>
+	</ul></li></ul>
+
+
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">Home</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+      &copy; Copyright 2010, QIIME Team.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

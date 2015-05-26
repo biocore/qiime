@@ -1,0 +1,275 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>validate_mapping_file.py – Checks user’s metadata mapping file for required data, valid format &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.9.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME Scripts" href="index.html" />
+    <link rel="next" title="Input Files" href="../documentation/file_formats.html" />
+    <link rel="prev" title="validate_demultiplexed_fasta.py – Checks a fasta file to verify if it has been properly demultiplexed, i.e., it is in QIIME compatible format." href="validate_demultiplexed_fasta.html" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../documentation/file_formats.html" title="Input Files"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="validate_demultiplexed_fasta.html" title="validate_demultiplexed_fasta.py – Checks a fasta file to verify if it has been properly demultiplexed, i.e., it is in QIIME compatible format."
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <span class="target" id="validate-mapping-file"></span><div class="section" id="validate-mapping-file-py-checks-user-s-metadata-mapping-file-for-required-data-valid-format">
+<span id="index-0"></span><h1><em>validate_mapping_file.py</em> &#8211; Checks user&#8217;s metadata mapping file for required data, valid format<a class="headerlink" href="#validate-mapping-file-py-checks-user-s-metadata-mapping-file-for-required-data-valid-format" title="Permalink to this headline">¶</a></h1>
+<p><strong>Description:</strong></p>
+<p>Specifically, we check that:</p>
+<blockquote>
+<div><ul>
+<li><dl class="first docutils">
+<dt>The BarcodeSequence, LinkerPrimerSequences, and ReversePrimer fields</dt>
+<dd><p class="first last">have valid IUPAC DNA characters, and BarcodeSequence characters
+are non-degenerate (error)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>The SampleID, BarcodeSequence, LinkerPrimerSequence, and Description</dt>
+<dd><p class="first last">headers are present. (error)</p>
+</dd>
+</dl>
+</li>
+<li><p class="first">There are not duplicate header fields (error)</p>
+</li>
+<li><p class="first">There are not duplicate barcodes (error)</p>
+</li>
+<li><dl class="first docutils">
+<dt>Barcodes are of the same length.  Suppressed when</dt>
+<dd><p class="first last">variable_len_barcode flag is passed (warning)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>The headers do not contain invalid characters (alphanumeric and</dt>
+<dd><p class="first last">underscore only) (warning)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>The data fields do not contain invalid characters (alphanumeric,</dt>
+<dd><p class="first last">underscore, space, and +-%./:,; characters) (warning)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>SampleID fields are MIENS compliant (only alphanumeric</dt>
+<dd><p class="first last">and . characters). (warning)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>There are no duplicates when the primer and variable length</dt>
+<dd><p class="first last">barcodes are appended (error)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>There are no duplicates when barcodes and added demultiplex</dt>
+<dd><p class="first last">fields (-j option) are combined (error)</p>
+</dd>
+</dl>
+</li>
+<li><p class="first">Data fields are not found beyond the Description column (warning)</p>
+</li>
+</ul>
+<p>Details about the metadata mapping file format can be found here:
+<a class="reference external" href="http://www.qiime.org/documentation/file_formats.html#metadata-mapping-files">http://www.qiime.org/documentation/file_formats.html#metadata-mapping-files</a></p>
+<p>Errors and warnings are saved to a log file.  Errors can be caused by
+problems with the headers, invalid characters in barcodes or primers, or
+by duplications in SampleIDs or barcodes.</p>
+<p>Warnings can arise from invalid characters and variable length barcodes that
+are not specified with the &#8211;variable_len_barcode.
+Warnings will contain a reference to the cell (row,column) that the
+warning arose from.</p>
+<p>In addition to the log file, a &#8220;corrected_mapping&#8221; file will be created.
+Any invalid characters will be replaced with &#8216;.&#8217; characters in
+the SampleID fields (to enforce MIENS compliance) and text in other data
+fields will be replaced with the character specified by the -c parameter,
+which is an underscore &#8220;_&#8221; by default.</p>
+<p>A html file will be created as well, which will show locations of
+warnings and errors, highlighted in yellow and red respectively.  If no
+errors or warnings were present the file will display a message saying
+such.  Header errors can mask other errors, so these should be corrected
+first.</p>
+<p>If pooled primers are used, separate with a comma.  For instance, a pooled
+set of three 27f primers (used to increase taxonomic coverage) could be
+specified in the LinkerPrimerSequence fields as such:
+AGGGTTCGATTCTGGCTCAG,AGAGTTTGATCCTGGCTTAG,AGAATTTGATCTTGGTTCAG</p>
+</div></blockquote>
+<p><strong>Usage:</strong> <tt class="file docutils literal"><span class="pre">validate_mapping_file.py</span> <span class="pre">[options]</span></tt></p>
+<p><strong>Input Arguments:</strong></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p><strong>[REQUIRED]</strong></p>
+<dl class="docutils">
+<dt>-m, <cite>-</cite>-mapping_fp</dt>
+<dd>Metadata mapping filepath</dd>
+</dl>
+<p><strong>[OPTIONAL]</strong></p>
+<dl class="last docutils">
+<dt>-o, <cite>-</cite>-output_dir</dt>
+<dd>Required output directory for log file, corrected mapping file, and html file. [default: ./]</dd>
+<dt>-v, <cite>-</cite>-verbose</dt>
+<dd>Enable printing information to standard out [default: True]</dd>
+<dt>-c, <cite>-</cite>-char_replace</dt>
+<dd>Changes the default character used to replace invalid characters found in the mapping file.  Must be a valid character (alphanumeric, period, or underscore).[default: _]</dd>
+<dt>-b, <cite>-</cite>-not_barcoded</dt>
+<dd>Use -b if barcodes are not present.  BarcodeSequence header still required.  [default: False]</dd>
+<dt>-B, <cite>-</cite>-variable_len_barcodes</dt>
+<dd>Use -B if variable length barcodes are present to suppress warnings about barcodes of unequal length. [default: False]</dd>
+<dt>-p, <cite>-</cite>-disable_primer_check</dt>
+<dd>Use -p to disable checks for primers.  LinkerPrimerSequence header still required. [default: False]</dd>
+<dt>-j, <cite>-</cite>-added_demultiplex_field</dt>
+<dd>Use -j to add a field to use in the mapping file as additional demultiplexing (can be used with or without barcodes).  All combinations of barcodes/primers and the these fields must be unique. The fields must contain values that can be parsed from the fasta labels such as &#8220;plate=R_2008_12_09&#8221;.  In this case, &#8220;plate&#8221; would be the column header and &#8220;R_2008_12_09&#8221; would be the field data (minus quotes) in the mapping file.  To use the run prefix from the fasta label, such as &#8220;&gt;FLP3FBN01ELBSX&#8221;, where &#8220;FLP3FBN01&#8221; is generated from the run ID, use &#8220;-j run_prefix&#8221; and set the run prefix to be used as the data under the column header &#8220;run_prefix&#8221;.  [default: None]</dd>
+<dt>-s, <cite>-</cite>-suppress_html</dt>
+<dd>Use -s to disable html file generation, can be useful for extremely large mapping files. [default: False]</dd>
+</dl>
+</div>
+<p><strong>Output:</strong></p>
+<p>A log file, html file, and corrected_mapping.txt file will be written to the current output directory.</p>
+<p><strong>Example:</strong></p>
+<p>Check the Fasting_Map.txt     mapping file for problems, supplying the required mapping file, and output     the results in the validate_mapping_file_output directory</p>
+<div class="highlight-python"><div class="highlight"><pre>validate_mapping_file.py -m     Fasting_Map.txt -o validate_mapping_file_output
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="../documentation/index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="validate_demultiplexed_fasta.html"
+                        title="previous chapter"><em>validate_demultiplexed_fasta.py</em> &#8211; Checks a fasta file to verify if it has  been properly demultiplexed, i.e., it is in QIIME compatible format.</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../documentation/file_formats.html"
+                        title="next chapter">Input Files</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../documentation/file_formats.html" title="Input Files"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="validate_demultiplexed_fasta.html" title="validate_demultiplexed_fasta.py – Checks a fasta file to verify if it has been properly demultiplexed, i.e., it is in QIIME compatible format."
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="../documentation/index.html" >QIIME File Formats</a> &raquo;</li>
+          <li><a href="index.html" >QIIME Scripts</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

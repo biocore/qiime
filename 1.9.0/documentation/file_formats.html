@@ -1,0 +1,441 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Input Files &mdash; Homepage</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.9.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="Homepage" href="../index.html" />
+    <link rel="up" title="QIIME File Formats" href="index.html" />
+    <link rel="next" title="QIIME parameters files" href="qiime_parameters_files.html" />
+    <link rel="prev" title="validate_mapping_file.py – Checks user’s metadata mapping file for required data, valid format" href="../scripts/validate_mapping_file.html" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src="../_static/google_feed.js"></script>
+
+  </head>
+  <body>
+
+<div style="background-color: white; text-align: left; padding: 0px">
+<a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
+</div>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="qiime_parameters_files.html" title="QIIME parameters files"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../scripts/validate_mapping_file.html" title="validate_mapping_file.py – Checks user’s metadata mapping file for required data, valid format"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">QIIME File Formats</a> &raquo;</li> 
+      </ul>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="input-files">
+<span id="essential-files"></span><h1>Input Files<a class="headerlink" href="#input-files" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="general-suggestions-for-formatting-your-files">
+<h2>General suggestions for formatting your files<a class="headerlink" href="#general-suggestions-for-formatting-your-files" title="Permalink to this headline">¶</a></h2>
+<p>These are general guidelines that apply to formatting files for use with QIIME, and command line tools in general:</p>
+<ol class="arabic simple">
+<li>Files should have proper file type suffix. For example, <tt class="docutils literal"><span class="pre">.fna</span></tt> or <tt class="docutils literal"><span class="pre">.fasta</span></tt> for FASTA files; <tt class="docutils literal"><span class="pre">.qual</span></tt> for quality score files; <tt class="docutils literal"><span class="pre">.sff</span></tt> for sff files; <tt class="docutils literal"><span class="pre">.txt</span></tt> for mapping files.</li>
+<li>Do not use spaces in your filenames. Use underscores or MixedCase instead. For example, instead of <tt class="file docutils literal"><span class="pre">amazon</span> <span class="pre">soil.fna</span></tt> use <tt class="file docutils literal"><span class="pre">amazon_soil.fna</span></tt> or <tt class="file docutils literal"><span class="pre">AmazonSoil.fna</span></tt>.</li>
+<li>Edit your files with a text editor such as TextEdit or TextMate (on Mac), gedit (on Linux), vim, or emacs, but not Microsoft Word, which is a <a class="reference external" href="http://en.wikipedia.org/wiki/Word_processor">word processor</a>, not a <a class="reference external" href="http://en.wikipedia.org/wiki/Text_editor">text editor</a>. Mapping files and OTU tables can be edited in Microsoft Excel, but should always be saved as tab-delimited text.</li>
+</ol>
+</div>
+<div class="section" id="metadata-mapping-files">
+<h2>Metadata mapping files<a class="headerlink" href="#metadata-mapping-files" title="Permalink to this headline">¶</a></h2>
+<p>Metadata mapping files are used through-out QIIME, and provide per-sample metadata. These are used in <tt class="docutils literal"><span class="pre">split_libraries.py</span></tt>, <tt class="docutils literal"><span class="pre">beta_diversity_through_plots.py</span></tt>, <tt class="docutils literal"><span class="pre">alpha_rarefaction.py</span></tt> and other scripts.</p>
+<div class="section" id="mapping-file-overview">
+<h3>Mapping File Overview<a class="headerlink" href="#mapping-file-overview" title="Permalink to this headline">¶</a></h3>
+<p>The mapping file is generated by the user. This file contains all of the information about the samples necessary to perform the data analysis. In general, the mapping file should contain the name of each sample, the barcode sequence used for each sample, the linker/primer sequence used to amplify the sample, and a description column. One should also include in the mapping file any metadata that relates to the samples (for instance, health status or sampling site) and any additional information relating to specific samples that may be useful to have at hand when considering outliers (for example, what medications a patient was taking at time of sampling).</p>
+<p>The mapping file relates barcodes in the FASTA file to each sample and their related metadata. Each FASTA file must have at least one mapping file but multiple mapping files can be defined for any given FASTA file. For example, if you have bundled several unrelated studies into one 454 run (for instance, a mouse study, a soil study and a fish study), and need to analyze each study separately, you would generate three separate mapping files that specify a subset of samples and their associated metadata. Alternatively, you can combine multiple runs (e.g. multiple 454 runs, multiple FASTA files) with a single mapping file.</p>
+<p>Each column header MUST contain alphanumeric (a-z, A-Z and 1-9) and/or underscore (&#8220;_&#8221;) characters only, where the header MUST start with letter. All other characters (e.g. $, *, ^, etc) are not supported at this time and use of those characters may cause problems downstream in the QIIME pipeline.</p>
+<p>Currently, the user has the ability to define their own column headers, however; QIIME will be adopting the MIMARKS standard, therefore all column headings MUST correspond the proper MIMARKS nomenclature (<a class="reference external" href="http://wiki.gensc.org/index.php?title=MIMARKS">http://wiki.gensc.org/index.php?title=MIMARKS</a>). The following details the current mapping file guidelines:</p>
+<ol class="arabic simple">
+<li>The first column header must be &#8220;#SampleID&#8221;, and the data in this column must contain unique (short and meaningful) sample identifiers containing only alphanumeric and period (&#8221;.&#8221;) characters. Leading and trailing spaces will raise a warning when using <a class="reference external" href="../scripts/validate_mapping_file.html">validate_mapping_file.py</a>.</li>
+<li>The second column header must be &#8220;BarcodeSequence&#8221;, where each value in that column corresponds to the barcode used for each sample.  Only IUPAC DNA characters are acceptable. Leading and trailing spaces will raise a warning when using <a class="reference external" href="../scripts/validate_mapping_file.html">validate_mapping_file.py</a>.</li>
+<li>The third column header must be “LinkerPrimerSequence”, where each value in that column corresponds to the primer used to amplify that sample.  Only IUPAC DNA characters are acceptable. Leading and trailing spaces will raise a warning when using <a class="reference external" href="../scripts/validate_mapping_file.html">validate_mapping_file.py</a>.</li>
+<li>All subsequent column headers (except the last one) are metadata headers. For example, a &#8220;Smoker&#8221; column would include either &#8220;Yes&#8221; or &#8220;No&#8221;. Note that the data in each column is assumed to be categorical unless specified otherwise. Categorical data columns must include at least 2 unique values per column. All metadata must be composed of only alphanumeric, underscore (&#8220;_&#8221;), period (&#8221;.&#8221;), minus sign (&#8220;-&#8221;), plus sign (&#8220;+&#8221;), percentage (&#8220;%&#8221;), space (&#8221; &#8221;), semicolon (&#8221;;&#8221;), colon (&#8221;:&#8221;), comma (&#8221;,&#8221;), and/or forward slash (&#8220;/&#8221;) characters. For missing data, write &#8220;NA&#8221;; do not leave blanks.</li>
+<li>The last column of the mapping file must be named &#8220;Description&#8221;. Information in this column includes information that is unique to each sample, such as the medications taken by the patient, or any other descriptive information. The same character restrictions that apply to the metadata columns in guideline four apply to sample descriptions.  Sample/Run Description should be kept brief, if possible. Information that applies to all samples in a mapping file should go in the run description section, which is defined as lines starting with a &#8220;#&#8221; character, immediately following the header line (See example format below.) Information that is specific to a particular sample should go in the &#8220;Description&#8221; column.</li>
+<li>There should be no empty lines or comment lines (starting with #) throughout the metadata, with the exception of any additional run description lines that immediately follow the initial header line.</li>
+<li>Quotes (&#8221;) will be stripped from the mapping file (header and data fields) when it is parsed by most scripts in QIIME. For <a class="reference external" href="../scripts/validate_mapping_file.html">validate_mapping_file.py</a>, these will be flagged with a warning.</li>
+<li>Stripping of leading and trailing whitespace is only performed on table cells (including sample IDs), not on the column headers. If quote characters (&#8221;) are present, these are removed first, followed by whitespace stripping.</li>
+</ol>
+<p>The header for this mapping file starts with a pound (#) character, and generally requires a &#8220;SampleID&#8221;, &#8220;BarcodeSequence&#8221;, &#8220;LinkerPrimerSequence&#8221;, and a &#8220;Description&#8221;, all tab separated.  The following example header represents the minimum field requirement for the mapping file:</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li>#SampleID  BarcodeSequence LinkerPrimerSequence    Description</li>
+</ul>
+</div>
+<p>Additional optional headers can follow the &#8220;LinkerPrimerSequence&#8221; header.  Any lines following this header that start with the pound character are considered to be comment lines and are ignored by QIIME.</p>
+<p>Data fields do not start with a pound character.  These fields are tab separated, and have restrictions regarding character usage.  SampleID fields only accept alphanumeric and period (.) characters.  The other data fields will accept alphanumeric, period (.), underscore (_), percent (%), plus (+), minus (-), space ( ), semicolon (;), colon (:), comma (,), or forward slash (/) characters.</p>
+<p>You are highly encouraged to validate your mapping file using <a class="reference external" href="../scripts/validate_mapping_file.html">validate_mapping_file.py</a> before attempting to analyze your data. This tool will check for errors, and make suggestions for other aspects of the file to be edited (errors and warnings are output to a log file, and suggested changes to invalid characters are output to a &#8220;_corrected.txt&#8221; file).  The contents of a sample mapping file are shown here - as you can see, a nucleotide barcode sequence is provided for each of the 9 samples, as well as metadata related to treatment group and date of birth, and general run descriptions about the project:</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li>#SampleID  BarcodeSequence LinkerPrimerSequence    Treatment       DOB     Description</li>
+<li>#Example mapping file for the QIIME analysis package. These 9 samples are from a study of the effects of</li>
+<li>#exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).</li>
+<li>PC.354     AGCACGAGCCTA    YATGCTGCCTCCCGTAGGAGT   Control 20061218        Control_mouse__I.D._354</li>
+<li>PC.355     AACTCGTCGATG    YATGCTGCCTCCCGTAGGAGT   Control 20061218        Control_mouse__I.D._355</li>
+<li>PC.356     ACAGACCACTCA    YATGCTGCCTCCCGTAGGAGT   Control 20061126        Control_mouse__I.D._356</li>
+<li>PC.481     ACCAGCGACTAG    YATGCTGCCTCCCGTAGGAGT   Control 20070314        Control_mouse__I.D._481</li>
+<li>PC.593     AGCAGCACTTGT    YATGCTGCCTCCCGTAGGAGT   Control 20071210        Control_mouse__I.D._593</li>
+<li>PC.607     AACTGTGCGTAC    YATGCTGCCTCCCGTAGGAGT   Fast    20071112        Fasting_mouse__I.D._607</li>
+<li>PC.634     ACAGAGTCGGCT    YATGCTGCCTCCCGTAGGAGT   Fast    20080116        Fasting_mouse__I.D._634</li>
+<li>PC.635     ACCGCAGAGTCA    YATGCTGCCTCCCGTAGGAGT   Fast    20080116        Fasting_mouse__I.D._635</li>
+<li>PC.636     ACGGTGAGTGTC    YATGCTGCCTCCCGTAGGAGT   Fast    20080116        Fasting_mouse__I.D._636</li>
+</ul>
+</div>
+<p>This example mapping file is available here: <a class="reference external" href="../_static/Examples/File_Formats/Example_Mapping_File.txt">Example Mapping File</a> (Right click and use &#8216;download&#8217; or &#8216;save as&#8217; to save this file)</p>
+<p>During demultiplexing with <a class="reference external" href="../scripts/split_libraries.html">split_libraries.py</a>, the <cite>SampleID</cite> that is associated with the barcode found in a given sequence is used to label the output sequence.  An example set of such assignments are seen in the <a class="reference external" href="../tutorials/tutorial.html#assign-samples-to-multiplex-reads">Tutorial - Assign Samples to Multiplex Reads section</a>.  Note that in this example, the barcode associated with &#8220;PC.634&#8221;, &#8220;ACAGAGTCGGCT&#8221; was found in the first two sequences, and so the output &#8220;seqs.fna&#8221; file has these sequences labeled as &#8220;PC.634_1&#8221; and &#8220;PC.634_2&#8221; respectively.  The third sequence contained the barcode &#8220;AGCACGAGCCTA&#8221;, and hence was associated with &#8220;PC.354&#8221;.</p>
+</div>
+<div class="section" id="generating-a-mapping-file-by-hand">
+<h3>Generating a Mapping File by Hand<a class="headerlink" href="#generating-a-mapping-file-by-hand" title="Permalink to this headline">¶</a></h3>
+<p>The easiest way to generate a mapping file is to use a spreadsheet program, such as Microsoft Excel.  Each header and field should be in its own column.  When saving the file, it is best to use the pre-built tab-delimited option.  If this is not available for a particular spreadsheet program, set the format to text csv, the field delimiter as a tab, and leave the text delimiter blank.  Once the file is saved, open it in a basic text editor to see if the formatting meets the criteria given above.  Finally, use <a class="reference external" href="../scripts/validate_mapping_file.html">validate_mapping_file.py</a> to test the file for QIIME compatibility.</p>
+</div>
+<div class="section" id="fixing-problems-in-the-mapping-file">
+<h3>Fixing Problems in the Mapping File<a class="headerlink" href="#fixing-problems-in-the-mapping-file" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="../scripts/validate_mapping_file.html">validate_mapping_file.py</a> will test for many problems in the mapping file, such as incorrect character usage.  A &#8220;_corrected.txt&#8221; form of the mapping file will be generated containing invalid characters replaced by allowed characters.  The following is an example of an incorrectly formatted mapping file, with invalid characters, duplicated values that should be unique (&#8220;SampleID&#8221;, &#8220;BarcodeSequence&#8221;), non DNA characters in the &#8220;LinkerPrimerSequence&#8221;, and a missing &#8220;Description&#8221; cell.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li>#SampleID  BarcodeSequence LinkerPrimerSequence    Treatment       DOB     Description</li>
+<li>#Example mapping file for the QIIME analysis package. These 9 samples are from a study of the effects of</li>
+<li>#exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).</li>
+<li>PC&amp;&amp;&amp;&amp;     AGCACGAGCCTA    YATGCTGCCTCCCGTAGGAGT   Control 20061218        Control_mouse__I.D._354</li>
+<li>PC.355     AGCACGAGCCTA    YATGCTGCCTCCCGTAGGAGT   Control 20061218        Control_mouse__I.D._355</li>
+<li>PC.355     ACAGACCACTCA    YATGCTGCCTCCCGTAGGAGT   Control 20061126        Control_mouse__I.D._356</li>
+<li>PC_481     ACCAGCGACTAG    ZATGCTGCCTCCCGTAGGAGT   Control 20070314        Control_mouse__I.D._481</li>
+<li>PC.593     AGCAGCACTTGT    YATGCTGCCTCCCGTAGGAGT   Control 20071210        Control_mouse__I.D._593</li>
+<li>PC.607     AACTGTGCGTAC    YATGCTGCCTCCCGTAGGAGT   Fast^2  20071112        Fasting_mouse__I.D._607</li>
+<li>PC.634     ACAGAGTCGGCT    YATGCTGCCTCCCGTAGGAGT   Fast    20080116</li>
+<li>PC.635     ACCGCAGAGTCA    YATGCTGCCTCCCGTAGGAGT   Fast    20080116        Fasting_mouse__I.D._635</li>
+<li>PC.636     ACGGTGAGTGTC    YATGCTGCCTCCCGTAGGAGT   Fast    20080116        Fasting_mouse__I.D._636</li>
+</ul>
+</div>
+<p>The corrected mapping file will replace invalid characters and fill in missing &#8220;Description&#8221; fields.  The example corrected mapping file output is below:</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li>#SampleID  BarcodeSequence LinkerPrimerSequence    Treatment       DOB     Description</li>
+<li>#Example mapping file for the QIIME analysis package. These 9 samples are from a study of the effects of</li>
+<li>#exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).</li>
+<li>PC....     AGCACGAGCCTA    YATGCTGCCTCCCGTAGGAGT   Control 20061218        Control_mouse__I.D._354</li>
+<li>PC.355     AGCACGAGCCTA    YATGCTGCCTCCCGTAGGAGT   Control 20061218        Control_mouse__I.D._355</li>
+<li>PC.355     ACAGACCACTCA    YATGCTGCCTCCCGTAGGAGT   Control 20061126        Control_mouse__I.D._356</li>
+<li>PC.481     ACCAGCGACTAG    ZATGCTGCCTCCCGTAGGAGT   Control 20070314        Control_mouse__I.D._481</li>
+<li>PC.593     AGCAGCACTTGT    YATGCTGCCTCCCGTAGGAGT   Control 20071210        Control_mouse__I.D._593</li>
+<li>PC.607     AACTGTGCGTAC    YATGCTGCCTCCCGTAGGAGT   Fast_2  20071112        Fasting_mouse__I.D._607</li>
+<li>PC.634     ACAGAGTCGGCT    YATGCTGCCTCCCGTAGGAGT   Fast    20080116        missing_description</li>
+<li>PC.635     ACCGCAGAGTCA    YATGCTGCCTCCCGTAGGAGT   Fast    20080116        Fasting_mouse__I.D._635</li>
+<li>PC.636     ACGGTGAGTGTC    YATGCTGCCTCCCGTAGGAGT   Fast    20080116        Fasting_mouse__I.D._636</li>
+</ul>
+</div>
+<p>However, this corrected mapping file is still not usable.  The log file generated by <a class="reference external" href="../scripts/validate_mapping_file.html">validate_mapping_file.py</a> explains the remaining problems.  The barcode &#8220;AGCACGAGCCTA&#8221; is duplicated, and appears in the first two rows.  Rows two and three contain the same &#8220;SampleID&#8221; value.  These errors will have to be fixed by hand.  Secondly, the &#8220;Z&#8221; character in the fourth row &#8220;LinkerPrimerSequence&#8221; is not a valid IUPAC DNA character and needs to be replaced with a legitimate nucleotide code.</p>
+</div>
+<div class="section" id="mapping-files-without-barcodes-and-or-primers">
+<h3>Mapping Files Without Barcodes and/or Primers<a class="headerlink" href="#mapping-files-without-barcodes-and-or-primers" title="Permalink to this headline">¶</a></h3>
+<p>In some circumstances, users may need to generate a mapping file that does not contain barcodes and/or primers.  To generate such a mapping file, fields for &#8220;BarcodeSequence&#8221; and &#8220;LinkerPrimerSequence&#8221; can be left empty.  An example of such a file is below (note that the tabs are still present for the empty &#8220;BarcodeSequence&#8221; and &#8220;LinkerPrimerSequence&#8221; fields):</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li>#SampleID  BarcodeSequence LinkerPrimerSequence    Treatment DOB   Description</li>
+<li>#Example mapping file for the QIIME analysis package. These 9 samples are from a study of the effects of</li>
+<li>#exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).</li>
+<li>PC.354             Control 20061218        Control_mouse__I.D._354</li>
+<li>PC.355             Control 20061218        Control_mouse__I.D._355</li>
+<li>PC.356             Control 20061126        Control_mouse__I.D._356</li>
+<li>PC.481             Control 20070314        Control_mouse__I.D._481</li>
+<li>PC.593             Control 20071210        Control_mouse__I.D._593</li>
+<li>PC.607             Fast    20071112        Fasting_mouse__I.D._607</li>
+<li>PC.634             Fast    20080116        Fasting_mouse__I.D._634</li>
+<li>PC.635             Fast    20080116        Fasting_mouse__I.D._635</li>
+<li>PC.636             Fast    20080116        Fasting_mouse__I.D._636</li>
+</ul>
+</div>
+<p>To validate such a mapping file, the user will need to disable barcode and primer testing with the -p and -b parameters:</p>
+<div class="highlight-python"><div class="highlight"><pre>validate_mapping_file.py -m &lt;mapping_filepath&gt; -o check_id_output/ -p -b
+</pre></div>
+</div>
+<p>The above mapping file will still show a warning-as it is lacking any barcodes, it has no way to differentiate sequences, and thus can not be used for demultiplexing. However, such warnings can be ignored if the mapping file is being used for steps downstream of demultiplexing.</p>
+</div>
+</div>
+<div class="section" id="demultiplexed-sequences">
+<h2>Demultiplexed sequences<a class="headerlink" href="#demultiplexed-sequences" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="post-split-libraries-fasta-file-overview">
+<h3>Post- split_libraries FASTA File Overview<a class="headerlink" href="#post-split-libraries-fasta-file-overview" title="Permalink to this headline">¶</a></h3>
+<p>When performing a typical workflow, it is not necessary for users to put together the specially formatted post-split-libraries FASTA file.  Thus, this section is primarily useful for users who would like to use the downstream capabilities of QIIME without running split_libraries.py.  For a description of the essential files for the typical workflow see their description in the QIIME <a class="reference external" href="../tutorials/tutorial.html">Tutorial</a>.</p>
+<p>The purpose of the post-split_libraries FASTA is to relate each sequence to the sample from which it came, while also recording information about the original and error-corrected barcodes from which this inference was made.</p>
+<p>Here is an example of the post-split libraries FASTA file format:</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li>&gt;PC.634_1 FLP3FBN01ELBSX orig_bc=ACAGAGTCGGCT new_bc=ACAGAGTCGGCT bc_diffs=0</li>
+<li>CTGGGCCGTGTCTCAGTCCCAATGTGGCCGTTTACCCTCTCAGGCCGGCTACGCATCATCGCCTTGGTGGGCCGTT</li>
+<li>&gt;PC.634_2 FLP3FBN01EG8AX orig_bc=ACAGAGTCGGCT new_bc=ACAGAGTCGGCT bc_diffs=0</li>
+<li>TTGGACCGTGTCTCAGTTCCAATGTGGGGGCCTTCCTCTCAGAACCCCTATCCATCGAAGGCTTGGTGGGCCGTTA</li>
+<li>&gt;PC.354_3 FLP3FBN01EEWKD orig_bc=AGCACGAGCCTA new_bc=AGCACGAGCCTA bc_diffs=0</li>
+<li>TTGGGCCGTGTCTCAGTCCCAATGTGGCCGATCAGTCTCTTAACTCGGCTATGCATCATTGCCTTGGTAAGCCGTT</li>
+<li>&gt;PC.481_4 FLP3FBN01DEHK3 orig_bc=ACCAGCGACTAG new_bc=ACCAGCGACTAG bc_diffs=0</li>
+<li>CTGGGCCGTGTCTCAGTCCCAATGTGGCCGTTCAACCTCTCAGTCCGGCTACTGATCGTCGACTTGGTGAGCCGTT</li>
+</ul>
+</div>
+<p>An example of the post-split_libraries FASTA  file is available here: <a class="reference external" href="../_static/Examples/File_Formats/example_fasta_after_split_libraries.fna">Example Post Split Libraries Sequence File</a></p>
+<p>(Right click and use &#8216;download&#8217; or &#8216;save as&#8217; to save this file.  In general it is preferable to download these files directly rather than opening them in your browser and then cutting and pasting the text into a word-processor such as Microsoft Word or OpenOffice, as these programs often silently introduce small but important changes in the file format.)</p>
+<p>The post-split libraries FASTA file is a typical FASTA file, with a few special fields in the label line.</p>
+<p>The important things to notice about the format are:</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li><ol class="first arabic">
+<li>The file is a FASTA file, with sequences in the single line format.  That is, sequences are not broken up into multiple lines of a particular length, but instead the entire sequence occupies a single line.</li>
+</ol>
+</li>
+<li><ol class="first arabic" start="2">
+<li>The label line is separated by spaces and has five fields.   In order, those fields are:  the sample id of the sample that the sequence came from (e.g. PC.634_1), the unique sequence id (e.g. FLP3FBN01ELBSX), the original barcode (e.g. orig_bc=ACAGAGTCGGCT), the new barcode after error-correction (e.g. new_bc=ACAGAGTCGGCT), and the number of positions that differ between the original and new barcode (e.g. bc_diffs=0).</li>
+</ol>
+</li>
+<li><ol class="first arabic" start="3">
+<li>Note that the first two fields (the sample id and sequence id) don&#8217;t require anything ahead of the ids, the last three (orig_bc, new_bc, and bc_diffs) require the name of the field and an equals sign immediately ahead of the value (e.g. &#8216;bc_diffs=0&#8217; not &#8216;bc_diffs = 0&#8217; or just &#8216;0&#8217;)</li>
+</ol>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="handling-already-demultiplexed-samples">
+<h3>Handling Already Demultiplexed Samples<a class="headerlink" href="#handling-already-demultiplexed-samples" title="Permalink to this headline">¶</a></h3>
+<p>Demultiplexed sequence files are passed to <tt class="docutils literal"><span class="pre">pick_otus.py</span></tt>, and used when skipping the <tt class="docutils literal"><span class="pre">split_libraries.py</span></tt> step when your sequences are already demultiplexed.  In order for the downstream modules of QIIME to associate sequences with particular samples, these demultiplexed sequences need to be labeled in such a way that the SampleID (see <a class="reference external" href="file_formats.html#mapping-file-overview">mapping file format</a>) and sequence number are incorporated into the fasta label.</p>
+<p>For instance, if the following fasta sequence:</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li>&gt;FLP3FBN01ELBSX length=250 xy=1766_0111 region=1 run=R_2008_12_09_13_51_01_</li>
+<li>GCAGAGTCGGCTCATGCTGCCTCCCGTAGGAGTCTGGGCCGTGTCTCAGTCCCAATGTGGCCGTTTACCCTCTCAGGCCGGCTACGCATCATCGCCTTGGTGGGC</li>
+</ul>
+</div>
+<p>was the first sequence in the fasta file, and it was associated with the sample PC.634, the demultiplexed sequence should be listed as so (note that the barcode and primer are removed from the sequence):</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li>&gt;PC.634_1 FLP3FBN01ELBSX orig_bc=ACAGAGTCGGCT new_bc=ACAGAGTCGGCT bc_diffs=0</li>
+<li>CTGGGCCGTGTCTCAGTCCCAATGTGGCCGTTTACCCTCTCAGGCCGGCTACGCATCATCGCCTTGGTGGGC</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="section" id="biom-table-e-g-otu-table">
+<span id="otu-table-format"></span><h2>BIOM table (e.g., OTU table)<a class="headerlink" href="#biom-table-e-g-otu-table" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="overview">
+<h3>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h3>
+<p>The Biological Observation Matrix (or BIOM, canonically pronounced <em>biome</em>) table is the core data type for downstream analyses in QIIME. It is a matrix of counts of observations on a per-sample basis. Most commonly, the observations are OTUs or taxa, and the samples are the unit of sampling in a study (e.g., a microbiome sample from the skin of one individual at one time point). These tables are often referred to as OTU tables in QIIME (but really an OTU table is one type of a BIOM table). BIOM tables are stored in the BIOM file format. For more information about the BIOM file format, please visit <a class="reference external" href="http://biom-format.org">http://biom-format.org</a>.</p>
+<p>OTU tables are generated during the OTU picking process (e.g., <a class="reference external" href="../scripts/pick_open_reference_otus.html">pick_open_reference_otus.py</a>, <a class="reference external" href="../scripts/pick_closed_reference_otus.html">pick_closed_reference_otus.py</a>, or <a class="reference external" href="../scripts/pick_de_novo_otus.html">pick_de_novo_otus.py</a>) but can also be generated externally from QIIME (e.g., exported from MG-RAST for metagenomic analysis with QIIME). They are used in scripts such as <a class="reference external" href="../scripts/core_diversity_analyses.html">core_diversity_analyses.py</a>, <a class="reference external" href="../scripts/beta_diversity_through_plots.html">beta_diversity_through_plots.py</a>, <a class="reference external" href="../scripts/alpha_rarefaction.html">alpha_rarefaction.py</a>, and <a class="reference external" href="../scripts/summarize_taxa_through_plots.html">summarize_taxa_through_plots.py</a>. For more information about working with BIOM tables in QIIME, please refer to <a class="reference internal" href="../tutorials/working_with_biom_tables.html"><em>Working with BIOM tables in QIIME</em></a>.</p>
+</div>
+<div class="section" id="biom-file-format-versions">
+<h3>BIOM file format versions<a class="headerlink" href="#biom-file-format-versions" title="Permalink to this headline">¶</a></h3>
+<p>As of version 1.8.0-dev, QIIME supports BIOM tables stored in version <a class="reference external" href="http://biom-format.org/documentation/format_versions/biom-1.0.html">1.0</a> and <a class="reference external" href="http://biom-format.org/documentation/format_versions/biom-2.1.html">2.1</a> of the BIOM file format. The main distinction between these two versions is the underlying file format: <a class="reference external" href="http://www.json.org/">JSON</a> is used for version 1.0 and <a class="reference external" href="http://www.hdfgroup.org/HDF5/">HDF5</a> is used for version 2.1. Version 2.1 is recommended for large datasets as it provides an efficient way to store and access thousands of samples by millions of observations.</p>
+<p>QIIME is designed to work seamlessly with BIOM tables stored in either version, so you shouldn&#8217;t need to worry too much about which version your BIOM table is stored in. If the <a class="reference external" href="http://www.hdfgroup.org/HDF5/">HDF5</a> libraries and <a class="reference external" href="http://www.h5py.org">h5py</a> are installed, QIIME will create BIOM tables in version 2.1 of the file format. If h5py and HDF5 are not installed, QIIME will create BIOM tables in version 1.0 of the file format. You can use <a class="reference external" href="http://biom-format.org/documentation/biom_conversion.html">biom convert</a> to convert between file formats if necessary.</p>
+<p>To see if h5py and HDF5 are installed on your system (thus enabling support for version 2.1 of the BIOM file format), run <a class="reference external" href="../scripts/print_qiime_config.html">print_qiime_config.py</a> and look for a line of output that is similar to the following (note that version numbers may differ):</p>
+<div class="highlight-python"><div class="highlight"><pre>h5py version:       2.4.0 (HDF5 version: 1.8.13)
+</pre></div>
+</div>
+<p>If you instead see the following output, you do not have h5py and/or HDF5 installed, so QIIME will create BIOM tables in version 1.0 of the file format (and support for version 2.1 is disabled):</p>
+<div class="highlight-python"><div class="highlight"><pre>h5py version:       Not installed.
+</pre></div>
+</div>
+<p>Note that in order to interact with an existing BIOM table stored in version 2.1 of the file format, you will need h5py and HDF5 installed so that QIIME can load the table. This may be necessary, for example, if a collaborator generated a version 2.1 BIOM table and you plan to use QIIME to perform further analyses with the table.</p>
+</div>
+</div>
+<div class="section" id="id-to-taxonomy-map">
+<h2>ID-to-taxonomy map<a class="headerlink" href="#id-to-taxonomy-map" title="Permalink to this headline">¶</a></h2>
+<p>ID-to-taxonomy maps are pass to <tt class="docutils literal"><span class="pre">assign_taxonomy.py</span> <span class="pre">-m</span> <span class="pre">blast</span></tt> via the <tt class="docutils literal"><span class="pre">-t/--id_to_taxonomy_fp</span></tt> option with an associated fasta file passed via <tt class="docutils literal"><span class="pre">-r/--reference_seqs_fp</span></tt>.</p>
+<div class="section" id="sequence-id-to-taxonomy-mapping-files">
+<h3>Sequence ID to Taxonomy Mapping Files<a class="headerlink" href="#sequence-id-to-taxonomy-mapping-files" title="Permalink to this headline">¶</a></h3>
+<p>Several QIIME modules, such as <a class="reference external" href="../scripts/assign_taxonomy.html">assign_taxonomy.py</a>, require a sequence ID to taxonomy mapping file when one is using a custom training sequence set or BLAST database.  ID to taxonomy mapping files are tab delimited, with the sequence ID as the first column, and a semicolon-separated taxonomy, in descending order, as the second column.  An example of an ID to taxonomy mapping file is show below:</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li>339039     Bacteria;Proteobacteria;Alphaproteobacteria;Rhodospirillales;unclassified_Rhodospirillales</li>
+<li>199390     Bacteria;Chloroflexi;Anaerolineae;Caldilineae;Caldilineales;Caldilineacea;unclassified_Caldilineacea</li>
+<li>370251     Bacteria;Proteobacteria;Gammaproteobacteria;unclassified_Gammaproteobacteria</li>
+<li>11544      Bacteria;Actinobacteria;Actinobacteria;Actinobacteridae;Actinomycetales;unclassified_Actinomycetales</li>
+<li>460067     Unclassified</li>
+<li>256904     Bacteria</li>
+<li>286896     Bacteria;Actinobacteria;Actinobacteria;Actinobacteridae;Actinomycetales;Micrococcineae;Micrococcaceae;Kocuria</li>
+<li>127471     Bacteria;Bacteroidetes;Sphingobacteria;Sphingobacteriales;Crenotrichaceae;Terrimonas</li>
+<li>155634     Archaea;Euryarchaeota;Methanobacteria;Methanobacteriales;Methanobacteriaceae;Methanosphaera</li>
+</ul>
+</div>
+<p>This file can be downloaded here: <a class="reference external" href="../_static/Examples/File_Formats/Example_ID_to_Taxonomy_mapping_File.txt">Example ID to Taxonomy Mapping File</a> (Right click and use &#8216;download&#8217; or &#8216;save as&#8217; to save this file)</p>
+<p>Several Greegenes (<a class="reference external" href="http://greengenes.lbl.gov/">http://greengenes.lbl.gov/</a>) sequence ID to taxonomy mapping files are available for download in our Greengenes OTU build. To ensure you have the latest version, follow the link to <cite>Most recent Greengenes OTUs</cite> on the top right of <a class="reference external" href="http://blog.qiime.org">this page.</a></p>
+<p>To add taxonomy mapping to an existing sequence ID to taxonomy mapping file, open the existing taxonomy mapping file in a spreadsheet, such as Microsoft Excel.  Save new sequence IDs in the first column, and the semicolon-separated taxa in the second column (make sure there are not extra spaces, tabs, or other white space around these entries).  Save this modified mapping file with the field delimiter as a tab, and leave the text delimiter blank.  It is best to visually inspect the modified ID to taxonomy mapping file in a basic text editor to ensure that no extraneous characters or spacings were saved during this process.</p>
+</div>
+</div>
+<div class="section" id="qiime-parameters">
+<h2>QIIME parameters<a class="headerlink" href="#qiime-parameters" title="Permalink to this headline">¶</a></h2>
+<p>The QIIME parameters files is used to pass per-script parameters to the QIIME &#8216;workflow&#8217; scripts. You can find details on these files in <a class="reference internal" href="qiime_parameters_files.html"><em>QIIME parameters files</em></a>.</p>
+</div>
+<div class="section" id="sample-id-map">
+<span id="id11"></span><h2>Sample id map<a class="headerlink" href="#sample-id-map" title="Permalink to this headline">¶</a></h2>
+<p>Some scripts which compare paired samples, including <a class="reference external" href="../scripts/transform_coordinate_matrices.html">transform_coordinate_matrices.py</a> and <a class="reference external" href="../scripts/compare_taxa_summaries.html">compare_taxa_summaries.py</a>, take a parameter, <tt class="docutils literal"><span class="pre">--sample_id_map_fp</span></tt>, which is necessary when comparing data sets with different sample IDs. This file, a <em>sample id map</em> (<strong>which is different than a QIIME mapping file</strong>), describes how to map from the sample IDs associated with the input data to a new sample id that will be consistent across the data sets being compared. For example, if your first data set contains samples <tt class="docutils literal"><span class="pre">S1</span></tt>, <tt class="docutils literal"><span class="pre">S2</span></tt>, and <tt class="docutils literal"><span class="pre">S3</span></tt>, and these should be paired with samples <tt class="docutils literal"><span class="pre">T1</span></tt>, <tt class="docutils literal"><span class="pre">T2</span></tt>, and <tt class="docutils literal"><span class="pre">T3</span></tt> in your second data set, your <em>sample id map</em> might look like:</p>
+<div class="highlight-python"><div class="highlight"><pre>S1      1
+S2      2
+S3      3
+T1      1
+T2      2
+T3      3
+</pre></div>
+</div>
+<p>The reason for this format is that it&#8217;s usually sample metadata from one or more columns in the QIIME mapping files associated with each data set that allows you to match samples to one another. With this format you can select one or more columns from each QIIME mapping file (concatenating some fields, if necessary) to build the sample id map.</p>
+<p>To clarify, this format maps from <em>input</em> sample id to <em>new</em> sample id, <strong>not</strong> from <em>sample id in matrix 1</em> to <em>sample id in matrix 2</em>.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+
+    
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Input Files</a><ul>
+<li><a class="reference internal" href="#general-suggestions-for-formatting-your-files">General suggestions for formatting your files</a></li>
+<li><a class="reference internal" href="#metadata-mapping-files">Metadata mapping files</a><ul>
+<li><a class="reference internal" href="#mapping-file-overview">Mapping File Overview</a></li>
+<li><a class="reference internal" href="#generating-a-mapping-file-by-hand">Generating a Mapping File by Hand</a></li>
+<li><a class="reference internal" href="#fixing-problems-in-the-mapping-file">Fixing Problems in the Mapping File</a></li>
+<li><a class="reference internal" href="#mapping-files-without-barcodes-and-or-primers">Mapping Files Without Barcodes and/or Primers</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#demultiplexed-sequences">Demultiplexed sequences</a><ul>
+<li><a class="reference internal" href="#post-split-libraries-fasta-file-overview">Post- split_libraries FASTA File Overview</a></li>
+<li><a class="reference internal" href="#handling-already-demultiplexed-samples">Handling Already Demultiplexed Samples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#biom-table-e-g-otu-table">BIOM table (e.g., OTU table)</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#biom-file-format-versions">BIOM file format versions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id-to-taxonomy-map">ID-to-taxonomy map</a><ul>
+<li><a class="reference internal" href="#sequence-id-to-taxonomy-mapping-files">Sequence ID to Taxonomy Mapping Files</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#qiime-parameters">QIIME parameters</a></li>
+<li><a class="reference internal" href="#sample-id-map">Sample id map</a></li>
+</ul>
+</li>
+</ul>
+
+
+    <h3><a href="../index.html">Site index</a></h3>
+    <ul><li><ul>
+    <li><a href="http://www.qiime.org">Home</a><br /></li>
+    <li><a href="../install/index.html">Install</a><br /></li>
+    <li><a href="../tutorials/index.html">Tutorials</a><br /></li>
+    <li><a href="../scripts/index.html">Scripts</a><br /></li>
+    <li><a href="http://help.qiime.org">Help</a><br /></li>
+    <li><a href="http://qiime.org/home_static/dataFiles.html">Resources</a><br /></li>
+    <li><a href="index.html">File Formats</a><br /></li>
+    <li><a href="http://workshops.qiime.org">Workshops</a><br /></li>
+    <li><a href="http://qiime.wordpress.com">Blog</a><br /></li>
+    <li><a href="../developer/index.html">Developer</a><br /></li>
+    </ul></li></ul>
+
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../scripts/validate_mapping_file.html"
+                        title="previous chapter"><em>validate_mapping_file.py</em> &#8211; Checks user&#8217;s metadata mapping file for required data, valid format</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="qiime_parameters_files.html"
+                        title="next chapter">QIIME parameters files</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="qiime_parameters_files.html" title="QIIME parameters files"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../scripts/validate_mapping_file.html" title="validate_mapping_file.py – Checks user’s metadata mapping file for required data, valid format"
+             >previous</a> |</li>
+        <li><a href="../index.html">Home</a> &raquo;</li>
+          <li><a href="index.html" >QIIME File Formats</a> &raquo;</li> 
+      </ul>
+    </div>
+<div style="text-align: center; padding: 0px;"><br />
+<a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
+<br /></div>
+
+    <div class="footer">
+        &copy; Copyright 2010-2014, QIIME Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-6636235-4");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+  </body>
+</html>

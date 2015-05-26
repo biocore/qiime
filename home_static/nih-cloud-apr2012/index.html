@@ -1,0 +1,81 @@
+<html>
+<head>
+<style type="text/css">
+	div.code {
+	font-style: Courier;
+	font-color: red; }
+</style>
+
+<title>2012 NIH Cloud Computing the Microbiome QIIME/IPython/StarCluster Demo: Supporting Data</title>
+
+</head>
+
+<body>
+<h3>Instructions and supporting data for the QIIME/IPython/StarCluster demo at the <i>2012 NIH Cloud Computing the Microbiome</i> workshop and our corresponding paper in the ISME Journal.</h3>
+
+
+<hr>
+The analysis made use of the <a href="http://ipython.org/ipython-doc/stable/whatsnew/version0.12.html">IPython Notebook</a>, <a href="http://www.qiime.org">QIIME</a>, <a href="http://web.mit.edu/star/cluster/">StarCluster</a>, <a href="http://www.pycogent.org">PyCogent</a>, and <a href="http://pprospector.sourceforge.net/">PrimerProspector</a>. All of these tools are pre-installed in the <tt>ami-9f69c1f6</tt> public Amazon EC2 instance, which was used in this study.
+<p>
+
+<h4>Supporting Files</h4>
+<hr>
+The IPython notebooks supporting this study can be viewed <a href="http://nbviewer.ipython.org/3693491/">here</a> and are available here in PDF format:
+<ul>
+	<li><a href="cloud_demo_complete.pdf">NIH Cloud Demo (Complete)</a></li>
+	<li><a href="cloud_demo_fast.pdf">NIH Cloud Demo (Fast)</a></li>
+	<li><a href="timing.pdf">Timing</a>*</li>
+	<li><a href="variable_region_position_calculations.pdf">Variable Region Position Boundaries</a></li>
+	<li><a href="pearson_v_rf.pdf">Pearson v Robinson-Foulds Distances</a></li>
+	<li><a href="v3_v4_regions_only.pdf">V3 and V4 Regions Only</a></li>
+</ul>
+* Note that the Timing notebook is for reference as related to the paper only - it will not be directly reproducible on re-runs of the above notebooks as it relies on the semi-manual creation of the <tt>tasks.log</tt> file. The <tt>tasks.log</tt> file used to generate the original timing data is available for <a href="./tasks.log">download here</a>.<p>
+The Greengenes reference OTU collection used in this study is available for <a href="http://greengenes.lbl.gov/Download/Sequence_Data/Fasta_data_files/Caporaso_Reference_OTUs/gg_otus_4feb2011.tgz">download here</a>.
+<p>
+The IPython notebook files (<tt>.ipynb</tt>) are available for <a href="ipynb_files.zip">download here</a>.
+<p>
+The tree metadata mapping file used in generating the coloring categories in the 3D PCoA plot is <a href="./tree_metadata.txt">available here</a>.
+<p>
+The paper for this analysis, "Collaborative cloud-enabled tools allow rapid, reproducible biological insights", is available <a href="http://www.nature.com/ismej/journal/vaop/ncurrent/full/ismej2012123a.html">here</a>. 
+<h4>Reproducing the analysis</h4>
+<hr>
+Four <tt>m2.4xlarge</tt> instances were booted using StarCluster to create a 32 core cluster with approximately 280GB of RAM (70GB per 8 core instance). This was used for the full analysis (a more complete analysis then was done during the workshop, where the workshop analysis was optimized to run quickly). To support the large quantity of data that is generated during the analysis, you should create an EBS volume which will be attached to the running instance. A 20 GB volume will be sufficient. The volume used for running these notebooks is available as <tt>snap-75eb8005</tt>.
+<p>
+To reproduce the analyses presented in this paper you should install StarCluster locally, and configure it according to the <a href="http://web.mit.edu/star/cluster/docs/latest/quickstart.html">instructions on the StarCluster website</a>. You can then add the following to your <tt>~/.starcluster/config</tt> file:
+</p>
+<tt>
+[plugin ipcluster]<br>
+setup_class = starcluster.plugins.ipcluster.IPCluster<br>
+enable_notebook = true<br>
+# If you leave notebook_passwd out, a random password <br>
+# will be generated instead.<br>
+notebook_passwd = YOUR-PASSWORD<p>
+
+[cluster qiime-ipython]<br>
+node_image_id = ami-9f69c1f6<br>
+cluster_user = ubuntu<br>
+keyname = YOUR-KEY<br>
+cluster_size = 4<br>
+node_instance_type = m2.4xlarge<br>
+plugins = ipcluster<br>
+volumes = qiime-ipython-data<p>
+
+[volume qiime-ipython-data]<br>
+VOLUME_ID = YOUR-VOLUME-ID<br>
+MOUNT_PATH = /home/ubuntu/data<br>
+</tt>
+<p>
+You can then boot this cluster by running:
+<p>
+<tt>starcluster start -c qiime-ipython mycluster</tt>
+<p>
+You will be presented with the URL of your IPython notebook. You can upload our <tt><a href="ipynb_files.zip">.ipynb files</a></tt> to re-run the analysis directly on your own hardware, or tweak it to perform your own analysis.
+<p>
+<h4>Citing this work</h4>
+<hr>
+You can cite this work as follows:<br>
+Collaborative cloud-enabled tools allow rapid, reproducible biological insights.<br>
+Benjamin Ragan-Kelley, William Anton Walters, Daniel McDonald, Justin Riley, Brian E. Granger, Antonio Gonzalez, Rob Knight, Fernando Perez and J. Gregory Caporaso.<br>
+ISME Journal, in press (2012).<br>
+</body>
+</html> 
