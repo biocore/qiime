@@ -159,6 +159,10 @@ def main():
 
     if biom_table_fp:
         biom_table = load_table(biom_table_fp)
+        sample_ids_to_keep = biom_table.ids(axis='sample')
+        for sid in mapping_data.keys():
+            if sid not in sample_ids_to_keep:
+                del mapping_data[sid]
         analysis_categories = observation_ids or biom_table.ids(axis='observation')
         personal_ids_to_state_values = \
             extract_per_individual_state_metadata_from_sample_metadata_and_biom(
