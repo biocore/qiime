@@ -20,7 +20,7 @@ __copyright__ = "Copyright (c) 2011--, %s" % __author__
 __credits__ = ["Greg Caporaso", "Kyle Bittinger", "Jai Ram Rideout",
                "Yoshiki Vazquez Baeza", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.9.1"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "qiime.help@gmail.com"
 
@@ -378,7 +378,7 @@ classes = """
     Operating System :: Unix
     Operating System :: MacOS :: MacOS X
     Operating System :: POSIX
-    """
+"""
 classifiers = [s.strip() for s in classes.split('\n') if s]
 
 # compile the list of all qiime_test_data files that need to be installed.

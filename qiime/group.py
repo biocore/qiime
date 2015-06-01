@@ -8,7 +8,7 @@ __credits__ = ["Jai Ram Rideout",
                "Greg Caporaso",
                "Jeremy Widmann"]
 __license__ = "GPL"
-__version__ = "1.9.1"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Jai Ram Rideout"
 __email__ = "jai.rideout@gmail.com"
 

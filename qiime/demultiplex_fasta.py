@@ -13,7 +13,7 @@ __credits__ = [
     "Jens Reeder",
     "Emily TerAvest"]  # remember to add yourself
 __license__ = "GPL"
-__version__ = "1.9.1"
+__version__ = "1.9.1-dev"
 __maintainer__ = "William Walters"
 __email__ = "william.a.walters@colorado.edu"
 
