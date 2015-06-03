@@ -20,7 +20,7 @@ Test Usage
 ----------
 Before running SourceTracker check to see if it installed and accessible to QIIME::
 
-    print_qiime_config.py -t
+    print_qiime_config.py -tfv
 
 You should see the following line in the output if SourceTracker is properly installed::
 
