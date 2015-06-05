@@ -8,7 +8,7 @@ __credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso",
                "Levi McCracken", "Damien Coy", "Yoshiki Vazquez Baeza",
                "Will Van Treuren", "Adam Robbins-Pianka"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -18,6 +18,8 @@ __email__ = "gregcaporaso@gmail.com"
 A lot of this might migrate into cogent at some point.
 """
 
+import tempfile
+import os
 from os import getenv, listdir, close
 from os.path import abspath, basename, exists, dirname, join, splitext, isfile
 from collections import defaultdict
@@ -28,7 +30,6 @@ from datetime import datetime
 from subprocess import Popen
 from random import random
 from itertools import repeat, izip
-from tempfile import mkstemp
 from functools import partial
 
 from numpy import (array, zeros, shape, vstack, ndarray, asarray,
@@ -39,6 +40,7 @@ from numpy.ma.extras import apply_along_axis
 
 from biom.util import compute_counts_per_sample_stats, biom_open, HAVE_H5PY
 from biom import load_table
+from biom.exception import BiomException
 from biom.table import Table
 
 from cogent.parse.tree import DndParser
@@ -118,6 +120,9 @@ class ScriptsDirError(IOError):
     """Exception for when the QIIME scripts directory cannot be found."""
     pass
 
+class EmptyBIOMTableError(BiomException):
+    """Exception for when an empty BIOM table is encountered."""
+    pass
 
 def make_safe_f(f, allowed_params):
     """Make version of f that ignores extra named params."""
@@ -306,13 +311,7 @@ def get_qiime_temp_dir():
     """ Returns the temp directory that should be used by QIIME scripts
 
     """
-    qiime_config = load_qiime_config()
-    qiime_config_value = qiime_config['temp_dir']
-    if qiime_config_value is not None:
-        result = qiime_config_value
-    else:
-        result = '/tmp/'
-    return result
+    return load_qiime_config()['temp_dir']
 
 
 def load_qiime_config():
@@ -352,6 +351,15 @@ def load_qiime_config():
 
     qiime_config['assign_taxonomy_id_to_taxonomy_fp'] = \
         qiime_config['assign_taxonomy_id_to_taxonomy_fp'] or get_reference_taxonomy()
+
+    # Fall back to the system's temporary directory if one hasn't been defined.
+    temp_dir = qiime_config['temp_dir'] or tempfile.gettempdir()
+
+    # QIIME was historically written to assume that directory names end with a
+    # path separator. Add one for safety.
+    if not temp_dir.endswith(os.sep):
+        temp_dir += os.sep
+    qiime_config['temp_dir'] = temp_dir
 
     return qiime_config
 
@@ -530,7 +538,7 @@ def get_generated_by_for_biom_tables():
 
 
 def write_biom_table(biom_table, biom_table_fp, compress=True,
-                     write_hdf5=HAVE_H5PY):
+                     write_hdf5=HAVE_H5PY, table_type='OTU table'):
     """Writes a BIOM table to the specified filepath
 
     Parameters
@@ -547,8 +555,22 @@ def write_biom_table(biom_table, biom_table_fp, compress=True,
         Defaults to ``True`` if H5PY is installed and to ``False`` if H5PY is
         not installed. If ``True`` the output biom table will be written as an
         HDF5 binary file, otherwise it will be a JSON string.
+    table_type : str, optional
+        The Table.type value to set for the table before it is written. Note
+        that this is a controlled vocabulary documented on biom-format.org.
+
+    Raises
+    ------
+    EmptyBIOMTableError
+        If ``biom_table.is_empty() == True``. 
     """
+    if biom_table.is_empty():
+        raise EmptyBIOMTableError(
+            "Attempting to write an empty BIOM table to disk. "
+            "QIIME doesn't support writing empty BIOM output files.")
+
     generated_by = get_generated_by_for_biom_tables()
+    biom_table.type = table_type
 
     if write_hdf5:
         with biom_open(biom_table_fp, 'w') as biom_file:
@@ -1033,10 +1055,10 @@ def degap_fasta_aln(seqs):
         yield DNASequence(seq, id=label).degap()
 
 
-def write_degapped_fasta_to_file(seqs, tmp_dir="/tmp/"):
+def write_degapped_fasta_to_file(seqs, tmp_dir=get_qiime_temp_dir()):
     """ write degapped seqs to temp fasta file."""
-    fd, tmp_filename = mkstemp(dir=tmp_dir, prefix="degapped_",
-                               suffix=".fasta")
+    fd, tmp_filename = tempfile.mkstemp(dir=tmp_dir, prefix="degapped_",
+                                        suffix=".fasta")
     close(fd)
 
     with open(tmp_filename, 'w') as fh:
@@ -1345,7 +1367,7 @@ def count_seqs_in_filepaths(fasta_filepaths, seq_counter=count_seqs):
     for fasta_filepath in fasta_filepaths:
         # if the file is actually fastq, use the fastq parser.
         # otherwise use the fasta parser
-        if fasta_filepath.endswith('.fastq'):
+        if fasta_filepath.endswith('.fastq') or fasta_filepath.endswith('.fq'):
             parser = partial(parse_fastq, enforce_qual_range=False)
         elif fasta_filepath.endswith('.tre') or \
                 fasta_filepath.endswith('.ph') or \

@@ -6,7 +6,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Greg Caporaso", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -49,9 +49,14 @@ def format_output(count_data, total, inaccessible_filepaths,
     lines = ['']
     count_data.sort()
     for c in count_data:
-        lines.append(
-            '%d  : %s (Sequence lengths (mean +/- std): %1.4f +/- %1.4f)' %
-            (c[0][0], c[1], c[0][1], c[0][2]))
+        if c[0][0] > 0:
+            lines.append(
+                '%d  : %s (Sequence lengths (mean +/- std): %1.4f +/- %1.4f)' %
+                (c[0][0], c[1], c[0][1], c[0][2]))
+        else:
+            lines.append(
+                '%d  : %s' % (c[0][0], c[1]))
+
     lines.append('%d  : Total' % total)
 
     if inaccessible_filepaths and not suppress_errors:

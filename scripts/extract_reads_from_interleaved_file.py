@@ -4,7 +4,7 @@ __author__ = "Antonio Gonzalez Pena"
 __copyright__ = "Copyright 2013, The QIIME Project"
 __credits__ = ["Antonio Gonzalez Pena"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Antonio Gonzalez Pena"
 __email__ = "antgonza@gmail.com"
 

@@ -4,15 +4,13 @@ __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Justin Kuczynski", "Rob Knight", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
 """Contains tests for performing alpha diversity analyses within each sample."""
 
 from os import makedirs, close
-from os.path import exists
-from shutil import rmtree
 from tempfile import mkstemp
 from unittest import TestCase, main
 
@@ -26,21 +24,14 @@ from skbio.util import remove_files
 from qiime.alpha_diversity import (AlphaDiversityCalc, AlphaDiversityCalcs,
                                    single_file_cup)
 from qiime.parse import parse_newick
-from qiime.util import load_qiime_config, write_biom_table
+from qiime.util import get_qiime_temp_dir, write_biom_table
 
 
 class AlphaDiversitySharedSetUpTests(TestCase):
 
     def setUp(self):
         """Define some test data."""
-        self.qiime_config = load_qiime_config()
-        self.dirs_to_remove = []
-
-        self.tmp_dir = self.qiime_config['temp_dir'] or '/tmp/'
-        if not exists(self.tmp_dir):
-            makedirs(self.tmp_dir)
-            # if test creates the temp dir, also remove it
-            self.dirs_to_remove.append(self.tmp_dir)
+        self.tmp_dir = get_qiime_temp_dir()
 
         self.otu_table1 = Table(data=array([[2, 0, 0, 1],
                                             [1, 1, 1, 1],
@@ -86,11 +77,6 @@ class AlphaDiversitySharedSetUpTests(TestCase):
     def tearDown(self):
         """ """
         remove_files(self.files_to_remove)
-        # remove directories last, so we don't get errors
-        # trying to remove files which may be in the directories
-        for d in self.dirs_to_remove:
-            if exists(d):
-                rmtree(d)
 
 
 class AlphaDiversityCalcTests(AlphaDiversitySharedSetUpTests):

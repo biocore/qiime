@@ -29,7 +29,7 @@ __credits__ = [
     "Adam Robbins-Pianka",
     "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Kyle Bittinger"
 __email__ = "kylebittinger@gmail.com"
 

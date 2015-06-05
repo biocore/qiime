@@ -7,7 +7,7 @@ __credits__ = ["Meg Pirrung", "Jesse Stombaugh", "Antonio Gonzalez Pena",
                "Will Van Treuren", "Yoshiki Vazquez Baeza", "Jai Ram Rideout",
                "Evan Bolyen"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 
@@ -717,8 +717,8 @@ def make_html(rarefaction_legend_mat, rarefaction_data_mat, xaxisvals,
 
         # iterate through the categories in the legend dictionary
         for category in natsort(rarefaction_legend_mat[m]['groups']):
-
-                # Create the select box options
+            category_colors[category] = {}
+            # Create the select box options
             if cat_iter == 0:
                 cat_links = []
                 for i in rarefaction_legend_mat[m]['groups'][category]:
@@ -731,7 +731,7 @@ def make_html(rarefaction_legend_mat, rarefaction_data_mat, xaxisvals,
             # the html formatted rows for each category and group
             for group in natsort(rarefaction_legend_mat[m]['groups'][category]):
                 sample_list = []
-                category_colors[group] =\
+                category_colors[category][group] =\
                     rarefaction_legend_mat[m]['groups'][
                         category][group]['groupcolor']
 
@@ -811,7 +811,7 @@ def make_html(rarefaction_legend_mat, rarefaction_data_mat, xaxisvals,
                     (category))
                 data_table_html.append(
                     '<td class="data" bgcolor="%s">%s</td><td class="data">%s</td>' %
-                    (category_colors[g], g, xaxisvals[i]))
+                    (category_colors[category][g], g, xaxisvals[i]))
                 # bugfix, was rarefaction_data_mat[category][g]
                 for m in metrics:
                     data_table_html.append(

@@ -6,7 +6,7 @@ __copyright__ = "Copyright 2011, The QIIME Project"  # consider project name
 # remember to add yourself
 __credits__ = ["Julia Goodrich", "Jose Carlos Clemente Litran"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Jose Clemente"
 __email__ = "jose.clemente@gmail.com"
 
@@ -24,15 +24,14 @@ from qiime.stats import G_2_by_2
 from qiime.make_otu_network import get_sample_info, get_connection_info, \
     get_num_con_cat, get_num_cat, make_table_file, make_stats_files,\
     make_props_files
-from qiime.util import load_qiime_config, write_biom_table
+from qiime.util import get_qiime_temp_dir, write_biom_table
 from biom.table import Table
 
 
 class OtuNetworkTests(TestCase):
 
     def setUp(self):
-        self.qiime_config = load_qiime_config()
-        self.tmp_dir = self.qiime_config['temp_dir'] or '/tmp/'
+        self.tmp_dir = get_qiime_temp_dir()
 
         self.map_file = """#SampleID	Day	time	Description
 #This is some comment about the study

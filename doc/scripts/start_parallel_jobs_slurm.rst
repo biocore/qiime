@@ -29,6 +29,8 @@ This script is designed to start multiple jobs in parallel on cluster systems wi
 		Megabytes of memory to request per CPU [default: slurm's default]
 	-j, `-`-job_dir
 		Directory to store the jobs [default: jobs/]
+	-t, `-`-time
+		Run time limit of the jobs in dd-hh:mm:ss format [default: slurm's default]
 
 
 **Output:**

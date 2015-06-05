@@ -6,7 +6,7 @@ __copyright__ = "Copyright 2011, The QIIME Project"  # consider project name
 # remember to add yourself
 __credits__ = ["Jesse Stombaugh", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 
@@ -27,7 +27,7 @@ from qiime.make_2d_plots import (make_interactive_scatter, transform_xy_coords,
                                  convert_coord_data_to_dict, generate_xmap,
                                  draw_scree_graph, make_line_plot)
 from qiime.colors import data_colors
-from qiime.util import load_qiime_config
+from qiime.util import get_qiime_temp_dir
 
 class TopLevelTests(TestCase):
 
@@ -35,9 +35,7 @@ class TopLevelTests(TestCase):
 
     def setUp(self):
         """define some top-level data"""
-
-        self.qiime_config = load_qiime_config()
-        self.tmp_dir = self.qiime_config['temp_dir'] or '/tmp/'
+        self.tmp_dir = get_qiime_temp_dir()
 
         self.props = {
             "title": "PCoA - PC1 vs PC2",

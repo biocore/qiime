@@ -6,7 +6,7 @@ __author__ = "Meg Pirrung"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Meg Pirrung", "Jesse Stombaugh", "Adam Robbins-Pianka"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Meg Pirrung"
 __email__ = "meganap@gmail.com"
 

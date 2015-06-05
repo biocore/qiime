@@ -6,7 +6,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -244,7 +244,6 @@ def assemble_distance_matrix(dm_components):
     """ assemble distance matrix components into a complete dm string
 
     """
-    print "I get called."
     data = {}
     # iterate over compenents
     for c in dm_components:
@@ -269,7 +268,7 @@ def assemble_distance_matrix(dm_components):
     dm = []
     # construct the dm one row at a time
     for l1 in labels:
-        dm.append([data[l1][l2] for l2 in labels])
+        dm.append([float(data[l1][l2]) for l2 in labels])
     # create the dm string and return it
     dm = format_distance_matrix(labels, dm)
     return dm

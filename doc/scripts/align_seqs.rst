@@ -37,7 +37,7 @@ This script aligns the sequences in a FASTA file to each other or to a template 
 	-a, `-`-pairwise_alignment_method
 		Method for performing pairwise alignment in PyNAST. Valid choices are muscle, pair_hmm, clustal, blast, uclust, mafft [default: uclust]
 	-t, `-`-template_fp
-		Filepath for template alignment [default: /Users/jairideout/.virtualenvs/qiime/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set_aligned/85_otus.fasta]
+		Filepath for template alignment [default: /Users/caporaso/.virtualenvs/qiime/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set_aligned/`85_otus.py <./85_otus.html>`_nast.fasta]
 	-e, `-`-min_length
 		Minimum sequence length to include in alignment [default: 75% of the median input sequence length]
 	-p, `-`-min_percent_id

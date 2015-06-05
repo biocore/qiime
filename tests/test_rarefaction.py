@@ -5,7 +5,7 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["justin kuczynski", "Rob Knight",
                "Jose Carlos Clemente Litran", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
@@ -23,15 +23,13 @@ from biom import load_table
 from biom.table import Table, TableException
 
 from qiime.rarefaction import RarefactionMaker, get_rare_data
-from qiime.util import load_qiime_config, write_biom_table
+from qiime.util import get_qiime_temp_dir, write_biom_table
 
 
 class FunctionTests(TestCase):
 
     def setUp(self):
-
-        self.qiime_config = load_qiime_config()
-        self.tmp_dir = self.qiime_config['temp_dir'] or '/tmp/'
+        self.tmp_dir = get_qiime_temp_dir()
 
         self.otu_table_data = np.array([[2, 1, 0],
                                         [0, 5, 0],

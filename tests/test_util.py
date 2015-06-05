@@ -49,7 +49,7 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
                         iseq_to_qseq_fields,
                         make_compatible_distance_matrices, stderr, _chk_asarray, expand_otu_ids,
                         subsample_fasta, summarize_otu_sizes_from_otu_map,
-                        load_qiime_config, MetadataMap,
+                        MetadataMap,
                         RExecutor, duplicates_indices, trim_fasta, get_qiime_temp_dir,
                         qiime_blastx_seqs, add_filename_suffix, is_valid_git_refname,
                         is_valid_git_sha1, sync_biom_and_mf,
@@ -69,7 +69,7 @@ __credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso",
                "Levi McCracken", "Damien Coy", "Yoshiki Vazquez Baeza",
                "Will Van Treuren", "Luke Ursell"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -114,6 +114,16 @@ class TopLevelTests(TestCase):
         self.files_to_remove.append(output_fp)
         write_biom_table(example_table, output_fp)
         self.assertTrue(exists(output_fp))
+
+    def test_write_biom_table_table_type(self):
+        """BIOM table has correct table type"""
+        fd, output_fp = mkstemp(prefix="test_biom_")
+        close(fd)
+
+        self.files_to_remove.append(output_fp)
+        write_biom_table(example_table, output_fp, write_hdf5=False)
+        t = parse_biom_table(open(output_fp))
+        self.assertEqual(t.type, "OTU table")
 
     def test_write_biom_table_no_h5py(self):
         fd, output_fp = mkstemp(prefix="test_biom_")
@@ -1622,7 +1632,7 @@ class SubSampleFastaTests(TestCase):
         self.expected_lines_50_perc = expected_lines_50_perc
         self.expected_lines_20_perc = expected_lines_20_perc
 
-        self.temp_dir = load_qiime_config()['temp_dir']
+        self.temp_dir = get_qiime_temp_dir()
 
         self.fasta_lines = fasta_lines
         fd, self.fasta_filepath = mkstemp(

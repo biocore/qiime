@@ -6,7 +6,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -16,7 +16,7 @@ from skbio.parse.sequences import parse_fasta
 from biom import load_table
 
 from qiime.util import (parse_command_line_parameters, make_option,
-                        write_biom_table)
+                        write_biom_table, EmptyBIOMTableError)
 from qiime.filter import filter_otus_from_otu_table
 
 script_info = {}
@@ -131,7 +131,13 @@ def main():
                                                     min_samples,
                                                     max_samples,
                                                     negate_ids_to_exclude)
-    write_biom_table(filtered_otu_table, opts.output_fp)
+
+    try:
+        write_biom_table(filtered_otu_table, opts.output_fp)
+    except EmptyBIOMTableError:
+        option_parser.error(
+            "Filtering resulted in an empty BIOM table. "
+            "This indicates that no OTUs remained after filtering.")
 
 if __name__ == "__main__":
     main()

@@ -8,7 +8,7 @@ __credits__ = ["Rob Knight", "Greg Caporaso", "Kyle Bittinger",
                "Jens Reeder", "William Walters", "Jose Carlos Clemente Litran",
                "Jai Ram Rideout", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -258,7 +258,7 @@ script_info['optional_options'] = [
     make_option('-s', '--similarity', type='float', default=0.97,
                 help=('Sequence similarity threshold (for blast, cdhit, uclust, '
                       'uclust_ref, usearch, usearch_ref, usearch61, usearch61_ref, '
-                      'sumaclust or sortmerna [default: %default]')),
+                      'sumaclust, and sortmerna) [default: %default]')),
 
     make_option('--sumaclust_exact', action='store_true', default=False,
                 help='A sequence is assigned to the best matching seed '
@@ -650,6 +650,11 @@ def main():
                           db_filepath)
 
     # Input validation to throw a useful error message on common mistakes
+    if not (0.0 <= similarity <= 1.0):
+        option_parser.error("%r is an invalid sequence similarity threshold. "
+                            "--similarity must be between 0.0 and 1.0 "
+                            "(inclusive)." % similarity)
+
     if (otu_picking_method == 'cdhit' and
             similarity < 0.80):
         option_parser.error('cdhit requires similarity >= 0.80.')

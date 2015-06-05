@@ -6,7 +6,7 @@ __credits__ = ["Justin Kuczynski", "Rob Knight", "Greg Caporaso",
                "Jose Carlos Clemente Litran", "Jai Ram Rideout",
                "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 
@@ -122,74 +122,6 @@ def list_known_metrics():
         list_known_phylogenetic_metrics()
 
 
-class BetaDiversityCalc(FunctionWithParams):
-
-    """A BetaDiversityCalc takes taxon x sample counts, returns distance mat.
-
-    Some BetaDiversityCalcs also require a tree.
-
-    typical usage is:
-    calc = BetaDiversityCalc(my_metric, 'metric name', \
-        IsPhylogenetic=False)
-    calc(data_path=stuff, result_path=stuff2)
-    """
-    _tracked_properties = ['IsPhylogenetic', 'Metric']
-
-    def __init__(self, metric, name, is_phylogenetic=False, params=None):
-        """Return new BetaDiversityCalc object with specified params.
-
-        Note: metric must conform to the following interface:
-            must return 2d sample distance matrix with sample order preserved.
-            * phylogenetic methods: take samples by taxa array, taxon_names,
-            cogent PhyloNode tree
-            * nonphylo methods: take only samples by taxa array, numpy 2d
-
-        Not sure what params does
-        """
-        self.Metric = metric  # should be f(table, tree) -> dist matrix
-        self.Name = name
-        self.IsPhylogenetic = is_phylogenetic
-        self.Params = params or {}
-
-    def getResult(self, data_path, tree_path=None):
-        """Returns distance matrix from (indcidence matrix and optionally tree).
-
-        Parameters:
-
-        data_path: path to data file, matrix (samples = cols, taxa = rows)
-        in tab-delimited text format
-
-        tree_path: path or object.
-        if method is phylogenetic, must supply tree_path.
-        if path, path to
-        Newick-format tree file where taxon ids match taxon ids in the
-        input data file.
-
-        returns 2d dist matrix, list of sample names ordered as in dist mtx
-        """
-        # if it's a phylogenetic metric, read the tree
-        if self.IsPhylogenetic:
-            tree = self.getTree(tree_path)
-        else:
-            tree = None
-
-        otu_table = load_table(data_path)
-        otumtx = asarray([v for v in otu_table.iter_data(axis='sample')])
-
-        # get the 2d dist matrix from beta diversity analysis
-        if self.IsPhylogenetic:
-            return (self.Metric(otumtx, otu_table.ids(axis='observation'),
-                                tree, otu_table.ids()),
-                    list(otu_table.ids()))
-        else:
-            return self.Metric(otumtx), list(otu_table.ids())
-
-    def formatResult(self, result):
-        """Generate formatted distance matrix. result is (data, sample_names)"""
-        data, sample_names = result
-        return format_distance_matrix(sample_names, data)
-
-
 def single_file_beta(input_path, metrics, tree_path, output_dir,
                      rowids=None, full_tree=False):
     """ does beta diversity calc on a single otu table
@@ -293,114 +225,10 @@ def single_file_beta(input_path, metrics, tree_path, output_dir,
                                              make_subtree=(not full_tree))
                         row_dissims.append(dissims)
 
-            # rows_outfilepath = os.path.join(output_dir, metric + '_' +\
-            #     '_'.join(rowids_list) + '_' + os.path.split(input_path)[1])
-            f = open(outfilepath, 'w')
-            f.write(
-                format_matrix(
-                    row_dissims,
-                    rowids_list,
-                    otu_table.ids()))
-            f.close()
-
-
-def single_object_beta(otu_table, metrics, tr, rowids=None,
-                       full_tree=False):
-    """mod of single_file_beta to recieve and return otu obj, tree str
-
-    uses name in metrics to name output beta diversity files
-    assumes input tree is already trimmed to contain only otus present
-    in otu_table, doesn't call getSubTree()
-    inputs:
-                otu_table -- a otu_table in the biom format
-                metrics -- metrics (str, comma delimited if more than 1 metric)
-                tr -- a phylonode cogent tree object if needed by the chosen beta
-                                        diversity metric
-                rowids -- comma seperated string
-    """
-    otumtx = asarray([v for v in otu_table.iter_sample_data()])
-
-    if tr:
-        tree = tr
-    else:
-        tree = None
-
-    metrics_list = metrics.split(',')
-
-    for metric in metrics_list:
-        try:
-            metric_f = get_nonphylogenetic_metric(metric)
-            is_phylogenetic = False
-        except AttributeError:
-            try:
-                metric_f = get_phylogenetic_metric(metric)
-                is_phylogenetic = True
-                if tree is None:
-                    stderr.write("metric %s requires a tree, but none found\n"
-                                 % (metric,))
-                    exit(1)
-            except AttributeError:
-                stderr.write("Could not find metric %s.\n\nKnown metrics are: %s\n"
-                             % (metric, ', '.join(list_known_metrics())))
-                exit(1)
-        if rowids is None:
-            # standard, full way
-            if is_phylogenetic:
-                dissims = metric_f(otumtx, otu_table.ids(axis='observation'),
-                                   tree, otu_table.ids(),
-                                   make_subtree=(not full_tree))
-            else:
-                dissims = metric_f(otumtx)
-
-            return (
-                format_distance_matrix(
-                    otu_table.ids(),
-                    dissims).split(
-                    '\n')
-            )
-        else:
-            # only calc d(rowid1, *) for each rowid
-            rowids_list = rowids.split(',')
-            row_dissims = []  # same order as rowids_list
-            for rowid in rowids_list:
-                rowidx = otu_table.index(rowid)
-
-                # first test if we can the dissim is a fn of only the pair
-                # if not, just calc the whole matrix
-                if metric_f.__name__ == 'dist_chisq' or \
-                        metric_f.__name__ == 'dist_gower' or \
-                        metric_f.__name__ == 'dist_hellinger' or\
-                        metric_f.__name__ == 'binary_dist_chisq':
-                    warnings.warn('dissimilarity ' + metric_f.__name__ +
-                                  ' is not parallelized, calculating the whole matrix...')
-                    row_dissims.append(metric_f(otumtx)[rowidx])
-                else:
-                    try:
-                        row_metric = get_phylogenetic_row_metric(metric)
-                    except AttributeError:
-                        # do element by element
-                        dissims = []
-                        sample_ids = otu_table.ids()
-                        observation_ids = otu_table.ids(axis='observation')
-                        for i in range(len(sample_ids)):
-                            if is_phylogenetic:
-                                dissim = metric_f(
-                                    otumtx[[rowidx, i], :], observation_ids,
-                                    tree, [sample_ids[rowidx], sample_ids[i]],
-                                    make_subtree=(not full_tree))[0, 1]
-                            else:
-                                dissim = metric_f(otumtx[[rowidx, i], :])[0, 1]
-                            dissims.append(dissim)
-                        row_dissims.append(dissims)
-                    else:
-                        # do whole row at once
-                        dissims = row_metric(otumtx,
-                                             otu_table.ids(axis='observation'),
-                                             tree, otu_table.ids(), rowid,
-                                             make_subtree=(not full_tree))
-                        row_dissims.append(dissims)
-
-            return format_matrix(row_dissims, rowids_list, otu_table.ids())
+            with open(outfilepath, 'w') as f:
+                f.write(format_matrix(row_dissims, rowids_list,
+                                      otu_table.ids(),
+                                      convert_matching_names_to_zero=True))
 
 
 def multiple_file_beta(input_path, output_dir, metrics, tree_path,

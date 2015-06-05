@@ -27,7 +27,7 @@ This script performs like the `assign_taxonomy.py <./assign_taxonomy.html>`_ scr
 	**[OPTIONAL]**
 		
 	-r, `-`-reference_seqs_fp
-		Ref seqs to blast against.  Must provide either --blast_db or --reference_seqs_db for assignment with blast [default: /Users/jairideout/.virtualenvs/qiime/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set/97_otus.fasta]
+		Ref seqs to blast against.  Must provide either --blast_db or --reference_seqs_db for assignment with blast [default: /Users/caporaso/.virtualenvs/qiime/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set/97_otus.fasta]
 	-b, `-`-blast_db
 		Database to blast against.  Must provide either --blast_db or --reference_seqs_db for assignment with blast [default: None]
 	-e, `-`-e_value
@@ -51,7 +51,7 @@ This script performs like the `assign_taxonomy.py <./assign_taxonomy.html>`_ scr
 	-Z, `-`-seconds_to_sleep
 		Number of seconds to sleep between checks for run  completion when polling runs [default: 1]
 	-t, `-`-id_to_taxonomy_fp
-		Full path to id_to_taxonomy mapping file [default: /Users/jairideout/.virtualenvs/qiime/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/taxonomy/97_otu_taxonomy.txt]
+		Full path to id_to_taxonomy mapping file [default: /Users/caporaso/.virtualenvs/qiime/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/taxonomy/97_otu_taxonomy.txt]
 
 
 **Output:**

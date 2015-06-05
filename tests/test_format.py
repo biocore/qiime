@@ -9,7 +9,7 @@ __credits__ = [
     "Jai Ram Rideout", "Jose Antonio Navas Molina"]
 # remember to add yourself if you make changes
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -318,6 +318,17 @@ class TopLevelTests(TestCase):
         self.assertEqual(res,
                          '\t11\t22\t33\n11\t1\t2\t3\n22\t4\t5\t6\n33\t7\t8\t9')
         self.assertRaises(ValueError, format_distance_matrix, labels[:2], a)
+
+    def test_format_distance_matrix_almost_zero_diagonal(self):
+        # only diagonal values should be converted to 0.0 if they are close to
+        # zero. other values in the matrix should not be changed.
+        a = array([[0.00001, 1, 0.0000000000001],
+                   [1.0, 0.0000000000001, 3],
+                   [0.0000000000001, 3.0, 0.0]])
+        res = format_distance_matrix(['foo', 'bar', 'baz'], a)
+        self.assertEqual(res,
+                         '\tfoo\tbar\tbaz\nfoo\t1e-05\t1.0\t1e-13\nbar\t1.0'
+                         '\t0.0\t3.0\nbaz\t1e-13\t3.0\t0.0')
 
     def test_format_matrix(self):
         """format_matrix should return tab-delimited mat"""

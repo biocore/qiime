@@ -9,7 +9,7 @@ __credits__ = ["Rob Knight", "Catherine Lozupone", "Justin Kuczynski",
                "Jesse Stombaugh", "Jose Carlos Clemente Litran",
                "Greg Caporaso", "Jai Ram Rideout", "Adam Robbins-Pianka"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Daniel McDonald"
 __email__ = "wasade@gmail.com"
 
@@ -42,10 +42,12 @@ script_info['script_description'] = (
     "strings that are returned from the taxonomy assignment step. The "
     "taxonomy strings that are most useful are those that standardize the "
     "taxonomic level with the depth in the taxonomic strings. For instance, "
-    "for the RDP classifier taxonomy, Level 2 = Domain (e.g. Bacteria), "
-    "3 = Phylum (e.g. Firmicutes), 4 = Class (e.g. Clostridia), 5 = Order "
-    "(e.g. Clostridiales), 6 = Family (e.g. Clostridiaceae), and 7 = Genus "
-    "(e.g. Clostridium). By default, the relative abundance of each taxonomic "
+    "the Greengenes database uses the following levels: Level 1 = Kingdom "
+    "(e.g Bacteria), Level 2 = Phylum (e.g Actinobacteria), Level 3 = Class "
+    "(e.g Actinobacteria), Level 4 = Order (e.g Actinomycetales), Level 5 = "
+    "Family (e.g Streptomycetaceae), Level 6 = Genus (e.g Streptomyces), "
+    "Level 7 = Species (e.g mirabilis). "
+    "By default, the relative abundance of each taxonomic "
     "group will be reported, but the raw counts can be returned if -a is "
     "passed.\n\nBy default, taxa summary tables will be output in both "
     "classic (tab-separated) and BIOM formats. The BIOM-formatted taxa "

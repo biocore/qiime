@@ -5,7 +5,7 @@ __author__ = "Jesse Zaneveld"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jesse Zaneveld", "Rob Knight"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Jesse Zaneveld"
 __email__ = "zaneveld@gmail.com"
 

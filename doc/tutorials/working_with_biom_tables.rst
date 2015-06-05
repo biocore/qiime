@@ -14,7 +14,7 @@ Filtering
 Even sampling (rarefaction)
 ---------------------------
 
-The `single_rarefaction.py <../scripts/single_rarefaction.html>`_ script allows the user to randomly subsample each of their samples to an equal count. This is essential for many diversity analyses, which assume that the count of observations for each sample is equal. `multiple_rarefactions.py <../scripts/multiple_rarefactions.html>`_ is a variant on this script which allows the user to generate rarified OTU tables at a range of different sampling depths (it is the equivalent of running `single_rarefaction.py <../scripts/single_rarefaction.html>`_ multiple times at different depths). `multiple_rarefactions_even_depth.py <../scripts/multiple_rarefactions_even_depth.html>`_ is another variant which allows the user to create many replicate subsampled OTU tables at a single depth.
+The `single_rarefaction.py <../scripts/single_rarefaction.html>`_ script allows the user to randomly subsample each of their samples to an equal count. This is essential for many diversity analyses, which assume that the count of observations for each sample is equal. `multiple_rarefactions.py <../scripts/multiple_rarefactions.html>`_ is a variant on this script which allows the user to generate rarefied OTU tables at a range of different sampling depths (it is the equivalent of running `single_rarefaction.py <../scripts/single_rarefaction.html>`_ multiple times at different depths). `multiple_rarefactions_even_depth.py <../scripts/multiple_rarefactions_even_depth.html>`_ is another variant which allows the user to create many replicate subsampled OTU tables at a single depth.
 
 Filtering observations/OTUs
 -----------------------------

@@ -27,7 +27,7 @@ A wrapper for the `align_seqs.py <./align_seqs.html>`_ PyNAST option, intended t
 	**[OPTIONAL]**
 		
 	-t, `-`-template_fp
-		Filepath for template alignment [default: /Users/jairideout/.virtualenvs/qiime/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set_aligned/85_otus.fasta]
+		Filepath for template alignment [default: /Users/caporaso/.virtualenvs/qiime/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set_aligned/`85_otus.py <./85_otus.html>`_nast.fasta]
 	-a, `-`-pairwise_alignment_method
 		Method to use for pairwise alignments [default: uclust]
 	-d, `-`-blast_db

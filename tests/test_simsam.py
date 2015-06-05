@@ -6,7 +6,7 @@ __author__ = "Justin Kucyznski"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Justin Kucyznski", "Jai Ram Rideout", "Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Justin Kucyznski"
 __email__ = "justinak@gmail.com"
 
@@ -21,7 +21,7 @@ from biom import load_table
 from biom.parse import parse_biom_table
 from biom.table import Table
 from qiime.parse import parse_mapping_file
-from qiime.util import load_qiime_config, get_qiime_temp_dir
+from qiime.util import get_qiime_temp_dir
 import qiime.simsam
 
 from tempfile import gettempdir, mkdtemp
@@ -79,8 +79,7 @@ class SimsamTests(TestCase):
     def test_script(self):
         """ test the whole simsam script
         """
-        qiime_config = load_qiime_config()
-        tempdir = qiime_config['temp_dir'] or gettempdir()
+        tempdir = get_qiime_temp_dir()
         maindir = os.path.join(tempdir,
                                ''.join(random.choice(string.ascii_letters + string.digits)
                                        for x in range(10)))
@@ -146,8 +145,7 @@ class SimsamTests(TestCase):
     def test_script_nochange(self):
         """ simsam script with 0 distance should just replicate input samples
         """
-        qiime_config = load_qiime_config()
-        tempdir = qiime_config['temp_dir'] or gettempdir()
+        tempdir = get_qiime_temp_dir()
         maindir = os.path.join(tempdir,
                                ''.join(random.choice(string.ascii_letters + string.digits)
                                        for x in range(10)))

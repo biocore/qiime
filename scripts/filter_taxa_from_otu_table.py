@@ -6,7 +6,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Greg Caporaso", "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -14,7 +14,7 @@ from biom import load_table
 
 from qiime.filter import get_otu_ids_from_taxonomy_f
 from qiime.util import (parse_command_line_parameters, make_option,
-                        write_biom_table)
+                        write_biom_table, EmptyBIOMTableError)
 
 script_info = {}
 script_info['brief_description'] = "Filter taxa from an OTU table"
@@ -78,7 +78,12 @@ def main():
                                             metadata_field)
     input_table.filter(filter_fn, axis='observation')
 
-    write_biom_table(input_table, output_table_fp)
+    try:
+        write_biom_table(input_table, output_table_fp)
+    except EmptyBIOMTableError:
+        option_parser.error(
+            "Filtering resulted in an empty BIOM table. "
+            "This indicates that no OTUs remained after filtering.")
 
 
 if __name__ == "__main__":

@@ -25,7 +25,7 @@ This script works like the `identify_chimeric_seqs.py <./identify_chimeric_seqs.
 	**[OPTIONAL]**
 		
 	-a, `-`-aligned_reference_seqs_fp
-		Path to (Py)Nast aligned reference sequences. REQUIRED when method ChimeraSlayer [default: /Users/jairideout/.virtualenvs/qiime/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set_aligned/85_otus.fasta]
+		Path to (Py)Nast aligned reference sequences. REQUIRED when method ChimeraSlayer [default: /Users/caporaso/.virtualenvs/qiime/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set_aligned/`85_otus.py <./85_otus.html>`_nast.fasta]
 	-t, `-`-id_to_taxonomy_fp
 		Path to tab-delimited file mapping sequences to assigned taxonomy. Each assigned taxonomy is provided as a comma-separated list. [default: None; REQUIRED when method is blast_fragments]
 	-r, `-`-reference_seqs_fp

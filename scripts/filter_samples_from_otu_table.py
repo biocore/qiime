@@ -11,7 +11,7 @@ __credits__ = ["Greg Caporaso",
                "Daniel McDonald",
                "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -20,7 +20,7 @@ from numpy import inf, isinf
 from biom import load_table
 
 from qiime.util import (parse_command_line_parameters, make_option,
-                        write_biom_table)
+                        write_biom_table, EmptyBIOMTableError)
 from qiime.parse import parse_mapping_file
 from qiime.filter import (sample_ids_from_metadata_description,
                           filter_samples_from_otu_table,
@@ -94,10 +94,9 @@ def main():
     max_count = opts.max_count
     sample_id_fp = opts.sample_id_fp
 
-    if ((mapping_fp is None and valid_states is not None) or
-        (mapping_fp is not None and valid_states is None)):
-        option_parser.error("Both --mapping_fp and --valid_states must be "
-                            "provided if either are used.")
+    if (mapping_fp is None and valid_states is not None):
+        option_parser.error("--mapping_fp must be provided if --valid_states "
+                            "is passed.")
 
     if not ((mapping_fp and valid_states) or
             min_count != 0 or
@@ -135,7 +134,12 @@ def main():
         otu_table, sample_ids_to_keep, min_count, max_count,
         negate_ids_to_keep=negate_sample_id_fp)
 
-    write_biom_table(filtered_otu_table, output_fp)
+    try:
+        write_biom_table(filtered_otu_table, output_fp)
+    except EmptyBIOMTableError:
+        option_parser.error(
+            "Filtering resulted in an empty BIOM table. "
+            "This indicates that no samples remained after filtering.")
 
     # filter mapping file if requested
     if output_mapping_fp:

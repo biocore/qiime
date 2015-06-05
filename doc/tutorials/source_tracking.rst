@@ -6,7 +6,7 @@ Tracking the source of microbes with SourceTracker
 
 Introduction
 ------------
-This tutorial illustrations how to use the `SourceTracker <http://sourceforge.net/projects/sourcetracker/>`_ 0.9.5 software with QIIME. SourceTracker is designed to predict the source of microbial communities in a set of input samples (i.e., the sink samples). See `Knights (2011) <http://www.nature.com/nmeth/journal/v8/n9/full/nmeth.1650.html>`_ for the original paper on SourceTracker.
+This tutorial illustrations how to use the `SourceTracker <https://github.com/danknights/sourcetracker>`_ 1.0 software with QIIME. SourceTracker is designed to predict the source of microbial communities in a set of input samples (i.e., the sink samples). See `Knights (2011) <http://www.nature.com/nmeth/journal/v8/n9/full/nmeth.1650.html>`_ for the original paper on SourceTracker.
 
 This tutorial does not attempt to cover every possible usage of SourceTracker. Instead, it provide an example of how to use the basic framework in your own analyses.
 
@@ -20,7 +20,7 @@ Test Usage
 ----------
 Before running SourceTracker check to see if it installed and accessible to QIIME::
 
-    print_qiime_config.py -t
+    print_qiime_config.py -tfv
 
 You should see the following line in the output if SourceTracker is properly installed::
 
@@ -46,7 +46,7 @@ Convert table from BIOM to tab-separated text format
 ----------------------------------------------------
 SourceTracker does not work with the `BIOM format <http://www.biom-format.org>`_, so the OTU table needs to be converted to tab-separated text format. You can do that with the following command::
 
-    biom convert -i filtered_otu_table.biom -o filtered_otu_table.txt -b
+    biom convert -i filtered_otu_table.biom -o filtered_otu_table.txt --to-tsv
 
 This creates a file named ``filtered_otu_table.txt``.
 

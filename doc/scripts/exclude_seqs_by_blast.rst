@@ -48,7 +48,7 @@ WARNING: You cannot use this script if there are spaces in the path to the datab
 	`-`-blastmatroot
 		Path to a folder containing blast matrices [default: None].
 	`-`-working_dir
-		Working dir for BLAST [default: /tmp/].
+		Working dir for BLAST [default: /Users/caporaso/temp/].
 	-m, `-`-max_hits
 		Max hits parameter for BLAST. CAUTION: Because filtering on alignment percentage occurs after BLAST, a max hits value of 1 in combination with an alignment percent filter could miss valid contaminants. [default: 100]
 	-w, `-`-word_size

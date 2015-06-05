@@ -33,7 +33,7 @@
 	`-`-store_qual_scores
 		Store qual strings in .qual files [default: False]
 	`-`-sample_ids
-		Comma-separated list of samples id to be applied to all sequences, must be one per input file path (used when data is not multiplexed) [default: None]
+		Comma-separated list of samples ids to be applied to all sequences, must be one per input file path (used when data is not multiplexed) [default: None]
 	`-`-store_demultiplexed_fastq
 		Write demultiplexed fastq files [default: False]
 	`-`-retain_unassigned_reads
@@ -57,7 +57,7 @@
 	`-`-last_bad_quality_char
 		DEPRECATED: use -q instead. This method of setting is not robust to different versions of CASAVA.
 	`-`-barcode_type
-		The type of barcode used. This can be an integer, e.g. for length 6 barcodes, or golay_12 for golay error-correcting barcodes. Error correction will only be applied for golay_12 barcodes. [default: golay_12]
+		The type of barcode used. This can be an integer, e.g. for length 6 barcodes, or "golay_12" for golay error-correcting barcodes. Error correction will only be applied for "golay_12" barcodes. If data is not barcoded, pass "not-barcoded". [default: golay_12]
 	`-`-max_barcode_errors
 		Maximum number of errors in barcode [default: 1.5]
 	`-`-phred_offset
@@ -91,12 +91,12 @@
 
 ::
 
-	split_libraries_fastq.py -i lane1_read1.fastq.gz --sample_id my.sample.1 -o slout_single_sample_q20/ -q 19 --barcode_type 'not-barcoded'
+	split_libraries_fastq.py -i lane1_read1.fastq.gz --sample_ids my.sample.1 -o slout_single_sample_q20/ -q 19 --barcode_type 'not-barcoded'
 
 **Quality filter (at Phred >= Q20) two non-multiplexed lanes of Illumina fastq data with different samples in each and write results to ./slout_not_multiplexed_q20.:**
 
 ::
 
-	split_libraries_fastq.py -i lane1_read1.fastq.gz,lane2_read1.fastq.gz --sample_id my.sample.1,my.sample.2 -o slout_not_multiplexed_q20/ -q 19 --barcode_type 'not-barcoded'
+	split_libraries_fastq.py -i lane1_read1.fastq.gz,lane2_read1.fastq.gz --sample_ids my.sample.1,my.sample.2 -o slout_not_multiplexed_q20/ -q 19 --barcode_type 'not-barcoded'
 
 
