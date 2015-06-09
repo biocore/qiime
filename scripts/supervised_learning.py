@@ -64,7 +64,7 @@ error of the classified, and the pooled standard deviation (for cv5 and cv10 err
 
 This script requires that R be installed and in the search path. To install R \
 visit: http://www.r-project.org/. Once R is installed, run R and excecute the \
-command "install.packages("randomForest")", then type q() to exit."""
+command "install.packages('randomForest')", then type q() to exit."""
 
 script_info['script_usage'] = []
 
