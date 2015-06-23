@@ -1204,7 +1204,7 @@ def preprocess(fasta_files, qual_files, mapping_file,
     reverse_primers: (default 'disable') Enables removal of reverse primers and
     any subsequence sequence data from output reads.  Reverse primers have to
     be in 5'->3' format and in correct IUPAC codes in a column "ReversePrimer"
-    in the input mapping file.  Run check_id_map to make test primers in this
+    in the input mapping file.  Run validate_mapping_file.py to make test primers in this
     column for valid formatting.  The primers read from this column will be
     reverse complemented and associated with the given barcode in the
     mapping file.  If set to 'truncate_only', sequences where primers are found
@@ -1307,7 +1307,7 @@ def preprocess(fasta_files, qual_files, mapping_file,
     map_file.close()
     if errors:
         raise ValueError("Invalid mapping file. " +
-                         "Validate with check_id_map first: %s" % "\n".join(errors))
+                         "Validate with validate_mapping_file.py first: %s" % "\n".join(errors))
 
     # Find actual length of barcodes in the mapping file, also check for
     # variable lengths, in case of added_demultiplex, split on comma.
