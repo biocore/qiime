@@ -105,12 +105,81 @@ class FilterTests(TestCase):
         self.assertItemsEqual(negate_tips_to_keep(tips_to_keep, t), expected)
 
     def test_filter_mapping_file(self):
-        """filter_mapping_file should filter map file according to sample ids"""
+        """filter_mapping_file should filter map file according to sample ids
+        """
+        # make sure new code passes old tests
         self.assertEqual(filter_mapping_file(self.map_data, self.map_headers,
-                                             ['a', 'b', 'c', 'd', 'e', 'f']), (self.map_headers, self.map_data))
-        self.assertEqual(
-            filter_mapping_file(self.map_data, self.map_headers, ['a']),
-            (['SampleID', 'Description'], ['a\tx'.split('\t')]))
+                                             ['a', 'b', 'c', 'd', 'e', 'f']),
+                                            (self.map_headers, self.map_data))
+
+        # this test has been removed - we now won't filter 1 sample mapping
+        # files because the idea of uniqueness doesn't make sense.
+        # self.assertEqual(filter_mapping_file(self.map_data, self.map_headers,
+        #                                      ['a']),
+        #                 (['SampleID', 'Description'], ['a\tx'.split('\t')]))
+
+        # test: non-unique colums removed, unique columns retained
+        obs_headers, obs_data = filter_mapping_file(self.map_data,
+                                                    self.map_headers,
+                                                    ['a', 'b', 'e'],
+                                                    include_repeat_cols=False,
+                                                    include_unique_cols=True)
+        exp_headers = ['SampleID', 'Study', 'Description']
+        exp_data = [['a', 'Dog', 'x'],
+                    ['b', 'Dog', 'y'],
+                    ['e', 'WholeBody', 'b']]
+        self.assertEqual(obs_headers, exp_headers)
+        self.assertEqual(obs_data, exp_data)
+
+        # test: non-unique colums retained, unique columns removed
+        obs_headers, obs_data = filter_mapping_file(self.map_data,
+                                                    self.map_headers,
+                                                    ['a', 'b'],
+                                                    include_repeat_cols=True,
+                                                    include_unique_cols=False)
+        exp_headers = ['SampleID', 'Study', 'BodySite']
+        exp_data = [['a', 'Dog', 'Stool'],
+                    ['b', 'Dog', 'Stool']]
+        self.assertEqual(obs_headers, exp_headers)
+        self.assertEqual(obs_data, exp_data)
+
+        # test: non-unique colums remove, unique columns removed
+        obs_headers, obs_data = filter_mapping_file(self.map_data,
+                                                    self.map_headers,
+                                                    ['a', 'b'],
+                                                    include_repeat_cols=False,
+                                                    include_unique_cols=False)
+        exp_headers = ['SampleID']
+        exp_data = [['a'],
+                    ['b']]
+        self.assertEqual(obs_headers, exp_headers)
+        self.assertEqual(obs_data, exp_data)
+
+        # test with new data - retain both
+        data, headers, _ = parse_mapping_file(StringIO(map_str3))
+
+        obs_headers, obs_data = filter_mapping_file(data, headers,
+                                                    ['a', 'b', 'd', 'e'],
+                                                    include_repeat_cols=True,
+                                                    include_unique_cols=True)
+        exp_headers = ['SampleID', 'Study', 'BodySite', 'Description']
+        exp_data = [['a', 'study1', 'Stool', 'x'],
+                    ['b', 'study1', 'Eye', 'y'],
+                    ['d', 'study1', 'Palm', 'a'],
+                    ['e', 'study1', 'Lung', 'b']]
+        self.assertEqual(obs_headers, exp_headers)
+        self.assertEqual(obs_data, exp_data)
+
+        # test that with one sample we get back that sample and all columns
+        obs_headers, obs_data = filter_mapping_file(self.map_data,
+                                                    self.map_headers,
+                                                    ['a'],
+                                                    include_repeat_cols=False,
+                                                    include_unique_cols=False)
+        exp_headers = ['SampleID', 'Study', 'BodySite', 'Description']
+        exp_data = [['a', 'Dog', 'Stool', 'x']]
+        self.assertEqual(obs_headers, exp_headers)
+        self.assertEqual(obs_data, exp_data)
 
     def test_filter_mapping_file_from_mapping_f(self):
         """ filter_mapping_file_from_mapping_f functions as expected """
@@ -1251,6 +1320,13 @@ d\tI3\t3\tStool\ta
 e\tI3\t1\tPalm\tb
 f\tI1\t3\tPalm\tc
 g\tI1\t2\tStool\td"""
+
+map_str3 = """#SampleID\tStudy\tBodySite\tDescription
+a\tstudy1\tStool\tx
+b\tstudy1\tEye\ty
+c\tstudy1\tEar\tz
+d\tstudy1\tPalm\ta
+e\tstudy1\tLung\tb"""
 
 filter_fasta_expected1 = """>Seq1 some comment
 ACCTTGG

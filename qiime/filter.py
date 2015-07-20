@@ -13,7 +13,7 @@ __email__ = "gregcaporaso@gmail.com"
 
 from collections import defaultdict
 from random import shuffle, sample
-from numpy import array, inf
+from numpy import array, inf, apply_along_axis, in1d
 
 from skbio.parse.sequences import parse_fasta, parse_fastq
 from skbio.format.sequences import format_fastq_record
@@ -386,48 +386,68 @@ def filter_fastq(input_seqs_f, output_seqs_f, seqs_to_keep, negate=False,
 
 
 def filter_mapping_file(map_data, map_header, good_sample_ids,
-                        include_repeat_cols=False, column_rename_ids=None):
-    """Filters map according to several criteria.
+                        include_repeat_cols=False, include_unique_cols=True):
+    '''Filter samples from a mapping file.
 
-    - keep only sample ids in good_sample_ids
-    - drop cols that are different in every sample (except id)
-    - drop cols that are the same in every sample
-    """
-    # keeping samples
-    to_keep = []
-    to_keep.extend([i for i in map_data if i[0] in good_sample_ids])
+    This script filters out all samples not in `good_sample_ids` (i.e. removing
+    rows of a mapping file). It defaults to removing metadata columns if every
+    sample in the `good_sample_ids` has the same value for that column. It can
+    optionally remove metadata columns if every sample in the `good_sample_ids`
+    has a unique value for that colum (excluding the 0th column - the sample id
+    column).
 
-    # keeping columns
-    headers = []
-    to_keep = zip(*to_keep)
-    headers.append(map_header[0])
-    result = [to_keep[0]]
+    If `good_sample_ids` only contains one sample then that sample will be
+    returned along with all columns because uniquness for metadata values is
+    no longer meaningful.
 
-    if column_rename_ids:
-        # reduce in 1 as we are not using the first colum (SampleID)
-        column_rename_ids = column_rename_ids - 1
-        for i, l in enumerate(to_keep[1:-1]):
-            if i == column_rename_ids:
-                if len(set(l)) != len(result[0]):
-                    raise ValueError(
-                        "The column to rename the samples is not unique.")
-                result.append(result[0])
-                result[0] = l
-                headers.append('SampleID_was_' + map_header[i + 1])
-            elif include_repeat_cols or len(set(l)) > 1:
-                headers.append(map_header[i + 1])
-                result.append(l)
-    else:
-        for i, l in enumerate(to_keep[1:-1]):
-            if include_repeat_cols or len(set(l)) > 1:
-                headers.append(map_header[i + 1])
-                result.append(l)
-    headers.append(map_header[-1])
-    result.append(to_keep[-1])
+    Parameters
+    ----------
+    map_data : list
+        List of lists of mapping file data. Expected format is that produced by
+        qiime.parse.parse_mapping_file.
+    map_header : list
+        List of strs of mapping file headers. Expected format is that produced
+        by qiime.parse.parse_mapping_file.
+    good_sample_ids : list
+        List of sample ids to retain.
+    include_repeat_cols : boolean
+        If true, retain columns where all retained samples have the same value
+        for the column.
+    include_unique_cols : boolean
+        If true, retain columns where all retained samples have a unique value
+        for the column.
 
-    result = map(list, zip(*result))
+    Returns
+    -------
+    list
+        List of headers that have been retained.
+    list
+        List of lists of mapping data including retained rows (samples) and
+        columns.
+    '''
+    # this breaks backward compatability on one line mapping files.
+    if len(good_sample_ids) == 1:
+        return map_header, [r for r in map_data if r[0] == good_sample_ids[0]]
 
-    return headers, result
+    data = array(map_data)
+    headers = array(map_header)
+    rd = data[in1d(data[:, 0], good_sample_ids)]
+
+    # calculate number of unique values in each column of the mapping file
+    num_unique_vals = apply_along_axis(lambda col: len(set(col)), 0, rd)
+
+    cols_to_keep = array([True] * rd.shape[1])
+    if not include_repeat_cols:
+        cols_to_keep[(num_unique_vals == 1)] = False
+    if not include_unique_cols:
+        cols_to_keep[(num_unique_vals == rd.shape[0])] = False
+
+    # we will always keep the 0th column - the sample id column, so we are
+    # doing more calculations than necessary, but its simpler to just set the
+    # first entry of cols_to_keep to True.
+    cols_to_keep[0] = True
+
+    return list(headers[cols_to_keep]), map(list, rd[:, cols_to_keep])
 
 
 def filter_mapping_file_from_mapping_f(
