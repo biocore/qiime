@@ -9,7 +9,8 @@ __credits__ = ["Greg Caporaso",
                "Jesse Stombaugh",
                "Dan Knights",
                "Daniel McDonald",
-               "Jai Ram Rideout"]
+               "Jai Ram Rideout",
+               "Will Van Treuren"]
 __license__ = "GPL"
 __version__ = "1.9.1-dev"
 __maintainer__ = "Greg Caporaso"
@@ -39,6 +40,8 @@ script_info[
                         "%prog -i otu_table.biom -o otu_table_control_only.biom -m map.txt -s 'Treatment:Control'"),
                        ("Metadata-based filtering (negative)", "Filter samples from the table, keeping samples where the value for 'Treatment' in the mapping file is not 'Control'",
                         "%prog -i otu_table.biom -o otu_table_not_control.biom -m map.txt -s 'Treatment:*,!Control'"),
+                       ("Metadata-based filtering (positive)", "Filter samples from the table, keeping samples where the value for 'Treatment' in the mapping file is 'Control' and output a new mapping file",
+                        "%prog -i otu_table.biom -o otu_table_control_only.biom -m map.txt -s 'Treatment:Control' --output_mapping_fp new_map.txt"),
                        ("ID-based filtering", "Keep samples where the id is listed in ids.txt", "%prog -i otu_table.biom -o filtered_otu_table.biom --sample_id_fp ids.txt"),
                        ("ID-based filtering (negation)", "Discard samples where the id is listed in ids.txt", "%prog -i otu_table.biom -o filtered_otu_table.biom --sample_id_fp ids.txt --negate_sample_id_fp")]
 
@@ -149,7 +152,9 @@ def main():
             filter_mapping_file(
                 mapping_data,
                 mapping_headers,
-                filtered_otu_table.ids())
+                filtered_otu_table.ids(),
+                include_repeat_cols=True,
+                include_unique_cols=True)
         open(
             output_mapping_fp,
             'w').write(
