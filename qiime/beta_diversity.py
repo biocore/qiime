@@ -200,25 +200,35 @@ def single_file_beta(input_path, metrics, tree_path, output_dir,
                     otumtx = otu_table.matrix_data.T.toarray()
                     row_dissims.append(metric_f(otumtx)[rowidx])
                 else:
-                    # do element by element
-                    dissims = []
-                    sample_ids = otu_table.ids()
-                    observation_ids = otu_table.ids(axis='observation')
-                    for i in range(len(sample_ids)):
-                        samp_a = otu_table.data(sample_ids[rowidx])
-                        samp_b = otu_table.data(sample_ids[i])
-                        samp_data = vstack([samp_a, samp_b])
+                    try:
+                        row_metric = get_phylogenetic_row_metric(metric)
+                    except AttributeError:
+                        # do element by element
+                        dissims = []
+                        sample_ids = otu_table.ids()
+                        observation_ids = otu_table.ids(axis='observation')
+                        for i in range(len(sample_ids)):
+                            samp_a = otu_table.data(sample_ids[rowidx])
+                            samp_b = otu_table.data(sample_ids[i])
+                            samp_data = vstack([samp_a, samp_b])
 
-                        if is_phylogenetic:
+                            if is_phylogenetic:
 
-                            dissim = metric_f(
-                                samp_data, observation_ids,
-                                tree, [sample_ids[rowidx], sample_ids[i]],
-                                make_subtree=(not full_tree))[0, 1]
-                        else:
-                            dissim = metric_f(samp_data)[0, 1]
-                        dissims.append(dissim)
-                    row_dissims.append(dissims)
+                                dissim = metric_f(
+                                    samp_data, observation_ids,
+                                    tree, [sample_ids[rowidx], sample_ids[i]],
+                                    make_subtree=(not full_tree))[0, 1]
+                            else:
+                                dissim = metric_f(samp_data)[0, 1]
+                            dissims.append(dissim)
+                        row_dissims.append(dissims)
+                    else:
+                        # do whole row at once
+                        dissims = row_metric(otu_table,
+                                             otu_table.ids(axis='observation'),
+                                             tree, otu_table.ids(), rowid,
+                                             make_subtree=(not full_tree))
+                        row_dissims.append(dissims)
 
             with open(outfilepath, 'w') as f:
                 f.write(format_matrix(row_dissims, rowids_list,
