@@ -372,6 +372,16 @@ class GenerateJoinPairedEndsCommands(TestCase):
                     "  | qsub -N BigErn -k oe").format(output_dir=output_dir)
         self.assertEquals(actual_command, expected)
 
+    def test_creat_commands_slf_exception(self):
+        all_files = ['sample1_r1.fastq', 'sample2_r1.fastq']
+        demultiplexing_method = 'sampleid_by_file'
+        output_dir = 'foo-boo-loo-bloop'
+
+        with self.assertRaises(IOError):
+            actual_command = create_commands_slf(all_files,
+                                                 demultiplexing_method,
+                                                 output_dir)[0][0][1]
+
     def test_make_file(self):
         a = ['/foo/bar/baz.fastq.gz', '/pleep/ploop/bloom.fastq.gz',
              '/foo/bar/beezzz.fastq.gz', '/a/b/c/d/e/f/g/h.fastq.gz']
