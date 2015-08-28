@@ -44,6 +44,17 @@ For example, sample1_L001_R1_001.fastq.gz, sample1_L001_I1_001.fastq.gz,
 sample1_L001_mapping_001.txt would be matched up if "R1" is the read indicator,
 "I1" is the barcode indicator, and "mapping" is the mapping file indicator.
 
+Depending on the inputed arguments, this script can create any of the following
+files in the output directory:
+
+    * seqs.txt: this file will contain a list (one element per line) of found
+      sequences filepaths.
+    * barcodes.txt: this file will contain a list (one element per line) of
+      found barcodes filepaths.
+    * map.txt: this file wil contain a list (one element per line) of mapping
+      file filepaths.
+    * sample_ids.txt: this file will contain a list (one element per line)
+      sample identifiers.
 """
 script_info['script_usage'] = []
 

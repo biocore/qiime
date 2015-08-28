@@ -9,9 +9,7 @@ __maintainer__ = "William Walters"
 __email__ = "William.A.Walters@colorado.edu"
 
 
-from os import close
-from os.path import join, basename, splitext
-from tempfile import mkstemp
+from os.path import join, basename, splitext, exists
 
 
 def create_commands_jpe(pairs, base_output_dir, optional_params = "",
@@ -115,7 +113,8 @@ def create_commands_slf(all_files, demultiplexing_method, output_dir,
 
     all_files: list of input filelpaths or dict of reads:(barcode,mapping)
     demultiplexing_method: Either 'sampleid_by_file' or 'mapping_barcode_files'
-    output_dir: output directory to write split_libraries_fastq output
+    output_dir: output directory to write split_libraries_fastq output, the
+        directory has to exist before calling this function.
     params: added parameters to split_libraries_fastq.py calls
     leading_text: Text to add before split_libraries_fastq.py call
     trailing_text: Text to add after split_libraries_fastq.py call
@@ -125,7 +124,17 @@ def create_commands_slf(all_files, demultiplexing_method, output_dir,
         output directory names.
     sampleid_indicator: Split on this character in input fastq filenames to
         generate output SampleID name.
+
+    Raises
+    ------
+    IOError
+        If the output_dir doesn't exist.
     """
+
+    # we need the folder to exist so we can write the seqs.txt, barcodes.txt,
+    # sample_ids.txt and maps.txt files
+    if not exists(output_dir):
+        raise IOError("%s directory doesn't exist" % output_dir)
 
     commands = []
     read_files = []
@@ -134,6 +143,7 @@ def create_commands_slf(all_files, demultiplexing_method, output_dir,
     sample_ids = []
 
     params_dict = {}
+    path_builder = lambda x: join(output_dir, x)
 
     # Using a set in this case to keep consistent order (needed for unit tests)
     all_fps = set(all_files)
@@ -158,18 +168,22 @@ def create_commands_slf(all_files, demultiplexing_method, output_dir,
     params_dict = {'leading_text': _clean_leading_text(leading_text),
                    'trailing_text': trailing_text, 'output_dir': output_dir,
                    'params': params,
-                   'read_files': _make_file(read_files, 'seqs_')}
+                   'read_files': _make_file(read_files,
+                                            path_builder('seqs.txt'))}
     cmd = ("{leading_text}split_libraries_fastq.py {params} "
            "-i {read_files} -o {output_dir} --read_arguments_from_file ")
 
     if demultiplexing_method == 'sampleid_by_file':
         cmd += ("--sample_ids {sample_ids} --barcode_type 'not-barcoded' ")
-        params_dict['sample_ids'] = _make_file(sample_ids, 'sample_ids_')
+        params_dict['sample_ids'] = _make_file(sample_ids,
+                                               path_builder('sample_ids.txt'))
     else:
         cmd += ("--barcode_read_fps {barcode_files} "
                 "--mapping_fps {mapping_files} ")
-        params_dict['barcode_files'] = _make_file(barcode_files, 'barcodes_')
-        params_dict['mapping_files'] = _make_file(mapping_files, 'maps_')
+        params_dict['barcode_files'] = _make_file(barcode_files,
+                                                  path_builder('barcodes.txt'))
+        params_dict['mapping_files'] = _make_file(mapping_files,
+                                                  path_builder('maps.txt'))
 
     # regardless of the method, trailing_text should go last
     cmd += '{trailing_text}'
@@ -178,24 +192,23 @@ def create_commands_slf(all_files, demultiplexing_method, output_dir,
     return commands
 
 
-def _make_file(elements, prefix='tmp'):
-    """Create a temporary file with one element per line
+def _make_file(elements, fp):
+    """Create a file with one element per line
+
+    This function is just a helper for create_commands_slf.
 
     Parameters
     ----------
     elements : list
         List of elements to be formatted one by line in the output file.
-    prefix : str
-        Prefix to prepend in the temporary filename.
+    fp : str
+        Filepath where the file should be written to
 
     Returns
     -------
     str
-        Temporary filepath.
+        Filepath where the file is written.
     """
-    fd, fp = mkstemp(prefix=prefix)
-    close(fd)
-
     with open(fp, 'w') as f:
         f.write('\n'.join(elements))
     return fp
