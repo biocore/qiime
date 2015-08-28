@@ -1,6 +1,11 @@
 QIIME 1.9.1-dev (changes since 1.9.1 go here)
 =============================================
 
+Bug fixes
+---------
+
+* Add ``--read_arguments_from_file`` to ``split_libraries_fastq.py``, thus preventing ``multiple_split_libraries_fastq.py`` from failing with an `Argument list too long error` when the number of input files is large, see [#2069](https://github.com/biocore/qiime/issues/2069).
+
 QIIME 1.9.1
 ===========
 

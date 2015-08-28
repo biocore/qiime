@@ -2,13 +2,17 @@ from __future__ import division
 
 __author__ = "William Walters"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["William Walters"]
+__credits__ = ["William Walters", "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
 __version__ = "1.9.1-dev"
 __maintainer__ = "William Walters"
 __email__ = "William.A.Walters@colorado.edu"
 
+
+from os import close
 from os.path import join, basename, splitext
+from tempfile import mkstemp
+
 
 def create_commands_jpe(pairs, base_output_dir, optional_params = "",
         leading_text = "", trailing_text = "", include_input_dir_path=False,
@@ -129,6 +133,8 @@ def create_commands_slf(all_files, demultiplexing_method, output_dir,
     mapping_files = []
     sample_ids = []
 
+    params_dict = {}
+
     # Using a set in this case to keep consistent order (needed for unit tests)
     all_fps = set(all_files)
 
@@ -148,21 +154,52 @@ def create_commands_slf(all_files, demultiplexing_method, output_dir,
             barcode_files.append(all_files[curr_fp][0])
             mapping_files.append(all_files[curr_fp][1])
 
-    if demultiplexing_method == 'sampleid_by_file':
-        command =\
-            "%ssplit_libraries_fastq.py %s -i %s --sample_ids %s -o %s %s --barcode_type 'not-barcoded'" %\
-            (_clean_leading_text(leading_text), params, ",".join(read_files), ",".join(sample_ids),
-            output_dir, trailing_text)
-    else:
-        command =\
-            "%ssplit_libraries_fastq.py %s -i %s --barcode_read_fps %s --mapping_fps %s -o %s %s" %\
-            (_clean_leading_text(leading_text), params, ",".join(read_files),
-            ",".join(barcode_files), ",".join(mapping_files),
-            output_dir, trailing_text)
+    # gather all the arguments into a dictionary to format them into a command
+    params_dict = {'leading_text': _clean_leading_text(leading_text),
+                   'trailing_text': trailing_text, 'output_dir': output_dir,
+                   'params': params,
+                   'read_files': _make_file(read_files, 'seqs_')}
+    cmd = ("{leading_text}split_libraries_fastq.py {params} "
+           "-i {read_files} -o {output_dir} --read_arguments_from_file ")
 
-    commands.append([('split_libraries_fastq.py', command)])
+    if demultiplexing_method == 'sampleid_by_file':
+        cmd += ("--sample_ids {sample_ids} --barcode_type 'not-barcoded' ")
+        params_dict['sample_ids'] = _make_file(sample_ids, 'sample_ids_')
+    else:
+        cmd += ("--barcode_read_fps {barcode_files} "
+                "--mapping_fps {mapping_files} ")
+        params_dict['barcode_files'] = _make_file(barcode_files, 'barcodes_')
+        params_dict['mapping_files'] = _make_file(mapping_files, 'maps_')
+
+    # regardless of the method, trailing_text should go last
+    cmd += '{trailing_text}'
+    commands.append([('split_libraries_fastq.py', cmd.format(**params_dict))])
 
     return commands
+
+
+def _make_file(elements, prefix='tmp'):
+    """Create a temporary file with one element per line
+
+    Parameters
+    ----------
+    elements : list
+        List of elements to be formatted one by line in the output file.
+    prefix : str
+        Prefix to prepend in the temporary filename.
+
+    Returns
+    -------
+    str
+        Temporary filepath.
+    """
+    fd, fp = mkstemp(prefix=prefix)
+    close(fd)
+
+    with open(fp, 'w') as f:
+        f.write('\n'.join(elements))
+    return fp
+
 
 def get_pairs(all_files, read1_indicator, read2_indicator, match_barcodes=False,
         barcode_indicator="_I1_"):

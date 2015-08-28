@@ -4,7 +4,8 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso", "Emily TerAvest"]
+__credits__ = ["Greg Caporaso", "Emily TerAvest", "Yoshiki Vazquez Baeza",
+               "Rob Knight"]
 __license__ = "GPL"
 __version__ = "1.9.1-dev"
 __maintainer__ = "Greg Caporaso"
@@ -137,7 +138,16 @@ script_info['optional_options'] = [
                 choices=['33', '64'], help="the ascii offset to use when "
                 "decoding phred scores (either 33 or 64). Warning: in most "
                 "cases you don't need to pass this value "
-                "[default: determined automatically]")
+                "[default: determined automatically]"),
+    make_option('--read_arguments_from_file', default=False,
+                action='store_true', help='If this flag is enabled, then the '
+                'inputs to "-i" or "--sequence_read_fps", "-b" or '
+                '"--barcode_read_fps", "-m" or "--mapping_fps" and '
+                '"--sample_ids" will each be interpreted as a single text file'
+                ', where the contents are one file-path or sample identifier '
+                'per line (depending on the flag). NOTE: In most cases regular'
+                ' users don\'t need to use this flag, as it is intended for '
+                'use in multiple_split_libraries_fastq.py [default: %default]')
     # NEED TO FIX THIS FUNCTIONALITY - CURRENTLY READING THE WRONG FIELD
     # make_option('--filter_bad_illumina_qual_digit',
     #    action='store_true',
@@ -151,6 +161,24 @@ script_info['version'] = __version__
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
+    read_arguments_from_file = opts.read_arguments_from_file
+
+    # these arguments can optionally be read from a file, reasoning is to
+    # allow arguments that would span over hundreds of samples and would be
+    # prohibitive to execute as a command line call
+    if read_arguments_from_file:
+        read_f = lambda x: open(x, 'U').read().strip().split('\n')
+
+        # sample_ids is the only one of these arguments that's returned as a
+        # string, the rest of them are lists
+        if opts.sample_ids:
+            opts.sample_ids = ','.join(read_f(opts.sample_ids))
+        if opts.sequence_read_fps:
+            opts.sequence_read_fps = read_f(opts.sequence_read_fps[0])
+        if opts.barcode_read_fps:
+            opts.barcode_read_fps = read_f(opts.barcode_read_fps[0])
+        if opts.mapping_fps:
+            opts.mapping_fps = read_f(opts.mapping_fps[0])
 
     sequence_read_fps = opts.sequence_read_fps
     barcode_read_fps = opts.barcode_read_fps
