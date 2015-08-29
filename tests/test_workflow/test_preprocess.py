@@ -326,7 +326,7 @@ class GenerateJoinPairedEndsCommands(TestCase):
                     "{output_dir}/sample_ids.txt --barcode_type "
                     "'not-barcoded' ").format(output_dir=output_dir)
 
-        self.assertEquals(actual_command, expected)
+        self.assertEqual(actual_command, expected)
 
     def test_create_commands_slf_mapping_barcodes(self):
         """ Properly creates commands for barcode/mapping files option """
@@ -346,7 +346,7 @@ class GenerateJoinPairedEndsCommands(TestCase):
                     "--barcode_read_fps {output_dir}/barcodes.txt "
                     "--mapping_fps {output_dir}/maps.txt ").format(
                     output_dir=output_dir)
-        self.assertEquals(actual_command, expected)
+        self.assertEqual(actual_command, expected)
 
     def test_create_commands_slf_added_options(self):
         """ Properly creates slf commands with added parameters """
@@ -370,7 +370,7 @@ class GenerateJoinPairedEndsCommands(TestCase):
                     "--read_arguments_from_file --sample_ids "
                     "{output_dir}/sample_ids.txt --barcode_type 'not-barcoded'"
                     "  | qsub -N BigErn -k oe").format(output_dir=output_dir)
-        self.assertEquals(actual_command, expected)
+        self.assertEqual(actual_command, expected)
 
     def test_creat_commands_slf_exception(self):
         all_files = ['sample1_r1.fastq', 'sample2_r1.fastq']
@@ -388,15 +388,14 @@ class GenerateJoinPairedEndsCommands(TestCase):
         fp = join(self.temp_dir, 'gzweep')
         observed = _make_file(a, fp)
         with open(fp) as f:
-            self.assertEquals('\n'.join(a), f.read())
-        self.assertEquals(observed, fp)
+            self.assertEqual('\n'.join(a), f.read())
+        self.assertEqual(observed, fp)
 
         fp = join(self.temp_dir, 'gzweep')
         observed = _make_file([], fp)
         with open(observed) as f:
-            self.assertEquals('', f.read())
-        self.assertEquals(observed, fp)
-
+            self.assertEqual('', f.read())
+        self.assertEqual(observed, fp)
 
 
 if __name__ == '__main__':

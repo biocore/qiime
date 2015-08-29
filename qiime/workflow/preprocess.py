@@ -10,6 +10,7 @@ __email__ = "William.A.Walters@colorado.edu"
 
 
 from os.path import join, basename, splitext, exists
+from functools import partial
 
 
 def create_commands_jpe(pairs, base_output_dir, optional_params = "",
@@ -143,7 +144,7 @@ def create_commands_slf(all_files, demultiplexing_method, output_dir,
     sample_ids = []
 
     params_dict = {}
-    path_builder = lambda x: join(output_dir, x)
+    path_builder = partial(join, output_dir)
 
     # Using a set in this case to keep consistent order (needed for unit tests)
     all_fps = set(all_files)
@@ -199,7 +200,7 @@ def _make_file(elements, fp):
 
     Parameters
     ----------
-    elements : list
+    elements : list or tuple
         List of elements to be formatted one by line in the output file.
     fp : str
         Filepath where the file should be written to

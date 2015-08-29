@@ -18,7 +18,7 @@ from skbio.sequence import DNA
 from skbio.format.sequences import format_fastq_record
 
 from qiime.util import parse_command_line_parameters, make_option, gzip_open
-from qiime.parse import parse_mapping_file
+from qiime.parse import parse_mapping_file, parse_items
 from qiime.split_libraries_fastq import (process_fastq_single_end_read_file,
                                          BARCODE_DECODER_LOOKUP, process_fastq_single_end_read_file_no_barcode)
 from qiime.split_libraries import check_map
@@ -167,18 +167,16 @@ def main():
     # allow arguments that would span over hundreds of samples and would be
     # prohibitive to execute as a command line call
     if read_arguments_from_file:
-        read_f = lambda x: open(x, 'U').read().strip().split('\n')
-
         # sample_ids is the only one of these arguments that's returned as a
         # string, the rest of them are lists
         if opts.sample_ids:
-            opts.sample_ids = ','.join(read_f(opts.sample_ids))
+            opts.sample_ids = ','.join(parse_items(opts.sample_ids))
         if opts.sequence_read_fps:
-            opts.sequence_read_fps = read_f(opts.sequence_read_fps[0])
+            opts.sequence_read_fps = parse_items(opts.sequence_read_fps[0])
         if opts.barcode_read_fps:
-            opts.barcode_read_fps = read_f(opts.barcode_read_fps[0])
+            opts.barcode_read_fps = parse_items(opts.barcode_read_fps[0])
         if opts.mapping_fps:
-            opts.mapping_fps = read_f(opts.mapping_fps[0])
+            opts.mapping_fps = parse_items(opts.mapping_fps[0])
 
     sequence_read_fps = opts.sequence_read_fps
     barcode_read_fps = opts.barcode_read_fps

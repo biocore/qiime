@@ -3,7 +3,7 @@ from __future__ import division
 
 __author__ = "William Walters"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["William Walters"]
+__credits__ = ["William Walters", "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
 __version__ = "1.9.1-dev"
 __maintainer__ = "William Walters"
