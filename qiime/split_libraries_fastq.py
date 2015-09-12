@@ -402,7 +402,7 @@ def process_fastq_single_end_read_file(fastq_read_f,
         fasta_header = '%s_%s %s orig_bc=%s new_bc=%s bc_diffs=%d' %\
             (sample_id, seq_id, header, barcode,
              corrected_barcode, num_barcode_errors)
-        yield fasta_header, sequence, quality, seq_id
+        yield sample_id, fasta_header, sequence, quality, seq_id
         seq_id += 1
 
     # Add sample IDs with zero counts to dictionary for logging

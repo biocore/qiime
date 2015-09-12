@@ -11,7 +11,8 @@ __version__ = "1.9.1-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
-from os import rename
+from os import rename, remove
+from os.path import exists
 
 from skbio.util import safe_md5, create_dir
 from skbio.sequence import DNA
@@ -92,6 +93,9 @@ script_info['optional_options'] = [
     make_option("--store_demultiplexed_fastq", default=False,
                 action='store_true', help='write demultiplexed fastq files '
                 '[default: %default]'),
+    make_option("--split_files", default=False,
+            action='store_true', help='write an individual file for each sample'
+            '[default: %default]'),
     make_option("--retain_unassigned_reads", default=False,
                 action='store_true', help="retain sequences which don't map to a "
                 'barcode in the mapping file (sample ID will be "Unassigned") '
@@ -198,6 +202,7 @@ def main():
     filter_bad_illumina_qual_digit = False
     store_qual_scores = opts.store_qual_scores
     store_demultiplexed_fastq = opts.store_demultiplexed_fastq
+    split_files = opts.split_files
     barcode_type = opts.barcode_type
     max_barcode_errors = opts.max_barcode_errors
 
@@ -367,10 +372,38 @@ def main():
                 log_f=log_f, histogram_f=histogram_f,
                 phred_offset=phred_offset)
 
-        for fasta_header, sequence, quality, seq_id in seq_generator:
-            output_f.write('>%s\n%s\n' % (fasta_header, sequence))
-            qual_writer(fasta_header, quality)
-            fastq_writer(fasta_header, sequence, quality)
+
+        # If files are being split, they will be appended to.
+        #  To ensure they are writing to a clean file, and delete preexisting files
+        if split_files:
+            for sample_id in barcode_to_sample_id.values():
+                samplefiles = [ "{}/{}_seqs.fna.incomplete".format(output_dir, sample_id),
+                                "{}/{}_seqs.qual.incomplete".format(output_dir, sample_id),
+                                "{}/{}_seqs.fastq.incomplete".format(output_dir, sample_id) ]
+
+                for samplefile in samplefiles:
+                    if exists(samplefile):
+                        remove(samplefile)
+
+
+        for sample_id, fasta_header, sequence, quality, seq_id in seq_generator:
+            if split_files:
+                #write per-sample fna, qual, and fastq
+                with open("%s/%s_seqs.fna.incomplete" % (output_dir, sample_id), "a") as fna:
+                    fna.write('>%s\n%s\n' % (fasta_header, sequence))
+
+                if store_qual_scores:
+                    with open("{}/{}_seqs.qual.incomplete".format(output_dir, sample_id), "a") as qual:
+                        qual.write('>%s\n%s\n' % (fasta_header, quality))
+
+                if store_demultiplexed_fastq:
+                    with open("{}/{}_seqs.fastq.incomplete".format(output_dir, sample_id), "a") as fq:
+                        fq.write(format_fastq_record(fasta_header, sequence, quality) )
+
+            else:
+                output_f.write('>%s\n%s\n' % (fasta_header, sequence))
+                qual_writer(fasta_header, quality)
+                fastq_writer(fasta_header, sequence, quality)
 
         start_seq_id = seq_id + 1
         log_f.write('\n---\n\n')
@@ -386,6 +419,19 @@ def main():
     if store_demultiplexed_fastq:
         output_fastq_f.close()
         rename(output_fastq_fp_temp, output_fastq_fp)
+
+    if split_files:
+        for sample_id in barcode_to_sample_id.values():
+            try:
+                rename("%s/%s_seqs.fna.incomplete" % (output_dir, sample_id),
+                       "%s/%s_seqs.fna" % (output_dir, sample_id))
+                rename("%s/%s_seqs.qualincomplete" % (output_dir, sample_id),
+                       "%s/%s_seqs.qual" % (output_dir, sample_id))
+                rename("%s/%s_seqs.fastq.incomplete" % (output_dir, sample_id),
+                       "%s/%s_seqs.fastq" % (output_dir, sample_id))
+            except:
+                pass
+
 
 if __name__ == "__main__":
     main()
