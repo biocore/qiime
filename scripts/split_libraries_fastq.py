@@ -377,7 +377,10 @@ def main():
         #  To ensure they are writing to a clean file, and delete preexisting files
         if split_files:
             for sample_id in barcode_to_sample_id.values():
-                samplefiles = [ "{}/{}_seqs.fna.incomplete".format(output_dir, sample_id),
+                samplefiles = [ "{}/{}_seqs.fna".format(output_dir, sample_id),
+                                "{}/{}_seqs.qual".format(output_dir, sample_id),
+                                "{}/{}_seqs.fastq".format(output_dir, sample_id),
+                                "{}/{}_seqs.fna.incomplete".format(output_dir, sample_id),
                                 "{}/{}_seqs.qual.incomplete".format(output_dir, sample_id),
                                 "{}/{}_seqs.fastq.incomplete".format(output_dir, sample_id) ]
 
@@ -421,16 +424,16 @@ def main():
         rename(output_fastq_fp_temp, output_fastq_fp)
 
     if split_files:
+        # rename the fna, qual, and fastq files. There may be different configurations
+        # allowing for one or more of these files per sample. simple test and rename.
         for sample_id in barcode_to_sample_id.values():
-            try:
-                rename("%s/%s_seqs.fna.incomplete" % (output_dir, sample_id),
-                       "%s/%s_seqs.fna" % (output_dir, sample_id))
-                rename("%s/%s_seqs.qualincomplete" % (output_dir, sample_id),
-                       "%s/%s_seqs.qual" % (output_dir, sample_id))
-                rename("%s/%s_seqs.fastq.incomplete" % (output_dir, sample_id),
-                       "%s/%s_seqs.fastq" % (output_dir, sample_id))
-            except:
-                pass
+            samplefiles = [ "{}/{}_seqs.fna.incomplete".format(output_dir, sample_id),
+                            "{}/{}_seqs.qual.incomplete".format(output_dir, sample_id),
+                            "{}/{}_seqs.fastq.incomplete".format(output_dir, sample_id) ]
+            for samplefile in samplefiles:
+                if exists(samplefile):
+                        rename(samplefile, samplefile[:-11]) #rename without ".incomplete"
+
 
 
 if __name__ == "__main__":
