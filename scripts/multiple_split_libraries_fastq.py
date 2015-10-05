@@ -11,6 +11,7 @@ __email__ = "William.A.Walters@colorado.edu"
 
 from os.path import abspath, join
 from os import walk
+from fnmatch import filter
 
 from qiime.util import (parse_command_line_parameters,
                         make_option,
@@ -116,7 +117,11 @@ script_info['optional_options']= [
         'See http://www.qiime.org/documentation/file_formats.html#qiime-parameters'
         ' [default: split_libraries_fastq.py defaults will be used]'),
     make_option('--read_indicator', default='_R1_',
-        help='Substring to search for to indicate read files'
+        help='Substring to search for to indicate read files, when '
+        '--demultiplexing_method is sampleid_by_file, wildcards can be used, e.g. \'*\' '
+        'for all files. If multiple fastq files are present as in the case after joining '
+        'reads, then one can select for joined reads with a value such as '
+        '\'*fastqjoin.join*\''
         ' [default: %default]'),
     make_option('--barcode_indicator', default='_I1_',
         help='Substring to search for to indicate barcode files'
@@ -206,7 +211,13 @@ def main():
         all_files = get_matching_files(all_fastq, all_mapping,
             read_indicator, barcode_indicator, mapping_indicator)
     else:
-        all_files = all_fastq
+        # Filter down files to only the target files, raise error if nothing found
+        all_files = filter(all_fastq, read_indicator)
+        if not all_files:
+            raise ValueError,("No reads detected-please check the values indicated with "
+                "the --read_indicator parameter. Set as '*' to include all files, or use "
+                "a value such as '*fastqjoin.join*' to detect only the reads that are "
+                "joined after join_paired_ends.py.")
 
     commands = create_commands_slf(all_files, demultiplexing_method, output_dir,
         params_str, leading_text, trailing_text, include_input_dir_path,
