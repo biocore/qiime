@@ -436,12 +436,13 @@ setup(name='qiime',
                         'natsort < 4.0.0',
                         'matplotlib >= 1.1.0, != 1.4.2',
                         'pynast == 1.2.2', 'qcli >= 0.1.1, < 0.2.0', 'gdata',
-                        'biom-format >= 2.1.4, < 2.2.0',
+                        'biom-format == 2.1.4-dev',
                         'emperor >= 0.9.51, < 1.0.0',
                         'scikit-bio >= 0.2.3, < 0.3.0',
                         'burrito-fillings >= 0.1.1, < 0.2.0',
                         'pandas >= 0.13.1', 'burrito >= 0.9.1, < 1.0.0',
                         'qiime-default-reference >= 0.1.2, < 0.2.0'],
       extras_require={'all': ['ipython[notebook] >= 3.1.0, < 4.0.0',
-                              'sphinx >= 0.3']}
+                              'sphinx >= 0.3']},
+      dependency_links=['https://github.com/biocore/biom-format/archive/master.zip#egg=biom-format-2.1.4-dev']
       )
