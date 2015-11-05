@@ -24,7 +24,7 @@ script_info['script_usage'] = []
 script_info['script_usage'].append(
     ("""Example:""",
      """ """,
-     """ validate_demultiplexed_fasta.py -f seqs.fasta -m Mapping_File.txt"""))
+     """ validate_demultiplexed_fasta.py -i seqs.fasta -m Mapping_File.txt"""))
 script_info['output_description'] = """"""
 script_info['required_options'] = [
     make_option('-m', '--mapping_fp', type='existing_filepath',
