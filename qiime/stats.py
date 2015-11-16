@@ -1635,6 +1635,8 @@ def assign_correlation_pval(corr, n, method, permutations=None,
             r = empty(permutations)
             for i in range(permutations):
                 r[i] = perm_test_fn(v1, permutation(v2))
+                print('%.64f' % r[i])
+            print('corr value to comp, %.64f' % abs(corr))
             return (abs(r) >= abs(corr)).sum() / float(permutations)
     elif method == 'kendall':
         return kendall_pval(corr, n)
