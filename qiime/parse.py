@@ -878,7 +878,10 @@ def parse_otu_map(otu_map_f, otu_ids_to_exclude=None, delim='_'):
         if otu_id in otu_ids_to_exclude:
             continue
         for seq_id in fields[1:]:
-            sample_id = re.search('(\S+)%s\d+$'%delim,seq_id).group(1)
+            try:
+                sample_id = re.search('(\S+)%s\d+$'%delim,seq_id).group(1)
+            except AttributeError:
+                sample_id = seq_id
             try:
                 sample_index = sample_id_idx[sample_id]
             except KeyError:
