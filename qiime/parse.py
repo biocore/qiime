@@ -28,6 +28,7 @@ from cogent.parse.tree import DndParser
 from skbio.parse.sequences import parse_fastq
 from skbio.parse.sequences.fasta import FastaFinder
 from skbio.sequence import DNA
+from skbio.io.util import open_file
 from cogent.core.tree import PhyloNode
 
 
@@ -929,3 +930,24 @@ def parse_sample_id_map(sample_id_map_f):
                 result[samp_id] = mapped_id
                 new_samp_id_counts[mapped_id] += 1
     return result
+
+
+def parse_items(fp):
+    """Parse items from a file where each item is in a different line
+
+    Parameters
+    ----------
+    fp : str/bytes/unicode string or file-like
+        Filepath or file-like object to parse.
+
+    Returns
+    -------
+    list
+        List of the items parsed from the file
+    """
+    with open_file(fp, 'U') as f:
+        items = f.read().strip('\n').split('\n')
+
+    if items == ['']:
+        items = []
+    return items

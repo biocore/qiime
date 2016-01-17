@@ -120,7 +120,7 @@ def main():
     job_prefix = args[1]
 
     if opts.mem_per_cpu is not None:
-        mem_per_cpu = " --mem_per_cpu=" + opts.mem_per_cpu
+        mem_per_cpu = " --mem-per-cpu=" + opts.mem_per_cpu
     else:
         mem_per_cpu = ""
 

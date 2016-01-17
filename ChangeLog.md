@@ -1,6 +1,12 @@
 QIIME 1.9.1-dev (changes since 1.9.1 go here)
 =============================================
 
+Bug fixes
+---------
+
+* Add ``--read_arguments_from_file`` to ``split_libraries_fastq.py``, thus preventing ``multiple_split_libraries_fastq.py`` from failing with an `Argument list too long error` when the number of input files is large, see [#2069](https://github.com/biocore/qiime/issues/2069).
+* Fixed bug in start_parallel_jobs_slurm.py, which would cause jobs to not run if ``slurm_memory`` was specified in ``qiime_config``. 
+
 QIIME 1.9.1
 ===========
 
@@ -153,7 +159,7 @@ Removal of outdated and unsupported functionality
 Performance enhancements
 ------------------------
 
-* Changed default parameters for uclust-based OTU picking: ``max_accepts`` is now 1 (was 8), ``max_rejects`` is now 8 (was 500), ``stepwords`` is now 8 (was 20), and ``word_length`` is now 8 (was 12). These changes greatly reduce runtime, with minimal effect on the results. See Rideout et al., 2014 ([PeerJ pre-print](https://peerj.com/preprints/411/)) for more details.
+* Changed default parameters for uclust-based OTU picking: ``max_accepts`` is now 1 (was 20), ``max_rejects`` is now 8 (was 500), ``stepwords`` is now 8 (was 20), and ``word_length`` is now 8 (was 12). These changes greatly reduce runtime, with minimal effect on the results. See Rideout et al., 2014 ([PeerJ pre-print](https://peerj.com/preprints/411/)) for more details.
 * Disabled the prefilter by default in ``pick_open_reference_otus.py``. This change greatly reduces runtime, with minimal effect on the results. See Rideout et al., 2014 ([PeerJ pre-print](https://peerj.com/preprints/411/)) for more details.
 * The alpha diversity measures available in QIIME (e.g., ``alpha_diversity.py``) are now powered by [scikit-bio](http://scikit-bio.org/), and several of these methods are now considerably faster! See the scikit-bio docs on [alpha diversity](http://scikit-bio.org/docs/latest/generated/skbio.diversity.alpha.html) for more details on the methods.
 * ANOSIM and PERMANOVA (available in ``compare_categories.py``) are now powered by [scikit-bio](http://scikit-bio.org/) and are approximately 1000 times faster than previous implementations. These additionally now provide more useful information in the output file. See the scikit-bio docs for [ANOSIM](http://scikit-bio.org/docs/latest/generated/generated/skbio.stats.distance.anosim.html) and [PERMANOVA](http://scikit-bio.org/docs/latest/generated/generated/skbio.stats.distance.permanova.html) for more detail.
