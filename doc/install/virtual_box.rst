@@ -24,7 +24,7 @@ Installing the QIIME Virtual Box
 
 4. Double click on the new virtual machine created -- it will be called QIIME -- to boot it for the first time.
 5. Review any messages that are shown, and select whatever options are best for you.
-6. When your new virtual machine boots, you will see a folder on the Desktop called 'Before_you_start'. Double click on that folder to open it, and then double click on the 'Welcome' file in that folder. This will get you started with using your QIIME virtual box.
+6. When your new virtual machine boots, you will see a folder on the Desktop called 'Before_you_start'. Double click on that folder to open it, and then double click on the '0.QIIME_version.txt' file in that folder. This will get you started with using your QIIME virtual box.
 
 VirtualBox help video
 =====================
