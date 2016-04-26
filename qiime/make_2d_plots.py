@@ -11,25 +11,22 @@ __version__ = "1.9.1-dev"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 
-import re
 from matplotlib import use
 use('Agg', warn=False)
-from matplotlib.pylab import *
-from matplotlib.cbook import iterable, is_string_like
+from matplotlib.pyplot import rc
+import matplotlib.pyplot as plt
+from matplotlib.cbook import iterable
 from matplotlib.patches import Ellipse
 from matplotlib.font_manager import FontProperties
-from string import strip
-from numpy import array, asarray, ndarray
-from time import strftime
-from random import choice
+from numpy import asarray
 from qiime.util import summarize_pcoas, isarray, qiime_system_call
-from qiime.parse import group_by_field, group_by_fields, parse_coords
-from qiime.colors import data_color_order, data_colors, \
-    get_group_colors, data_colors, iter_color_groups
-from qiime.sort import natsort
+from qiime.parse import parse_coords
+from qiime.colors import iter_color_groups
+import numpy as np
 from tempfile import mkdtemp
 import os
-import numpy
+
+from qiime.util import MissingFileError, load_pcoa_files
 
 SCREE_TABLE_HTML = """<table cellpadding=0 cellspacing=0 border=1>
 <tr><th align=center colspan=3 border=0>Scree plot</th></tr>
@@ -102,6 +99,7 @@ data_colors={'blue':'#0000FF','lime':'#00FF00','red':'#FF0000', \
 default_colors = ['blue', 'lime', 'red', 'aqua', 'fuchsia', 'yellow', 'green',
                   'maroon', 'teal', 'purple', 'olive', 'silver', 'gray']
 
+
 # This function used to live in make_3d_plots.py but in the Boulder sk-bio
 # code sprint it got moved here to remove the 3D files.
 def get_coord(coord_fname, method="IQR"):
@@ -135,12 +133,14 @@ def get_coord(coord_fname, method="IQR"):
              coords_high]
         )
 
+
 def make_line_plot(
         dir_path, data_file_link, background_color, label_color, xy_coords,
         props, x_len=8, y_len=4, draw_axes=False, generate_eps=True):
     """ Write a line plot
 
-    xy_coords: a dict of form {series_label:([x data], [y data], point_marker, color)}
+    xy_coords: a dict of form
+       {series_label:([x data], [y data], point_marker, color)}
 
     (code adapted from Micah Hamady's code)
     """
@@ -149,32 +149,30 @@ def make_line_plot(
     rc('axes', labelsize=8)
     rc('xtick', labelsize=8)
     rc('ytick', labelsize=8)
-    fig = figure(figsize=(x_len, y_len))
+    fig, ax = plt.subplots(figsize=(x_len, y_len))
     mtitle = props.get("title", "Groups")
     x_label = props.get("xlabel", "X")
     y_label = props.get("ylabel", "Y")
 
-    title('%s' % mtitle, fontsize='10', color=label_color)
-    xlabel(x_label, fontsize='8', color=label_color)
-    ylabel(y_label, fontsize='8', color=label_color)
+    ax.set_title('%s' % mtitle, fontsize='10', color=label_color)
+    ax.set_xlabel(x_label, fontsize='8', color=label_color)
+    ax.set_ylabel(y_label, fontsize='8', color=label_color)
 
     sorted_keys = sorted(xy_coords.keys())
-    labels = []
+
     for s_label in sorted_keys:
         s_data = xy_coords[s_label]
         c = s_data[3]
         m = s_data[2]
-        plot(s_data[0], s_data[1], c=c, marker=m, label=s_label,
-             linewidth=.1, ms=5, alpha=1.0)
+        ax.plot(s_data[0], s_data[1], c=c, marker=m, label=s_label,
+                linewidth=.1, ms=5, alpha=1.0)
 
     fp = FontProperties()
     fp.set_size('8')
-    legend(prop=fp, loc=0)
-
-    show()
+    ax.legend(prop=fp, loc=0)
 
     img_name = 'scree_plot.png'
-    savefig(
+    fig.savefig(
         os.path.join(dir_path,
                      img_name),
         dpi=80,
@@ -184,11 +182,12 @@ def make_line_plot(
     eps_link = ""
     if generate_eps:
         eps_img_name = str('scree_plot.eps')
-        savefig(os.path.join(dir_path, eps_img_name), format='eps')
+        fig.savefig(os.path.join(dir_path, eps_img_name), format='eps')
         out, err, retcode = qiime_system_call(
             "gzip -f " + os.path.join(dir_path, eps_img_name))
-        eps_link = DOWNLOAD_LINK % ((os.path.join(data_file_link, eps_img_name)
-                                     + ".gz"), "Download Figure")
+        eps_link = DOWNLOAD_LINK % ((os.path.join(data_file_link,
+                                                  eps_img_name) +
+                                     ".gz"), "Download Figure")
 
     return os.path.join(data_file_link, img_name), eps_link
 
@@ -250,28 +249,26 @@ def make_interactive_scatter(plot_label, dir_path, data_file_link,
     mtitle = props.get("title", "Groups")
     x_label = props.get("xlabel", "X")
     y_label = props.get("ylabel", "Y")
-
-    title('%s' % mtitle, fontsize='10', color=label_color)
-    xlabel(x_label, fontsize='8', color=label_color)
-    ylabel(y_label, fontsize='8', color=label_color)
-
-    show()
+    fig, ax = plt.subplots()
+    ax.set_title('%s' % mtitle, fontsize='10', color=label_color)
+    ax.set_xlabel(x_label, fontsize='8', color=label_color)
+    ax.set_ylabel(y_label, fontsize='8', color=label_color)
 
     if draw_axes:
-        axvline(linewidth=.5, x=0, color=label_color)
-        axhline(linewidth=.5, y=0, color=label_color)
+        ax.axvline(linewidth=.5, x=0, color=label_color)
+        ax.axhline(linewidth=.5, y=0, color=label_color)
 
     if my_axis is not None:
-        axis(my_axis)
+        ax.axis(my_axis)
     img_name = x_label[0:3] + '_vs_' + y_label[0:3] + '_plot.png'
-    savefig(os.path.join(dir_path, img_name),
-            dpi=80, facecolor=background_color)
+    fig.savefig(os.path.join(dir_path, img_name),
+                dpi=80, facecolor=background_color)
 
     # Create zipped eps files
     eps_link = ""
     if generate_eps:
         eps_img_name = str(x_label[0:3] + 'vs' + y_label[0:3] + 'plot.eps')
-        savefig(os.path.join(dir_path, eps_img_name), format='eps')
+        fig.savefig(os.path.join(dir_path, eps_img_name), format='eps')
         out, err, retcode = qiime_system_call(
             "gzip -f " + os.path.join(dir_path, eps_img_name))
         eps_link = DOWNLOAD_LINK % ((os.path.join(data_file_link, eps_img_name)
@@ -309,7 +306,7 @@ def draw_scatterplot(props, xy_coords, x_len, y_len, size, background_color,
                      label_color, sample_location, alpha):
     """Create scatterplot figure"""
 
-    fig = figure(figsize=(x_len, y_len))
+    fig = plt.figure(figsize=(x_len, y_len))
     xPC = int(props['xlabel'][2:3])
     yPC = int(props['ylabel'][2:3])
     sorted_keys = xy_coords.keys()
@@ -348,10 +345,10 @@ def draw_scatterplot(props, xy_coords, x_len, y_len, size, background_color,
                 ellipse_x = [ellipse_ave[sample_location[s_label], xPC]]
                 ellipse_y = [ellipse_ave[sample_location[s_label], yPC]]
 
-                width = [fabs(matrix_high[sample_location[s_label], xPC] -
-                              matrix_low[sample_location[s_label], xPC])]
-                height = [fabs(matrix_high[sample_location[s_label], yPC] -
-                               matrix_low[sample_location[s_label], yPC])]
+                width = [np.fabs(matrix_high[sample_location[s_label], xPC] -
+                                 matrix_low[sample_location[s_label], xPC])]
+                height = [np.fabs(matrix_high[sample_location[s_label], yPC] -
+                                  matrix_low[sample_location[s_label], yPC])]
 
                 sc_plot = scatter_ellipse(ax, ellipse_x,
                                           ellipse_y, width, height, c=c, a=0.0,
@@ -360,7 +357,8 @@ def draw_scatterplot(props, xy_coords, x_len, y_len, size, background_color,
                                 alpha=1.0)
             else:
                 sc_plot = ax.scatter(s_data[0], s_data[1], c=c, marker=m,
-                                     alpha=1.0, s=size, linewidth=1, edgecolor=c)
+                                     alpha=1.0, s=size, linewidth=1,
+                                     edgecolor=c)
             size_ct += 1
             shape_ct += 1
             scatters[s_label] = sc_plot
@@ -401,7 +399,6 @@ def draw_pcoa_graph(plot_label, dir_path, data_file_link, coord_1, coord_2,
     """Draw PCoA graphs"""
 
     coords, pct_var = convert_coord_data_to_dict(data)
-    mapping = data['map']
 
     if coord_1 not in coords:
         raise ValueError("Principal coordinate: %s not available." % coord_1)
@@ -472,7 +469,7 @@ def extract_and_color_xy_coords(
     xy_coords = {}
     shape_ct = 0
     for group_name, ids in (groups.items()):
-        x = 0
+
         color = data_colors[colors[group_name]].toHex()
         m = shape[shape_ct % len(shape)]
         shape_ct += 1
@@ -563,7 +560,6 @@ def generate_2d_plots(prefs, data, html_dir_path, data_dir_path, filename,
         data_file_link = os.path.join('.', os.path.split(new_link[-2])[-1],
                                       new_link[-1])
 
-        new_col_name = labelname
         img_data = {}
         plot_label = labelname
 
@@ -579,9 +575,8 @@ def generate_2d_plots(prefs, data, html_dir_path, data_dir_path, filename,
             matrix_average = None
             matrix_low = None
             matrix_high = None
-            eigval_average = None
+
             m_names = None
-        iterator = 0
 
         for coord_tup in coord_tups:
             if isarray(matrix_low) and isarray(matrix_high) and \
