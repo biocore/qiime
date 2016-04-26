@@ -15,7 +15,7 @@ from matplotlib import use
 use('Agg', warn=False)
 from sys import exit
 from qiime.parse import parse_rarefaction_data
-from matplotlib.pylab import savefig, clf, gca, gcf, errorbar
+from matplotlib.pyplot import savefig, clf, gca, gcf, errorbar
 import matplotlib.pyplot as plt
 import os.path
 from os.path import splitext, split

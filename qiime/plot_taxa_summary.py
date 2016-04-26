@@ -18,23 +18,17 @@ Python 2.7
 """
 
 import matplotlib
-import re
+
 matplotlib.use('Agg', warn=False)
 from matplotlib.font_manager import FontProperties
-from pylab import rc, axis, title, axes, pie, figlegend, clf, savefig, figure\
-    , close
-from string import strip
-from numpy import array
+from matplotlib.pyplot import (rc, axis, title, axes, pie, clf,
+                               savefig, figure, close)
+
 import numpy as numpy
-from optparse import OptionParser
-from collections import defaultdict
-from time import strftime
 from random import choice, randrange
 import os
 import shutil
-from qiime.util import get_qiime_project_dir
-from qiime.colors import natsort, data_color_order, data_colors, \
-    get_group_colors, iter_color_groups
+from qiime.colors import (data_colors, get_group_colors)
 from qiime.parse import group_by_field
 
 ALPHABET = "ABCDEFGHIJKLMNOPQRSTUZWXYZ"
