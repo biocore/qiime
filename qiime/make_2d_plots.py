@@ -249,7 +249,8 @@ def make_interactive_scatter(plot_label, dir_path, data_file_link,
     mtitle = props.get("title", "Groups")
     x_label = props.get("xlabel", "X")
     y_label = props.get("ylabel", "Y")
-    fig, ax = plt.subplots()
+    ax = plt.gca()
+    fig = ax.figure
     ax.set_title('%s' % mtitle, fontsize='10', color=label_color)
     ax.set_xlabel(x_label, fontsize='8', color=label_color)
     ax.set_ylabel(y_label, fontsize='8', color=label_color)
