@@ -18,23 +18,18 @@ Python 2.7
 """
 
 import matplotlib
-import re
+
 matplotlib.use('Agg', warn=False)
 from matplotlib.font_manager import FontProperties
-from pylab import rc, axis, title, axes, pie, figlegend, clf, savefig, figure\
-    , close
-from string import strip
-from numpy import array
+from matplotlib.pyplot import (rc, axis, title, axes, pie, clf,
+                               savefig, figure, close)
+import matplotlib.patches as mpatches
+from itertools import cycle
 import numpy as numpy
-from optparse import OptionParser
-from collections import defaultdict
-from time import strftime
 from random import choice, randrange
 import os
 import shutil
-from qiime.util import get_qiime_project_dir
-from qiime.colors import natsort, data_color_order, data_colors, \
-    get_group_colors, iter_color_groups
+from qiime.colors import (data_colors, get_group_colors)
 from qiime.parse import group_by_field
 
 ALPHABET = "ABCDEFGHIJKLMNOPQRSTUZWXYZ"
@@ -166,12 +161,8 @@ def make_legend(data_ids, colors, plot_width, plot_height, label_color,
         if len(i) > max_id_len:
             max_id_len = len(i)
 
-    # define the figure and a separate figure for the legend
-    fig = figure(randrange(10000), figsize=(1, 1))
-
     # numbers multiplied by were tweaked by hand
     figlegend = figure(figsize=(max_id_len * 0.15, num_ids * 0.22))
-    ax = fig.add_subplot(111)
 
     # set some of the legend parameters
     fsize = 6
@@ -181,16 +172,15 @@ def make_legend(data_ids, colors, plot_width, plot_height, label_color,
     rc('axes', linewidth=0, edgecolor=label_color)
     rc('text', usetex=False)
 
-    y = numpy.arange(len(data_ids))
-    barg = ax.bar(y, y, color=colors, label=data_ids)
-    l = figlegend.legend(barg, tuple(data_ids), loc='center left',
+    proxies = [mpatches.Patch(color=c, label=lab)
+               for c, lab in zip(cycle(colors), data_ids)]
+    l = figlegend.legend(handles=proxies, labels=data_ids,
+                         loc='center left',
                          shadow=False, fancybox=False)
     l.legendPatch.set_alpha(0)
 
     figlegend.savefig(out_fpath, dpi=dpi, facecolor=background_color)
-    close(fig)
     close(figlegend)
-    clf()
 
     return fname
 

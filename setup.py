@@ -360,7 +360,7 @@ def build_swarm():
 
 # don't build any of the non-Python dependencies if the following modes are
 # invoked
-if all([e not in sys.argv for e in 'egg_info', 'sdist', 'register']):
+if all([e not in sys.argv for e in ('egg_info', 'sdist', 'register')]):
     catch_install_errors(build_denoiser, 'denoiser')
     catch_install_errors(download_UCLUST, 'UCLUST')
     catch_install_errors(build_FastTree, 'FastTree')

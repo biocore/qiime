@@ -14,7 +14,7 @@ from os.path import join
 
 from matplotlib import use
 use('Agg', warn=False)
-from pylab import xlim, ylim, xlabel, ylabel, plot, savefig
+from matplotlib.pyplot import xlim, ylim, xlabel, ylabel, plot, savefig
 import numpy as np
 from skbio.util import create_dir
 from biom import load_table

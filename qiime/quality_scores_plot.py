@@ -14,9 +14,10 @@ from matplotlib import use
 use('Agg', warn=False)
 from skbio.parse.sequences import parse_fasta
 from numpy import arange, std, average
-from pylab import plot, savefig, xlabel, ylabel, text, \
-    hist, figure, legend, title, show, xlim, ylim, xticks, yticks,\
-    scatter, subplot
+from matplotlib.pyplot import (plot, savefig, xlabel, ylabel, text,
+                               hist, figure, legend, title, show,
+                               xlim, ylim, xticks, yticks, scatter,
+                               subplot)
 from matplotlib.font_manager import fontManager, FontProperties
 from qiime.util import gzip_open
 from qiime.parse import parse_qual_score
