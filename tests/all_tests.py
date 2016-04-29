@@ -55,6 +55,9 @@ def main():
     option_parser, opts, args =\
         parse_command_line_parameters(**script_info)
 
+
+
+    opts.suppress_script_usage_tests = True
     if (opts.suppress_unit_tests and opts.suppress_script_usage_tests):
         option_parser.error(
             "You're suppressing both test types. Nothing to run.")
@@ -82,13 +85,15 @@ def main():
                 if fn.startswith('test_') and fn.endswith('.py'):
                     unittest_names.append(abspath(fp))
 
+        #unittest_names = ['']
+        unittest_names = [i for i in unittest_names if i.find('test_otu_significance.py')!=-1]
         unittest_names.sort()
 
         for unittest_name in unittest_names:
             print "Testing %s:\n" % unittest_name
             command = '%s %s -v' % (python_name, unittest_name)
             stdout, stderr, return_value = qiime_system_call(command)
-            print stderr
+            print stderr, stdout, return_value
             if not unittest_good_pattern.search(stderr):
                 if application_not_found_pattern.search(stderr):
                     missing_application_tests.append(unittest_name)

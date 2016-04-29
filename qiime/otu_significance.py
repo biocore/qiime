@@ -326,6 +326,7 @@ def run_correlation_test(data_generator, test, test_choices,
                                            pval_assignment_method)
         corr_coefs.append(r)
         pvals.append(pval)
+        print('combined r, p = (%s, %s)' % (r, pval))
     return corr_coefs, pvals
 
 
