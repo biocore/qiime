@@ -1,6 +1,8 @@
 Contributing to QIIME
 =====================
 
+**QIIME 1 is now considered to be in maintenance mode as we shift our development efforts to [QIIME 2](http://github.com/qiime2). We don't expect to release any new versions of QIIME 1, except for critical bug fixes if necessary. If you're interested in contributing to QIIME, please consider [contributing to QIIME 2](https://github.com/qiime2/qiime2/blob/master/CONTRIBUTING.md).**
+
 [QIIME](http://www.qiime.org) is an open source software package, and we welcome community contributions. You can find the source code and test code for QIIME under public revision control in the QIIME git repository on [GitHub](https://github.com/qiime/qiime). While we have a core development group, we very much welcome contributions from other users.
 
 This document covers what you should do to get started with contributing to QIIME. You should read this whole document before considering submitting code to QIIME. This will save time for both you and the QIIME developers.
