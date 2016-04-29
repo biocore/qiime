@@ -4,6 +4,7 @@ QIIME 1.9.1-dev (changes since 1.9.1 go here)
 Bug fixes
 ---------
 
+* **Critical**: Fix incorrect list of taxa in ``compute_taxonomy_ratios.py``. **This was a serious bug that was encountered when users would call ``compute_taxonomy_ratios.py`` using the MD-index, custom ratios did not suffer from this bug. Any computations of the MD-index previously generated with that command should be re-run.**.
 * Add ``--read_arguments_from_file`` to ``split_libraries_fastq.py``, thus preventing ``multiple_split_libraries_fastq.py`` from failing with an `Argument list too long error` when the number of input files is large, see [#2069](https://github.com/biocore/qiime/issues/2069).
 * Fixed bug in start_parallel_jobs_slurm.py, which would cause jobs to not run if ``slurm_memory`` was specified in ``qiime_config``. 
 
