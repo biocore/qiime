@@ -71,25 +71,26 @@ script_info['script_usage'].append(
 script_info['script_usage'].append(
     ("Example 2:",
      "Process an input folder of files, with the option specified to generate "
-     "sample ids using the filenames (default behavior is to use all text "
-     "before the first underscore as the sample id)",
-     "%prog -i input_files -o output_folder --demultiplexing_method "
-     "sampleid_by_file"))
+     "sample ids using the filenames containing the text _R1_ (behavior is to use "
+     "all text before the first underscore as the sample id)",
+     "%prog -i input_files -o output_folder --read_indicator '*_R1_*'"
+     " --demultiplexing_method sampleid_by_file"))
 
 script_info['script_usage'].append(
     ("Example 3:",
      "Process an input folder of folders, with an option specified to "
      "use the folder names as the sample ids. In this case, the fastq "
-     "filenames themselves are not included, only the folder names are used.",
+     "filenames themselves are not included, only the folder names are used. "
+     "The target reads in this case have the text _reads_ in the filenames. ",
      "%prog -i input_folders_no_barcodes -o output_folder "
      "--demultiplexing_method sampleid_by_file --include_input_dir_path "
-     "--remove_filepath_in_name"))
+     "--remove_filepath_in_name --read_indicator '*_reads_*'"))
 
 script_info['script_usage'].append(
  ("Example 4:",
   "To see what commands would be executed by the script without actually "
-  "running them, use the following command:",
-  "%prog -i input_files -o output_folder -w"))
+  "running them, use the following command (target reads include _R1_ in the filename):",
+  "%prog -i input_files -o output_folder -w --read_indicator '*_R1_*'"))
 
 script_info['output_description']= (
     "The output of running split_libraries_fastq.py on many input files. "
@@ -116,7 +117,7 @@ script_info['optional_options']= [
         ' to the default behavior of split_libraries_fastq.py. '
         'See http://www.qiime.org/documentation/file_formats.html#qiime-parameters'
         ' [default: split_libraries_fastq.py defaults will be used]'),
-    make_option('--read_indicator', default='_R1_',
+    make_option('--read_indicator', default='*_R1_*',
         help='Substring to search for to indicate read files, when '
         '--demultiplexing_method is sampleid_by_file, wildcards can be used, e.g. \'*\' '
         'for all files. If multiple fastq files are present as in the case after joining '
