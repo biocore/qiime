@@ -58,7 +58,7 @@ Test assumptions:
   appropriate for the data. For instance, the script will error if you use the
   Mann-Whitney-U test and one of your group sizes is smaller than 20. It is
   likely that assumptions about the distribution of the data, the distribution
-  of the variance, etc. are not robustly met. IT IS YOUR REPSONSIBILTY TO CHECK
+  of the variance, etc. are not robustly met. IT IS YOUR RESPONSIBILITY TO CHECK
   THAT YOU ARE USING AN APPROPRIATE TEST. For more information on assumptions
   made by the tests, please view the following resources:
 
