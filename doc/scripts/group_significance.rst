@@ -112,7 +112,7 @@ Null and alternate hypothesis:
   log-likelihood ratio test) is that the frequency of any given OTU is equal
   across all sample groups. The alternate hypothesis is that the frequency of
   the OTU is not the same across all sample groups.
-- Kruskal-Wallis: The null hypothesis is that the location paramater of the
+- Kruskal-Wallis: The null hypothesis is that the location parameter of the
   groups of abundances for a given OTU is the same. The alternate hypothesis is
   that at least one of the location parameters is different.
 - ANOVA: the null hypothesis is that the means of the observations in the groups
