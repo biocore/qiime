@@ -20,7 +20,7 @@ with the -c option. Any samples that do not contain a value under the given
 header will not be included in the comparison.
 At a basic level, the script is constructing a OTUxSample
 (rowXcolumn) contingency table, and testing whether or not each OTU is
-differentially represented in cerstain groups of columns (determined by the
+differentially represented in certain groups of columns (determined by the
 metadata category passed).
 
 There are several important considerations with this script.
@@ -174,9 +174,9 @@ The available tests are:
 
 .. note::
 
-	
+
 	**[REQUIRED]**
-		
+
 	-i, `-`-otu_table_fp
 		Path to biom format table
 	-m, `-`-mapping_fp
@@ -185,9 +185,9 @@ The available tests are:
 		Name of the category over which to run the analysis
 	-o, `-`-output_fp
 		Path to the output file
-	
+
 	**[OPTIONAL]**
-		
+
 	-s, `-`-test
 		Test to use. Choices are: nonparametric_t_test, bootstrap_mann_whitney_u, ANOVA, kruskal_wallis, g_test, parametric_t_test, mann_whitney_u [default: kruskal_wallis]
 	`-`-metadata_key
@@ -245,5 +245,3 @@ This script generates a tab separated output file with the following headers:
 ::
 
 	group_significance.py -i otu_table.biom -m map_overlapping.txt -c before_after -s nonparametric_t_test --permutations 100 -o btt_ocs.txt
-
-
