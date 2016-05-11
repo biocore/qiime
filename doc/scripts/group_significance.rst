@@ -222,7 +222,7 @@ This script generates a tab separated output file with the following headers:
 
 
 
-**Find which OTUs have the highest probablilty of being differently represented depending on the sample category 'diet' using a G test:**
+**Find which OTUs have the highest probability of being differently represented depending on the sample category 'diet' using a G test:**
 
 ::
 
