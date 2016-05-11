@@ -234,7 +234,7 @@ This script generates a tab separated output file with the following headers:
 
 	group_significance.py -i otu_table.biom -m map_overlapping.txt -c before_after -s parametric_t_test -o tt_ocs.txt
 
-**Find which OTUs are differentially represented in the sample groups formed by 'diet' based on nonparamteric ANOVA, aka, Kruskal Wallis test. In addition, prevent the script from erroring because the biom table samples are a superset of the mapping file samples, and print the non-overlapping samples:**
+**Find which OTUs are differentially represented in the sample groups formed by 'diet' based on nonparametric ANOVA, aka, Kruskal Wallis test. In addition, prevent the script from erroring because the biom table samples are a superset of the mapping file samples, and print the non-overlapping samples:**
 
 ::
 
