@@ -30,7 +30,7 @@ Errors and behind-the-scenes processing:
 - This script will ignore samples that are found in the mapping file but do not
   contain information for the passed category. This would cause the mapping
   file to fail `validate_mapping_file.py <./validate_mapping_file.html>`_, but will not cause a failure here.
-- This script will silenty ignore situations where the set of samples in the
+- This script will silently ignore situations where the set of samples in the
   mapping file is a superset of the samples in the biom file. If the reverse is
   true, the script will error unless --biom_samples_are_superset is passed.
 - This script will round P-values greater than 1 (after correcting for multiple
