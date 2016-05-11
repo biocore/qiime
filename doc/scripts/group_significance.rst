@@ -66,7 +66,7 @@ Test assumptions:
   - Nonparamteric Statistical Methods by Hollander and Wolfe
   - Documentation in R and Scipy packages
   - Handbook of Biological Statistics by McDonald (available at
-    http://udel.edu/~mcdonald/statintro.html)
+    http://www.biostathandbook.com/)
 
 The assumptions we check for:
 
