@@ -87,7 +87,8 @@ script_info['optional_options'] = [
                      "[default: %default]"),
     make_option('--valid_states', type='string',
                 help="Description of sample ids to retain (for use with "
-                     "--mapping_fp). [default: %default]")
+                     "--mapping_fp) as a string in format "
+                     "'column1:good1,good2;column2:good1'. [default: %default]")
 ]
 script_info['version'] = __version__
 
