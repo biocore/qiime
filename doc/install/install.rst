@@ -126,12 +126,11 @@ directory:
     mkdir $QIIME_ENV/qiime_deps
     cd $QIIME_ENV/qiime_deps
 
-Download the binaries for the dependency (uclust, in this case), and
-link to the Conda bin (for macOS use curl instead of wget):
+Download the binaries for the dependency (uclust, in this case):
 
 ::
 
-    wget http://www.drive5.com/uclust/uclustq1.2.22_i86linux64
+    curl -sO http://www.drive5.com/uclust/uclustq1.2.22_i86linux64
 
 Make sure the permissions allow you to execute the binary:
 
