@@ -9,7 +9,7 @@ Installing QIIME
    :glob:
 
    install
-   alternatives
+   alternative
    virtual_box
    upgrade
    qiime_config
