@@ -6,7 +6,7 @@ __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Justin Kuczynski", "Rob Knight", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 

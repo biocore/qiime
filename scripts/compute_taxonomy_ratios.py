@@ -5,7 +5,7 @@ __author__ = "Daniel McDonald"
 __copyright__ = "Copyright 2014, The QIIME project"
 __credits__ = ["Daniel McDonald", "Greg Caporaso", "Jai Rideout"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Daniel McDonald"
 __email__ = "mcdonadt@colorado.edu"
 
@@ -21,16 +21,23 @@ from qiime.util import parse_command_line_parameters, make_option, MetadataMap
 known_indices = {
     'md': {'name': 'Microbial dysbiosis index',
     'source': 'http://www.ncbi.nlm.nih.gov/pubmed/24629344',
-    'decreased': set(['g__Akkermansia',
+    'decreased': set(['g__Dialister',
     'g__Faecalibacterium',
     'g__Ruminococcus',
-    'g__Bacteroides',
-    'g__Parabacteroides']),
-    'increased': set(['g__Escherichia',
-    'g__Fusobacterium',
-    'g__Haemophilus',
-    'g__Aggregatibacter',
     'g__Sutterella',
+    'g__Rikenellaceae',
+    'g__Parabacteroides',
+    'g__Bacteroides',
+    'g__Lachnospiraceae',
+    'g__Coprococcus',
+    'g__Erysipelotrichaceae',
+    'g__Dorea',
+    'g__Ruminococcaceae',
+    'g__Oscillospira',
+    'g__Bilophila']),
+    'increased': set(['g__Escherichia',
+    'g__Haemophilus',
+    'g__Fusobacterium',
     'g__Veillonella'])}}
 
 script_info = {}

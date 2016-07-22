@@ -6,7 +6,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Greg Caporaso", "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -14,7 +14,7 @@ from os.path import join
 
 from matplotlib import use
 use('Agg', warn=False)
-from pylab import xlim, ylim, xlabel, ylabel, plot, savefig
+from matplotlib.pyplot import xlim, ylim, xlabel, ylabel, plot, savefig
 import numpy as np
 from skbio.util import create_dir
 from biom import load_table

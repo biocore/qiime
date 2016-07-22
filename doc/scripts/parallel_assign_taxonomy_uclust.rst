@@ -27,9 +27,9 @@ This script performs like the `assign_taxonomy.py <./assign_taxonomy.html>`_ scr
 	**[OPTIONAL]**
 		
 	-t, `-`-id_to_taxonomy_fp
-		Full path to id_to_taxonomy mapping file [default: /Users/jairideout/.virtualenvs/qiime/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/taxonomy/97_otu_taxonomy.txt]
+		Full path to id_to_taxonomy mapping file [default: /Users/caporaso/.virtualenvs/qiime/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/taxonomy/97_otu_taxonomy.txt]
 	-r, `-`-reference_seqs_fp
-		Ref seqs to search against. [default: /Users/jairideout/.virtualenvs/qiime/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set/97_otus.fasta]
+		Ref seqs to search against. [default: /Users/caporaso/.virtualenvs/qiime/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set/97_otus.fasta]
 	`-`-min_consensus_fraction
 		Minimum fraction of database hits that must have a specific taxonomic assignment to assign that taxonomy to a query [default: 0.51]
 	`-`-similarity

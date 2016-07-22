@@ -6,7 +6,7 @@ __author__ = "Dan Knights"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Dan Knights", "Luke Ursell"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Dan Knights"
 __email__ = "daniel.knights@colorado.edu"
 
@@ -64,7 +64,7 @@ error of the classified, and the pooled standard deviation (for cv5 and cv10 err
 
 This script requires that R be installed and in the search path. To install R \
 visit: http://www.r-project.org/. Once R is installed, run R and excecute the \
-command "install.packages("randomForest")", then type q() to exit."""
+command "install.packages('randomForest')", then type q() to exit."""
 
 script_info['script_usage'] = []
 

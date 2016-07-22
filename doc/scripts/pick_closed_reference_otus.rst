@@ -42,11 +42,11 @@ Be aware that this doubles the amount of memory used.
 	**[OPTIONAL]**
 		
 	-r, `-`-reference_fp
-		The reference sequences [default: /Users/jairideout/.virtualenvs/qiime/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set/97_otus.fasta]. NOTE: If you do not pass -r to this script, you will be using QIIME's default reference sequences. In this case, QIIME will copy the corresponding reference tree to the output directory. This is the tree that should be used to perform phylogenetic diversity analyses (e.g., with `core_diversity_analyses.py <./core_diversity_analyses.html>`_).
+		The reference sequences [default: /Users/caporaso/.virtualenvs/qiime/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/rep_set/97_otus.fasta]. NOTE: If you do not pass -r to this script, you will be using QIIME's default reference sequences. In this case, QIIME will copy the corresponding reference tree to the output directory. This is the tree that should be used to perform phylogenetic diversity analyses (e.g., with `core_diversity_analyses.py <./core_diversity_analyses.html>`_).
 	-p, `-`-parameter_fp
 		Path to the parameter file, which specifies changes to the default behavior. See http://www.qiime.org/documentation/file_formats.html#qiime-parameters . [if omitted, default values will be used]
 	-t, `-`-taxonomy_fp
-		The taxonomy map [default: /Users/jairideout/.virtualenvs/qiime/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/taxonomy/97_otu_taxonomy.txt]
+		The taxonomy map [default: /Users/caporaso/.virtualenvs/qiime/lib/python2.7/site-packages/qiime_default_reference/gg_13_8_otus/taxonomy/97_otu_taxonomy.txt]
 	-s, `-`-assign_taxonomy
 		Assign taxonomy to each sequence using `assign_taxonomy.py <./assign_taxonomy.html>`_ (this will override --taxonomy_fp, if provided) [default: False]
 	-f, `-`-force

@@ -8,7 +8,7 @@ __credits__ = ["Greg Caporaso", "Kyle Bittinger", "Justin Kuczynski",
                "Jesse Stombaugh", "Yoshiki Vazquez Baeza", "Jai Ram Rideout",
                "Adam Robbins-Pianka"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -398,6 +398,7 @@ def run_jackknifed_beta_diversity(otu_table_fp,
         beta_diversity_metrics = ['weighted_unifrac', 'unweighted_unifrac']
 
     # Prep the beta-diversity command
+    full_table_bdiv_dir = join(output_dir, 'unrarefied_bdiv')
     try:
         params_str = get_params_str(params['beta_diversity'])
     except KeyError:
@@ -406,7 +407,7 @@ def run_jackknifed_beta_diversity(otu_table_fp,
         params_str = '%s -t %s' % (params_str, tree_fp)
     # Build the beta-diversity command
     beta_div_cmd = 'beta_diversity.py -i %s -o %s %s' %\
-        (otu_table_fp, output_dir, params_str)
+        (otu_table_fp, full_table_bdiv_dir, params_str)
     commands.append(
         [('Beta Diversity (%s)' % ', '.join(beta_diversity_metrics), beta_div_cmd)])
 
@@ -428,11 +429,12 @@ def run_jackknifed_beta_diversity(otu_table_fp,
     for beta_diversity_metric in beta_diversity_metrics:
         metric_output_dir = '%s/%s/' % (output_dir, beta_diversity_metric)
         distance_matrix_fp = '%s/%s_%s.txt' % \
-            (output_dir, beta_diversity_metric, otu_table_basename)
+            (full_table_bdiv_dir, beta_diversity_metric, otu_table_basename)
 
         # Prep the hierarchical clustering command (for full distance matrix)
-        full_tree_fp = '%s/%s_upgma.tre' % (metric_output_dir,
-                                            otu_table_basename)
+        full_tree_fp = '%s/%s_%s_upgma.tre' % (full_table_bdiv_dir,
+                                               otu_table_basename,
+                                               beta_diversity_metric)
         try:
             params_str = get_params_str(params['upgma_cluster'])
         except KeyError:

@@ -6,7 +6,7 @@ __author__ = "Simon Jacobs"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jens Reeder", "Rob Knight", "Greg Caporaso", "Jai Ram Rideout", "Evan Bolyen", "Simon Jacobs"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Simon Jacobs"
 __email__ = "sdjacobs@uchicago.edu"
 
@@ -120,7 +120,7 @@ def main():
     job_prefix = args[1]
 
     if opts.mem_per_cpu is not None:
-        mem_per_cpu = " --mem_per_cpu=" + opts.mem_per_cpu
+        mem_per_cpu = " --mem-per-cpu=" + opts.mem_per_cpu
     else:
         mem_per_cpu = ""
 

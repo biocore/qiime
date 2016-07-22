@@ -6,7 +6,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Greg Caporaso", "Kyle Bittinger", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -401,9 +401,9 @@ class DownstreamWorkflowTests(TestCase):
             'index.html')
 
         input_file_basename = splitext(split(self.test_data['biom'][0])[1])[0]
-        unweighted_unifrac_dm_fp = join(self.test_out,
+        unweighted_unifrac_dm_fp = join(self.test_out, 'unrarefied_bdiv',
                                         'unweighted_unifrac_%s.txt' % input_file_basename)
-        weighted_unifrac_dm_fp = join(self.test_out,
+        weighted_unifrac_dm_fp = join(self.test_out, 'unrarefied_bdiv',
                                       'weighted_unifrac_%s.txt' % input_file_basename)
 
        # check for expected relations between values in the unweighted unifrac
@@ -460,9 +460,9 @@ class DownstreamWorkflowTests(TestCase):
             'index.html')
 
         input_file_basename = splitext(split(self.test_data['biom'][0])[1])[0]
-        unweighted_unifrac_dm_fp = join(self.test_out,
+        unweighted_unifrac_dm_fp = join(self.test_out, 'unrarefied_bdiv',
                                         'unweighted_unifrac_%s.txt' % input_file_basename)
-        weighted_unifrac_dm_fp = join(self.test_out,
+        weighted_unifrac_dm_fp = join(self.test_out, 'unrarefied_bdiv',
                                       'weighted_unifrac_%s.txt' % input_file_basename)
 
        # check for expected relations between values in the unweighted unifrac

@@ -7,7 +7,7 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Rob Knight", "Greg Caporaso", "Kyle Bittinger",
                "Antonio Gonzalez Pena", "David Soergel", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -788,6 +788,7 @@ class MothurTaxonAssigner(TaxonAssigner):
                 iters=self.Params['Iterations'],
                 ksize=self.Params['KmerSize'],
                 output_fp=None,
+                tmp_dir=get_qiime_temp_dir()
             )
         finally:
             mothur_tax_file.close()
@@ -1281,6 +1282,7 @@ uclust-based consensus taxonomy assigner by Greg Caporaso, citation: QIIME allow
 
         # initialize the application controller object
         app = Uclust(params,
+                     TmpDir=get_qiime_temp_dir(),
                      HALT_EXEC=HALT_EXEC)
 
         # Configure for consensus taxonomy assignment

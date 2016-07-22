@@ -7,7 +7,7 @@ __credits__ = ["Meg Pirrung", "Jesse Stombaugh", "Antonio Gonzalez Pena",
                "Will Van Treuren", "Yoshiki Vazquez Baeza", "Jai Ram Rideout",
                "Evan Bolyen"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 
@@ -15,7 +15,7 @@ from matplotlib import use
 use('Agg', warn=False)
 from sys import exit
 from qiime.parse import parse_rarefaction_data
-from matplotlib.pylab import savefig, clf, gca, gcf, errorbar
+from matplotlib.pyplot import savefig, clf, gca, gcf, errorbar
 import matplotlib.pyplot as plt
 import os.path
 from os.path import splitext, split

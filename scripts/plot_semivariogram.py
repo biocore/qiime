@@ -6,7 +6,7 @@ __author__ = "Antonio Gonzalez Pena"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Antonio Gonzalez Pena", "Kyle Patnode", "Yoshiki Vazquez-Baeza"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Antonio Gonzalez Pena"
 __email__ = "antgonza@gmail.com"
 
@@ -20,8 +20,8 @@ from qiime.filter import (filter_samples_from_distance_matrix,
                           sample_ids_from_metadata_description)
 from matplotlib import use
 use('Agg', warn=False)
-from pylab import (plot, xlabel, ylabel, title, savefig, ylim, xlim, legend,
-                   show, figure)
+from matplotlib.pyplot import (plot, xlabel, ylabel, title, savefig, ylim,
+                               xlim, legend, show, figure)
 from numpy import asarray
 import os
 from os.path import splitext

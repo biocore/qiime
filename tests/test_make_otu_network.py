@@ -6,7 +6,7 @@ __copyright__ = "Copyright 2011, The QIIME Project"  # consider project name
 # remember to add yourself
 __credits__ = ["Julia Goodrich", "Jose Carlos Clemente Litran"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Jose Clemente"
 __email__ = "jose.clemente@gmail.com"
 

@@ -8,7 +8,7 @@ __credits__ = ["Rob Knight", "Justin Kuczynski", "Greg Caporaso",
                "Jai Ram Rideout", "Will Van Treuren", "Yoshiki Vazquez-Baeza",
                "Jose Antonio Navas Molina"]  # remember to add yourself
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 
@@ -33,7 +33,8 @@ from qiime.parse import (group_by_field, group_by_fields,
                          parse_taxa_summary_table, parse_prefs_file, parse_mapping_file_to_dict,
                          mapping_file_to_dict, MinimalQualParser, parse_denoiser_mapping,
                          parse_otu_map, parse_sample_id_map, parse_taxonomy_to_otu_metadata,
-                         is_casava_v180_or_later, MinimalSamParser)
+                         is_casava_v180_or_later, MinimalSamParser,
+                         parse_items)
 
 
 class TopLevelTests(TestCase):
@@ -1227,6 +1228,19 @@ otu3	s8_7	s2_5""".split('\n')
         sample_id_map = ['S1\ta', 'T1\ta', 'S2\ta']
         self.assertRaises(ValueError, parse_sample_id_map,
                           sample_id_map)
+
+    def test_parse_items(self):
+        x = StringIO('foo\nbar\nbaz\n')
+        self.assertEqual(['foo', 'bar', 'baz'], parse_items(x))
+
+        x = StringIO('\t\n\t\n\t\n')
+        self.assertEqual(['\t', '\t', '\t'], parse_items(x))
+
+        x = StringIO('111\n2222\n33333\n')
+        self.assertEqual(['111', '2222', '33333'], parse_items(x))
+
+        x = StringIO('')
+        self.assertEqual([], parse_items(x))
 
 
 illumina_read1 = """HWI-6X_9267:1:1:4:1699#ACCACCC/1:TACGGAGGGTGCGAGCGTTAATCGCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCGAAAAAAAAAAAAAAAAAAAAAAA:abbbbbbbbbb`_`bbbbbb`bb^aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaDaabbBBBBBBBBBBBBBBBBBBB

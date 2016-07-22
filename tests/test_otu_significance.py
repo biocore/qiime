@@ -6,7 +6,7 @@ __author__ = "Luke Ursell"
 __copyright__ = "Copyright 2013, The QIIME project"
 __credits__ = ["Luke Ursell", "Will Van Treuren", "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Luke Ursell"
 __email__ = "lkursell@gmail.com"
 
@@ -865,7 +865,8 @@ class GroupedCorrelationTests(TestCase):
                                   0.045999999999999999,
                                   0.38200000000000001,
                                   0.88200000000000001,
-                                  0.438]
+                                  0.438,
+                                  0.54600000000000004]
 
         obs_ccs, obs_pvals = run_correlation_test(data_gen, 'pearson',
                                                   CORRELATION_TEST_CHOICES,
@@ -890,8 +891,12 @@ class GroupedCorrelationTests(TestCase):
         # permutations used in the test, this difference is 1 / 1000 = 0.001,
         # hence the smaller number of decimal places used here in the
         # comparison.
-        assert_almost_equal(obs_pvals[:-1], exp_bootstrapped_pvals)
-        assert_almost_equal(obs_pvals[-1], 0.54600000000000004, decimal=2)
+        assert_almost_equal(obs_pvals[0], exp_bootstrapped_pvals[0])
+        assert_almost_equal(obs_pvals[1], exp_bootstrapped_pvals[1])
+        assert_almost_equal(obs_pvals[2], exp_bootstrapped_pvals[2], decimal=1)
+        assert_almost_equal(obs_pvals[3], exp_bootstrapped_pvals[3])
+        assert_almost_equal(obs_pvals[4], exp_bootstrapped_pvals[4])
+        assert_almost_equal(obs_pvals[5], exp_bootstrapped_pvals[5], decimal=2)
 
         # spearman
         exp_ccs = [0.25714285714285712,

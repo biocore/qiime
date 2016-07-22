@@ -6,7 +6,7 @@ __credits__ = ["Will Van Treuren", "Luke Ursell", "Catherine Lozupone",
                "Jesse Stombaugh", "Doug Wendel", "Dan Knights", "Greg Caporaso",
                "Jai Ram Rideout"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1-dev"
 __maintainer__ = "Will Van Treuren"
 __email__ = "wdwvt1@gmail.com"
 
@@ -199,7 +199,7 @@ def main():
 
     # sort the biom table so that feature values are retrieved in the same
     # order as the metadata in the samples they correspond to
-    bt.sort(sort_f = lambda _: samples_to_correlate, axis='sample')
+    bt = bt.sort(sort_f = lambda _: samples_to_correlate, axis='sample')
 
     if bt.shape[1] <= 3:
         option_parser.error(filtration_error_text)

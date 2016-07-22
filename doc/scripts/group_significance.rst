@@ -20,7 +20,7 @@ with the -c option. Any samples that do not contain a value under the given
 header will not be included in the comparison.
 At a basic level, the script is constructing a OTUxSample
 (rowXcolumn) contingency table, and testing whether or not each OTU is
-differentially represented in cerstain groups of columns (determined by the
+differentially represented in certain groups of columns (determined by the
 metadata category passed).
 
 There are several important considerations with this script.
@@ -30,7 +30,7 @@ Errors and behind-the-scenes processing:
 - This script will ignore samples that are found in the mapping file but do not
   contain information for the passed category. This would cause the mapping
   file to fail `validate_mapping_file.py <./validate_mapping_file.html>`_, but will not cause a failure here.
-- This script will silenty ignore situations where the set of samples in the
+- This script will silently ignore situations where the set of samples in the
   mapping file is a superset of the samples in the biom file. If the reverse is
   true, the script will error unless --biom_samples_are_superset is passed.
 - This script will round P-values greater than 1 (after correcting for multiple
@@ -58,7 +58,7 @@ Test assumptions:
   appropriate for the data. For instance, the script will error if you use the
   Mann-Whitney-U test and one of your group sizes is smaller than 20. It is
   likely that assumptions about the distribution of the data, the distribution
-  of the variance, etc. are not robustly met. IT IS YOUR REPSONSIBILTY TO CHECK
+  of the variance, etc. are not robustly met. IT IS YOUR RESPONSIBILITY TO CHECK
   THAT YOU ARE USING AN APPROPRIATE TEST. For more information on assumptions
   made by the tests, please view the following resources:
 
@@ -66,7 +66,7 @@ Test assumptions:
   - Nonparamteric Statistical Methods by Hollander and Wolfe
   - Documentation in R and Scipy packages
   - Handbook of Biological Statistics by McDonald (available at
-    http://udel.edu/~mcdonald/statintro.html)
+    http://www.biostathandbook.com/)
 
 The assumptions we check for:
 
@@ -112,7 +112,7 @@ Null and alternate hypothesis:
   log-likelihood ratio test) is that the frequency of any given OTU is equal
   across all sample groups. The alternate hypothesis is that the frequency of
   the OTU is not the same across all sample groups.
-- Kruskal-Wallis: The null hypothesis is that the location paramater of the
+- Kruskal-Wallis: The null hypothesis is that the location parameter of the
   groups of abundances for a given OTU is the same. The alternate hypothesis is
   that at least one of the location parameters is different.
 - ANOVA: the null hypothesis is that the means of the observations in the groups
@@ -174,9 +174,9 @@ The available tests are:
 
 .. note::
 
-	
+
 	**[REQUIRED]**
-		
+
 	-i, `-`-otu_table_fp
 		Path to biom format table
 	-m, `-`-mapping_fp
@@ -185,9 +185,9 @@ The available tests are:
 		Name of the category over which to run the analysis
 	-o, `-`-output_fp
 		Path to the output file
-	
+
 	**[OPTIONAL]**
-		
+
 	-s, `-`-test
 		Test to use. Choices are: nonparametric_t_test, bootstrap_mann_whitney_u, ANOVA, kruskal_wallis, g_test, parametric_t_test, mann_whitney_u [default: kruskal_wallis]
 	`-`-metadata_key
@@ -222,7 +222,7 @@ This script generates a tab separated output file with the following headers:
 
 
 
-**Find which OTUs have the highest probablilty of being differently represented depending on the sample category 'diet' using a G test:**
+**Find which OTUs have the highest probability of being differently represented depending on the sample category 'diet' using a G test:**
 
 ::
 
@@ -234,7 +234,7 @@ This script generates a tab separated output file with the following headers:
 
 	group_significance.py -i otu_table.biom -m map_overlapping.txt -c before_after -s parametric_t_test -o tt_ocs.txt
 
-**Find which OTUs are differentially represented in the sample groups formed by 'diet' based on nonparamteric ANOVA, aka, Kruskal Wallis test. In addition, prevent the script from erroring because the biom table samples are a superset of the mapping file samples, and print the non-overlapping samples:**
+**Find which OTUs are differentially represented in the sample groups formed by 'diet' based on nonparametric ANOVA, aka, Kruskal Wallis test. In addition, prevent the script from erroring because the biom table samples are a superset of the mapping file samples, and print the non-overlapping samples:**
 
 ::
 
@@ -245,5 +245,3 @@ This script generates a tab separated output file with the following headers:
 ::
 
 	group_significance.py -i otu_table.biom -m map_overlapping.txt -c before_after -s nonparametric_t_test --permutations 100 -o btt_ocs.txt
-
-

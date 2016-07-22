@@ -3,14 +3,15 @@ from __future__ import division
 
 __author__ = "William Walters"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["William Walters"]
+__credits__ = ["William Walters", "Yoshiki Vazquez Baeza"]
 __license__ = "GPL"
-__version__ = "1.9.0-dev"
+__version__ = "1.9.1-dev"
 __maintainer__ = "William Walters"
 __email__ = "William.A.Walters@colorado.edu"
 
 from os.path import abspath, join
 from os import walk
+from fnmatch import filter
 
 from qiime.util import (parse_command_line_parameters,
                         make_option,
@@ -44,6 +45,17 @@ For example, sample1_L001_R1_001.fastq.gz, sample1_L001_I1_001.fastq.gz,
 sample1_L001_mapping_001.txt would be matched up if "R1" is the read indicator,
 "I1" is the barcode indicator, and "mapping" is the mapping file indicator.
 
+Depending on the inputed arguments, this script can create any of the following
+files in the output directory:
+
+    * seqs.txt: this file will contain a list (one element per line) of found
+      sequences filepaths.
+    * barcodes.txt: this file will contain a list (one element per line) of
+      found barcodes filepaths.
+    * map.txt: this file wil contain a list (one element per line) of mapping
+      file filepaths.
+    * sample_ids.txt: this file will contain a list (one element per line)
+      sample identifiers.
 """
 script_info['script_usage'] = []
 
@@ -59,25 +71,26 @@ script_info['script_usage'].append(
 script_info['script_usage'].append(
     ("Example 2:",
      "Process an input folder of files, with the option specified to generate "
-     "sample ids using the filenames (default behavior is to use all text "
-     "before the first underscore as the sample id)",
-     "%prog -i input_files -o output_folder --demultiplexing_method "
-     "sampleid_by_file"))
+     "sample ids using the filenames containing the text _R1_ (behavior is to use "
+     "all text before the first underscore as the sample id)",
+     "%prog -i input_files -o output_folder --read_indicator '*_R1_*'"
+     " --demultiplexing_method sampleid_by_file"))
 
 script_info['script_usage'].append(
     ("Example 3:",
      "Process an input folder of folders, with an option specified to "
      "use the folder names as the sample ids. In this case, the fastq "
-     "filenames themselves are not included, only the folder names are used.",
+     "filenames themselves are not included, only the folder names are used. "
+     "The target reads in this case have the text _reads_ in the filenames. ",
      "%prog -i input_folders_no_barcodes -o output_folder "
      "--demultiplexing_method sampleid_by_file --include_input_dir_path "
-     "--remove_filepath_in_name"))
+     "--remove_filepath_in_name --read_indicator '*_reads_*'"))
 
 script_info['script_usage'].append(
  ("Example 4:",
   "To see what commands would be executed by the script without actually "
-  "running them, use the following command:",
-  "%prog -i input_files -o output_folder -w"))
+  "running them, use the following command (target reads include _R1_ in the filename):",
+  "%prog -i input_files -o output_folder -w --read_indicator '*_R1_*'"))
 
 script_info['output_description']= (
     "The output of running split_libraries_fastq.py on many input files. "
@@ -104,8 +117,12 @@ script_info['optional_options']= [
         ' to the default behavior of split_libraries_fastq.py. '
         'See http://www.qiime.org/documentation/file_formats.html#qiime-parameters'
         ' [default: split_libraries_fastq.py defaults will be used]'),
-    make_option('--read_indicator', default='_R1_',
-        help='Substring to search for to indicate read files'
+    make_option('--read_indicator', default='*_R1_*',
+        help='Substring to search for to indicate read files, when '
+        '--demultiplexing_method is sampleid_by_file, wildcards can be used, e.g. \'*\' '
+        'for all files. If multiple fastq files are present as in the case after joining '
+        'reads, then one can select for joined reads with a value such as '
+        '\'*fastqjoin.join*\''
         ' [default: %default]'),
     make_option('--barcode_indicator', default='_I1_',
         help='Substring to search for to indicate barcode files'
@@ -195,7 +212,13 @@ def main():
         all_files = get_matching_files(all_fastq, all_mapping,
             read_indicator, barcode_indicator, mapping_indicator)
     else:
-        all_files = all_fastq
+        # Filter down files to only the target files, raise error if nothing found
+        all_files = filter(all_fastq, read_indicator)
+        if not all_files:
+            raise ValueError,("No reads detected-please check the values indicated with "
+                "the --read_indicator parameter. Set as '*' to include all files, or use "
+                "a value such as '*fastqjoin.join*' to detect only the reads that are "
+                "joined after join_paired_ends.py.")
 
     commands = create_commands_slf(all_files, demultiplexing_method, output_dir,
         params_str, leading_text, trailing_text, include_input_dir_path,
