@@ -6,15 +6,15 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>QIIME installation guide &mdash; Homepage</title>
+    <title>QIIME Installation Guide &mdash; Homepage</title>
     
-    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '1.9.1',
+        VERSION:     '1.9.0-dev',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -26,14 +26,14 @@
     <link rel="shortcut icon" href="../_static/favicon.ico"/>
     <link rel="top" title="Homepage" href="../index.html" />
     <link rel="up" title="Installing QIIME" href="index.html" />
-    <link rel="next" title="QIIME Virtual Box" href="virtual_box.html" />
+    <link rel="next" title="QIIME Alternative Installation Guide" href="alternative.html" />
     <link rel="prev" title="Installing QIIME" href="index.html" />
 <meta http-equiv="Content-Style-Type" content="text/css" />
 <script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
 <script type="text/javascript" src="../_static/google_feed.js"></script>
 
   </head>
-  <body>
+  <body role="document">
 
 <div style="background-color: white; text-align: left; padding: 0px">
 <a href="../index.html"><img src="../_static/wordpressheader.png" border="0" alt="sampledoc"/></a>
@@ -41,20 +41,20 @@
 <div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
 </tr></table></div>
 
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="virtual_box.html" title="QIIME Virtual Box"
+          <a href="alternative.html" title="QIIME Alternative Installation Guide"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="index.html" title="Installing QIIME"
              accesskey="P">previous</a> |</li>
-        <li><a href="../index.html">Home</a> &raquo;</li>
-          <li><a href="index.html" accesskey="U">Installing QIIME</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">Home</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Installing QIIME</a> &raquo;</li> 
       </ul>
     </div>
   
@@ -62,271 +62,74 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="qiime-installation-guide">
-<span id="index-0"></span><h1>QIIME installation guide<a class="headerlink" href="#qiime-installation-guide" title="Permalink to this headline">¶</a></h1>
-<p>QIIME consists of native Python 2 code and additionally wraps many external applications. This gives the user flexibility to easily build their own analysis pipelines, making use of popular microbial community analysis tools. QIIME handles the processing of input and output of these applications, so the user can spend time analyzing their data rather than parsing, writing, and converting file formats.</p>
-<p>As a consequence of this <em>pipeline</em> architecture, <strong>QIIME has a lot of dependencies and can (but doesn&#8217;t have to) be very challenging to install</strong>.</p>
-<p>We therefore break this guide down into several parts:</p>
-<blockquote>
-<div><ul class="simple">
-<li>First we tell you how you can <a class="reference internal" href="#vm-or-macqiime">avoid installing QIIME natively</a>, and instead use pre-built virtual machines or MacQIIME.</li>
-</ul>
-<ul class="simple">
-<li>Then we show how to <a class="reference internal" href="#native-base">install QIIME natively with a minimal (base) install.</a> This is easy, and is sufficient for the vast majority of users.</li>
-</ul>
-</div></blockquote>
-<blockquote>
-<div><ul class="simple">
-<li>Finally, we cover how to <a class="reference internal" href="#native-full">install QIIME natively doing a complete install.</a> This can be very challenging, and is likely only needed by users looking to develop custom analysis workflows.</li>
-</ul>
-</div></blockquote>
-<div class="section" id="how-you-can-avoid-installing-qiime-by-using-a-virtual-machine-or-macqiime">
-<span id="vm-or-macqiime"></span><h2>How you can avoid installing QIIME by using a virtual machine or MacQIIME<a class="headerlink" href="#how-you-can-avoid-installing-qiime-by-using-a-virtual-machine-or-macqiime" title="Permalink to this headline">¶</a></h2>
-<p>Since QIIME can be difficult to install, we have attempted to shift this burden away from our users by providing the following options:</p>
-<blockquote>
-<div><ul class="simple">
-<li><a class="reference external" href="http://www.wernerlab.org/software/macqiime">MacQIIME</a>: The easiest way to get a complete, native QIIME base install (and a nearly complete full install) for Mac OS X. MacQIIME is built and maintained by the <a class="reference external" href="http://www.wernerlab.org/">Werner Lab</a>.</li>
-<li><a class="reference external" href="./virtual_box.html">QIIME Virtual Box</a>: A virtual machine that you run on your own hardware.</li>
-<li><a class="reference external" href="./vm_ec2.html">QIIME Amazon Web Services virtual machine</a>: A virtual machine that you run on rented hardware.</li>
-</ul>
-</div></blockquote>
-<p><strong>We highly recommend going with one of these options if you&#8217;re new to QIIME, or just want to test it out to see if it will do what you want.</strong></p>
+<span id="index-0"></span><h1>QIIME Installation Guide<a class="headerlink" href="#qiime-installation-guide" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="installing-qiime-on-mac-os-x-and-linux-using-anaconda">
+<h2>Installing QIIME on Mac OS X and Linux using Anaconda<a class="headerlink" href="#installing-qiime-on-mac-os-x-and-linux-using-anaconda" title="Permalink to this headline">¶</a></h2>
+<p>QIIME consists of native Python 2 code and additionally wraps many external applications. These instructions describe how to perform a base installation of QIIME using <a class="reference external" href="https://anaconda.org/">Anaconda</a>/Miniconda.</p>
+<div class="section" id="step-1-install-miniconda">
+<h3>Step 1: Install Miniconda<a class="headerlink" href="#step-1-install-miniconda" title="Permalink to this headline">¶</a></h3>
+<p>Anaconda/Miniconda is a Python distribution, package manager, and virtual environment solution. While QIIME 1 is Python 2 software, we recommend installing
+Miniconda with Python 3 (miniconda3), as many bioinformatics packages
+are now transitioning to Python 3. You can still install Python 2
+software with miniconda3 by passing the <code class="docutils literal"><span class="pre">python=2.7</span></code> flag when you create
+a new environment; otherwise the default Python version will be Python
+3.</p>
+<p>Begin by downloading <a class="reference external" href="http://conda.pydata.org/miniconda.html">Miniconda</a>
+and following the associated installation instructions.</p>
+<p>You should next work through the tutorials on the Miniconda install page
+linked above. We recommend setting up a QIIME 1.9.1 environment for your
+Miniconda installation, so pay particular attention to the virtual
+environment management in this tutorial. This will eventually allow you
+to install QIIME 2 alongside QIIME 1 on your system. It will also
+facilitate easy installation of the many other bioinformatics tools
+supported by <a class="reference external" href="https://bioconda.github.io/">bioconda</a>.</p>
 </div>
-<div class="section" id="installing-qiime-natively-with-a-minimal-base-install">
-<span id="native-base"></span><h2>Installing QIIME natively with a minimal (base) install<a class="headerlink" href="#installing-qiime-natively-with-a-minimal-base-install" title="Permalink to this headline">¶</a></h2>
-<p>If you want to customize QIIME, work with QIIME in a multi-user environment (e.g., a Linux cluster), are interested in getting involved in QIIME development, or want to use the development version of QIIME, you may need to install QIIME manually.</p>
-<p><strong>For the vast majority of use cases, the QIIME minimal (base) install will be sufficient.</strong> This is much easier than a <em>QIIME full install</em>. Additionally, it&#8217;s possible to add parts of the QIIME full install to an existing QIIME base install as needed, so the QIIME base install is nearly always what you should do to get started.</p>
-<p>The QIIME base install allows use of core QIIME functionality, including, but not limited to:</p>
-<blockquote>
-<div><ul class="simple">
-<li><a class="reference external" href="../scripts/validate_mapping_file.html">validate_mapping_file.py</a></li>
-<li><a class="reference external" href="../scripts/split_libraries.html">split_libraries.py</a></li>
-<li><a class="reference external" href="../scripts/split_libraries_fastq.html">split_libraries_fastq.py</a></li>
-<li><a class="reference external" href="../scripts/pick_open_reference_otus.html">pick_open_reference_otus.py</a></li>
-<li><a class="reference external" href="../scripts/pick_de_novo_otus.html">pick_de_novo_otus.py</a></li>
-<li><a class="reference external" href="../scripts/pick_closed_reference_otus.html">pick_closed_reference_otus.py</a></li>
-<li><a class="reference external" href="../scripts/core_diversity_analyses.html">core_diversity_analyses.py</a></li>
-</ul>
-</div></blockquote>
-<div class="section" id="prepare-your-build-environment">
-<h3>Prepare your build environment...<a class="headerlink" href="#prepare-your-build-environment" title="Permalink to this headline">¶</a></h3>
-<p>First, you need to have a build environment on your machine:</p>
-<blockquote>
-<div><ul>
-<li><p class="first">On OS X, this involves installing the <a class="reference external" href="http://developer.apple.com/technologies/xcode.html">developer tools</a>.</p>
-</li>
-<li><p class="first">On Debian-based Linux (e.g., Ubuntu), this involves installing the following packages:</p>
-<div class="highlight-python"><div class="highlight"><pre>sudo apt-get install build-essential python-dev python-pip
-</pre></div>
-</div>
-</li>
-</ul>
-</div></blockquote>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">Depending on your system, additional packages may need to be installed that may be required by QIIME or its dependencies. Also, packages names will vary across operating systems and even within operating system distributions (e.g., different versions of Ubuntu). Since there are a wide range of systems that QIIME can be installed on, the QIIME development team cannot provide a comprehensive list of commands that are guaranteed to successfully install QIIME on your system.</p>
-</div>
-<p>QIIME is written in Python 2, and requires Python version greater than Python 2.7.0 and less than Python 3.0.0. You can verify which version of Python you&#8217;re running with:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">python</span> <span class="o">--</span><span class="n">version</span>
-</pre></div>
-</div>
-<p>If you encounter problems installing QIIME, please visit <a class="reference external" href="http://help.qiime.org">http://help.qiime.org</a>.</p>
-</div>
-<div class="section" id="then-just-pip-install-qiime">
-<h3>Then, just pip install qiime!<a class="headerlink" href="#then-just-pip-install-qiime" title="Permalink to this headline">¶</a></h3>
-<p>The easiest way to install the latest QIIME release and its base dependencies is with pip:</p>
-<div class="highlight-python"><div class="highlight"><pre>pip install numpy
-pip install qiime
-</pre></div>
-</div>
-<p>If you do not have pip, the easiest way to install it is by running:</p>
-<div class="highlight-python"><div class="highlight"><pre>easy_install pip
-</pre></div>
-</div>
-<p>Or, if you are on Ubuntu, run:</p>
-<div class="highlight-python"><div class="highlight"><pre>apt-get install python-pip
-</pre></div>
-</div>
-<p><strong>Note:</strong> You may need to prefix the above commands with <tt class="docutils literal"><span class="pre">sudo</span></tt> if you do not have permission to place files in the default locations. You will also need an active Internet connection.</p>
-<p>These commands install QIIME and all of its Python dependencies. <tt class="docutils literal"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">qiime</span></tt> will also attempt to install some non-Python dependencies, including uclust, FastTree, SortMeRNA, SUMACLUST, and swarm. If any of the non-Python dependencies cannot be installed, they will be skipped and you&#8217;ll need to install them manually if you need to use them. See below for links to where you can obtain these dependencies if any of them fail to install with <tt class="docutils literal"><span class="pre">pip</span></tt>.</p>
-</div>
-<div class="section" id="alternatives-to-pip-install-qiime">
-<h3>Alternatives to pip install qiime<a class="headerlink" href="#alternatives-to-pip-install-qiime" title="Permalink to this headline">¶</a></h3>
-<p>If you don&#8217;t have permission (or don&#8217;t want) to install QIIME into your system (e.g., with <tt class="docutils literal"><span class="pre">sudo</span></tt>), you might want to look into these alternatives:</p>
-<blockquote>
-<div><ul class="simple">
-<li><a class="reference external" href="https://store.continuum.io/cshop/anaconda/">Anaconda</a></li>
-<li><a class="reference external" href="https://virtualenvwrapper.readthedocs.org/en/latest/">virtualenv and virtualenv-wrapper</a> (this is what most of the QIIME developers use instead of system-wide QIIME installations)</li>
-<li><a class="reference external" href="https://www.enthought.com/products/canopy/">Canopy</a></li>
-<li><a class="reference external" href="https://pip.pypa.io/en/latest/user_guide.html#user-installs">pip-install to a non-system directory</a></li>
-</ul>
-</div></blockquote>
-</div>
-<div class="section" id="testing-the-qiime-base-installation">
-<h3>Testing the QIIME base installation<a class="headerlink" href="#testing-the-qiime-base-installation" title="Permalink to this headline">¶</a></h3>
-<p>After installing the QIIME base packages, you can test the installation:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">print_qiime_config</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">t</span>
-</pre></div>
-</div>
-<p>If the output doesn&#8217;t indicate any failures, you&#8217;re now ready to use QIIME. If you&#8217;re working in a cluster environment, you may next want to make some customizations by <a class="reference external" href="./qiime_config.html">setting up your qiime config file</a>. You should also read the documentation on <a class="reference external" href="../tutorials/parallel_qiime.html">using parallel qiime</a>.</p>
-</div>
-</div>
-<div class="section" id="installing-qiime-natively-with-a-full-install">
-<span id="native-full"></span><h2>Installing QIIME natively with a full install<a class="headerlink" href="#installing-qiime-natively-with-a-full-install" title="Permalink to this headline">¶</a></h2>
-<p>You should begin by performing the <a class="reference internal" href="#native-base">QIIME minimal (base) install</a>. The following steps are not necessary for the vast majority of QIIME&#8217;s use cases.</p>
-<p>Then, install the following packages. If you&#8217;re installing on Linux, the easiest way to install most of these packages is using <a class="reference external" href="https://github.com/qiime/qiime-deploy">qiime-deploy</a>.</p>
-<p>Alternatively, you can manually install some or all of the following packages. These are grouped by the features that each dependency will provide access to. Installation instructions should be followed for each individual package (e.g., from the project&#8217;s website or README/INSTALL file).</p>
-<p>Alignment, tree-building, taxonomy assignment, OTU picking, and other data generation steps:</p>
-<ul class="simple">
-<li>jre1.6.0_05 (<a class="reference external" href="http://java.sun.com/javase/downloads/index.jsp">src_jre</a>) (license: GPL2)</li>
-<li>rdp_classifier-2.2 (<a class="reference external" href="http://sourceforge.net/projects/rdp-classifier/files/rdp-classifier/rdp_classifier_2.2.zip/download">src_rdp</a>) See <a class="reference internal" href="#rdp-install"><em>RDP install notes</em></a>. (license: GPL)</li>
-<li>blast-2.2.22 (legacy BLAST from NCBI, <em>NOT</em> BLAST+) (<a class="reference external" href="ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/2.2.22/blast-2.2.22-universal-macosx.tar.gz">OS X</a> or <a class="reference external" href="ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/2.2.22/blast-2.2.22-ia32-linux.tar.gz">linux 32-bit</a>) (license: GNU)</li>
-<li>cd-hit 3.1.1 (<a class="reference external" href="http://www.bioinformatics.org/download/cd-hit/cd-hit-2007-0131.tar.gz">src_cdhit</a>) (license: Free access)</li>
-<li>ChimeraSlayer (via microbiomeutil_2010-04-29) (<a class="reference external" href="http://sourceforge.net/projects/microbiomeutil/files/">src_chimeraslayer</a>) See <a class="reference internal" href="#chimeraslayer-install"><em>ChimeraSlayer install notes</em></a>.</li>
-<li>mothur 1.25.0 (<a class="reference external" href="http://www.mothur.org/w/images/6/6d/Mothur.1.25.0.zip">src_mothur</a>) (license: GPL)</li>
-<li>clearcut v1.0.9 (<a class="reference external" href="http://www.mothur.org/w/images/9/91/Clearcut.source.zip">src_clearcut</a>)</li>
-<li>raxml 7.3.0 (<a class="reference external" href="ftp://thebeast.colorado.edu/pub/QIIME-v1.5.0-dependencies/stamatak-standard-RAxML-5_7_2012.tgz">src_raxml</a>)</li>
-<li>infernal 1.0.2 (<a class="reference external" href="ftp://selab.janelia.org/pub/software/infernal/infernal-1.0.2.tar.gz">src_infernal</a>) (license: GPL)</li>
-<li>cdbtools (<a class="reference external" href="ftp://occams.dfci.harvard.edu/pub/bio/tgi/software/cdbfasta/cdbfasta.tar.gz">src_cdbtools</a>)</li>
-<li>muscle 3.8.31 (<a class="reference external" href="http://www.drive5.com/muscle/downloads.htm">src_muscle</a>) (Public domain)</li>
-<li>rtax 0.984 (<a class="reference external" href="http://static.davidsoergel.com/rtax-0.984.tgz">src_rtax</a>) (license: BSD)</li>
-<li>usearch v5.2.236 and/or usearch v6.1 (<a class="reference external" href="http://www.drive5.com/usearch/">src_usearch</a>) (license: see <a class="reference external" href="http://www.drive5.com/usearch/nonprofit_form.html">http://www.drive5.com/usearch/nonprofit_form.html</a>) <strong>At this stage two different versions of usearch are supported.</strong> usearch v5.2.236 is referred to as <tt class="docutils literal"><span class="pre">usearch</span></tt> in QIIME, and usearch v6.1 is referred to as <tt class="docutils literal"><span class="pre">usearch61</span></tt>.</li>
-<li>sumaclust v1.0.00 (<a class="reference external" href="ftp://ftp.microbio.me/pub/QIIME-v1.9.0-dependencies/suma_package_V_1.0.00.tar.gz">src_sumaclust</a>) (license: CeCILL FREE SOFTWARE LICENSE AGREEMENT)</li>
-<li>swarm 1.2.19 (<a class="reference external" href="https://github.com/torognes/swarm/releases/tag/1.2.19">src_swarm</a>) (license: GPL)</li>
-<li>sortmerna 2.0 (<a class="reference external" href="https://github.com/biocore/sortmerna/releases/tag/2.0">src_sortmerna</a>) (license: LGPL)</li>
-</ul>
-<p>Processing sff files:</p>
-<ul class="simple">
-<li>sfffile and sffinfo (optional, QIIME 1.2.0 and later contain built-in tools for processing sff files although they are about 10x slower than the tools from Roche) (license: proprietary - must be obtained from Roche/454)</li>
-</ul>
-<p>Denoising 454 data:</p>
-<ul class="simple">
-<li>GNU Science Library (required by AmpliconNoise) (<a class="reference external" href="ftp://ftp.gnu.org/gnu/gsl/gsl-1.9.tar.gz">src_gsl</a>)</li>
-<li>AmpliconNoise 1.27 (<a class="reference external" href="http://ampliconnoise.googlecode.com/files/AmpliconNoiseV1.27.tar.gz">src_ampliconnoise</a>) See <a class="reference internal" href="#ampliconnoise-install"><em>AmpliconNoise install notes</em></a>.</li>
-<li>ghc 6.8 (required by the QIIME denoiser) (<a class="reference external" href="http://haskell.org/ghc">src_ghc</a>)</li>
-</ul>
-<p>Network visualization:</p>
-<ul class="simple">
-<li>cytoscape v2.7.0 (<a class="reference external" href="http://www.cytoscape.org/">src_cytoscape</a>) (license: LGPL)</li>
-</ul>
-<p>Advanced statistics, including those performed in <tt class="docutils literal"><span class="pre">supervised_learning.py</span></tt>, <tt class="docutils literal"><span class="pre">detrend.py</span></tt> and <tt class="docutils literal"><span class="pre">compare_categories.py</span></tt>:</p>
-<ul class="simple">
-<li>R 3.1.2 (<a class="reference external" href="http://www.r-project.org/">src_r</a>) See <a class="reference internal" href="#r-install"><em>R install notes</em></a>. (license: GPL2)</li>
-</ul>
-<p>If you plan to use SourceTracker with QIIME:</p>
-<ul class="simple">
-<li>SourceTracker 0.9.5 (<a class="reference external" href="http://downloads.sourceforge.net/project/sourcetracker/sourcetracker-0.9.5.tar.gz">src</a>) (license: GPL)</li>
-</ul>
-<p>For joining paired end reads, with <tt class="docutils literal"><span class="pre">join_paired_ends.py</span></tt> and <tt class="docutils literal"><span class="pre">multiple_join_paired_ends.py</span></tt>:</p>
-<ul class="simple">
-<li>ea-utils 1.1.2-537 (<a class="reference external" href="https://code.google.com/p/ea-utils/">web</a>) (license: MIT)</li>
-<li>SeqPrep v1.1 (<a class="reference external" href="https://github.com/jstjohn/SeqPrep">src</a>) (license: MIT)</li>
-</ul>
-<p>For improved performance with large BIOM files, or if you&#8217;re working with BIOM format 2.x files (see <a class="reference external" href="../documentation/file_formats.html#biom-file-format-versions">here</a> for more details):</p>
-<ul class="simple">
-<li>HDF5 (<a class="reference external" href="http://www.hdfgroup.org/HDF5/">web_hdf5</a>)</li>
-<li>h5py (<a class="reference external" href="http://www.h5py.org">web_h5py</a>; this can be installed with <tt class="docutils literal"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">h5py</span></tt> after HDF5 has been installed)</li>
-</ul>
-<div class="section" id="testing-the-qiime-full-installation">
-<h3>Testing the QIIME full installation<a class="headerlink" href="#testing-the-qiime-full-installation" title="Permalink to this headline">¶</a></h3>
-<p>After installing the packages above, you can test this for sanity by running:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">print_qiime_config</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">tf</span>
-</pre></div>
-</div>
-<p>If the output doesn&#8217;t indicate any failures related to packages that you plan to use, you&#8217;re now ready to use QIIME. If you&#8217;re working in a cluster environment, you may next want to make some customizations by <a class="reference external" href="./qiime_config.html">setting up your qiime config file</a>. You should also read the documentation on <a class="reference external" href="../tutorials/parallel_qiime.html">using parallel qiime</a>.</p>
-</div>
-<div class="section" id="running-the-test-suite">
-<h3>Running the test suite<a class="headerlink" href="#running-the-test-suite" title="Permalink to this headline">¶</a></h3>
-<p>Due to size constraints, pip-installing QIIME won&#8217;t download QIIME&#8217;s unit tests. If you want to run QIIME&#8217;s comprehensive unit test suite after installing QIIME, you should <a class="reference external" href="https://github.com/biocore/qiime/releases">download the QIIME source code from GitHub</a> for the version of QIIME that you&#8217;ve installed. After unpacking the source distribution, you should run the test suite. Execute the following commands:</p>
-<div class="highlight-python"><div class="highlight"><pre>cd qiime-&lt;version&gt;/tests/
-python all_tests.py
-</pre></div>
-</div>
-<p>Where <tt class="docutils literal"><span class="pre">qiime-&lt;version&gt;</span></tt> will be dependent on the specific version that you&#8217;ve downloaded.</p>
-<p>You will see test output on the terminal indicating test successes and failures. Some failures are OK.</p>
-<p>The <tt class="docutils literal"><span class="pre">all_tests.py</span></tt> command will complete with a summary of test failures. Some tests may fail due to missing external applications &#8211; these will be noted separately from other test failures. If these are related to features of QIIME that you are not using, this is acceptable. Otherwise, you&#8217;ll want to ensure that you have the external applications installed correctly (be sure to check that you have the right versions, QIIME may not always work with the latest version of an external dependency), and re-run the tests.</p>
-</div>
-</div>
-<div class="section" id="license-information-for-external-dependencies">
-<h2>License information for external dependencies<a class="headerlink" href="#license-information-for-external-dependencies" title="Permalink to this headline">¶</a></h2>
-<p>We have attempted to provide accurate licensing information for the above dependencies for the convenience of our users. This information is by no means definitive and may contain errors. Any questions about licenses or the legality of specific uses of these software packages should be directed to the authors of the software. Do not rely solely on the license information presented above!</p>
-</div>
-<div class="section" id="additional-install-notes-for-some-external-dependencies">
-<h2>Additional install notes for some external dependencies<a class="headerlink" href="#additional-install-notes-for-some-external-dependencies" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="path-environment-variable">
-<h3>PATH Environment Variable<a class="headerlink" href="#path-environment-variable" title="Permalink to this headline">¶</a></h3>
-<p>External applications used by QIIME need to be visible to the shell by existing in the executable search path (i.e., listed in the <tt class="docutils literal"><span class="pre">$PATH</span></tt> environment variable). For example, if you plan to use cd-hit, and have the cd-hit executables installed in <tt class="docutils literal"><span class="pre">$HOME/bin</span></tt> you can add this directory to your system path with the commands:</p>
-<div class="highlight-python"><div class="highlight"><pre>echo &quot;export PATH=$HOME/bin/:$PATH&quot; &gt;&gt; $HOME/.bashrc
-source $HOME/.bashrc
+<div class="section" id="step-2-create-your-qiime1-environment-and-install-qiime">
+<h3>Step 2: Create your qiime1 environment and install QIIME.<a class="headerlink" href="#step-2-create-your-qiime1-environment-and-install-qiime" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">qiime1</span> <span class="n">python</span><span class="o">=</span><span class="mf">2.7</span> <span class="n">qiime</span> <span class="n">matplotlib</span><span class="o">=</span><span class="mf">1.4</span><span class="o">.</span><span class="mi">3</span> <span class="n">mock</span> <span class="n">nose</span> <span class="o">-</span><span class="n">c</span> <span class="n">bioconda</span>
 </pre></div>
 </div>
 </div>
-<div class="section" id="rdp-jar-path-environment-variable">
-<span id="rdp-install"></span><h3>RDP_JAR_PATH Environment Variable<a class="headerlink" href="#rdp-jar-path-environment-variable" title="Permalink to this headline">¶</a></h3>
-<p>If you plan to use the RDP classifier for taxonomy assignment you must define an <tt class="docutils literal"><span class="pre">RDP_JAR_PATH</span></tt> environment variable. If you downloaded and unzipped the RDP classifier folder in <tt class="docutils literal"><span class="pre">$HOME/app/</span></tt>, you can do this with the following commands:</p>
-<div class="highlight-python"><div class="highlight"><pre>echo &quot;export RDP_JAR_PATH=$HOME/app/rdp_classifier_2.2/rdp_classifier-2.2.jar&quot; &gt;&gt; $HOME/.bashrc
-source $HOME/.bashrc
-</pre></div>
-</div>
-<p>Note that you will need the contents inside <tt class="docutils literal"><span class="pre">rdp_classifier_2.2</span></tt> for the program to function properly.</p>
-</div>
-<div class="section" id="uclust-install-notes">
-<span id="uclust-install"></span><h3>uclust Install Notes<a class="headerlink" href="#uclust-install-notes" title="Permalink to this headline">¶</a></h3>
-<p>The uclust binary must be called <tt class="docutils literal"><span class="pre">uclust</span></tt>, which differs from the names of the posted binaries, but is the name of the binary if you build from source. If you&#8217;ve installed the binary <tt class="docutils literal"><span class="pre">uclust1.2.21q_i86linux64</span></tt> as <tt class="docutils literal"><span class="pre">$HOME/bin/uclust1.2.21q_i86linux64</span></tt>, we recommend creating a symbolic link to this file:</p>
-<div class="highlight-python"><div class="highlight"><pre>ln -s $HOME/bin/uclust1.2.21q_i86linux64 $HOME/bin/uclust
+<div class="section" id="step-3-activate-your-qiime1-environment-and-test-your-qiime-installation">
+<h3>Step 3: Activate your qiime1 environment and test your QIIME installation.<a class="headerlink" href="#step-3-activate-your-qiime1-environment-and-test-your-qiime-installation" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="n">activate</span> <span class="n">qiime1</span>
+<span class="n">print_qiime_config</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">t</span>
 </pre></div>
 </div>
 </div>
-<div class="section" id="usearch-install-notes">
-<span id="usearch-install"></span><h3>usearch Install Notes<a class="headerlink" href="#usearch-install-notes" title="Permalink to this headline">¶</a></h3>
-<p>The usearch binary must be called <tt class="docutils literal"><span class="pre">usearch</span></tt>, which differs from the names of the posted binaries, but is the name of the binary if you build from source. If you&#8217;ve installed the binary <tt class="docutils literal"><span class="pre">usearch5.2.236_i86linux32</span></tt> as <tt class="docutils literal"><span class="pre">$HOME/bin/usearch5.2.236_i86linux32</span></tt>, we recommend creating a symbolic link to this file:</p>
-<div class="highlight-python"><div class="highlight"><pre>ln -s $HOME/bin/usearch5.2.236_i86linux32 $HOME/bin/usearch
+<div class="section" id="using-qiime-after-installation-with-anaconda">
+<h3>Using QIIME after installation with Anaconda<a class="headerlink" href="#using-qiime-after-installation-with-anaconda" title="Permalink to this headline">¶</a></h3>
+<p>Anytime you want to use QIIME after installation with Anaconda, you’ll need to reactivate your <code class="docutils literal"><span class="pre">qiime1</span></code> environment using this command:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="n">activate</span> <span class="n">qiime1</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="chimeraslayer-install-notes">
-<span id="chimeraslayer-install"></span><h3>ChimeraSlayer Install Notes<a class="headerlink" href="#chimeraslayer-install-notes" title="Permalink to this headline">¶</a></h3>
-<p>ChimeraSlayer can only be run from the directory where it was unpacked and built as it depends on several of its dependencies being in specific places relative to the executable (<tt class="docutils literal"><span class="pre">ChimeraSlayer/ChimeraSlayer.pl</span></tt>). Carefully follow the ChimeraSlayer install instructions. Then add the directory containing <tt class="docutils literal"><span class="pre">ChimeraSlayer.pl</span></tt> to your <tt class="docutils literal"><span class="pre">$PATH</span></tt> environment variable. If your <tt class="docutils literal"><span class="pre">ChimeraSlayer</span></tt> folder is in <tt class="docutils literal"><span class="pre">$HOME/app/</span></tt> you can set the <tt class="docutils literal"><span class="pre">$PATH</span></tt> environment variable as follows:</p>
-<div class="highlight-python"><div class="highlight"><pre>echo &quot;export PATH=$HOME/app/ChimeraSlayer:$PATH&quot; &gt;&gt; $HOME/.bashrc
-source $HOME/.bashrc
+<p>To exit the virtual environment, simply run the deactivate command:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="n">deactivate</span>
 </pre></div>
 </div>
-<p>If you&#8217;re having trouble getting ChimeraSlayer to work via QIIME, you should first check to see if you can run it directly from a directory other than its install directory. For example, try running <tt class="docutils literal"><span class="pre">ChimeraSlayer.pl</span></tt> from your home directory.</p>
-<p>Once you have configured Qiime, you can test your ChimeraSlayer install by running:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">print_qiime_config</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">tf</span>
+<p>If you decide later that you don’t want the environment or its packages
+anymore, deactivate the environment and then run this command:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">remove</span> <span class="o">--</span><span class="n">name</span> <span class="n">qiime1</span> <span class="o">--</span><span class="nb">all</span>
 </pre></div>
 </div>
-<p>This includes a check for obvious problems with your ChimeraSlayer install, and should help you determine if you have it installed correctly.</p>
-</div>
-<div class="section" id="r-install-notes">
-<span id="r-install"></span><h3>R Install Notes<a class="headerlink" href="#r-install-notes" title="Permalink to this headline">¶</a></h3>
-<p>To install R visit <a class="reference external" href="http://www.r-project.org/">http://www.r-project.org/</a> and follow the install instructions. Once R is installed, run R and execute the following commands:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">install</span><span class="o">.</span><span class="n">packages</span><span class="p">(</span><span class="n">c</span><span class="p">(</span><span class="s">&#39;ape&#39;</span><span class="p">,</span> <span class="s">&#39;biom&#39;</span><span class="p">,</span> <span class="s">&#39;optparse&#39;</span><span class="p">,</span> <span class="s">&#39;RColorBrewer&#39;</span><span class="p">,</span> <span class="s">&#39;randomForest&#39;</span><span class="p">,</span> <span class="s">&#39;vegan&#39;</span><span class="p">))</span>
-<span class="n">source</span><span class="p">(</span><span class="s">&#39;http://bioconductor.org/biocLite.R&#39;</span><span class="p">)</span>
-<span class="n">biocLite</span><span class="p">(</span><span class="n">c</span><span class="p">(</span><span class="s">&#39;DESeq2&#39;</span><span class="p">,</span> <span class="s">&#39;metagenomeSeq&#39;</span><span class="p">))</span>
-<span class="n">q</span><span class="p">()</span>
-</pre></div>
+<p>These instructions have been tested on Mac OS X (10.8–10.11) and Linux
+(Ubuntu 14.04 and Mint 17.3 Rosa).</p>
 </div>
 </div>
-<div class="section" id="ampliconnoise-install-notes">
-<span id="ampliconnoise-install"></span><h3>AmpliconNoise Install Notes<a class="headerlink" href="#ampliconnoise-install-notes" title="Permalink to this headline">¶</a></h3>
-<p>AmpliconNoise requires that several environment variables are set. After you&#8217;ve installed AmpliconNoise, you can set these with the following commands (assuming your AmpliconNoise install directory is <tt class="docutils literal"><span class="pre">$HOME/AmpliconNoiseV1.27/</span></tt>):</p>
-<div class="highlight-python"><div class="highlight"><pre>echo &quot;export PATH=$HOME/AmpliconNoiseV1.27/Scripts:$HOME/AmpliconNoiseV1.27/bin:$PATH&quot; &gt;&gt; $HOME/.bashrc
-
-echo &quot;export PYRO_LOOKUP_FILE=$HOME/AmpliconNoiseV1.27/Data/LookUp_E123.dat&quot; &gt;&gt; $HOME/.bashrc
-echo &quot;export SEQ_LOOKUP_FILE=$HOME/AmpliconNoiseV1.27/Data/Tran.dat&quot; &gt;&gt; $HOME/.bashrc
-</pre></div>
+<div class="section" id="making-additional-dependencies-accessible-in-your-qiime1-environment">
+<h2>Making additional dependencies accessible in your qiime1 environment<a class="headerlink" href="#making-additional-dependencies-accessible-in-your-qiime1-environment" title="Permalink to this headline">¶</a></h2>
+<p>You now have the QIIME 1 base installation and access to much of QIIME&#8217;s
+functionality. However, if you want to use additional dependencies, your
+installation of QIIME will need to have access to the executable
+files for each program you&#8217;d like to use. If these executables are accessible through your <code class="docutils literal"><span class="pre">PATH</span></code> environment, they will be accessible in your <code class="docutils literal"><span class="pre">qiime1</span></code> conda environment and accessible to QIIME. Some of QIIME&#8217;s external dependencies may have special installation instructions. These can be found <a class="reference external" href="./alternative.html#additional-install-notes-for-some-external-dependencies">here</a>.</p>
 </div>
-</div>
-<div class="section" id="qiime-denoiser-install-notes">
-<h3>QIIME Denoiser Install Notes<a class="headerlink" href="#qiime-denoiser-install-notes" title="Permalink to this headline">¶</a></h3>
-<p>If you do not install QIIME using <tt class="docutils literal"><span class="pre">setup.py</span></tt> and you plan to use the QIIME Denoiser, you&#8217;ll need to compile the FlowgramAlignment program. To do this you&#8217;ll need to have <tt class="docutils literal"><span class="pre">ghc</span></tt> installed. Then from the <tt class="docutils literal"><span class="pre">Qiime/qiime/support_files/denoiser/FlowgramAlignment/</span></tt> directory, run the following command:</p>
-<div class="highlight-python"><div class="highlight"><pre>make ; make install
-</pre></div>
-</div>
-<span class="target" id="build-qiime-docs"></span></div>
+<div class="section" id="installing-qiime-using-alternative-approaches">
+<h2>Installing QIIME using alternative approaches<a class="headerlink" href="#installing-qiime-using-alternative-approaches" title="Permalink to this headline">¶</a></h2>
+<p>If you cannot install QIIME using conda, there are a few other options. These
+are described in the <a class="reference external" href="./alternative.html">alternative installation methods document</a>.</p>
 </div>
 </div>
 
@@ -334,38 +137,22 @@ echo &quot;export SEQ_LOOKUP_FILE=$HOME/AmpliconNoiseV1.27/Data/Tran.dat&quot; &
           </div>
         </div>
       </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 
     
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">QIIME installation guide</a><ul>
-<li><a class="reference internal" href="#how-you-can-avoid-installing-qiime-by-using-a-virtual-machine-or-macqiime">How you can avoid installing QIIME by using a virtual machine or MacQIIME</a></li>
-<li><a class="reference internal" href="#installing-qiime-natively-with-a-minimal-base-install">Installing QIIME natively with a minimal (base) install</a><ul>
-<li><a class="reference internal" href="#prepare-your-build-environment">Prepare your build environment...</a></li>
-<li><a class="reference internal" href="#then-just-pip-install-qiime">Then, just pip install qiime!</a></li>
-<li><a class="reference internal" href="#alternatives-to-pip-install-qiime">Alternatives to pip install qiime</a></li>
-<li><a class="reference internal" href="#testing-the-qiime-base-installation">Testing the QIIME base installation</a></li>
+<li><a class="reference internal" href="#">QIIME Installation Guide</a><ul>
+<li><a class="reference internal" href="#installing-qiime-on-mac-os-x-and-linux-using-anaconda">Installing QIIME on Mac OS X and Linux using Anaconda</a><ul>
+<li><a class="reference internal" href="#step-1-install-miniconda">Step 1: Install Miniconda</a></li>
+<li><a class="reference internal" href="#step-2-create-your-qiime1-environment-and-install-qiime">Step 2: Create your qiime1 environment and install QIIME.</a></li>
+<li><a class="reference internal" href="#step-3-activate-your-qiime1-environment-and-test-your-qiime-installation">Step 3: Activate your qiime1 environment and test your QIIME installation.</a></li>
+<li><a class="reference internal" href="#using-qiime-after-installation-with-anaconda">Using QIIME after installation with Anaconda</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#installing-qiime-natively-with-a-full-install">Installing QIIME natively with a full install</a><ul>
-<li><a class="reference internal" href="#testing-the-qiime-full-installation">Testing the QIIME full installation</a></li>
-<li><a class="reference internal" href="#running-the-test-suite">Running the test suite</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#license-information-for-external-dependencies">License information for external dependencies</a></li>
-<li><a class="reference internal" href="#additional-install-notes-for-some-external-dependencies">Additional install notes for some external dependencies</a><ul>
-<li><a class="reference internal" href="#path-environment-variable">PATH Environment Variable</a></li>
-<li><a class="reference internal" href="#rdp-jar-path-environment-variable">RDP_JAR_PATH Environment Variable</a></li>
-<li><a class="reference internal" href="#uclust-install-notes">uclust Install Notes</a></li>
-<li><a class="reference internal" href="#usearch-install-notes">usearch Install Notes</a></li>
-<li><a class="reference internal" href="#chimeraslayer-install-notes">ChimeraSlayer Install Notes</a></li>
-<li><a class="reference internal" href="#r-install-notes">R Install Notes</a></li>
-<li><a class="reference internal" href="#ampliconnoise-install-notes">AmpliconNoise Install Notes</a></li>
-<li><a class="reference internal" href="#qiime-denoiser-install-notes">QIIME Denoiser Install Notes</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#making-additional-dependencies-accessible-in-your-qiime1-environment">Making additional dependencies accessible in your qiime1 environment</a></li>
+<li><a class="reference internal" href="#installing-qiime-using-alternative-approaches">Installing QIIME using alternative approaches</a></li>
 </ul>
 </li>
 </ul>
@@ -390,9 +177,9 @@ echo &quot;export SEQ_LOOKUP_FILE=$HOME/AmpliconNoiseV1.27/Data/Tran.dat&quot; &
   <p class="topless"><a href="index.html"
                         title="previous chapter">Installing QIIME</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="virtual_box.html"
-                        title="next chapter">QIIME Virtual Box</a></p>
-<div id="searchbox" style="display: none">
+  <p class="topless"><a href="alternative.html"
+                        title="next chapter">QIIME Alternative Installation Guide</a></p>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
@@ -400,38 +187,35 @@ echo &quot;export SEQ_LOOKUP_FILE=$HOME/AmpliconNoiseV1.27/Data/Tran.dat&quot; &
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="virtual_box.html" title="QIIME Virtual Box"
+          <a href="alternative.html" title="QIIME Alternative Installation Guide"
              >next</a> |</li>
         <li class="right" >
           <a href="index.html" title="Installing QIIME"
              >previous</a> |</li>
-        <li><a href="../index.html">Home</a> &raquo;</li>
-          <li><a href="index.html" >Installing QIIME</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">Home</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Installing QIIME</a> &raquo;</li> 
       </ul>
     </div>
 <div style="text-align: center; padding: 0px;"><br />
 <a href="http://www.scikit-bio.org" target="_blank"><img src="../_static/powered_by_skbio.png" border="0" alt="sampledoc" height="70px"/></a>
 <br /></div>
 
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
