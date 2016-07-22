@@ -119,7 +119,7 @@
 <li><p class="first">On OS X, this involves installing the <a class="reference external" href="http://developer.apple.com/technologies/xcode.html">developer tools</a>.</p>
 </li>
 <li><p class="first">On Debian-based Linux (e.g., Ubuntu), this involves installing the following packages:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">build</span><span class="o">-</span><span class="n">essential</span> <span class="n">python</span><span class="o">-</span><span class="n">dev</span> <span class="n">python</span><span class="o">-</span><span class="n">pip</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span>sudo apt-get install build-essential python-dev python-pip
 </pre></div>
 </div>
 </li>
@@ -130,7 +130,7 @@
 <p class="last">Depending on your system, additional packages may need to be installed that may be required by QIIME or its dependencies. Also, packages names will vary across operating systems and even within operating system distributions (e.g., different versions of Ubuntu). Since there are a wide range of systems that QIIME can be installed on, the QIIME development team cannot provide a comprehensive list of commands that are guaranteed to successfully install QIIME on your system.</p>
 </div>
 <p>QIIME is written in Python 2, and requires Python version greater than Python 2.7.0 and less than Python 3.0.0. You can verify which version of Python you&#8217;re running with:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">--</span><span class="n">version</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">--</span><span class="n">version</span>
 </pre></div>
 </div>
 <p>If you encounter problems installing QIIME, please visit <a class="reference external" href="http://help.qiime.org">http://help.qiime.org</a>.</p>
@@ -138,16 +138,16 @@
 <div class="section" id="then-just-pip-install-qiime">
 <h3>Then, just pip install qiime!<a class="headerlink" href="#then-just-pip-install-qiime" title="Permalink to this headline">¶</a></h3>
 <p>The easiest way to install the latest QIIME release and its base dependencies is with pip:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">numpy</span>
-<span class="n">pip</span> <span class="n">install</span> <span class="n">qiime</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span>pip install numpy
+pip install qiime
 </pre></div>
 </div>
 <p>If you do not have pip, the easiest way to install it is by running:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">easy_install</span> <span class="n">pip</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span>easy_install pip
 </pre></div>
 </div>
 <p>Or, if you are on Ubuntu, run:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">python</span><span class="o">-</span><span class="n">pip</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span>apt-get install python-pip
 </pre></div>
 </div>
 <p><strong>Note:</strong> You may need to prefix the above commands with <code class="docutils literal"><span class="pre">sudo</span></code> if you do not have permission to place files in the default locations. You will also need an active Internet connection.</p>
@@ -168,7 +168,7 @@
 <div class="section" id="testing-the-qiime-base-installation">
 <h3>Testing the QIIME base installation<a class="headerlink" href="#testing-the-qiime-base-installation" title="Permalink to this headline">¶</a></h3>
 <p>After installing the QIIME base packages, you can test the installation:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">print_qiime_config</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">t</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">print_qiime_config</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">t</span>
 </pre></div>
 </div>
 <p>If the output doesn&#8217;t indicate any failures, you&#8217;re now ready to use QIIME. If you&#8217;re working in a cluster environment, you may next want to make some customizations by <a class="reference external" href="./qiime_config.html">setting up your qiime config file</a>. You should also read the documentation on <a class="reference external" href="../tutorials/parallel_qiime.html">using parallel qiime</a>.</p>
@@ -182,10 +182,10 @@
 <p>Alignment, tree-building, taxonomy assignment, OTU picking, and other data generation steps:</p>
 <ul class="simple">
 <li>jre1.6.0_05 (<a class="reference external" href="http://java.sun.com/javase/downloads/index.jsp">src_jre</a>) (license: GPL2)</li>
-<li>rdp_classifier-2.2 (<a class="reference external" href="http://sourceforge.net/projects/rdp-classifier/files/rdp-classifier/rdp_classifier_2.2.zip/download">src_rdp</a>) See <a class="reference internal" href="#rdp-install"><span class="std std-ref">RDP install notes</span></a>. (license: GPL)</li>
+<li>rdp_classifier-2.2 (<a class="reference external" href="http://sourceforge.net/projects/rdp-classifier/files/rdp-classifier/rdp_classifier_2.2.zip/download">src_rdp</a>) See <a class="reference internal" href="#rdp-install"><span>RDP install notes</span></a>. (license: GPL)</li>
 <li>blast-2.2.22 (legacy BLAST from NCBI, <em>NOT</em> BLAST+) (<a class="reference external" href="ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/2.2.22/blast-2.2.22-universal-macosx.tar.gz">OS X</a> or <a class="reference external" href="ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/2.2.22/blast-2.2.22-ia32-linux.tar.gz">linux 32-bit</a>) (license: GNU)</li>
 <li>cd-hit 3.1.1 (<a class="reference external" href="http://www.bioinformatics.org/download/cd-hit/cd-hit-2007-0131.tar.gz">src_cdhit</a>) (license: Free access)</li>
-<li>ChimeraSlayer (via microbiomeutil_2010-04-29) (<a class="reference external" href="http://sourceforge.net/projects/microbiomeutil/files/">src_chimeraslayer</a>) See <a class="reference internal" href="#chimeraslayer-install"><span class="std std-ref">ChimeraSlayer install notes</span></a>.</li>
+<li>ChimeraSlayer (via microbiomeutil_2010-04-29) (<a class="reference external" href="http://sourceforge.net/projects/microbiomeutil/files/">src_chimeraslayer</a>) See <a class="reference internal" href="#chimeraslayer-install"><span>ChimeraSlayer install notes</span></a>.</li>
 <li>mothur 1.25.0 (<a class="reference external" href="http://www.mothur.org/w/images/6/6d/Mothur.1.25.0.zip">src_mothur</a>) (license: GPL)</li>
 <li>clearcut v1.0.9 (<a class="reference external" href="http://www.mothur.org/w/images/9/91/Clearcut.source.zip">src_clearcut</a>)</li>
 <li>raxml 7.3.0 (<a class="reference external" href="ftp://thebeast.colorado.edu/pub/QIIME-v1.5.0-dependencies/stamatak-standard-RAxML-5_7_2012.tgz">src_raxml</a>)</li>
@@ -205,7 +205,7 @@
 <p>Denoising 454 data:</p>
 <ul class="simple">
 <li>GNU Science Library (required by AmpliconNoise) (<a class="reference external" href="ftp://ftp.gnu.org/gnu/gsl/gsl-1.9.tar.gz">src_gsl</a>)</li>
-<li>AmpliconNoise 1.27 (<a class="reference external" href="http://ampliconnoise.googlecode.com/files/AmpliconNoiseV1.27.tar.gz">src_ampliconnoise</a>) See <a class="reference internal" href="#ampliconnoise-install"><span class="std std-ref">AmpliconNoise install notes</span></a>.</li>
+<li>AmpliconNoise 1.27 (<a class="reference external" href="http://ampliconnoise.googlecode.com/files/AmpliconNoiseV1.27.tar.gz">src_ampliconnoise</a>) See <a class="reference internal" href="#ampliconnoise-install"><span>AmpliconNoise install notes</span></a>.</li>
 <li>ghc 6.8 (required by the QIIME denoiser) (<a class="reference external" href="http://haskell.org/ghc">src_ghc</a>)</li>
 </ul>
 <p>Network visualization:</p>
@@ -214,7 +214,7 @@
 </ul>
 <p>Advanced statistics, including those performed in <code class="docutils literal"><span class="pre">supervised_learning.py</span></code>, <code class="docutils literal"><span class="pre">detrend.py</span></code> and <code class="docutils literal"><span class="pre">compare_categories.py</span></code>:</p>
 <ul class="simple">
-<li>R 3.1.2 (<a class="reference external" href="http://www.r-project.org/">src_r</a>) See <a class="reference internal" href="#r-install"><span class="std std-ref">R install notes</span></a>. (license: GPL2)</li>
+<li>R 3.1.2 (<a class="reference external" href="http://www.r-project.org/">src_r</a>) See <a class="reference internal" href="#r-install"><span>R install notes</span></a>. (license: GPL2)</li>
 </ul>
 <p>If you plan to use SourceTracker with QIIME:</p>
 <ul class="simple">
@@ -233,7 +233,7 @@
 <div class="section" id="testing-the-qiime-full-installation">
 <h3>Testing the QIIME full installation<a class="headerlink" href="#testing-the-qiime-full-installation" title="Permalink to this headline">¶</a></h3>
 <p>After installing the packages above, you can test this for sanity by running:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">print_qiime_config</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">tf</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">print_qiime_config</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">tf</span>
 </pre></div>
 </div>
 <p>If the output doesn&#8217;t indicate any failures related to packages that you plan to use, you&#8217;re now ready to use QIIME. If you&#8217;re working in a cluster environment, you may next want to make some customizations by <a class="reference external" href="./qiime_config.html">setting up your qiime config file</a>. You should also read the documentation on <a class="reference external" href="../tutorials/parallel_qiime.html">using parallel qiime</a>.</p>
@@ -241,8 +241,8 @@
 <div class="section" id="running-the-test-suite">
 <h3>Running the test suite<a class="headerlink" href="#running-the-test-suite" title="Permalink to this headline">¶</a></h3>
 <p>Due to size constraints, pip-installing QIIME won&#8217;t download QIIME&#8217;s unit tests. If you want to run QIIME&#8217;s comprehensive unit test suite after installing QIIME, you should <a class="reference external" href="https://github.com/biocore/qiime/releases">download the QIIME source code from GitHub</a> for the version of QIIME that you&#8217;ve installed. After unpacking the source distribution, you should run the test suite. Execute the following commands:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">qiime</span><span class="o">-&lt;</span><span class="n">version</span><span class="o">&gt;/</span><span class="n">tests</span><span class="o">/</span>
-<span class="n">python</span> <span class="n">all_tests</span><span class="o">.</span><span class="n">py</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span>cd qiime-&lt;version&gt;/tests/
+python all_tests.py
 </pre></div>
 </div>
 <p>Where <code class="docutils literal"><span class="pre">qiime-&lt;version&gt;</span></code> will be dependent on the specific version that you&#8217;ve downloaded.</p>
@@ -259,7 +259,7 @@
 <div class="section" id="path-environment-variable">
 <h3>PATH Environment Variable<a class="headerlink" href="#path-environment-variable" title="Permalink to this headline">¶</a></h3>
 <p>External applications used by QIIME need to be visible to the shell by existing in the executable search path (i.e., listed in the <code class="docutils literal"><span class="pre">$PATH</span></code> environment variable). For example, if you plan to use cd-hit, and have the cd-hit executables installed in <code class="docutils literal"><span class="pre">$HOME/bin</span></code> you can add this directory to your system path with the commands:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>echo &quot;export PATH=$HOME/bin/:$PATH&quot; &gt;&gt; $HOME/.bashrc
+<div class="highlight-python"><div class="highlight"><pre><span></span>echo &quot;export PATH=$HOME/bin/:$PATH&quot; &gt;&gt; $HOME/.bashrc
 source $HOME/.bashrc
 </pre></div>
 </div>
@@ -267,7 +267,7 @@ source $HOME/.bashrc
 <div class="section" id="rdp-jar-path-environment-variable">
 <span id="rdp-install"></span><h3>RDP_JAR_PATH Environment Variable<a class="headerlink" href="#rdp-jar-path-environment-variable" title="Permalink to this headline">¶</a></h3>
 <p>If you plan to use the RDP classifier for taxonomy assignment you must define an <code class="docutils literal"><span class="pre">RDP_JAR_PATH</span></code> environment variable. If you downloaded and unzipped the RDP classifier folder in <code class="docutils literal"><span class="pre">$HOME/app/</span></code>, you can do this with the following commands:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>echo &quot;export RDP_JAR_PATH=$HOME/app/rdp_classifier_2.2/rdp_classifier-2.2.jar&quot; &gt;&gt; $HOME/.bashrc
+<div class="highlight-python"><div class="highlight"><pre><span></span>echo &quot;export RDP_JAR_PATH=$HOME/app/rdp_classifier_2.2/rdp_classifier-2.2.jar&quot; &gt;&gt; $HOME/.bashrc
 source $HOME/.bashrc
 </pre></div>
 </div>
@@ -276,27 +276,27 @@ source $HOME/.bashrc
 <div class="section" id="uclust-install-notes">
 <span id="uclust-install"></span><h3>uclust Install Notes<a class="headerlink" href="#uclust-install-notes" title="Permalink to this headline">¶</a></h3>
 <p>The uclust binary must be called <code class="docutils literal"><span class="pre">uclust</span></code>, which differs from the names of the posted binaries, but is the name of the binary if you build from source. If you&#8217;ve installed the binary <code class="docutils literal"><span class="pre">uclust1.2.21q_i86linux64</span></code> as <code class="docutils literal"><span class="pre">$HOME/bin/uclust1.2.21q_i86linux64</span></code>, we recommend creating a symbolic link to this file:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>ln -s $HOME/bin/uclust1.2.21q_i86linux64 $HOME/bin/uclust
+<div class="highlight-python"><div class="highlight"><pre><span></span>ln -s $HOME/bin/uclust1.2.21q_i86linux64 $HOME/bin/uclust
 </pre></div>
 </div>
 </div>
 <div class="section" id="usearch-install-notes">
 <span id="usearch-install"></span><h3>usearch Install Notes<a class="headerlink" href="#usearch-install-notes" title="Permalink to this headline">¶</a></h3>
 <p>The usearch binary must be called <code class="docutils literal"><span class="pre">usearch</span></code>, which differs from the names of the posted binaries, but is the name of the binary if you build from source. If you&#8217;ve installed the binary <code class="docutils literal"><span class="pre">usearch5.2.236_i86linux32</span></code> as <code class="docutils literal"><span class="pre">$HOME/bin/usearch5.2.236_i86linux32</span></code>, we recommend creating a symbolic link to this file:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>ln -s $HOME/bin/usearch5.2.236_i86linux32 $HOME/bin/usearch
+<div class="highlight-python"><div class="highlight"><pre><span></span>ln -s $HOME/bin/usearch5.2.236_i86linux32 $HOME/bin/usearch
 </pre></div>
 </div>
 </div>
 <div class="section" id="chimeraslayer-install-notes">
 <span id="chimeraslayer-install"></span><h3>ChimeraSlayer Install Notes<a class="headerlink" href="#chimeraslayer-install-notes" title="Permalink to this headline">¶</a></h3>
 <p>ChimeraSlayer can only be run from the directory where it was unpacked and built as it depends on several of its dependencies being in specific places relative to the executable (<code class="docutils literal"><span class="pre">ChimeraSlayer/ChimeraSlayer.pl</span></code>). Carefully follow the ChimeraSlayer install instructions. Then add the directory containing <code class="docutils literal"><span class="pre">ChimeraSlayer.pl</span></code> to your <code class="docutils literal"><span class="pre">$PATH</span></code> environment variable. If your <code class="docutils literal"><span class="pre">ChimeraSlayer</span></code> folder is in <code class="docutils literal"><span class="pre">$HOME/app/</span></code> you can set the <code class="docutils literal"><span class="pre">$PATH</span></code> environment variable as follows:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>echo &quot;export PATH=$HOME/app/ChimeraSlayer:$PATH&quot; &gt;&gt; $HOME/.bashrc
+<div class="highlight-python"><div class="highlight"><pre><span></span>echo &quot;export PATH=$HOME/app/ChimeraSlayer:$PATH&quot; &gt;&gt; $HOME/.bashrc
 source $HOME/.bashrc
 </pre></div>
 </div>
 <p>If you&#8217;re having trouble getting ChimeraSlayer to work via QIIME, you should first check to see if you can run it directly from a directory other than its install directory. For example, try running <code class="docutils literal"><span class="pre">ChimeraSlayer.pl</span></code> from your home directory.</p>
 <p>Once you have configured Qiime, you can test your ChimeraSlayer install by running:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">print_qiime_config</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">tf</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">print_qiime_config</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">tf</span>
 </pre></div>
 </div>
 <p>This includes a check for obvious problems with your ChimeraSlayer install, and should help you determine if you have it installed correctly.</p>
@@ -304,7 +304,7 @@ source $HOME/.bashrc
 <div class="section" id="r-install-notes">
 <span id="r-install"></span><h3>R Install Notes<a class="headerlink" href="#r-install-notes" title="Permalink to this headline">¶</a></h3>
 <p>To install R visit <a class="reference external" href="http://www.r-project.org/">http://www.r-project.org/</a> and follow the install instructions. Once R is installed, run R and execute the following commands:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">install</span><span class="o">.</span><span class="n">packages</span><span class="p">(</span><span class="n">c</span><span class="p">(</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;biom&#39;</span><span class="p">,</span> <span class="s1">&#39;optparse&#39;</span><span class="p">,</span> <span class="s1">&#39;RColorBrewer&#39;</span><span class="p">,</span> <span class="s1">&#39;randomForest&#39;</span><span class="p">,</span> <span class="s1">&#39;vegan&#39;</span><span class="p">))</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">install</span><span class="o">.</span><span class="n">packages</span><span class="p">(</span><span class="n">c</span><span class="p">(</span><span class="s1">&#39;ape&#39;</span><span class="p">,</span> <span class="s1">&#39;biom&#39;</span><span class="p">,</span> <span class="s1">&#39;optparse&#39;</span><span class="p">,</span> <span class="s1">&#39;RColorBrewer&#39;</span><span class="p">,</span> <span class="s1">&#39;randomForest&#39;</span><span class="p">,</span> <span class="s1">&#39;vegan&#39;</span><span class="p">))</span>
 <span class="n">source</span><span class="p">(</span><span class="s1">&#39;http://bioconductor.org/biocLite.R&#39;</span><span class="p">)</span>
 <span class="n">biocLite</span><span class="p">(</span><span class="n">c</span><span class="p">(</span><span class="s1">&#39;DESeq2&#39;</span><span class="p">,</span> <span class="s1">&#39;metagenomeSeq&#39;</span><span class="p">))</span>
 <span class="n">q</span><span class="p">()</span>
@@ -314,7 +314,7 @@ source $HOME/.bashrc
 <div class="section" id="ampliconnoise-install-notes">
 <span id="ampliconnoise-install"></span><h3>AmpliconNoise Install Notes<a class="headerlink" href="#ampliconnoise-install-notes" title="Permalink to this headline">¶</a></h3>
 <p>AmpliconNoise requires that several environment variables are set. After you&#8217;ve installed AmpliconNoise, you can set these with the following commands (assuming your AmpliconNoise install directory is <code class="docutils literal"><span class="pre">$HOME/AmpliconNoiseV1.27/</span></code>):</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>echo &quot;export PATH=$HOME/AmpliconNoiseV1.27/Scripts:$HOME/AmpliconNoiseV1.27/bin:$PATH&quot; &gt;&gt; $HOME/.bashrc
+<div class="highlight-python"><div class="highlight"><pre><span></span>echo &quot;export PATH=$HOME/AmpliconNoiseV1.27/Scripts:$HOME/AmpliconNoiseV1.27/bin:$PATH&quot; &gt;&gt; $HOME/.bashrc
 
 echo &quot;export PYRO_LOOKUP_FILE=$HOME/AmpliconNoiseV1.27/Data/LookUp_E123.dat&quot; &gt;&gt; $HOME/.bashrc
 echo &quot;export SEQ_LOOKUP_FILE=$HOME/AmpliconNoiseV1.27/Data/Tran.dat&quot; &gt;&gt; $HOME/.bashrc
@@ -324,7 +324,7 @@ echo &quot;export SEQ_LOOKUP_FILE=$HOME/AmpliconNoiseV1.27/Data/Tran.dat&quot; &
 <div class="section" id="qiime-denoiser-install-notes">
 <h3>QIIME Denoiser Install Notes<a class="headerlink" href="#qiime-denoiser-install-notes" title="Permalink to this headline">¶</a></h3>
 <p>If you do not install QIIME using <code class="docutils literal"><span class="pre">setup.py</span></code> and you plan to use the QIIME Denoiser, you&#8217;ll need to compile the FlowgramAlignment program. To do this you&#8217;ll need to have <code class="docutils literal"><span class="pre">ghc</span></code> installed. Then from the <code class="docutils literal"><span class="pre">Qiime/qiime/support_files/denoiser/FlowgramAlignment/</span></code> directory, run the following command:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="p">;</span> <span class="n">make</span> <span class="n">install</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span>make ; make install
 </pre></div>
 </div>
 <span class="target" id="build-qiime-docs"></span></div>
@@ -401,6 +401,9 @@ echo &quot;export SEQ_LOOKUP_FILE=$HOME/AmpliconNoiseV1.27/Data/Tran.dat&quot; &
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -429,7 +432,7 @@ echo &quot;export SEQ_LOOKUP_FILE=$HOME/AmpliconNoiseV1.27/Data/Tran.dat&quot; &
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

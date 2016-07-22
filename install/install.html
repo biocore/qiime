@@ -89,30 +89,30 @@ supported by <a class="reference external" href="https://bioconda.github.io/">bi
 </div>
 <div class="section" id="step-2-create-your-qiime1-environment-and-install-qiime">
 <h3>Step 2: Create your qiime1 environment and install QIIME.<a class="headerlink" href="#step-2-create-your-qiime1-environment-and-install-qiime" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">qiime1</span> <span class="n">python</span><span class="o">=</span><span class="mf">2.7</span> <span class="n">qiime</span> <span class="n">matplotlib</span><span class="o">=</span><span class="mf">1.4</span><span class="o">.</span><span class="mi">3</span> <span class="n">mock</span> <span class="n">nose</span> <span class="o">-</span><span class="n">c</span> <span class="n">bioconda</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span>conda create -n qiime1 python=2.7 qiime matplotlib=1.4.3 mock nose -c bioconda
 </pre></div>
 </div>
 </div>
 <div class="section" id="step-3-activate-your-qiime1-environment-and-test-your-qiime-installation">
 <h3>Step 3: Activate your qiime1 environment and test your QIIME installation.<a class="headerlink" href="#step-3-activate-your-qiime1-environment-and-test-your-qiime-installation" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="n">activate</span> <span class="n">qiime1</span>
-<span class="n">print_qiime_config</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">t</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span>source activate qiime1
+print_qiime_config.py -t
 </pre></div>
 </div>
 </div>
 <div class="section" id="using-qiime-after-installation-with-anaconda">
 <h3>Using QIIME after installation with Anaconda<a class="headerlink" href="#using-qiime-after-installation-with-anaconda" title="Permalink to this headline">¶</a></h3>
 <p>Anytime you want to use QIIME after installation with Anaconda, you’ll need to reactivate your <code class="docutils literal"><span class="pre">qiime1</span></code> environment using this command:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="n">activate</span> <span class="n">qiime1</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span>source activate qiime1
 </pre></div>
 </div>
 <p>To exit the virtual environment, simply run the deactivate command:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="n">deactivate</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span>source deactivate
 </pre></div>
 </div>
 <p>If you decide later that you don’t want the environment or its packages
 anymore, deactivate the environment and then run this command:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">remove</span> <span class="o">--</span><span class="n">name</span> <span class="n">qiime1</span> <span class="o">--</span><span class="nb">all</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span>conda remove --name qiime1 --all
 </pre></div>
 </div>
 <p>These instructions have been tested on Mac OS X (10.8–10.11) and Linux
@@ -187,6 +187,9 @@ are described in the <a class="reference external" href="./alternative.html">alt
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -215,7 +218,7 @@ are described in the <a class="reference external" href="./alternative.html">alt
 
     <div class="footer" role="contentinfo">
         &copy; Copyright 2010-2014, QIIME Team.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
