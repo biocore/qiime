@@ -87,12 +87,12 @@ script_info['optional_options'] = [
     make_option('-j', '--min_overlap', type='int',
                 help='Applies to both fastq-join and SeqPrep methods.' +
                       ' Minimum allowed overlap in base-pairs required to join pairs.' +
-                      ' If not set, progam defaults will be used.'
+                      ' If not set, progam defaults will be used. For example, for fastq-join (6 bp) will be used.'
                       ' Must be an integer. [default: %default]', default=None),
     make_option('-p', '--perc_max_diff', type='int',
                 help='Only applies to fastq-join method, otherwise ignored. ' +
                      'Maximum allowed % differences within region of overlap.' +
-                      ' If not set, progam defaults will be used.' +
+                      ' If not set, progam defaults will be used. For example, for fastq-join (8%) will be used.' +
                       ' Must be an integer between 1-100 [default: %default]',
                 default=None),
     make_option('-y', '--max_ascii_score',
