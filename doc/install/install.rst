@@ -4,15 +4,15 @@
 QIIME Installation Guide
 ========================
 
-Installing QIIME on Mac OS X and Linux using Anaconda
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Installing QIIME on Mac OS X and Linux using Miniconda
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-QIIME consists of native Python 2 code and additionally wraps many external applications. These instructions describe how to perform a base installation of QIIME using `Anaconda <https://anaconda.org/>`_/Miniconda.
+QIIME consists of native Python 2 code and additionally wraps many external applications. These instructions describe how to perform a base installation of QIIME using `Miniconda <https://anaconda.org/>`_.
 
 Step 1: Install Miniconda
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Anaconda/Miniconda is a Python distribution, package manager, and virtual environment solution. While QIIME 1 is Python 2 software, we recommend installing
+Miniconda is a Python distribution, package manager, and virtual environment solution. While QIIME 1 is Python 2 software, we recommend installing
 Miniconda with Python 3 (miniconda3), as many bioinformatics packages
 are now transitioning to Python 3. You can still install Python 2
 software with miniconda3 by passing the ``python=2.7`` flag when you create
@@ -30,25 +30,27 @@ to install QIIME 2 alongside QIIME 1 on your system. It will also
 facilitate easy installation of the many other bioinformatics tools
 supported by `bioconda <https://bioconda.github.io/>`_.
 
-Step 2: Create your qiime1 environment and install QIIME.
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+You'll primarily interact with Miniconda using the ``conda`` command. 
+
+Step 2: Create your qiime1 environment and install QIIME
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
     conda create -n qiime1 python=2.7 qiime matplotlib=1.4.3 mock nose -c bioconda
 
-Step 3: Activate your qiime1 environment and test your QIIME installation.
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Step 3: Activate your qiime1 environment and test your QIIME installation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
     source activate qiime1
     print_qiime_config.py -t
 
-Using QIIME after installation with Anaconda
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Using QIIME after installation with Miniconda
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Anytime you want to use QIIME after installation with Anaconda, you’ll need to reactivate your ``qiime1`` environment using this command:
+Anytime you want to use QIIME after installation with Miniconda, you’ll need to reactivate your ``qiime1`` environment using this command:
 
 ::
 
