@@ -1,5 +1,6 @@
 QIIME 1.9.1-dev (changes since 1.9.1 go here)
 =============================================
+* New script, subsample_fastqs.py, which allows to subsample the read and barcode fastq files at the same time.
 
 Bug fixes
 ---------
