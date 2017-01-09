@@ -1,0 +1,686 @@
+FlowClus
+
+This program can both filter and denoise reads produced by
+  454 pyrosequencing.
+
+This file describes the usage and parameters of the program
+  in great detail.  
+
+Parameter names are subject to change -- check ./flowclus -h
+  for the latest.
+
+
+
+***************************************************************
+
+
+Usage:
+
+  ./flowclus {-m master.csv} [optional parameters]
+
+The order of the parameters does not matter.
+
+Parameters specified as "options" below do not require
+  arguments.  Other parameters should be followed by the
+  appropriate argument (integer, floating-point value, or
+  string).
+
+
+
+***************************************************************
+
+
+  -h   Help option
+
+         This option will cause the program to print to stderr
+           brief usage information and exit.
+         More complete descriptions of the parameters are
+           found in this README file.
+
+
+
+***************************************************************
+
+
+Required parameter:
+
+
+  -m <str>   Input master file with primer and mid tag sequences
+              (one per line, comma- or tab-delimited)
+
+         Lines for primers should begin with "primer", followed
+           by the name of the primer and its sequence.
+         Lines for mid tags should begin with "midtag", followed
+           by the name of the sample and the sequence.  They
+           should be listed following the primer with which
+           they were used.
+         The sequences can contain IUPAC ambiguous DNA codes,
+           but should not use regular expressions
+           (i.e. use "R", not "[AG]" or "(A|G)" or ".").
+         Here is a sample master file for an amplicon sequenced
+           bidirectionally from its two primers (341F and 926R)
+           generated from two samples (MID12 and MID13):
+
+             primer,341F,CCTACGGGAGGCAGCAG
+             midtag,MID12,ATATCGCGAG
+             midtag,MID13,AGACTCGACGT
+
+             primer,926R,CCGTCAATTCMTTTGAGTTT
+             midtag,MID12,AGCACTGTAG
+             midtag,MID13,ACGTCGGGTCT
+
+         Note that it is perfectly acceptable to use the same
+           sample name with different primers.
+
+         If one wants to search for the reverse primer at the
+           3' end of a read (see Sequence Analysis, below),
+           one should add a line for each primer.  The line
+           should begin with "reverse" and be followed by its
+           sequence (5' to 3', not reverse-complemented):
+
+             primer,341F,CCTACGGGAGGCAGCAG
+             midtag,MID12,ATATCGCGAG
+             midtag,MID13,AGACTCGACGT
+             reverse,CCGTCAATTCMTTTGAGTTT
+
+
+
+***************************************************************
+
+
+Analysis options:
+
+
+  -a   Option to filter only
+  -b   Option to denoise only
+  -ab  Option to filter and denoise (default)
+
+         If you choose to filter the reads, you must specify an
+           input sff.txt file (see next).
+         If you choose "denoise only", you must have reads that
+           have already been filtered by this program (or have
+           the same format) as input files.
+
+
+  -i <str>   Input sff.txt file
+
+         This is the file that is converted from a 454 .sff 
+           file using the 454 Tools program "sffinfo".  It is
+           required in order to perform filtering.
+         The label names that are used in the analysis of this
+           file are given in flowclus.h.  If these do not match
+           those used in your sff.txt file, they will need to
+           be changed accordingly.
+
+
+  -f <str>   File extension for the filtered flowgrams
+               (default: ".flow")
+
+         If filtering is performed, separate output files will
+           be produced for each of the primers.  The files
+           will be the primer name (as given in the master
+           file) followed by this file extension.
+         If the "denoise only" option is specified, these
+           files will be used as the inputs.
+         The format of a filtered flowgram file is as follows:
+           The first line indicates the number of flows and 
+           the flow order.  After that, each line will contain
+           the filtered flowgram for a read.  It will begin
+           with the read header (454 accession number), the
+           name of its sample, and optionally the flow start
+           number (if the flow order is irregular).  Then the
+           flows will be listed, beginning with the flow of
+           the last base of the primer -- this is due to the
+           way the flowgram is denoised by flowclus.  The
+           flowgram will end with the last "good" flow of the
+           sequence -- either the flow corresponding to the
+           last base, or the flow immediately prior to where
+           the read was truncated.
+         Flow values greater than the maximum specified (see
+           -u below) will be changed to that maximum value.
+
+
+  -o <str>   Output fasta file after denoising
+               (default: "denoised.fasta") 
+
+         If denoising is performed, this output fasta file
+           is produced.
+         NOTE: For this, and any other output files, if a
+           file of that name already exists, you will be
+           prompted to overwrite.  If you decline to
+           overwrite, the program will terminate so you can
+           specify a new file name.
+
+
+
+***************************************************************
+
+
+Other input/output files and options:
+
+
+  -e <str>   Output fasta file after filtering
+
+         If a file name is specified, a fasta file will be
+           produced for the reads after the filtering step.
+         The flowgrams will not be re-interpreted at this
+           stage, so the reads should not be altered except
+           for possibly missing bases at the 3' end (the
+           "3' gap" as a wise man once termed it).
+
+
+  -x   Option to produce "QIIME-style" fasta files
+
+         If this option is specified, the output fasta
+           file(s) (after filtering and/or after denoising)
+           will have the same format as that produced by
+           split_libraries.py or inflate_denoiser_output.py
+           in QIIME.  The reads can be used immediately in
+           an OTU clustering, such as by pick_otus.py.
+         Each new fasta header will contain the sample name,
+           followed by "_", a unique number, a space, and
+           the read's 454 accession number.
+         The mid tag and primer sequences will be removed
+           from the 5' ends of the reads.
+         The output cleaned flowgrams will not be affected.
+
+
+  -c <str>   Output file for counts from filtering step
+
+         The filtering step allows for a variety of criteria
+           with which to eliminate or to truncate reads.  For
+           each criterion specified by the user, a tally of
+           the number of reads eliminated or truncated for
+           that reason will be printed to the given file.
+           This is followed by a tally of the number of mid
+           tag - primer matches and reads printed for each
+           of the primers.  Then a full breakdown of the
+           counts for each sample is printed.
+         If a file is not specified, only the basic counts
+           will be printed to stderr.
+
+
+  -d <str>   Output file for denoising "misses"
+
+         Denoising in FlowClus consists of matching a read's
+           flow values to those of each cluster.  If a pair
+           of flow values are sufficiently distinct, the read
+           does not join that cluster.
+         If a file is specified with -d, that pair of flow
+           values is recorded.  At the conclusion of
+           denoising, the read vs. cluster flow values are
+           printed to the given file in comma-separated form.
+           The file can then be visualized as a levelplot in
+           R to give some indications of how well the 
+           denoising worked and if the parameters should be
+           adjusted.
+
+
+  -v          Option to produce consensus flowgram and
+                mapping files after denoising
+  -vf <str>   File extension for denoised flowgrams
+                (default: ".den")
+  -vm <str>   File extension for mapping files
+                (default: ".map")
+
+         The denoising process of FlowClus relies on creating,
+           for each cluster, consensus flowgrams and a set of
+           reads that map to that cluster.  These are used to
+           produce the denoised fasta file.
+         If the -v option is specified, the consensus
+           flowgrams and read headers for each cluster will
+           be printed for each primer.  The file names will
+           be the primer name followed by the specified (or
+           default) file extensions.
+         If denoising is performed using a trie (see -tr below),
+           a mapping file will not be produced.  Instead, one
+           can use the mapping file generated for chimera-
+           checking (see -cm, below), although this may list a
+           read from an internal node more than once.
+
+
+  -ch         Option to produce output fasta files that can be
+                analyzed by a de novo chimera-checking program
+                after denoising
+  -cu <str>   File extension for these files that can be
+                analyzed by UCHIME (default: ".chfasta")
+  -cp <str>   File extension for these files that can be
+                analyzed by Perseus
+  -cm <str>   File extension for the output mapping files that
+                indicate the reads in each cluster
+                (default: ".chmap")
+
+         Since FlowClus does nothing to remove PCR chimeras,
+           one may still wish to use a program to do so.
+         If the -ch option is specified, such fasta files will
+           be produced for each primer.  The files will
+           contain a single sequence for each cluster -- the
+           longest sequence -- and the fasta header will
+           indicate how many reads are in the cluster.
+         Mapping files will also be produced.  They will list
+           each cluster's representative read header, followed
+           by a comma-separated list of all of the cluster's
+           reads' headers.  This can be used to remove the
+           reads from any cluster that is judged to be
+           chimeric.
+         The default is to produce files of the form required
+           by UCHIME (v4.2.40).  The alternative is to produce
+           files of the form required by Perseus.  Either
+           option may be specified, but not both.
+         If denoising is performed using a trie (see -tr below),
+           only the leaf nodes will have a sequence printed to
+           the fasta file.  The mapping file will contain
+           the read headers for that leaf node AND those of
+           any ancestor nodes.  Therefore, a read from an
+           internal node may appear more than once in the
+           mapping file.
+
+
+  -sd <str>   Input file containing distances for each flow
+                value (default: "stddev.txt")
+
+         FlowClus allows one to denoise with variable values
+           (confidence interval widths) at each flow value.
+           "stddev.txt" provides a list of such distances
+           based on the standard deviations produced by
+           Balzer et al. (Bioinformatics, 2010).  This file
+           lists the standard deviations for each flow value
+           (from 0.00 to 19.99, one per line).
+         The -sd option allows one to specify an alternative
+           file to use.
+
+
+
+***************************************************************
+
+
+Filtering options:
+
+
+Reads can be filtered based on sequence, quality scores, and
+  flowgrams -- or any combination thereof.  But before a read
+  is analyzed, it must match a mid tag and primer given in
+  the master file.
+
+
+  -em <int>   Number of mismatches to the mid tag sequence to
+                allow for a read (default: 0)
+  -ep <int>   Number of mismatches to the primer sequence to
+                allow for a read (default: 0)
+
+         The reads will be tested for matching each of the 
+           mid tag - primer sequences in order.  This parameter
+           allows for some mismatching to the target sequences.
+         Only substitutions are allowed, not insertions or
+           deletions.
+         This parameter does not apply to the 3' base of the
+           primer, i.e. that base must be a match.  This is due
+           to the way the flowgram is analyzed by the program.
+         Be careful not to specify too large a number for the
+           mid tag parameter, or you may find "sample
+           switching" of your reads if the mid tags are not
+           sufficiently distinct.
+         Only reads that have a match and contain at least one
+           additional base (past the mid tag and primer) will
+           be further analyzed by the program.
+
+
+NOTE: A given read is either eliminated, truncated, or
+  neither.  A read can be eliminated for only one reason.
+  If multiple criteria would have eliminated a read, the
+  one listed first below is credited with the elimination.
+  Similarly, a read can be truncated for only one reason --
+  the one which left it shortest.  If multiple criteria
+  would have truncated a read at the same position, the one
+  listed first below is credited with the truncation.
+
+
+Sequence Analysis:
+
+  NOTE: The bases of the "key sequence" that begins every
+    read (e.g. "tcag") are not analyzed.
+
+
+  -l <int>   Minimum sequence length (bp)  (default [and min.]:
+               <length of mid tag - primer> + 1)
+
+         A read shorter than this minimum length will be
+           eliminated.
+         This parameter also applies after all of the
+           various truncation criteria, i.e. if a read's
+           truncation causes its length to fall below the
+           minimum specified here, it will be eliminated.
+         The specified minimum length includes the length of
+           the mid tag and the primer (but not the key
+           sequence).
+
+
+  -L <int>   Maximum sequence length (bp)
+
+         A read longer than this maximum will be eliminated. 
+         The specified maximum length includes the length of
+           the mid tag and the primer.
+
+
+  -t <int>   Maximum sequence length for truncation (bp)
+
+         A read will be truncated to the maximum specified.
+         The specified maximum length includes the length of
+           the mid tag and the primer.
+         NOTE: The truncated bases, as well as the quality
+           scores and flow values, will NOT be further
+           analyzed, even if the read should have been
+           eliminated due to its truncated end.
+           For example: A read should be eliminated due to
+             an ambiguous base at position 410 and the -N 0
+             option.  If -t 400 is specified, the read is
+             truncated at 400bp, so the ambiguous base is
+             ignored and the read is not eliminated.
+         This criterion should not result in any eliminations,
+           except in a case where the truncated sequence
+           results in a flowgram that is too short for the
+           -lf parameter.  If this occurs, you should
+           reconsider your choice of parameters.
+         The resulting flowgram might not match the sequence
+           perfectly, if the truncation divides a homopolymer.
+
+
+  Note that -L and -t can be used together.  For example, one
+    can eliminate any read that is longer than 600bp, but
+    truncate the rest to 400bp by specifying -L 600 -t 400.
+
+
+
+  -N <int>   Maximum number of ambiguous bases to allow in a
+               read
+
+         A read containing more than the specified number of
+           Ns will be eliminated.
+
+
+  -n <int>   Maximum number of ambiguous bases to allow in a
+               read before truncating it
+
+         A read containing more than the specified number of
+           Ns will be truncated immediately prior to the
+           offending N.
+         This may result in the elimination of the read due to
+           the minimum size parameters (-l or -lf).
+
+
+  Note that -N and -n can be used together.  For example, one
+    can truncate the reads before the first N (thus removing
+    all Ns) but also eliminate any read that has more than
+    two Ns by specifying -N 2 -n 0.
+
+
+
+  -G <int>   Maximum homopolymer length to allow in a read
+
+         A read that contains a homopolymer run longer than
+           the specified value will be eliminated.
+
+
+  -g <int>   Maximum homopolymer length to allow in a read
+               before truncating it
+
+         A read that contains a homopolymer run longer than
+           the specified value will be truncated immediately
+           prior to the homopolymer run.
+         This may result in the elimination of the read due to
+           the minimum size parameters (-l or -lf).
+
+
+  Note that -G and -g can be used together.  For example, one
+    can truncate a read prior to a homopolymer longer than 6
+    but also eliminate any read that has a homopolymer longer
+    than 10 by specifying -G 10 -g 6.
+
+
+
+  -r          Option to remove the reverse primer from reads
+  -rq         Option to require the reverse primer in reads,
+                which will then be removed
+  -er <int>   Number of mismatches to allow in the search for
+                the reverse primer (default: 0)
+
+         If either option is specified, the reads will be
+           checked for the presence of the reverse-complement
+           of the "reverse" primer specified in the master
+           file.  The search will allow for the specified
+           number of mismatches (not including the 3' base,
+           which must be a match).
+         If found, the reads will be truncated immediately
+           prior to the reverse primer.  This may result in
+           the elimination of the read, depending on the
+           minimum length parameters.
+         If the "require" option is specified, the read will
+           be eliminated if the reverse primer is not found.
+           This is equivalent to QIIME's "-z truncate_remove"
+           option in split_libraries.py.
+         The less strict "remove only" option is equivalent
+           to "-z truncate_only" in split_libraries.
+         Either option may be specified, but not both.
+
+
+
+Quality Score Analysis:
+
+  NOTE: The quality scores for bases removed by truncation
+    due to any of the above criteria are NOT analyzed.
+    Also, the quality scores of the "key sequence" that
+    begins every read are not analyzed.
+
+
+  -s <float>   Minimum average quality score
+
+         A read whose average quality score is not at least
+           the value specified will be eliminated.
+
+
+  -wl <int>     Length of sliding window of quality scores
+  -wq <float>   Minimum average quality score of sliding window
+  -wx           Option to eliminate a read with a bad quality
+                  window (default: do not eliminate)
+
+         A read containing a "window" (of the length specified
+           by -wl) of consecutive bases whose average quality
+           score is less than that specified by -wq will be
+           truncated immediately prior to the window.
+         This may result in the elimination of the read due to
+           the minimum size parameters (-l or -lf).  
+         If the option -wx is specified, the read will be 
+           eliminated regardless of where the window occurs
+           (this is equivalent to QIIME's -w, -g combination
+           in split_libraries.py).
+
+
+  Note that -q and -wl/-wq/-wx can be used together.  For
+    example, one can truncate a read prior to a window of
+    50bp that contains an average quality score below 20,
+    but also eliminate a read whose overall average quality
+    score is below 25, by specifying -q 25 -wl 50 -wq 20.
+
+
+
+Flowgram Analysis:
+
+  NOTE: The flow values of the "key sequence" that begins
+    every read are not analyzed.
+
+
+  -u <float>   Absolute maximum flow value (default: 19.99)
+
+         This program requires a maximum flow value that can
+           be analyzed.  Flow values greater than the
+           maximum will be changed to the maximum.
+         To truncate a flowgram prior to a flow value larger
+           than a specified maximum, use the -z parameter
+           (see below).
+
+
+  -lf <int>   Minimum number of flows (default [and min.]:
+                number of flows corresponding to minimum
+                sequence length of <length of key - mid
+                tag - primer> + 1)
+
+         A read whose flowgram is shorter than this minimum
+           length will be eliminated.
+         This parameter also applies after all of the
+           various truncation criteria, i.e. if a read's
+           truncation causes its flowgram's length to fall
+           below the minimum specified here, it will be
+           eliminated.
+         The specified minimum length includes the flows of
+           the mid tag and the primer, as well as the key
+           sequence.  Depending on the first base of the
+           mid tag, the standard key "tcag" utilizes 7-10
+           flows before the actual sequence begins.
+
+
+  -Lf <int>   Maximum number of flows
+
+         A flowgram will be truncated to the maximum
+           specified.
+         This criterion should not result in any eliminations,
+           except in a case where the truncated flowgram
+           results in a read that is too short for the
+           -l parameter.  If this occurs, you should
+           reconsider your choice of parameters.
+
+
+  -p <float>   Noisy interval flow value minimum
+  -q <float>   Noisy interval flow value maximum
+
+         A flowgram will be truncated immediately prior
+           to a flow whose value falls in the interval
+           defined by -p and -q (inclusive).
+         In the CleanMinMax.pl script of AmpliconNoise,
+           this interval is 0.50 - 0.70.
+         This may result in the elimination of the read due to
+           the minimum size parameters (-l or -lf).
+
+
+  -z <float>   Maximum flow value (for truncation)
+
+         A flowgram will be truncated immediately prior
+           to a flow whose value is greater than the
+           specified value (not inclusive).
+         In the CleanMinMax.pl script of AmpliconNoise,
+           this value is 6.49.
+         This may result in the elimination of the read due to
+           the minimum size parameters (-l or -lf).
+         Note that this is not the absolute maximum flow value
+           (see -u above).
+
+
+  -y <float>   Minimum flow value for 4 straight flows
+
+         A flowgram will be truncated immediately prior to
+           a set of 4 flows whose values are not at least
+           the minimum specified.
+         This may result in the elimination of the read due to
+           the minimum size parameters (-l or -lf).
+         This criterion is based on observations of Reeder
+           and Knight (Nature Methods, 2010), confirmed by
+           me (JMG), that a flowgram may contain 4 or more
+           consecutive flows with almost no signal, but the
+           corresponding sequence will not contain any Ns.
+         I would recommend a small value for this parameter,
+           such as -y 0.25.
+         Note that specifying -y 0.50 will NOT truncate reads
+           prior to all Ns, because only three flows with
+           insufficient signal are required for an N to be
+           called.  If you wish to truncate prior to all Ns,
+           use the -n 0 option.
+         This criterion has not been modified for use with
+           an irregular flow pattern ("flow pattern B").
+           It still evaluates every set of 4 consecutive
+           flows, regardless of the actual flow order.
+           Be cautious when using this criterion with such
+           data.
+
+
+
+***************************************************************
+
+
+Denoising options:
+
+If denoising is to be performed, one of the following
+  parameters must be specified, but not both.
+These parameters define the width of the "confidence interval"
+  around each flow value.  If a flow value from a read falls
+  outside of the confidence interval for the corresponding
+  flow value of a cluster, the flow values will be considered
+  sufficiently distinct, and the read will not join the
+  cluster.
+
+
+  -j <float>   Constant value
+
+         This parameter defines a constant value (plus or
+           minus) for all flow values.
+         For example, if "-j 0.50" is specified, the
+           interval for a flow value of 0.93 will range from
+           0.43 to 1.43 (inclusive).  Flow values inside
+           that interval will not be considered sufficiently
+           distinct from 0.93.
+         The parameter must be strictly positive.  To run
+           with a distance of 0, use -j 0.001.
+         In essence, the 454 base caller uses a constant
+           value of 0.50.  The important difference is that
+           454 calls bases using integers (0, 1, 2, ...) as
+           its reference values.  FlowClus uses a cluster's
+           (floating-point) flow values as the references.
+
+
+  -k <float>   Number of distances
+
+         This parameter defines a multiplier for the distances
+           given for each flow value in an external file
+           ("stddev.txt" by default, or whatever is specified
+           by -sd parameter; see above).  It must be positive.
+         For example, the distance (given in "stddev.txt") for
+           the flow value 0.93 is 0.11781817.  If "-k 5" is
+           specified, the interval for 0.93 will range from
+           0.34090915 to 1.51909085.
+         The distances given in "stddev.txt" are based on the
+           standard deviations produced by Balzer et al.
+           (Bioinformatics, 2010).  They more naturally
+           reflect flowgram noise in that they increase with
+           larger flow values.
+         If you have a set of desired distances for each flow
+           value, write those distances to a separate file
+           (one per line) and specify -sd <file> -k 1.  There
+           should be one distance for each flow value, from
+           0.00 to the maximum specified by -u (or 19.99, by
+           default).
+
+
+  -tr  Option to denoise using a trie
+
+         If this option is selected, denoising will be
+           performed using a trie data structure.  The reads
+           will not be clustered; instead they will be placed
+           into the trie according to their flow values and
+           the distance(s) given by -j or -k.
+         This will use less memory and have a shorter run-time,
+           but will be less precise than the default denoising.
+           It is recommended for very large datasets.
+         Since clusters are not formed, some of the output
+           files are different, as outlined in various sections
+           above.
+
+
+***************************************************************
+
+
+
+Congratulations.  You made it to the end.  Hopefully this is
+  not because you still have questions about the program and
+  how it is used.  But if you do have questions, or if you
+  found any bugs, please let me know.
+
+John M. Gaspar (jsh58@unh.edu)
+June 2013
