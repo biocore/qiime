@@ -77,13 +77,13 @@ class SingleRarefactionMaker(FunctionWithParams):
 
 class RarefactionMaker(FunctionWithParams):
 
-    def __init__(self, otu_path, min, max, step, num_reps):
+    def __init__(self, otu_path, min, max, step, num_reps, ranges=None):
         """ init a rarefactionmaker
 
         otu_path is path to .biom otu table
         we just ignore any rarefaction levels beyond any sample in the data
         """
-        self.rare_depths = range(min, max + 1, step)
+        self.rare_depths = ranges or range(min, max + 1, step)
         self.num_reps = num_reps
         self.otu_table = self.getBiomData(otu_path)
         self.max_num_taxa = -1
