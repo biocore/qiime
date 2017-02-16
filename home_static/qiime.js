@@ -84,11 +84,12 @@ function loadCitations(selected_item)
 
 function loadHeaderFooter(selected_page)
 {
-    if(selected_page == 'main')
-        load();
     document.getElementById('header').innerHTML = getFile("/home_static/header.html");
     document.getElementById('leftcol').innerHTML = getFile("/home_static/leftcol.html");
     document.getElementById('footer').innerHTML = getFile("/home_static/footer.html");
+
+    if(selected_page == 'main')
+        load();
 }
 
 
