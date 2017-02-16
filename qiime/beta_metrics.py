@@ -53,12 +53,8 @@ def make_unifrac_metric(weighted, metric, is_symmetric):
 # length is present in one sample but not (both samples OR NEITHER
 # SAMPLE).  Divide by total branch length of full tree.
 # G is asymmetric unifrac
-dist_unweighted_unifrac = make_unifrac_metric(False, fast_tree.unifrac, True)
-dist_unifrac = dist_unweighted_unifrac  # default unifrac is just unifrac
 dist_unweighted_unifrac_full_tree = make_unifrac_metric(False,
                                                         fast_tree.unnormalized_unifrac, True)
-dist_weighted_unifrac = make_unifrac_metric(True,
-                                            fast_tree.weighted_unifrac, True)
 dist_weighted_normalized_unifrac = make_unifrac_metric('correct',
                                                        fast_tree.weighted_unifrac, True)
 dist_unifrac_g = make_unifrac_metric(False, fast_tree.G, False)
@@ -105,6 +101,7 @@ one_sample_unweighted_unifrac = make_unifrac_row_metric(
     False,
     fast_tree.unifrac,
     True)
+
 # default unifrac is just unifrac
 one_sample_unifrac = one_sample_unweighted_unifrac
 one_sample_unweighted_unifrac_full_tree = make_unifrac_row_metric(False,
@@ -117,6 +114,8 @@ one_sample_unifrac_g = make_unifrac_row_metric(False, fast_tree.G, False)
 one_sample_unifrac_g_full_tree = make_unifrac_row_metric(False,
                                                          fast_tree.unnormalized_G, False)
 
+dist_unweighted_unifrac = one_sample_unweighted_unifrac
+dist_weighted_unifrac = one_sample_weighted_unifrac
 
 def _reorder_unifrac_res(unifrac_res, sample_names_in_desired_order):
     """ reorder unifrac result

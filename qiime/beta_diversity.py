@@ -34,7 +34,7 @@ import os.path
 import warnings
 warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
 
-from numpy import asarray
+from numpy import vstack
 import cogent.maths.distance_transform as distance_transform
 from biom import load_table
 
@@ -144,8 +144,6 @@ def single_file_beta(input_path, metrics, tree_path, output_dir,
 
     otu_table = load_table(input_path)
 
-    otumtx = asarray([v for v in otu_table.iter_data(axis='sample')])
-
     if tree_path:
         tree = parse_newick(open(tree_path, 'U'),
                             PhyloNode)
@@ -173,6 +171,7 @@ def single_file_beta(input_path, metrics, tree_path, output_dir,
                              % (metric, ', '.join(list_known_metrics())))
                 exit(1)
         if rowids is None:
+            otumtx = otu_table.matrix_data.T.toarray()
             # standard, full way
             if is_phylogenetic:
                 dissims = metric_f(otumtx, otu_table.ids(axis='observation'),
@@ -198,6 +197,7 @@ def single_file_beta(input_path, metrics, tree_path, output_dir,
                         metric_f.__name__ == 'binary_dist_chisq':
                     warnings.warn('dissimilarity ' + metric_f.__name__ +
                                   ' is not parallelized, calculating the whole matrix...')
+                    otumtx = otu_table.matrix_data.T.toarray()
                     row_dissims.append(metric_f(otumtx)[rowidx])
                 else:
                     try:
@@ -208,17 +208,23 @@ def single_file_beta(input_path, metrics, tree_path, output_dir,
                         sample_ids = otu_table.ids()
                         observation_ids = otu_table.ids(axis='observation')
                         for i in range(len(sample_ids)):
+                            samp_a = otu_table.data(sample_ids[rowidx])
+                            samp_b = otu_table.data(sample_ids[i])
+                            samp_data = vstack([samp_a, samp_b])
+
                             if is_phylogenetic:
+
                                 dissim = metric_f(
-                                    otumtx[[rowidx, i], :], observation_ids,
+                                    samp_data, observation_ids,
                                     tree, [sample_ids[rowidx], sample_ids[i]],
                                     make_subtree=(not full_tree))[0, 1]
                             else:
-                                dissim = metric_f(otumtx[[rowidx, i], :])[0, 1]
+                                dissim = metric_f(samp_data)[0, 1]
                             dissims.append(dissim)
                         row_dissims.append(dissims)
                     else:
                         # do whole row at once
+                        otumtx = otu_table.matrix_data.T.toarray()
                         dissims = row_metric(otumtx,
                                              otu_table.ids(axis='observation'),
                                              tree, otu_table.ids(), rowid,
