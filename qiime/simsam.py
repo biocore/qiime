@@ -257,7 +257,7 @@ def simsam_range(table,
                 output_data, output_otu_ids, output_sample_ids,
                 observation_metadata=output_metadata,
                 generated_by=get_generated_by_for_biom_tables(),
-                create_date=datetime.now().isoformat())
+                create_date=datetime.now().isoformat(), type='OTU table')
             yield (output_table,
                    output_mapping_lines,
                    simulated_sample_size,

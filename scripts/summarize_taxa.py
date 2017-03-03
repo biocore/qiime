@@ -245,7 +245,7 @@ def main():
                 observation_ids.append(delimiter.join(row[0]))
                 data.append(row[1:])
 
-            table = Table(np.asarray(data), observation_ids, sample_ids)
+            table = Table(np.asarray(data), observation_ids, sample_ids, type='OTU table')
             if opts.transposed_output:
                 table = table.transpose()
 

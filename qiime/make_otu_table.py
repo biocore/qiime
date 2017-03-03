@@ -91,7 +91,7 @@ def make_otu_table(otu_map_f, otu_to_taxonomy=None, delim='_', table_id=None,
                      observation_metadata=otu_metadata, 
                      sample_metadata=sample_metadata, table_id=table_id,
                      generated_by=get_generated_by_for_biom_tables(),
-                     create_date=datetime.now().isoformat())
+                     create_date=datetime.now().isoformat(), type='OTU table')
     except ValueError as e:
         raise ValueError("Couldn't create OTU table. Is your OTU map empty?"
                          " Original error message: %s" % (str(e)))
