@@ -7,6 +7,19 @@
 
 **Description:**
 
+The Illumina MiSeq platform commonly outputs sequence reads and barcode reads in separate files. For example:
+
+.. note::
+- "Example_S0_L001_R1_001.fastq.gz": 	R1 is read one, the forward read
+- "Example_S0_L001_I1_001.fastq.gz": 	I1 is the index, the barcode read
+
+When paired end reads are generated on an Illumina machine, they can be paired with `join_paired_ends.py <http://qiime.org/scripts/join_paired_ends.html>`_ and produce the following output:
+
+.. note::
+- "fastqjoin.join.fastq":		the result of pairing the forward and reverse reads
+- "fastqjoin.join_barcodes.fastq": 	the updated barcodes for these newly paired reads
+
+In both these cases, this script can be used to demultiplex the reads.fastq file using the barcodes.fastq file and `mapping file <http://qiime.org/documentation/file_formats.html#mapping-file-overview>`_.
 
 
 
