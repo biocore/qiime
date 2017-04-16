@@ -104,7 +104,7 @@ Your denoised sequences can now be fed directly into QIIME at the OTU picking st
 
     pick_otus.py -s 0.97 -i denoised_seqs.fna -m uclust --optimal
 
-Passing ``--optimal`` may be prohibitively compute-intensive for large analyses however (for example, greater than a single 454 FLX run). The default QIIME pick_otus.py parameters are likely to be sufficient.
+Passing ``--optimal`` may be prohibitively compute-intensive for large analyses however (for example, greater than a single 454 FLX run). The default QIIME pick_otus.py parameters are likely to be sufficient. Please note that the uclust version fro this step must be 1.2.22, and that it can be obtained `here <http://www.drive5.com/uclust/downloads1_2_22q.html>`_.
 
 
 Notes:
