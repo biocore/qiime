@@ -51,7 +51,7 @@ script_info['required_options'] = [
 
 script_info['optional_options'] = [
     make_option('-o', '--output_dir',
-                type='new_path',
+                type='new_dirpath',
                 help='Output directory.  Will be created if does not exist.  ' +
                 '[default: %default]', default="."),
 ]

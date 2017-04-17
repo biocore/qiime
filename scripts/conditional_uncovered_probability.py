@@ -85,7 +85,7 @@ script_info['optional_options'] = [
                 type='existing_path'),
     make_option('-o', '--output_path',
                 help='Output filepath to store the predictions. [default: %default]',
-                type='new_path'),
+                type='new_filepath'),
     make_option('-r', '--look_ahead',
                 help='Number of unobserved, new colors necessary for prediction.'
                 ' [default: %default]', default=25,
