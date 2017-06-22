@@ -65,7 +65,7 @@ def _contiguous_regions(condition):
     """
 
     # Find the indicies of changes in "condition"
-    d = np.diff(condition)
+    d = np.diff(condition.astype(np.int8))
     idx, = d.nonzero()
 
     # We need to start things after the change in "condition". Therefore,
