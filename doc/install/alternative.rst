@@ -131,8 +131,8 @@ Alignment, tree-building, taxonomy assignment, OTU picking, and other data gener
 
 * jre1.6.0_05 (`src_jre <http://java.sun.com/javase/downloads/index.jsp>`_) (license: GPL2)
 * rdp_classifier-2.2 (`src_rdp <http://sourceforge.net/projects/rdp-classifier/files/rdp-classifier/rdp_classifier_2.2.zip/download>`_) See :ref:`RDP install notes <rdp-install>`. (license: GPL)
-* blast-2.2.22 (legacy BLAST, *not* BLAST+) (binary for `OS X <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/legacy/2.2.22/blast-2.2.22-universal-macosx.tar.gz>`_, `linux 32-bit
-<ftp://ftp.ncbi.nlm.nih.gov/blast/executables/legacy/2.2.22/blast-2.2.22-ia32-linux.tar.gz>`_, `other versions<ftp://ftp.ncbi.nlm.nih.gov/blast/executables/legacy/2.2.22/>`_) (license: GNU)
+* blast-2.2.22 (legacy BLAST from NCBI, *NOT* BLAST+) (binary for `OS X <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/legacy/2.2.22/blast-2.2.22-universal-macosx.tar.gz>`_ or `linux 32-bit
+<ftp://ftp.ncbi.nlm.nih.gov/blast/executables/legacy/2.2.22/blast-2.2.22-ia32-linux.tar.gz>`_) (license: GNU)
 * cd-hit 3.1.1 (`src_cdhit <http://www.bioinformatics.org/download/cd-hit/cd-hit-2007-0131.tar.gz>`_) (license: Free access)
 * ChimeraSlayer (via microbiomeutil_2010-04-29) (`src_chimeraslayer <http://sourceforge.net/projects/microbiomeutil/files/>`_) See :ref:`ChimeraSlayer install notes <chimeraslayer-install>`.
 * mothur 1.25.0 (`src_mothur <http://www.mothur.org/w/images/6/6d/Mothur.1.25.0.zip>`_) (license: GPL)
