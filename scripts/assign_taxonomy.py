@@ -211,6 +211,9 @@ script_info['optional_options'] = [
     make_option('-e', '--blast_e_value', type='float',
                 help='Maximum e-value to record an assignment, only used for blast '
                 'method [default: %default]', default=0.001),
+    make_option('--identity', type='float',
+                help='Minimum percent identity to record an assignment, only used for blast '
+                'method [default: %default]',default=90.0),
     make_option('-o', '--output_dir', type='new_dirpath',
                 help='Path to store result file ' +
                 '[default: <ASSIGNMENT_METHOD>_assigned_taxonomy]')
@@ -334,6 +337,7 @@ def main():
         else:
             params['reference_seqs_filepath'] = opts.reference_seqs_fp
         params['Max E value'] = opts.blast_e_value
+        params['Min percent identity'] = opts.identity
 
     elif assignment_method == 'mothur':
         params['Confidence'] = opts.confidence
