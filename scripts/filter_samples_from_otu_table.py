@@ -62,7 +62,7 @@ script_info['optional_options'] = [
                 help='Path to file listing sample ids to keep. Valid formats for the file are: 1) any white space, newline, or tab delimited list of samples, 2) a mapping file with samples in the first column [default: %default]'),
     make_option('-s',
                 '--valid_states', type='string',
-                help="string describing valid states (e.g. 'Treatment:Fasting') [default: %default]"),
+                help="string describing valid states (e.g. 'Treatment:Fasting' or 'Treatment:*,!Control;Age:19,20,21') [default: %default]"),
     make_option('-n',
                 '--min_count',
                 type='int',
