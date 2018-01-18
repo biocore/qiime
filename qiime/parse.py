@@ -22,6 +22,7 @@ from types import GeneratorType
 from numpy import concatenate, repeat, zeros, nan, asarray
 from numpy.random import permutation
 
+import biom
 from skbio.stats.ordination import OrdinationResults
 from skbio.parse.record_finder import LabeledRecordFinder
 from cogent.parse.tree import DndParser
@@ -567,18 +568,28 @@ def make_envs_dict(abund_mtx, sample_names, taxon_names):
     sample_names is a list, length = num rows
     taxon_names is a list, length = num columns
     """
-    num_samples, num_seqs = abund_mtx.shape
+    if isinstance(abund_mtx, biom.Table):
+        num_seqs, num_samples = abund_mtx.shape
+    else:
+        num_samples, num_seqs = abund_mtx.shape
+
     if (num_samples, num_seqs) != (len(sample_names), len(taxon_names)):
         raise ValueError(
             "Shape of matrix %s doesn't match # samples and # taxa (%s and %s)" %
             (abund_mtx.shape, num_samples, num_seqs))
     envs_dict = {}
     sample_names = asarray(sample_names)
-    for i, taxon in enumerate(abund_mtx.T):
 
-        nonzeros = taxon.nonzero()  # this removes zero values to reduce memory
-        envs_dict[taxon_names[i]] = dict(zip(sample_names[nonzeros],
-                                             taxon[nonzeros]))
+    if isinstance(abund_mtx, biom.Table):
+        for i, v in enumerate(abund_mtx.matrix_data):
+            envs_dict[taxon_names[i]] = dict(zip(sample_names[v.indices],
+                                                 v.data))
+    else:
+        for i, taxon in enumerate(abund_mtx.T):
+
+            nonzeros = taxon.nonzero()  # this removes zero values to reduce memory
+            envs_dict[taxon_names[i]] = dict(zip(sample_names[nonzeros],
+                                                 taxon[nonzeros]))
     return envs_dict
 
 
