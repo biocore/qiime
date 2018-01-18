@@ -174,6 +174,38 @@ class ExtractBarcodes(TestCase):
         expected_reads = ['@HWI-ST830', 'TTTCCCCGGGG', '+', ')*+,-./0123', '']
 
         self.assertEqual(actual_reads, expected_reads)
+    
+    def test_process_barcode_single_end_data_with_orientation(self):
+        """ Handles fastq lines, parses barcodes, orients reads """
+
+        fastq_data = ["HWI-ST830", "AAAATTTTCCCCGGGG",
+                      np.arange(3, 19, dtype=np.int8)]
+        reads_out = FakeOutFile()
+        bcs_out = FakeOutFile()
+        forward_primers = [compile(''.join([self.iupac[symbol] for
+                                            symbol in 'AYA']))]
+        reverse_primers = [compile(''.join([self.iupac[symbol] for
+                                            symbol in 'TCCCCG']))]
+        output_bc_not_oriented = FakeOutFile()
+        fastq1_out_not_oriented = FakeOutFile()
+
+        process_barcode_single_end_data(fastq_data, bcs_out, reads_out,
+                                        bc1_len=5, rev_comp_bc1=False,
+                                        attempt_read_orientation=True,
+                                        forward_primers=forward_primers,
+                                        reverse_primers=reverse_primers,
+                                        output_bc_not_oriented=output_bc_not_oriented,
+                                        fastq_out_not_oriented=fastq1_out_not_oriented)
+
+        actual_bcs = bcs_out.data.split('\n')
+        expected_bcs = ["@HWI-ST830", "CCCCG", "+", "3210/", ""]
+
+        self.assertEqual(actual_bcs, expected_bcs)
+
+        actual_reads = reads_out.data.split('\n')
+        expected_reads = ['@HWI-ST830', 'GGGAAAATTTT', '+', ".-,+*)('&%$", '']
+
+        self.assertEqual(actual_reads, expected_reads)
 
     def test_process_barcode_paired_end_data(self):
         """ Handles paired fastq lines, parses barcodes """
