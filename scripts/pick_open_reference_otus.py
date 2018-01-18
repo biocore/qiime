@@ -19,7 +19,8 @@ from qiime.workflow.util import (validate_and_set_jobs_to_start,
                                  call_commands_serially, print_commands, no_status_updates, print_to_stdout)
 from qiime.workflow.pick_open_reference_otus import (
     pick_subsampled_open_reference_otus,
-    iterative_pick_subsampled_open_reference_otus)
+    iterative_pick_subsampled_open_reference_otus,
+    convergent_pick_subsampled_open_reference_otus)
 
 qiime_config = load_qiime_config()
 options_lookup = get_options_lookup()
@@ -216,6 +217,14 @@ script_info['script_usage'].append(("", "Run the subsampled open-reference "
                                     "-s 0.1 -p $PWD/ucrss_params.txt"))
 
 script_info['script_usage'].append(("", "Run the subsampled open-reference "
+                                    "OTU picking workflow in convergent iterative mode on seqs1.fna and seqs2.fna using "
+                                    "refseqs.fna as the initial reference collection. ALWAYS SPECIFY ABSOLUTE "
+                                    "FILE PATHS (absolute path represented here as $PWD, but will generally "
+                                    "look something like /home/ubuntu/my_analysis/", "%prog "
+                                    "-i $PWD/seqs1.fna,$PWD/seqs2.fna -r $PWD/refseqs.fna -o $PWD/ucrss_iterc/ "
+                                    "-s 0.1 -p $PWD/ucrss_params.txt --convergent"))
+
+script_info['script_usage'].append(("", "Run the subsampled open-reference "
                                     "OTU picking workflow in iterative mode on seqs1.fna and seqs2.fna using "
                                     "refseqs.fna as the initial reference collection. This is useful if "
                                     "you're working with marker genes that do not result in useful alignment "
@@ -322,7 +331,16 @@ script_info['optional_options'] = [
     make_option('--suppress_align_and_tree', action='store_true',
                 default=False,
                 help='skip the sequence alignment and tree-building steps [default: '
-                '%default]')
+                '%default]'),
+    make_option('--num_seqs', type='int', default=10000,
+                help='Number of sequences to include form each input file in '
+                     'each step in the convergent mode. [default:%default]'),
+    make_option('--convergent', action='store_true',
+                default=False,
+                help='Run the open reference workflow in convergent iterative mode. '
+                     'This flag is silently ignored when not running in iterative '
+                     'mode. [default: %default]'),
+
 ]
 script_info['version'] = __version__
 
@@ -431,23 +449,45 @@ def main():
                                             status_update_callback=status_update_callback,
                                             minimum_failure_threshold=minimum_failure_threshold)
     else:
-        iterative_pick_subsampled_open_reference_otus(input_fps=input_fps,
-                                                      refseqs_fp=refseqs_fp, output_dir=output_dir,
-                                                      percent_subsample=percent_subsample, new_ref_set_id=new_ref_set_id,
-                                                      command_handler=command_handler, params=params,
-                                                      min_otu_size=opts.min_otu_size,
-                                                      run_assign_tax=not opts.suppress_taxonomy_assignment,
-                                                      run_align_and_tree=not opts.suppress_align_and_tree,
-                                                      qiime_config=qiime_config,
-                                                      prefilter_refseqs_fp=prefilter_refseqs_fp,
-                                                      prefilter_percent_id=prefilter_percent_id,
-                                                      step1_otu_map_fp=opts.step1_otu_map_fp,
-                                                      step1_failures_fasta_fp=opts.step1_failures_fasta_fp,
-                                                      parallel=parallel, suppress_step4=opts.suppress_step4, logger=None,
-                                                      denovo_otu_picking_method=denovo_otu_picking_method,
-                                                      reference_otu_picking_method=reference_otu_picking_method,
-                                                      status_update_callback=status_update_callback,
-                                                      minimum_failure_threshold=minimum_failure_threshold)
+        if opts.convergent:
+            convergent_pick_subsampled_open_reference_otus(
+                input_fps=input_fps,
+                refseqs_fp=refseqs_fp, output_dir=output_dir,
+                percent_subsample=percent_subsample,
+                new_ref_set_id=new_ref_set_id,
+                command_handler=command_handler, params=params,
+                min_otu_size=opts.min_otu_size,
+                run_assign_tax=not opts.suppress_taxonomy_assignment,
+                run_align_and_tree=not opts.suppress_align_and_tree,
+                qiime_config=qiime_config,
+                prefilter_refseqs_fp=prefilter_refseqs_fp,
+                prefilter_percent_id=prefilter_percent_id,
+                step1_otu_map_fp=opts.step1_otu_map_fp,
+                step1_failures_fasta_fp=opts.step1_failures_fasta_fp,
+                parallel=parallel, suppress_step4=opts.suppress_step4, logger=None,
+                denovo_otu_picking_method=denovo_otu_picking_method,
+                reference_otu_picking_method=reference_otu_picking_method,
+                status_update_callback=status_update_callback,
+                minimum_failure_threshold=minimum_failure_threshold,
+                num_seqs=opts.num_seqs)
+        else:
+            iterative_pick_subsampled_open_reference_otus(input_fps=input_fps,
+                                                          refseqs_fp=refseqs_fp, output_dir=output_dir,
+                                                          percent_subsample=percent_subsample, new_ref_set_id=new_ref_set_id,
+                                                          command_handler=command_handler, params=params,
+                                                          min_otu_size=opts.min_otu_size,
+                                                          run_assign_tax=not opts.suppress_taxonomy_assignment,
+                                                          run_align_and_tree=not opts.suppress_align_and_tree,
+                                                          qiime_config=qiime_config,
+                                                          prefilter_refseqs_fp=prefilter_refseqs_fp,
+                                                          prefilter_percent_id=prefilter_percent_id,
+                                                          step1_otu_map_fp=opts.step1_otu_map_fp,
+                                                          step1_failures_fasta_fp=opts.step1_failures_fasta_fp,
+                                                          parallel=parallel, suppress_step4=opts.suppress_step4, logger=None,
+                                                          denovo_otu_picking_method=denovo_otu_picking_method,
+                                                          reference_otu_picking_method=reference_otu_picking_method,
+                                                          status_update_callback=status_update_callback,
+                                                          minimum_failure_threshold=minimum_failure_threshold)
 
 if __name__ == "__main__":
     main()
